@@ -154,10 +154,19 @@ QString FlagsTypeEntry::qualifiedTargetLangJNIName() const {
 }
 
 QString FunctionalTypeEntry::javaPackage() const {
-    if(!m_qualifier_type)
+    if(!m_qualifier_type){
         m_qualifier_type = TypeDatabase::instance()->findType(m_qualifier);
+        if (m_qualifier_type){
+            if(m_qualifier_type->isQString() && TypeDatabase::instance()->qstringType())
+                m_qualifier_type = TypeDatabase::instance()->qstringType();
+            else if(m_qualifier_type->isQVariant() && TypeDatabase::instance()->qvariantType())
+                m_qualifier_type = TypeDatabase::instance()->qvariantType();
+            else if(m_qualifier_type->isQChar() && TypeDatabase::instance()->qcharType())
+                m_qualifier_type = TypeDatabase::instance()->qcharType();
+        }
+    }
     if (m_qualifier_type){
-        if(m_qualifier_type->isVariant())
+        if(m_qualifier_type->isQVariant())
             return "io.qt.core";
         if(m_qualifier_type->designatedInterface()){
             return m_qualifier_type->designatedInterface()->javaPackage();
@@ -168,10 +177,19 @@ QString FunctionalTypeEntry::javaPackage() const {
 }
 
 QString FunctionalTypeEntry::javaQualifier() const {
-    if(!m_qualifier_type)
+    if(!m_qualifier_type){
         m_qualifier_type = TypeDatabase::instance()->findType(m_qualifier);
+        if (m_qualifier_type){
+            if(m_qualifier_type->isQString() && TypeDatabase::instance()->qstringType())
+                m_qualifier_type = TypeDatabase::instance()->qstringType();
+            else if(m_qualifier_type->isQVariant() && TypeDatabase::instance()->qvariantType())
+                m_qualifier_type = TypeDatabase::instance()->qvariantType();
+            else if(m_qualifier_type->isQChar() && TypeDatabase::instance()->qcharType())
+                m_qualifier_type = TypeDatabase::instance()->qcharType();
+        }
+    }
     if (m_qualifier_type){
-        if(m_qualifier_type->isVariant())
+        if(m_qualifier_type->isQVariant())
             return "QVariant";
         if(m_qualifier_type->designatedInterface()){
             return m_qualifier_type->designatedInterface()->targetLangName();
@@ -188,15 +206,15 @@ QString EnumTypeEntry::javaPackage() const {
         }else{
             m_qualifier_type = TypeDatabase::instance()->findType(m_javaScope);
         }
-        if(m_qualifier_type && m_qualifier_type->isVariant() && TypeDatabase::instance()->qvariantType())
+        if(m_qualifier_type && m_qualifier_type->isQVariant() && TypeDatabase::instance()->qvariantType())
             m_qualifier_type = TypeDatabase::instance()->qvariantType();
         else if(m_qualifier_type && m_qualifier_type->isQString() && TypeDatabase::instance()->qstringType())
             m_qualifier_type = TypeDatabase::instance()->qstringType();
-        else if(m_qualifier_type && m_qualifier_type->isChar() && TypeDatabase::instance()->qcharType())
+        else if(m_qualifier_type && m_qualifier_type->isQChar() && TypeDatabase::instance()->qcharType())
             m_qualifier_type = TypeDatabase::instance()->qcharType();
     }
     if (m_qualifier_type){
-        if(m_qualifier_type->isVariant())
+        if(m_qualifier_type->isQVariant())
             return "io.qt.core";
         if(m_qualifier_type->designatedInterface()){
             return m_qualifier_type->designatedInterface()->javaPackage();
@@ -213,15 +231,17 @@ QString EnumTypeEntry::javaQualifier() const {
         }else{
             m_qualifier_type = TypeDatabase::instance()->findType(m_javaScope);
         }
-        if(m_qualifier_type && m_qualifier_type->isVariant())
-            m_qualifier_type = TypeDatabase::instance()->findType("QtJambiVariant");
-        else if(m_qualifier_type && m_qualifier_type->isQString())
-            m_qualifier_type = TypeDatabase::instance()->findType("QtJambiString");
-        else if(m_qualifier_type && m_qualifier_type->isChar())
-            m_qualifier_type = TypeDatabase::instance()->findType("QtJambiChar");
+        if (m_qualifier_type){
+            if(m_qualifier_type->isQString() && TypeDatabase::instance()->qstringType())
+                m_qualifier_type = TypeDatabase::instance()->qstringType();
+            else if(m_qualifier_type->isQVariant() && TypeDatabase::instance()->qvariantType())
+                m_qualifier_type = TypeDatabase::instance()->qvariantType();
+            else if(m_qualifier_type->isQChar() && TypeDatabase::instance()->qcharType())
+                m_qualifier_type = TypeDatabase::instance()->qcharType();
+        }
     }
     if (m_qualifier_type){
-        if(m_qualifier_type->isVariant())
+        if(m_qualifier_type->isQVariant())
             return "QVariant";
         if(m_qualifier_type->designatedInterface()){
             return m_qualifier_type->designatedInterface()->targetLangName();
@@ -422,6 +442,28 @@ FunctionModificationList ComplexTypeEntry::functionModifications(const QString &
     return lst;
 }
 
+TypeSystemTypeEntry::TypeSystemTypeEntry(const QString &name)
+        : TypeEntry(name, TypeSystemType),
+          snips(),
+          m_include(),
+          m_extra_includes(),
+          m_qtLibrary(),
+          m_module(),
+          m_requiredTypeSystems(),
+          m_noExports(false) {
+}
+
+TypeSystemTypeEntry::TypeSystemTypeEntry(const QString &name, const QString &lib, const QString &module)
+        : TypeEntry(name, TypeSystemType),
+          snips(),
+          m_include(),
+          m_extra_includes(),
+          m_qtLibrary(lib),
+          m_module(module),
+          m_requiredTypeSystems(),
+          m_noExports(false) {
+}
+
 FunctionModificationList TypeSystemTypeEntry::functionModifications(const QString &signature) const {
     FunctionModificationList lst;
     for (const FunctionModification& mod : m_function_mods) {
@@ -452,12 +494,12 @@ QString ComplexTypeEntry::qualifiedCppName() const {
     return m_qualified_cpp_name;
 }
 
-bool ObjectTypeEntry::isValueOwner() const
+bool ImplementorTypeEntry::isValueOwner() const
 {
     return m_attributes.testFlag(IsValueOwner);
 }
 
-void ObjectTypeEntry::setIsValueOwner(bool is_value_owner)
+void ImplementorTypeEntry::setIsValueOwner(bool is_value_owner)
 {
     m_attributes.setFlag(IsValueOwner, is_value_owner);
 }

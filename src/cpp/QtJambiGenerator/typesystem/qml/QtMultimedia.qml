@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.multimedia"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtMultimedia"
     module: "qtjambi.multimedia"
     description: "Classes for audio, video, radio and camera functionality."
@@ -81,14 +81,6 @@ TypeSystem{
     
     Rejection{
         className: "QAudioFrame"
-    }
-    
-    Rejection{
-        className: "QAudioBuffer::StereoFrame"
-    }
-    
-    Rejection{
-        className: "QAudioBuffer::StereoFrameDefault"
     }
     
     Rejection{
@@ -199,18 +191,6 @@ TypeSystem{
     }
     
     EnumType{
-        name: "QAudioFormat::Endian"
-    }
-    
-    EnumType{
-        name: "QAudioFormat::SampleType"
-    }
-    
-    EnumType{
-        name: "QAudioFormat::SampleFormat"
-    }
-    
-    EnumType{
         name: "QVideoSurfaceFormat::Direction"
         until: 5
     }
@@ -230,7 +210,6 @@ TypeSystem{
     
     EnumType{
         name: "QCamera::CaptureMode"
-        flags: "QCamera::CaptureModes"
     }
     
     EnumType{
@@ -247,7 +226,6 @@ TypeSystem{
     
     EnumType{
         name: "QCamera::LockType"
-        flags: "QCamera::LockTypes"
     }
     
     EnumType{
@@ -268,7 +246,6 @@ TypeSystem{
     
     EnumType{
         name: "QCamera::Feature"
-        flags: "QCamera::Features"
     }
     
     EnumType{
@@ -294,7 +271,6 @@ TypeSystem{
     
     EnumType{
         name: "QCameraExposure::FlashMode"
-        flags: "QCameraExposure::FlashModes"
         until: 5
     }
     
@@ -315,7 +291,6 @@ TypeSystem{
     
     EnumType{
         name: "QCameraFocus::FocusMode"
-        flags: "QCameraFocus::FocusModes"
         until: 5
     }
     
@@ -331,7 +306,6 @@ TypeSystem{
     
     EnumType{
         name: "QCameraImageCapture::CaptureDestination"
-        flags: "QCameraImageCapture::CaptureDestinations"
         until: 5
     }
     
@@ -371,7 +345,6 @@ TypeSystem{
     
     EnumType{
         name: "QMediaPlayer::Flag"
-        flags: "QMediaPlayer::Flags"
     }
     
     EnumType{
@@ -491,25 +464,7 @@ TypeSystem{
     }
     
     EnumType{
-        name: "QMediaServiceProviderHint::Feature"
-        flags: "QMediaServiceProviderHint::Features"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QMediaServiceProviderHint::Type"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QVideoFilterRunnable::RunFlag"
-        flags: "QVideoFilterRunnable::RunFlags"
-        until: 5
-    }
-    
-    EnumType{
         name: "QVideoFrame::PaintOptions::PaintFlag"
-        flags: "QVideoFrame::PaintOptions::PaintFlags"
         since: [6, 2]
     }
     
@@ -522,12 +477,9 @@ TypeSystem{
         name: "QVideoFrame"
         ModifyFunction{
             signature: "operator=(const QVideoFrame &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
         ModifyFunction{
@@ -552,6 +504,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "byte[]"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = %env->NewByteArray(__qt_this->mappedBytes(%1));\n"+
@@ -566,7 +519,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.nio.ByteBuffer"
+                    modifiedType: "java.nio.@NonNull ByteBuffer"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -582,6 +535,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "byte[]"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = %env->NewByteArray(__qt_this->mappedBytes());\n"+
@@ -594,15 +548,33 @@ TypeSystem{
     
     ValueType{
         name: "QAudioBuffer"
-        ModifyFunction{
-            signature: "operator=(const QAudioBuffer &)"
-            remove: RemoveFlag.All
-        }
         ExtraIncludes{
             Include{
                 fileName: "utils_p.h"
                 location: Include.Local
             }
+        }
+
+        Rejection{
+            className: "StereoFrame"
+        }
+        Rejection{
+            className: "StereoFrameDefault"
+        }
+        ModifyFunction{
+            signature: "constData<T>()const"
+            remove: RemoveFlag.All
+            since: 6
+        }
+        ModifyFunction{
+            signature: "data<T>()const"
+            remove: RemoveFlag.All
+            since: 6
+        }
+        ModifyFunction{
+            signature: "data<T>()"
+            remove: RemoveFlag.All
+            since: 6
         }
         ModifyFunction{
             signature: "data() const"
@@ -612,6 +584,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "byte[]"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = %env->NewByteArray(__qt_this->byteCount());\n"+
@@ -624,7 +597,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.nio.ByteBuffer"
+                    modifiedType: "java.nio.@NonNull ByteBuffer"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -638,7 +611,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.nio.ByteBuffer"
+                    modifiedType: "java.nio.@NonNull ByteBuffer"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -695,6 +668,7 @@ TypeSystem{
             }
             ModifyArgument{
                 index: 0
+                NoNullPointer{}
                 ReplaceType{
                     modifiedType: "io.qt.multimedia.QAbstractVideoBuffer$MapResult"
                 }
@@ -779,7 +753,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.multimedia.QAbstractVideoBuffer$MapResult[]"
+                    modifiedType: "io.qt.multimedia.QAbstractVideoBuffer$@NonNull MapResult @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -867,7 +841,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.multimedia.QAbstractVideoBuffer$MapResult[]"
+                    modifiedType: "io.qt.multimedia.QAbstractVideoBuffer$@NonNull MapResult @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -943,48 +917,35 @@ TypeSystem{
     
     ValueType{
         name: "QAudioDeviceInfo"
-        ModifyFunction{
-            signature: "operator=(const QAudioDeviceInfo &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator!=(const QAudioDeviceInfo &)const"
-            remove: RemoveFlag.All
-        }
         until: 5
-    }
-    
-    EnumType{
-        name: "QAudioFormat::AudioChannelPosition"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QAudioFormat::ChannelConfig"
-        extensible: true
-        since: [6, 2]
     }
     
     ValueType{
         name: "QAudioFormat"
-        ModifyFunction{
-            signature: "operator=(const QAudioFormat &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator==(const QAudioFormat &)"
-            remove: RemoveFlag.All
+
+        EnumType{
+            name: "AudioChannelPosition"
             since: [6, 2]
         }
-        ModifyFunction{
-            signature: "operator!=(const QAudioFormat &)"
-            remove: RemoveFlag.All
+
+        EnumType{
+            name: "ChannelConfig"
+            extensible: true
             since: [6, 2]
         }
+        EnumType{
+            name: "Endian"
+        }
+        EnumType{
+            name: "SampleType"
+        }
+        EnumType{
+            name: "SampleFormat"
+        }
         ModifyFunction{
-            signature: "operator!=(const QAudioFormat &)const"
+            signature: "channelConfig<Args...>(Args)"
             remove: RemoveFlag.All
-            until: 5
+            since: 6
         }
         InjectCode{
             ImportFile{
@@ -1009,14 +970,6 @@ TypeSystem{
     
     ValueType{
         name: "QVideoSurfaceFormat"
-        ModifyFunction{
-            signature: "operator=(const QVideoSurfaceFormat &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator!=(const QVideoSurfaceFormat &)const"
-            remove: RemoveFlag.All
-        }
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QScopedPointer"
@@ -1027,185 +980,68 @@ TypeSystem{
                 location: Include.Global
             }
         }
-        ModifyFunction{
-            signature: "operator=(const QVideoSurfaceFormat)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator==(const QVideoSurfaceFormat)const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator!=(const QVideoSurfaceFormat)const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "property(const char*) const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setProperty(const char *, const QVariant &)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
         until: 5
     }
     
     ValueType{
         name: "QAudioEncoderSettings"
-        ModifyFunction{
-            signature: "operator=(const QAudioEncoderSettings &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator!=(const QAudioEncoderSettings &)const"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QCameraFocusZone"
-        ModifyFunction{
-            signature: "operator=(const QCameraFocusZone &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator!=(const QCameraFocusZone &)const"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QImageEncoderSettings"
-        ModifyFunction{
-            signature: "operator=(const QImageEncoderSettings &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator!=(const QImageEncoderSettings &)const"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QMediaContent"
-        ModifyFunction{
-            signature: "operator=(const QMediaContent &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator!=(const QMediaContent &)const"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QMediaResource"
-        ModifyFunction{
-            signature: "operator=(const QMediaResource &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator!=(const QMediaResource &)const"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QMediaTimeInterval"
-        ModifyFunction{
-            signature: "operator=(const QMediaTimeInterval &)"
-            remove: RemoveFlag.All
-            since: [5, 14]
-        }
     }
     
     ValueType{
         name: "QMediaTimeRange"
-        ModifyFunction{
-            signature: "operator=(const QMediaTimeRange::Interval&)"
-            remove: RemoveFlag.All
+        ValueType{
+            name: "Interval"
             since: [6, 2]
-        }
-        ModifyFunction{
-            signature: "operator=(const QMediaTimeInterval&)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "operator=(const QMediaTimeRange &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator+=(const QMediaTimeRange::Interval&)"
-            remove: RemoveFlag.All
-            since: [6, 2]
-        }
-        ModifyFunction{
-            signature: "operator+=(const QMediaTimeInterval&)"
-            remove: RemoveFlag.All
-            until: 5
         }
         ModifyFunction{
             signature: "operator+=(const QMediaTimeRange &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator-=(const QMediaTimeRange::Interval&)"
-            remove: RemoveFlag.All
-            since: [6, 2]
-        }
-        ModifyFunction{
-            signature: "operator-=(const QMediaTimeInterval&)"
-            remove: RemoveFlag.All
-            until: 5
+            rename: "add"
         }
         ModifyFunction{
             signature: "operator-=(const QMediaTimeRange &)"
-            remove: RemoveFlag.All
+            rename: "subtract"
         }
     }
     
     ValueType{
         name: "QVideoEncoderSettings"
-        ModifyFunction{
-            signature: "operator=(const QVideoEncoderSettings &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator!=(const QVideoEncoderSettings &)const"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QMediaServiceProviderHint"
-        ModifyFunction{
-            signature: "operator=(const QMediaServiceProviderHint &)"
-            remove: RemoveFlag.All
+
+        EnumType{
+            name: "Feature"
         }
-        ModifyFunction{
-            signature: "operator!=(const QMediaServiceProviderHint &)const"
-            remove: RemoveFlag.All
+
+        EnumType{
+            name: "Type"
         }
         until: 5
     }
     
     ValueType{
         name: "QCameraViewfinderSettings"
-        ModifyFunction{
-            signature: "operator=(const QCameraViewfinderSettings &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
@@ -1285,7 +1121,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.multimedia.QMediaService$ListResult<Integer>"
+                    modifiedType: "io.qt.multimedia.QMediaService$@StrictNonNull ListResult<@QtPrimitiveType@NonNull Integer>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -1296,12 +1132,12 @@ TypeSystem{
                     codeClass: CodeClass.Shell
                     Text{content: "QList<int> %out;\n"+
                                   "if(%in){\n"+
-                                  "jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
-                                  "if(__tmp_%in)\n"+
-                                  "%out = qtjambi_cast<QList<int>>(%env, __tmp_%in);\n"+
-                                  "if(%2){\n"+
-                                  "*%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
-                                  "}\n"+
+                                  "    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
+                                  "    if(__tmp_%in)\n"+
+                                  "        %out = qtjambi_cast<QList<int>>(%env, __tmp_%in);\n"+
+                                  "    if(%2){\n"+
+                                  "        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
+                                  "    }\n"+
                                   "}"}
                 }
             }
@@ -1440,10 +1276,6 @@ TypeSystem{
     
     ValueType{
         name: "QCameraInfo"
-        ModifyFunction{
-            signature: "operator=(const QCameraInfo&)"
-            remove: RemoveFlag.All
-        }
     }
     
     ObjectType{
@@ -1476,7 +1308,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.multimedia.QMediaService$ListResult<Object>"
+                    modifiedType: "io.qt.multimedia.QMediaService$@StrictNonNull ListResult<Object>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -1487,12 +1319,12 @@ TypeSystem{
                     codeClass: CodeClass.Shell
                     Text{content: "QList<QVariant> %out;\n"+
                                   "if(%in){\n"+
-                                  "jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
-                                  "if(__tmp_%in)\n"+
-                                  "%out = qtjambi_cast<QList<QVariant>>(%env, __tmp_%in);\n"+
-                                  "if(%2){\n"+
-                                  "*%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
-                                  "}\n"+
+                                  "    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
+                                  "    if(__tmp_%in)\n"+
+                                  "        %out = qtjambi_cast<QList<QVariant>>(%env, __tmp_%in);\n"+
+                                  "    if(%2){\n"+
+                                  "        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
+                                  "    }\n"+
                                   "}"}
                 }
             }
@@ -1532,7 +1364,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.multimedia.QMediaService$ListResult<Double>"
+                    modifiedType: "io.qt.multimedia.QMediaService$@StrictNonNull ListResult<@QtPrimitiveType@NonNull Double>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -1543,12 +1375,12 @@ TypeSystem{
                     codeClass: CodeClass.Shell
                     Text{content: "QList<double> %out;\n"+
                                   "if(%in){\n"+
-                                  "jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
-                                  "if(__tmp_%in)\n"+
-                                  "%out = qtjambi_cast<QList<double>>(%env, __tmp_%in);\n"+
-                                  "if(%1){\n"+
-                                  "*%1 = %env->GetObjectField(%in, Java::QtMultimedia::QMediaService$Result(%env).continuous);\n"+
-                                  "}\n"+
+                                  "    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
+                                  "    if(__tmp_%in)\n"+
+                                  "        %out = qtjambi_cast<QList<double>>(%env, __tmp_%in);\n"+
+                                  "    if(%1){\n"+
+                                  "        *%1 = %env->GetObjectField(%in, Java::QtMultimedia::QMediaService$Result(%env).continuous);\n"+
+                                  "    }\n"+
                                   "}"}
                 }
             }
@@ -1568,7 +1400,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.multimedia.QMediaService$ListResult<Integer>"
+                    modifiedType: "io.qt.multimedia.QMediaService$@StrictNonNull ListResult<@QtPrimitiveType@NonNull Integer>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -1579,12 +1411,12 @@ TypeSystem{
                     codeClass: CodeClass.Shell
                     Text{content: "QList<int> %out;\n"+
                                   "if(%in){\n"+
-                                  "jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
-                                  "if(__tmp_%in)\n"+
-                                  "%out = qtjambi_cast<QList<int>>(%env, __tmp_%in);\n"+
-                                  "if(%1){\n"+
-                                  "*%1 = %env->GetObjectField(%in, Java::QtMultimedia::QMediaService$Result(%env).continuous);\n"+
-                                  "}\n"+
+                                  "    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
+                                  "    if(__tmp_%in)\n"+
+                                  "        %out = qtjambi_cast<QList<int>>(%env, __tmp_%in);\n"+
+                                  "    if(%1){\n"+
+                                  "        *%1 = %env->GetObjectField(%in, Java::QtMultimedia::QMediaService$Result(%env).continuous);\n"+
+                                  "    }\n"+
                                   "}"}
                 }
             }
@@ -1604,7 +1436,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.multimedia.QMediaService$ListResult<Double>"
+                    modifiedType: "io.qt.multimedia.QMediaService$@StrictNonNull ListResult<@QtPrimitiveType@NonNull Double>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -1615,12 +1447,12 @@ TypeSystem{
                     codeClass: CodeClass.Shell
                     Text{content: "QList<double> %out;\n"+
                                   "if(%in){\n"+
-                                  "jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
-                                  "if(__tmp_%in)\n"+
-                                  "%out = qtjambi_cast<QList<double>>(%env, __tmp_%in);\n"+
-                                  "if(%1){\n"+
-                                  "*%1 = %env->GetObjectField(%in, Java::QtMultimedia::QMediaService$Result(%env).continuous);\n"+
-                                  "}\n"+
+                                  "    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
+                                  "    if(__tmp_%in)\n"+
+                                  "        %out = qtjambi_cast<QList<double>>(%env, __tmp_%in);\n"+
+                                  "    if(%1){\n"+
+                                  "        *%1 = %env->GetObjectField(%in, Java::QtMultimedia::QMediaService$Result(%env).continuous);\n"+
+                                  "    }\n"+
                                   "}"}
                 }
             }
@@ -1670,7 +1502,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.multimedia.QMediaService$ListResult<io.qt.core.QSize>"
+                    modifiedType: "io.qt.multimedia.QMediaService$@StrictNonNull ListResult<io.qt.core.@NonNull QSize>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -1681,12 +1513,12 @@ TypeSystem{
                     codeClass: CodeClass.Shell
                     Text{content: "QList<QSize> %out;\n"+
                                   "if(%in){\n"+
-                                  "jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
-                                  "if(__tmp_%in)\n"+
-                                  "%out = qtjambi_cast<QList<QSize>>(%env, __tmp_%in);\n"+
-                                  "if(%2){\n"+
-                                  "*%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
-                                  "}\n"+
+                                  "    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
+                                  "    if(__tmp_%in)\n"+
+                                  "        %out = qtjambi_cast<QList<QSize>>(%env, __tmp_%in);\n"+
+                                  "    if(%2){\n"+
+                                  "        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
+                                  "    }\n"+
                                   "}"}
                 }
             }
@@ -1749,7 +1581,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.multimedia.QMediaService$ListResult<io.qt.core.QSize>"
+                    modifiedType: "io.qt.multimedia.QMediaService$@StrictNonNull ListResult<io.qt.core.@NonNull QSize>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -1760,12 +1592,12 @@ TypeSystem{
                     codeClass: CodeClass.Shell
                     Text{content: "QList<QSize> %out;\n"+
                                   "if(%in){\n"+
-                                  "jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
-                                  "if(__tmp_%in)\n"+
-                                  "%out = qtjambi_cast<QList<QSize>>(%env, __tmp_%in);\n"+
-                                  "if(%2){\n"+
-                                  "*%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
-                                  "}\n"+
+                                  "    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
+                                  "    if(__tmp_%in)\n"+
+                                  "        %out = qtjambi_cast<QList<QSize>>(%env, __tmp_%in);\n"+
+                                  "    if(%2){\n"+
+                                  "        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
+                                  "    }\n"+
                                   "}"}
                 }
             }
@@ -1932,7 +1764,7 @@ TypeSystem{
                     action: ReferenceCount.Set
                 }
                 ReplaceType{
-                    modifiedType: "io.qt.core.QObject"
+                    modifiedType: "io.qt.core.@Nullable QObject"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -1986,51 +1818,6 @@ TypeSystem{
                 location: Include.Global
             }
         }
-        ModifyFunction{
-            signature: "load(const QNetworkRequest &, const char *)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "load(const QUrl &, const char *)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "save(const QUrl &, const char *)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "save(QIODevice*, const char *)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "load(QIODevice*, const char *)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
         until: 5
     }
     
@@ -2057,7 +1844,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.multimedia.QMediaService$ListResult<Integer>"
+                    modifiedType: "io.qt.multimedia.QMediaService$@StrictNonNull ListResult<@QtPrimitiveType@NonNull Integer>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -2068,12 +1855,12 @@ TypeSystem{
                     codeClass: CodeClass.Shell
                     Text{content: "QList<int> %out;\n"+
                                   "if(%in){\n"+
-                                  "jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
-                                  "if(__tmp_%in)\n"+
-                                  "%out = qtjambi_cast<QList<int>>(%env, __tmp_%in);\n"+
-                                  "if(%2){\n"+
-                                  "*%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
-                                  "}\n"+
+                                  "    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
+                                  "    if(__tmp_%in)\n"+
+                                  "        %out = qtjambi_cast<QList<int>>(%env, __tmp_%in);\n"+
+                                  "    if(%2){\n"+
+                                  "        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
+                                  "    }\n"+
                                   "}"}
                 }
             }
@@ -2094,7 +1881,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.multimedia.QMediaService$ListResult<Double>"
+                    modifiedType: "io.qt.multimedia.QMediaService$@StrictNonNull ListResult<@QtPrimitiveType@NonNull Double>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -2105,12 +1892,12 @@ TypeSystem{
                     codeClass: CodeClass.Shell
                     Text{content: "QList<double> %out;\n"+
                                   "if(%in){\n"+
-                                  "jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
-                                  "if(__tmp_%in)\n"+
-                                  "%out = qtjambi_cast<QList<double>>(%env, __tmp_%in);\n"+
-                                  "if(%2){\n"+
-                                  "*%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
-                                  "}\n"+
+                                  "    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
+                                  "    if(__tmp_%in)\n"+
+                                  "        %out = qtjambi_cast<QList<double>>(%env, __tmp_%in);\n"+
+                                  "    if(%2){\n"+
+                                  "        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
+                                  "    }\n"+
                                   "}"}
                 }
             }
@@ -2131,7 +1918,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.multimedia.QMediaService$ListResult<io.qt.core.QSize>"
+                    modifiedType: "io.qt.multimedia.QMediaService$@StrictNonNull ListResult<io.qt.core.@NonNull QSize>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -2142,12 +1929,12 @@ TypeSystem{
                     codeClass: CodeClass.Shell
                     Text{content: "QList<QSize> %out;\n"+
                                   "if(%in){\n"+
-                                  "jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
-                                  "if(__tmp_%in)\n"+
-                                  "%out = qtjambi_cast<QList<QSize>>(%env, __tmp_%in);\n"+
-                                  "if(%2){\n"+
-                                  "*%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
-                                  "}\n"+
+                                  "    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
+                                  "    if(__tmp_%in)\n"+
+                                  "        %out = qtjambi_cast<QList<QSize>>(%env, __tmp_%in);\n"+
+                                  "    if(%2){\n"+
+                                  "        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
+                                  "    }\n"+
                                   "}"}
                 }
             }
@@ -2187,6 +1974,10 @@ TypeSystem{
                 fileName: "QtCore/QByteArray"
                 location: Include.Global
             }
+        }
+        ModifyFunction{
+            signature: "requestControl<T>()"
+            remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "requestControl(const char *)"
@@ -2296,7 +2087,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.multimedia.QMediaService$ListResult<java.lang.Double>"
+                    modifiedType: "io.qt.multimedia.QMediaService$@StrictNonNull ListResult<@QtPrimitiveType@NonNull Double>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -2307,12 +2098,12 @@ TypeSystem{
                     codeClass: CodeClass.Shell
                     Text{content: "QList<double> %out;\n"+
                                   "if(%in){\n"+
-                                  "jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
-                                  "if(__tmp_%in)\n"+
-                                  "%out = qtjambi_cast<QList<double>>(%env, __tmp_%in);\n"+
-                                  "if(%2){\n"+
-                                  "*%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
-                                  "}\n"+
+                                  "    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
+                                  "    if(__tmp_%in)\n"+
+                                  "        %out = qtjambi_cast<QList<double>>(%env, __tmp_%in);\n"+
+                                  "    if(%2){\n"+
+                                  "        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
+                                  "    }\n"+
                                   "}"}
                 }
             }
@@ -2332,7 +2123,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.multimedia.QMediaService$ListResult<io.qt.core.QSize>"
+                    modifiedType: "io.qt.multimedia.QMediaService$@StrictNonNull ListResult<io.qt.core.@NonNull QSize>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -2343,12 +2134,12 @@ TypeSystem{
                     codeClass: CodeClass.Shell
                     Text{content: "QList<QSize> %out;\n"+
                                   "if(%in){\n"+
-                                  "jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
-                                  "if(__tmp_%in)\n"+
-                                  "%out = qtjambi_cast<QList<QSize>>(%env, __tmp_%in);\n"+
-                                  "if(%2){\n"+
-                                  "*%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
-                                  "}\n"+
+                                  "    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
+                                  "    if(__tmp_%in)\n"+
+                                  "        %out = qtjambi_cast<QList<QSize>>(%env, __tmp_%in);\n"+
+                                  "    if(%2){\n"+
+                                  "        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
+                                  "    }\n"+
                                   "}"}
                 }
             }
@@ -2514,6 +2305,10 @@ TypeSystem{
     
     ObjectType{
         name: "QVideoFilterRunnable"
+
+        EnumType{
+            name: "RunFlag"
+        }
         ExtraIncludes{
             Include{
                 fileName: "utils_p.h"
@@ -2521,22 +2316,12 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "run(QVideoFrame *, const QVideoSurfaceFormat &, QFlags<QVideoFilterRunnable::RunFlag>)"
+            signature: "run(QVideoFrame *, const QVideoSurfaceFormat &, QVideoFilterRunnable::RunFlags)"
             ModifyArgument{
                 index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.multimedia.QVideoFrame"
-                }
                 NoNullPointer{
                 }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QVideoFrame* %out = &qtjambi_cast<QVideoFrame&>(%env, %scope, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
+                invalidateAfterUse: true
             }
         }
         until: 5
@@ -2658,10 +2443,6 @@ TypeSystem{
     
     ValueType{
         name: "QCameraFormat"
-        ModifyFunction{
-            signature: "operator=(const QCameraFormat &)"
-            remove: RemoveFlag.All
-        }
         since: [6, 2]
     }
     
@@ -2672,19 +2453,11 @@ TypeSystem{
     
     ValueType{
         name: "QCameraDevice"
-        ModifyFunction{
-            signature: "operator=(const QCameraDevice &)"
-            remove: RemoveFlag.All
-        }
         since: [6, 2]
     }
     
     ValueType{
         name: "QAudioDevice"
-        ModifyFunction{
-            signature: "operator=(const QAudioDevice &)"
-            remove: RemoveFlag.All
-        }
         since: [6, 2]
     }
     
@@ -2704,10 +2477,6 @@ TypeSystem{
             name: "fmt"
             read: false
             write: false
-        }
-        ModifyFunction{
-            signature: "operator=(const QMediaFormat &)"
-            remove: RemoveFlag.All
         }
         since: [6, 2]
     }
@@ -2787,16 +2556,6 @@ TypeSystem{
                 index: 1
                 ReferenceCount{
                     variableName: "__rcScreen"
-                    action: ReferenceCount.Set
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setWindow(QWindow*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcWindow"
                     action: ReferenceCount.Set
                 }
             }
@@ -2933,44 +2692,15 @@ TypeSystem{
     }
     
     ValueType{
-        name: "QMediaTimeRange::Interval"
-        since: [6, 2]
-    }
-    
-    ValueType{
         name: "QMediaMetaData"
-        ModifyFunction{
-            signature: "operator[](QMediaMetaData::Key)"
-            remove: RemoveFlag.All
+        EnumType{
+            name: "Key"
         }
         since: [6, 2]
     }
     
     ValueType{
         name: "QVideoFrameFormat"
-        ModifyFunction{
-            signature: "operator=(const QVideoFrameFormat &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "updateUniformData(QByteArray *, const QVideoFrame &, const QMatrix4x4 &, float) const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.core.QByteArray"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QByteArray* %out = qtjambi_cast<QByteArray*>(%env, %in);"}
-                }
-            }
-            since: 6
-        }
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QMediaMetaData::Key"
         since: [6, 2]
     }
     
@@ -3006,10 +2736,7 @@ TypeSystem{
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QAudioBuffer::QAudioBuffer', unmatched parameter type 'QAbstractAudioBuffer*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QMediaService::requestControl', unmatched return type 'T'"}
-    SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QWebEngine*."}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QAudioBuffer."}
-    SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QCameraViewfinderSettings."}
-    SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QVideoSurfaceFormat."}
     SuppressedWarning{
         text: "WARNING(MetaJavaBuilder) :: skipping function 'QVideoFrame::QVideoFrame', unmatched parameter type 'QAbstractVideoBuffer*'"
         since: [6, 2]

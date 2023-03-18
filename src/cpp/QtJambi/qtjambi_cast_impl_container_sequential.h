@@ -88,7 +88,8 @@ public:
 
     jobject value(JNIEnv * env, const void* ptr) override {
         const Iterator* iterator = static_cast<const Iterator*>(ptr);
-        return qtjambi_scoped_cast<false,jobject,typename std::add_const<decltype(*(*iterator))>::type>::cast(env, *(*iterator), nullptr, nullptr);
+        const auto& value = *(*iterator);
+        return qtjambi_scoped_cast<false,jobject,decltype(value)>::cast(env, value, nullptr, nullptr);
     }
 };
 

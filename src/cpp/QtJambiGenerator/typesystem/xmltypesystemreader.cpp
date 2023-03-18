@@ -2832,7 +2832,7 @@ QString XmlTypeSystemReaderPrivate::parseTypeName(QDomNamedNodeMap& attributes, 
         TypesystemException::raise(QString("No 'name' attribute specified for tag <%1> in line %2").arg(element.localName()).arg(element.lineNumber()));
     }
     TypeEntry *tmp = m_database->findType(name);
-    if (tmp && !tmp->isQString() && !tmp->isChar() && !tmp->isVariant()) {
+    if (tmp && !tmp->isQString() && !tmp->isQChar() && !tmp->isQVariant()) {
         ReportHandler::warning(QString("Duplicate type entry: '%1'").arg(name));
     }
     return name;
@@ -3118,12 +3118,12 @@ void XmlTypeSystemReaderPrivate::parseEnumType(const QDomElement &element){
 
             // put in the flags parallel...
             if (!flags.isEmpty() && flags.toLower() != "no") {
-                std::unique_ptr<FlagsTypeEntry> ftype(new FlagsTypeEntry("QFlags<" + eentry->qualifiedCppName() + ">"));
+                std::unique_ptr<FlagsTypeEntry> ftype(new FlagsTypeEntry(flags));
                 ftype->setOriginator(eentry.get());
                 QStringList flagsNames = flags.split(QLatin1String("::"));
-                ftype->setOriginalName(flags);
+                ftype->setFlagsTemplate("QFlags<" + eentry->qualifiedCppName() + ">");
                 ftype->setCodeGeneration(eentry->codeGeneration());
-                QString n = ftype->originalName();
+                QString n = flags;
 
                 QStringList lst = n.split("::");
                 if (QStringList(lst.mid(0, lst.size() - 1)).join("::") != QStringList(names.mid(0, names.size() - 1)).join("::")) {

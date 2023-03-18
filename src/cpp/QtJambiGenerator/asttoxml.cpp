@@ -56,8 +56,7 @@ void astToXML(const QString& name, FileModelItem dom) {
 
     s.writeStartElement("code");
 
-    QMap<QString, NamespaceModelItem> namespaceMap = dom->namespaceMap();
-    for(const NamespaceModelItem& item : namespaceMap.values()) {
+    for(const NamespaceModelItem& item : dom->namespaces()) {
         writeOutNamespace(s, item);
     }
 
@@ -71,8 +70,7 @@ void writeOutNamespace(QXmlStreamWriter &s, const NamespaceModelItem &item) {
     s.writeStartElement("namespace");
     s.writeAttribute("name", item->name());
 
-    QMap<QString, NamespaceModelItem> namespaceMap = item->namespaceMap();
-    for(const NamespaceModelItem& item : namespaceMap.values()) {
+    for(const NamespaceModelItem& item : item->namespaces()) {
         writeOutNamespace(s, item);
     }
 
@@ -80,8 +78,7 @@ void writeOutNamespace(QXmlStreamWriter &s, const NamespaceModelItem &item) {
         writeOutClass(s, item);
     }
 
-    QMap<QString, EnumModelItem> enumMap = item->enumMap();
-    for(const EnumModelItem& item : enumMap.values()) {
+    for(const EnumModelItem& item : item->enums()) {
         writeOutEnum(s, item);
     }
 
@@ -286,23 +283,21 @@ void writeOutClass(QXmlStreamWriter &s, const ClassModelItem &item) {
     s.writeStartElement("class");
     s.writeAttribute("name", qualified_name);
 
-    QList<QPair<QString,bool>> bases = item.constData()->baseClasses();
+    QList<QPair<TypeInfo,bool>> bases = item.constData()->baseClasses();
     s.writeStartElement("inherits");
-    for(const QPair<QString,bool> &c : bases) {
+    for(const QPair<TypeInfo,bool> &c : bases) {
         s.writeStartElement("class");
-        s.writeAttribute("name", c.first);
+        s.writeAttribute("name", c.first.toString());
         s.writeAttribute("access", c.second ? "public" : "protected");
         s.writeEndElement();
     }
     s.writeEndElement();
 
-    QMap<QString, EnumModelItem> enumMap = item->enumMap();
-    for(const EnumModelItem& item : enumMap.values()) {
+    for(const EnumModelItem& item : item->enums()) {
         writeOutEnum(s, item);
     }
 
-    QMultiHash<QString, FunctionModelItem> functionMap = item->functionMap();
-    for(const FunctionModelItem& item : functionMap.values()) {
+    for(const FunctionModelItem& item : item->functions()) {
         writeOutFunction(s, qualified_name, item);
     }
 

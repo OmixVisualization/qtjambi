@@ -130,7 +130,7 @@ Scanner::Token Scanner::nextToken() {
             }
         }
 
-        if (tok <= GreaterThanToken) {
+        if (tok <= GreaterThanToken || tok==EllipsisToken) {
             ++m_pos;
             break;
         }
@@ -170,6 +170,7 @@ Scanner::Token Scanner::nextToken() {
 
 TypeParser::Info TypeParser::parse(const QString &str) {
     Info info;
+    info.originalType = str;
     try{
         Scanner scanner(str);
 
@@ -178,6 +179,16 @@ TypeParser::Info TypeParser::parse(const QString &str) {
 
         bool colon_prefix = false;
         bool in_array = false;
+        bool isFunctionPointerExpected = false;
+
+        enum State{
+            None,
+            InParentheses,
+            InTemplateDecl
+        };
+
+        State currentState = None;
+        QStack<State> lastState;
         QString array;
 
         // search for 'T', 'T *', 'const T *', 'T const *', 'T * const' and so on
@@ -185,73 +196,149 @@ TypeParser::Info TypeParser::parse(const QString &str) {
         Scanner::Token tok = scanner.nextToken();
         while (tok != Scanner::NoToken) {
 
+            Q_ASSERT(!stack.isEmpty());
             switch (tok) {
-                case Scanner::EllipsisToken:
-                    stack.top()->is_variadics = true;
-                    break;
-                case Scanner::StarToken:
+            case Scanner::EllipsisToken:
+                stack.top()->is_variadics = true;
+                break;
+            case Scanner::StarToken:
+                if(isFunctionPointerExpected){
+                    stack.top()->is_functionPointer = true;
+                }else{
                     //++stack.top()->indirections;
                     stack.top()->indirections << false;
-                    break;
+                }
+                break;
 
-                case Scanner::AmpersandToken:
-                    if(stack.top()->reference_type==TypeParser::Info::Reference){
-                        stack.top()->reference_type = TypeParser::Info::RReference;
-                    }else{
-                        stack.top()->reference_type = TypeParser::Info::Reference;
+            case Scanner::AmpersandToken:
+                if(stack.top()->reference_type==TypeParser::Info::Reference){
+                    stack.top()->reference_type = TypeParser::Info::RReference;
+                }else{
+                    stack.top()->reference_type = TypeParser::Info::Reference;
+                }
+                break;
+
+            case Scanner::LessThanToken:
+                lastState.push(currentState);
+                currentState = InTemplateDecl;
+                stack.top()->arguments << Info();
+                stack.push(&stack.top()->arguments.last());
+                break;
+
+            case Scanner::CommaToken:
+                switch(currentState){
+                case InTemplateDecl:
+                    stack.pop();
+                    Q_ASSERT(!stack.isEmpty());
+                    stack.top()->arguments << Info();
+                    stack.push(&stack.top()->arguments.last());
+                    break;
+                case InParentheses:
+                    stack.pop();
+                    Q_ASSERT(!stack.isEmpty());
+                    stack.top()->functionalArgumentTypes << Info();
+                    stack.push(&stack.top()->functionalArgumentTypes.last());
+                    break;
+                default:
+                    Info i;
+                    i.is_busted = true;
+                    i.originalType = str;
+                    return i;
+                }
+                break;
+
+            case Scanner::GreaterThanToken:
+                switch(currentState){
+                case InTemplateDecl:
+                    if(stack.top()->arguments.size()>0
+                            && !stack.top()->arguments.last()){
+                        stack.top()->arguments.takeLast();
                     }
                     break;
-
-                case Scanner::LessThanToken:
-                    stack.top()->template_instantiations << Info();
-                    stack.push(&stack.top()->template_instantiations.last());
+                default:
                     break;
+                }
+                currentState = lastState.pop();
+                break;
 
-                case Scanner::CommaToken:
-                    stack.pop();
-                    stack.top()->template_instantiations << Info();
-                    stack.push(&stack.top()->template_instantiations.last());
-                    break;
+            case Scanner::ColonToken:
+                colon_prefix = true;
+                break;
 
-                case Scanner::GreaterThanToken:
-                    stack.pop();
-                    break;
-
-                case Scanner::ColonToken:
-                    colon_prefix = true;
-                    break;
-
-                case Scanner::ConstToken:
-                    if(lastWasStarToken){
-                        stack.top()->indirections[stack.top()->indirections.size()-1] = true;
-                    }else{
-                        stack.top()->is_constant = true;
-                    }
-                    break;
+            case Scanner::ConstToken:
+                if(lastWasStarToken){
+                    stack.top()->indirections[stack.top()->indirections.size()-1] = true;
+                }else{
+                    stack.top()->is_constant = true;
+                }
+                break;
 
             case Scanner::VolatileToken:
                 stack.top()->is_volatile = true;
                 break;
 
-                case Scanner::OpenParenToken: // function pointers not supported
-                case Scanner::CloseParenToken: {
+            case Scanner::OpenParenToken:
+                switch(currentState){
+                case InTemplateDecl:
+                    lastState.push(currentState);
+                    currentState = InParentheses;
+                    stack.pop();
+                    Q_ASSERT(!stack.isEmpty());
+                    stack.top()->functionalReturnType << stack.top()->arguments;
+                    stack.top()->arguments.clear();
+                    stack.top()->functionalArgumentTypes << Info();
+                    stack.push(&stack.top()->functionalArgumentTypes.last());
+                    break;
+                default:
+                    lastState.push(currentState);
+                    currentState = InParentheses;
+                    if(stack.top()->is_functionPointer){
+                        Info* info = stack.top();
+                        Info returnType = *info;
+                        returnType.originalType.clear();
+                        returnType.is_functionPointer = false;
+                        *info = Info();
+                        info->originalType = str;
+                        info->is_functionPointer = true;
+                        info->functionalReturnType << returnType;
+                        info->functionalArgumentTypes << Info();
+                        stack.push(&info->functionalArgumentTypes.last());
+                    }else{
+                        isFunctionPointerExpected = true;
+                    }
+                }
+                break;
+            case Scanner::CloseParenToken:
+                switch(currentState){
+                case InParentheses:
+                    currentState = lastState.pop();
+                    if(stack.top()->functionalArgumentTypes.size()>0
+                            && !stack.top()->functionalArgumentTypes.last()){
+                        stack.top()->functionalArgumentTypes.takeLast();
+                    }
+                    isFunctionPointerExpected = false;
+                    break;
+                default:
                     Info i;
                     i.is_busted = true;
+                    i.originalType = str;
                     return i;
                 }
-
-                case Scanner::Identifier:
+                break;
+            case Scanner::Identifier:
+                if(!isFunctionPointerExpected){
                     parseIdentifier(scanner, stack, array, in_array, colon_prefix);
-                    break;
+                }
+                break;
 
-                case Scanner::SquareBegin:
-                    in_array = true;
-                    break;
+            case Scanner::SquareBegin:
+                in_array = true;
+                break;
 
-                case Scanner::SquareEnd:
-                    in_array = false;
-                    stack.top()->arrays += array;
-                    break;
+            case Scanner::SquareEnd:
+                in_array = false;
+                stack.top()->arrays += array;
+                break;
 
                 default:
                     break;
@@ -296,12 +383,12 @@ void TypeParser::parseIdentifier(Scanner &scanner, QStack<Info *> &stack, QStrin
 
 QString TypeParser::Info::instantiationName() const {
     QString s(qualified_name.join("::"));
-    if (!template_instantiations.isEmpty()) {
+    if (!arguments.isEmpty()) {
         s += '<';
-        for (int i = 0; i < template_instantiations.size(); ++i) {
+        for (int i = 0; i < arguments.size(); ++i) {
             if (i != 0)
                 s += ",";
-            s += template_instantiations.at(i).toString();
+            s += arguments.at(i).toString();
         }
         s += '>';
     }

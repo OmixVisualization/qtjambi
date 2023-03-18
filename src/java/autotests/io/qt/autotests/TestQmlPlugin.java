@@ -55,7 +55,7 @@ public class TestQmlPlugin extends ApplicationInitializer{
     public void run_testQmlPlugin() {
 		QByteArray data = new QByteArray("import io.qt.test.car 2.0; Car {}");
 		QQmlEngine qmlengine = new QQmlEngine();
-		String imports = System.getProperty("io.qt.qml.imports", "");
+		String imports = System.getProperty("io.qt.qml-imports", "");
 		if(!imports.isEmpty()) {
 			for(String i : imports.split(File.pathSeparator))
 				qmlengine.addImportPath(i);

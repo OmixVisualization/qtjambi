@@ -38,6 +38,10 @@ namespace Java{
             QTJAMBI_REPOSITORY_DEFINE_METHOD(getMessage,()Ljava/lang/String;)
         )
     }
+
+    namespace QtNetwork{
+            QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/network,QTcpSocket,)
+    }
 }
 
 class QModbusSerialAdu{

@@ -12,7 +12,7 @@ contains(QTJAMBI_MODULE, QtJambiAxBase): SUBDIRS += QtJambiActiveX
 
 !android:!ios:{
     contains(QTJAMBI_MODULE, QtJambiDesigner-private): SUBDIRS += QtJambiUIC
-    SUBDIRS += QtJambiLauncher
+    SUBDIRS += QtJambiLauncher\
     QtJambiGenerator
     QtJambiGenerator.file = QtJambiGenerator/library.pro
 }

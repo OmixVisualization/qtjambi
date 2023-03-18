@@ -85,6 +85,14 @@ rpp::pp_macro *rpp::pp_environment::resolve(pp_fast_string const *p_name) const 
     return it;
 }
 
+bool rpp::pp_environment::pragmaOnce(){
+    bool result = _M_pragmaOnceFiles.contains(current_file.absoluteFilePath());
+    if(!result){
+        _M_pragmaOnceFiles.insert(current_file.absoluteFilePath());
+    }
+    return result;
+}
+
 rpp::pp_macro *rpp::pp_environment::resolve(char const *__data, std::size_t __size) const {
     pp_fast_string const __tmp(__data, __size);
     return resolve(&__tmp);

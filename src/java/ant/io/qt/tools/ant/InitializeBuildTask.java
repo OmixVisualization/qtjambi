@@ -134,7 +134,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			_moduleInfos.put("virtualkeyboard", new ModuleInfo("QTJAMBI_NO_VIRTUAL_KEYBOARD", "QtVirtualKeyboard"));
 			_moduleInfos.put("serialport", new ModuleInfo("QTJAMBI_NO_SERIALPORT", "QtSerialPort"));
 			_moduleInfos.put("serialbus", new ModuleInfo("QTJAMBI_NO_SERIALBUS", "QtSerialBus"));
-			_moduleInfos.put("sensors", new ModuleInfo("QTJAMBI_NO_SENSORS", "QtSensors"));
+			_moduleInfos.put("sensors", new ModuleInfo("QTJAMBI_NO_SENSORS", "QtSensors", ModuleInfo.Headers.PrivateOptional));
 			_moduleInfos.put("location", new ModuleInfo("QTJAMBI_NO_LOCATION", "QtLocation"));
 			_moduleInfos.put("positioning", new ModuleInfo("QTJAMBI_NO_POSITIONING", "QtPositioning"));
 			_moduleInfos.put("bluetooth", new ModuleInfo("QTJAMBI_NO_BLUETOOTH", "QtBluetooth"));
@@ -2032,26 +2032,28 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			}
 
 			String availableAbis = "";
-			loop: for (String libSuffix : libSuffixes) {
-				if (!new File(libraryPath, libName + libSuffix).exists()) {
-					for (File libfile : libraryPath.listFiles()) {
-						String fileName = libfile.getName();
-						if (libfile.isFile() && fileName.startsWith(libName) && fileName.endsWith(libSuffix)) {
-							fileName = fileName.substring(0, fileName.length() - libSuffix.length());
-							fileName = fileName.substring(libName.length());
-							if (isAndroid) {
-								fileName = fileName.substring(1);
-								availableAbis += " " + fileName;
-								androidAbis.add(fileName);
-							} else {
-								libInfix = fileName;
+			if(libraryPath.isDirectory()) {
+				loop: for (String libSuffix : libSuffixes) {
+					if (!new File(libraryPath, libName + libSuffix).exists()) {
+						for (File libfile : libraryPath.listFiles()) {
+							String fileName = libfile.getName();
+							if (libfile.isFile() && fileName.startsWith(libName) && fileName.endsWith(libSuffix)) {
+								fileName = fileName.substring(0, fileName.length() - libSuffix.length());
+								fileName = fileName.substring(libName.length());
+								if (isAndroid) {
+									fileName = fileName.substring(1);
+									availableAbis += " " + fileName;
+									androidAbis.add(fileName);
+								} else {
+									libInfix = fileName;
+									break loop;
+								}
+							} else if (OSInfo.os() == OSInfo.OS.MacOS && libfile.isDirectory()
+									&& fileName.equals("QtGui.framework")) {
+								mySetProperty(-1, Constants.MAC_OS_USE_FRAMEWORK, " (as detected in lib directory)", "true", true);
+								useQtFramework = true;
 								break loop;
 							}
-						} else if (OSInfo.os() == OSInfo.OS.MacOS && libfile.isDirectory()
-								&& fileName.equals("QtGui.framework")) {
-							mySetProperty(-1, Constants.MAC_OS_USE_FRAMEWORK, " (as detected in lib directory)", "true", true);
-							useQtFramework = true;
-							break loop;
 						}
 					}
 				}

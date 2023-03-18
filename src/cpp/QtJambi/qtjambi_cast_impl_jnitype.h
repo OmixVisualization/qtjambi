@@ -126,11 +126,7 @@ struct qtjambi_jnitype_caster<true, has_scope,
     typedef typename std::add_pointer<NativeType_c>::type NativeType_in;
     typedef typename std::add_pointer<NativeType_c>::type NativeType_out;
     static jobject cast(JNIEnv *env, NativeType_in in, const char* nativeTypeName, QtJambiScope*){
-        jobject result = nullptr;
-        if(!QtJambiAPI::convertNativeToJava(env, typeid(NativeType_ptr), nativeTypeName, reinterpret_cast<const void*>(in), true, false, result)){
-           JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast to type %1").arg(QLatin1String(nativeTypeName ? nativeTypeName : QtJambiAPI::typeName(typeid(NativeType)).data())) QTJAMBI_STACKTRACEINFO );
-        }
-        return result;
+        return QtJambiAPI::convertNativeToJavaObjectAsCopy(env, reinterpret_cast<const void*>(in), typeid(NativeType_ptr), nativeTypeName);
     }
 };
 
@@ -249,7 +245,7 @@ struct qtjambi_jnitype_qobject_decider_cast<true, has_scope, NativeType, true, i
     typedef typename std::add_pointer<NativeType_c>::type NativeType_out;
     typedef typename std::add_pointer<NativeType>::type NativeType_ptr;
     static jobject cast(JNIEnv * env, NativeType_in in, const char*, QtJambiScope* scope){
-        jobject o = QtJambiAPI::convertNativeToJavaObject(env, in, typeid(NativeType), false, false);
+        jobject o = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, in, typeid(NativeType));
         if(scope)
             scope->addObjectInvalidation(env, o, true, false);
         return o;
@@ -266,7 +262,7 @@ struct qtjambi_jnitype_qobject_decider_cast<true, has_scope, NativeType, true, i
     static jobject cast(JNIEnv * env, NativeType_in in, const char*, QtJambiScope* scope){
         jobject o = QtJambiShellInterface::getJavaObjectLocalRef(env, dynamic_cast<const QtJambiShellInterface*>(in));
         if(!o){
-            o = QtJambiAPI::convertNativeToJavaObject(env, in, typeid(NativeType), false, false);
+            o = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, in, typeid(NativeType));
             if(scope)
                 scope->addObjectInvalidation(env, o, true, false);
         }
@@ -301,16 +297,7 @@ struct qtjambi_jnitype_copy_assignable_decider_cast{
 template<bool has_scope,
          typename NativeType, bool is_const, bool is_reference, bool is_polymorphic>
 struct qtjambi_jnitype_qobject_decider_cast<true, has_scope, NativeType, false, is_const, is_reference, false, is_polymorphic>
-{
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::add_lvalue_reference<typename std::add_const<NativeType>::type>::type NativeType_in;
-    typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_out;
-    typedef typename std::add_pointer<NativeType>::type NativeType_ptr;
-    constexpr static jobject cast(JNIEnv * env, NativeType_in in, const char*, QtJambiScope*){
-        return QtJambiAPI::convertNativeToJavaObject(env, &in, typeid(NativeType), true, false);
-    }
-};
+        : qtjambi_move_or_copy_decider<NativeType, is_const>{};
 
 template<bool has_scope,
          bool is_const, bool is_reference>
@@ -361,30 +348,58 @@ struct qtjambi_jnitype_copy_assignable_decider_cast<has_scope, NativeType, is_co
     }
 };
 
-template<bool has_scope, bool is_const, bool is_reference>
-struct qtjambi_jnitype_use_pointer_decider_cast<has_scope, QVariant, is_const, is_reference, true /*dont_use_pointer*/>{
-    typedef typename std::conditional<is_const, typename std::add_const<QVariant>::type, QVariant>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QVariant reference");
+// QVariant& and QString& are not light-weight
+template<bool has_scope, bool is_const>
+struct qtjambi_jnitype_use_pointer_decider_cast<has_scope, QVariant, is_const, true, true /*dont_use_pointer*/>
+        : qtjambi_jnitype_use_pointer_decider_cast<has_scope, QVariant, is_const, true, false>{};
 
-    static NativeType_cr cast(JNIEnv *env, jobject in, const char*, QtJambiScope*){
+template<bool has_scope, bool is_const>
+struct qtjambi_jnitype_use_pointer_decider_cast<has_scope, QString, is_const, true, true /*dont_use_pointer*/>
+        : qtjambi_jnitype_use_pointer_decider_cast<has_scope, QString, is_const, true, false>{};
+
+template<bool has_scope, bool is_const>
+struct qtjambi_jnitype_use_pointer_decider_cast<has_scope, QVariant, is_const, false, true /*dont_use_pointer*/>{
+    typedef typename std::conditional<is_const, typename std::add_const<QVariant>::type, QVariant>::type NativeType_c;
+
+    static NativeType_c cast(JNIEnv *env, jobject in, const char*, QtJambiScope*){
         return QtJambiAPI::convertJavaObjectToQVariant(env, in);
     }
 };
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #ifdef QABSTRACTITEMMODEL_H
-template<bool is_const, bool is_reference>
-struct qtjambi_jnitype_use_pointer_decider_cast<true, QModelRoleDataSpan, is_const, is_reference, true /*dont_use_pointer*/>{
-    typedef typename std::conditional<is_const, typename std::add_const<QModelRoleDataSpan>::type, QVariant>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast to QVariant reference");
+template<bool has_scope, bool is_const>
+struct qtjambi_jnitype_use_pointer_decider_cast<has_scope, QModelRoleDataSpan, is_const, false, true /*dont_use_pointer*/>{
+    typedef typename std::conditional<is_const, typename std::add_const<QModelRoleDataSpan>::type, QModelRoleDataSpan>::type NativeType_c;
+    typedef typename std::conditional<false, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
 
-    static QModelRoleDataSpan cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QModelRoleDataSpan reference without scope");
+    static NativeType_cr cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
+        if(!scope)
+            JavaException::raiseError(env, "Cannot cast to QModelRoleDataSpan reference without scope." QTJAMBI_STACKTRACEINFO );
         void *data(nullptr);
         qsizetype length(0);
         QtJambiAPI::convertJavaObjectToQModelRoleData(env, *scope, in, data, length);
         return QModelRoleDataSpan(reinterpret_cast<QModelRoleData*>(data), length);
+    }
+};
+
+template<bool has_scope, bool is_const>
+struct qtjambi_jnitype_use_pointer_decider_cast<has_scope, QModelRoleDataSpan, is_const, true, true /*dont_use_pointer*/>{
+    typedef typename std::conditional<is_const, typename std::add_const<QModelRoleDataSpan>::type, QModelRoleDataSpan>::type NativeType_c;
+    typedef typename std::conditional<true, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast to QModelRoleDataSpan reference without scope");
+
+    static NativeType_cr cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
+        if(!scope)
+            JavaException::raiseError(env, "Cannot cast to QModelRoleDataSpan reference without scope." QTJAMBI_STACKTRACEINFO );
+        void *data(nullptr);
+        qsizetype length(0);
+        QtJambiAPI::convertJavaObjectToQModelRoleData(env, *scope, in, data, length);
+        QModelRoleDataSpan* buffer = new QModelRoleDataSpan(reinterpret_cast<QModelRoleData*>(data), length);
+        scope->addDeletion(buffer);
+        return *buffer;
     }
 };
 #endif
@@ -1320,7 +1335,7 @@ struct qtjambi_jnitype_caster<true, has_scope,
     typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_in;
     typedef NativeType_cr NativeType_out;
     constexpr static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
-        return QtJambiAPI::convertNativeToJavaObject(env, &in, typeid(NativeType), false, false);
+        return QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, &in, typeid(NativeType));
     }
 };
 

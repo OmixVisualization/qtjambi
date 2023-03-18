@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.webengine.widgets"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtWebEngineWidgets"
     module: "qtjambi.webenginewidgets"
     description: "Provides C++ classes for rendering web content in a QWidget based application."
@@ -98,58 +98,6 @@ TypeSystem{
     }
     
     EnumType{
-        name: "QWebEnginePage::Feature"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWebEnginePage::FileSelectionMode"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWebEnginePage::FindFlag"
-        flags: "QWebEnginePage::FindFlags"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWebEnginePage::JavaScriptConsoleMessageLevel"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWebEnginePage::NavigationType"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWebEnginePage::PermissionPolicy"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWebEnginePage::RenderProcessTerminationStatus"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWebEnginePage::WebAction"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWebEnginePage::WebWindowType"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWebEnginePage::LifecycleState"
-        since: [5, 14]
-        until: 5
-    }
-    
-    EnumType{
         name: "QWebEngineProfile::HttpCacheType"
         until: 5
     }
@@ -196,22 +144,16 @@ TypeSystem{
     
     EnumType{
         name: "QWebEngineContextMenuData::MediaFlag"
-        flags: "QWebEngineContextMenuData::MediaFlags"
         until: 5
     }
     
     EnumType{
         name: "QWebEngineContextMenuData::EditFlag"
-        flags: "QWebEngineContextMenuData::EditFlags"
         until: 5
     }
     
     ValueType{
         name: "QWebEngineCertificateError"
-        ModifyFunction{
-            signature: "operator=(const QWebEngineCertificateError &)"
-            remove: RemoveFlag.All
-        }
         CustomConstructor{
             Text{content: "if(copy){\n"+
                           "    return new(placement) QWebEngineCertificateError(*copy);\n"+
@@ -252,12 +194,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(QWebEngineHistoryItem)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
         until: 5
@@ -267,12 +206,9 @@ TypeSystem{
         name: "QWebEngineScript"
         ModifyFunction{
             signature: "operator=(QWebEngineScript)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
         until: 5
@@ -282,12 +218,9 @@ TypeSystem{
         name: "QWebEngineContextMenuData"
         ModifyFunction{
             signature: "operator=(QWebEngineContextMenuData)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
         until: 5
@@ -304,12 +237,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(QWebEngineClientCertificateSelection)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
         until: 5
@@ -325,6 +255,48 @@ TypeSystem{
             Include{
                 fileName: "QtJambi/JObjectWrapper"
                 location: Include.Global
+            }
+        }
+
+        EnumType{
+            name: "Feature"
+        }
+        EnumType{
+            name: "FileSelectionMode"
+        }
+        EnumType{
+            name: "FindFlag"
+        }
+        EnumType{
+            name: "JavaScriptConsoleMessageLevel"
+        }
+        EnumType{
+            name: "NavigationType"
+        }
+        EnumType{
+            name: "PermissionPolicy"
+        }
+        EnumType{
+            name: "RenderProcessTerminationStatus"
+        }
+        EnumType{
+            name: "WebAction"
+        }
+        EnumType{
+            name: "WebWindowType"
+        }
+        EnumType{
+            name: "LifecycleState"
+            since: [5, 14]
+        }
+        ModifyFunction{
+            signature: "scripts()"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Dependent
+                }
             }
         }
         ModifyFunction{
@@ -399,6 +371,25 @@ TypeSystem{
             }
         }
         ModifyFunction{
+                    signature: "fullScreenRequested(QWebEngineFullScreenRequest)"
+                    ModifyArgument{
+                        index: 1
+                        ReplaceType{
+                            modifiedType: "io.qt.webengine.widgets.QWebEngineFullScreenRequest"
+                        }
+                        NoNullPointer{
+                        }
+                        ConversionRule{
+                            codeClass: CodeClass.Shell
+                            Text{content: "%out = qtjambi_cast<jobject>(%env, &%in);"}
+                        }
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: "QWebEngineFullScreenRequest& %out  = *qtjambi_cast<QWebEngineFullScreenRequest*>(%env, %in);"}
+                        }
+                    }
+                }
+        ModifyFunction{
             signature: "setUrlRequestInterceptor(QWebEngineUrlRequestInterceptor*)"
             ModifyArgument{
                 index: 1
@@ -429,40 +420,10 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "fullScreenRequested(QWebEngineFullScreenRequest)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "QWebEngineFullScreenRequest"
-                }
-                NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, &%in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QWebEngineFullScreenRequest& %out  = *qtjambi_cast<QWebEngineFullScreenRequest*>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
             signature: "authenticationRequired(const QUrl&,QAuthenticator*)"
             ModifyArgument{
                 index: 2
-                ReplaceType{
-                    modifiedType: "io.qt.network.QAuthenticator"
-                }
                 NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QAuthenticator* %out  = qtjambi_cast<QAuthenticator*>(%env, %scope, %in);"}
                 }
             }
         }
@@ -470,18 +431,7 @@ TypeSystem{
             signature: "proxyAuthenticationRequired(const QUrl&,QAuthenticator*, const QString&)"
             ModifyArgument{
                 index: 2
-                ReplaceType{
-                    modifiedType: "io.qt.network.QAuthenticator"
-                }
                 NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QAuthenticator* %out  = qtjambi_cast<QAuthenticator*>(%env, %scope, %in);"}
                 }
             }
         }
@@ -490,7 +440,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.lang.String"
+                    modifiedType: "java.lang.@Nullable String"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -558,7 +508,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "findText(const QString &, QFlags<QWebEnginePage::FindFlag>, QWebEngineCallback)"
+            signature: "findText(const QString &, QWebEnginePage::FindFlags, QWebEngineCallback)"
             ModifyArgument{
                 index: 3
                 ReplaceDefaultExpression{
@@ -643,7 +593,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "runJavaScript(const QString&,uint,QWebEngineCallback)"
+            signature: "runJavaScript(const QString&,quint32,QWebEngineCallback)"
             ModifyArgument{
                 index: 3
                 NoNullPointer{
@@ -754,7 +704,7 @@ TypeSystem{
                     expression: "null"
                 }
                 ReplaceType{
-                    modifiedType: "java.util.function.Consumer<io.qt.webengine.core.QWebEngineNotification>"
+                    modifiedType: "java.util.function.@Nullable Consumer<io.qt.webengine.core.@NonNull QWebEngineNotification>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -901,14 +851,14 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "findText(QString, QFlags<QWebEnginePage::FindFlag>, std::function<void(const QWebEngineFindTextResult&)>)"
+            signature: "findText(QString, QWebEnginePage::FindFlags, std::function<void(const QWebEngineFindTextResult&)>)"
             ModifyArgument{
                 index: 3
                 ReplaceDefaultExpression{
                     expression: "null"
                 }
                 ReplaceType{
-                    modifiedType: "java.util.function.Consumer<io.qt.webengine.core.QWebEngineFindTextResult>"
+                    modifiedType: "java.util.function.@Nullable Consumer<io.qt.webengine.core.@NonNull QWebEngineFindTextResult>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -924,7 +874,7 @@ TypeSystem{
             since: [6, 2]
         }
         ModifyFunction{
-            signature: "findText(const QString &, QFlags<QWebEnginePage::FindFlag>, QWebEngineCallback)"
+            signature: "findText(const QString &, QWebEnginePage::FindFlags, QWebEngineCallback)"
             ModifyArgument{
                 index: 3
                 ReplaceDefaultExpression{
@@ -961,7 +911,7 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "java.util.function.Consumer<io.qt.core.QByteArray>"
+                    modifiedType: "java.util.function.@Nullable Consumer<io.qt.core.@NonNull QByteArray>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -988,7 +938,5 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineContextMenuData::operator=', unmatched parameter type '*QWebEngineContextMenuData::QWebEngineContextDataPrivate*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineClientCertificateSelection::QWebEngineClientCertificateSelection', unmatched parameter type '*QSharedPointer*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineCertificateError::QWebEngineCertificateError', unmatched parameter type '*QSharedPointer<CertificateErrorController>*'"}
-    SuppressedWarning{text: "WARNING(CppImplGenerator) :: Value type 'QWebEngineClientCertificateSelection' is missing a default constructor. The resulting C++ code will not compile.*"}
-    SuppressedWarning{text: "WARNING(CppImplGenerator) :: Value type 'QWebEngineHistoryItem' is missing a default constructor. The resulting C++ code will not compile.*"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type *std::function<void(bool)>* (is_busted)"; since: [6, 2]}
+    SuppressedWarning{text: "WARNING(CppImplGenerator) :: Value type 'QWebEngineClientCertificateSelection' is missing a default constructor.*"}
 }

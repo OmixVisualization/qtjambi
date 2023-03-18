@@ -37,13 +37,13 @@ Make yourself familiar with [developing applications with QtJambi](www/How-to-de
 * [Apache Ant](https://ant.apache.org/) (min. 1.10.x)
 * Java Development Kit (e.g. [OpenJDK](https://adoptopenjdk.net/), tested with Java 1.8 and 18)
 * Qt 5.15 or 6.x (using the Qt Online Installer)
-* C++ compiler (Gcc, Clang, MSVC2019)
-* chrpath (Linux only)
+* Minimum required Qt modules: QtCore, QtQml, QtNetwork, QtConcurrent and QtXml
+* C++ compiler and make (Gcc, Clang, MSVC2019)
 * XCode command line tools (macOS only)
 
 ### Building QtJambi
 If you do'nt need the entire set of Qt modules available in Java edit property `qtjambi.skipped.modules` in `build.properties` and exclude Qt modules you don't need.
-This saves compilation time.
+This saves compilation time. Although QtJambi build process requires the availability of QtQml, QtNetwork, QtConcurrent and QtXml, you can skip them from being generated as QtJambi module.
 
 #### Pre-Build Steps On Windows
 * Open the Visual Studio command prompt for x64 architecture.

@@ -59,6 +59,13 @@ static char const * const _S_token_names[] = {
     "arrow",
     "asm",
     "assign",
+    "rem_assign",
+    "plus_assign",
+    "minus_assign",
+    "times_assign",
+    "div_assign",
+    "left_shift_assign",
+    "right_shift_assign",
     "auto",
     "bitand",
     "bitor",
@@ -94,7 +101,6 @@ static char const * const _S_token_names[] = {
     "float",
     "for",
     "friend",
-    "geq",
     "goto",
     "identifier",
     "if",
@@ -104,6 +110,7 @@ static char const * const _S_token_names[] = {
     "k_dcop",
     "k_dcop_signals",
     "leq",
+    "geq",
     "cmp",
     "long",
     "mutable",
@@ -124,7 +131,7 @@ static char const * const _S_token_names[] = {
     "reinterpret_cast",
     "return",
     "scope",
-    "shift",
+    "left_shift",
     "short",
     "signals",
     "signed",
@@ -166,7 +173,7 @@ static char const * const _S_token_names[] = {
     "alignas",
     "alignof",
 //    "nullptr"
-    "noexcept"
+    "noexcept",
 };
 
 static char _S_printable[][2] = {

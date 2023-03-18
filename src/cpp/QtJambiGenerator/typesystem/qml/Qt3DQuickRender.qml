@@ -31,18 +31,24 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.qt3d.render.quick"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     module: "qtjambi.qt3dquickrender"
     description: ""
+
+    NamespacePrefix{
+        prefix: "Qt3DRender::Render::Quick"
+        namespace: "Qt3DRender::Render::Quick"
+        namingPolicy: NamespacePrefix.Cut
+    }
+
     NamespaceType{
         name: "Qt3DRender::Render::Quick"
-        javaName: "Qt3DQuickRenderer"
+        javaName: "Qt3DQuickRender"
         generate: false
     }
     
     ObjectType{
         name: "Qt3DRender::Render::Quick::Quick3DEffect"
-        javaName: "Quick3DEffect"
         ExtraIncludes{
             Include{
                 fileName: "QtJambiQml/hashes.h"
@@ -53,7 +59,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::Render::Quick::Quick3DMaterial"
-        javaName: "Quick3DMaterial"
         ExtraIncludes{
             Include{
                 fileName: "QtJambiQml/hashes.h"
@@ -64,7 +69,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::Render::Quick::Quick3DParameter"
-        javaName: "Quick3DParameter"
         ExtraIncludes{
             Include{
                 fileName: "QtJambiQml/hashes.h"
@@ -75,7 +79,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::Render::Quick::Quick3DRenderPass"
-        javaName: "Quick3DRenderPass"
         ExtraIncludes{
             Include{
                 fileName: "QtJambiQml/hashes.h"
@@ -86,7 +89,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::Render::Quick::Quick3DRenderPassFilter"
-        javaName: "Quick3DRenderPassFilter"
         ExtraIncludes{
             Include{
                 fileName: "QtJambiQml/hashes.h"
@@ -97,7 +99,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::Render::Quick::Quick3DRenderTarget"
-        javaName: "Quick3DRenderTarget"
         ExtraIncludes{
             Include{
                 fileName: "QtJambiQml/hashes.h"
@@ -108,7 +109,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::Render::Quick::Quick3DRenderTargetSelector"
-        javaName: "Quick3DRenderTargetSelector"
         ExtraIncludes{
             Include{
                 fileName: "QtJambiQml/hashes.h"
@@ -119,7 +119,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::Render::Quick::Quick3DScene"
-        javaName: "Quick3DScene"
         ExtraIncludes{
             Include{
                 fileName: "QtJambiQml/hashes.h"
@@ -130,7 +129,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::Render::Quick::Quick3DShaderData"
-        javaName: "Quick3DShaderData"
         ExtraIncludes{
             Include{
                 fileName: "QtJambiQml/hashes.h"
@@ -141,7 +139,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::Render::Quick::Quick3DShaderDataArray"
-        javaName: "Quick3DShaderDataArray"
         ExtraIncludes{
             Include{
                 fileName: "QtJambiQml/hashes.h"
@@ -152,7 +149,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::Render::Quick::Quick3DSortMethod"
-        javaName: "Quick3DSortMethod"
         ExtraIncludes{
             Include{
                 fileName: "QtJambiQml/hashes.h"
@@ -163,7 +159,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::Render::Quick::Quick3DStateSet"
-        javaName: "Quick3DStateSet"
         ExtraIncludes{
             Include{
                 fileName: "QtJambiQml/hashes.h"
@@ -174,7 +169,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::Render::Quick::Quick3DTechnique"
-        javaName: "Quick3DTechnique"
         ExtraIncludes{
             Include{
                 fileName: "QtJambiQml/hashes.h"
@@ -185,7 +179,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::Render::Quick::Quick3DTechniqueFilter"
-        javaName: "Quick3DTechniqueFilter"
         ExtraIncludes{
             Include{
                 fileName: "QtJambiQml/hashes.h"
@@ -196,7 +189,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::Render::Quick::Quick3DTextureExtension"
-        javaName: "Quick3DTextureExtension"
         ExtraIncludes{
             Include{
                 fileName: "QtJambiQml/hashes.h"
@@ -207,7 +199,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::Render::Quick::Quick3DViewport"
-        javaName: "Quick3DViewport"
         ExtraIncludes{
             Include{
                 fileName: "QtJambiQml/hashes.h"

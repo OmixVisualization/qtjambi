@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.webview"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtWebView"
     module: "qtjambi.webview"
     description: "Displays web content in a QML application by using APIs native to the platform, without the need to include a full web browser stack."

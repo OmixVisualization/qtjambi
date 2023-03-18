@@ -56,7 +56,7 @@ _Target model_static_cast(_Source item) {
     return ptr;
 }
 
-class CodeModel {
+class CodeModel : public QSharedData {
     public:
         enum AccessPolicy {
             Public,
@@ -84,31 +84,19 @@ class CodeModel {
         template <class _Target> _Target create() {
             typedef typename _Target::Type _Target_type;
 
-            _Target result = _Target_type::create(this);
+            _Target result = _Target_type::create(CodeModelPtr(this));
             result->setCreationId(_M_creation_id++);
             return result;
         }
 
-        FileList files() const;
-        NamespaceModelItem globalNamespace() const;
-
-        void addFile(FileModelItem item);
-        void removeFile(FileModelItem item);
-        FileModelItem findFile(const QString &name) const;
-        const QMap<QString, FileModelItem>& fileMap() const;
-
         CodeModelItem findItem(const QStringList &qualifiedName, CodeModelItem scope) const;
 
-        void wipeout();
-
+        FileModelItem globalNamespace() const { return _M_globalNamespace; }
     private:
-        QMap<QString, FileModelItem> _M_files;
-        NamespaceModelItem _M_globalNamespace;
+        FileModelItem _M_globalNamespace;
         std::size_t _M_creation_id;
 
-    private:
-        CodeModel(const CodeModel &other);
-        void operator = (const CodeModel &other);
+        Q_DISABLE_COPY_MOVE(CodeModel)
 };
 
 class TypeInfo {
@@ -142,8 +130,10 @@ class TypeInfo {
         inline const QList<bool>& indirections() const { return m_indirections; }
         void setIndirections(const QList<bool> & indirections) { m_indirections = indirections; }
 
-        bool isFunctionPointer() const { return m_flags.testFlag(IsFunctionPointer); }
+        bool isFunctionPointer() const { return m_flags.testFlag(IsFunctionPointer) || (m_qualifiedName.isEmpty() && !m_functionalReturnType.isEmpty()); }
         void setFunctionPointer(bool is) { m_flags.setFlag(IsFunctionPointer, is); }
+        //bool isFunctionDecl() const { return m_flags.testFlag(IsFunctionDecl); }
+        //void setFunctionDecl(bool is) { m_flags.setFlag(IsFunctionDecl, is); }
 
         bool isVariadic() const { return m_flags.testFlag(IsVariadic); }
         void setVariadic(bool is) { m_flags.setFlag(IsVariadic, is); }
@@ -171,17 +161,23 @@ class TypeInfo {
         TypeInfo functionalReturnType() const { return m_functionalReturnType.isEmpty() ? TypeInfo() : m_functionalReturnType.first(); }
         const QList<TypeInfo>& functionalArgumentTypes() const { return m_functionalArgumentTypes; }
         const QList<QString>& functionalArgumentNames() const { return m_functionalArgumentNames; }
-        void setFunctionalReturnType(const TypeInfo& s) { m_functionalReturnType.clear(); if(!s.qualifiedName().isEmpty()) m_functionalReturnType << s; }
+        void setFunctionalReturnType(const TypeInfo& s) { m_functionalReturnType.clear(); if(s) m_functionalReturnType << s; }
         void setFunctionalArgumentTypes(const QList<TypeInfo>& l) { m_functionalArgumentTypes = l; }
         void setFunctionalArgumentNames(const QList<QString>& l) { m_functionalArgumentNames = l; }
+        void addFunctionalArgumentType(const TypeInfo& l) { m_functionalArgumentTypes << l; }
+        void addFunctionalArgumentName(const QString& l) { m_functionalArgumentNames << l; }
+
+        bool operator!()const{return m_qualifiedName.isEmpty() && m_functionalReturnType.isEmpty();}
+        operator bool()const{return !m_qualifiedName.isEmpty() || !m_functionalReturnType.isEmpty();}
 
     private:
-        enum Flag : quint8{
+        enum Flag{
             None = 0x00,
             IsConst = 0x01,
             IsVolatile = 0x02,
             IsFunctionPointer = 0x04,
-            IsVariadic = 0x08,
+            IsFunctionDecl = 0x08,
+            IsVariadic = 0x10,
         };
         QFlags<Flag> m_flags;
 
@@ -243,8 +239,6 @@ class _CodeModelItem: public QSharedData {
         const QStringList& requiredFeatures() const;
         void setRequiredFeatures(const QStringList &features);
 
-        FileModelItem file() const;
-
         void getStartPosition(int *line, int *column);
         void setStartPosition(int line, int column);
 
@@ -254,16 +248,16 @@ class _CodeModelItem: public QSharedData {
         inline std::size_t creationId() const { return _M_creation_id; }
         inline void setCreationId(std::size_t creation_id) { _M_creation_id = creation_id; }
 
-        inline CodeModel *model() const { return _M_model; }
+        inline CodeModelPtr model() const { return _M_model; }
 
         CodeModelItem toItem() const;
 
     protected:
-        _CodeModelItem(CodeModel *model, int kind);
+        _CodeModelItem(CodeModelPtr model, int kind);
         void setKind(int kind);
 
     private:
-        CodeModel *_M_model;
+        CodeModelPtr _M_model;
         int _M_kind;
         int _M_startLine;
         int _M_startColumn;
@@ -283,15 +277,15 @@ class _ScopeModelItem: public _CodeModelItem {
     public:
         DECLARE_MODEL_NODE(Scope)
 
-        static ScopeModelItem create(CodeModel *model);
+        static ScopeModelItem create(CodeModelPtr model);
 
     public:
         ScopeModelItem toScope() const;
-        EnumList enums() const;
-        FunctionDefinitionList functionDefinitions() const;
-        FunctionList functions() const;
-        TypeAliasList typeAliases() const;
-        VariableList variables() const;
+        const EnumList& enums() const;
+        const FunctionDefinitionList& functionDefinitions() const;
+        const FunctionList& functions() const;
+        const TypeAliasList& typeAliases() const;
+        const VariableList& variables() const;
         virtual NamespaceModelItem findNamespace(const QString &name) const;
 
         void addClass(ClassModelItem item);
@@ -301,13 +295,6 @@ class _ScopeModelItem: public _CodeModelItem {
         void addTypeAlias(TypeAliasModelItem item);
         void addVariable(VariableModelItem item);
 
-        void removeClass(ClassModelItem item);
-        void removeEnum(EnumModelItem item);
-        void removeFunction(FunctionModelItem item);
-        void removeFunctionDefinition(FunctionDefinitionModelItem item);
-        void removeTypeAlias(TypeAliasModelItem item);
-        void removeVariable(VariableModelItem item);
-
         ClassModelItem findClass(const QString &name) const;
         EnumModelItem findEnum(const QString &name) const;
         FunctionDefinitionList findFunctionDefinitions(const QString &name) const;
@@ -316,25 +303,28 @@ class _ScopeModelItem: public _CodeModelItem {
         VariableModelItem findVariable(const QString &name) const;
 
         inline const QList<ClassModelItem>& classes() const { return _M_classList; }
-        inline const QMap<QString, EnumModelItem>& enumMap() const { return _M_enums; }
-        inline const QMap<QString, TypeAliasModelItem>& typeAliasMap() const { return _M_typeAliases; }
-        inline const QMap<QString, VariableModelItem>& variableMap() const { return _M_variables; }
-        inline const QMultiHash<QString, FunctionDefinitionModelItem>& functionDefinitionMap() const { return _M_functionDefinitions; }
-        inline const QMultiHash<QString, FunctionModelItem>& functionMap() const { return _M_functions; }
+        inline const QMap<QString, QString>& flagsMap() const { return _M_flags; }
 
         FunctionModelItem declaredFunction(FunctionModelItem item);
 
     protected:
-        _ScopeModelItem(CodeModel *model, int kind = __node_kind)
+        _ScopeModelItem(CodeModelPtr model, int kind = __node_kind)
                 : _CodeModelItem(model, kind) {}
 
     private:
         QList<ClassModelItem> _M_classList;
+        QMap<QString, ClassModelItem> _M_qnclasses;
         QMap<QString, ClassModelItem> _M_classes;
+        QList<EnumModelItem> _M_enumList;
         QMap<QString, EnumModelItem> _M_enums;
+        QList<TypeAliasModelItem> _M_typeAliasList;
         QMap<QString, TypeAliasModelItem> _M_typeAliases;
+        QMap<QString, QString> _M_flags;
+        QList<VariableModelItem> _M_variableList;
         QMap<QString, VariableModelItem> _M_variables;
+        QList<FunctionDefinitionModelItem> _M_functionDefinitionList;
         QMultiHash<QString, FunctionDefinitionModelItem> _M_functionDefinitions;
+        QList<FunctionModelItem> _M_functionList;
         QMultiHash<QString, FunctionModelItem> _M_functions;
 
     private:
@@ -346,15 +336,18 @@ class _ClassModelItem: public _ScopeModelItem {
     public:
         DECLARE_MODEL_NODE(Class)
 
-        static ClassModelItem create(CodeModel *model);
+        static ClassModelItem create(CodeModelPtr model);
 
     public:
-        const QList<QPair<QString,bool>>& baseClasses() const;
+        const QList<QPair<TypeInfo,bool>>& baseClasses() const;
 
-        void setBaseClasses(const QList<QPair<QString,bool>> &baseClasses);
+        void setBaseClasses(const QList<QPair<TypeInfo,bool>> &baseClasses);
 
         const TemplateParameterList& templateParameters() const;
         void setTemplateParameters(const TemplateParameterList &templateParameters);
+
+        const QList<TypeInfo>& templateInstantiations() const;
+        void setTemplateInstantiations(const QList<TypeInfo> &templateInstantiations);
 
         bool extendsClass(const QString &name) const;
 
@@ -370,6 +363,9 @@ class _ClassModelItem: public _ScopeModelItem {
         void setHas_Q_OBJECT(bool has_Q_OBJECT){m_has_Q_OBJECT = has_Q_OBJECT;}
         bool has_Q_OBJECT() const {return m_has_Q_OBJECT;}
 
+        void setIsTemplate(bool isTemplate);
+        bool isTemplate() const;
+
         void setUsingBaseConstructors(CodeModel::AccessPolicy usingBaseConstructors){_M_usingBaseConstructors = usingBaseConstructors;}
         CodeModel::AccessPolicy usingBaseConstructors() const {return _M_usingBaseConstructors;}
         bool isDeclFinal() const;
@@ -381,21 +377,23 @@ class _ClassModelItem: public _ScopeModelItem {
         CodeModel::AccessPolicy accessPolicy() const;
         void setAccessPolicy(CodeModel::AccessPolicy accessPolicy);
     protected:
-        _ClassModelItem(CodeModel *model, int kind = __node_kind)
+        _ClassModelItem(CodeModelPtr model, int kind = __node_kind)
                 : _ScopeModelItem(model, kind), m_has_Q_GADGET(false), m_has_Q_OBJECT(false), _M_classType(CodeModel::Class),
-                  _M_declFinal(false), _M_declDeprecated(false),
+                  _M_declFinal(false), _M_declDeprecated(false), _M_isTemplate(false),
                   _M_accessPolicy(CodeModel::Public),
                   _M_usingBaseConstructors(CodeModel::AccessPolicy::Private){}
 
     private:
         bool m_has_Q_GADGET;
         bool m_has_Q_OBJECT;
-        QList<QPair<QString,bool>> _M_baseClasses;
+        QList<QPair<TypeInfo,bool>> _M_baseClasses;
         TemplateParameterList _M_templateParameters;
+        QList<TypeInfo> _M_templateInstantiations;
         CodeModel::ClassType _M_classType;
         QStringList _M_propertyDeclarations;
         bool _M_declFinal;
         bool _M_declDeprecated;
+        bool _M_isTemplate;
         QString _M_declDeprecatedComment;
         CodeModel::AccessPolicy _M_accessPolicy;
         CodeModel::AccessPolicy _M_usingBaseConstructors;
@@ -409,23 +407,21 @@ class _NamespaceModelItem: public _ScopeModelItem {
     public:
         DECLARE_MODEL_NODE(Namespace)
 
-        static NamespaceModelItem create(CodeModel *model);
+        static NamespaceModelItem create(CodeModelPtr model);
 
     public:
-        NamespaceList namespaces() const;
+        const QList<NamespaceModelItem>& namespaces() const;
 
         void addNamespace(NamespaceModelItem item);
-        void removeNamespace(NamespaceModelItem item);
 
         NamespaceModelItem findNamespace(const QString &name) const;
 
-        inline const QMap<QString, NamespaceModelItem>& namespaceMap() const { return _M_namespaces; }
-
     protected:
-        _NamespaceModelItem(CodeModel *model, int kind = __node_kind)
+        _NamespaceModelItem(CodeModelPtr model, int kind = __node_kind)
                 : _ScopeModelItem(model, kind) {}
 
     private:
+        QList<NamespaceModelItem> _M_namespaceList;
         QMap<QString, NamespaceModelItem> _M_namespaces;
 
     private:
@@ -437,10 +433,10 @@ class _FileModelItem: public _NamespaceModelItem {
     public:
         DECLARE_MODEL_NODE(File)
 
-        static FileModelItem create(CodeModel *model);
+        static FileModelItem create(CodeModelPtr model);
 
     protected:
-        _FileModelItem(CodeModel *model, int kind = __node_kind)
+        _FileModelItem(CodeModelPtr model, int kind = __node_kind)
                 : _NamespaceModelItem(model, kind) {}
 
     private:
@@ -452,7 +448,7 @@ class _ArgumentModelItem: public _CodeModelItem {
     public:
         DECLARE_MODEL_NODE(Argument)
 
-        static ArgumentModelItem create(CodeModel *model);
+        static ArgumentModelItem create(CodeModelPtr model);
 
     public:
         const TypeInfo& type() const;
@@ -465,7 +461,7 @@ class _ArgumentModelItem: public _CodeModelItem {
         void setDefaultValueExpression(const QString &expr) { _M_defaultValueExpression = expr; }
 
     protected:
-        _ArgumentModelItem(CodeModel *model, int kind = __node_kind)
+        _ArgumentModelItem(CodeModelPtr model, int kind = __node_kind)
                 : _CodeModelItem(model, kind), _M_defaultValue(false) {}
 
     private:
@@ -506,6 +502,9 @@ class _MemberModelItem: public _CodeModelItem {
         bool isMutable() const;
         void setMutable(bool isMutable);
 
+        bool isTemplate() const;
+        void setTemplate(bool isTemplate);
+
         const QString& getDeprecatedComment() const;
         void setDeprecatedComment(const QString& comment);
 
@@ -521,17 +520,22 @@ class _MemberModelItem: public _CodeModelItem {
         void setTemplateParameters(const TemplateParameterList &templateParameters)
         { _M_templateParameters = templateParameters; }
 
+        const QList<TypeInfo>& templateInstantiations() const
+        { return _M_templateInstantiations; }
+        void setTemplateInstantiations(const QList<TypeInfo> &templateInstantiations)
+        { _M_templateInstantiations = templateInstantiations; }
+
         const TypeInfo& type() const;
         void setType(const TypeInfo &type);
 
     protected:
-        _MemberModelItem(CodeModel *model, int kind)
+        _MemberModelItem(CodeModelPtr model, int kind)
                 : _CodeModelItem(model, kind),
                 _M_accessPolicy(CodeModel::Public),
                 _M_flags(None) {}
 
     private:
-        enum Flag : quint16{
+        enum Flag{
             None = 0x00,
             IsConstant = 0x001,
             IsVolatile = 0x002,
@@ -542,20 +546,81 @@ class _MemberModelItem: public _CodeModelItem {
             IsMutable = 0x040,
             IsDeprecated = 0x080,
             IsConstExpr = 0x100,
+            IsTemplate = 0x200,
         };
 
         TemplateParameterList _M_templateParameters;
+        QList<TypeInfo> _M_templateInstantiations;
         TypeInfo _M_type;
         CodeModel::AccessPolicy _M_accessPolicy;
         QFlags<Flag> _M_flags;
         QString _M_deprecatedComment;
 };
 
+enum class OperatorType{
+    None,
+    Plus,
+    Minus,
+    Times,
+    Div,
+    Rem,
+    And,
+    Or,
+    Xor,
+    Not,
+    ShiftLeft,
+    ShiftRight,
+
+    // assigments
+    Assign,
+    PlusAssign,
+    MinusAssign,
+    TimesAssign,
+    DivAssign,
+    RemAssign,
+    AndAssign,
+    OrAssign,
+    XorAssign,
+    ShiftLeftAssign,
+    ShiftRightAssign,
+
+    // Logical
+    ExclusiveAnd,
+    ExclusiveOr,
+    Negation,
+
+    // incr/decr
+    Inc,
+    Dec,
+
+    // compare
+    Less,
+    Greater,
+    LessOrEquals,
+    Compare,
+    GreaterOrEquals,
+    NotEquals,
+    Equals,
+
+    // other
+    Subscript,
+    MemberOfPointer,
+    PointerToMemberOfPointer,
+    Comma,
+    FunctionCall,
+    TypeCast,
+    String,
+    New,
+    Delete,
+    NewArray,
+    DeleteArray
+};
+
 class _FunctionModelItem: public _MemberModelItem {
     public:
         DECLARE_MODEL_NODE(Function)
 
-        static FunctionModelItem create(CodeModel *model);
+        static FunctionModelItem create(CodeModelPtr model);
 
     public:
         const ArgumentList& arguments() const;
@@ -590,6 +655,8 @@ class _FunctionModelItem: public _MemberModelItem {
         void setHasBody(bool hasBody);
         bool isDeleted() const;
         void setDeleted(bool deleted);
+        OperatorType operatorType() const;
+        void setOperatorType(OperatorType op);
 
         TypeInfo::ReferenceType referenceType() const;
         void setReferenceType(TypeInfo::ReferenceType referenceType);
@@ -597,10 +664,10 @@ class _FunctionModelItem: public _MemberModelItem {
         bool isSimilar(FunctionModelItem other) const;
 
     protected:
-        _FunctionModelItem(CodeModel *model, int kind = __node_kind)
+        _FunctionModelItem(CodeModelPtr model, int kind = __node_kind)
                 : _MemberModelItem(model, kind),
                 _M_functionType(CodeModel::Normal),
-                _M_flags(None), _M_referenceType(TypeInfo::NoReference) {}
+                _M_flags(None), _M_referenceType(TypeInfo::NoReference), _M_operatorType(OperatorType::None) {}
 
     private:
         enum Flag : quint16{
@@ -613,12 +680,13 @@ class _FunctionModelItem: public _MemberModelItem {
             IsInvokable = 0x020,
             IsDeclFinal = 0x040,
             HasBody = 0x080,
-            IsDeleted = 0x100,
+            IsDeleted = 0x100
         };
         ArgumentList _M_arguments;
         CodeModel::FunctionType _M_functionType;
         QFlags<Flag> _M_flags;
         TypeInfo::ReferenceType _M_referenceType;
+        OperatorType _M_operatorType;
 
     private:
         _FunctionModelItem(const _FunctionModelItem &other);
@@ -629,10 +697,10 @@ class _FunctionDefinitionModelItem: public _FunctionModelItem {
     public:
         DECLARE_MODEL_NODE(FunctionDefinition)
 
-        static FunctionDefinitionModelItem create(CodeModel *model);
+        static FunctionDefinitionModelItem create(CodeModelPtr model);
 
     protected:
-        _FunctionDefinitionModelItem(CodeModel *model, int kind = __node_kind)
+        _FunctionDefinitionModelItem(CodeModelPtr model, int kind = __node_kind)
                 : _FunctionModelItem(model, kind) {}
 
     private:
@@ -644,10 +712,10 @@ class _VariableModelItem: public _MemberModelItem {
     public:
         DECLARE_MODEL_NODE(Variable)
 
-        static VariableModelItem create(CodeModel *model);
+        static VariableModelItem create(CodeModelPtr model);
 
     protected:
-        _VariableModelItem(CodeModel *model, int kind = __node_kind)
+        _VariableModelItem(CodeModelPtr model, int kind = __node_kind)
                 : _MemberModelItem(model, kind) {}
 
     private:
@@ -659,7 +727,7 @@ class _TypeAliasModelItem: public _CodeModelItem {
     public:
         DECLARE_MODEL_NODE(TypeAlias)
 
-        static TypeAliasModelItem create(CodeModel *model);
+        static TypeAliasModelItem create(CodeModelPtr model);
 
     public:
         const TypeInfo& type() const;
@@ -668,7 +736,7 @@ class _TypeAliasModelItem: public _CodeModelItem {
         void setAccessPolicy(CodeModel::AccessPolicy accessPolicy);
 
     protected:
-        _TypeAliasModelItem(CodeModel *model, int kind = __node_kind)
+        _TypeAliasModelItem(CodeModelPtr model, int kind = __node_kind)
                 : _CodeModelItem(model, kind),
                   _M_accessPolicy(CodeModel::Public) {}
 
@@ -685,7 +753,7 @@ class _EnumModelItem: public _CodeModelItem {
     public:
         DECLARE_MODEL_NODE(Enum)
 
-        static EnumModelItem create(CodeModel *model);
+        static EnumModelItem create(CodeModelPtr model);
 
     public:
         const TypeInfo& baseType() const;
@@ -707,7 +775,7 @@ class _EnumModelItem: public _CodeModelItem {
         void removeEnumerator(EnumeratorModelItem item);
 
     protected:
-        _EnumModelItem(CodeModel *model, int kind = __node_kind)
+        _EnumModelItem(CodeModelPtr model, int kind = __node_kind)
                 : _CodeModelItem(model, kind),
                 _M_accessPolicy(CodeModel::Public), _M_isAnonymous(false), _M_isScopedEnum(false), _M_baseType() {}
 
@@ -729,7 +797,7 @@ class _EnumeratorModelItem: public _CodeModelItem {
     public:
         DECLARE_MODEL_NODE(Enumerator)
 
-        static EnumeratorModelItem create(CodeModel *model);
+        static EnumeratorModelItem create(CodeModelPtr model);
 
     public:
         const QString& value() const;
@@ -740,7 +808,7 @@ class _EnumeratorModelItem: public _CodeModelItem {
         void setDeprecatedComment(const QString& value);
 
     protected:
-        _EnumeratorModelItem(CodeModel *model, int kind = __node_kind)
+        _EnumeratorModelItem(CodeModelPtr model, int kind = __node_kind)
                 : _CodeModelItem(model, kind), _M_deprecated(false), _M_deprecatedComment() {}
 
     private:
@@ -757,7 +825,7 @@ class _TemplateParameterModelItem: public _CodeModelItem {
     public:
         DECLARE_MODEL_NODE(TemplateParameter)
 
-        static TemplateParameterModelItem create(CodeModel *model);
+        static TemplateParameterModelItem create(CodeModelPtr model);
 
     public:
         const QString& defaultValue() const;
@@ -768,7 +836,7 @@ class _TemplateParameterModelItem: public _CodeModelItem {
         ClassModelItem ownerClass() const;
 
     protected:
-        _TemplateParameterModelItem(CodeModel *model, int kind = __node_kind)
+        _TemplateParameterModelItem(CodeModelPtr model, int kind = __node_kind)
                 : _CodeModelItem(model, kind), _M_defaultValue(), _M_isVaradic(false), _M_ownerClass(nullptr) {}
 
     private:
@@ -811,6 +879,7 @@ _Target model_dynamic_cast(_Source item) {
 
     return _Target();
 }
+
 #endif // CODEMODEL_H
 
 // kate: space-indent on; indent-width 2; replace-tabs on;

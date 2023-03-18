@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.pdf.widgets"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtPdfWidgets"
     module: "qtjambi.pdfwidgets"
     description: "Classes and functions for rendering PDF documents in a widget."

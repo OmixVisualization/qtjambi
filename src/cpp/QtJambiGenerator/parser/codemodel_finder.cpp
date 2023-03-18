@@ -48,7 +48,7 @@
 #include "codemodel.h"
 #include "binder.h"
 
-CodeModelFinder::CodeModelFinder(CodeModel *model, Binder *binder)
+CodeModelFinder::CodeModelFinder(CodeModelPtr model, Binder *binder)
         : _M_model(model),
         _M_binder(binder),
         _M_token_stream(binder->tokenStream()),

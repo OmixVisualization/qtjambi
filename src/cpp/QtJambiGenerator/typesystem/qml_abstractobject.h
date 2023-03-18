@@ -13,6 +13,7 @@ public:
         Java,
         Cpp,
         Ignore,
+        Dependent,
         Invalidate
     };
     Q_ENUM(Entries)
@@ -54,7 +55,7 @@ public:
         Setter              = 0x2000,
         NativeGetter        = Native | Getter,
         NativeSetter        = Native | Setter,
-        DeleterFunction     = 0x4000,
+        DeleterFunction     = 0x4000
     };
     Q_ENUM(Entries)
     CodeClass() = delete;
@@ -91,6 +92,7 @@ public:
         Compare,
         HashCode,
         ToString,
+        Comment,
         End = 1024
     };
     Q_ENUM(Entries)

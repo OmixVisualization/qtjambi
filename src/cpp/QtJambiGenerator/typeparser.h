@@ -55,18 +55,19 @@ class TypeParser {
                 RReference
             };
 
-            Info() : reference_type(NoReference), is_constant(false), is_volatile(false), is_variadics(false), is_busted(false), indirections() { }
+            Info() : reference_type(NoReference), is_constant(false), is_volatile(false), is_variadics(false), is_functionPointer(false), is_busted(false), indirections() { }
 
             QStringList qualified_name;
             /**
              * List of different parts of “array”, or [foo]
              */
             QStringList arrays;
-            QList<Info> template_instantiations;
+            QList<Info> arguments;
             ReferenceType reference_type;
             uint is_constant : 1;
             uint is_volatile : 1;
             uint is_variadics : 1;
+            uint is_functionPointer : 1;
             /**
              * If the type is not supported / valid
              */
@@ -78,8 +79,15 @@ class TypeParser {
              */
             QList<bool> indirections;
 
+            QString originalType;
+            QList<Info> functionalReturnType;
+            QList<Info> functionalArgumentTypes;
+
             QString toString() const;
             QString instantiationName() const; //private?
+
+            bool operator!()const{return qualified_name.isEmpty() && functionalReturnType.isEmpty();}
+            operator bool()const{return !qualified_name.isEmpty() || !functionalReturnType.isEmpty();}
         };
 
         /**

@@ -188,6 +188,9 @@ public class QMakeTask extends Task {
 
         if(includepath != null && includepath.length() > 0)
             parameters.add("INCLUDEPATH+=" + includepath);
+        
+        if(Boolean.valueOf(getProject().getProperty(Constants.QTJAMBI_FORCE_DEBUG_INFO)))
+        	parameters.add("CONFIG+=force_debug_info");
 		
         /*
 		String javaVersion = getProject().getProperty("target.java.version");

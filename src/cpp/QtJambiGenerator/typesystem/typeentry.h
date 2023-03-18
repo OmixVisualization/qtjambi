@@ -97,20 +97,20 @@ class TypeEntry {
             TemplateArgumentType,
             InstantiatedTemplateArgumentType,
             BasicValueType,
-            StringType,
-            Latin1StringType,
-            Latin1StringViewType,
-            StringViewType,
-            AnyStringViewType,
-            Utf8StringViewType,
-            StringRefType,
+            QStringType,
+            QLatin1StringType,
+            QLatin1StringViewType,
+            QStringViewType,
+            QAnyStringViewType,
+            QUtf8StringViewType,
+            QStringRefType,
             ContainerType,
             IteratorType,
             InterfaceType,
             ObjectType,
             TemplateType,
             NamespaceType,
-            VariantType,
+            QVariantType,
             PointerContainerType,
             InitializerListType,
             JObjectWrapperType,
@@ -120,16 +120,13 @@ class TypeEntry {
             JIteratorWrapperType,
             JEnumWrapperType,
             JQFlagsWrapperType,
-            CharType,
+            QCharType,
             ArrayType,
             TypeSystemType,
-            QModelIndexType,
             QMetaObjectType,
             QMetaObjectConnectionType,
-            QMetaMethodType,
-            QMetaPropertyType,
-            QMetaEnumType,
             GlobalType,
+            UnknownType,
         };
 
         enum CodeGeneration {
@@ -171,23 +168,11 @@ class TypeEntry {
         bool isGlobal() const {
             return m_type == GlobalType;
         }
-        bool isQModelIndexType() const {
-            return m_type == QModelIndexType;
-        }
         bool isQMetaObjectType() const {
             return m_type == QMetaObjectType;
         }
         bool isQMetaObjectConnectionType() const {
             return m_type == QMetaObjectConnectionType;
-        }
-        bool isQMetaEnumType() const {
-            return m_type == QMetaEnumType;
-        }
-        bool isQMetaMethodType() const {
-            return m_type == QMetaMethodType;
-        }
-        bool isQMetaPropertyType() const {
-            return m_type == QMetaPropertyType;
         }
         virtual bool isScopedEnum() const {
              return false;
@@ -202,37 +187,37 @@ class TypeEntry {
             return m_type == ObjectType;
         }
         bool isString() const {
-            return m_type == StringType
-                    || m_type == Latin1StringType
-                    || m_type == Latin1StringViewType
-                    || m_type == StringViewType
-                    || m_type == AnyStringViewType
-                    || m_type == Utf8StringViewType
-                    || m_type == StringRefType;
+            return m_type == QStringType
+                    || m_type == QLatin1StringType
+                    || m_type == QLatin1StringViewType
+                    || m_type == QStringViewType
+                    || m_type == QAnyStringViewType
+                    || m_type == QUtf8StringViewType
+                    || m_type == QStringRefType;
         }
         bool isQString() const {
-            return m_type == StringType;
+            return m_type == QStringType;
         }
-        bool isLatin1String() const {
-            return m_type == Latin1StringType;
+        bool isQLatin1String() const {
+            return m_type == QLatin1StringType;
         }
-        bool isLatin1StringView() const {
-            return m_type == Latin1StringViewType;
+        bool isQLatin1StringView() const {
+            return m_type == QLatin1StringViewType;
         }
-        bool isStringView() const {
-            return m_type == StringViewType;
+        bool isQStringView() const {
+            return m_type == QStringViewType;
         }
-        bool isAnyStringView() const {
-            return m_type == AnyStringViewType;
+        bool isQAnyStringView() const {
+            return m_type == QAnyStringViewType;
         }
-        bool isUtf8StringView() const {
-            return m_type == Utf8StringViewType;
+        bool isQUtf8StringView() const {
+            return m_type == QUtf8StringViewType;
         }
-        bool isStringRef() const {
-            return m_type == StringRefType;
+        bool isQStringRef() const {
+            return m_type == QStringRefType;
         }
-        bool isChar() const {
-            return m_type == CharType;
+        bool isQChar() const {
+            return m_type == QCharType;
         }
         bool isNamespace() const {
             return m_type == NamespaceType;
@@ -243,8 +228,8 @@ class TypeEntry {
         bool isIterator() const {
             return m_type == IteratorType;
         }
-        bool isVariant() const {
-            return m_type == VariantType;
+        bool isQVariant() const {
+            return m_type == QVariantType;
         }
         bool isJObjectWrapper() const {
             return m_type == JObjectWrapperType;
@@ -278,6 +263,9 @@ class TypeEntry {
         }
         bool isAuto() const {
             return m_type == AutoType;
+        }
+        bool isUnknown() const {
+            return m_type == UnknownType;
         }
         bool isPointerContainer() const {
             return m_type == PointerContainerType;
@@ -378,6 +366,14 @@ class TypeEntry {
         bool isDeclDeprecated() const{
             return m_isDeclaredDeprecated;
         }
+
+        void setInUse(bool inUse){
+            m_in_use = inUse;
+        }
+
+        bool isInUse() const{
+            return m_in_use;
+        }
     private:
         QString m_name;
         Type m_type;
@@ -385,6 +381,7 @@ class TypeEntry {
         bool m_isDeclaredDeprecated;
         // currently not yet in use:
         bool m_preferred_conversion;
+        bool m_in_use;
 };
 typedef QMap<QString, QList<TypeEntry *> > TypeEntryHash;
 typedef QMap<QString, TypeEntry *> SingleTypeEntryHash;
@@ -438,27 +435,8 @@ struct Dependency{
 class TypeSystemTypeEntry : public TypeEntry {
     public:
 
-        TypeSystemTypeEntry(const QString &name)
-                : TypeEntry(name, TypeSystemType),
-                  snips(),
-                  m_include(),
-                  m_extra_includes(),
-                  m_qtLibrary(),
-                  m_module(),
-                  m_requiredTypeSystems(),
-                  m_noExports(false) {
-        }
-
-        TypeSystemTypeEntry(const QString &name, const QString &lib, const QString &module)
-                : TypeEntry(name, TypeSystemType),
-                  snips(),
-                  m_include(),
-                  m_extra_includes(),
-                  m_qtLibrary(lib),
-                  m_module(module),
-                  m_requiredTypeSystems(),
-                  m_noExports(false) {
-        }
+        TypeSystemTypeEntry(const QString &name);
+        TypeSystemTypeEntry(const QString &name, const QString &lib, const QString &module);
 
         const Include& include() const {
             return m_include;
@@ -575,6 +553,13 @@ class AutoTypeEntry : public TypeEntry {
         }
 };
 
+class UnknownTypeEntry : public TypeEntry {
+    public:
+        UnknownTypeEntry(const QString &name) : TypeEntry(name, UnknownType) {
+            setCodeGeneration(GenerateNothing);
+        }
+};
+
 class TemplateArgumentEntry : public TypeEntry {
     public:
         TemplateArgumentEntry(const QString &name)
@@ -588,8 +573,16 @@ class TemplateArgumentEntry : public TypeEntry {
             m_ordinal = o;
         }
 
+        bool isVariadic() const {
+            return m_variadic;
+        }
+        void setVariadic(bool o) {
+            m_variadic = o;
+        }
+
     private:
         int m_ordinal;
+        bool m_variadic;
 };
 
 class ArrayTypeEntry : public TypeEntry {
@@ -609,7 +602,7 @@ class ArrayTypeEntry : public TypeEntry {
             if(m_indirections==0)
                 return m_nested_type->targetLangName() + "[]";
             else
-                return "io.qt.QNativePointer[]";
+                return "QNativePointer[]";
         }
         QString jniName() const override {
             if (m_nested_type->isPrimitive() && m_nested_type->jniName()!="void" && m_indirections==0)
@@ -857,6 +850,7 @@ class EnumTypeEntry : public TypeEntry {
                 m_extensible(false),
                 m_noMetaObject(false),
                 m_force_integer(false),
+                m_force_noFlags(false),
                 m_isEnumClass(false),
                 m_isPublic(true),
                 m_size(32),
@@ -990,6 +984,13 @@ class EnumTypeEntry : public TypeEntry {
             m_force_integer = force;
         }
 
+        bool forceNoFlags() const {
+            return m_force_noFlags;
+        }
+        void setForceNoFlags(bool force) {
+            m_force_noFlags = force;
+        }
+
         QString implements() const {
             return m_implements;
         }
@@ -1064,6 +1065,7 @@ class EnumTypeEntry : public TypeEntry {
         bool m_extensible;
         bool m_noMetaObject;
         bool m_force_integer;
+        bool m_force_noFlags;
         bool m_isEnumClass;
         bool m_isPublic;
         uint m_size;
@@ -1087,11 +1089,11 @@ class FlagsTypeEntry : public TypeEntry {
             return false;
         }
 
-        const QString& originalName() const {
-            return m_original_name;
+        const QString& flagsTemplate() const {
+            return m_flagsTemplate;
         }
-        void setOriginalName(const QString &s) {
-            m_original_name = s;
+        void setFlagsTemplate(const QString &s) {
+            m_flagsTemplate = s;
         }
 
         const QString& flagsName() const {
@@ -1124,7 +1126,7 @@ class FlagsTypeEntry : public TypeEntry {
             return TypeEntry::qualifiedCppName();
         }
     private:
-        QString m_original_name;
+        QString m_flagsTemplate;
         QString m_java_name;
         EnumTypeEntry *m_enum;
 };
@@ -1257,6 +1259,9 @@ class ComplexTypeEntry : public TypeEntry {
         }
         void setQObject(bool qobject) {
             m_attributes.setFlag(IsQObject, qobject);
+        }
+        bool isGLsync() const {
+            return m_attributes.testFlag(IsGLsync);
         }
 
         bool isQWidget() const {
@@ -1435,6 +1440,126 @@ class ComplexTypeEntry : public TypeEntry {
         const CustomFunction& customDestructor() const {
             return m_customDestructor;
         }
+
+        bool skipMetaTypeRegistration() const {
+            return m_attributes.testFlag(SkipMetaTypeRegistration);
+        }
+
+        void setSkipMetaTypeRegistration(bool skipMetaTypeRegistration){
+            m_attributes.setFlag(SkipMetaTypeRegistration, skipMetaTypeRegistration);
+        }
+
+        bool hasAnyConstructor(bool nonPrivate = true) const {
+            return m_functionAttributes.testFlag(nonPrivate ? HasAnyNonPrivateConstructor : HasAnyPrivateConstructor);
+        }
+
+        void setHasAnyConstructor(bool nonPrivate = true){
+            m_functionAttributes.setFlag(nonPrivate ? HasAnyNonPrivateConstructor : HasAnyPrivateConstructor);
+        }
+
+        bool hasDefaultConstructor(bool _public = true) const {
+            return m_functionAttributes.testFlag(_public ? HasPublicDefaultConstructor : HasProtectedDefaultConstructor);
+        }
+
+        void setHasDefaultConstructor(bool _public = true){
+            m_functionAttributes.setFlag(_public ? HasPublicDefaultConstructor : HasProtectedDefaultConstructor);
+        }
+
+        bool hasCopyConstructor(bool _public = true) const {
+            return m_functionAttributes.testFlag(_public ? HasPublicCopyConstructor : HasProtectedCopyConstructor);
+        }
+
+        void setHasCopyConstructor(bool _public = true){
+            m_functionAttributes.setFlag(_public ? HasPublicCopyConstructor : HasProtectedCopyConstructor);
+        }
+
+        bool hasMoveConstructor(bool _public = true) const {
+            return m_functionAttributes.testFlag(_public ? HasPublicMoveConstructor : HasProtectedMoveConstructor);
+        }
+
+        void setHasMoveConstructor(bool _public = true){
+            m_functionAttributes.setFlag(_public ? HasPublicMoveConstructor : HasProtectedMoveConstructor);
+        }
+
+        bool hasMoveAssignment(bool _public = true) const {
+            return m_functionAttributes.testFlag(_public ? HasPublicMoveAssignment : HasProtectedMoveAssignment);
+        }
+
+        void setHasMoveAssignment(bool _public = true){
+            m_functionAttributes.setFlag(_public ? HasPublicMoveAssignment : HasProtectedMoveAssignment);
+        }
+
+        bool hasDefaultAssignment(bool _public = true) const {
+            return m_functionAttributes.testFlag(_public ? HasPublicDefaultAssignment : HasProtectedDefaultAssignment);
+        }
+
+        void setHasDefaultAssignment(bool _public = true){
+            m_functionAttributes.setFlag(_public ? HasPublicDefaultAssignment : HasProtectedDefaultAssignment);
+        }
+
+        void setDestructorPrivate(){
+            m_functionAttributes.setFlag(HasPrivateDestructor, true);
+        }
+
+        bool isDestructorPrivate() const {
+            return m_functionAttributes.testFlag(HasPrivateDestructor);
+        }
+
+        void setDestructorProtected(){
+            m_functionAttributes.setFlag(HasProtectedDestructor, true);
+        }
+
+        bool isDestructorProtected() const {
+            return m_functionAttributes.testFlag(HasProtectedDestructor);
+        }
+
+        void setDestructorVirtual(){
+            m_functionAttributes.setFlag(HasVirtualDestructor, true);
+        }
+
+        bool isDestructorVirtual() const {
+            return m_functionAttributes.testFlag(HasVirtualDestructor);
+        }
+
+        void setHasEquals(){
+            m_functionAttributes.setFlag(HasEquals, true);
+        }
+
+        bool hasEquals() const {
+            return m_functionAttributes.testFlag(HasEquals);
+        }
+
+        void setHasHash(){
+            m_functionAttributes.setFlag(HasHash, true);
+        }
+
+        bool hasHash() const {
+            return m_functionAttributes.testFlag(HasHash);
+        }
+
+        void setHasVirtualFunctions(){
+            m_functionAttributes.setFlag(HasVirtuals, true);
+        }
+
+        bool hasVirtualFunctions() const {
+            return m_functionAttributes.testFlag(HasVirtuals);
+        }
+
+        void setHasFinalFunctions(){
+            m_functionAttributes.setFlag(HasFinals, true);
+        }
+
+        bool hasFinalFunctions() const {
+            return m_functionAttributes.testFlag(HasFinals);
+        }
+
+        bool hasPureVirtualFunctions(bool nonPrivate = true) const {
+            return m_functionAttributes.testFlag(nonPrivate ? HasPureVirtuals : HasPrivatePureVirtuals);
+        }
+
+        void setHasPureVirtualFunctions(bool nonPrivate = true){
+            m_functionAttributes.setFlag(nonPrivate ? HasPureVirtuals : HasPrivatePureVirtuals);
+        }
 protected:
         enum ComplexAttributeFlag{
             IsQObject = 0x01,
@@ -1442,17 +1567,45 @@ protected:
             IsQWindow = 0x04,
             IsQAction = 0x08,
             IsQCoreApplication = 0x010,
-            IsPolymorphicBase = 0x020,
-            IsGenericClass = 0x040,
-            IsTemplate = 0x080,
-            IsNativeInterface = 0x0100,
-            InhibitMetaobject = 0x0200,
-            IsNativeIdBased = 0x0400,
-            IsNoImpl = 0x0800,
-            IsValueOwner = 0x01000,
-            SkipMetaTypeRegistration = 0x2000
+            IsGLsync = 0x020,
+            IsPolymorphicBase = 0x0200,
+            IsGenericClass = 0x0400,
+            IsTemplate = 0x0800,
+            IsNativeInterface = 0x01000,
+            InhibitMetaobject = 0x02000,
+            IsNativeIdBased = 0x04000,
+            IsNoImpl = 0x08000,
+            IsValueOwner = 0x010000,
+            SkipMetaTypeRegistration = 0x20000,
+            ForceMetaTypeRegistration = 0x40000
         };
         QFlags<ComplexAttributeFlag> m_attributes;
+
+        enum FunctionAttributeFlag{
+            HasPublicDefaultConstructor = 0x1,
+            HasPublicCopyConstructor = 0x2,
+            HasPublicMoveConstructor = 0x4,
+            HasProtectedDefaultConstructor = 0x8,
+            HasProtectedCopyConstructor = 0x10,
+            HasProtectedMoveConstructor = 0x20,
+            HasPublicDefaultAssignment = 0x40,
+            HasPublicMoveAssignment = 0x80,
+            HasProtectedDefaultAssignment = 0x100,
+            HasProtectedMoveAssignment = 0x200,
+            HasPrivateDestructor = 0x400,
+            HasProtectedDestructor = 0x800,
+            HasVirtualDestructor = 0x1000,
+            HasAnyNonPrivateConstructor = 0x2000,
+            HasAnyPrivateConstructor = 0x4000,
+            HasEquals = 0x8000,
+            HasHash = 0x10000,
+            HasVirtuals = 0x20000,
+            HasPureVirtuals = 0x40000,
+            HasFinals = 0x80000,
+            HasPrivatePureVirtuals = 0x100000
+        };
+        QFlags<FunctionAttributeFlag> m_functionAttributes;
+
 private:
         IncludeList m_extra_includes;
         Include m_include;
@@ -1563,6 +1716,9 @@ public:
         return m_interface==nullptr ? ComplexTypeEntry::isNativeIdBased() : m_interface->isNativeIdBased();
     }
 
+    bool isValueOwner() const;
+    void setIsValueOwner(bool is_value_owner);
+
 private:
     InterfaceTypeEntry *m_interface;
 };
@@ -1593,8 +1749,6 @@ class ObjectTypeEntry : public ImplementorTypeEntry {
         ObjectTypeEntry(const QString &name)
                 : ImplementorTypeEntry(name, ObjectType) {
         }
-        bool isValueOwner() const;
-        void setIsValueOwner(bool is_value_owner);
 };
 
 class ValueTypeEntry : public ImplementorTypeEntry {
@@ -1604,15 +1758,6 @@ class ValueTypeEntry : public ImplementorTypeEntry {
         bool isValue() const override {
             return true;
         }
-
-        bool skipMetaTypeRegistration() const {
-            return m_attributes.testFlag(SkipMetaTypeRegistration);
-        }
-
-        void setSkipMetaTypeRegistration(bool skipMetaTypeRegistration){
-            m_attributes.setFlag(SkipMetaTypeRegistration, skipMetaTypeRegistration);
-        }
-
     protected:
         ValueTypeEntry(const QString &name, Type t) : ImplementorTypeEntry(name, t) { }
 };
@@ -1621,12 +1766,12 @@ class StringTypeEntry : public ValueTypeEntry {
     public:
         StringTypeEntry(const QString &name)
                 : ValueTypeEntry(name,
-                                 name=="QString" ? StringType :
-                                (name=="QLatin1String" ? Latin1StringType :
-                                (name=="QLatin1StringView" ? Latin1StringViewType :
-                                (name=="QStringView" ? StringViewType :
-                                (name=="QAnyStringView" ? AnyStringViewType :
-                                (name=="QUtf8StringView" ? Utf8StringViewType : StringRefType)))))) {
+                                 name=="QString" ? QStringType :
+                                (name=="QLatin1String" ? QLatin1StringType :
+                                (name=="QLatin1StringView" ? QLatin1StringViewType :
+                                (name=="QStringView" ? QStringViewType :
+                                (name=="QAnyStringView" ? QAnyStringViewType :
+                                (name=="QUtf8StringView" ? QUtf8StringViewType : QStringRefType)))))) {
             setCodeGeneration(GenerateNothing);
         }
 
@@ -1647,7 +1792,7 @@ class StringTypeEntry : public ValueTypeEntry {
 
 class CharTypeEntry : public ValueTypeEntry {
     public:
-        CharTypeEntry(const QString &name) : ValueTypeEntry(name, CharType) {
+        CharTypeEntry(const QString &name) : ValueTypeEntry(name, QCharType) {
             setCodeGeneration(GenerateNothing);
         }
 
@@ -1694,7 +1839,7 @@ private:
 
 class VariantTypeEntry: public ValueTypeEntry {
     public:
-        VariantTypeEntry(const QString &name) : ValueTypeEntry(name, VariantType) { }
+        VariantTypeEntry(const QString &name) : ValueTypeEntry(name, QVariantType) { }
 
         QString jniName() const override {
             return strings_jobject;
@@ -1892,17 +2037,16 @@ class InstantiatedTemplateArgumentEntry : public ComplexTypeEntry {
         QString m_javaInstantiationBaseType;
 };
 
-
-class QModelIndexTypeEntry : public ComplexTypeEntry {
+class GLsyncTypeEntry : public ObjectTypeEntry {
     public:
-        QModelIndexTypeEntry() : ComplexTypeEntry("QModelIndex", QModelIndexType) {
+        GLsyncTypeEntry() : ObjectTypeEntry("__GLsync") {
             setCodeGeneration(GenerateNothing);
-            disableNativeIdUsage();
+            setTargetLangName("GLsync");
+            setTargetTypeSystem("io.qt.gui");
+            setTargetLangPackage("io.qt.gui.gl");
+            setCodeGeneration(TypeEntry::GenerateNothing);
+            m_attributes.setFlag(ComplexTypeEntry::IsGLsync);
         }
-
-        QString javaPackage() const override { return "io.qt.core"; }
-
-        bool isValue() const override { return true; }
 };
 
 class QMetaObjectTypeEntry : public ComplexTypeEntry {

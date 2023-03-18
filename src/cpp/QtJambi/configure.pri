@@ -148,6 +148,10 @@ linux-g++* : lessThan(QT_MAJOR_VERSION, 6):{
     QMAKE_CXXFLAGS += -fno-sized-deallocation
 }
 
+win32-msvc* {
+    CONFIG += embed_manifest_dll force_embed_manifest
+}
+
 GENERATOR_PRI = $$clean_path($$PWD/../../../$$VERSION/build/generator/cpp/$$QTJAMBI_PROJECT/generated.pri)
 exists($$GENERATOR_PRI): include($$GENERATOR_PRI)
 
@@ -166,6 +170,7 @@ exists($$GENERATOR_PRI): include($$GENERATOR_PRI)
                     QTJAMBI_LIB_NAME = QtJambi_debug
             }else{
                     QTJAMBI_LIB_NAME = QtJambi
+                    CONFIG += optimize_full
             }
     }
 
@@ -208,11 +213,6 @@ exists($$GENERATOR_PRI): include($$GENERATOR_PRI)
         }else{
             LIBS += -l$$QTJAMBI_LIB_NAME
         }
-    }
-
-    # These option changes are recommended since at least: win32-msvc2005
-    win32-msvc* {
-        CONFIG += embed_manifest_dll force_embed_manifest
     }
 }
 

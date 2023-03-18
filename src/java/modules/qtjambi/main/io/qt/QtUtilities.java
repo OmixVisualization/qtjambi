@@ -317,4 +317,20 @@ public final class QtUtilities {
     public static QVersionNumber qtjambiVersion() {
     	return new QVersionNumber(Utility.majorVersion(), Utility.minorVersion(), Utility.qtjambiPatchVersion());
     }
+    
+    /**
+     * Checks if the current thread is UI thread and throws QThreadAffinityException otherwise.
+     * @throws QThreadAffinityException
+     */
+    public static native void uiThreadCheck() throws QThreadAffinityException;
+    
+    /**
+     * Checks if the current thread is the given object's thread and throws QThreadAffinityException otherwise.
+     * @throws QThreadAffinityException
+     */
+    public static void threadCheck(io.qt.core.QObject object) throws QThreadAffinityException{
+    	threadCheck(QtJambi_LibraryUtilities.internal.checkedNativeId(object));
+    }
+    
+    private static native void threadCheck(long objectId) throws QThreadAffinityException;
 }

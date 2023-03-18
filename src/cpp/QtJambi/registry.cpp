@@ -230,6 +230,115 @@ private:
 };
 #endif
 
+ParameterInfo::ParameterInfo()
+    : metaTypeId(0),
+      javaClass(nullptr),
+      qtToJavaConverterFunction(nullptr),
+      javaToQtConverterFunction(nullptr){}
+ParameterInfo::ParameterInfo(const ParameterInfo& other)
+    : metaTypeId(other.metaTypeId),
+      javaClass(other.javaClass),
+      qtToJavaConverterFunction(other.qtToJavaConverterFunction),
+      javaToQtConverterFunction(other.javaToQtConverterFunction){}
+ParameterInfo::ParameterInfo(int _metaTypeId):metaTypeId(_metaTypeId){}
+ParameterInfo::ParameterInfo(int _metaTypeId, const char* _javaClass, QtToJavaConverterFunction _qtToJavaConverterFunction, JavaToQtConverterFunction _javaToQtConverterFunction)
+    : metaTypeId(_metaTypeId),
+      javaClass(_javaClass),
+      qtToJavaConverterFunction(_qtToJavaConverterFunction),
+      javaToQtConverterFunction(_javaToQtConverterFunction){}
+ParameterInfo& ParameterInfo::operator=(const ParameterInfo& other){
+    metaTypeId = other.metaTypeId;
+    javaClass = other.javaClass;
+    qtToJavaConverterFunction = other.qtToJavaConverterFunction;
+    javaToQtConverterFunction = other.javaToQtConverterFunction;
+    return *this;
+}
+ParameterInfo::ParameterInfo(ParameterInfo&& other)
+    : metaTypeId(other.metaTypeId),
+      javaClass(other.javaClass),
+      qtToJavaConverterFunction(other.qtToJavaConverterFunction),
+      javaToQtConverterFunction(other.javaToQtConverterFunction){}
+ParameterInfo& ParameterInfo::operator=(ParameterInfo&& other){
+    metaTypeId = other.metaTypeId;
+    javaClass = other.javaClass;
+    qtToJavaConverterFunction = other.qtToJavaConverterFunction;
+    javaToQtConverterFunction = other.javaToQtConverterFunction;
+    return *this;
+}
+
+ConstructorInfo::ConstructorInfo(): constructorFunction(nullptr),signature(nullptr){}
+ConstructorInfo::ConstructorInfo(const ConstructorInfo& copy): constructorFunction(copy.constructorFunction),signature(copy.signature){}
+ConstructorInfo::ConstructorInfo(ConstructorInfo&& copy): constructorFunction(copy.constructorFunction),signature(copy.signature){}
+ConstructorInfo::ConstructorInfo(Constructor _constructorFunction, const char *_signature): constructorFunction(_constructorFunction),signature(_signature){}
+ConstructorInfo& ConstructorInfo::operator=(const ConstructorInfo& copy){
+    constructorFunction = copy.constructorFunction;
+    signature = copy.signature;
+    return *this;
+}
+ConstructorInfo& ConstructorInfo::operator=(ConstructorInfo&& copy){
+    constructorFunction = copy.constructorFunction;
+    signature = copy.signature;
+    return *this;
+}
+
+FunctionInfo::FunctionInfo(): name(nullptr),signature(nullptr),flags(None){}
+FunctionInfo::FunctionInfo(const FunctionInfo& copy): name(copy.name),signature(copy.signature),flags(copy.flags){}
+FunctionInfo::FunctionInfo(FunctionInfo&& copy): name(copy.name),signature(copy.signature),flags(copy.flags){}
+FunctionInfo::FunctionInfo(const char *_name, const char *_signature, Flags _flags): name(_name),signature(_signature),flags(_flags){}
+FunctionInfo& FunctionInfo::operator=(const FunctionInfo& copy){
+    name = copy.name;
+    signature = copy.signature;
+    flags = copy.flags;
+    return *this;
+}
+FunctionInfo& FunctionInfo::operator=(FunctionInfo&& copy){
+    name = copy.name;
+    signature = copy.signature;
+    flags = copy.flags;
+    return *this;
+}
+
+SignalMetaInfo::SignalMetaInfo():
+    signal_name(nullptr),
+    signal_signature(nullptr),
+    signal_argumentcount(0),
+    signal_method_index_provider(nullptr){}
+SignalMetaInfo::SignalMetaInfo(const SignalMetaInfo& copy):
+    signal_name(copy.signal_name),
+    signal_signature(copy.signal_signature),
+    signal_argumentcount(copy.signal_argumentcount),
+    signal_method_index_provider(copy.signal_method_index_provider)
+{}
+SignalMetaInfo::SignalMetaInfo(SignalMetaInfo&& copy):
+    signal_name(copy.signal_name),
+    signal_signature(copy.signal_signature),
+    signal_argumentcount(copy.signal_argumentcount),
+    signal_method_index_provider(copy.signal_method_index_provider)
+{}
+SignalMetaInfo::SignalMetaInfo(const char * _signal_name,
+                        const char * _signal_signature,
+                        const int _signal_argumentcount,
+                        SignalMethodIndexProvider _signal_method_index_provider):
+    signal_name(_signal_name),
+    signal_signature(_signal_signature),
+    signal_argumentcount(_signal_argumentcount),
+    signal_method_index_provider(_signal_method_index_provider)
+{}
+SignalMetaInfo& SignalMetaInfo::operator=(const SignalMetaInfo& copy){
+    signal_name = copy.signal_name;
+    signal_signature = copy.signal_signature;
+    signal_argumentcount = copy.signal_argumentcount;
+    signal_method_index_provider = copy.signal_method_index_provider;
+    return *this;
+}
+SignalMetaInfo& SignalMetaInfo::operator=(SignalMetaInfo&& copy){
+    signal_name = copy.signal_name;
+    signal_signature = copy.signal_signature;
+    signal_argumentcount = copy.signal_argumentcount;
+    signal_method_index_provider = copy.signal_method_index_provider;
+    return *this;
+}
+
 hash_type qHash(const char *p, hash_type seed) Q_DECL_NOEXCEPT
 {
     hash_type h = seed;
@@ -782,10 +891,13 @@ void registerMetaTypeID(const std::type_info& typeId, const std::type_info& nonP
                     new (target)JObjectWrapper();
                     return true;
                 }else if(JniEnvironment env{200}){
-                    jobject output(nullptr);
-                    bool result = QtJambiAPI::convertNativeToJava(env, *_nonPointerTypeId, nullptr, src, true, false, output);
-                    new (target)JObjectWrapper(env, output);
-                    return result;
+                    try{
+                        jobject output = QtJambiAPI::convertNativeToJavaObjectAsCopy(env, src, *_nonPointerTypeId);
+                        new (target)JObjectWrapper(env, output);
+                        return true;
+                    }catch(const JavaException& exn){
+                        exn.report(env);
+                    }
                 }
                 return false;
             }, metaType, jObjectWrapperMetaType);
@@ -1671,12 +1783,13 @@ Destructor registeredDestructor(const std::type_info& typeId){
     return gDestructorHash->value(unique_id(typeId), nullptr);
 }
 
-hash_type qHash(const QMetaObject* mo){
-    hash_type hashCode = qHash(qintptr(mo));
+hash_type qHash(const QMetaObject* mo, hash_type seed = 0){
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, qintptr(mo));
     if(mo){
-        hashCode = hashCode * 31 + qHash(mo->className());
+        seed = hash(seed, mo->className());
     }
-    return hashCode;
+    return seed;
 }
 
 void RegistryAPI::registerCustomMetaObject(const std::type_info& typeId, const QMetaObject& superTypeMetaObject)
@@ -2826,7 +2939,7 @@ bool JObjectValueWrapper::isNull()const{return !p;}
 void JObjectValueWrapper::writeTo(QDataStream &d)const{
     if(JniEnvironment env{200}){
         try{
-            jobject _d = QtJambiAPI::convertNativeToJavaObject(env, &d, false);
+            jobject _d = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, &d);
             QTJAMBI_INVALIDATE_AFTER_USE(env, _d);
             env->CallVoidMethod(object(), p->writeTo, _d);
         }catch(const JavaException& exn){
@@ -2837,7 +2950,7 @@ void JObjectValueWrapper::writeTo(QDataStream &d)const{
 void JObjectValueWrapper::readFrom(QDataStream &d){
     if(JniEnvironment env{200}){
         try{
-            jobject _d = QtJambiAPI::convertNativeToJavaObject(env, &d, false);
+            jobject _d = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, &d);
             QTJAMBI_INVALIDATE_AFTER_USE(env, _d);
             env->CallVoidMethod(object(), p->readFrom, _d);
         }catch(const JavaException& exn){
@@ -2849,7 +2962,7 @@ void JObjectValueWrapper::readFrom(QDataStream &d){
 void JObjectValueWrapper::serializeTo(QDataStream &d)const{
     if(JniEnvironment env{200}){
         try{
-            jobject _d = QtJambiAPI::convertNativeToJavaObject(env, &d, false);
+            jobject _d = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, &d);
             QTJAMBI_INVALIDATE_AFTER_USE(env, _d);
             Java::QtJambi::MetaTypeUtility::writeSerializableJavaObject(env, _d, object());
         }catch(const JavaException& exn){
@@ -2860,7 +2973,7 @@ void JObjectValueWrapper::serializeTo(QDataStream &d)const{
 void JObjectValueWrapper::serializeFrom(QDataStream &d){
     if(JniEnvironment env{200}){
         try{
-            jobject _d = QtJambiAPI::convertNativeToJavaObject(env, &d, false);
+            jobject _d = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, &d);
             QTJAMBI_INVALIDATE_AFTER_USE(env, _d);
             jobject newValue = Java::QtJambi::MetaTypeUtility::readSerializableJavaObject(env, _d);
             *this = JObjectValueWrapper(env, newValue, p);

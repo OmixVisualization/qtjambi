@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.sql"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtSql"
     module: "qtjambi.sql"
     description: "Classes for database integration using SQL."
@@ -131,10 +131,6 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "operator=(QSqlDatabase)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
             signature: "registerSqlDriver(QString, QSqlDriverCreatorBase *)"
             ModifyArgument{
                 index: 2
@@ -190,12 +186,6 @@ TypeSystem{
                 }
             }
         }
-        ModifyField{
-            name: "defaultConnection"
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
-        }
     }
     
     ValueType{
@@ -218,10 +208,6 @@ TypeSystem{
                 location: Include.Global
             }
         }
-        ModifyFunction{
-            signature: "operator=(QSqlQuery)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
@@ -236,26 +222,14 @@ TypeSystem{
             signature: "append(QSqlField)"
             access: Modification.NonFinal
         }
-        ModifyFunction{
-            signature: "operator=(QSqlRecord)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QSqlError"
-        ModifyFunction{
-            signature: "operator=(QSqlError)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QSqlIndex"
-        ModifyFunction{
-            signature: "operator=(QSqlIndex)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
@@ -264,10 +238,6 @@ TypeSystem{
     
     ValueType{
         name: "QSqlField"
-        ModifyFunction{
-            signature: "operator=(QSqlField)"
-            remove: RemoveFlag.All
-        }
         ModifyFunction{
             signature: "QSqlField(QString,QVariant::Type)"
             ModifyArgument{
@@ -329,6 +299,18 @@ TypeSystem{
         ModifyFunction{
             signature: "record()const"
             access: Modification.NonFinal
+        }
+        ModifyFunction{
+            signature: "query(Qt::Disambiguated_t)const"
+            ModifyArgument{
+                index: 1
+                RemoveArgument{}
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "constexpr Qt::Disambiguated_t %out = Qt::Disambiguated;"}
+                }
+            }
+            since: [6,5]
         }
         ModifyFunction{
             signature: "record(int)const"
@@ -401,6 +383,17 @@ TypeSystem{
             Remove{
             }
         }
+
+        ModifyFunction{
+            signature: "boundValues()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Dependent
+                }
+            }
+        }
     }
     
     ObjectType{
@@ -429,19 +422,6 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
-                NoNullPointer{
-                }
-                ReplaceType{
-                    modifiedType: "io.qt.sql.QSqlRecord"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, &%in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSqlRecord &%out = qtjambi_cast<QSqlRecord &>(%env, %in);"}
-                }
             }
         }
         ModifyFunction{
@@ -449,19 +429,6 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 invalidateAfterUse: true
-                NoNullPointer{
-                }
-                ReplaceType{
-                    modifiedType: "io.qt.sql.QSqlRecord"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, &%in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSqlRecord &%out = qtjambi_cast<QSqlRecord &>(%env, %in);"}
-                }
             }
         }
         ModifyFunction{
@@ -469,19 +436,6 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 invalidateAfterUse: true
-                NoNullPointer{
-                }
-                ReplaceType{
-                    modifiedType: "io.qt.sql.QSqlRecord"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, &%in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSqlRecord &%out = qtjambi_cast<QSqlRecord &>(%env, %in);"}
-                }
             }
         }
     }
@@ -516,7 +470,6 @@ TypeSystem{
     
     EnumType{
         name: "QSql::ParamTypeFlag"
-        flags: "QSql::ParamType"
     }
     
     EnumType{

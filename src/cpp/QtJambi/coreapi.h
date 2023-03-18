@@ -205,8 +205,6 @@ QTJAMBI_EXPORT void unregisterDependentInterface(JNIEnv *env, jobject dependentO
 
 QTJAMBI_EXPORT void unregisterDependentObject(JNIEnv *env, jobject dependentObject, jobject owner);
 
-QTJAMBI_EXPORT void registerDependency(JNIEnv *env, jobject dependentObject, QtJambiNativeID _this_nativeId);
-
 QTJAMBI_EXPORT void initializeQList(JNIEnv *env, jobject object, jclass elementType, QtJambiNativeID elementMetaType, jobject other);
 
 QTJAMBI_EXPORT void initializeQSet(JNIEnv *env, jobject object, jclass elementType, QtJambiNativeID elementMetaType, jobject other);

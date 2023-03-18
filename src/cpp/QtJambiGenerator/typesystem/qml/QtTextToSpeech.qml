@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.texttospeech"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtTextToSpeech"
     module: "qtjambi.texttospeech"
     description: "Provides support for accessibility features such as text-to-speech."
@@ -161,9 +161,5 @@ TypeSystem{
     
     ValueType{
         name: "QVoice"
-        ModifyFunction{
-            signature: "operator=(const QVoice &)"
-            remove: RemoveFlag.All
-        }
     }
 }

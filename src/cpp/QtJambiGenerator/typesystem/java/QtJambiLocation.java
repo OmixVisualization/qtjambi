@@ -35,21 +35,21 @@ class QGeoServiceProviderFactory___ {
         private final QGeoServiceProvider.Error error;
         private final String errorString;
         
-        public Result(T engine) {
+        public Result(@StrictNonNull T engine) {
             super();
             this.engine = java.util.Objects.requireNonNull(engine);
             this.error = QGeoServiceProvider.Error.NoError;
             this.errorString = null;
         }
         
-        public Result(QGeoServiceProvider.Error error, String errorString) {
+        public Result(QGeoServiceProvider.@StrictNonNull Error error, @NonNull String errorString) {
             super();
             this.engine = null;
             this.error = java.util.Objects.requireNonNull(error);
             this.errorString = java.util.Objects.requireNonNull(errorString);
         }
 
-        @io.qt.NativeAccess
+        @NativeAccess
         private Result(T engine, QGeoServiceProvider.Error error, String errorString) {
             super();
             this.engine = engine;
@@ -59,13 +59,13 @@ class QGeoServiceProviderFactory___ {
             this.errorString = errorString;
         }
         
-        public T engine() {
+        public @Nullable T engine() {
             return engine;
         }
-        public QGeoServiceProvider.Error error() {
+        public QGeoServiceProvider.@Nullable Error error() {
             return error;
         }
-        public String errorString() {
+        public @Nullable String errorString() {
             return errorString;
         }
     }

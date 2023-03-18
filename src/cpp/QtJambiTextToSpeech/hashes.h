@@ -40,12 +40,13 @@ inline bool operator==(const QVoice& lhs, const QVoice& rhs)
 }
 #endif
 
-inline hash_type qHash(const QVoice &value)
+inline hash_type qHash(const QVoice &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.name());
-    hashCode = hashCode * 31 + qHash(value.age());
-    hashCode = hashCode * 31 + qHash(value.gender());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.name());
+    seed = hash(seed, value.age());
+    seed = hash(seed, value.gender());
+    return seed;
 }
 
 #endif // QTJAMBITEXTTOSPEECH_HASHES_H

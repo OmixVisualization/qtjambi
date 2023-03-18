@@ -289,6 +289,44 @@ private:
     Q_PROPERTY(QString condition READ getCondition WRITE setCondition NOTIFY conditionChanged)
 };
 
+class Delegate : public AbstractObject
+{
+    Q_OBJECT
+    QML_ELEMENT
+public:
+    explicit Delegate(QObject *parent = nullptr):AbstractObject{parent}{}
+    QString name() const;
+    void setName(const QString &newName);
+
+    bool isDeprecated() const;
+    void setDeprecated(bool newIsDeprecated);
+
+    AccessModifications access() const;
+    void setAccess(const AccessModifications &newAccess);
+
+    bool isSelfReturning() const;
+    void setIsSelfReturning(bool newIsSelfReturning);
+
+signals:
+    void nameChanged();
+
+    void isDeprecatedChanged();
+
+    void accessChanged();
+
+    void isSelfReturningChanged();
+
+private:
+    QString m_name;
+    AccessModifications m_access;
+    bool m_isDeprecated = false;
+    bool m_isSelfReturning = false;
+    Q_PROPERTY(QString name READ name WRITE setName NOTIFY nameChanged)
+    Q_PROPERTY(bool deprecated READ isDeprecated WRITE setDeprecated NOTIFY isDeprecatedChanged)
+    Q_PROPERTY(AccessModifications access READ access WRITE setAccess NOTIFY accessChanged)
+    Q_PROPERTY(bool selfReturning READ isSelfReturning WRITE setIsSelfReturning NOTIFY isSelfReturningChanged)
+};
+
 class RemoveArgument : public AbstractObject
 {
     Q_OBJECT
@@ -655,6 +693,9 @@ public:
     bool getIsPaintMethod() const;
     void setIsPaintMethod(bool newIsPaintMethod);
 
+    bool noKotlinGetter() const;
+    void setNoKotlinGetter(bool newNoKotlinGetter);
+
 signals:
     void signatureChanged();
 
@@ -692,6 +733,8 @@ signals:
 
     void isPaintMethodChanged();
 
+    void noKotlinGetterChanged();
+
 private:
     QString signature;
     AccessModifications access;
@@ -711,6 +754,7 @@ private:
     QString proxyCall;
     QString targetType;
     bool isPaintMethod = false;
+    bool m_noKotlinGetter = false;
     Q_PROPERTY(QString signature READ getSignature WRITE setSignature NOTIFY signatureChanged)
     Q_PROPERTY(AccessModifications access READ getAccess WRITE setAccess NOTIFY accessChanged)
     Q_PROPERTY(bool noExcept READ getNoExcept WRITE setNoExcept NOTIFY noExceptChanged)
@@ -729,6 +773,7 @@ private:
     Q_PROPERTY(QString proxyCall READ getProxyCall WRITE setProxyCall NOTIFY proxyCallChanged)
     Q_PROPERTY(QString targetType READ getTargetType WRITE setTargetType NOTIFY targetTypeChanged)
     Q_PROPERTY(bool isPaintMethod READ getIsPaintMethod WRITE setIsPaintMethod NOTIFY isPaintMethodChanged)
+    Q_PROPERTY(bool noKotlinGetter READ noKotlinGetter WRITE setNoKotlinGetter NOTIFY noKotlinGetterChanged)
 };
 
 class GlobalFunction : public ModifyFunction
@@ -761,6 +806,9 @@ public:
     const QString &getRename() const;
     void setRename(const QString &newRename);
 
+    bool noKotlinGetter() const;
+    void setNoKotlinGetter(bool newNoKotlinGetter);
+
 signals:
     void nameChanged();
 
@@ -772,17 +820,21 @@ signals:
 
     void renameChanged();
 
+    void noKotlinGetterChanged();
+
 private:
     QString name;
     bool read = true;
     bool write = true;
     AccessModifications access;
     QString rename;
+    bool m_noKotlinGetter = false;
     Q_PROPERTY(QString name READ getName WRITE setName NOTIFY nameChanged)
     Q_PROPERTY(bool read READ getRead WRITE setRead NOTIFY readChanged)
     Q_PROPERTY(bool write READ getWrite WRITE setWrite NOTIFY writeChanged)
     Q_PROPERTY(AccessModifications access READ getAccess WRITE setAccess NOTIFY accessChanged)
     Q_PROPERTY(QString rename READ getRename WRITE setRename NOTIFY renameChanged)
+    Q_PROPERTY(bool noKotlinGetter READ noKotlinGetter WRITE setNoKotlinGetter NOTIFY noKotlinGetterChanged)
 };
 
 class RejectEnumValue : public AbstractObject
@@ -989,6 +1041,7 @@ QML_DECLARE_TYPE(CustomConstructor)
 QML_DECLARE_TYPE(CustomDestructor)
 QML_DECLARE_TYPE(DefineOwnership)
 QML_DECLARE_TYPE(DelegateBaseClass)
+QML_DECLARE_TYPE(Delegate)
 QML_DECLARE_TYPE(GlobalFunction)
 QML_DECLARE_TYPE(Import)
 QML_DECLARE_TYPE(Instantiation)

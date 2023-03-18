@@ -178,6 +178,7 @@
                 importdirectories="generator/${psep}${basedir}/src/cpp/autotests"
                 outputDirectory="${outputDir}/tests"
                 generatorDirectory="${generator.builddir}/../bin"
+				nullness="${qtjambi.generate.nullness}"
                 qtlibdirectory="${generator.builddir}/../lib${psep}${tools.qt.libdir}"
                 qtbindirectory="${generator.builddir}/../bin${psep}${tools.qt.bindir}"
 				qtjambiVersion="${qtjambi.patchversion}"
@@ -606,12 +607,12 @@
 							<os family="windows"/>
 							<then>
 								<property name="qtPath"           location="${qtjambi.qt.bindir}" />
-								<property name="qtJambiPath"      location="${outputDir}/${qtjambi.osname}/qtjambi/bin" />
+								<property name="qtJambiPath"      location="${deploymentdir}/native/${qtjambi.osname}/${kind}/bin" />
 								<property name="testLibPath"      location="${outputDir}/${qtjambi.osname}/tests/bin" />
 							</then>
 							<else>
 								<property name="qtPath"           location="${qtjambi.qt.libdir}" />
-								<property name="qtJambiPath"      location="${outputDir}/${qtjambi.osname}/qtjambi/lib" />
+								<property name="qtJambiPath"      location="${deploymentdir}/native/${qtjambi.osname}/${kind}/lib" />
 								<property name="testLibPath"      location="${outputDir}/${qtjambi.osname}/tests/lib" />
 							</else>
 						</if>
@@ -675,21 +676,6 @@
 						<condition property="Ddeploymentdir" value="-Dio.qt.deploymentdir=${io.qt.deploymentdir}" else="-Dx">
 							<isset property="io.qt.deploymentdir"/>
 						</condition>
-						<if>
-							<not>
-								<os family="windows"/>
-							</not>
-							<then>
-								<symlink link="${outputDir}/${qtjambi.osname}/tests/${kind}/lib" resource="${deploymentdir}/native/${qtjambi.osname}/${kind}/lib"/>
-							</then>
-						</if>
-						<if>
-							<os family="mac"/>
-							<then>
-								<symlink link="${testLibPath}/libQtJambi${dbgsuffix}.${qt.version.major}.jnilib" resource="${qtJambiPath}/libQtJambi${dbgsuffix}.${qt.version.major}.jnilib"/>
-								<symlink link="${testLibPath}/QtJambi${dbgsuffix}.framework" resource="${qtJambiPath}/QtJambi${dbgsuffix}.framework"/>
-							</then>
-						</if>
 						<trycatch>
 							<try>
 								<mkdir dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}"/>
@@ -730,21 +716,6 @@
 								<modify-test-results dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}" version="${qtjambi.jar.version}" mode="${kind}" jdk="${jdk-exec-version}"/>
 							</try>
 							<finally>
-								<if>
-									<not>
-										<os family="windows"/>
-									</not>
-									<then>
-										<symlink action="delete" link="${outputDir}/${qtjambi.osname}/tests/${kind}/lib"/>
-									</then>
-								</if>
-								<if>
-									<os family="mac"/>
-									<then>
-										<symlink action="delete" link="${testLibPath}/libQtJambi${dbgsuffix}.${qt.version.major}.jnilib"/>
-										<symlink action="delete" link="${testLibPath}/QtJambi${dbgsuffix}.framework"/>
-									</then>
-								</if>
 							</finally>
 						</trycatch>
 					</then>
@@ -903,7 +874,7 @@
     </target>
     
     <target name="tests.report"
-            depends="log, setenv, init.taskdef" description="Generates all test reports">
+            depends="log, init.taskdef" description="Generates all test reports">
         <antcall target="tests.report.impl"/>
     </target>
     
@@ -1065,7 +1036,7 @@
         </trycatch>
     </target>
     
-    <target name="tests.debug.run.all-impl" depends="init.build, setenv">
+    <target name="tests.debug.run.all-impl" depends="init.build">
         <trycatch>
             <try>
                 <antcall target="debug.run"/>

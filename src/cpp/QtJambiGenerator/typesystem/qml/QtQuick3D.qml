@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.quick3d"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtQuick3D"
     module: "qtjambi.quick3d"
     description: "Provides a high-level API for creating 3D content or UIs based on Qt Quick."
@@ -61,10 +61,6 @@ TypeSystem{
     }
     
     Rejection{
-        className: "QSSGRenderGraphObject"
-    }
-    
-    Rejection{
         className: ""
         functionName: "qml_register_types_QtQuick3D"
     }
@@ -78,34 +74,28 @@ TypeSystem{
         }
     }
     
-    
-    ObjectType{
-        name: "QQuick3DObject::ItemChangeData"
-        generate: false
-    }
-    
-    EnumType{
-        name: "QQuick3DGeometry::PrimitiveType"
-    }
-    
-    EnumType{
-        name: "QQuick3DGeometry::Attribute::Semantic"
-        RejectEnumValue{
-            name: "TexCoord0Semantic"
-            since: 6
-        }
-    }
-    
-    EnumType{
-        name: "QQuick3DGeometry::Attribute::ComponentType"
-    }
-    
-    ValueType{
-        name: "QQuick3DGeometry::Attribute"
-    }
-    
     ObjectType{
         name: "QQuick3DGeometry"
+
+        EnumType{
+            name: "PrimitiveType"
+        }
+
+        ValueType{
+            name: "Attribute"
+
+            EnumType{
+                name: "Semantic"
+                RejectEnumValue{
+                    name: "TexCoord0Semantic"
+                    since: 6
+                }
+            }
+
+            EnumType{
+                name: "ComponentType"
+            }
+        }
     }
     
     ObjectType{
@@ -128,30 +118,32 @@ TypeSystem{
                 }
             }
         }
+
+        ValueType{
+            name: "InstanceTableEntry"
+        }
         since: [6, 1]
-    }
-    
-    ValueType{
-        name: "QQuick3DInstancing::InstanceTableEntry"
-        since: [6, 1]
-    }
-    
-    EnumType{
-        name: "QQuick3DTextureData::Format"
-        since: 6
     }
     
     ObjectType{
         name: "QQuick3DTextureData"
+        EnumType{
+            name: "Format"
+        }
         since: 6
     }
-    
-    EnumType{
-        name: "QQuick3DObject::ItemChange"
-    }
+
+    Rejection{className: "QSSGRenderGraphObject"}
     
     ObjectType{
         name: "QQuick3DObject"
+        EnumType{
+            name: "ItemChange"
+        }
+        ObjectType{
+            name: "ItemChangeData"
+            generate: false
+        }
         ExtraIncludes{
             Include{
                 fileName: "utils_p.h"
@@ -174,7 +166,7 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 ReplaceType{
-                    modifiedType: "java.lang.Object"
+                    modifiedType: "java.lang.@Nullable Object"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -269,4 +261,5 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping*, unmatched *type 'QSSGRenderGraphObject*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping*unmatched*type '*QQuick3DSceneManager*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'QQuick3D()' for function modification in 'QQuick3D' not found. Possible candidates:"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Unimplementable pure virtual function: QQuick3DObject::updateSpatialNode*"}
 }

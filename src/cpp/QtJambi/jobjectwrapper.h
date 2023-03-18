@@ -689,31 +689,31 @@ Q_DECLARE_METATYPE(JFloatArrayWrapper)
 typedef JArrayWrapper<jdouble> JDoubleArrayWrapper;
 Q_DECLARE_METATYPE(JDoubleArrayWrapper)
 
-QTJAMBI_EXPORT hash_type qHash(const JObjectWrapper &value);
+QTJAMBI_EXPORT hash_type qHash(const JObjectWrapper &value, hash_type seed = 0);
 
-inline hash_type qHash(const JObjectArrayWrapper &value){
-    return qHash(static_cast<const JObjectWrapper &>(value));
+inline hash_type qHash(const JObjectArrayWrapper &value, hash_type seed = 0){
+    return qHash(static_cast<const JObjectWrapper &>(value), seed);
 }
 
-inline hash_type qHash(const JIteratorWrapper &value){
-    return qHash(static_cast<const JObjectWrapper &>(value));
+inline hash_type qHash(const JIteratorWrapper &value, hash_type seed = 0){
+    return qHash(static_cast<const JObjectWrapper &>(value), seed);
 }
 
-inline hash_type qHash(const JMapWrapper &value){
-    return qHash(static_cast<const JObjectWrapper &>(value));
+inline hash_type qHash(const JMapWrapper &value, hash_type seed = 0){
+    return qHash(static_cast<const JObjectWrapper &>(value), seed);
 }
 
-inline hash_type qHash(const JCollectionWrapper &value){
-    return qHash(static_cast<const JObjectWrapper &>(value));
+inline hash_type qHash(const JCollectionWrapper &value, hash_type seed = 0){
+    return qHash(static_cast<const JObjectWrapper &>(value), seed);
 }
 
-inline hash_type qHash(const JEnumWrapper &value){
-    return qHash(static_cast<const JObjectWrapper &>(value));
+inline hash_type qHash(const JEnumWrapper &value, hash_type seed = 0){
+    return qHash(static_cast<const JObjectWrapper &>(value), seed);
 }
 
 template<typename JType>
-inline hash_type qHash(const JArrayWrapper<JType> &value){
-    return qHash(static_cast<const JObjectWrapper &>(value));
+inline hash_type qHash(const JArrayWrapper<JType> &value, hash_type seed = 0){
+    return qHash(static_cast<const JObjectWrapper &>(value), seed);
 }
 
 QTJAMBI_EXPORT QDataStream &operator<<(QDataStream &out, const JObjectWrapper &myObj);

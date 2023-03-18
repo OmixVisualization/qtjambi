@@ -37,10 +37,11 @@
 #endif
 #endif
 
-inline hash_type qHash(const QRemoteObjectSourceLocationInfo& info){
-    hash_type hashCode = qHash(info.typeName);
-    hashCode = hashCode * 31 + qHash(info.hostUrl);
-    return hashCode;
+inline hash_type qHash(const QRemoteObjectSourceLocationInfo& info, hash_type seed = 0){
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, info.typeName);
+    seed = hash(seed, info.hostUrl);
+    return seed;
 }
 
 #endif // QTJAMBIREMOTEOBJECTS_HASHES_H

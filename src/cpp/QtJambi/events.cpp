@@ -350,9 +350,15 @@ void UIInitialCheck::enabledUIThreadCheck(JNIEnv *env, const std::type_info& typ
     QThread* objectThread = QCoreApplicationPrivate::theMainThread.loadRelaxed();
     QThread* currentThread = QThread::currentThread();
     if(currentThread!=objectThread){
-        JavaException::raiseQThreadAffinityException(env, QStringLiteral("%1 used from outside main thread").arg(getQtName(typeId)) QTJAMBI_STACKTRACEINFO ,
-                                                     nullptr,
-                                                     objectThread, currentThread);
+        if(unique_id(typeId)==unique_id(typeid(void))){
+            JavaException::raiseQThreadAffinityException(env, QStringLiteral("%1 used from outside main thread").arg(getQtName(typeId)) QTJAMBI_STACKTRACEINFO ,
+                                                         nullptr,
+                                                         objectThread, currentThread);
+        }else{
+            JavaException::raiseQThreadAffinityException(env, "Thread affinity breach" QTJAMBI_STACKTRACEINFO ,
+                                                         nullptr,
+                                                         objectThread, currentThread);
+        }
     }
 }
 

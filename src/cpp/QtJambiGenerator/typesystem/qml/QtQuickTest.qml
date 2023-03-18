@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.quick.test"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtQuickTest"
     module: "qtjambi.quicktest"
     description: "A unit test framework for QML applications, where the test cases are written as JavaScript functions."
@@ -77,25 +77,13 @@ TypeSystem{
         ModifyArgument{
             index: 2
             ReplaceType{
-                modifiedType: "java.lang.String[]"
+                modifiedType: "java.lang.@Nullable String @Nullable[]"
             }
             ConversionRule{
                 codeClass: CodeClass.Native
                 Text{content: "std::unique_ptr<ApplicationData> applicationData(new ApplicationData(%env, jobjectArray(%in)));\n"+
                               "char** %out = applicationData->chars();\n"+
                               "int %1 = applicationData->size();"}
-            }
-        }
-        ModifyArgument{
-            index: 3
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
-        }
-        ModifyArgument{
-            index: 4
-            ReplaceType{
-                modifiedType: "java.lang.String"
             }
         }
     }
@@ -111,25 +99,13 @@ TypeSystem{
         ModifyArgument{
             index: 2
             ReplaceType{
-                modifiedType: "java.lang.String[]"
+                modifiedType: "java.lang.@Nullable String @Nullable[]"
             }
             ConversionRule{
                 codeClass: CodeClass.Native
                 Text{content: "std::unique_ptr<ApplicationData> applicationData(new ApplicationData(%env, jobjectArray(%in)));\n"+
                               "char** %out = applicationData->chars();\n"+
                               "int %1 = applicationData->size();"}
-            }
-        }
-        ModifyArgument{
-            index: 3
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
-        }
-        ModifyArgument{
-            index: 4
-            ReplaceType{
-                modifiedType: "java.lang.String"
             }
         }
     }

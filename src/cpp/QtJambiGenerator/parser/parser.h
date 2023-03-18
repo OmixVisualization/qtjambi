@@ -57,7 +57,7 @@ class Control;
 
 class Parser {
     public:
-        Parser(Control *control);
+        Parser(Control *control, QMap<QString,QStringList>& requiredFeatures);
         ~Parser();
 
         LocationManager &location() { return _M_location; }
@@ -220,6 +220,7 @@ class Parser {
         uint m_isInTemplate;
         bool m_isShift;
         bool m_isTemplateDecl;
+        bool m_isExpression;
 };
 
 #endif

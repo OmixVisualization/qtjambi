@@ -31,14 +31,14 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.quick.controls"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtQuickControls2"
     module: "qtjambi.quickcontrols"
     description: "Provides lightweight QML types for creating performant user interfaces for desktop, embedded, and mobile devices. These types employ a simple styling architecture and are very efficient."
 
     InjectCode{
         position: Position.Position3
-        Text{content: "io.qt.QtUtilities.loadQtLibrary(\"QuickTemplates2\");"}
+        Text{content: "QtUtilities.loadQtLibrary(\"QuickTemplates2\");"}
     }
     
     NamespaceType{

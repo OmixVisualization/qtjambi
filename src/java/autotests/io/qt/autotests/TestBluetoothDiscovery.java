@@ -30,8 +30,8 @@ package io.qt.autotests;
 
 import org.junit.BeforeClass;
 
-import io.qt.autotests.generated.UI_DeviceDiscovery;
-import io.qt.autotests.generated.UI_ServiceDiscovery;
+import io.qt.autotests.generated.Ui_DeviceDiscovery;
+import io.qt.autotests.generated.Ui_ServiceDiscovery;
 import io.qt.bluetooth.QBluetoothAddress;
 import io.qt.bluetooth.QBluetoothDeviceDiscoveryAgent;
 import io.qt.bluetooth.QBluetoothDeviceInfo;
@@ -78,7 +78,7 @@ class DeviceDiscoveryDialog extends QDialog
 	public DeviceDiscoveryDialog(QWidget parent) {
 		super(parent);
 	    this.localDevice = new QBluetoothLocalDevice();
-	    this.ui = new UI_DeviceDiscovery();
+	    this.ui = new Ui_DeviceDiscovery();
 	    
 	    ui.setupUi(this);
 
@@ -194,7 +194,7 @@ class DeviceDiscoveryDialog extends QDialog
     
     private final QBluetoothDeviceDiscoveryAgent discoveryAgent;
     private final QBluetoothLocalDevice localDevice;
-    private final UI_DeviceDiscovery ui;
+    private final Ui_DeviceDiscovery ui;
 };
 
 
@@ -205,7 +205,7 @@ class ServiceDiscoveryDialog extends QDialog
 	}
 	
 	public ServiceDiscoveryDialog(String name, QBluetoothAddress address, QWidget parent) {
-		this.ui = new UI_ServiceDiscovery();
+		this.ui = new Ui_ServiceDiscovery();
 	    ui.setupUi(this);
 
 	    //Using default Bluetooth adapter
@@ -245,5 +245,5 @@ class ServiceDiscoveryDialog extends QDialog
 	}
 
 	private final QBluetoothServiceDiscoveryAgent discoveryAgent;
-	private final UI_ServiceDiscovery ui;
+	private final Ui_ServiceDiscovery ui;
 };

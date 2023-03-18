@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.statemachine"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtStateMachine"
     module: "qtjambi.statemachine"
     description: "Provides classes and tools for creating state machines from SCXML files and embedding them in applications."
@@ -209,12 +209,6 @@ TypeSystem{
                 }
             }
             ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 3
                 NoNullPointer{
                 }
@@ -278,15 +272,6 @@ TypeSystem{
                     metaName: "%1"
                 }
                 Text{content: "QtJambi_LibraryUtilities.internal.addReferenceCount(%0, QAbstractTransition.class, \"__rcTargetStates\", false, false, %1);"}
-            }
-        }
-        ModifyFunction{
-            signature: "assignProperty(QObject *, const char *, const QVariant &)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
             }
         }
         InjectCode{
@@ -430,12 +415,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "QSignalTransition(const QObject *, const char *, QState *)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning

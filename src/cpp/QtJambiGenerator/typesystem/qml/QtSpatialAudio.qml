@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.spatialaudio"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtSpatialAudio"
     module: "qtjambi.spatialaudio"
     description: "Qt Spatial Audio is an add-on module that provides a rich set of QML types and C++ classes to implement sound fields in 3D space."

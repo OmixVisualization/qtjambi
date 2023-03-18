@@ -1663,6 +1663,8 @@ public class WriteInitialization extends TreeWalker {
 	        } // QTextStream
 
 	        String varNewName = varName;
+	        boolean needBracket = false;
+            QTextStream o = delayProperty ? m_delayedOut : autoTrOutput(p);
 
 	        switch (p.kind()) {
 	        case Bool: {
@@ -1798,15 +1800,27 @@ public class WriteInitialization extends TreeWalker {
 		        }
 	            break;
 	        case Font:
+	        	o.append(m_indent).append('{').endl().flush();
+	        	m_indent = m_indent+"    ";
+	        	needBracket = true;
 	            propertyValue = writeFontProperties(p.elementFont());
 	            break;
 	        case IconSet:
+	        	o.append(m_indent).append('{').endl().flush();
+	        	m_indent = m_indent+"    ";
+	        	needBracket = true;
 	            propertyValue = writeIconProperties(p.elementIconSet());
 	            break;
 	        case Pixmap:
+	        	o.append(m_indent).append('{').endl().flush();
+	        	m_indent = m_indent+"    ";
+	        	needBracket = true;
 	            propertyValue = pixCall(p);
 	            break;
 	        case Palette: {
+	        	o.append(m_indent).append('{').endl().flush();
+	        	m_indent = m_indent+"    ";
+	        	needBracket = true;
 	            DomPalette pal = p.elementPalette();
 	            String paletteName = m_driver.unique("palette");
 	            m_output.append(m_indent).append("QPalette ").append(paletteName).append(" = new QPalette();").endl();
@@ -1951,6 +1965,9 @@ public class WriteInitialization extends TreeWalker {
 	            break;
 	        }
 	        case Brush:
+	        	o.append(m_indent).append('{').endl().flush();
+	        	m_indent = m_indent+"    ";
+	        	needBracket = true;
 	            propertyValue = writeBrushInitialization(p.elementBrush());
 	            break;
 	        case Unknown:
@@ -1958,8 +1975,11 @@ public class WriteInitialization extends TreeWalker {
 	        }
 
 	        if (!propertyValue.isEmpty()) {
-	            QTextStream o = delayProperty ? m_delayedOut : autoTrOutput(p);
 	            o.append(m_indent).append(varNewName).append(setFunction.toString()).append(propertyValue).append(");").endl().flush();
+	            if(needBracket) {
+	            	m_indent = m_indent.substring(4);
+	            	o.append(m_indent).append('}').endl().flush();
+	            }
 	        }
 	    }
 	    if (leftMargin != -1 || topMargin != -1 || rightMargin != -1 || bottomMargin != -1) {

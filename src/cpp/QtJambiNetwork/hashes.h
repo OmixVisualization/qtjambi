@@ -34,211 +34,216 @@
 #include <QtCore/QDeadlineTimer>
 #include <QtJambi/Global>
 
-inline hash_type qHash(const QHstsPolicy& p){
-    hash_type hashCode = qHash(p.expiry());
-    hashCode = hashCode * 31 + qHash(p.includesSubDomains());
-    hashCode = hashCode * 31 + qHash(p.host());
-    return hashCode;
+inline hash_type qHash(const QHstsPolicy& p, hash_type seed = 0){
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, p.expiry());
+    seed = hash(seed, p.includesSubDomains());
+    seed = hash(seed, p.host());
+    return seed;
 }
 
-inline hash_type qHash(const QNetworkAddressEntry& p){
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(int(p.dnsEligibility()));
-    hashCode = hashCode * 31 + qHash(p.ip());
-    hashCode = hashCode * 31 + qHash(p.netmask());
-    hashCode = hashCode * 31 + qHash(p.prefixLength());
-    hashCode = hashCode * 31 + qHash(p.isLifetimeKnown());
-    hashCode = hashCode * 31 + qHash(p.preferredLifetime().deadline());
-    hashCode = hashCode * 31 + qHash(p.validityLifetime().deadline());
-    hashCode = hashCode * 31 + qHash(p.isPermanent());
-    return hashCode;
+inline hash_type qHash(const QNetworkAddressEntry& p, hash_type seed = 0){
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, int(p.dnsEligibility()));
+    seed = hash(seed, p.ip());
+    seed = hash(seed, p.netmask());
+    seed = hash(seed, p.prefixLength());
+    seed = hash(seed, p.isLifetimeKnown());
+    seed = hash(seed, p.preferredLifetime().deadline());
+    seed = hash(seed, p.validityLifetime().deadline());
+    seed = hash(seed, p.isPermanent());
+    return seed;
 }
 
-inline hash_type qHash(const QNetworkCacheMetaData& p){
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(p.isValid());
-    hashCode = hashCode * 31 + qHash(p.url());
-    hashCode = hashCode * 31 + qHash(p.lastModified());
-    hashCode = hashCode * 31 + qHash(p.expirationDate());
-    hashCode = hashCode * 31 + qHash(p.saveToDisk());
+inline hash_type qHash(const QNetworkCacheMetaData& p, hash_type seed = 0){
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, p.isValid());
+    seed = hash(seed, p.url());
+    seed = hash(seed, p.lastModified());
+    seed = hash(seed, p.expirationDate());
+    seed = hash(seed, p.saveToDisk());
     QNetworkCacheMetaData::RawHeaderList rawHeaders = p.rawHeaders();
-    hashCode = hashCode * 31 + qHash(rawHeaders.size());
+    seed = hash(seed, rawHeaders.size());
     for(const QNetworkCacheMetaData::RawHeader & i : rawHeaders){
-        hashCode = hashCode * 31 + qHash(i.first);
-        hashCode = hashCode * 31 + qHash(i.second);
+        seed = hash(seed, i.first);
+        seed = hash(seed, i.second);
     }
     QNetworkCacheMetaData::AttributesMap attributes = p.attributes();
-    hashCode = hashCode * 31 + qHash(attributes.size());
+    seed = hash(seed, attributes.size());
     for(QNetworkRequest::Attribute i : attributes.keys()){
-        hashCode = hashCode * 31 + qHash(int(i));
+        seed = hash(seed, int(i));
     }
-    return hashCode;
+    return seed;
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-inline hash_type qHash(const QNetworkConfiguration& p){
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(int(p.state()));
-    hashCode = hashCode * 31 + qHash(int(p.type()));
-    hashCode = hashCode * 31 + qHash(int(p.purpose()));
-    hashCode = hashCode * 31 + qHash(int(p.bearerType()));
-    hashCode = hashCode * 31 + qHash(int(p.bearerTypeFamily()));
-    hashCode = hashCode * 31 + qHash(p.bearerTypeName());
-    hashCode = hashCode * 31 + qHash(p.identifier());
-    hashCode = hashCode * 31 + qHash(p.isRoamingAvailable());
-    hashCode = hashCode * 31 + qHash(p.name());
-    hashCode = hashCode * 31 + qHash(p.isValid());
-    hashCode = hashCode * 31 + qHash(p.connectTimeout());
-    hashCode = hashCode * 31 + qHash(p.children().size());
-    return hashCode;
+inline hash_type qHash(const QNetworkConfiguration& p, hash_type seed = 0){
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, int(p.state()));
+    seed = hash(seed, int(p.type()));
+    seed = hash(seed, int(p.purpose()));
+    seed = hash(seed, int(p.bearerType()));
+    seed = hash(seed, int(p.bearerTypeFamily()));
+    seed = hash(seed, p.bearerTypeName());
+    seed = hash(seed, p.identifier());
+    seed = hash(seed, p.isRoamingAvailable());
+    seed = hash(seed, p.name());
+    seed = hash(seed, p.isValid());
+    seed = hash(seed, p.connectTimeout());
+    seed = hash(seed, p.children().size());
+    return seed;
 }
 #endif
 
-inline hash_type qHash(const QSslPreSharedKeyAuthenticator& value){
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(value.identityHint());
-    hashCode = hashCode * 31 + qHash(value.identity());
-    hashCode = hashCode * 31 + qHash(value.maximumIdentityLength());
-    hashCode = hashCode * 31 + qHash(value.preSharedKey());
-    hashCode = hashCode * 31 + qHash(value.maximumPreSharedKeyLength());
-    return hashCode;
+inline hash_type qHash(const QSslPreSharedKeyAuthenticator& value, hash_type seed = 0){
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.identityHint());
+    seed = hash(seed, value.identity());
+    seed = hash(seed, value.maximumIdentityLength());
+    seed = hash(seed, value.preSharedKey());
+    seed = hash(seed, value.maximumPreSharedKeyLength());
+    return seed;
 }
 
-inline hash_type qHash(const QNetworkCookie& p){
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(p.isSecure());
-    hashCode = hashCode * 31 + qHash(p.isHttpOnly());
-    hashCode = hashCode * 31 + qHash(p.isSessionCookie());
-    hashCode = hashCode * 31 + qHash(p.expirationDate());
-    hashCode = hashCode * 31 + qHash(p.domain());
-    hashCode = hashCode * 31 + qHash(p.path());
-    hashCode = hashCode * 31 + qHash(p.name());
-    hashCode = hashCode * 31 + qHash(p.value());
-    return hashCode;
+inline hash_type qHash(const QNetworkCookie& p, hash_type seed = 0){
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, p.isSecure());
+    seed = hash(seed, p.isHttpOnly());
+    seed = hash(seed, p.isSessionCookie());
+    seed = hash(seed, p.expirationDate());
+    seed = hash(seed, p.domain());
+    seed = hash(seed, p.path());
+    seed = hash(seed, p.name());
+    seed = hash(seed, p.value());
+    return seed;
 }
 
-inline hash_type qHash(const QNetworkProxy& p){
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(int(p.type()));
-    hashCode = hashCode * 31 + qHash(p.capabilities());
-    hashCode = hashCode * 31 + qHash(p.isCachingProxy());
-    hashCode = hashCode * 31 + qHash(p.isTransparentProxy());
-    hashCode = hashCode * 31 + qHash(p.user());
-    hashCode = hashCode * 31 + qHash(p.password());
-    hashCode = hashCode * 31 + qHash(p.hostName());
-    hashCode = hashCode * 31 + qHash(p.port());
+inline hash_type qHash(const QNetworkProxy& p, hash_type seed = 0){
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, int(p.type()));
+    seed = hash(seed, p.capabilities());
+    seed = hash(seed, p.isCachingProxy());
+    seed = hash(seed, p.isTransparentProxy());
+    seed = hash(seed, p.user());
+    seed = hash(seed, p.password());
+    seed = hash(seed, p.hostName());
+    seed = hash(seed, p.port());
     for(const QByteArray & i : p.rawHeaderList()){
-        hashCode = hashCode * 31 + qHash(i);
+        seed = hash(seed, i);
     }
-    return hashCode;
+    return seed;
 }
 
-inline hash_type qHash(const QNetworkProxyQuery& p){
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(int(p.queryType()));
-    hashCode = hashCode * 31 + qHash(p.peerPort());
-    hashCode = hashCode * 31 + qHash(p.peerHostName());
-    hashCode = hashCode * 31 + qHash(p.localPort());
-    hashCode = hashCode * 31 + qHash(p.protocolTag());
-    hashCode = hashCode * 31 + qHash(p.url());
-    return hashCode;
+inline hash_type qHash(const QNetworkProxyQuery& p, hash_type seed = 0){
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, int(p.queryType()));
+    seed = hash(seed, p.peerPort());
+    seed = hash(seed, p.peerHostName());
+    seed = hash(seed, p.localPort());
+    seed = hash(seed, p.protocolTag());
+    seed = hash(seed, p.url());
+    return seed;
 }
 
-inline hash_type qHash(const QNetworkRequest& p){
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(p.url());
-    hashCode = hashCode * 31 + qHash(quintptr(p.originatingObject()));
-    hashCode = hashCode * 31 + qHash(int(p.priority()));
-    hashCode = hashCode * 31 + qHash(p.maximumRedirectsAllowed());
-    return hashCode;
+inline hash_type qHash(const QNetworkRequest& p, hash_type seed = 0){
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, p.url());
+    seed = hash(seed, quintptr(p.originatingObject()));
+    seed = hash(seed, int(p.priority()));
+    seed = hash(seed, p.maximumRedirectsAllowed());
+    return seed;
 }
 
-inline hash_type qHash(const QAuthenticator& p){
+inline hash_type qHash(const QAuthenticator& p, hash_type seed = 0){
     if(p.isNull())
         return 0;
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(p.user());
-    hashCode = hashCode * 31 + qHash(p.password());
-    hashCode = hashCode * 31 + qHash(p.realm());
-    hashCode = hashCode * 31 + qHash(p.options().keys());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, p.user());
+    seed = hash(seed, p.password());
+    seed = hash(seed, p.realm());
+    seed = hash(seed, p.options().keys());
+    return seed;
 }
 
 #ifndef QT_NO_SSL
 
-inline hash_type qHash(const QSslKey& p){
+inline hash_type qHash(const QSslKey& p, hash_type seed = 0){
     if(p.isNull())
         return 0;
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(p.type());
-    hashCode = hashCode * 31 + qHash(quintptr(p.handle()));
-    hashCode = hashCode * 31 + qHash(p.length());
-    hashCode = hashCode * 31 + qHash(p.algorithm());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, p.type());
+    seed = hash(seed, quintptr(p.handle()));
+    seed = hash(seed, p.length());
+    seed = hash(seed, p.algorithm());
+    return seed;
 }
 
-inline hash_type qHash(const QSslCipher& p){
+inline hash_type qHash(const QSslCipher& p, hash_type seed = 0){
     if(p.isNull())
         return 0;
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(p.name());
-    hashCode = hashCode * 31 + qHash(quintptr(p.protocol()));
-    hashCode = hashCode * 31 + qHash(p.usedBits());
-    hashCode = hashCode * 31 + qHash(p.supportedBits());
-    hashCode = hashCode * 31 + qHash(p.protocolString());
-    hashCode = hashCode * 31 + qHash(p.encryptionMethod());
-    hashCode = hashCode * 31 + qHash(p.keyExchangeMethod());
-    hashCode = hashCode * 31 + qHash(p.authenticationMethod());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, p.name());
+    seed = hash(seed, quintptr(p.protocol()));
+    seed = hash(seed, p.usedBits());
+    seed = hash(seed, p.supportedBits());
+    seed = hash(seed, p.protocolString());
+    seed = hash(seed, p.encryptionMethod());
+    seed = hash(seed, p.keyExchangeMethod());
+    seed = hash(seed, p.authenticationMethod());
+    return seed;
 }
 
-inline hash_type qHash(const QSslConfiguration& p){
+inline hash_type qHash(const QSslConfiguration& p, hash_type seed = 0){
     if(p.isNull())
         return 0;
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(p.ciphers());
-    hashCode = hashCode * 31 + qHash(quintptr(p.protocol()));
-    hashCode = hashCode * 31 + qHash(p.privateKey());
-    hashCode = hashCode * 31 + qHash(p.sessionCipher());
-    hashCode = hashCode * 31 + qHash(p.sessionTicket());
-    hashCode = hashCode * 31 + qHash(p.caCertificates());
-    hashCode = hashCode * 31 + qHash(p.ellipticCurves());
-    hashCode = hashCode * 31 + qHash(p.peerVerifyMode());
-    hashCode = hashCode * 31 + qHash(p.peerCertificate());
-    hashCode = hashCode * 31 + qHash(p.peerVerifyDepth());
-    hashCode = hashCode * 31 + qHash(p.sessionProtocol());
-    hashCode = hashCode * 31 + qHash(p.localCertificate());
-    hashCode = hashCode * 31 + qHash(p.ephemeralServerKey());
-    hashCode = hashCode * 31 + qHash(p.ocspStaplingEnabled());
-    hashCode = hashCode * 31 + qHash(p.allowedNextProtocols());
-    hashCode = hashCode * 31 + qHash(p.peerCertificateChain());
-    hashCode = hashCode * 31 + qHash(p.localCertificateChain());
-    hashCode = hashCode * 31 + qHash(p.nextNegotiatedProtocol());
-    hashCode = hashCode * 31 + qHash(p.diffieHellmanParameters());
-    hashCode = hashCode * 31 + qHash(p.preSharedKeyIdentityHint());
-    hashCode = hashCode * 31 + qHash(p.sessionTicketLifeTimeHint());
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, p.ciphers());
+    seed = hash(seed, quintptr(p.protocol()));
+    seed = hash(seed, p.privateKey());
+    seed = hash(seed, p.sessionCipher());
+    seed = hash(seed, p.sessionTicket());
+    seed = hash(seed, p.caCertificates());
+    seed = hash(seed, p.ellipticCurves());
+    seed = hash(seed, p.peerVerifyMode());
+    seed = hash(seed, p.peerCertificate());
+    seed = hash(seed, p.peerVerifyDepth());
+    seed = hash(seed, p.sessionProtocol());
+    seed = hash(seed, p.localCertificate());
+    seed = hash(seed, p.ephemeralServerKey());
+    seed = hash(seed, p.ocspStaplingEnabled());
+    seed = hash(seed, p.allowedNextProtocols());
+    seed = hash(seed, p.peerCertificateChain());
+    seed = hash(seed, p.localCertificateChain());
+    seed = hash(seed, p.nextNegotiatedProtocol());
+    seed = hash(seed, p.diffieHellmanParameters());
+    seed = hash(seed, p.preSharedKeyIdentityHint());
+    seed = hash(seed, p.sessionTicketLifeTimeHint());
 #if QT_CONFIG(dtls)
-    hashCode = hashCode * 31 + qHash(p.dtlsCookieVerificationEnabled());
+    seed = hash(seed, p.dtlsCookieVerificationEnabled());
 #endif // dtls
-    hashCode = hashCode * 31 + qHash(p.nextProtocolNegotiationStatus());
-    hashCode = hashCode * 31 + qHash(p.supportedCiphers());
-    return hashCode;
+    seed = hash(seed, p.nextProtocolNegotiationStatus());
+    seed = hash(seed, p.supportedCiphers());
+    return seed;
 }
 
 #endif // def QT_NO_SSL
 
 #if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 
-inline hash_type qHash(const QHttp2Configuration& p){
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(p.serverPushEnabled());
-    hashCode = hashCode * 31 + qHash(quintptr(p.huffmanCompressionEnabled()));
-    hashCode = hashCode * 31 + qHash(p.sessionReceiveWindowSize());
-    hashCode = hashCode * 31 + qHash(p.streamReceiveWindowSize());
-    hashCode = hashCode * 31 + qHash(p.maxFrameSize());
-    return hashCode;
+inline hash_type qHash(const QHttp2Configuration& p, hash_type seed = 0){
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, p.serverPushEnabled());
+    seed = hash(seed, quintptr(p.huffmanCompressionEnabled()));
+    seed = hash(seed, p.sessionReceiveWindowSize());
+    seed = hash(seed, p.streamReceiveWindowSize());
+    seed = hash(seed, p.maxFrameSize());
+    return seed;
 }
 
+#endif
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0) && defined(QTJAMBI_GENERATOR_RUNNING)
+size_t qHash(const QHttp1Configuration &value, size_t seed = 0);
 #endif
 
 #endif // QTJAMBINETWORK_HASHES_H

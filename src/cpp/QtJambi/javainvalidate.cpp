@@ -74,27 +74,75 @@ void invalidateCollection(JNIEnv *env, jobject java_collection, bool checkJavaOw
     }
 }
 
+struct InvalidateAfterUsePrivate{
+    virtual ~InvalidateAfterUsePrivate();
+};
+
+InvalidateAfterUsePrivate::~InvalidateAfterUsePrivate() = default;
+
+struct InvalidateObjectAfterUsePrivate : InvalidateAfterUsePrivate{
+    InvalidateObjectAfterUsePrivate(JNIEnv *env, jobject object, bool checkJavaOwnership)
+        : m_env(env),
+          m_object(m_env->NewGlobalRef(object)),
+          m_checkJavaOwnership(checkJavaOwnership)
+    {}
+    ~InvalidateObjectAfterUsePrivate(){
+        QtJambiExceptionInhibitor __exnHandler;
+        try{
+            invalidateJavaObject(m_env, m_object, m_checkJavaOwnership);
+        }catch(const JavaException& exn){
+            m_env->DeleteGlobalRef(m_object);
+            m_object = nullptr;
+            __exnHandler.handle(m_env, exn, nullptr);
+        } catch (const std::exception& e) {
+            qWarning("%s", e.what());
+        } catch (...) {
+        }
+        if(m_object)
+            m_env->DeleteGlobalRef(m_object);
+    }
+
+    JNIEnv *m_env;
+    jobject m_object;
+    bool m_checkJavaOwnership;
+};
+
+struct InvalidateNativeIDAfterUsePrivate : InvalidateAfterUsePrivate{
+    InvalidateNativeIDAfterUsePrivate(JNIEnv *env, const QSharedPointer<QtJambiLink>& link)
+        : m_env(env),
+          m_link(link)
+    {}
+    ~InvalidateNativeIDAfterUsePrivate(){
+        QtJambiExceptionInhibitor __exnHandler;
+        try{
+            if(QSharedPointer<QtJambiLink> link = m_link.toStrongRef()){
+                if(link->isShell() && !link->isQObject()){
+                    link->invalidate(m_env);
+                }
+            }
+        }catch(const JavaException& exn){
+            __exnHandler.handle(m_env, exn, nullptr);
+        } catch (const std::exception& e) {
+            qWarning("%s", e.what());
+        } catch (...) {
+        }
+    }
+
+    JNIEnv *m_env;
+    QWeakPointer<QtJambiLink> m_link;
+};
+
 InvalidateAfterUse::InvalidateAfterUse(JNIEnv *env, jobject object, bool checkJavaOwnership)
-    : m_env(env),
-      m_object(m_env->NewGlobalRef(object)),
-      m_checkJavaOwnership(checkJavaOwnership)
+    : p(new InvalidateObjectAfterUsePrivate(env, object, checkJavaOwnership))
+{}
+
+InvalidateAfterUse::InvalidateAfterUse(JNIEnv *env, QtJambiNativeID nativeId)
+    : p(new InvalidateNativeIDAfterUsePrivate(env, QtJambiLink::fromNativeId(nativeId)))
 {}
 
 InvalidateAfterUse::~InvalidateAfterUse()
 {
-    QtJambiExceptionInhibitor __exnHandler;
-    try{
-        invalidateJavaObject(m_env, m_object, m_checkJavaOwnership);
-    }catch(const JavaException& exn){
-        m_env->DeleteGlobalRef(m_object);
-        m_object = nullptr;
-        __exnHandler.handle(m_env, exn, nullptr);
-    } catch (const std::exception& e) {
-        qWarning("%s", e.what());
-    } catch (...) {
-    }
-    if(m_object)
-        m_env->DeleteGlobalRef(m_object);
+    delete p;
 }
 
 void InvalidateAfterUse::invalidate(JNIEnv *env, jobject java_object, bool checkJavaOwnership){

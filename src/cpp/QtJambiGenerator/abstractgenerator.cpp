@@ -164,11 +164,202 @@ void AbstractGenerator::verifyDirectoryFor(const QFile &file) {
     }
 }
 
+bool AbstractGenerator::isCharSequenceSubstitute(const MetaType* type){
+    return type->isQString()
+             && !type->typeEntry()->isQString()
+             && (type->isConstant() || type->actualIndirections()==0);
+}
+
+QString AbstractGenerator::annotationFreeTypeName(QString typeName){
+    auto index = typeName.indexOf('@');
+    if(index>=0){
+        QString result = typeName.left(index).trimmed();
+        typeName = typeName.mid(index);
+        while(typeName.startsWith('@')){
+            QChar lastChar = typeName[0];
+            QString annotation = lastChar;
+            bool isInIdentifier = false;
+            bool isInParentheses = false;
+            bool isInBraces = false;
+            bool isInString = false;
+            bool isInChar = false;
+            int parenteses = 0;
+            int braces = 0;
+            for(auto l = typeName.length(), i=decltype(l)(1); i<l; ++i){
+                QChar currentChar = typeName[i];
+                if(isInBraces){
+                    if(isInString){
+                        if(currentChar==QLatin1Char('"') && lastChar!=QLatin1Char('\\')){
+                            isInString = false;
+                        }
+                    }else if(isInChar){
+                        if(currentChar==QLatin1Char('\'') && lastChar!=QLatin1Char('\\')){
+                            isInChar = false;
+                        }
+                    }else{
+                        if(currentChar==QLatin1Char('>')){
+                            --braces;
+                            if(braces==0){
+                                result += currentChar;
+                                lastChar = currentChar;
+                                ++i;
+                                // take identifier
+                                while(i<l){
+                                    currentChar = typeName[i];
+                                    if(!currentChar.isSpace()){
+                                        break;
+                                    }
+                                    ++i;
+                                }
+                                typeName = typeName.mid(i);
+                                break;
+                            }
+                        }else if(currentChar==QLatin1Char('<')){
+                            ++braces;
+                        }else if(currentChar==QLatin1Char('"')){
+                            isInString = true;
+                        }else if(currentChar==QLatin1Char('\'')){
+                            isInChar = true;
+                        }
+                    }
+                }else if(isInParentheses){
+                    if(isInString){
+                        if(currentChar==QLatin1Char('"') && lastChar!=QLatin1Char('\\')){
+                            isInString = false;
+                        }
+                    }else if(isInChar){
+                        if(currentChar==QLatin1Char('\'') && lastChar!=QLatin1Char('\\')){
+                            isInChar = false;
+                        }
+                    }else{
+                        if(currentChar==QLatin1Char(')')){
+                            --parenteses;
+                            if(parenteses==0){
+                                isInParentheses = false;
+                                annotation += currentChar;
+                                lastChar = currentChar;
+                                ++i;
+                                // take identifier
+                                while(i<l){
+                                    currentChar = typeName[i];
+                                    if(isInIdentifier){
+                                        if(currentChar.isLetterOrNumber() || currentChar==QLatin1Char('_') || currentChar==QLatin1Char('$')){
+                                            result += currentChar;
+                                        }else{
+                                            break;
+                                        }
+                                    }else{
+                                        if(!currentChar.isSpace()){
+                                            if(lastChar.isLetterOrNumber() || lastChar==QLatin1Char('_') || lastChar==QLatin1Char('$')){
+                                                isInIdentifier = true;
+                                                result += currentChar;
+                                            }
+                                        }
+                                    }
+                                    ++i;
+                                }
+                                if(i<l && typeName[i]==QLatin1Char('<')){
+                                    isInBraces = true;
+                                    result += QLatin1Char('<');
+                                    ++braces;
+                                    continue;
+                                }
+                                typeName = typeName.mid(i);
+                                break;
+                            }
+                        }else if(currentChar==QLatin1Char('(')){
+                            ++parenteses;
+                        }else if(currentChar==QLatin1Char('"')){
+                            isInString = true;
+                        }else if(currentChar==QLatin1Char('\'')){
+                            isInChar = true;
+                        }
+                    }
+                }else {
+                    if(currentChar.isSpace()){
+                        if(isInIdentifier)
+                            isInIdentifier = false;
+                        continue;
+                    }
+                    if(isInIdentifier){
+                        if(currentChar.isLetterOrNumber() || currentChar==QLatin1Char('_') || currentChar==QLatin1Char('$')){
+                            // ok so far
+                        }else if(currentChar==QLatin1Char('.')){
+                            isInIdentifier = false;
+                            if(i+2<l && typeName[i+1]==QLatin1Char('.') && typeName[i+2]==QLatin1Char('.')){
+                                typeName = typeName.mid(i);
+                                break;
+                            }
+                        }else if(currentChar==QLatin1Char('(')){
+                            isInIdentifier = false;
+                            isInParentheses = true;
+                            ++parenteses;
+                        }else if(currentChar==QLatin1Char('@') || currentChar==QLatin1Char('[')){
+                            typeName = typeName.mid(i);
+                            break;
+                        }
+                    }else{
+                        if(lastChar.isLetterOrNumber() || lastChar==QLatin1Char('_') || lastChar==QLatin1Char('$')){
+                            if(currentChar.isLetter() || currentChar==QLatin1Char('_') || currentChar==QLatin1Char('$')){
+                                // take identifier
+                                while(i<l){
+                                    currentChar = typeName[i];
+                                    if(isInIdentifier){
+                                        if(currentChar.isLetterOrNumber() || currentChar==QLatin1Char('_') || currentChar==QLatin1Char('$')){
+                                            result += currentChar;
+                                        }else{
+                                            break;
+                                        }
+                                    }else{
+                                        if(lastChar.isLetterOrNumber() || lastChar==QLatin1Char('_') || lastChar==QLatin1Char('$')){
+                                            isInIdentifier = true;
+                                            result += currentChar;
+                                        }
+                                    }
+                                    ++i;
+                                }
+                                while(i<l){
+                                    currentChar = typeName[i];
+                                    if(!currentChar.isSpace())
+                                        break;
+                                    ++i;
+                                }
+                                if(i<l && typeName[i]==QLatin1Char('<')){
+                                    isInBraces = true;
+                                    result += QLatin1Char('<');
+                                    ++braces;
+                                    continue;
+                                }
+                            }
+                            typeName = typeName.mid(i);
+                            break;
+                        }
+                        if(currentChar.isLetter() || currentChar==QLatin1Char('_') || currentChar==QLatin1Char('$')){
+                            isInIdentifier = true;
+                        }else if(currentChar==QLatin1Char('(')){
+                            isInParentheses = true;
+                            ++parenteses;
+                        }
+                    }
+                }
+                if(isInBraces){
+                    result += currentChar;
+                }else{
+                    annotation += currentChar;
+                }
+                lastChar = currentChar;
+            }
+        }
+        return result + typeName;
+    }
+    return typeName;
+}
+
 bool AbstractGenerator::hasDefaultConstructor(const MetaType *type) {
     QString full_name = type->typeEntry()->qualifiedTargetLangName();
     QString class_name = type->typeEntry()->targetLangName();
 
-    for(const MetaClass *java_class : m_classes) {
+    for(const MetaClass *java_class : qAsConst(m_classes)) {
         if (java_class->typeEntry()->qualifiedTargetLangName() == full_name) {
             MetaFunctionList functions = java_class->functions();
             for(const MetaFunction *function : functions) {

@@ -267,9 +267,10 @@ public class TestInjectedCode extends ApplicationInitializer {
         public int inputPos;
 
         @Override
-        public String fixup(String input) {
-            inputString = input;
-            return super.fixup(input) + "javaPostfix";
+        public void fixup(QString input) {
+            inputString = input.toString();
+            super.fixup(input);
+            input.append("javaPostfix");
         }
 
         @Override
@@ -861,20 +862,20 @@ public class TestInjectedCode extends ApplicationInitializer {
     public void testValidatorFixup() {
         ValidatorSubclassSubclass vss = new ValidatorSubclassSubclass();
 
-        String[] str = {"acceptable"};
+        final QString str = new QString("acceptable");
         int[] i = {13};
         assertEquals(QValidator.State.Acceptable, vss.callValidate(str, i));
-        assertEquals("javaPrefixacceptablesomePostfix", str[0]);
+        assertEquals("javaPrefixacceptablesomePostfix", str.toString());
         assertEquals("acceptable".length(), i[0]);
         assertEquals("acceptable", vss.inputString);
         assertEquals(13, vss.inputPos);
         assertEquals("acceptable", vss.inputString());
         assertEquals(13, vss.inputPos());
 
-        str[0] = "intermediate";
+        str.assign("intermediate");
         i[0] = 14;
         assertEquals(QValidator.State.Intermediate, vss.callValidate(str, i));
-        assertEquals("javaPrefixintermediatesomePostfix", str[0]);
+        assertEquals("javaPrefixintermediatesomePostfix", str.toString());
         assertEquals("intermediate".length(), i[0]);
         assertEquals("intermediate", vss.inputString);
         assertEquals(14, vss.inputPos);

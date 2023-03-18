@@ -110,10 +110,6 @@ QTJAMBI_EXPORT bool convertJavaToNative(JNIEnv *env, const std::type_info& typeI
 
 QTJAMBI_EXPORT bool convertJavaToNative(JNIEnv *env, const std::type_info& typeId, const char* typeName, jobject java_object, void * output, QtJambiScope* scope = nullptr);
 
-QTJAMBI_EXPORT bool convertNativeToJava(JNIEnv *env, const std::type_info& typeId, const char* qtName, const char* javaName, const void *qt_object, bool makeCopyOfValueTypes, bool cppOwnership, jobject& output);
-
-QTJAMBI_EXPORT bool convertNativeToJava(JNIEnv *env, const std::type_info& typeId, const char* typeName, const void *qt_object, bool makeCopyOfValueTypes, bool cppOwnership, jobject& output);
-
 QTJAMBI_EXPORT bool isShell(QtJambiNativeID nativeId);
 
 QTJAMBI_EXPORT bool javaObjectHasShell(JNIEnv *env, jobject object);
@@ -306,25 +302,41 @@ QTJAMBI_EXPORT bool isQByteArrayViewObject(JNIEnv *env, jobject obj);
 
 QTJAMBI_EXPORT bool isJavaString(JNIEnv *env, jobject obj);
 
-QTJAMBI_EXPORT jobject convertNativeToJavaObject(JNIEnv *env, const void *qt_object, const std::type_info& typeId, bool makeCopyOfValueTypes, bool cppOwnership = false);
+QTJAMBI_EXPORT jobject convertNativeToJavaOwnedObjectAsWrapper(JNIEnv *env, const void *qt_object, const std::type_info& typeId, const char *nativeTypeName = nullptr);
 
-QTJAMBI_EXPORT jobject convertNativeToJavaObject(JNIEnv *env, const void *qt_object, const char *className, const std::type_info& typeId, bool makeCopyOfValueTypes, bool cppOwnership = false);
+QTJAMBI_EXPORT jobject convertNativeToJavaOwnedObjectAsWrapper(JNIEnv *env, const void *qt_object, jclass clazz);
 
-QTJAMBI_EXPORT jobject convertNativeToJavaObject(JNIEnv *env, const void *qt_object, const char *className, bool makeCopyOfValueTypes, bool cppOwnership = false);
+QTJAMBI_EXPORT jobject convertNativeToJavaObjectAsWrapper(JNIEnv *env, const void *qt_object, const std::type_info& typeId, const char *nativeTypeName = nullptr);
 
-QTJAMBI_EXPORT jobject convertNativeToJavaObject(JNIEnv *env, const void *qt_object, jclass clazz, bool makeCopyOfValueTypes, bool cppOwnership = false);
+QTJAMBI_EXPORT jobject convertNativeToJavaObjectAsWrapper(JNIEnv *env, const void *qt_object, jclass clazz);
+
+QTJAMBI_EXPORT jobject convertNativeToJavaObjectAsCopy(JNIEnv *env, const void *qt_object, const std::type_info& typeId, const char *nativeTypeName = nullptr);
+
+QTJAMBI_EXPORT jobject convertNativeToJavaObjectAsCopy(JNIEnv *env, const void *qt_object, jclass clazz);
 
 template<typename T>
-jobject convertNativeToJavaObject(JNIEnv *env, const T *qt_object, bool makeCopyOfValueTypes, bool cppOwnership = false)
+jobject convertNativeToJavaOwnedObjectAsWrapper(JNIEnv *env, const T *qt_object, const char *nativeTypeName = nullptr)
 {
-    return convertNativeToJavaObject(env, qt_object, typeid(T), makeCopyOfValueTypes, cppOwnership);
+    return convertNativeToJavaOwnedObjectAsWrapper(env, qt_object, typeid(T), nativeTypeName);
 }
 
 template<typename T>
-jobject convertNativeToJavaObject(JNIEnv *env, const T *qt_object, const char *className, bool makeCopyOfValueTypes, bool cppOwnership = false)
+jobject convertNativeToJavaObjectAsWrapper(JNIEnv *env, const T *qt_object, const char *nativeTypeName = nullptr)
 {
-    return convertNativeToJavaObject(env, qt_object, className, typeid(T), makeCopyOfValueTypes, cppOwnership);
+    return convertNativeToJavaObjectAsWrapper(env, qt_object, typeid(T), nativeTypeName);
 }
+
+template<typename T>
+jobject convertNativeToJavaObjectAsCopy(JNIEnv *env, const T *qt_object, const char *nativeTypeName = nullptr)
+{
+    return convertNativeToJavaObjectAsCopy(env, qt_object, typeid(T), nativeTypeName);
+}
+
+template<typename Ret, typename... Args>
+struct FunctionType{
+    typedef Ret(*type)(Args...);
+    typedef Ret(signature)(Args...);
+};
 
 QTJAMBI_EXPORT jobject convertQObjectToJavaObject(JNIEnv *env, const QObject *qt_object, const char *className);
 
@@ -341,9 +353,9 @@ jobject convertQObjectToJavaObject(JNIEnv *env, const O *qt_object)
 QTJAMBI_EXPORT jobject convertQFlagsToJavaObject(JNIEnv *env, int qt_flags, jclass cls);
 
 template<typename E>
-jobject convertQFlagsToJavaObject(JNIEnv *env, const QFlags<E>& qt_flags)
+jobject convertQFlagsToJavaObject(JNIEnv *env, QFlags<E> qt_flags)
 {
-    return convertNativeToJavaObject(env, &qt_flags, typeid(QFlags<E>), true, false);
+    return convertNativeToJavaObjectAsCopy(env, &qt_flags, typeid(QFlags<E>));
 }
 
 QTJAMBI_EXPORT jobject convertEnumToJavaObject(JNIEnv *env, qint32 qt_enum, jclass cls);
@@ -365,7 +377,7 @@ QTJAMBI_EXPORT jobject convertEnumToJavaObject(JNIEnv *env, quint64 qt_enum, jcl
 template<typename E>
 jobject convertEnumToJavaObject(JNIEnv *env, E qt_enum)
 {
-    return convertNativeToJavaObject(env, &qt_enum, typeid(E), true, false);
+    return convertNativeToJavaObjectAsCopy(env, &qt_enum, typeid(E));
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -503,6 +515,8 @@ QTJAMBI_EXPORT void setJavaOwnershipForTopLevelObject(JNIEnv *env, QObject* qobj
 QTJAMBI_EXPORT void setCppOwnershipForTopLevelObject(JNIEnv *env, QObject* qobject);
 
 QTJAMBI_EXPORT void setDefaultOwnershipForTopLevelObject(JNIEnv *env, QObject* qobject);
+
+QTJAMBI_EXPORT void registerDependency(JNIEnv *env, jobject dependentObject, QtJambiNativeID _this_nativeId);
 
 QTJAMBI_EXPORT uint getJavaObjectIdentity(JNIEnv *env, jobject object);
 

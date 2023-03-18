@@ -19,7 +19,7 @@ public class ForeachVersionTask extends Task {
 		Properties targetProperties = new Properties();
 		PropertyHelper propertyHelper = PropertyHelper.getPropertyHelper(getProject());
 		for (String key : Arrays.asList("java.srcdir", 
-				"qtjambi.junit.threads", "qtjambi.junit.timeout", 
+				"qtjambi.junit.threads", "qtjambi.junit.timeout", "qtjambi.generate.nullness", 
 				"parallel", "qtjambi.build.module", "test",
 				"test.enable.criticals", "jnicheck")) {
 			String value = AntUtil.getPropertyAsString(propertyHelper, key);

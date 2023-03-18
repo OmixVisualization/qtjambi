@@ -37,6 +37,7 @@
 #include <stdio.h>
 #include <map>
 #include <initializer_list>
+#include "threadapi.h"
 #endif
 #include "java_p.h"
 #include "utils_p.h"
@@ -194,6 +195,26 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_reinstallEventNotifyCallback)(JNI
     return false;
 }
 
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_uiThreadCheck)(JNIEnv *env, jclass)
+{
+    try{
+        QtJambiAPI::checkThreadUI(env, typeid(void));
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_threadCheck)(JNIEnv *env, jclass, QtJambiNativeID objectId)
+{
+    try{
+        QtJambiAPI::checkThread(env, QtJambiAPI::objectFromNativeId<QObject>(objectId));
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+}
+
 #if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS)) && !defined(Q_OS_ANDROID)
 #if defined(signals)
 #undef signals
@@ -204,67 +225,83 @@ struct SignalCache : public QtJambiObjectData{
     ~SignalCache() override = default;
     QTJAMBI_OBJECTUSERDATA_ID_IMPL(static,)
     Q_DISABLE_COPY_MOVE(SignalCache)
-    static std::initializer_list<int> signals(){
-        static std::initializer_list<int> signals{SIGSEGV,SIGBUS,SIGFPE,SIGPIPE,SIGILL,SIGQUIT,SIGUSR2,SIGFPE};
-        return signals;
+    static std::vector<int> signals(){
+        return std::vector<int>{SIGSEGV,SIGBUS,SIGFPE,SIGPIPE,SIGILL,SIGQUIT,SIGUSR2,SIGFPE};
     }
     std::map<int,std::pair<int,void(*)(int)>> handlers;
 };
 #endif
 
 extern "C" Q_DECL_EXPORT bool JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_saveUnixSignalHandlers)(JNIEnv *)
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_saveUnixSignalHandlers)(JNIEnv *env, jclass)
 {
 #if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS)) && !defined(Q_OS_ANDROID)
-    if(QThread* mainThread = QCoreApplicationPrivate::theMainThread.loadRelaxed()){
-        std::unique_ptr<SignalCache> cache{new SignalCache()};
-        for(int s : SignalCache::signals()){
-            struct sigaction sa;
-            memset(&sa, 0, sizeof(sa));
-            if(sigaction(s, nullptr, &sa)==0){
-                qDebug("Signalhandler for %d saved.", s);
-                cache->handlers[s] = {sa.sa_flags, sa.sa_handler};
-            }else
-                qDebug("Unable to save signalhandler for %d.", s);
+    try{
+        QThread* mainThread = QCoreApplicationPrivate::theMainThread.loadRelaxed();
+        if(!mainThread){
+            ThreadAPI::initializeMainThread(env);
+            mainThread = QCoreApplicationPrivate::theMainThread.loadRelaxed();
         }
-        QWriteLocker locker(QtJambiLinkUserData::lock());
-        QTJAMBI_SET_OBJECTUSERDATA(SignalCache, mainThread, cache.release());
-        return true;
+        if(mainThread){
+            std::unique_ptr<SignalCache> cache{new SignalCache()};
+            for(int s : SignalCache::signals()){
+                struct sigaction sa;
+                memset(&sa, 0, sizeof(sa));
+                if(sigaction(s, nullptr, &sa)==0){
+                    qDebug("Signalhandler for %d saved.", s);
+                    cache->handlers[s] = {sa.sa_flags, sa.sa_handler};
+                }else
+                    qDebug("Unable to save signalhandler for %d.", s);
+            }
+            QWriteLocker locker(QtJambiLinkUserData::lock());
+            QTJAMBI_SET_OBJECTUSERDATA(SignalCache, mainThread, cache.release());
+            return true;
+        }
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
     }
+#else
+    Q_UNUSED(env)
 #endif
     return false;
 }
 
 extern "C" Q_DECL_EXPORT bool JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_restoreUnixSignalHandlers)(JNIEnv *)
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_restoreUnixSignalHandlers)(JNIEnv *env, jclass)
 {
 #if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS)) && !defined(Q_OS_ANDROID)
-    if(QThread* mainThread = QCoreApplicationPrivate::theMainThread.loadRelaxed()){
-        std::unique_ptr<SignalCache> cache{nullptr};
-        {
-            QWriteLocker locker(QtJambiLinkUserData::lock());
-            cache.reset(QTJAMBI_GET_OBJECTUSERDATA(SignalCache, mainThread));
-            QTJAMBI_SET_OBJECTUSERDATA(SignalCache, mainThread, nullptr);
-        }
-        if(cache){
-            for(int s : SignalCache::signals()){
-                struct sigaction sa;
-                struct sigaction sa2;
-                memset(&sa, 0, sizeof(sa));
-                memset(&sa2, 0, sizeof(sa2));
-                sa.sa_flags = cache->handlers[s].first;
-                sa.sa_handler = cache->handlers[s].second;
-                if(sigaction(s, &sa, &sa2)==0){
-                    if(sa.sa_handler!=sa2.sa_handler)
-                        qDebug("Signalhandler for %d restored.", s);
-                    else
-                        qDebug("Signalhandler for %d unchanged.", s);
-                }else
-                    qDebug("Unable to restore signalhandler for %d.", s);
+    try{
+        if(QThread* mainThread = QCoreApplicationPrivate::theMainThread.loadRelaxed()){
+            std::unique_ptr<SignalCache> cache{nullptr};
+            {
+                QWriteLocker locker(QtJambiLinkUserData::lock());
+                cache.reset(QTJAMBI_GET_OBJECTUSERDATA(SignalCache, mainThread));
+                QTJAMBI_SET_OBJECTUSERDATA(SignalCache, mainThread, nullptr);
             }
-            return true;
+            if(cache){
+                for(int s : SignalCache::signals()){
+                    struct sigaction sa;
+                    struct sigaction sa2;
+                    memset(&sa, 0, sizeof(sa));
+                    memset(&sa2, 0, sizeof(sa2));
+                    sa.sa_flags = cache->handlers[s].first;
+                    sa.sa_handler = cache->handlers[s].second;
+                    if(sigaction(s, &sa, &sa2)==0){
+                        if(sa.sa_handler!=sa2.sa_handler)
+                            qDebug("Signalhandler for %d restored.", s);
+                        else
+                            qDebug("Signalhandler for %d unchanged.", s);
+                    }else
+                        qDebug("Unable to restore signalhandler for %d.", s);
+                }
+                return true;
+            }
         }
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
     }
+#else
+    Q_UNUSED(env)
 #endif
     return false;
 }

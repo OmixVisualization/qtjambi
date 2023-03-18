@@ -31,15 +31,15 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.multimedia.widgets"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtMultimediaWidgets"
     module: "qtjambi.multimediawidgets"
     description: "Widget classes for audio, video, radio and camera functionality."
     InjectCode{
         position: Position.Position4
         until: 5
-        Text{content: "if(io.qt.QtUtilities.isAvailableQtLibrary(\"OpenGL\"))\n"+
-                      "io.qt.QtUtilities.loadQtLibrary(\"OpenGL\");"}
+        Text{content: "if(QtUtilities.isAvailableQtLibrary(\"OpenGL\"))\n"+
+                      "QtUtilities.loadQtLibrary(\"OpenGL\");"}
     }
     
     RequiredLibrary{

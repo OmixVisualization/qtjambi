@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.script"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtScript"
     module: "qtjambi.script"
     description: "Classes for making Qt applications scriptable. Deprecated in favor of the QJS* classes in the Qt QML module."
@@ -98,7 +98,6 @@ TypeSystem{
     
     EnumType{
         name: "QScriptClass::QueryFlag"
-        flags: "QScriptClass::QueryFlags"
     }
     
     EnumType{
@@ -115,7 +114,6 @@ TypeSystem{
     
     EnumType{
         name: "QScriptEngine::QObjectWrapOption"
-        flags: "QScriptEngine::QObjectWrapOptions"
     }
     
     EnumType{
@@ -128,12 +126,10 @@ TypeSystem{
     
     EnumType{
         name: "QScriptValue::PropertyFlag"
-        flags: "QScriptValue::PropertyFlags"
     }
     
     EnumType{
         name: "QScriptValue::ResolveFlag"
-        flags: "QScriptValue::ResolveFlags"
     }
     
     EnumType{
@@ -151,7 +147,7 @@ TypeSystem{
             ModifyArgument{
                 index: "return"
                 ReplaceType{
-                    modifiedType: "io.qt.script.QScriptClassPropertyIterator"
+                    modifiedType: "io.qt.script.@NonNull QScriptClassPropertyIterator"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -160,11 +156,11 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "queryProperty(const QScriptValue &, const QScriptString &, QFlags<QScriptClass::QueryFlag>, uint *)"
+            signature: "queryProperty(const QScriptValue &, const QScriptString &, QScriptClass::QueryFlags, uint *)"
             ModifyArgument{
                 index: 4
                 ReplaceType{
-                    modifiedType: "java.lang.Integer"
+                    modifiedType: "java.lang.@Nullable Integer"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -177,23 +173,12 @@ TypeSystem{
                 }
             }
         }
+
         ModifyFunction{
-            signature: "setProperty(QScriptValue &, const QScriptString &, unsigned int, const QScriptValue &)"
+            signature: "setProperty(QScriptValue&,QScriptString,uint,QScriptValue)"
             ModifyArgument{
                 index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.script.QScriptValue"
-                }
-                NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QScriptValue& %out = qtjambi_cast<QScriptValue&>(%env, %scope, %in);"}
-                }
+                invalidateAfterUse: true
             }
         }
     }
@@ -212,10 +197,6 @@ TypeSystem{
     
     ValueType{
         name: "QScriptContextInfo"
-        ModifyFunction{
-            signature: "operator=(const QScriptContextInfo &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ObjectType{
@@ -224,10 +205,6 @@ TypeSystem{
     
     ValueType{
         name: "QScriptString"
-        ModifyFunction{
-            signature: "operator= ( const QScriptString & )"
-            remove: RemoveFlag.All
-        }
         ModifyFunction{
             signature: "operator QString() const"
             remove: RemoveFlag.All
@@ -259,10 +236,6 @@ TypeSystem{
     
     ValueType{
         name: "QScriptProgram"
-        ModifyFunction{
-            signature: "operator= ( const QScriptProgram & )"
-            remove: RemoveFlag.All
-        }
     }
     
     InterfaceType{
@@ -271,10 +244,6 @@ TypeSystem{
     
     ValueType{
         name: "QScriptSyntaxCheckResult"
-        ModifyFunction{
-            signature: "operator= ( const QScriptSyntaxCheckResult & )"
-            remove: RemoveFlag.All
-        }
         CustomConstructor{
             Text{content: "if(copy)\n"+
                           "    return new(placement) QScriptSyntaxCheckResult(*copy);\n"+
@@ -303,10 +272,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "QScriptValue(const char * )"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator= ( const QScriptValue & )"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -368,7 +333,7 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 ReplaceType{
-                    modifiedType: "java.util.Collection<QScriptValue>"
+                    modifiedType: "java.util.@Nullable Collection<@NonNull QScriptValue>"
                 }
                 ReplaceDefaultExpression{
                     expression: "new java.util.ArrayList<>()"
@@ -380,7 +345,7 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "java.util.Collection<QScriptValue>"
+                    modifiedType: "java.util.@Nullable Collection<@NonNull QScriptValue>"
                 }
                 ReplaceDefaultExpression{
                     expression: "new java.util.ArrayList<>()"
@@ -388,7 +353,7 @@ TypeSystem{
             }
         }
         InjectCode{
-            Text{content: "@io.qt.QtUninvokable\n"+
+            Text{content: "@QtUninvokable\n"+
                           "public final Integer toInteger() {\n"+
                           "    if(Double.isNaN(private_toInteger())){\n"+
                           "        return null;\n"+
@@ -469,7 +434,7 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QScriptEngine::registerCustomType', unmatched parameter type 'QScriptEngine::MarshalFunction'"}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QScriptSyntaxCheckResult."}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QScriptValue."}
-    SuppressedWarning{text: "WARNING(CppImplGenerator) :: Value type 'QScriptSyntaxCheckResult' is missing a default constructor. The resulting C++ code will not compile.*"}
+    SuppressedWarning{text: "WARNING(CppImplGenerator) :: Value type 'QScriptSyntaxCheckResult' is missing a default constructor.*"}
     SuppressedWarning{text: "WARNING(CppImplGenerator) :: protected function '*' in final class '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: visibility of function '*' modified in class '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: hiding of function '*' in class '*'"}

@@ -34,29 +34,29 @@
 #include <QtScript/QScriptContextInfo>
 #include <QtScript/QScriptProgram>
 
-inline hash_type qHash(const QScriptContextInfo &value)
+inline hash_type qHash(const QScriptContextInfo &value, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(value.scriptId());
-    hashCode = hashCode * 31 + qHash(value.fileName());
-    hashCode = hashCode * 31 + qHash(value.lineNumber());
-    hashCode = hashCode * 31 + qHash(value.columnNumber());
-    hashCode = hashCode * 31 + qHash(value.functionName());
-    hashCode = hashCode * 31 + qHash(value.functionType());
-    hashCode = hashCode * 31 + qHash(value.functionParameterNames());
-    hashCode = hashCode * 31 + qHash(value.functionStartLineNumber());
-    hashCode = hashCode * 31 + qHash(value.functionEndLineNumber());
-    hashCode = hashCode * 31 + qHash(value.functionMetaIndex());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.scriptId());
+    seed = hash(seed, value.fileName());
+    seed = hash(seed, value.lineNumber());
+    seed = hash(seed, value.columnNumber());
+    seed = hash(seed, value.functionName());
+    seed = hash(seed, value.functionType());
+    seed = hash(seed, value.functionParameterNames());
+    seed = hash(seed, value.functionStartLineNumber());
+    seed = hash(seed, value.functionEndLineNumber());
+    seed = hash(seed, value.functionMetaIndex());
+    return seed;
 }
 
-inline hash_type qHash(const QScriptProgram &value)
+inline hash_type qHash(const QScriptProgram &value, hash_type seed = 0)
 {
-    hash_type hashCode = 1;
-    hashCode = hashCode * 31 + qHash(value.fileName());
-    hashCode = hashCode * 31 + qHash(value.firstLineNumber());
-    hashCode = hashCode * 31 + qHash(value.sourceCode());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.fileName());
+    seed = hash(seed, value.firstLineNumber());
+    seed = hash(seed, value.sourceCode());
+    return seed;
 }
 
 #endif // QTJAMBISCRIPT_HASHES_H

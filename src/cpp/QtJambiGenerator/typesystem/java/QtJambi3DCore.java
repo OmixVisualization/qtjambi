@@ -37,12 +37,12 @@ class QAbstractAspect___java extends QAbstractAspect {
     /**
      * <p>See <a href="@docRoot/qt3dcore-qabstractaspect.html#registerBackendType">Qt3DCore::QAbstractAspect::registerBackendType(Qt3DCore::QBackendNodeMapperPtr)</a></p>
      */
-    @io.qt.QtUninvokable
-    protected final void registerBackendType(Class<? extends io.qt.core.QObject> type, io.qt.qt3d.core.QBackendNodeMapper functor)    {
+    @QtUninvokable
+    protected final void registerBackendType(@StrictNonNull Class<? extends io.qt.core.QObject> type, io.qt.qt3d.core.@Nullable QBackendNodeMapper functor)    {
         registerBackendType(io.qt.core.QMetaObject.forType(type), functor);
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     protected final void unregisterBackendType(Class<? extends io.qt.core.QObject> type)    {
         unregisterBackendType(io.qt.core.QMetaObject.forType(type));
     }
@@ -54,8 +54,8 @@ class QEntity_6_ {
     /**
      * <p>See <a href="@docRoot/qt3dcore-qentity.html#componentsOfType">Qt3DCore::QEntity::componentsOfType&lt;T>()const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final <T extends io.qt.qt3d.core.QComponent> io.qt.core.QList<T> componentsOfType(Class<T> type)
+    @QtUninvokable
+    public final <T extends io.qt.qt3d.core.@Nullable QComponent> io.qt.core.@NonNull QList<T> componentsOfType(@StrictNonNull Class<T> type)
     {
         io.qt.core.QList<T> matchComponents = new io.qt.core.QList<T>(type);
         for (io.qt.qt3d.core.QComponent component : components()) {
@@ -72,8 +72,8 @@ class QEntity_5_ {
     /**
      * <p>See <a href="@docRoot/qt3dcore-qentity.html#componentsOfType">Qt3DCore::QEntity::componentsOfType&lt;T>()const</a></p>
      */
-    @io.qt.QtUninvokable
-    public final <T extends io.qt.qt3d.core.QComponent> io.qt.core.QVector<T> componentsOfType(Class<T> type)
+    @QtUninvokable
+    public final <T extends io.qt.qt3d.core.@Nullable QComponent> io.qt.core.@NonNull QVector<T> componentsOfType(@StrictNonNull Class<T> type)
     {
         io.qt.core.QVector<T> matchComponents = new io.qt.core.QVector<T>(type);
         for (io.qt.qt3d.core.QComponent component : components()) {

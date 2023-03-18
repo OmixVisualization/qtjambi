@@ -328,6 +328,14 @@ QByteArray QtJambiAPI::typeName(const std::type_info& typeId){
     return typeName;
 }
 
+void QtJambiAPI::registerDependency(JNIEnv *env, jobject dependentObject, QtJambiNativeID nativeId){
+    QSharedPointer<QtJambiLink> _dependentLink = QtJambiLink::findLinkForJavaInterface(env, dependentObject);
+    QSharedPointer<QtJambiLink> _ownerLink = QtJambiLink::fromNativeId(nativeId);
+    if(_dependentLink && _ownerLink){
+        _ownerLink->registerDependentObject(_dependentLink);
+    }
+}
+
 void QtJambiAPI::setJavaOwnershipForTopLevelObject(JNIEnv *env, QObject* qobject)
 {
     if(qobject && !qobject->parent()){
@@ -478,7 +486,27 @@ void QtJambiAPI::checkPointer(JNIEnv *env, const void* ptr, const std::type_info
 jobjectArray QtJambiAPI::createObjectArray(JNIEnv *env, const std::type_info& componentType, jsize size){
     jclass arrayElementType = JavaAPI::resolveClass(env, getJavaInterfaceName(componentType));
     JavaException::check(env QTJAMBI_STACKTRACEINFO );
-    Q_ASSERT(arrayElementType);
+    Q_ASSERT(arrayElementType && !Java::Runtime::Class::isPrimitive(env, arrayElementType));
+    if(Java::Runtime::Class::isPrimitive(env, arrayElementType)){
+        if(Java::Runtime::Integer::isPrimitiveType(env, arrayElementType))
+            arrayElementType = Java::Runtime::Integer::getClass(env);
+        else if(Java::Runtime::Short::isPrimitiveType(env, arrayElementType))
+            arrayElementType = Java::Runtime::Short::getClass(env);
+        else if(Java::Runtime::Byte::isPrimitiveType(env, arrayElementType))
+            arrayElementType = Java::Runtime::Byte::getClass(env);
+        else if(Java::Runtime::Long::isPrimitiveType(env, arrayElementType))
+            arrayElementType = Java::Runtime::Long::getClass(env);
+        else if(Java::Runtime::Float::isPrimitiveType(env, arrayElementType))
+            arrayElementType = Java::Runtime::Float::getClass(env);
+        else if(Java::Runtime::Double::isPrimitiveType(env, arrayElementType))
+            arrayElementType = Java::Runtime::Double::getClass(env);
+        else if(Java::Runtime::Character::isPrimitiveType(env, arrayElementType))
+            arrayElementType = Java::Runtime::Character::getClass(env);
+        else if(Java::Runtime::Boolean::isPrimitiveType(env, arrayElementType))
+            arrayElementType = Java::Runtime::Boolean::getClass(env);
+        else if(Java::Runtime::Void::isPrimitiveType(env, arrayElementType))
+            arrayElementType = Java::Runtime::Void::getClass(env);
+    }
     jobjectArray array = env->NewObjectArray(jsize(size), arrayElementType, nullptr);
     JavaException::check(env QTJAMBI_STACKTRACEINFO );
     return array;
@@ -962,7 +990,7 @@ jobject QtJambiAPI::createQPromise(JNIEnv* env, jobject futureInterface, const v
         }
     }
     jobject result = Java::QtCore::QPromise::newInstance(env, futureInterface, true);
-    jobject ni = QtJambiAPI::convertNativeToJavaObject(env, promise, Java::QtCore::QPromise$NativeInstance::getClass(env), false, false);
+    jobject ni = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, promise, Java::QtCore::QPromise$NativeInstance::getClass(env));
     if(scope){
         JObjectWrapper _result(env, result);
         scope->addFinalAction([env, _result](){

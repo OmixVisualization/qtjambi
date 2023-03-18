@@ -30,6 +30,14 @@
 ****************************************************************************/
 
 #include <QtJambi/MetaInfo>
+#include <QtCore/QMutex>
+#include "utils_p.h"
+
+namespace Java{
+    namespace QtUIC{
+        QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/uic/ui4,DomUI,)
+    }
+}
 
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_designer_util_QtJambi_1LibraryUtilities_internalAccess)(JNIEnv *env, jclass cls){
     jobject result{0};

@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.qml"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtQml"
     module: "qtjambi.qml"
     description: "Classes for QML and JavaScript languages."
@@ -62,14 +62,6 @@ TypeSystem{
     }
     
     Rejection{
-        className: "QJSEngine::FunctionWithArgSignature"
-    }
-    
-    Rejection{
-        className: "QJSEngine::FunctionSignature"
-    }
-    
-    Rejection{
         className: ""
         functionName: "qmlCreateCustomParser"
     }
@@ -79,40 +71,10 @@ TypeSystem{
         functionName: "qjsvalue_cast_helper"
     }
     
-    Rejection{
-        className: "QJSEngine"
-        functionName: "fromScriptValue"
-    }
-    
-    Rejection{
-        className: "QJSEngine"
-        functionName: "toScriptValue"
-    }
-    
-    Rejection{
-        className: "QJSEngine"
-        functionName: "registerCustomType"
-    }
-    
-    Rejection{
-        className: "QJSEngine"
-        functionName: "scriptValueFromQMetaObject"
-    }
-    
-    Rejection{
-        className: "QJSEngine"
-        functionName: "newFunction"
-    }
-    
     
     Rejection{
         className: "QQmlInfo"
         functionName: "operator<<"
-    }
-    
-    Rejection{
-        className: "QJSEngine"
-        functionName: "objectById"
     }
     
     Rejection{
@@ -179,28 +141,8 @@ TypeSystem{
     }
     
     EnumType{
-        name: "QJSEngine::ObjectOwnership"
-        since: 6
-    }
-    
-    EnumType{
-        name: "QJSManagedValue::Type"
-        since: [6, 1]
-    }
-    
-    EnumType{
-        name: "QJSPrimitiveValue::Type"
-        since: [6, 1]
-    }
-    
-    EnumType{
         name: "QJSValue::ObjectConversionBehavior"
         since: [6, 1]
-    }
-    
-    EnumType{
-        name: "QJSEngine::Extension"
-        flags: "QJSEngine::Extensions"
     }
     
     EnumType{
@@ -269,32 +211,6 @@ TypeSystem{
             signature: "data() const"
             remove: RemoveFlag.All
         }
-        ModifyFunction{
-            signature: "connectDownloadProgress(QObject *, const char *)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "connectFinished(QObject *, const char *)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "J2CStringBuffer %out(%env, %in);"}
-                }
-            }
-        }
     }
     
     ValueType{
@@ -346,15 +262,11 @@ TypeSystem{
     ValueType{
         name: "QQmlScriptString"
         ModifyFunction{
-            signature: "operator= ( const QQmlScriptString & )"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
             signature: "numberLiteral( bool * ) const"
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.lang.Double"
+                    modifiedType: "java.lang.@Nullable Double"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -377,7 +289,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.lang.Boolean"
+                    modifiedType: "java.lang.@Nullable Boolean"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -399,47 +311,9 @@ TypeSystem{
     
     ObjectType{
         name: "QJSManagedValue"
-        ModifyFunction{
-            signature: "jsMetaInstantiate(QList<QJSValue>)const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.qml.QJSManagedValue"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, new QJSManagedValue(std::move(%in)));\n"+
-                                  "QtJambiAPI::setJavaOwnership(%env, %out);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "jsMetaType()const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.qml.QJSManagedValue"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, new QJSManagedValue(std::move(%in)));\n"+
-                                  "QtJambiAPI::setJavaOwnership(%env, %out);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "prototype()const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.qml.QJSManagedValue"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, new QJSManagedValue(std::move(%in)));\n"+
-                                  "QtJambiAPI::setJavaOwnership(%env, %out);"}
-                }
-            }
+        EnumType{
+            name: "Type"
+            since: [6, 1]
         }
         since: [6, 1]
     }
@@ -451,6 +325,10 @@ TypeSystem{
                 fileName: "QtJambi/QmlAPI"
                 location: Include.Global
             }
+        }
+        EnumType{
+            name: "Type"
+            since: [6, 1]
         }
         ModifyFunction{
             signature: "QJSPrimitiveValue(QJSPrimitiveNull)"
@@ -466,54 +344,6 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "operator+()"
-            rename: "unaryPlus"
-            since: [6, 2]
-        }
-        ModifyFunction{
-            signature: "operator++()"
-            rename: "inc"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-            }
-            since: [6, 2]
-        }
-        ModifyFunction{
-            signature: "operator-()"
-            rename: "unaryMinus"
-            since: [6, 2]
-        }
-        ModifyFunction{
-            signature: "operator--()"
-            rename: "dec"
-            ModifyArgument{
-                index: "return"
-                replaceValue: "this"
-            }
-            since: [6, 2]
-        }
-        ModifyFunction{
-            signature: "operator%(QJSPrimitiveValue)"
-            rename: "mod"
-        }
-        ModifyFunction{
-            signature: "operator/(QJSPrimitiveValue)"
-            rename: "div"
-        }
-        ModifyFunction{
-            signature: "operator*(QJSPrimitiveValue)"
-            rename: "times"
-        }
-        ModifyFunction{
-            signature: "operator+(QJSPrimitiveValue)"
-            rename: "plus"
-        }
-        ModifyFunction{
-            signature: "operator-(QJSPrimitiveValue)"
-            rename: "minus"
-        }
-        ModifyFunction{
             signature: "operator--(int)"
             remove: RemoveFlag.All
             since: [6, 2]
@@ -524,19 +354,32 @@ TypeSystem{
             since: [6, 2]
         }
         ModifyFunction{
+            signature: "operator*(QJSPrimitiveValue)"
+            Delegate{name: "multiplied"; deprecated: true}
+        }
+        ModifyFunction{
+            signature: "operator%(QJSPrimitiveValue)"
+            Delegate{name: "modulo"; deprecated: true}
+        }
+        ModifyFunction{
+            signature: "operator+(QJSPrimitiveValue)"
+            Delegate{name: "added"; deprecated: true}
+        }
+        ModifyFunction{
+            signature: "operator-(QJSPrimitiveValue)"
+            Delegate{name: "substracted"; deprecated: true}
+        }
+        ModifyFunction{
+            signature: "operator/(QJSPrimitiveValue)"
+            Delegate{name: "divided"; deprecated: true}
+        }
+        ModifyFunction{
             signature: "operate<Operators>(QJSPrimitiveValue,QJSPrimitiveValue)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "operateOnIntegers<Operators,Lhs,Rhs>(QJSPrimitiveValue,QJSPrimitiveValue)"
             remove: RemoveFlag.All
-        }
-        InjectCode{
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiQml.java"
-                quoteAfterLine: "class QJSPrimitiveValue__"
-                quoteBeforeLine: "}// class"
-            }
         }
         since: [6, 1]
     }
@@ -570,10 +413,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "QJSValue(const char * )"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator= ( const QJSValue & )"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -611,9 +450,6 @@ TypeSystem{
             signature: "call(const QList<QJSValue> &)"
             ModifyArgument{
                 index: 1
-                ReplaceType{
-                    modifiedType: "java.util.Collection<QJSValue>"
-                }
                 ReplaceDefaultExpression{
                     expression: "java.util.Collections.emptyList()"
                 }
@@ -624,9 +460,6 @@ TypeSystem{
             signature: "callWithInstance(const QJSValue &, const QList<QJSValue> &)"
             ModifyArgument{
                 index: 2
-                ReplaceType{
-                    modifiedType: "java.util.Collection<QJSValue>"
-                }
                 ReplaceDefaultExpression{
                     expression: "java.util.Collections.emptyList()"
                 }
@@ -637,9 +470,6 @@ TypeSystem{
             signature: "callAsConstructor(const QList<QJSValue> &)"
             ModifyArgument{
                 index: 1
-                ReplaceType{
-                    modifiedType: "java.util.Collection<QJSValue>"
-                }
                 ReplaceDefaultExpression{
                     expression: "java.util.Collections.emptyList()"
                 }
@@ -650,9 +480,6 @@ TypeSystem{
             signature: "call(const QList<QJSValue> &)const"
             ModifyArgument{
                 index: 1
-                ReplaceType{
-                    modifiedType: "java.util.Collection<QJSValue>"
-                }
                 ReplaceDefaultExpression{
                     expression: "java.util.Collections.emptyList()"
                 }
@@ -663,9 +490,6 @@ TypeSystem{
             signature: "callWithInstance(const QJSValue &, const QList<QJSValue> &)const"
             ModifyArgument{
                 index: 2
-                ReplaceType{
-                    modifiedType: "java.util.Collection<QJSValue>"
-                }
                 ReplaceDefaultExpression{
                     expression: "java.util.Collections.emptyList()"
                 }
@@ -676,9 +500,6 @@ TypeSystem{
             signature: "callAsConstructor(const QList<QJSValue> &)const"
             ModifyArgument{
                 index: 1
-                ReplaceType{
-                    modifiedType: "java.util.Collection<QJSValue>"
-                }
                 ReplaceDefaultExpression{
                     expression: "java.util.Collections.emptyList()"
                 }
@@ -700,14 +521,15 @@ TypeSystem{
             type: CustomConstructor.Default
             Text{content: "new(placement) QQmlInfo(qmlDebug(nullptr));"}
         }
+        ModifyFunction{
+            signature: "operator<<(QQmlInfo,const QWindow*)"
+            rename: "append"
+            since: 6
+        }
     }
     
     ValueType{
         name: "QQmlError"
-        ModifyFunction{
-            signature: "operator=(const QQmlError &)"
-            remove: RemoveFlag.All
-        }
         ModifyFunction{
             signature: "setObject(QObject*)"
             ModifyArgument{
@@ -807,10 +629,175 @@ TypeSystem{
     
     ObjectType{
         name: "QJSEngine"
+        ExtraIncludes{
+            Include{
+                fileName: "utils_p.h"
+                location: Include.Local
+            }
+        }
+        Rejection{className: "FunctionWithArgSignature"}
+        Rejection{className: "FunctionSignature"}
+        Rejection{functionName: "registerCustomType"}
+        Rejection{functionName: "scriptValueFromQMetaObject"}
+        Rejection{functionName: "newFunction"}
+        Rejection{functionName: "objectById"}
+        EnumType{
+            name: "ObjectOwnership"
+            since: 6
+        }
+        EnumType{
+            name: "Extension"
+        }
+
         ModifyFunction{
             signature: "newQMetaObject<T>()"
             remove: RemoveFlag.All
         }
+        ModifyFunction{
+            signature: "toManagedValue<T>(T)"
+            Instantiation{
+                proxyCall: "qtjambi_toManagedValue"
+                Argument{
+                    type: "QVariant"
+                }
+                AddTypeParameter{
+                    name: "T"
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "T"
+                    }
+                }
+            }
+            since: [6, 1]
+        }
+        ModifyFunction{
+            signature: "fromManagedValue<T>(QJSManagedValue)"
+            Instantiation{
+                proxyCall: "qtjambi_fromManagedValue"
+                Argument{
+                    type: "QVariant"
+                }
+                AddTypeParameter{
+                    name: "T"
+                }
+                AddArgument{
+                    name: "type"
+                    type: "io.qt.core.QMetaType"
+                }
+                ModifyArgument{
+                    index: 0
+                    replaceType: "T"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "%out = %in;"}
+                    }
+                }
+            }
+            since: [6, 1]
+        }
+        ModifyFunction{
+            signature: "toScriptValue<T>(T)"
+            Instantiation{
+                proxyCall: "qtjambi_toScriptValue"
+                Argument{
+                    type: "QVariant"
+                }
+                AddTypeParameter{
+                    name: "T"
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "T"
+                    }
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "fromScriptValue<T>(QJSValue)"
+            Instantiation{
+                proxyCall: "qtjambi_fromScriptValue"
+                Argument{
+                    type: "QVariant"
+                }
+                AddTypeParameter{
+                    name: "T"
+                }
+                AddArgument{
+                    name: "type"
+                    type: "io.qt.core.QMetaType"
+                }
+                ModifyArgument{
+                    index: 0
+                    replaceType: "T"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "%out = %in;"}
+                    }
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "toPrimitiveValue<T>(T)"
+            Instantiation{
+                Argument{
+                    type: "int"
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "bool"
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "double"
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QString"
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "fromPrimitiveValue<T>(QJSPrimitiveValue)"
+            remove: RemoveFlag.All
+            since: 6.5
+        }
+        ModifyFunction{
+            signature: "fromVariant<T>(QVariant)"
+            Instantiation{
+                proxyCall: "qtjambi_fromVariant"
+                Argument{
+                    type: "QVariant"
+                }
+                AddTypeParameter{
+                    name: "T"
+                }
+                AddArgument{
+                    name: "type"
+                    type: "io.qt.core.QMetaType"
+                }
+                ModifyArgument{
+                    index: 0
+                    replaceType: "T"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "%out = %in;"}
+                    }
+                }
+            }
+            since: [6, 3]
+        }
+        ModifyFunction{
+            signature: "coerceValue<From,To>(From)"
+            remove: RemoveFlag.All
+            since: 6.5
+        }
+
         ModifyFunction{
             signature: "setObjectOwnership(QObject*,QJSEngine::ObjectOwnership)"
             ModifyArgument{
@@ -1001,11 +988,45 @@ TypeSystem{
             }
             since: 6
         }
+        ModifyFunction{
+            signature: "singletonInstance(int)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "singletonInstance<T>(int)"
+            Instantiation{
+                Argument{
+                    type: "QJSValue"
+                    isImplicit: false
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "singletonInstance(QAnyStringView,QAnyStringView)"
+            remove: RemoveFlag.All
+            since: [6,5]
+        }
+        ModifyFunction{
+            signature: "singletonInstance<T>(QAnyStringView,QAnyStringView)"
+            Instantiation{
+                Argument{
+                    type: "QJSValue"
+                    isImplicit: false
+                }
+            }
+            since: [6,5]
+        }
         InjectCode{
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiQml.java"
                 quoteAfterLine: "class QQmlEngine__"
                 quoteBeforeLine: "}// class"
+            }
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiQml.java"
+                quoteAfterLine: "class QQmlEngine_65_"
+                quoteBeforeLine: "}// class"
+                since: [6,5]
             }
         }
     }
@@ -1040,24 +1061,6 @@ TypeSystem{
             Include{
                 fileName: "QtCore/QByteArray"
                 location: Include.Global
-            }
-        }
-        ModifyFunction{
-            signature: "initializeEngine ( QQmlEngine * , const char * )"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "registerTypes ( const char * )"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
             }
         }
     }
@@ -1180,7 +1183,6 @@ TypeSystem{
     
     EnumType{
         name: "QQmlImageProviderBase::Flag"
-        flags: "QQmlImageProviderBase::Flags"
     }
     
     EnumType{
@@ -1199,10 +1201,6 @@ TypeSystem{
     
     InterfaceType{
         name: "QQmlIncubationController"
-        ModifyFunction{
-            signature: "operator=(const QQmlIncubationController &)"
-            remove: RemoveFlag.All
-        }
         ExtraIncludes{
             Include{
                 fileName: "utils_p.h"
@@ -1276,10 +1274,6 @@ TypeSystem{
     ObjectType{
         name: "QQmlIncubator"
         ModifyFunction{
-            signature: "operator=(const QQmlIncubator &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
             signature: "setInitialState(QObject*)"
             ModifyArgument{
                 index: 1
@@ -1307,10 +1301,6 @@ TypeSystem{
     
     ValueType{
         name: "QQmlListReference"
-        ModifyFunction{
-            signature: "operator=(const QQmlListReference &)"
-            remove: RemoveFlag.All
-        }
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QScopedPointer"
@@ -1320,25 +1310,6 @@ TypeSystem{
                 fileName: "QtCore/QByteArray"
                 location: Include.Global
             }
-        }
-        ModifyFunction{
-            signature: "QQmlListReference ( QObject *, const char *, QQmlEngine * )"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "QQmlListReference ( QObject *, const char *)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            since: [6, 4]
         }
     }
     
@@ -1376,37 +1347,10 @@ TypeSystem{
                 location: Include.Global
             }
         }
-        ModifyFunction{
-            signature: "registerTypes(const char *)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
     }
     
     InterfaceType{
         name: "QQmlExtensionInterface"
-        ModifyFunction{
-            signature: "registerTypes(const char *)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "initializeEngine(QQmlEngine *, const char *)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
     }
     
     InterfaceType{
@@ -1425,22 +1369,12 @@ TypeSystem{
                     action: ReferenceCount.Ignore
                 }
             }
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
         }
         since: [5, 15]
     }
     
     ValueType{
         name: "QQmlProperty"
-        ModifyFunction{
-            signature: "operator=(const QQmlProperty &)"
-            remove: RemoveFlag.All
-        }
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QScopedPointer"
@@ -1478,21 +1412,6 @@ TypeSystem{
                               "    }\n"+
                               "}"}
             }
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "propertyTypeName() const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
         }
         InjectCode{
             ImportFile{
@@ -1506,11 +1425,7 @@ TypeSystem{
     ObjectType{
         name: "QQmlPropertyMap"
         ModifyFunction{
-            signature: "operator[](const QString &) const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator[](const QString &)"
+            signature: "QQmlPropertyMap<DerivedType>(DerivedType *, QObject *)"
             remove: RemoveFlag.All
         }
     }
@@ -1642,175 +1557,61 @@ TypeSystem{
     GlobalFunction{
         signature: "qmlProtectModule(const char*, int)"
         targetType: "QtQml"
-        ModifyArgument{
-            index: 1
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
-        }
     }
     
     GlobalFunction{
         signature: "qmlRegisterModule(const char*, int, int)"
         targetType: "QtQml"
-        ModifyArgument{
-            index: 1
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
-        }
     }
     
     GlobalFunction{
         signature: "qmlRegisterModuleImport(const char*, int, const char*, int, int)"
         targetType: "QtQml"
-        ModifyArgument{
-            index: 1
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
-        }
-        ModifyArgument{
-            index: 3
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
-        }
     }
     
     GlobalFunction{
         signature: "qmlRegisterNamespaceAndRevisions(const QMetaObject*, const char*, int)"
         targetType: "QtQml"
-        ModifyArgument{
-            index: 2
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
-        }
     }
     
     GlobalFunction{
         signature: "qmlRegisterNamespaceAndRevisions(const QMetaObject*, const char*, int, QList<int>*, const QMetaObject*)"
         targetType: "QtQml"
-        ModifyArgument{
-            index: 2
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
-        }
     }
     
     GlobalFunction{
         signature: "qmlRegisterNamespaceAndRevisions(const QMetaObject*, const char*, int, QList<int>*, const QMetaObject*, const QMetaObject*)"
         targetType: "QtQml"
-        ModifyArgument{
-            index: 2
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
-        }
     }
     
     GlobalFunction{
         signature: "qmlRegisterSingletonType(QUrl, const char*, int, int, const char*)"
         targetType: "QtQml"
-        ModifyArgument{
-            index: 2
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
-        }
-        ModifyArgument{
-            index: 5
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
-        }
     }
     
     GlobalFunction{
         signature: "qmlRegisterType(QUrl, const char*, int, int, const char*)"
         targetType: "QtQml"
-        ModifyArgument{
-            index: 2
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
-        }
-        ModifyArgument{
-            index: 5
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
-        }
     }
     
     GlobalFunction{
         signature: "qmlRegisterTypeNotAvailable(const char*, int, int, const char*, QString)"
         targetType: "QtQml"
-        ModifyArgument{
-            index: 1
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
-        }
-        ModifyArgument{
-            index: 4
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
-        }
     }
     
     GlobalFunction{
         signature: "qmlRegisterUncreatableMetaObject(const QMetaObject&, const char*, int, int, const char*, QString)"
         targetType: "QtQml"
-        ModifyArgument{
-            index: 2
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
-        }
-        ModifyArgument{
-            index: 5
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
-        }
     }
     
     GlobalFunction{
         signature: "qmlTypeId(const char*, int, int, const char*)"
         targetType: "QtQml"
-        ModifyArgument{
-            index: 1
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
-        }
-        ModifyArgument{
-            index: 4
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
-        }
     }
     
     GlobalFunction{
         signature: "qmlUnregisterModuleImport(const char*, int, const char*, int, int)"
         targetType: "QtQml"
-        ModifyArgument{
-            index: 1
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
-        }
-        ModifyArgument{
-            index: 3
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
-        }
     }
     
     GlobalFunction{
@@ -1837,12 +1638,6 @@ TypeSystem{
             Argument{
                 type: "QObject"
             }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             AddArgument{
                 index: 1
                 name: "containerType"
@@ -1859,12 +1654,6 @@ TypeSystem{
             Argument{
                 type: "QObject"
             }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             AddArgument{
                 index: 1
                 name: "type"
@@ -1876,12 +1665,6 @@ TypeSystem{
             since: [6, 3]
             Argument{
                 type: "QString"
-            }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
             }
             AddArgument{
                 index: 1
@@ -1904,12 +1687,6 @@ TypeSystem{
             Argument{
                 type: "QObject"
             }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             AddArgument{
                 index: 1
                 name: "type"
@@ -1929,12 +1706,6 @@ TypeSystem{
             }
             Argument{
                 type: "QObject"
-            }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
             }
             AddArgument{
                 index: 1
@@ -1958,12 +1729,6 @@ TypeSystem{
             Argument{
                 type: "QObject"
             }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             AddArgument{
                 index: 1
                 name: "type"
@@ -1980,16 +1745,10 @@ TypeSystem{
             Argument{
                 type: "QObject"
             }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             AddArgument{
                 index: 1
                 name: "type"
-                type: "java.lang.Class<? extends io.qt.QtObjectInterface>"
+                type: "java.lang.Class<? extends QtObjectInterface>"
             }
         }
     }
@@ -2002,16 +1761,10 @@ TypeSystem{
             Argument{
                 type: "QObject"
             }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             AddArgument{
                 index: 1
                 name: "type"
-                type: "java.lang.Class<? extends io.qt.QtObjectInterface>"
+                type: "java.lang.Class<? extends QtObjectInterface>"
             }
         }
         until: [5, 15]
@@ -2027,12 +1780,6 @@ TypeSystem{
             }
             Argument{
                 type: "int"
-            }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
             }
             AddArgument{
                 index: 1
@@ -2058,12 +1805,6 @@ TypeSystem{
             Argument{
                 type: "QObject"
             }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             AddArgument{
                 index: 1
                 name: "type"
@@ -2087,18 +1828,6 @@ TypeSystem{
             }
             Argument{
                 type: "QObject"
-            }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
             }
             AddArgument{
                 index: 1
@@ -2124,18 +1853,6 @@ TypeSystem{
             Argument{
                 type: "QObject"
             }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             AddArgument{
                 index: 1
                 name: "type"
@@ -2154,18 +1871,6 @@ TypeSystem{
             }
             Argument{
                 type: "QString"
-            }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
             }
             AddArgument{
                 index: 1
@@ -2186,34 +1891,22 @@ TypeSystem{
     }
     
     GlobalFunction{
-        signature: "qmlRegisterSingletonType<T>(const char*, int, int, const char*, QObject*)"
+        signature: "qmlRegisterSingletonType<T>(const char*,int,int,const char*,QObject*(*)(QQmlEngine*,QJSEngine*))"
         targetType: "QtQml"
+        ModifyArgument{
+            index: 5
+            ReplaceType{
+                modifiedType: "io.qt.qml.QtQml$@Nullable ObjectCallback"
+            }
+            ConversionRule{
+                codeClass: CodeClass.Native
+                Text{content: "QtQml::ObjectCallback %out = qtjambi_cast<QtQml::ObjectCallback>(%env, %in);"}
+            }
+        }
         Instantiation{
             proxyCall: "qtjambi_qmlRegisterSingletonType"
             Argument{
                 type: "QObject"
-            }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 5
-                ReplaceType{
-                    modifiedType: "io.qt.qml.QtQml$ObjectCallback"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QtQml::ObjectCallback %out = qtjambi_cast<QtQml::ObjectCallback>(%env, %in);"}
-                }
             }
             AddArgument{
                 index: 1
@@ -2224,25 +1917,13 @@ TypeSystem{
     }
     
     GlobalFunction{
-        signature: "qmlRegisterSingletonType(const char*, int, int, const char*, QJSValue)"
+        signature: "qmlRegisterSingletonType(const char*,int,int,const char*,QJSValue(*)(QQmlEngine*,QJSEngine*))"
         proxyCall: "qtjambi_qmlRegisterSingletonType"
         targetType: "QtQml"
         ModifyArgument{
-            index: 1
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
-        }
-        ModifyArgument{
-            index: 4
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
-        }
-        ModifyArgument{
             index: 5
             ReplaceType{
-                modifiedType: "io.qt.qml.QtQml$ValueCallback"
+                modifiedType: "io.qt.qml.QtQml$@Nullable ValueCallback"
             }
             ConversionRule{
                 codeClass: CodeClass.Native
@@ -2262,18 +1943,6 @@ TypeSystem{
             Argument{
                 type: "QObject"
             }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             AddArgument{
                 index: 1
                 name: "type"
@@ -2287,18 +1956,6 @@ TypeSystem{
             }
             Argument{
                 type: "QObject"
-            }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
             }
             AddArgument{
                 index: 1
@@ -2324,18 +1981,6 @@ TypeSystem{
             Argument{
                 type: "QObject"
             }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             AddArgument{
                 index: 1
                 name: "type"
@@ -2349,18 +1994,6 @@ TypeSystem{
             }
             Argument{
                 type: "QObject"
-            }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
             }
             AddArgument{
                 index: 1
@@ -2389,17 +2022,16 @@ TypeSystem{
             Argument{
                 type: "QObject"
             }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             AddArgument{
                 name: "types"
                 type: "java.lang.Class<?>..."
             }
         }
+    }
+
+    GlobalFunction{
+        signature: "qmlRegisterTypesAndRevisions<>(const char *, int, QList<int> *)"
+        remove: RemoveFlag.All
     }
     
     GlobalFunction{
@@ -2415,12 +2047,6 @@ TypeSystem{
             }
             Argument{
                 type: "QObject"
-            }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
             }
             AddArgument{
                 name: "types"
@@ -2439,12 +2065,6 @@ TypeSystem{
             }
             Argument{
                 type: "QObject"
-            }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
             }
             AddArgument{
                 name: "types"
@@ -2479,9 +2099,6 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: enum 'QQmlModuleImportSpecialVersions' does not have a type entry or is not an enum"}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QJSValue."}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QQmlContext::PropertyPair."}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type std::function<QObject *(QQmlEngine *, QJSEngine *)> (is_busted)"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type QObject *(*)(QQmlEngine *, QJSEngine *) (is_busted)"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type QJSValue (*)(QQmlEngine *, QJSEngine *) (is_busted)"}
     SuppressedWarning{text: "WARNING(CppImplGenerator) :: protected function '*' in final class '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: visibility of function '*' modified in class '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: hiding of function '*' in class '*'"}

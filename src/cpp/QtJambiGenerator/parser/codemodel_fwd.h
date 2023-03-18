@@ -68,6 +68,7 @@ class _VariableModelItem;
 class _MemberModelItem;
 class TypeInfo;
 
+typedef QExplicitlySharedDataPointer<CodeModel> CodeModelPtr;
 typedef QExplicitlySharedDataPointer<_ArgumentModelItem> ArgumentModelItem;
 typedef QExplicitlySharedDataPointer<_ClassModelItem> ClassModelItem;
 typedef QExplicitlySharedDataPointer<_CodeModelItem> CodeModelItem;

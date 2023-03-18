@@ -49,30 +49,7 @@
 
 #include <QtCore/qcompilerdetection.h>
 
-#ifdef QT6_DECL_NEW_OVERLOAD
-#undef QT6_DECL_NEW_OVERLOAD
-#define QT6_DECL_NEW_OVERLOAD
-#endif
-#ifdef QT6_IMPL_NEW_OVERLOAD
-#undef QT6_IMPL_NEW_OVERLOAD
-#define QT6_IMPL_NEW_OVERLOAD
-#endif
-#ifdef QT6_CALL_NEW_OVERLOAD
-#undef QT6_CALL_NEW_OVERLOAD
-#define QT6_CALL_NEW_OVERLOAD
-#endif
-#ifdef QT6_DECL_NEW_OVERLOAD_TAIL
-#undef QT6_DECL_NEW_OVERLOAD_TAIL
-#define QT6_DECL_NEW_OVERLOAD_TAIL
-#endif
-#ifdef QT6_IMPL_NEW_OVERLOAD_TAIL
-#undef QT6_IMPL_NEW_OVERLOAD_TAIL
-#define QT6_IMPL_NEW_OVERLOAD_TAIL
-#endif
-#ifdef QT6_CALL_NEW_OVERLOAD_TAIL
-#undef QT6_CALL_NEW_OVERLOAD_TAIL
-#define QT6_CALL_NEW_OVERLOAD_TAIL
-#endif
+#define seed_seq initializer_list<uint>const
 
 #include <QtCore/qstringliteral.h>
 #undef QStringLiteral
@@ -91,6 +68,9 @@
 
 #define QSETTINGS_H
 #include <QtCore/QtCore>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#include <QtCore/qpermissions.h>
+#endif
 #include <QtCore/qfloat16.h>
 #undef QSETTINGS_H
 #define Q_OS_WIN
@@ -137,7 +117,7 @@ typedef struct __GLsync *GLsync;
 
 #ifndef QT_OPENGL_ES_2
 #define QT_OPENGL_ES_2
-#include <QtGui/QOpenGLFunctions_ES2>
+#include <QtGui/qopenglfunctions_es2.h>
 #undef QT_OPENGL_ES_2
 #else
 #include <QtGui/QOpenGLFunctions_ES2>
@@ -234,10 +214,22 @@ typedef struct __GLsync *GLsync;
 #       undef QSGTEXTURE_PLATFORM_H
 #       ifndef Q_OS_WIN
 #           define Q_OS_WIN
-#           include <QtQuick/qsgtexture_platform.h>
+#               ifndef __OBJC__
+#                   define __OBJC__
+#                   include <QtQuick/qsgtexture_platform.h>
+#                   undef __OBJC__
+#               else
+#                   include <QtQuick/qsgtexture_platform.h>
+#               endif
 #           undef Q_OS_WIN
 #       else
-#           include <QtQuick/qsgtexture_platform.h>
+#           ifndef __OBJC__
+#               define __OBJC__
+#               include <QtQuick/qsgtexture_platform.h>
+#               undef __OBJC__
+#           else
+#               include <QtQuick/qsgtexture_platform.h>
+#           endif
 #       endif
 #   endif
 #	include <QtQuick/private/qquickevents_p_p.h>
@@ -343,6 +335,7 @@ typedef struct __GLsync *GLsync;
 
 #ifndef QTJAMBI_NO_XMLPATTERNS
 #  include <QtXmlPatterns/QtXmlPatterns>
+#  include <QtJambiXmlPatterns/hashes.h>
 #endif
 
 #ifndef QTJAMBI_NO_DBUS
@@ -577,37 +570,37 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #endif
 
 #include <QtOpenGL/QOpenGLPixelTransferOptions>
-#include <QtOpenGL/QOpenGLFunctions_1_0>
-#include <QtOpenGL/QOpenGLFunctions_1_1>
-#include <QtOpenGL/QOpenGLFunctions_1_2>
-#include <QtOpenGL/QOpenGLFunctions_1_3>
-#include <QtOpenGL/QOpenGLFunctions_1_4>
-#include <QtOpenGL/QOpenGLFunctions_1_5>
-#include <QtOpenGL/QOpenGLFunctions_2_0>
-#include <QtOpenGL/QOpenGLFunctions_2_1>
-#include <QtOpenGL/QOpenGLFunctions_3_0>
-#include <QtOpenGL/QOpenGLFunctions_3_1>
-#include <QtOpenGL/QOpenGLFunctions_3_2_Compatibility>
-#include <QtOpenGL/QOpenGLFunctions_3_2_Core>
-#include <QtOpenGL/QOpenGLFunctions_3_3_Compatibility>
-#include <QtOpenGL/QOpenGLFunctions_3_3_Core>
-#include <QtOpenGL/QOpenGLFunctions_4_0_Compatibility>
-#include <QtOpenGL/QOpenGLFunctions_4_0_Core>
-#include <QtOpenGL/QOpenGLFunctions_4_1_Compatibility>
-#include <QtOpenGL/QOpenGLFunctions_4_1_Core>
-#include <QtOpenGL/QOpenGLFunctions_4_2_Compatibility>
-#include <QtOpenGL/QOpenGLFunctions_4_2_Core>
-#include <QtOpenGL/QOpenGLFunctions_4_3_Compatibility>
-#include <QtOpenGL/QOpenGLFunctions_4_3_Core>
-#include <QtOpenGL/QOpenGLFunctions_4_4_Compatibility>
-#include <QtOpenGL/QOpenGLFunctions_4_4_Core>
-#include <QtOpenGL/QOpenGLFunctions_4_5_Compatibility>
-#include <QtOpenGL/QOpenGLFunctions_4_5_Core>
+#include <QtOpenGL/qopenglfunctions_1_0.h>
+#include <QtOpenGL/qopenglfunctions_1_1.h>
+#include <QtOpenGL/qopenglfunctions_1_2.h>
+#include <QtOpenGL/qopenglfunctions_1_3.h>
+#include <QtOpenGL/qopenglfunctions_1_4.h>
+#include <QtOpenGL/qopenglfunctions_1_5.h>
+#include <QtOpenGL/qopenglfunctions_2_0.h>
+#include <QtOpenGL/qopenglfunctions_2_1.h>
+#include <QtOpenGL/qopenglfunctions_3_0.h>
+#include <QtOpenGL/qopenglfunctions_3_1.h>
+#include <QtOpenGL/qopenglfunctions_3_2_compatibility.h>
+#include <QtOpenGL/qopenglfunctions_3_2_core.h>
+#include <QtOpenGL/qopenglfunctions_3_3_compatibility.h>
+#include <QtOpenGL/qopenglfunctions_3_3_core.h>
+#include <QtOpenGL/qopenglfunctions_4_0_compatibility.h>
+#include <QtOpenGL/qopenglfunctions_4_0_core.h>
+#include <QtOpenGL/qopenglfunctions_4_1_compatibility.h>
+#include <QtOpenGL/qopenglfunctions_4_1_core.h>
+#include <QtOpenGL/qopenglfunctions_4_2_compatibility.h>
+#include <QtOpenGL/qopenglfunctions_4_2_core.h>
+#include <QtOpenGL/qopenglfunctions_4_3_compatibility.h>
+#include <QtOpenGL/qopenglfunctions_4_3_core.h>
+#include <QtOpenGL/qopenglfunctions_4_4_compatibility.h>
+#include <QtOpenGL/qopenglfunctions_4_4_core.h>
+#include <QtOpenGL/qopenglfunctions_4_5_compatibility.h>
+#include <QtOpenGL/qopenglfunctions_4_5_core.h>
 
 #undef QT_CONFIG
 #define QT_CONFIG(feature) (1/QT_FEATURE_##feature == 1)
 
-#include <QtOpenGL/QOpenGLFunctions_ES2>
+#include <QtOpenGL/qopenglfunctions_es2.h>
 
 #ifdef QT_NO_OPENGL_BRIDGE
 #undef QT_NO_OPENGL_BRIDGE

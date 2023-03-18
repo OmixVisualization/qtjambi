@@ -156,15 +156,27 @@ bool isValueType(JNIEnv * __jni_env, jclass valueType, int* metaTypeId = nullptr
 
 extern "C" Q_DECL_EXPORT jobject JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_readObject)
-  (JNIEnv * __jni_env, jclass, jlong ptr, jclass valueType, jlong pos, jboolean readOnly)
+  (JNIEnv * __jni_env, jclass, jlong ptr, jclass valueType, jlong pos, jboolean readOnly, jint type, jlong size)
 {
     try{
-        int metaTypeId;
-        bool isValue = isValueType(__jni_env, valueType, &metaTypeId);
-        if(readOnly && !isValue){
-            JavaException::raiseIllegalArgumentException(__jni_env, "Cannot read non-value typed object from read-only buffer." QTJAMBI_STACKTRACEINFO);
+        if(QNativePointer::Type(type)==QNativePointer::Type::Pointer && size==-1){
+            if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinksForPointer(&reinterpret_cast<void **>(ptr)[pos]).value(0)){
+                return link->getJavaObjectLocalRef(__jni_env);
+            }
+            return QtJambiAPI::convertNativeToJavaObjectAsWrapper(__jni_env, &reinterpret_cast<void **>(ptr)[pos], valueType);
+        }else if(size>0){
+            void* _ptr = reinterpret_cast<char*>(ptr) + size_t(pos) * size;
+            int metaTypeId;
+            bool isValue = isValueType(__jni_env, valueType, &metaTypeId);
+            if(readOnly && !isValue){
+                JavaException::raiseIllegalArgumentException(__jni_env, "Cannot read non-value typed object from read-only buffer." QTJAMBI_STACKTRACEINFO);
+            }
+            if(isValue){
+                return QtJambiAPI::convertNativeToJavaObjectAsCopy(__jni_env, &_ptr, valueType);
+            }else{
+                return QtJambiAPI::convertNativeToJavaObjectAsWrapper(__jni_env, &_ptr, valueType);
+            }
         }
-        return QtJambiAPI::convertNativeToJavaObject(__jni_env, &reinterpret_cast<void **>(ptr)[pos], valueType, isValue, false);
     }catch(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }

@@ -838,7 +838,8 @@ final class LibraryUtility {
     }
     
     private static Architecture decideArchitecture() {
-    	switch(System.getProperty("os.arch").toLowerCase()) {
+    	String arch = System.getProperty("os.arch").toLowerCase();
+    	switch(arch) {
     	case "arm":
     	case "arm32":
     		return Architecture.arm;
@@ -850,7 +851,12 @@ final class LibraryUtility {
     	case "amd64":
     		return Architecture.x86_64;
     	default:
-    		return Architecture.x86;
+    		if(arch.startsWith("arm-"))
+    			return Architecture.arm;
+    		else if(arch.startsWith("aarch64-"))
+    			return Architecture.arm64;
+    		else 
+    			return Architecture.x86;
     	}
     }
 
@@ -1796,7 +1802,7 @@ final class LibraryUtility {
 				break;
 	        }
     	}
-		List<Dependency> dependencies = qtLibName==null ? Collections.emptyList() : QtJambi_LibraryUtilities.getDependencies().getOrDefault("Qt"+qtLibName, Collections.emptyList());
+		List<Dependency> dependencies = qtLibName==null ? Collections.emptyList() : QtJambi_LibraryUtilities.dependencies.getOrDefault("Qt"+qtLibName, Collections.emptyList());
 		
     	return ()->{
 	    	URL entryURL = new URL(urlBase+libName);

@@ -48,18 +48,22 @@
 #include <QtCore/qdebug.h>
 
 NameCompiler::NameCompiler(Binder *binder)
-        : _M_binder(binder), _M_token_stream(binder->tokenStream()) {
+        : _M_binder(binder), _M_token_stream(binder->tokenStream()), _M_operatorType(OperatorType::None) {
 }
 
-QString NameCompiler::decode_operator(std::size_t index, bool op2) const {
+QString NameCompiler::decode_operator(std::size_t index, unsigned opLength) const {
     const Token &tk = _M_token_stream->token(index);
-    return QString::fromUtf8(&tk.text[tk.position], int(tk.size + (op2 ? 1 : 0)));
+    return QString::fromUtf8(&tk.text[tk.position], int(tk.size + opLength));
 }
 
-QString NameCompiler::internal_run(AST *node) {
+void NameCompiler::internal_run(AST *node) {
     _M_name.clear();
+    _M_functionalReturnType = TypeInfo();
+    _M_templateArgs.clear();
+    _M_templateArgumentTypes.clear();
+    _M_functionalArgumentTypes.clear();
+    _M_functionalArgumentNames.clear();
     visit(node);
-    return name();
 }
 
 void NameCompiler::visitUnqualifiedName(UnqualifiedNameAST *node) {
@@ -75,16 +79,187 @@ void NameCompiler::visitUnqualifiedName(UnqualifiedNameAST *node) {
 
     if (OperatorFunctionIdAST *op_id = node->operator_id) {
         if (op_id->op && op_id->op->op) {
+            switch (_M_token_stream->kind(op_id->op->op)) {
+            case Token_new:
+                if(op_id->op->opLength==0)
+                    _M_operatorType = OperatorType::New;
+                else
+                    _M_operatorType = OperatorType::NewArray;
+                break;
+            case Token_delete:
+                if(op_id->op->opLength==0)
+                    _M_operatorType = OperatorType::Delete;
+                else
+                    _M_operatorType = OperatorType::DeleteArray;
+                break;
+            case '+':
+                _M_operatorType = OperatorType::Plus;
+                break;
+            case Token_plus_assign:
+                _M_operatorType = OperatorType::PlusAssign;
+                break;
+            case '-':
+                _M_operatorType = OperatorType::Minus;
+                break;
+            case Token_minus_assign:
+                _M_operatorType = OperatorType::MinusAssign;
+                break;
+            case '*':
+                _M_operatorType = OperatorType::Times;
+                break;
+            case Token_times_assign:
+                _M_operatorType = OperatorType::TimesAssign;
+                break;
+            case '/':
+                _M_operatorType = OperatorType::Div;
+                break;
+            case Token_div_assign:
+                _M_operatorType = OperatorType::DivAssign;
+                break;
+            case '%':
+                _M_operatorType = OperatorType::Rem;
+                break;
+            case Token_rem_assign:
+                _M_operatorType = OperatorType::RemAssign;
+                break;
+            case '^':
+                _M_operatorType = OperatorType::Xor;
+                break;
+            case Token_xor_eq:
+                _M_operatorType = OperatorType::XorAssign;
+                break;
+            case '&':
+                _M_operatorType = OperatorType::And;
+                break;
+            case Token_and_eq:
+                _M_operatorType = OperatorType::AndAssign;
+                break;
+            case '|':
+                _M_operatorType = OperatorType::Or;
+                break;
+            case Token_or_eq:
+                _M_operatorType = OperatorType::OrAssign;
+                break;
+            case '~':
+                _M_operatorType = OperatorType::Not;
+                break;
+            case '!':
+                _M_operatorType = OperatorType::Negation;
+                break;
+            case Token_assign:
+            case '=':
+                _M_operatorType = OperatorType::Assign;
+                break;
+            case '<':
+                _M_operatorType = OperatorType::Less;
+                break;
+            case Token_leq:
+                _M_operatorType = OperatorType::LessOrEquals;
+                break;
+            case Token_geq:
+                _M_operatorType = OperatorType::GreaterOrEquals;
+                break;
+            case ',':
+                _M_operatorType = OperatorType::Comma;
+                break;
+            case Token_left_shift:
+                _M_operatorType = OperatorType::ShiftLeft;
+                break;
+            case Token_left_shift_assign:
+                _M_operatorType = OperatorType::ShiftLeftAssign;
+                break;
+            case Token_right_shift_assign:
+                _M_operatorType = OperatorType::ShiftRightAssign;
+                break;
+            case Token_eq:
+                _M_operatorType = OperatorType::Equals;
+                break;
+            case Token_not_eq:
+                _M_operatorType = OperatorType::NotEquals;
+                break;
+            case Token_compare:
+                _M_operatorType = OperatorType::Compare;
+                break;
+            case Token_and:
+                _M_operatorType = OperatorType::ExclusiveAnd;
+                break;
+            case Token_or:
+                _M_operatorType = OperatorType::ExclusiveOr;
+                break;
+            case Token_incr:
+                _M_operatorType = OperatorType::Inc;
+                break;
+            case Token_decr:
+                _M_operatorType = OperatorType::Dec;
+                break;
+            case Token_ptrmem:
+                _M_operatorType = OperatorType::PointerToMemberOfPointer;
+                break;
+            case Token_arrow:
+                _M_operatorType = OperatorType::MemberOfPointer;
+                break;
+            case '>':
+                switch(op_id->op->opLength){
+                case 0:
+                    _M_operatorType = OperatorType::Greater;
+                    break;
+                case 1:
+                    switch (_M_token_stream->kind(op_id->op->op+1)) {
+                    case '>':
+                        _M_operatorType = OperatorType::ShiftRight;
+                        break;
+                    }
+                    break;
+                }
+                break;
+            break;
+            case '(':
+                switch(op_id->op->opLength){
+                case 1:
+                    switch (_M_token_stream->kind(op_id->op->op+1)) {
+                    case ')':
+                        _M_operatorType = OperatorType::FunctionCall;
+                        break;
+                    }
+                    break;
+                }
+            break;
+            case '[':
+                switch(op_id->op->opLength){
+                case 1:
+                    switch (_M_token_stream->kind(op_id->op->op+1)) {
+                    case ']':
+                        _M_operatorType = OperatorType::Subscript;
+                        break;
+                    }
+                    break;
+                }
+            break;
+            }
+
             tmp_name += QLatin1String("operator");
-            tmp_name += decode_operator(op_id->op->op, op_id->op->op2);
-            if (op_id->op->close)
-                tmp_name += decode_operator(op_id->op->close, false);
+            tmp_name += decode_operator(op_id->op->op, op_id->op->opLength);
         } else if (op_id->type_specifier) {
+            TypeCompiler type_cc(_M_binder);
+            type_cc.run(op_id->type_specifier);
+            _M_operatorCastType.setQualifiedName(type_cc.qualifiedName());
+            _M_operatorCastType.setConstant(type_cc.isConstant());
+            _M_operatorCastType.setVolatile(type_cc.isVolatile());
+            _M_operatorCastType.setReferenceType(TypeInfo::NoReference);
+            _M_operatorCastType.setIndirections({});
+            _M_operatorCastType.setArrayElements({});
+            _M_operatorCastType.setFunctionalArgumentTypes(type_cc.functionalArgumentTypes());
+            _M_operatorCastType.setFunctionalArgumentNames(type_cc.functionalArgumentNames());
+            if(!type_cc.functionalReturnType().qualifiedName().isEmpty())
+                _M_operatorCastType.setFunctionalReturnType(type_cc.functionalReturnType());
+            _M_operatorType = OperatorType::TypeCast;
+
             Token const &tk = _M_token_stream->token(op_id->start_token);
             Token const &end_tk = _M_token_stream->token(op_id->end_token);
             tmp_name += QString::fromLatin1(&tk.text[tk.position],
                                             Size(end_tk.position - tk.position)).trimmed();
         } else if (_M_token_stream->token(op_id->type_name).kind==Token_string_literal) {
+            _M_operatorType = OperatorType::String;
             Token const &tk = _M_token_stream->token(op_id->type_name+1);
             tmp_name += QLatin1String("operator\"\"");
             tmp_name += QString::fromLatin1(&tk.text[tk.position], Size(tk.size)).trimmed();
@@ -94,15 +269,13 @@ void NameCompiler::visitUnqualifiedName(UnqualifiedNameAST *node) {
     _M_name += tmp_name;
     if (node->template_arguments) {
         // ### cleanup
-        _M_name.last() += QLatin1String("<");
         visitNodes(this, node->template_arguments);
-        _M_name.last().truncate(_M_name.last().size() - 1); // remove the last ','
-        _M_name.last() += QLatin1String(">");
     }
 
 }
 
 void NameCompiler::visitTemplateArgument(TemplateArgumentAST *node) {
+    QString templateArg;
     if (node->type_id && node->type_id->type_specifier) {
         TypeCompiler type_cc(_M_binder);
         type_cc.run(node->type_id->type_specifier);
@@ -111,7 +284,7 @@ void NameCompiler::visitTemplateArgument(TemplateArgumentAST *node) {
         decl_cc.run(node->type_id->declarator);
 
         if (type_cc.isConstant())
-            _M_name.last() += "const ";
+            templateArg += "const ";
 
         QStringList q = type_cc.qualifiedName();
 
@@ -129,17 +302,17 @@ void NameCompiler::visitTemplateArgument(TemplateArgumentAST *node) {
             }
         }
 
-        _M_name.last() += q.join("::");
+        templateArg += q.join("::");
 
         if (decl_cc.getReferenceType()==DeclaratorCompiler::Reference)
-            _M_name.last() += "&";
+            templateArg += "&";
         if (decl_cc.getReferenceType()==DeclaratorCompiler::RReference)
-            _M_name.last() += "&&";
+            templateArg += "&&";
         for (int i=0; i<decl_cc.indirection().size(); i++){
             if(decl_cc.indirection()[i]){
-                _M_name.last() += "*const ";
+                templateArg += "*const ";
             }else{
-                _M_name.last() += "*";
+                templateArg += "*";
             }
         }
 
@@ -152,29 +325,44 @@ void NameCompiler::visitTemplateArgument(TemplateArgumentAST *node) {
             _M_functionalReturnType.setArrayElements(decl_cc.arrayElements());
             _M_functionalReturnType.setFunctionalArgumentTypes(type_cc.functionalArgumentTypes());
             _M_functionalReturnType.setFunctionalArgumentNames(type_cc.functionalArgumentNames());
-            _M_functionalReturnType.setFunctionalReturnType(type_cc.functionalReturnType());
-            _M_name.last() += "(";
+            if(!type_cc.functionalReturnType().qualifiedName().isEmpty())
+                _M_functionalReturnType.setFunctionalReturnType(type_cc.functionalReturnType());
+            templateArg += "(";
             bool isBegin = true;
             for(const DeclaratorCompiler::Parameter& parameter : decl_cc.parameters()){
                 if(!isBegin)
-                    _M_name.last() += ",";
+                    templateArg += ",";
                 if(parameter.type.qualifiedName().isEmpty()){
-                    _M_name.last() += parameter.name;
+                    templateArg += parameter.name;
                 }else{
-                    _M_name.last() += parameter.type.toString();
+                    templateArg += parameter.type.toString();
                 }
                 _M_functionalArgumentTypes << parameter.type;
                 _M_functionalArgumentNames << parameter.name;
                 isBegin = false;
             }
-            _M_name.last() += ")";
+            templateArg += ")";
+        }else{
+            TypeInfo type;
+            type.setQualifiedName(type_cc.qualifiedName());
+            type.setConstant(type_cc.isConstant());
+            type.setVolatile(type_cc.isVolatile());
+            type.setReferenceType(TypeInfo::ReferenceType(decl_cc.getReferenceType()));
+            type.setIndirections(decl_cc.indirection());
+            type.setArrayElements(decl_cc.arrayElements());
+            type.setArguments(type_cc.templateArgumentTypes());
+            type.setFunctionalArgumentTypes(type_cc.functionalArgumentTypes());
+            if(!type_cc.functionalReturnType().qualifiedName().isEmpty())
+                type.setFunctionalArgumentNames(type_cc.functionalArgumentNames());
+            type.setFunctionalReturnType(type_cc.functionalReturnType());
+            _M_templateArgumentTypes << type;
         }
-        _M_name.last() += QLatin1String(",");
     }else if(node->expression){
 //        DefaultVisitor defaultVisitor;
 //        defaultVisitor.visit(node->expression);
-        _M_name.last() += QLatin1String("EXPRESSION,");
+        templateArg = QLatin1String("EXPRESSION");
     }
+    _M_templateArgs << templateArg;
 }
 
 // kate: space-indent on; indent-width 2; replace-tabs on;

@@ -79,18 +79,15 @@ QString CppGenerator::translateType(const MetaType *java_type, Option option) {
 
     if (java_type->hasNativeId() && (option & UseNativeIds)){
         return "QtJambiNativeID";
+    }else if (java_type->isCharString()){
+        return "jstring";
     }else if (java_type->isPrimitive()
-            || java_type->isTargetLangChar()
-            || java_type->isTargetLangString()
-            || java_type->isTargetLangStringRef()
-            || java_type->isVariant()
+            || java_type->isQChar()
+            || java_type->isQString()
+            || java_type->isQStringRef()
+            || java_type->isQVariant()
             || java_type->isJObjectWrapper()
-            || java_type->isJMapWrapper()
-            || java_type->isJCollectionWrapper()
-            || java_type->isJEnumWrapper()
-            || java_type->isJIteratorWrapper()
-            || java_type->isJQFlagsWrapper()
-            || java_type->isTargetLangChar()) {
+            || java_type->isQChar()) {
         return java_type->typeEntry()->jniName();
     } else if (java_type->isArray()){
         if(java_type->typeEntry()->isArray())
@@ -140,13 +137,14 @@ QString CppGenerator::translateType(const MetaType *java_type, Option option) {
         default: break;
         }
         return "jint";
-    } else if (java_type->isTargetLangString()
-               || java_type->isTargetLangStringRef()
-               || java_type->isTargetLangStringView()
-               || java_type->isTargetLangAnyStringView()
-               || java_type->isTargetLangUtf8StringView()
-               || java_type->isTargetLangLatin1String()
-               || java_type->isTargetLangLatin1StringView()
+    } else if (java_type->isQString()
+               || java_type->isCharString()
+               || java_type->isQStringRef()
+               || java_type->isQStringView()
+               || java_type->isQAnyStringView()
+               || java_type->isQUtf8StringView()
+               || java_type->isQLatin1String()
+               || java_type->isQLatin1StringView()
                || (java_type->typeEntry()->qualifiedTargetLangName()=="java.lang.String" && java_type->indirections().isEmpty())){
         return "jstring";
     } else {
@@ -155,7 +153,7 @@ QString CppGenerator::translateType(const MetaType *java_type, Option option) {
 }
 
 void writeTypeInfo(QTextStream &s, const MetaType *type){
-    CppGenerator::writeTypeInfo(s, type, CppGenerator::NoOption);
+    CppGenerator::writeTypeInfo(s, type, CppGenerator::SkipName);
 }
 
 void CppGenerator::writeTypeInfo(QTextStream &s, const MetaType *type, Option options) {
@@ -243,8 +241,6 @@ void CppGenerator::writeTypeInfo(QTextStream &s, const MetaType *type, Option op
             size = static_cast<const EnumTypeEntry*>(te)->size();
         }
         s << "qint" << size;
-    } else if (te->isFlags()) {
-        s << static_cast<const FlagsTypeEntry *>(te)->originalName();
     } else if (type->instantiations().size() > 0
                && (!type->isContainer()
                || (
@@ -273,7 +269,11 @@ void CppGenerator::writeTypeInfo(QTextStream &s, const MetaType *type, Option op
             s << ' ';
         s << '>';
     } else {
-        s << fixCppTypeName(te->qualifiedCppName());
+        s << te->qualifiedCppName();
+    }
+
+    if(type->typeEntry()->isTemplateArgument() && reinterpret_cast<const TemplateArgumentEntry *>(type->typeEntry())->isVariadic()){
+        s << "...";
     }
 
     for(int i=0; i<type->indirections().size(); i++){
@@ -393,7 +393,7 @@ void CppGenerator::writeFunctionArguments(QTextStream &s,
         if(option & JNIProxyFunction){
             QString typeReplaced = java_function->typeReplaced(arg->argumentIndex() + 1);
             if(!typeReplaced.isEmpty())
-                s << jniName(typeReplaced);
+                s << jniName(annotationFreeTypeName(typeReplaced));
             else{
                 if(java_function->argumentTypeBuffer(arg->argumentIndex() + 1)){
                     s << "jobject";
@@ -416,6 +416,8 @@ void CppGenerator::writeFunctionArguments(QTextStream &s,
                         }else if(arg->type()->typeEntry()->targetLangName()=="double"){
                             s << "jdoubleArray";
                         }
+                    }else if(arg->type()->typeEntry()->isQChar()){
+                        s << "jcharArray";
                     }else{
                         s << "jobjectArray";
                     }
@@ -501,7 +503,7 @@ void CppGenerator::writeFunctionSignature(QTextStream &s,
         if((option & JNIProxyFunction)){
             QString typeReplaced = java_function->typeReplaced(0);
             if(!typeReplaced.isEmpty())
-                s << jniName(typeReplaced) << " ";
+                s << jniName(typeReplaced.replace("@Nullable ", "").replace("@NonNull ", "")) << " ";
             else if (function_type) {
                 s << translateType(function_type, Option(Option(option & ~JNIProxyFunction) & ~UseNativeIds));
                 s << " ";
@@ -520,7 +522,11 @@ void CppGenerator::writeFunctionSignature(QTextStream &s,
 
     if (implementor) {
         if((option & JNIProxyFunction)){
-            s << implementor->name() + "_access" << "::";
+            if(implementor->typeEntry()->designatedInterface()){
+                s << implementor->extractInterface()->name() + "_access" << "::";
+            }else{
+                s << implementor->name() + "_access" << "::";
+            }
         }else{
             if (classname_prefix.isEmpty())
                 s << shellClassName(implementor) << "::";
@@ -720,7 +726,7 @@ QString CppGenerator::jni_signature(const MetaFunctional *function, JNISignature
                 if (modified_type.isEmpty())
                     returned += jni_signature(argument->type(), format);
                 else if(jniType.isEmpty())
-                    returned += jni_signature(modified_type, format);
+                    returned += jni_signature(modified_type.replace("@Nullable ", "").replace("@NonNull ", ""), format);
                 else
                     returned += jni_signature(jniType, format);
             }
@@ -734,7 +740,7 @@ QString CppGenerator::jni_signature(const MetaFunctional *function, JNISignature
     if (modified_type.isEmpty())
         returned += jni_signature(function->type(), JNISignatureFormat(format | ReturnType));
     else if(jniType.isEmpty())
-        returned += jni_signature(modified_type, JNISignatureFormat(format | ReturnType));
+        returned += jni_signature(annotationFreeTypeName(modified_type), JNISignatureFormat(format | ReturnType));
     else
         returned += jni_signature(jniType, JNISignatureFormat(format | ReturnType));
     return returned;
@@ -758,9 +764,9 @@ QString CppGenerator::jni_signature(const MetaFunction *function, JNISignatureFo
             QString t = parameterTypesByName[mod.modified_type];
             if(t.isEmpty())
                 t = "java.lang.Object";
-            returned += jni_signature(t, format);
+            returned += jni_signature(annotationFreeTypeName(t), format);
         }else if(mod.modified_jni_type.isEmpty())
-            returned += jni_signature(mod.modified_type, format);
+            returned += jni_signature(annotationFreeTypeName(mod.modified_type), format);
         else
             returned += jni_signature(mod.modified_jni_type, format);
         ++argumentCounter;
@@ -821,9 +827,9 @@ QString CppGenerator::jni_signature(const MetaFunction *function, JNISignatureFo
                         QString t = parameterTypesByName[modified_type];
                         if(t.isEmpty())
                             t = "java.lang.Object";
-                        returned += jni_signature(t, format);
+                        returned += jni_signature(annotationFreeTypeName(t), format);
                     }else if(jniType.isEmpty())
-                        returned += jni_signature(modified_type, format);
+                        returned += jni_signature(annotationFreeTypeName(modified_type), format);
                     else
                         returned += jni_signature(jniType, format);
                 }
@@ -836,9 +842,9 @@ QString CppGenerator::jni_signature(const MetaFunction *function, JNISignatureFo
                 QString t = parameterTypesByName[mod.modified_type];
                 if(t.isEmpty())
                     t = "java.lang.Object";
-                returned += jni_signature(t, format);
+                returned += jni_signature(annotationFreeTypeName(t), format);
             }else if(mod.modified_jni_type.isEmpty())
-                returned += jni_signature(mod.modified_type, format);
+                returned += jni_signature(annotationFreeTypeName(mod.modified_type), format);
             else
                 returned += jni_signature(mod.modified_jni_type, format);
             ++argumentCounter;
@@ -850,9 +856,9 @@ QString CppGenerator::jni_signature(const MetaFunction *function, JNISignatureFo
             QString t = parameterTypesByName[mod.modified_type];
             if(t.isEmpty())
                 t = "java.lang.Object";
-            returned += jni_signature(t, format);
+            returned += jni_signature(annotationFreeTypeName(t), format);
         }else if(mod.modified_jni_type.isEmpty())
-            returned += jni_signature(mod.modified_type, format);
+            returned += jni_signature(annotationFreeTypeName(mod.modified_type), format);
         else
             returned += jni_signature(mod.modified_jni_type, format);
     }
@@ -867,13 +873,14 @@ QString CppGenerator::jni_signature(const MetaFunction *function, JNISignatureFo
         else
             returned += jni_signature(function->type(), JNISignatureFormat(format | ReturnType | NoQContainers));
     }else{
+        modified_type = modified_type.replace("@Nullable ", "").replace("@NonNull ", "");
         if(parameterTypesByName.contains(modified_type)){
             QString t = parameterTypesByName[modified_type];
             if(t.isEmpty())
                 t = "java.lang.Object";
-            returned += jni_signature(t, JNISignatureFormat(format | ReturnType));
+            returned += jni_signature(annotationFreeTypeName(t), JNISignatureFormat(format | ReturnType));
         }else if(jniType.isEmpty())
-            returned += jni_signature(modified_type, JNISignatureFormat(format | ReturnType));
+            returned += jni_signature(annotationFreeTypeName(modified_type), JNISignatureFormat(format | ReturnType));
         else
             returned += jni_signature(jniType, JNISignatureFormat(format | ReturnType));
     }
@@ -886,10 +893,12 @@ QString CppGenerator::jni_signature(const QString &_full_name, JNISignatureForma
 
     if (full_name.endsWith("...")) {
         full_name.chop(3);
+        full_name = full_name.trimmed();
         signature = "[";
     }
     while(full_name.endsWith("[]")) {
         full_name.chop(2);
+        full_name = full_name.trimmed();
         signature = "[";
     }
 
@@ -898,17 +907,14 @@ QString CppGenerator::jni_signature(const QString &_full_name, JNISignatureForma
         full_name.remove(start, end - start + 1);
     }
 
-    static QMap<QString, QString> table;
-    if (table.isEmpty()) {
-        table["boolean"] = "Z";
-        table["byte"] = "B";
-        table["char"] = "C";
-        table["short"] = "S";
-        table["int"] = "I";
-        table["long"] = "J";
-        table["float"] = "F";
-        table["double"] = "D";
-    }
+    static QMap<QString, QString> table{        {"boolean", "Z"},
+                                                {"byte", "B"},
+                                                {"char", "C"},
+                                                {"short", "S"},
+                                                {"int", "I"},
+                                                {"long", "J"},
+                                                {"float", "F"},
+                                                {"double", "D"}};
 
     if ((format & Underscores) == Underscores)
         signature.replace("[", "_3");
@@ -1029,6 +1035,11 @@ QString CppGenerator::jni_signature(const MetaType *java_type, JNISignatureForma
         return jni_signature(instantiation, format);
     } else if(java_type->typeEntry()->type()==TypeEntry::InstantiatedTemplateArgumentType){
         return jni_signature(reinterpret_cast<const InstantiatedTemplateArgumentEntry*>(java_type->typeEntry())->javaInstantiationBaseType(), format);
+    } else if (java_type->isCharString()) {
+        if ((format & Underscores) == Underscores)
+            return "Ljava_lang_String_2";
+        else
+            return "Ljava/lang/String;";
     } else if (java_type->isNativePointer()) {
         if ((format & Underscores) == Underscores)
             return "Lio_qt_QNativePointer_2";
@@ -1108,18 +1119,69 @@ QStringList CppGenerator::getFunctionPPConditions(const MetaFunction *java_funct
     return pps;
 }
 
-/*!
- * The Visual Studio 2002 compiler doesn't support these symbols,
- * which our typedefs unforntuatly expand to.
- */
-QString CppGenerator::fixCppTypeName(const QString &name) {
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-    QMetaType metaType(QMetaType::type(name.toLatin1().constData()));
-#else
-    QMetaType metaType = QMetaType::fromName(name.toLatin1().constData());
-#endif
-    if(metaType.isValid() && metaType.id()<=QMetaType::HighestInternalId){
-        return metaType.name();
+QString CppGenerator::resolveOutputDirectory() const { return cppOutputDirectory(); }
+
+QString CppGenerator::cppOutputDirectory() const {
+    if (!m_cpp_out_dir.isNull())
+        return m_cpp_out_dir;
+    return outputDirectory() + QLatin1String("/cpp");
+}
+void CppGenerator::setCppOutputDirectory(const QString &cppOutDir) { m_cpp_out_dir = cppOutDir; }
+
+QString CppGenerator::subDirectoryForFunctional(const MetaFunctional * cls) const
+{ return subDirectoryForPackage(cls->targetTypeSystem()); }
+
+QString CppGenerator::subDirectoryForClass(const MetaClass *cls) const {
+    return subDirectoryForPackage(cls->targetTypeSystem());
+}
+
+bool CppGenerator::shouldGenerateCpp(const MetaClass *java_class){
+    return (!java_class->isNamespace() || java_class->functionsInTargetLang().size() > 0)
+           && !java_class->isInterface()
+           && !java_class->typeEntry()->isQVariant()
+           && !java_class->typeEntry()->isIterator()
+           && (java_class->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp)
+           && !java_class->isFake();
+}
+
+bool CppGenerator::shouldGenerate(const MetaClass *java_class) const {
+    return shouldGenerateCpp(java_class);
+}
+
+bool CppGenerator::shouldGenerate(const MetaFunctional *functional) const {
+    if(functional->enclosingClass()){
+        if(!(!functional->enclosingClass()->isFake()
+             && functional->enclosingClass()->typeEntry()
+             && (functional->enclosingClass()->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp))){
+            return false;
+        }
+        return functional->typeEntry()->getUsing().isEmpty() && (functional->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp);
     }
-    return name;
+    return (functional->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp);
+}
+
+QString CppGenerator::shellClassName(const MetaClass *java_class) {
+    if(java_class->typeEntry()->designatedInterface() && java_class->enclosingClass()){
+        return java_class->generateShellClass()
+               ? java_class->enclosingClass()->name() + "_shell"
+               : java_class->enclosingClass()->qualifiedCppName();
+    }
+    return java_class->generateShellClass()
+           ? java_class->name() + "_shell"
+           : java_class->qualifiedCppName();
+}
+
+QString CppGenerator::shellClassName(const MetaFunctional *java_class) {
+    QString _shellClassName;
+    if(java_class->enclosingClass() && !java_class->enclosingClass()->isFake()){
+        _shellClassName = shellClassName(java_class->enclosingClass());
+        if(_shellClassName.endsWith("_shell")){
+            _shellClassName = _shellClassName.chopped(6);
+        }
+        _shellClassName += "$";
+    }
+    return _shellClassName + java_class->name() + "_shell";
+    //return java_class->enclosingClass()
+    //        ? shellClassName(java_class->enclosingClass()) + "$" + java_class->name()
+    //                                    : java_class->name() + "_shell";
 }

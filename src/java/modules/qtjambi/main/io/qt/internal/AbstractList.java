@@ -39,10 +39,6 @@ import io.qt.QtUninvokable;
 
 public abstract class AbstractList<E> extends AbstractSequentialContainer<E> implements List<E> {
 	
-    protected AbstractList() {
-		super();
-	}
-
     protected AbstractList(QPrivateConstructor p) {
 		super(p);
 	}

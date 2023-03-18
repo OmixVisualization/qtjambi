@@ -31,113 +31,35 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.printsupport"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtPrintSupport"
     module: "qtjambi.printsupport"
     description: "Classes to make printing easier and more portable."
-
-    Rejection{
-        className: "QPrinter"
-        functionName: "printerSelectionOption"
-    }
-    
-    Rejection{
-        className: "QPrinter"
-        functionName: "setPrinterSelectionOption"
-    }
-    
-    EnumType{
-        name: "QAbstractPrintDialog::PrintDialogOption"
-        flags: "QAbstractPrintDialog::PrintDialogOptions"
-    }
-    
-    EnumType{
-        name: "QAbstractPrintDialog::PrintRange"
-    }
-    
-    EnumType{
-        name: "QPrintPreviewWidget::ViewMode"
-    }
-    
-    EnumType{
-        name: "QPrintPreviewWidget::ZoomMode"
-    }
-    
-    EnumType{
-        name: "QPrintEngine::PrintEnginePropertyKey"
-        ppCondition: "!defined(QT_NO_PRINTER)"
-        RejectEnumValue{
-            name: "PPK_PaperSize"
-        }
-    }
-    
-    EnumType{
-        name: "QPrinter::ColorMode"
-        ppCondition: "!defined(QT_NO_PRINTER)"
-    }
-    
-    EnumType{
-        name: "QPrinter::Orientation"
-        ppCondition: "!defined(QT_NO_PRINTER)"
-    }
-    
-    EnumType{
-        name: "QPrinter::OutputFormat"
-        ppCondition: "!defined(QT_NO_PRINTER)"
-    }
-    
-    EnumType{
-        name: "QPrinter::PageOrder"
-        ppCondition: "!defined(QT_NO_PRINTER)"
-    }
-    
-    EnumType{
-        name: "QPrinter::PaperSource"
-        ppCondition: "!defined(QT_NO_PRINTER)"
-        RejectEnumValue{
-            name: "Upper"
-        }
-        RejectEnumValue{
-            name: "LastPaperSource"
-        }
-    }
-    
-    EnumType{
-        name: "QPrinter::PrintRange"
-        ppCondition: "!defined(QT_NO_PRINTER)"
-    }
-    
-    EnumType{
-        name: "QPrinter::PrinterMode"
-        ppCondition: "!defined(QT_NO_PRINTER)"
-    }
-    
-    EnumType{
-        name: "QPrinter::PrinterState"
-        ppCondition: "!defined(QT_NO_PRINTER)"
-    }
-    
-    EnumType{
-        name: "QPrinter::Unit"
-        ppCondition: "!defined(QT_NO_PRINTER)"
-    }
-    
-    EnumType{
-        name: "QPrinter::DuplexMode"
-        ppCondition: "!defined(QT_NO_PRINTER)"
-    }
     
     ValueType{
         name: "QPrinterInfo"
         ppCondition: "!defined(QT_NO_PRINTER)"
-        ModifyFunction{
-            signature: "operator=(const QPrinterInfo &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ObjectType{
         name: "QAbstractPrintDialog"
+
+        EnumType{
+            name: "PrintDialogOption"
+        }
+
+        EnumType{
+            name: "PrintRange"
+        }
+        ModifyFunction{
+            signature: "printer()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
     }
     
     ObjectType{
@@ -170,11 +92,57 @@ TypeSystem{
     ObjectType{
         name: "QPrintEngine"
         ppCondition: "!defined(QT_NO_PRINTER)"
+        EnumType{
+            name: "PrintEnginePropertyKey"
+            RejectEnumValue{
+                name: "PPK_PaperSize"
+            }
+        }
     }
     
     ObjectType{
         name: "QPrinter"
         ppCondition: "!defined(QT_NO_PRINTER)"
+        EnumType{
+            name: "ColorMode"
+        }
+        EnumType{
+            name: "Orientation"
+        }
+        EnumType{
+            name: "OutputFormat"
+        }
+        EnumType{
+            name: "PageOrder"
+        }
+        EnumType{
+            name: "PaperSource"
+            RejectEnumValue{
+                name: "Upper"
+            }
+            RejectEnumValue{
+                name: "LastPaperSource"
+            }
+        }
+        EnumType{
+            name: "PrintRange"
+        }
+
+        EnumType{
+            name: "PrinterMode"
+        }
+
+        EnumType{
+            name: "PrinterState"
+        }
+
+        EnumType{
+            name: "Unit"
+        }
+
+        EnumType{
+            name: "DuplexMode"
+        }
         ModifyFunction{
             signature: "devType() const"
             remove: RemoveFlag.All
@@ -210,6 +178,15 @@ TypeSystem{
                 position: Position.Beginning
                 Text{content: "if(io.qt.core.QCoreApplication.instance()==null)\n"+
                               "    throw new IllegalStateException(\"Cannot create QPrinter before initializing QCoreApplication.\");"}
+            }
+        }
+        ModifyFunction{
+            signature: "printEngine()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
             }
         }
         ModifyFunction{
@@ -257,7 +234,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.core.QMarginsF"
+                    modifiedType: "io.qt.core.@NonNull QMarginsF"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -274,10 +251,27 @@ TypeSystem{
             signature: "open(QObject*,const char*)"
             remove: RemoveFlag.All
         }
+        ModifyFunction{
+            signature: "printer()"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
     }
     
     ObjectType{
         name: "QPrintPreviewWidget"
+        EnumType{
+            name: "ViewMode"
+        }
+
+        EnumType{
+            name: "ZoomMode"
+        }
+
         ModifyFunction{
             signature: "setVisible(bool)"
             threadAffinity: true
@@ -290,6 +284,15 @@ TypeSystem{
         ModifyFunction{
             signature: "open(QObject*,const char*)"
             remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "printer()"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
         }
     }
     

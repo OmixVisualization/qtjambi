@@ -205,15 +205,13 @@ jobject QtJambiAPI::convertQCharToJavaObject(JNIEnv *env, const QChar &strg)
 {
     jobject returned = Java::QtCore::QChar::newInstance(env, nullptr);
     QChar* sptr = new QChar(strg);
-    if (const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForObject(
+    if (const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(
                 env,
                 returned,
                 sptr,
                 LINK_NAME_ARG("QChar")
                 false,
-                false, [](void * ptr,bool){delete reinterpret_cast<QChar*>(ptr);})) {
-        // If the type is copied in, we own the pointer
-        link->setJavaOwnership(env);
+                false, [](void * ptr,bool){delete reinterpret_cast<QChar*>(ptr);}, QtJambiLink::Ownership::Java)) {
     } else {
         delete sptr;
         returned = nullptr;
@@ -224,13 +222,13 @@ jobject QtJambiAPI::convertQCharToJavaObject(JNIEnv *env, const QChar &strg)
 jobject QtJambiAPI::convertQCharToJavaObject(JNIEnv *env, QChar *strg)
 {
     jobject returned = Java::QtCore::QChar::newInstance(env, nullptr);
-    if (const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForObject(
+    if (const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(
                 env,
                 returned,
                 strg,
                 LINK_NAME_ARG("QChar")
                 false,
-                false, [](void * ptr,bool){delete reinterpret_cast<QChar*>(ptr);})) {
+                false, [](void * ptr,bool){delete reinterpret_cast<QChar*>(ptr);}, QtJambiLink::Ownership::None)) {
     } else {
         returned = nullptr;
     }
@@ -241,15 +239,13 @@ jobject QtJambiAPI::convertQVariantToJavaVariant(JNIEnv *env, const QVariant &va
 {
     jobject returned = Java::QtCore::QVariant::newInstance(env, nullptr);
     QVariant* vptr = new QVariant(variant);
-    if (const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForObject(
+    if (const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(
                 env,
                 returned,
                 vptr,
                 LINK_NAME_ARG("QVariant")
                 false,
-                false, [](void * ptr,bool){delete reinterpret_cast<QVariant*>(ptr);})) {
-        // If the type is copied in, we own the pointer
-        link->setJavaOwnership(env);
+                false, [](void * ptr,bool){delete reinterpret_cast<QVariant*>(ptr);}, QtJambiLink::Ownership::Java)) {
     } else {
         delete vptr;
         returned = nullptr;
@@ -260,15 +256,13 @@ jobject QtJambiAPI::convertQVariantToJavaVariant(JNIEnv *env, const QVariant &va
 jobject QtJambiAPI::convertQVariantToJavaVariant(JNIEnv *env, QVariant *variant)
 {
     jobject returned = Java::QtCore::QVariant::newInstance(env, nullptr);
-    if (const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForObject(
+    if (const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(
                 env,
                 returned,
                 variant,
                 LINK_NAME_ARG("QVariant")
                 false,
-                false, [](void * ptr,bool){delete reinterpret_cast<QVariant*>(ptr);})) {
-        // If the type is copied in, we own the pointer
-        link->setJavaOwnership(env);
+                false, [](void * ptr,bool){delete reinterpret_cast<QVariant*>(ptr);}, QtJambiLink::Ownership::None)) {
     } else {
         returned = nullptr;
     }
@@ -279,15 +273,13 @@ jobject QtJambiAPI::convertQStringToJavaObject(JNIEnv *env, const QString &strg)
 {
     jobject returned = Java::QtCore::QString::newInstance(env, nullptr);
     QString* sptr = new QString(strg);
-    if (const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForObject(
+    if (const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(
                 env,
                 returned,
                 sptr,
                 LINK_NAME_ARG("QString")
                 false,
-                false, [](void * ptr,bool){delete reinterpret_cast<QString*>(ptr);})) {
-        // If the type is copied in, we own the pointer
-        link->setJavaOwnership(env);
+                false, [](void * ptr,bool){delete reinterpret_cast<QString*>(ptr);}, QtJambiLink::Ownership::Java)) {
     } else {
         delete sptr;
         returned = nullptr;
@@ -298,13 +290,13 @@ jobject QtJambiAPI::convertQStringToJavaObject(JNIEnv *env, const QString &strg)
 jobject QtJambiAPI::convertQStringToJavaObject(JNIEnv *env, QString *strg)
 {
     jobject returned = Java::QtCore::QString::newInstance(env, nullptr);
-    if (const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForObject(
+    if (const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(
                 env,
                 returned,
                 strg,
                 LINK_NAME_ARG("QString")
                 false,
-                false, [](void * ptr,bool){delete reinterpret_cast<QString*>(ptr);})) {
+                false, [](void * ptr,bool){delete reinterpret_cast<QString*>(ptr);}, QtJambiLink::Ownership::None)) {
     } else {
         returned = nullptr;
     }
@@ -1766,7 +1758,7 @@ QVariant QtJambiAPI::convertJavaObjectToQVariant(JNIEnv *env, jobject java_objec
 
 bool QtJambiAPI::convertJavaToNative(JNIEnv *env, const std::type_info& typeId, jobject java_object, void * output, QtJambiScope* scope)
 {
-    if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId)){
+    if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId)){
         jvalue java_value;
         java_value.l = java_object;
         return typeEntry->convertToNative(env, java_value, jValueType::l, output, scope);
@@ -1775,7 +1767,7 @@ bool QtJambiAPI::convertJavaToNative(JNIEnv *env, const std::type_info& typeId, 
 
 bool QtJambiAPI::convertJavaToNative(JNIEnv *env, const std::type_info& typeId, const char* qtName, const char* javaName, jobject java_object, void * output, QtJambiScope* scope)
 {
-    const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId, qtName);
+    QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId, qtName);
     if(!qtName && javaName && typeEntry->isFunctional()){
         if(const std::type_info* typeId = getTypeByJavaName(javaName))
             qtName = getQtName(*typeId);
@@ -1789,28 +1781,9 @@ bool QtJambiAPI::convertJavaToNative(JNIEnv *env, const std::type_info& typeId, 
     }else return false;
 }
 
-bool QtJambiAPI::convertNativeToJava(JNIEnv *env, const std::type_info& typeId, const char* qtName, const char* javaName, const void *qt_object, bool makeCopyOfValueTypes, bool cppOwnership, jobject& output)
-{
-    const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId, qtName);
-    if(!qtName && javaName && typeEntry->isFunctional()){
-        if(const std::type_info* typeId = getTypeByJavaName(javaName))
-            qtName = getQtName(*typeId);
-        if(qtName)
-            typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId, qtName);
-    }
-    if(typeEntry){
-        jvalue jv;
-        jv.l = nullptr;
-        bool result = typeEntry->convertToJava(env, qt_object, makeCopyOfValueTypes, cppOwnership, &jv, jValueType::l);
-        if(result)
-            output = jv.l;
-        return result;
-    }else return false;
-}
-
 bool QtJambiAPI::convertJavaToNative(JNIEnv *env, const std::type_info& typeId, const char* typeName, jobject java_object, void * output, QtJambiScope* scope)
 {
-    const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId, typeName);
+    QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId, typeName);
     if(!typeEntry){
         if(typeName){
             if(const std::type_info* typeId = getTypeByJavaName(typeName)){
@@ -1827,28 +1800,6 @@ bool QtJambiAPI::convertJavaToNative(JNIEnv *env, const std::type_info& typeId, 
     }else{
         return false;
     }
-}
-
-bool QtJambiAPI::convertNativeToJava(JNIEnv *env, const std::type_info& typeId, const char* typeName, const void *qt_object, bool makeCopyOfValueTypes, bool cppOwnership, jobject& output)
-{
-    const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId, typeName);
-    if(!typeEntry){
-        if(typeName){
-            if(const std::type_info* typeId = getTypeByJavaName(typeName)){
-                typeName = getQtName(*typeId);
-            }
-            if(typeName)
-                typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId, typeName);
-        }
-    }
-    if(typeEntry){
-        jvalue jv;
-        jv.l = nullptr;
-        bool result = typeEntry->convertToJava(env, qt_object, makeCopyOfValueTypes, cppOwnership, &jv, jValueType::l);
-        if(result)
-            output = jv.l;
-        return result;
-    }else return false;
 }
 
 void *QtJambiAPI::convertJavaObjectToNative(JNIEnv *env, jobject java_object)
@@ -1983,16 +1934,19 @@ void *QtJambiAPI::convertJavaInterfaceToNative(JNIEnv *env, jobject object, cons
     return internal_convertJavaInterfaceToNative(env, object, typeId);
 }
 
-jobject internal_convertNativeToJavaObject(JNIEnv *env, const void *qt_object, const std::type_info& typeId, bool makeCopyOfValueTypes, bool cppOwnership, bool *ok = nullptr)
+jobject internal_convertNativeToJavaObject(JNIEnv *env, const void *qt_object, const std::type_info& typeId, const char *qtName, NativeToJavaConversionMode mode, bool *ok)
 {
     if(ok) *ok = true;
     if (!qt_object)
         return nullptr;
-    if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId)){
-        jvalue result;
-        result.l = nullptr;
-        if(typeEntry->convertToJava(env, qt_object, makeCopyOfValueTypes, cppOwnership, &result, jValueType::l)){
-            return result.l;
+    if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId, qtName)){
+        jvalue jv;
+        jv.l = nullptr;
+        QtJambiTypeEntry::NativeToJavaResult result = typeEntry->convertToJava(env, qt_object, mode==NativeToJavaConversionMode::MakeCopyOfValues, &jv, jValueType::l);
+        if(result){
+            if(mode==NativeToJavaConversionMode::TransferOwnership && result.link())
+                result.link()->setJavaOwnership(env);
+            return jv.l;
         }else{
             return nullptr;
         }
@@ -2001,8 +1955,10 @@ jobject internal_convertNativeToJavaObject(JNIEnv *env, const void *qt_object, c
     return nullptr;
 }
 
-jobject internal_convertNativeToJavaObject(JNIEnv *env, const void *qt_object, QByteArray className, jclass clazz, bool makeCopyOfValueTypes, bool cppOwnership)
+jobject internal_convertNativeToJavaObject(JNIEnv *env, const void *qt_object, QByteArray className, jclass clazz, NativeToJavaConversionMode mode, bool *ok)
 {
+    if(ok)
+        *ok = true;
     if (!qt_object || !clazz)
         return nullptr;
     int metaType = QMetaType::UnknownType;
@@ -2015,7 +1971,7 @@ jobject internal_convertNativeToJavaObject(JNIEnv *env, const void *qt_object, Q
 
     // If it's not a value type, we just link to the pointer directly.
     void *copy = nullptr;
-    if (!makeCopyOfValueTypes || metaType == QMetaType::UnknownType) {
+    if (mode!=NativeToJavaConversionMode::MakeCopyOfValues || metaType == QMetaType::UnknownType) {
         // If the object is constructed in Java, then we can look it up
         for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
             if(link){
@@ -2038,8 +1994,11 @@ jobject internal_convertNativeToJavaObject(JNIEnv *env, const void *qt_object, Q
         copy = const_cast<void *>(qt_object);
     } else {
         copy = QMetaType::create(metaType, qt_object);
-        if (!copy)
+        if (!copy){
+            if(ok)
+                *ok = false;
             return nullptr;
+        }
     }
 
     jobject returned = nullptr;
@@ -2052,6 +2011,8 @@ jobject internal_convertNativeToJavaObject(JNIEnv *env, const void *qt_object, Q
                 }else{
                     if (metaType != QMetaType::UnknownType && copy)
                         QMetaType::destroy(metaType, copy);
+                    if(ok)
+                        *ok = false;
                     return nullptr;
                 }
             }
@@ -2062,81 +2023,148 @@ jobject internal_convertNativeToJavaObject(JNIEnv *env, const void *qt_object, Q
         }
     }
 
-    if (!returned)
+    if (!returned){
+        if(ok)
+            *ok = false;
         return nullptr;
-
-    if (const QSharedPointer<QtJambiLink>& link =
-               metaType == QMetaType::UnknownType ? QtJambiLink::createLinkForObject(
-                                                    env,
-                                                    returned,
-                                                    copy,
-                                                    LINK_NAME_ARG(nullptr)
-                                                    false,
-                                                    false)
-                                                : QtJambiLink::createLinkForObject(
-                                                    env,
-                                                    returned,
-                                                    copy,
-                                                    QMetaType(metaType),
-                                                    false,
-                                                    false) ) {
-        // If the type is copied in, we own the pointer
-        if(cppOwnership){
-            link->setCppOwnership(env);
-        }
-        else if (metaType != QMetaType::UnknownType && makeCopyOfValueTypes){
-            link->setJavaOwnership(env);
-        }
-    } else {
-        if (metaType != QMetaType::UnknownType && copy)
-            QMetaType::destroy(metaType, copy);
-        returned = nullptr;
     }
-
+    QtJambiLink::Ownership ownership = QtJambiLink::Ownership::None;
+    // If the type is copied in, we own the pointer
+    if ((metaType != QMetaType::UnknownType && mode==NativeToJavaConversionMode::MakeCopyOfValues) || mode==NativeToJavaConversionMode::TransferOwnership){
+        ownership = QtJambiLink::Ownership::Java;
+    }
+    const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, clazz);
+    QSharedPointer<QtJambiLink> link;
+    if(metaType == QMetaType::UnknownType){
+        if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
+            link = QtJambiLink::createLinkForNativeObject(
+                        env,
+                        returned,
+                        copy,
+                        LINK_NAME_ARG(nullptr)
+                        false,
+                        false,
+                        ownership,
+                        interfaceOffsets->offsets,
+                        interfaceOffsets->interfaces,
+                        interfaceOffsets->inheritedInterfaces);
+        }else{
+            link = QtJambiLink::createLinkForNativeObject(
+                        env,
+                        returned,
+                        copy,
+                        LINK_NAME_ARG(nullptr)
+                        false,
+                        false,
+                        ownership);
+        }
+        if(!link){
+            if(ok)
+                *ok = false;
+            returned = nullptr;
+        }
+    }else{
+        if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
+            link = QtJambiLink::createLinkForNativeObject(
+                        env,
+                        returned,
+                        copy,
+                        QMetaType(metaType),
+                        false,
+                        false,
+                        ownership,
+                        interfaceOffsets->offsets,
+                        interfaceOffsets->interfaces,
+                        interfaceOffsets->inheritedInterfaces);
+        }else{
+            link = QtJambiLink::createLinkForNativeObject(
+                        env,
+                        returned,
+                        copy,
+                        QMetaType(metaType),
+                        false,
+                        false,
+                        ownership);
+        }
+        if(!link){
+            if (mode==NativeToJavaConversionMode::MakeCopyOfValues && copy)
+                QMetaType::destroy(metaType, copy);
+            returned = nullptr;
+            if(ok)
+                *ok = false;
+        }
+    }
     return returned;
 }
 
-jobject QtJambiAPI::convertNativeToJavaObject(JNIEnv *env, const void *qt_object, const char *className, bool makeCopyOfValueTypes, bool cppOwnership){
-    const std::type_info* typeId = getTypeByJavaName(className);
-    if(typeId){
-        bool ok;
-        jobject result = internal_convertNativeToJavaObject(env, qt_object, *typeId, makeCopyOfValueTypes, cppOwnership, &ok);
-        if(ok)
-            return result;
+jobject internal_convertNativeToJavaObject(NativeToJavaConversionMode mode, JNIEnv *env, const void *qt_object, const std::type_info& typeId, const char *qtName){
+    bool ok{false};
+    jobject result = internal_convertNativeToJavaObject(env, qt_object, typeId, qtName, mode, &ok);
+    if(!ok){
+        QByteArray className = getJavaName(typeId);
+        if(!className.isEmpty()
+                && (!className.startsWith("io/qt/core/Q")
+                    || (   className!="io/qt/core/QList"
+                        && className!="io/qt/core/QVector"
+                        && className!="io/qt/core/QLinkedList"
+                        && className!="io/qt/core/QMultiMap"
+                        && className!="io/qt/core/QMultiHash"
+                        && className!="io/qt/core/QMap"
+                        && className!="io/qt/core/QHash"
+                        && className!="io/qt/core/QSet"
+                        && className!="io/qt/core/QStack"
+                        && className!="io/qt/core/QQueue"
+                        && className!="io/qt/core/QSequentialIterator"
+                        && className!="io/qt/core/QAssociativeIterator"
+                        && className!="io/qt/core/QSequentialConstIterator"
+                        && className!="io/qt/core/QAssociativeConstIterator"
+                        && className!="io/qt/core/QPair"))){
+            return internal_convertNativeToJavaObject(env, qt_object, className, JavaAPI::resolveClass(env, className), mode, &ok);
+        }
     }
-    return internal_convertNativeToJavaObject(env, qt_object, className, JavaAPI::resolveClass(env, className), makeCopyOfValueTypes, cppOwnership);
-}
-
-jobject QtJambiAPI::convertNativeToJavaObject(JNIEnv *env, const void *qt_object, const char *className,
-                            const std::type_info& typeId, bool makeCopyOfValueTypes, bool cppOwnership){
-    bool ok;
-    jobject result = internal_convertNativeToJavaObject(env, qt_object, typeId, makeCopyOfValueTypes, cppOwnership, &ok);
     if(ok)
         return result;
-    return internal_convertNativeToJavaObject(env, qt_object, className, JavaAPI::resolveClass(env, className), makeCopyOfValueTypes, cppOwnership);
+    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast %1 to java object").arg(QLatin1String(QtJambiAPI::typeName(typeId))) QTJAMBI_STACKTRACEINFO );
+    return nullptr;
 }
 
-jobject QtJambiAPI::convertNativeToJavaObject(JNIEnv *env, const void *qt_object, jclass clazz, bool makeCopyOfValueTypes, bool cppOwnership){
+jobject QtJambiAPI::convertNativeToJavaObjectAsCopy(JNIEnv *env, const void *qt_object, const std::type_info& typeId, const char *qtName){
+    return internal_convertNativeToJavaObject(NativeToJavaConversionMode::MakeCopyOfValues, env, qt_object, typeId, qtName);
+}
+
+jobject QtJambiAPI::convertNativeToJavaObjectAsWrapper(JNIEnv *env, const void *qt_object, const std::type_info& typeId, const char *qtName){
+    return internal_convertNativeToJavaObject(NativeToJavaConversionMode::None, env, qt_object, typeId, qtName);
+}
+
+jobject QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper(JNIEnv *env, const void *qt_object, const std::type_info& typeId, const char *qtName){
+    return internal_convertNativeToJavaObject(NativeToJavaConversionMode::TransferOwnership, env, qt_object, typeId, qtName);
+}
+
+jobject internal_convertNativeToJavaObject(NativeToJavaConversionMode mode, JNIEnv *env, const void *qt_object, jclass clazz){
     QString java_name = QtJambiAPI::getClassName(env, clazz).replace(QLatin1Char('.'), QLatin1Char('/'));
     const std::type_info* typeId = getTypeByJavaName(java_name);
-    if(typeId){
-        bool ok;
-        jobject result = internal_convertNativeToJavaObject(env, qt_object, *typeId, makeCopyOfValueTypes, cppOwnership, &ok);
-        if(ok)
-            return result;
-    }
-    return internal_convertNativeToJavaObject(env, qt_object, qPrintable(java_name), clazz, makeCopyOfValueTypes, cppOwnership);
-}
-
-jobject QtJambiAPI::convertNativeToJavaObject(JNIEnv *env, const void *qt_object, const std::type_info& typeId, bool makeCopyOfValueTypes, bool cppOwnership){
-    bool ok;
-    jobject result = internal_convertNativeToJavaObject(env, qt_object, typeId, makeCopyOfValueTypes, cppOwnership, &ok);
+    bool ok{false};
+    jobject result{nullptr};
+    if(typeId)
+        result = internal_convertNativeToJavaObject(env, qt_object, *typeId, getQtName(*typeId), mode, &ok);
+    if(!ok)
+        result = internal_convertNativeToJavaObject(env, qt_object, qPrintable(java_name), clazz, mode, &ok);
     if(ok)
         return result;
-    QByteArray className = getJavaName(typeId);
-    if(!className.isEmpty())
-        return internal_convertNativeToJavaObject(env, qt_object, className, JavaAPI::resolveClass(env, className), makeCopyOfValueTypes, cppOwnership);
+    JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast %1 to java object").arg(QtJambiAPI::getClassName(env, clazz).replace(QLatin1Char('$'), QLatin1Char('.'))) QTJAMBI_STACKTRACEINFO );
     return nullptr;
+}
+
+jobject QtJambiAPI::convertNativeToJavaObjectAsCopy(JNIEnv *env, const void *qt_object, jclass clazz){
+    return internal_convertNativeToJavaObject(NativeToJavaConversionMode::MakeCopyOfValues, env, qt_object, clazz);
+}
+
+jobject QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper(JNIEnv *env, const void *qt_object, jclass clazz){
+    return internal_convertNativeToJavaObject(NativeToJavaConversionMode::TransferOwnership, env, qt_object, clazz);
+}
+
+jobject QtJambiAPI::convertNativeToJavaObjectAsWrapper(JNIEnv *env, const void *qt_object, jclass clazz){
+    return internal_convertNativeToJavaObject(NativeToJavaConversionMode::None, env, qt_object, clazz);
 }
 
 jobject internal_convertSmartPointerToJavaObject_impl(JNIEnv *env,
@@ -2145,7 +2173,7 @@ jobject internal_convertSmartPointerToJavaObject_impl(JNIEnv *env,
     if(ok) *ok = true;
     if (!ptr_shared_pointer || !sharedPointerDeleter || !sharedPointerGetter || !sharedPointerGetter(ptr_shared_pointer))
         return nullptr;
-    if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId)){
+    if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId)){
         jvalue result;
         if(typeEntry->convertSharedPointerToJava(env, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter, &result, jValueType::l)){
             return result.l;
@@ -2418,16 +2446,17 @@ jobject internal_convertQObjectToJavaObject_type(JNIEnv *env, const QObject *qt_
     if(ok) *ok = true;
     if (!qt_object)
         return nullptr;
-    const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeid(*qt_object));
+    QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeid(*qt_object));
     if(!typeEntry)
         typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId);
     if(!typeEntry)
         typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeid(QObject));
     if(typeEntry){
-        jvalue result;
-        result.l = nullptr;
-        if(typeEntry->convertToJava(env, qt_object, false, true, &result, jValueType::l)){
-            return result.l;
+        jvalue jv;
+        jv.l = nullptr;
+        QtJambiTypeEntry::NativeToJavaResult result = typeEntry->convertToJava(env, qt_object, false, &jv, jValueType::l);
+        if(result){
+            return jv.l;
         }else{
             return nullptr;
         }
@@ -2576,7 +2605,7 @@ jobject internal_convertQObjectSmartPointerToJavaObject_impl(JNIEnv *env, const 
     if (!ptr_shared_pointer || !shared_pointer_deleter || !pointerGetter || !pointerGetter(ptr_shared_pointer))
         return nullptr;
 
-    if(const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId)){
+    if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId)){
         jvalue result;
         if(typeEntry->convertSharedPointerToJava(env, ptr_shared_pointer, shared_pointer_deleter, pointerGetter, &result, jValueType::l)){
             return result.l;

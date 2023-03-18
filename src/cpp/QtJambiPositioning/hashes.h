@@ -36,149 +36,159 @@
 #include <QtJambiCore/hashes.h>
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-hash_type qHash(const QGeoAddress &value);
-hash_type qHash(const QGeoShape &value);
+hash_type qHash(const QGeoAddress &value, hash_type seed = 0);
+hash_type qHash(const QGeoShape &value, hash_type seed = 0);
 #endif
 
-hash_type qHash(const QGeoRectangle &value);
-hash_type qHash(const QGeoPath &value);
-hash_type qHash(const QGeoCircle &value);
-hash_type qHash(const QGeoPolygon &value);
+hash_type qHash(const QGeoRectangle &value, hash_type seed = 0);
+hash_type qHash(const QGeoPath &value, hash_type seed = 0);
+hash_type qHash(const QGeoCircle &value, hash_type seed = 0);
+hash_type qHash(const QGeoPolygon &value, hash_type seed = 0);
 
-inline hash_type qHash(const QGeoCircle &value)
+inline hash_type qHash(const QGeoCircle &value, hash_type seed)
 {
     if(!value.isValid())
         return 0;
-    hash_type hashCode = qHash(value.radius());
-    hashCode = hashCode * 31 + qHash(value.isEmpty());
-    hashCode = hashCode * 31 + qHash(value.center());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.radius());
+    seed = hash(seed, value.isEmpty());
+    seed = hash(seed, value.center());
+    return seed;
 }
 
-inline hash_type qHash(const QGeoPath &value)
+inline hash_type qHash(const QGeoPath &value, hash_type seed)
 {
     if(!value.isValid())
         return 0;
-    hash_type hashCode = qHash(value.path());
-    hashCode = hashCode * 31 + qHash(value.isEmpty());
-    hashCode = hashCode * 31 + qHash(value.center());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.path());
+    seed = hash(seed, value.isEmpty());
+    seed = hash(seed, value.center());
+    return seed;
 }
 
-inline hash_type qHash(const QGeoPolygon &value)
+inline hash_type qHash(const QGeoPolygon &value, hash_type seed)
 {
     if(!value.isValid())
         return 0;
-hash_type hashCode =
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed,
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        qHash(value.path());
+        value.path());
 #else
-        qHash(value.perimeter());
+        value.perimeter());
 #endif
-    hashCode = hashCode * 31 + qHash(value.isEmpty());
-    hashCode = hashCode * 31 + qHash(value.center());
-    return hashCode;
+    seed = hash(seed, value.isEmpty());
+    seed = hash(seed, value.center());
+    return seed;
 }
 
-inline hash_type qHash(const QGeoRectangle &value)
+inline hash_type qHash(const QGeoRectangle &value, hash_type seed)
 {
     if(!value.isValid())
         return 0;
-    hash_type hashCode = qHash(value.width());
-    hashCode = hashCode * 31 + qHash(value.isEmpty());
-    hashCode = hashCode * 31 + qHash(value.center());
-    hashCode = hashCode * 31 + qHash(value.height());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.width());
+    seed = hash(seed, value.isEmpty());
+    seed = hash(seed, value.center());
+    seed = hash(seed, value.height());
+    return seed;
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-inline hash_type qHash(const QGeoLocation &value)
+inline hash_type qHash(const QGeoLocation &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.address());
-    hashCode = hashCode * 31 + qHash(value.coordinate());
-    hashCode = hashCode * 31 + qHash(value.boundingBox());
-    hashCode = hashCode * 31 + qHash(value.isEmpty());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.address());
+    seed = hash(seed, value.coordinate());
+    seed = hash(seed, value.boundingBox());
+    seed = hash(seed, value.isEmpty());
+    return seed;
 }
 
-inline hash_type qHash(const QGeoAreaMonitorInfo &value)
+inline hash_type qHash(const QGeoAreaMonitorInfo &value, hash_type seed = 0)
 {
     if(!value.isValid())
         return 0;
-    hash_type hashCode = qHash(value.area());
-    hashCode = hashCode * 31 + qHash(value.name());
-    hashCode = hashCode * 31 + qHash(value.expiration());
-    hashCode = hashCode * 31 + qHash(value.identifier());
-    hashCode = hashCode * 31 + qHash(value.isPersistent());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.area());
+    seed = hash(seed, value.name());
+    seed = hash(seed, value.expiration());
+    seed = hash(seed, value.identifier());
+    seed = hash(seed, value.isPersistent());
+    return seed;
 }
 
-inline hash_type qHash(const QGeoSatelliteInfo &value)
+inline hash_type qHash(const QGeoSatelliteInfo &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.signalStrength());
-    hashCode = hashCode * 31 + qHash(value.satelliteSystem());
-    hashCode = hashCode * 31 + qHash(value.satelliteIdentifier());
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.signalStrength());
+    seed = hash(seed, value.satelliteSystem());
+    seed = hash(seed, value.satelliteIdentifier());
     for(int a=QGeoSatelliteInfo::Elevation; a<=QGeoSatelliteInfo::Azimuth; ++a){
         if(value.hasAttribute(QGeoSatelliteInfo::Attribute(a))){
-            hashCode = hashCode * 31 + qHash(value.attribute(QGeoSatelliteInfo::Attribute(a)));
+            seed = hash(seed, value.attribute(QGeoSatelliteInfo::Attribute(a)));
         }else{
-            hashCode = hashCode * 31 + qHash(false);
+            seed = hash(seed, false);
         }
     }
-    return hashCode;
+    return seed;
 }
 
-inline hash_type qHash(const QGeoPositionInfo &value)
+inline hash_type qHash(const QGeoPositionInfo &value, hash_type seed = 0)
 {
     if(!value.isValid())
         return 0;
-    hash_type hashCode = qHash(value.timestamp());
-    hashCode = hashCode * 31 + qHash(value.coordinate());
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.timestamp());
+    seed = hash(seed, value.coordinate());
     for(int a=QGeoPositionInfo::Direction; a<=QGeoPositionInfo::VerticalAccuracy; ++a){
         if(value.hasAttribute(QGeoPositionInfo::Attribute(a))){
-            hashCode = hashCode * 31 + qHash(value.attribute(QGeoPositionInfo::Attribute(a)));
+            seed = hash(seed, value.attribute(QGeoPositionInfo::Attribute(a)));
         }else{
-            hashCode = hashCode * 31 + qHash(false);
+            seed = hash(seed, false);
         }
     }
-    return hashCode;
+    return seed;
 }
 
-inline hash_type qHash(const QGeoShape &value)
+inline hash_type qHash(const QGeoShape &value, hash_type seed)
 {
     if(!value.isValid())
         return 0;
     switch(value.type()){
     case QGeoShape::RectangleType:
-        return qHash(static_cast<const QGeoRectangle &>(value));
+        return qHash(static_cast<const QGeoRectangle &>(value), seed);
     case QGeoShape::CircleType:
-        return qHash(static_cast<const QGeoCircle &>(value));
+        return qHash(static_cast<const QGeoCircle &>(value), seed);
     case QGeoShape::PathType:
-        return qHash(static_cast<const QGeoPath &>(value));
+        return qHash(static_cast<const QGeoPath &>(value), seed);
     case QGeoShape::PolygonType:
-        return qHash(static_cast<const QGeoPolygon &>(value));
+        return qHash(static_cast<const QGeoPolygon &>(value), seed);
     default:
-        hash_type hashCode = qHash(value.type());
-        hashCode = hashCode * 31 + qHash(value.isEmpty());
-        hashCode = hashCode * 31 + qHash(value.center());
-        return hashCode;
+        QtPrivate::QHashCombine hash;
+        seed = hash(seed, value.type());
+        seed = hash(seed, value.isEmpty());
+        seed = hash(seed, value.center());
+        return seed;
     }
 }
 
-inline hash_type qHash(const QGeoAddress &value)
+inline hash_type qHash(const QGeoAddress &value, hash_type seed)
 {
-    hash_type hashCode = qHash(value.city());
-    hashCode = hashCode * 31 + qHash(value.text());
-    hashCode = hashCode * 31 + qHash(value.state());
-    hashCode = hashCode * 31 + qHash(value.county());
-    hashCode = hashCode * 31 + qHash(value.street());
-    hashCode = hashCode * 31 + qHash(value.country());
-    hashCode = hashCode * 31 + qHash(value.district());
-    hashCode = hashCode * 31 + qHash(value.postalCode());
-    hashCode = hashCode * 31 + qHash(value.countryCode());
-    hashCode = hashCode * 31 + qHash(value.isTextGenerated());
-    hashCode = hashCode * 31 + qHash(value.isEmpty());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.city());
+    seed = hash(seed, value.text());
+    seed = hash(seed, value.state());
+    seed = hash(seed, value.county());
+    seed = hash(seed, value.street());
+    seed = hash(seed, value.country());
+    seed = hash(seed, value.district());
+    seed = hash(seed, value.postalCode());
+    seed = hash(seed, value.countryCode());
+    seed = hash(seed, value.isTextGenerated());
+    seed = hash(seed, value.isEmpty());
+    return seed;
 }
 #endif
 

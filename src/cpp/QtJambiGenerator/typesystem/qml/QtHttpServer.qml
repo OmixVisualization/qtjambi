@@ -31,14 +31,10 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.httpserver"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtHttpServer"
     module: "qtjambi.httpserver"
     description: "Qt HTTP Server supports building an HTTP server into an application."
-
-    Rejection{
-        className: "QHttpServer::AfterRequestHandler"
-    }
     
     Rejection{
         className: "QHttpServerAfterRequestViewTraits"
@@ -46,11 +42,6 @@ TypeSystem{
     
     Rejection{
         className: "QHttpServerRouterViewTraits"
-    }
-    
-    Rejection{
-        className: "QHttpServerRouter"
-        functionName: "bind_front"
     }
     
     ObjectType{
@@ -76,7 +67,7 @@ TypeSystem{
             ppCondition: "defined(QT_WEBSOCKETS_LIB)"
         }
         ModifyFunction{
-            signature: "listen(QHostAddress,unsigned short)"
+            signature: "listen(QHostAddress,quint16)"
             ModifyArgument{
                 index: 1
                 ReplaceDefaultExpression{
@@ -108,7 +99,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.core.QList<java.lang.Integer>"
+                    modifiedType: "io.qt.core.@NonNull QList<java.lang.@QtPrimitiveType@NonNull Integer>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -176,25 +167,32 @@ TypeSystem{
             }
             since: [6,5]
         }
-        ModifyFunction{
-            signature: "makeResponder(QHttpServerRequest,QTcpSocket*)"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.httpserver.QHttpServerResponder"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, new QHttpServerResponder(std::move(%in)));\n"+
-                                  "QtJambiAPI::setJavaOwnership(%env, %out);"}
-                }
-            }
-            until: [6,4]
-        }
     }
     
     ObjectType{
         name: "QHttpServer"
+        Rejection{
+            className: "AfterRequestHandler"
+        }
+        ModifyFunction{
+            signature: "route<Rule,Args...>(Args&&)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "afterRequest<ViewHandler>(ViewHandler&&)"
+            remove: RemoveFlag.All
+        }
+        FunctionalType{
+            name: "MissingHandler"
+            ModifyArgument{
+                index: 1
+                invalidateAfterUse: true
+            }
+            ModifyArgument{
+                index: 2
+                invalidateAfterUse: true
+            }
+        }
         ExtraIncludes{
             Include{
                 fileName: "QtJambi/JavaAPI"
@@ -240,17 +238,17 @@ TypeSystem{
     
     ObjectType{
         name: "QHttpServerResponder"
-        ModifyFunction{
-            signature: "writeBody(const char*)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
+
+        EnumType{
+            name: "StatusCode"
+        }
+
+        ValueType{
+            name: "HeaderList"
+            generate: false
         }
         ModifyFunction{
-            signature: "writeBody(const char*, long long)"
+            signature: "writeBody(const char*, qint64)"
             ModifyArgument{
                 index: 1
                 ArrayType{
@@ -264,7 +262,7 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "io.qt.core.QPair<io.qt.core.QByteArray,io.qt.core.QByteArray>..."
+                    modifiedType: "io.qt.core.@NonNull QPair<io.qt.core.@NonNull QByteArray,io.qt.core.@NonNull QByteArray>@NonNull..."
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -277,7 +275,7 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "io.qt.core.QPair<io.qt.core.QByteArray,io.qt.core.QByteArray>[]"
+                    modifiedType: "io.qt.core.@NonNull QPair<io.qt.core.@NonNull QByteArray,io.qt.core.@NonNull QByteArray>@NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -295,7 +293,7 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 ReplaceType{
-                    modifiedType: "io.qt.core.QPair<io.qt.core.QByteArray,io.qt.core.QByteArray>[]"
+                    modifiedType: "io.qt.core.@NonNull QPair<io.qt.core.@NonNull QByteArray,io.qt.core.@NonNull QByteArray>@NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -313,7 +311,7 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 ReplaceType{
-                    modifiedType: "io.qt.core.QPair<io.qt.core.QByteArray,io.qt.core.QByteArray>[]"
+                    modifiedType: "io.qt.core.@NonNull QPair<io.qt.core.@NonNull QByteArray,io.qt.core.@NonNull QByteArray>@NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -331,7 +329,7 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 ReplaceType{
-                    modifiedType: "io.qt.core.QPair<io.qt.core.QByteArray,io.qt.core.QByteArray>[]"
+                    modifiedType: "io.qt.core.@NonNull QPair<io.qt.core.@NonNull QByteArray,io.qt.core.@NonNull QByteArray>@NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -354,24 +352,37 @@ TypeSystem{
         }
     }
     
-    FunctionalType{
-        name: "QHttpServer::MissingHandler"
-        ModifyArgument{
-            index: 1
-            invalidateAfterUse: true
-        }
-        ModifyArgument{
-            index: 2
-            invalidateAfterUse: true
-        }
-    }
-    
-    EnumType{
-        name: "QHttpServerResponder::StatusCode"
-    }
-    
     ObjectType{
         name: "QHttpServerRequest"
+
+        EnumType{
+            name: "Method"
+            RejectEnumValue{
+                name: "GET"
+            }
+            RejectEnumValue{
+                name: "PUT"
+            }
+            RejectEnumValue{
+                name: "DELETE"
+            }
+            RejectEnumValue{
+                name: "POST"
+            }
+            RejectEnumValue{
+                name: "HEAD"
+            }
+            RejectEnumValue{
+                name: "OPTIONS"
+            }
+            RejectEnumValue{
+                name: "PATCH"
+            }
+            RejectEnumValue{
+                name: "CONNECT"
+            }
+        }
+
         InjectCode{
             target: CodeClass.Java
             ImportFile{
@@ -382,40 +393,6 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QHttpServerRequest::Method"
-        flags: "QHttpServerRequest::Methods"
-        RejectEnumValue{
-            name: "GET"
-        }
-        RejectEnumValue{
-            name: "PUT"
-        }
-        RejectEnumValue{
-            name: "DELETE"
-        }
-        RejectEnumValue{
-            name: "POST"
-        }
-        RejectEnumValue{
-            name: "HEAD"
-        }
-        RejectEnumValue{
-            name: "OPTIONS"
-        }
-        RejectEnumValue{
-            name: "PATCH"
-        }
-        RejectEnumValue{
-            name: "CONNECT"
-        }
-    }
-    
-    ValueType{
-        name: "QHttpServerResponder::HeaderList"
-        generate: false
-    }
-    
     
     ObjectType{
         name: "QHttpServerResponse"
@@ -424,11 +401,15 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
+            signature: "addHeaders<Container>(Container)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
             signature: "addHeaders(QHttpServerResponder::HeaderList)"
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "io.qt.core.QPair<io.qt.core.QByteArray,io.qt.core.QByteArray>..."
+                    modifiedType: "io.qt.core.@NonNull QPair<io.qt.core.@NonNull QByteArray,io.qt.core.@NonNull QByteArray>@NonNull..."
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -441,7 +422,7 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "io.qt.core.QPair<io.qt.core.QByteArray,io.qt.core.QByteArray>..."
+                    modifiedType: "io.qt.core.@NonNull QPair<io.qt.core.@NonNull QByteArray,io.qt.core.@NonNull QByteArray>@NonNull..."
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -494,20 +475,6 @@ TypeSystem{
                 }
             }
         }
-        ModifyFunction{
-            signature: "fromFile(QString)"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.httpserver.QHttpServerResponse"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, new QHttpServerResponse(std::move(%in)));\n"+
-                                  "QtJambiAPI::setJavaOwnership(%env, %out);"}
-                }
-            }
-        }
         InjectCode{
             target: CodeClass.Java
             ImportFile{
@@ -520,6 +487,8 @@ TypeSystem{
     
     ObjectType{
         name: "QHttpServerRouter"
+
+        Rejection{functionName: "bind_front"}
         ModifyFunction{
             signature: "addConverter<Type>(QAnyStringView)"
             remove: RemoveFlag.All
@@ -540,6 +509,25 @@ TypeSystem{
     
     ObjectType{
         name: "QHttpServerRouterRule"
+        FunctionalType{
+            name: "RouterHandler"
+            ExtraIncludes{
+                Include{
+                    fileName: "QtCore/QRegularExpressionMatch"
+                    location: Include.Global
+                }
+                Include{
+                    fileName: "QtNetwork/QTcpSocket"
+                    location: Include.Global
+                    until: [6,4]
+                }
+                Include{
+                    fileName: "QtHttpServer/QHttpServerResponder"
+                    location: Include.Global
+                    since: [6,5]
+                }
+            }
+        }
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QRegularExpressionMatch"
@@ -559,44 +547,12 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.core.QRegularExpressionMatch"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QRegularExpressionMatch* %out = qtjambi_cast<QRegularExpressionMatch*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
-    }
-    
-    FunctionalType{
-        name: "QHttpServerRouterRule::RouterHandler"
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QRegularExpressionMatch"
-                location: Include.Global
-            }
-            Include{
-                fileName: "QtNetwork/QTcpSocket"
-                location: Include.Global
-                until: [6,4]
-            }
-            Include{
-                fileName: "QtHttpServer/QHttpServerResponder"
-                location: Include.Global
-                since: [6,5]
             }
         }
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'ViewTraits::BindableType'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QHttpServer::AfterRequestHandler'"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Type parser doesn't recognize the type std::function<QHttpServerResponse(QHttpServerResponse&&,const QHttpServerRequest&)> (is_busted)"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: unsupported default value 'qMakePair(1u, 1u)' of argument in function 'writeStatusLine', class 'QHttpServerResponder'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Cannot find enum constant for value 'StatusCode::Ok' in '*' or any of its super classes"}
 }

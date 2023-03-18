@@ -29,6 +29,7 @@ contains(QT_CONFIG, release):contains(QT_CONFIG, debug) {
 }
 
 macx:{
+    CONFIG+=no_default_rpath no_qt_rpath
     contains(QT_CONFIG, x86):CONFIG += x86
     contains(QT_CONFIG, ppc):CONFIG += ppc
     contains(QT_CONFIG, x86_64):CONFIG += x86_64
@@ -40,7 +41,7 @@ macx:{
     QMAKE_CXXFLAGS_WARN_OFF += -Wdollar-in-identifier-extension -Woverloaded-virtual
 
     QMAKE_RPATHDIR =  @loader_path/../lib
-    QMAKE_RPATHDIR =  @loader_path/../../lib
+    QMAKE_RPATHDIR += @loader_path/../../lib
     QMAKE_RPATHDIR += @loader_path/../../../lib
     QMAKE_RPATHDIR += @loader_path/../../../../lib
     QMAKE_RPATHDIR += @loader_path/../../../../../lib

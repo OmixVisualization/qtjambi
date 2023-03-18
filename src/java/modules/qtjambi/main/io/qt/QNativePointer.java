@@ -808,7 +808,7 @@ public final class QNativePointer {
     	}else {
     		verifyAccess(Type.Pointer, pos);
     	}
-        T object = readObject(data.m_ptr, valueType, pos, data.m_isReadonly);
+        T object = readObject(data.m_ptr, valueType, pos, data.m_isReadonly, data.m_type.value(), data.m_knownSize);
         if(data.m_autodelete!=AutoDeleteMode.None) {
         	if(data.m_dependentObjects==null) {
         		data.m_dependentObjects = new ArrayList<>();
@@ -1102,6 +1102,24 @@ public final class QNativePointer {
      */
     public long pointer() {
         return data.m_ptr;
+    }
+
+    /**
+     * This function creates a QNativePointer from an existing c++
+     * pointer of unknown type. The long is the <code>void *</code> (i.e., address)
+     * value of the pointer.
+     *
+     * @param ptr the void * value of the pointer.
+     * @return a QNativePointer object with ptr as the native pointer
+     */
+    public static QNativePointer fromNative(long ptr) {
+        QNativePointer nativePointer = new QNativePointer();
+        nativePointer.data.m_ptr = ptr;
+        nativePointer.data.m_knownSize = -1;
+        nativePointer.data.m_type = Type.Pointer;
+        nativePointer.data.m_indirections = 1;
+        nativePointer.data.m_isReadonly = true;
+        return nativePointer;
     }
 
     /**
@@ -1400,7 +1418,7 @@ public final class QNativePointer {
     private static native double readDouble(long ptr, long pos);
     private static native ByteBuffer toByteBuffer(long ptr, long capacity, boolean readOnly);
     private static native long readPointer(long ptr, long pos);
-    private static native <T extends QtObjectInterface> T readObject(long ptr, Class<T> valueType, long pos, boolean readOnly);
+    private static native <T extends QtObjectInterface> T readObject(long ptr, Class<T> valueType, long pos, boolean readOnly, int type, long size);
     private static native String readString(long ptr, long pos);
     private static native void writeBoolean(long ptr, long pos, boolean value);
     private static native void writeByte(long ptr, long pos, byte value);

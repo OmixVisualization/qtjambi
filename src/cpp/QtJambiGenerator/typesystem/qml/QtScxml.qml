@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.scxml"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtScxml"
     module: "qtjambi.scxml"
     description: "Provides classes and tools for creating state machines from SCXML files and embedding them in applications."
@@ -74,18 +74,33 @@ TypeSystem{
         Text{content: "initialize_meta_info_ForeachLoopBody();"}
     }
     
-    Rejection{
-        className: "QScxmlStateMachine"
-        functionName: "onExit"
-    }
-    
-    Rejection{
-        className: "QScxmlStateMachine"
-        functionName: "onEntry"
-    }
-    
     NamespaceType{
         name: "QScxmlExecutableContent"
+
+        ValueType{
+            name: "AssignmentInfo"
+        }
+
+        ValueType{
+            name: "EvaluatorInfo"
+        }
+
+        ValueType{
+            name: "ForeachInfo"
+        }
+
+        ValueType{
+            name: "InvokeInfo"
+            ModifyField{
+                name: "finalize"
+                rename: "finalizeId"
+            }
+        }
+
+        ValueType{
+            name: "ParameterInfo"
+        }
+
         InjectCode{
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiScxml.java"
@@ -96,39 +111,7 @@ TypeSystem{
     }
     
     ValueType{
-        name: "QScxmlExecutableContent::AssignmentInfo"
-    }
-    
-    ValueType{
-        name: "QScxmlExecutableContent::EvaluatorInfo"
-    }
-    
-    ValueType{
-        name: "QScxmlExecutableContent::ForeachInfo"
-    }
-    
-    ValueType{
-        name: "QScxmlExecutableContent::InvokeInfo"
-        ModifyField{
-            name: "finalize"
-            rename: "finalizeId"
-        }
-    }
-    
-    ValueType{
-        name: "QScxmlExecutableContent::ParameterInfo"
-    }
-    
-    ValueType{
         name: "QScxmlError"
-        ModifyFunction{
-            signature: "operator=( const QScxmlError & )"
-            remove: RemoveFlag.All
-        }
-    }
-    
-    InterfaceType{
-        name: "QScxmlCompiler::Loader"
     }
     
     InterfaceType{
@@ -146,6 +129,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.IntBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Shell
                     Text{content: "int* %out = reinterpret_cast<int*>(%env->GetDirectBufferAddress(%in));"}
@@ -165,6 +149,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.IntBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Shell
                     Text{content: "int* %out = reinterpret_cast<int*>(%env->GetDirectBufferAddress(%in));"}
@@ -184,6 +169,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "java.nio.IntBuffer"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Shell
                     Text{content: "int* %out = reinterpret_cast<int*>(%env->GetDirectBufferAddress(%in));\n"+
@@ -214,6 +200,10 @@ TypeSystem{
     
     ObjectType{
         name: "QScxmlCompiler"
+
+        InterfaceType{
+            name: "Loader"
+        }
         ModifyFunction{
             signature: "setLoader(QScxmlCompiler::Loader*)"
             ModifyArgument{
@@ -235,6 +225,70 @@ TypeSystem{
     
     ObjectType{
         name: "QScxmlDataModel"
+
+        ObjectType{
+            name: "ForeachLoopBody"
+            forceAbstract: true
+            generate: false
+            ModifyFunction{
+                signature: "ForeachLoopBody()"
+                remove: RemoveFlag.All
+            }
+            ModifyFunction{
+                signature: "run(bool*)"
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "boolean @Nullable[]"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "JBooleanArrayPointer %out(%env, %in);"}
+                    }
+                }
+            }
+            until: [5, 11]
+        }
+
+        InterfaceType{
+            name: "ForeachLoopBody"
+            ExtraIncludes{
+                Include{
+                    fileName: "QtJambi/JavaAPI"
+                    location: Include.Global
+                }
+            }
+            ModifyFunction{
+                signature: "run(bool*)"
+                ModifyArgument{
+                    index: 0
+                    ReplaceType{
+                        modifiedType: "boolean"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "jboolean %out = %1;"}
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Shell
+                        Text{content: "if(%1){\n"+
+                                      "    *%1 = %in;\n"+
+                                      "}"}
+                    }
+                }
+                ModifyArgument{
+                    index: 1
+                    RemoveArgument{
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "bool %in = false;\n"+
+                                      "bool* %out = &%in;"}
+                    }
+                }
+            }
+            since: [5, 12]
+        }
         ModifyFunction{
             signature: "setStateMachine(QScxmlStateMachine*)"
             ModifyArgument{
@@ -257,11 +311,11 @@ TypeSystem{
             since: [6, 1]
         }
         ModifyFunction{
-            signature: "evaluateToString(int, bool *)"
+            signature: "evaluateToString(qint32, bool *)"
             ModifyArgument{
                 index: 2
                 ReplaceType{
-                    modifiedType: "boolean[]"
+                    modifiedType: "boolean @Nullable[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -275,11 +329,11 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "evaluateToBool(int, bool *)"
+            signature: "evaluateToBool(qint32, bool *)"
             ModifyArgument{
                 index: 2
                 ReplaceType{
-                    modifiedType: "boolean[]"
+                    modifiedType: "boolean @Nullable[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -293,11 +347,11 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "evaluateToVariant(int, bool *)"
+            signature: "evaluateToVariant(qint32, bool *)"
             ModifyArgument{
                 index: 2
                 ReplaceType{
-                    modifiedType: "boolean[]"
+                    modifiedType: "boolean @Nullable[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -311,11 +365,11 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "evaluateToVoid(int, bool *)"
+            signature: "evaluateToVoid(qint32, bool *)"
             ModifyArgument{
                 index: 2
                 ReplaceType{
-                    modifiedType: "boolean[]"
+                    modifiedType: "boolean @Nullable[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -329,11 +383,11 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "evaluateAssignment(int, bool *)"
+            signature: "evaluateAssignment(qint32, bool *)"
             ModifyArgument{
                 index: 2
                 ReplaceType{
-                    modifiedType: "boolean[]"
+                    modifiedType: "boolean @Nullable[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -347,11 +401,11 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "evaluateInitialization(int, bool *)"
+            signature: "evaluateInitialization(qint32, bool *)"
             ModifyArgument{
                 index: 2
                 ReplaceType{
-                    modifiedType: "boolean[]"
+                    modifiedType: "boolean @Nullable[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -365,11 +419,11 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "evaluateForeach(int,bool*,QScxmlDataModel::ForeachLoopBody*)"
+            signature: "evaluateForeach(qint32,bool*,QScxmlDataModel::ForeachLoopBody*)"
             ModifyArgument{
                 index: 2
                 ReplaceType{
-                    modifiedType: "boolean[]"
+                    modifiedType: "boolean @Nullable[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -398,9 +452,9 @@ TypeSystem{
     
     ValueType{
         name: "QScxmlEvent"
-        ModifyFunction{
-            signature: "operator=( const QScxmlEvent & )"
-            remove: RemoveFlag.All
+
+        EnumType{
+            name: "EventType"
         }
     }
     
@@ -411,7 +465,7 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "io.qt.scxml.QScxmlEvent"
+                    modifiedType: "io.qt.scxml.@Nullable QScxmlEvent"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -435,6 +489,8 @@ TypeSystem{
     
     ObjectType{
         name: "QScxmlStateMachine"
+        Rejection{functionName: "onExit"}
+        Rejection{functionName: "onEntry"}
         ModifyFunction{
             signature: "setDataModel(QScxmlDataModel*)"
             ModifyArgument{
@@ -469,12 +525,6 @@ TypeSystem{
             signature: "connectToEvent(QString,const QObject*,const char*,Qt::ConnectionType)"
             access: Modification.Private
             ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 4
                 ReplaceType{
                     modifiedType: "int"
@@ -487,34 +537,11 @@ TypeSystem{
             signature: "connectToState(QString,const QObject*,const char*,Qt::ConnectionType)"
             access: Modification.Private
             ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
                 index: 4
                 ReplaceType{
                     modifiedType: "int"
                 }
                 RemoveDefaultExpression{
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "submitEvent(QScxmlEvent *)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.scxml.QScxmlEvent"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QScxmlEvent *%out = qtjambi_cast<QScxmlEvent *>(%env, %in);"}
                 }
             }
         }
@@ -530,74 +557,6 @@ TypeSystem{
     
     ObjectType{
         name: "QScxmlStaticScxmlServiceFactory"
-    }
-    
-    ObjectType{
-        name: "QScxmlDataModel::ForeachLoopBody"
-        forceAbstract: true
-        generate: false
-        ModifyFunction{
-            signature: "ForeachLoopBody()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "run(bool*)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "boolean[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBooleanArrayPointer %out(%env, %in);"}
-                }
-            }
-        }
-        until: [5, 11]
-    }
-    
-    InterfaceType{
-        name: "QScxmlDataModel::ForeachLoopBody"
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambi/JavaAPI"
-                location: Include.Global
-            }
-        }
-        ModifyFunction{
-            signature: "run(bool*)"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "boolean"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jboolean %out = %1;"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "if(%1){\n"+
-                                  "    *%1 = %in;\n"+
-                                  "}"}
-                }
-            }
-            ModifyArgument{
-                index: 1
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "bool %in = false;\n"+
-                                  "bool* %out = &%in;"}
-                }
-            }
-        }
-        since: [5, 12]
-    }
-    
-    EnumType{
-        name: "QScxmlEvent::EventType"
     }
     
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QScxml*."}

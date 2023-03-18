@@ -69,9 +69,14 @@ namespace rpp {
                 if (*first == '\\') {
                     _InputIterator begin = first;
                     ++begin;
-
+                    int counter = 1;
+                    while(begin != last && *begin==' ') {
+                        ++begin;
+                        ++counter;
+                    }
                     if (begin != last && *begin == '\n') {
-                        ++first;
+                        for(int i=0; i<counter; ++i)
+                            ++first;
                     } else {
                         break;
                     }

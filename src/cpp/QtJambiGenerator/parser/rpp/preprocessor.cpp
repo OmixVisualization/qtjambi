@@ -93,7 +93,7 @@ void Preprocessor::processString(const QByteArray &str) {
     pp proc(d->env);
     d->initPP(proc);
 
-    proc(str.begin(), str.end(), std::back_inserter(d->result));
+    proc.process(str.begin(), str.end(), std::back_inserter(d->result));
 }
 
 QByteArray Preprocessor::result() const {

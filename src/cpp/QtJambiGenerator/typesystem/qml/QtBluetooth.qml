@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.bluetooth"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtBluetooth"
     module: "qtjambi.bluetooth"
     description: "Provides access to Bluetooth hardware."
@@ -59,282 +59,120 @@ TypeSystem{
     
     NamespaceType{
         name: "QBluetooth"
-    }
-    
-    EnumType{
-        name: "QBluetooth::AttAccessConstraint"
-        flags: "QBluetooth::AttAccessConstraints"
-    }
-    
-    EnumType{
-        name: "QBluetooth::Security"
-        flags: "QBluetooth::SecurityFlags"
-    }
-    
-    EnumType{
-        name: "QBluetoothDeviceDiscoveryAgent::DiscoveryMethod"
-        flags: "QBluetoothDeviceDiscoveryAgent::DiscoveryMethods"
-    }
-    
-    EnumType{
-        name: "QBluetoothDeviceDiscoveryAgent::Error"
-    }
-    
-    EnumType{
-        name: "QBluetoothDeviceDiscoveryAgent::InquiryType"
-    }
-    
-    EnumType{
-        name: "QBluetoothServiceInfo::AttributeId"
-        RejectEnumValue{
-            name: "PrimaryLanguageBase"
+
+        EnumType{
+            name: "AttAccessConstraint"
         }
-    }
-    
-    EnumType{
-        name: "QBluetoothServiceInfo::Protocol"
-    }
-    
-    EnumType{
-        name: "QBluetoothSocket::SocketError"
-    }
-    
-    EnumType{
-        name: "QBluetoothSocket::SocketState"
-    }
-    
-    EnumType{
-        name: "QBluetoothDeviceInfo::CoreConfiguration"
-        flags: "QBluetoothDeviceInfo::CoreConfigurations"
-    }
-    
-    EnumType{
-        name: "QBluetoothDeviceInfo::DataCompleteness"
-    }
-    
-    EnumType{
-        name: "QBluetoothDeviceInfo::Field"
-        flags: "QBluetoothDeviceInfo::Fields"
-    }
-    
-    EnumType{
-        name: "QBluetoothDeviceInfo::MajorDeviceClass"
-        RejectEnumValue{
-            name: "NetworkDevice"
-            until: 5
-        }
-    }
-    
-    EnumType{
-        name: "QBluetoothDeviceInfo::MinorAudioVideoClass"
-    }
-    
-    EnumType{
-        name: "QBluetoothDeviceInfo::MinorComputerClass"
-    }
-    
-    EnumType{
-        name: "QBluetoothDeviceInfo::MinorHealthClass"
-    }
-    
-    EnumType{
-        name: "QBluetoothDeviceInfo::MinorImagingClass"
-    }
-    
-    EnumType{
-        name: "QBluetoothDeviceInfo::MinorMiscellaneousClass"
-    }
-    
-    EnumType{
-        name: "QBluetoothDeviceInfo::MinorNetworkClass"
-    }
-    
-    EnumType{
-        name: "QBluetoothDeviceInfo::MinorPeripheralClass"
-    }
-    
-    EnumType{
-        name: "QBluetoothDeviceInfo::MinorPhoneClass"
-    }
-    
-    EnumType{
-        name: "QBluetoothDeviceInfo::MinorToyClass"
-    }
-    
-    EnumType{
-        name: "QBluetoothDeviceInfo::MinorWearableClass"
-    }
-    
-    EnumType{
-        name: "QBluetoothDeviceInfo::ServiceClass"
-        flags: "QBluetoothDeviceInfo::ServiceClasses"
-    }
-    
-    EnumType{
-        name: "QBluetoothLocalDevice::Error"
-    }
-    
-    EnumType{
-        name: "QBluetoothLocalDevice::HostMode"
-    }
-    
-    EnumType{
-        name: "QBluetoothLocalDevice::Pairing"
-    }
-    
-    EnumType{
-        name: "QBluetoothServer::Error"
-    }
-    
-    EnumType{
-        name: "QBluetoothServiceDiscoveryAgent::DiscoveryMode"
-    }
-    
-    EnumType{
-        name: "QBluetoothServiceDiscoveryAgent::Error"
-    }
-    
-    EnumType{
-        name: "QBluetoothTransferReply::TransferError"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QBluetoothTransferRequest::Attribute"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QBluetoothUuid::CharacteristicType"
-    }
-    
-    EnumType{
-        name: "QBluetoothUuid::DescriptorType"
-    }
-    
-    EnumType{
-        name: "QBluetoothUuid::ProtocolUuid"
-    }
-    
-    EnumType{
-        name: "QBluetoothUuid::ServiceClassUuid"
-    }
-    
-    EnumType{
-        name: "QLowEnergyAdvertisingData::Discoverability"
-    }
-    
-    EnumType{
-        name: "QLowEnergyAdvertisingParameters::FilterPolicy"
-    }
-    
-    EnumType{
-        name: "QLowEnergyAdvertisingParameters::Mode"
-    }
-    
-    EnumType{
-        name: "QLowEnergyController::ControllerState"
-    }
-    
-    EnumType{
-        name: "QLowEnergyController::Error"
-    }
-    
-    EnumType{
-        name: "QLowEnergyController::RemoteAddressType"
-    }
-    
-    EnumType{
-        name: "QLowEnergyController::Role"
-    }
-    
-    EnumType{
-        name: "QLowEnergyService::ServiceError"
-    }
-    
-    EnumType{
-        name: "QLowEnergyService::ServiceState"
-        RejectEnumValue{
-            name: "DiscoveryRequired"
-            since: [6, 2]
-        }
-        RejectEnumValue{
-            name: "DiscoveringService"
-        }
-        RejectEnumValue{
-            name: "ServiceDiscovered"
-            since: [6, 2]
-        }
-    }
-    
-    EnumType{
-        name: "QLowEnergyService::WriteMode"
-    }
-    
-    EnumType{
-        name: "QLowEnergyService::DiscoveryMode"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QLowEnergyService::ServiceType"
-        flags: "QLowEnergyService::ServiceTypes"
-    }
-    
-    EnumType{
-        name: "QLowEnergyServiceData::ServiceType"
-    }
-    
-    EnumType{
-        name: "QLowEnergyCharacteristic::PropertyType"
-        flags: "QLowEnergyCharacteristic::PropertyTypes"
-    }
-    
-    ValueType{
-        name: "QLowEnergyAdvertisingParameters::AddressInfo"
-    }
-    
-    ValueType{
-        name: "QBluetoothServiceInfo::Sequence"
-        ExtraIncludes{
-            Include{
-                fileName: "hashes.h"
-                location: Include.Local
-            }
-        }
-    }
-    
-    ValueType{
-        name: "QBluetoothServiceInfo::Alternative"
-        ExtraIncludes{
-            Include{
-                fileName: "hashes.h"
-                location: Include.Local
-            }
+
+        EnumType{
+            name: "Security"
         }
     }
     
     ValueType{
         name: "QBluetoothAddress"
-        ModifyFunction{
-            signature: "operator=(QBluetoothAddress)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QBluetoothServiceInfo"
-        ModifyFunction{
-            signature: "operator=(QBluetoothServiceInfo)"
-            remove: RemoveFlag.All
+
+        EnumType{
+            name: "AttributeId"
+            RejectEnumValue{
+                name: "PrimaryLanguageBase"
+            }
+        }
+
+        EnumType{
+            name: "Protocol"
+        }
+
+        ValueType{
+            name: "Sequence"
+            ExtraIncludes{
+                Include{
+                    fileName: "hashes.h"
+                    location: Include.Local
+                }
+            }
+        }
+
+        ValueType{
+            name: "Alternative"
+            ExtraIncludes{
+                Include{
+                    fileName: "hashes.h"
+                    location: Include.Local
+                }
+            }
         }
     }
     
     ValueType{
         name: "QBluetoothDeviceInfo"
-        ModifyFunction{
-            signature: "operator=(QBluetoothDeviceInfo)"
-            remove: RemoveFlag.All
+
+        EnumType{
+            name: "CoreConfiguration"
+        }
+
+        EnumType{
+            name: "DataCompleteness"
+        }
+
+        EnumType{
+            name: "Field"
+        }
+
+        EnumType{
+            name: "MajorDeviceClass"
+            RejectEnumValue{
+                name: "NetworkDevice"
+                until: 5
+            }
+        }
+
+        EnumType{
+            name: "MinorAudioVideoClass"
+        }
+
+        EnumType{
+            name: "MinorComputerClass"
+        }
+
+        EnumType{
+            name: "MinorHealthClass"
+        }
+
+        EnumType{
+            name: "MinorImagingClass"
+        }
+
+        EnumType{
+            name: "MinorMiscellaneousClass"
+        }
+
+        EnumType{
+            name: "MinorNetworkClass"
+        }
+
+        EnumType{
+            name: "MinorPeripheralClass"
+        }
+
+        EnumType{
+            name: "MinorPhoneClass"
+        }
+
+        EnumType{
+            name: "MinorToyClass"
+        }
+
+        EnumType{
+            name: "MinorWearableClass"
+        }
+
+        EnumType{
+            name: "ServiceClass"
         }
         ExtraIncludes{
             Include{
@@ -388,6 +226,7 @@ TypeSystem{
             }
             ModifyArgument{
                 index: 0
+                NoNullPointer{}
                 ReplaceType{
                     modifiedType: "io.qt.bluetooth.QBluetoothDeviceInfo$ServiceUuids"
                 }
@@ -402,32 +241,41 @@ TypeSystem{
     
     ValueType{
         name: "QBluetoothHostInfo"
-        ModifyFunction{
-            signature: "operator=(QBluetoothHostInfo)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QBluetoothTransferRequest"
-        ModifyFunction{
-            signature: "operator=(QBluetoothTransferRequest)"
-            remove: RemoveFlag.All
+
+        EnumType{
+            name: "Attribute"
         }
         until: 5
     }
     
     ValueType{
         name: "QBluetoothUuid"
-        ModifyFunction{
-            signature: "operator=(QBluetoothUuid)"
-            remove: RemoveFlag.All
+
+        EnumType{
+            name: "CharacteristicType"
+        }
+
+        EnumType{
+            name: "DescriptorType"
+        }
+
+        EnumType{
+            name: "ProtocolUuid"
+        }
+
+        EnumType{
+            name: "ServiceClassUuid"
         }
         ModifyFunction{
             signature: "toUInt128() const"
             rename: "toBytes"
             ModifyArgument{
                 index: 0
+                NoNullPointer{}
                 ReplaceType{
                     modifiedType: "byte[]"
                 }
@@ -447,6 +295,7 @@ TypeSystem{
             }
             ModifyArgument{
                 index: 1
+                NoNullPointer{}
                 ReplaceType{
                     modifiedType: "byte[]"
                 }
@@ -463,7 +312,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.lang.Short"
+                    modifiedType: "java.lang.@Nullable Short"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -487,7 +336,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.lang.Integer"
+                    modifiedType: "java.lang.@Nullable Integer"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -514,65 +363,57 @@ TypeSystem{
     
     ValueType{
         name: "QLowEnergyAdvertisingData"
-        ModifyFunction{
-            signature: "operator=(QLowEnergyAdvertisingData)"
-            remove: RemoveFlag.All
+
+        EnumType{
+            name: "Discoverability"
         }
     }
     
     ValueType{
         name: "QLowEnergyAdvertisingParameters"
-        ModifyFunction{
-            signature: "operator=(QLowEnergyAdvertisingParameters)"
-            remove: RemoveFlag.All
+
+        EnumType{
+            name: "FilterPolicy"
+        }
+
+        EnumType{
+            name: "Mode"
+        }
+
+        ValueType{
+            name: "AddressInfo"
         }
     }
     
     ValueType{
         name: "QLowEnergyDescriptor"
-        ModifyFunction{
-            signature: "operator=(QLowEnergyDescriptor)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QLowEnergyDescriptorData"
-        ModifyFunction{
-            signature: "operator=(QLowEnergyDescriptorData)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QLowEnergyCharacteristic"
-        ModifyFunction{
-            signature: "operator=(QLowEnergyCharacteristic)"
-            remove: RemoveFlag.All
+
+        EnumType{
+            name: "PropertyType"
         }
     }
     
     ValueType{
         name: "QLowEnergyCharacteristicData"
-        ModifyFunction{
-            signature: "operator=(QLowEnergyCharacteristicData)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QLowEnergyConnectionParameters"
-        ModifyFunction{
-            signature: "operator=(QLowEnergyConnectionParameters)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QLowEnergyServiceData"
-        ModifyFunction{
-            signature: "operator=(QLowEnergyServiceData)"
-            remove: RemoveFlag.All
+
+        EnumType{
+            name: "ServiceType"
         }
         ModifyFunction{
             signature: "setIncludedServices(const QList<QLowEnergyService*>&)"
@@ -600,14 +441,46 @@ TypeSystem{
     
     ObjectType{
         name: "QBluetoothDeviceDiscoveryAgent"
+
+        EnumType{
+            name: "DiscoveryMethod"
+        }
+
+        EnumType{
+            name: "Error"
+        }
+
+        EnumType{
+            name: "InquiryType"
+        }
     }
     
     ObjectType{
         name: "QBluetoothLocalDevice"
+
+        EnumType{
+            name: "Error"
+        }
+
+        EnumType{
+            name: "HostMode"
+        }
+
+        EnumType{
+            name: "Pairing"
+        }
     }
     
     ObjectType{
         name: "QBluetoothSocket"
+
+        EnumType{
+            name: "SocketError"
+        }
+
+        EnumType{
+            name: "SocketState"
+        }
         ModifyFunction{
             signature: "errorString() const"
             rename: "socketErrorString"
@@ -616,10 +489,22 @@ TypeSystem{
     
     ObjectType{
         name: "QBluetoothServer"
+
+        EnumType{
+            name: "Error"
+        }
     }
     
     ObjectType{
         name: "QBluetoothServiceDiscoveryAgent"
+
+        EnumType{
+            name: "DiscoveryMode"
+        }
+
+        EnumType{
+            name: "Error"
+        }
     }
     
     ObjectType{
@@ -628,6 +513,11 @@ TypeSystem{
     
     ObjectType{
         name: "QBluetoothTransferReply"
+
+        EnumType{
+            name: "TransferError"
+            until: 5
+        }
         ModifyFunction{
             signature: "setManager(QBluetoothTransferManager*)"
             ModifyArgument{
@@ -643,6 +533,22 @@ TypeSystem{
     
     ObjectType{
         name: "QLowEnergyController"
+
+        EnumType{
+            name: "ControllerState"
+        }
+
+        EnumType{
+            name: "Error"
+        }
+
+        EnumType{
+            name: "RemoteAddressType"
+        }
+
+        EnumType{
+            name: "Role"
+        }
         ModifyFunction{
             signature: "addService(QLowEnergyServiceData,QObject*)"
             ModifyArgument{
@@ -729,6 +635,38 @@ TypeSystem{
     
     ObjectType{
         name: "QLowEnergyService"
+
+        EnumType{
+            name: "WriteMode"
+        }
+
+        EnumType{
+            name: "DiscoveryMode"
+            since: [6, 2]
+        }
+
+        EnumType{
+            name: "ServiceType"
+        }
+
+        EnumType{
+            name: "ServiceError"
+        }
+
+        EnumType{
+            name: "ServiceState"
+            RejectEnumValue{
+                name: "DiscoveryRequired"
+                since: [6, 2]
+            }
+            RejectEnumValue{
+                name: "DiscoveringService"
+            }
+            RejectEnumValue{
+                name: "ServiceDiscovered"
+                since: [6, 2]
+            }
+        }
     }
     
     SuppressedWarning{text: "WARNING(CppImplGenerator) :: Object type 'quint128' passed as value. Resulting code will not compile.  io.qt.bluetooth.QBluetoothUuid::QBluetoothUuid(quint128 uuid)"}

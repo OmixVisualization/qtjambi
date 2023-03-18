@@ -46,23 +46,14 @@
 class CppGenerator : public AbstractGenerator {
 public:
     CppGenerator(PriGenerator *_priGenerator);
-    QString resolveOutputDirectory() const override { return cppOutputDirectory(); }
+    QString resolveOutputDirectory() const override;
 
-    QString cppOutputDirectory() const {
-        if (!m_cpp_out_dir.isNull())
-            return m_cpp_out_dir;
-        return outputDirectory() + QLatin1String("/cpp");
-    }
-    void setCppOutputDirectory(const QString &cppOutDir) { m_cpp_out_dir = cppOutDir; }
+    QString cppOutputDirectory() const;
+    void setCppOutputDirectory(const QString &cppOutDir);
 
     QString subDirectoryForPackage(const QString &package) const;
-    virtual QString subDirectoryForFunctional(const MetaFunctional * cls) const override
-    { return subDirectoryForPackage(cls->targetTypeSystem()); }
-
-    virtual QString subDirectoryForClass(const MetaClass *cls) const override {
-        return subDirectoryForPackage(cls->targetTypeSystem());
-    }
-
+    QString subDirectoryForFunctional(const MetaFunctional * cls) const override;
+    QString subDirectoryForClass(const MetaClass *cls) const override;
     static QString fixNormalizedSignatureForQt(const QString &signature);
     static void writeTypeInfo(QTextStream &s, const MetaType *type, Option option = NoOption);
     void writeFunctionSignature(QTextStream &s, const MetaFunction *java_function,
@@ -77,52 +68,15 @@ public:
                                        Option option = NoOption,
                                        int numArguments = -1) const;
 
-    bool shouldGenerate(const MetaClass *java_class) const override {
-        return (!java_class->isNamespace() || java_class->functionsInTargetLang().size() > 0)
-               && !java_class->isInterface()
-               && !java_class->typeEntry()->isVariant()
-               && !java_class->typeEntry()->isIterator()
-               && (java_class->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp)
-               && !java_class->isFake();
-    }
+    bool shouldGenerate(const MetaClass *java_class) const override;
 
-    bool shouldGenerate(const MetaFunctional *functional) const override {
-        if(functional->enclosingClass()){
-            if(!(!functional->enclosingClass()->isFake()
-                 && functional->enclosingClass()->typeEntry()
-                 && (functional->enclosingClass()->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp))){
-                return false;
-            }
-        }
-        return functional->typeEntry()->getUsing().isEmpty() && (functional->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp);
-    }
+    static bool shouldGenerateCpp(const MetaClass *java_class);
 
-    static QString shellClassName(const MetaClass *java_class) {
-        if(java_class->typeEntry()->designatedInterface() && java_class->enclosingClass()){
-            return java_class->generateShellClass()
-                   ? java_class->enclosingClass()->name() + "_shell"
-                   : java_class->enclosingClass()->qualifiedCppName();
-        }
-        return java_class->generateShellClass()
-               ? java_class->name() + "_shell"
-               : java_class->qualifiedCppName();
-    }
+    bool shouldGenerate(const MetaFunctional *functional) const override;
 
-    static QString shellClassName(const MetaFunctional *java_class) {
-        QString _shellClassName;
-        if(java_class->enclosingClass() && !java_class->enclosingClass()->isFake()){
-            _shellClassName = shellClassName(java_class->enclosingClass());
-            if(_shellClassName.endsWith("_shell")){
-                _shellClassName = _shellClassName.chopped(6);
-            }
-            _shellClassName += "$";
-        }
-        return _shellClassName + java_class->name() + "_shell";
-        //return java_class->enclosingClass()
-        //        ? shellClassName(java_class->enclosingClass()) + "$" + java_class->name()
-        //                                    : java_class->name() + "_shell";
-    }
+    static QString shellClassName(const MetaClass *java_class);
 
+    static QString shellClassName(const MetaFunctional *java_class);
     static QStringList getFunctionPPConditions(const MetaFunction *java_function);
 
     static QString translateType(const MetaType *java_type, Option option = NoOption);
@@ -141,7 +95,6 @@ public:
     static QString jni_signature(const MetaFunction *function, JNISignatureFormat format);
     static QString jni_signature(const MetaFunctional *function, JNISignatureFormat format);
     static QString jni_signature(const MetaType *java_type, JNISignatureFormat format);
-    static QString fixCppTypeName(const QString &name);
     inline TS::TypeDatabase* database() const {return priGenerator->database();}
 protected:
     QByteArray jniName(const QString &name) const;

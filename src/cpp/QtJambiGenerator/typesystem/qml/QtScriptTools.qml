@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.script.tools"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtScriptTools"
     module: "qtjambi.scripttools"
     description: "Additional components for applications that use Qt Script."

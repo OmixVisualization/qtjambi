@@ -58,9 +58,11 @@ struct qtjambi_jnitype_template4_cast<true, has_scope,
     static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope* scope){
         NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
         jobject list = QtJambiAPI::newJavaHashMap(env, jint(_in.size()));
-        for (auto it = _in.begin(); it != _in.end(); ++it) {
-            jobject first = qtjambi_scoped_cast<has_scope,jobject,decltype(it->first)>::cast(env, it->first, nullptr, scope);
-            jobject second = qtjambi_scoped_cast<has_scope,jobject,decltype(it->second)>::cast(env, it->second, nullptr, scope);
+        for (auto it = _in.cbegin(); it != _in.cend(); ++it) {
+            const auto& _first = it->first;
+            const auto& _second = it->second;
+            jobject first = qtjambi_scoped_cast<has_scope,jobject,decltype(_first)>::cast(env, _first, nullptr, scope);
+            jobject second = qtjambi_scoped_cast<has_scope,jobject,decltype(_second)>::cast(env, _second, nullptr, scope);
             QtJambiAPI::putJavaMap(env, list, first, second);
         }
         return list;
@@ -110,9 +112,11 @@ struct qtjambi_jnitype_template4_cast<true, has_scope,
     static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope* scope){
         NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
         jobject list = QtJambiAPI::newJavaHashMap(env, jint(_in.size()));
-        for (auto it = _in.begin(); it != _in.end(); ++it) {
-            jobject first = qtjambi_scoped_cast<has_scope,jobject,decltype(it->first)>::cast(env, it->first, nullptr, scope);
-            jobject second = qtjambi_scoped_cast<has_scope,jobject,decltype(it->second)>::cast(env, it->second, nullptr, scope);
+        for (auto it = _in.cbegin(); it != _in.cend(); ++it) {
+            const auto& _first = it->first;
+            const auto& _second = it->second;
+            jobject first = qtjambi_scoped_cast<has_scope,jobject,decltype(_first)>::cast(env, _first, nullptr, scope);
+            jobject second = qtjambi_scoped_cast<has_scope,jobject,decltype(_second)>::cast(env, _second, nullptr, scope);
             QtJambiAPI::putJavaMap(env, list, first, second);
         }
         return list;
@@ -163,7 +167,7 @@ struct qtjambi_jnitype_template4_cast<true, has_scope,
     static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope* scope){
         NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
         jobject list = QtJambiAPI::newJavaHashSet(env);
-        for(decltype(*(_in.begin())) entry : _in){
+        for(const auto& entry : _in){
             jobject _entry = qtjambi_scoped_cast<has_scope,jobject,decltype(entry)>::cast(env, entry, nullptr, scope);
             QtJambiAPI::addToJavaCollection(env, list, _entry);
         }

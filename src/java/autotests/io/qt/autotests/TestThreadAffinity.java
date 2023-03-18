@@ -284,6 +284,10 @@ public class TestThreadAffinity extends ApplicationInitializer {
     			parent.removeEventFilter(null);
 				fail("QThreadAffinityException expected to be thrown.");
 			}catch(QThreadAffinityException e) {}
+			try{
+				QtUtilities.threadCheck(parent);
+				fail("QThreadAffinityException expected to be thrown.");
+			}catch(QThreadAffinityException e) {}
     	}finally {
     		parent.disposeLater();
     		thread.quit();
@@ -307,6 +311,10 @@ public class TestThreadAffinity extends ApplicationInitializer {
 			}catch(QThreadAffinityException e) {}
 			try{
 				widget.setWidget(comboBox);
+				fail("QThreadAffinityException expected to be thrown.");
+			}catch(QThreadAffinityException e) {}
+			try{
+				QtUtilities.uiThreadCheck();
 				fail("QThreadAffinityException expected to be thrown.");
 			}catch(QThreadAffinityException e) {}
 		});
@@ -498,7 +506,7 @@ public class TestThreadAffinity extends ApplicationInitializer {
 				fail("QThreadAffinityException expected to be thrown.");
 			}catch(QThreadAffinityException e) {}
 			try{
-				QFontDialog.getFont();
+				QFontDialog.getFont((QWidget)null);
 				fail("QThreadAffinityException expected to be thrown.");
 			}catch(QThreadAffinityException e) {}
 			try{

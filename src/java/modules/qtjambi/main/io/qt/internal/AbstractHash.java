@@ -38,10 +38,6 @@ import io.qt.core.QPair;
 
 public abstract class AbstractHash<K, V> extends AbstractAssociativeContainer<K, V> {
 
-	protected AbstractHash() {
-		super();
-	}
-
 	protected AbstractHash(QPrivateConstructor p) {
 		super(p);
 	}

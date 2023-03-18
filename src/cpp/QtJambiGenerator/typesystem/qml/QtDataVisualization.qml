@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.datavis"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtDataVisualization"
     module: "qtjambi.datavisualization"
     description: "UI Components for creating stunning 3D data visualizations."
@@ -101,19 +101,6 @@ TypeSystem{
     
     ObjectType{
         name: "QtDataVisualization::Q3DBars"
-        ModifyFunction{
-            signature: "Q3DBars(const QSurfaceFormat*,QWindow*)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QSurfaceFormat"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "const QSurfaceFormat* %out = qtjambi_cast<const QSurfaceFormat*>(%env, %in);"}
-                }
-            }
-        }
         ModifyFunction{
             signature: "setColumnAxis(QtDataVisualization::QCategory3DAxis *)"
             threadAffinity: true
@@ -215,12 +202,12 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QtDataVisualization::Q3DCamera::CameraPreset"
-    }
-    
     ObjectType{
         name: "QtDataVisualization::Q3DCamera"
+
+        EnumType{
+            name: "CameraPreset"
+        }
     }
     
     ObjectType{
@@ -265,19 +252,6 @@ TypeSystem{
     
     ObjectType{
         name: "QtDataVisualization::Q3DScatter"
-        ModifyFunction{
-            signature: "Q3DScatter(const QSurfaceFormat*,QWindow*)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QSurfaceFormat"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "const QSurfaceFormat* %out = qtjambi_cast<const QSurfaceFormat*>(%env, %in);"}
-                }
-            }
-        }
         ModifyFunction{
             signature: "setAxisX(QtDataVisualization::QValue3DAxis *)"
             threadAffinity: true
@@ -386,19 +360,6 @@ TypeSystem{
     ObjectType{
         name: "QtDataVisualization::Q3DSurface"
         ModifyFunction{
-            signature: "Q3DSurface(const QSurfaceFormat*,QWindow*)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QSurfaceFormat"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "const QSurfaceFormat* %out = qtjambi_cast<const QSurfaceFormat*>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
             signature: "addAxis(QtDataVisualization::QValue3DAxis *)"
             threadAffinity: true
             ModifyArgument{
@@ -466,28 +427,28 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QtDataVisualization::Q3DTheme::ColorStyle"
-    }
-    
-    EnumType{
-        name: "QtDataVisualization::Q3DTheme::Theme"
-    }
-    
     ObjectType{
         name: "QtDataVisualization::Q3DTheme"
-    }
-    
-    EnumType{
-        name: "QtDataVisualization::QAbstract3DAxis::AxisOrientation"
-    }
-    
-    EnumType{
-        name: "QtDataVisualization::QAbstract3DAxis::AxisType"
+
+        EnumType{
+            name: "ColorStyle"
+        }
+
+        EnumType{
+            name: "Theme"
+        }
     }
     
     ObjectType{
         name: "QtDataVisualization::QAbstract3DAxis"
+
+        EnumType{
+            name: "AxisOrientation"
+        }
+
+        EnumType{
+            name: "AxisType"
+        }
         ModifyFunction{
             signature: "QAbstract3DAxis(QtDataVisualization::QAbstract3DAxisPrivate *, QObject *)"
             remove: RemoveFlag.All
@@ -502,26 +463,24 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QtDataVisualization::QAbstract3DGraph::ElementType"
-    }
-    
-    EnumType{
-        name: "QtDataVisualization::QAbstract3DGraph::ShadowQuality"
-    }
-    
-    EnumType{
-        name: "QtDataVisualization::QAbstract3DGraph::OptimizationHint"
-        flags: "QtDataVisualization::QAbstract3DGraph::OptimizationHints"
-    }
-    
-    EnumType{
-        name: "QtDataVisualization::QAbstract3DGraph::SelectionFlag"
-        flags: "QtDataVisualization::QAbstract3DGraph::SelectionFlags"
-    }
-    
     ObjectType{
         name: "QtDataVisualization::QAbstract3DGraph"
+
+        EnumType{
+            name: "ElementType"
+        }
+
+        EnumType{
+            name: "ShadowQuality"
+        }
+
+        EnumType{
+            name: "OptimizationHint"
+        }
+
+        EnumType{
+            name: "SelectionFlag"
+        }
         ModifyFunction{
             signature: "QAbstract3DGraph(QtDataVisualization::QAbstract3DGraphPrivate *,const QSurfaceFormat *, QWindow *)"
             remove: RemoveFlag.All
@@ -631,12 +590,12 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QtDataVisualization::QAbstract3DInputHandler::InputView"
-    }
-    
     ObjectType{
         name: "QtDataVisualization::QAbstract3DInputHandler"
+
+        EnumType{
+            name: "InputView"
+        }
         ModifyFunction{
             signature: "mouseMoveEvent(QMouseEvent *,QPoint)"
             ModifyArgument{
@@ -691,28 +650,28 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QtDataVisualization::QAbstract3DSeries::Mesh"
-    }
-    
-    EnumType{
-        name: "QtDataVisualization::QAbstract3DSeries::SeriesType"
-    }
-    
     ObjectType{
         name: "QtDataVisualization::QAbstract3DSeries"
+
+        EnumType{
+            name: "Mesh"
+        }
+
+        EnumType{
+            name: "SeriesType"
+        }
         ModifyFunction{
             signature: "QAbstract3DSeries(QtDataVisualization::QAbstract3DSeriesPrivate *, QObject *)"
             remove: RemoveFlag.All
         }
     }
     
-    EnumType{
-        name: "QtDataVisualization::QAbstractDataProxy::DataType"
-    }
-    
     ObjectType{
         name: "QtDataVisualization::QAbstractDataProxy"
+
+        EnumType{
+            name: "DataType"
+        }
         ModifyFunction{
             signature: "QAbstractDataProxy(QtDataVisualization::QAbstractDataProxyPrivate *, QObject *)"
             remove: RemoveFlag.All
@@ -752,10 +711,6 @@ TypeSystem{
     
     ValueType{
         name: "QtDataVisualization::QBarDataItem"
-        ModifyFunction{
-            signature: "operator=(QtDataVisualization::QBarDataItem)"
-            remove: RemoveFlag.All
-        }
     }
     
     ObjectType{
@@ -821,45 +776,6 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "array()const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.datavis.QBarDataArray"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = %in ? qtjambi_cast<jobject>(%env, *%in) : nullptr;"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "itemAt(int,int)const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.datavis.QBarDataItem"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = %in ? qtjambi_cast<jobject>(%env, *%in) : nullptr;"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "itemAt(QPoint)const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.datavis.QBarDataItem"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = %in ? qtjambi_cast<jobject>(%env, *%in) : nullptr;"}
-                }
-            }
-        }
-        ModifyFunction{
             signature: "resetArray(QtDataVisualization::QBarDataArray*)"
             InjectCode{
                 position: Position.Beginning
@@ -879,19 +795,6 @@ TypeSystem{
                 DefineOwnership{
                     codeClass: CodeClass.Java
                     ownership: Ownership.Cpp
-                }
-                ReplaceType{
-                    modifiedType: "io.qt.datavis.QBarDataArray"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QtDataVisualization::QBarDataArray* %out = %in ? qtjambi_cast<QtDataVisualization::QBarDataArray*>(%env, %in) : nullptr;"}
-                    until: 5
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QBarDataArray* %out = %in ? qtjambi_cast<QBarDataArray*>(%env, %in) : nullptr;"}
-                    since: 6
                 }
             }
         }
@@ -915,19 +818,6 @@ TypeSystem{
                 DefineOwnership{
                     codeClass: CodeClass.Java
                     ownership: Ownership.Cpp
-                }
-                ReplaceType{
-                    modifiedType: "io.qt.datavis.QBarDataArray"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QtDataVisualization::QBarDataArray* %out = %in ? qtjambi_cast<QtDataVisualization::QBarDataArray*>(%env, %in) : nullptr;"}
-                    until: 5
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QBarDataArray* %out = %in ? qtjambi_cast<QBarDataArray*>(%env, %in) : nullptr;"}
-                    since: 6
                 }
             }
         }
@@ -971,7 +861,7 @@ TypeSystem{
     ObjectType{
         name: "QtDataVisualization::QCustom3DVolume"
         ModifyFunction{
-            signature: "setSubTextureData(Qt::Axis,int,const unsigned char*)"
+            signature: "setSubTextureData(Qt::Axis,int,const uchar*)"
             ModifyArgument{
                 index: 3
                 ArrayType{
@@ -981,27 +871,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "createTextureData(QVector<QImage*>)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.util.Collection<io.qt.gui.QImage>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "const QVector<QImage*>& %out = qtjambi_cast<const QVector<QImage*>&>(%env, %scope, %in);\n"+
-                                  "for(QImage* image : %out){\n"+
-                                  "    if(!image)\n"+
-                                  "        JavaException::raiseIllegalArgumentException(%env, \"Collection must not contain null.\" QTJAMBI_STACKTRACEINFO );\n"+
-                                  "}"}
-                }
-            }
-            ModifyArgument{
-                index: 0
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
             InjectCode{
                 position: Position.Beginning
                 Text{content: "QtJambi_LibraryUtilities.internal.invalidateObject(__rcTextureData);"}
@@ -1017,7 +886,7 @@ TypeSystem{
             }
         }
         InjectCode{
-            Text{content: "private io.qt.QtObject __rcTextureData;"}
+            Text{content: "private QtObject __rcTextureData;"}
         }
     }
     
@@ -1025,12 +894,12 @@ TypeSystem{
         name: "QtDataVisualization::QHeightMapSurfaceDataProxy"
     }
     
-    EnumType{
-        name: "QtDataVisualization::QItemModelBarDataProxy::MultiMatchBehavior"
-    }
-    
     ObjectType{
         name: "QtDataVisualization::QItemModelBarDataProxy"
+
+        EnumType{
+            name: "MultiMatchBehavior"
+        }
         ModifyFunction{
             signature: "setItemModel(QAbstractItemModel*)"
             threadAffinity: true
@@ -1060,12 +929,12 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QtDataVisualization::QItemModelSurfaceDataProxy::MultiMatchBehavior"
-    }
-    
     ObjectType{
         name: "QtDataVisualization::QItemModelSurfaceDataProxy"
+
+        EnumType{
+            name: "MultiMatchBehavior"
+        }
         ModifyFunction{
             signature: "setItemModel(QAbstractItemModel *)"
             threadAffinity: true
@@ -1126,40 +995,10 @@ TypeSystem{
     
     ValueType{
         name: "QtDataVisualization::QScatterDataItem"
-        ModifyFunction{
-            signature: "operator=(QtDataVisualization::QScatterDataItem)"
-            remove: RemoveFlag.All
-        }
     }
     
     ObjectType{
         name: "QtDataVisualization::QScatterDataProxy"
-        ModifyFunction{
-            signature: "array()const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.datavis.QScatterDataArray"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = %in ? qtjambi_cast<jobject>(%env, *%in) : nullptr;"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "itemAt(int)const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.datavis.QScatterDataItem"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = %in ? qtjambi_cast<jobject>(%env, *%in) : nullptr;"}
-                }
-            }
-        }
         ModifyFunction{
             signature: "resetArray(QtDataVisualization::QScatterDataArray*)"
             InjectCode{
@@ -1180,19 +1019,6 @@ TypeSystem{
                 DefineOwnership{
                     codeClass: CodeClass.Java
                     ownership: Ownership.Cpp
-                }
-                ReplaceType{
-                    modifiedType: "io.qt.datavis.QScatterDataArray"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QtDataVisualization::QScatterDataArray* %out = %in ? qtjambi_cast<QtDataVisualization::QScatterDataArray*>(%env, %in) : nullptr;"}
-                    until: 5
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QScatterDataArray* %out = %in ? qtjambi_cast<QScatterDataArray*>(%env, %in) : nullptr;"}
-                    since: 6
                 }
             }
         }
@@ -1221,13 +1047,12 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QtDataVisualization::QSurface3DSeries::DrawFlag"
-        flags: "QtDataVisualization::QSurface3DSeries::DrawFlags"
-    }
-    
     ObjectType{
         name: "QtDataVisualization::QSurface3DSeries"
+
+        EnumType{
+            name: "DrawFlag"
+        }
         ModifyFunction{
             signature: "setDataProxy(QtDataVisualization::QSurfaceDataProxy *)"
             threadAffinity: true
@@ -1259,10 +1084,6 @@ TypeSystem{
     
     ValueType{
         name: "QtDataVisualization::QSurfaceDataItem"
-        ModifyFunction{
-            signature: "operator=(QtDataVisualization::QSurfaceDataItem)"
-            remove: RemoveFlag.All
-        }
     }
     
     ObjectType{
@@ -1298,45 +1119,6 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "array()const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.datavis.QSurfaceDataArray"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = %in ? qtjambi_cast<jobject>(%env, *%in) : nullptr;"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "itemAt(int,int)const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.datavis.QSurfaceDataItem"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = %in ? qtjambi_cast<jobject>(%env, *%in) : nullptr;"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "itemAt(QPoint)const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.datavis.QSurfaceDataItem"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = %in ? qtjambi_cast<jobject>(%env, *%in) : nullptr;"}
-                }
-            }
-        }
-        ModifyFunction{
             signature: "resetArray(QtDataVisualization::QSurfaceDataArray*)"
             InjectCode{
                 position: Position.Beginning
@@ -1356,19 +1138,6 @@ TypeSystem{
                 DefineOwnership{
                     codeClass: CodeClass.Java
                     ownership: Ownership.Cpp
-                }
-                ReplaceType{
-                    modifiedType: "io.qt.datavis.QSurfaceDataArray"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QtDataVisualization::QSurfaceDataArray* %out = %in ? qtjambi_cast<QtDataVisualization::QSurfaceDataArray*>(%env, %in) : nullptr;"}
-                    until: 5
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSurfaceDataArray* %out = %in ? qtjambi_cast<QSurfaceDataArray*>(%env, %in) : nullptr;"}
-                    since: 6
                 }
             }
         }
@@ -1421,10 +1190,50 @@ TypeSystem{
         ModifyFunction{
             signature: "createNewInstance()const"
             ModifyArgument{
-                index: "return"
+                index: 0
                 DefineOwnership{
                     codeClass: CodeClass.Native
                     ownership: Ownership.Java
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "gridPositions()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Dependent
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "labelPositions()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Dependent
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "labelStrings()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Dependent
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "subGridPositions()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Dependent
                 }
             }
         }

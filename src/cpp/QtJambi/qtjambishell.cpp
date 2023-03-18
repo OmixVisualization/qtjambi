@@ -2736,17 +2736,17 @@ QList<jmethodID> getMethodIDs(JNIEnv *env, jclass object_class, const std::type_
 {
     bool is_interface = isInterface(typeId) || isFunctional(typeId);
     QList<jmethodID> methods;
-    const QtJambiTypeEntry* typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId);
+    QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeId);
     Q_ASSERT(typeEntry);
     const QVector<const FunctionInfo>* virtualFcts(nullptr);
     if(typeEntry->isObject()){
-        virtualFcts = static_cast<const ObjectTypeEntry*>(typeEntry)->virtualFunctions();
+        virtualFcts = static_cast<const ObjectTypeEntry*>(typeEntry.data())->virtualFunctions();
     }else if(typeEntry->isQObject()){
-        virtualFcts = static_cast<const QObjectTypeEntry*>(typeEntry)->virtualFunctions();
+        virtualFcts = static_cast<const QObjectTypeEntry*>(typeEntry.data())->virtualFunctions();
     }else if(typeEntry->isInterface()){
-        virtualFcts = static_cast<const InterfaceTypeEntry*>(typeEntry)->virtualFunctions();
+        virtualFcts = static_cast<const InterfaceTypeEntry*>(typeEntry.data())->virtualFunctions();
     }else if(typeEntry->isFunctional()){
-        virtualFcts = static_cast<const FunctionalTypeEntry*>(typeEntry)->virtualFunctions();
+        virtualFcts = static_cast<const FunctionalTypeEntry*>(typeEntry.data())->virtualFunctions();
     }
     if(virtualFcts){
         for (int i=0; i<virtualFcts->size(); ++i) {

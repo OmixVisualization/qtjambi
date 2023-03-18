@@ -89,6 +89,12 @@ struct RegistryHelper<QtDataVisualization::QScatterDataArray,false>{
 bool operator==(const QtDataVisualization::QBarDataItem& a, const QtDataVisualization::QBarDataItem& b);
 bool operator==(const QtDataVisualization::QScatterDataItem& a, const QtDataVisualization::QScatterDataItem& b);
 bool operator==(const QtDataVisualization::QSurfaceDataItem& a, const QtDataVisualization::QSurfaceDataItem& b);
+hash_type qHash(const QtDataVisualization::QBarDataItem &value, hash_type seed = 0);
+hash_type qHash(const QtDataVisualization::QScatterDataItem &value, hash_type seed = 0);
+hash_type qHash(const QtDataVisualization::QSurfaceDataItem &value, hash_type seed = 0);
+hash_type qHash(const QtDataVisualization::QBarDataRow &value, hash_type seed = 0);
+hash_type qHash(const QtDataVisualization::QSurfaceDataRow &value, hash_type seed = 0);
+hash_type qHash(const QtDataVisualization::QScatterDataArray &value, hash_type seed = 0);
 #else
 namespace QtDataVisualization{
 inline bool operator==(const QBarDataItem& a, const QBarDataItem& b){
@@ -102,46 +108,37 @@ inline bool operator==(const QScatterDataItem& a, const QScatterDataItem& b){
 inline bool operator==(const QSurfaceDataItem& a, const QSurfaceDataItem& b){
     return a.position()==b.position();
 }
-}
-#endif
-
-inline hash_type qHash(const QtDataVisualization::QBarDataItem &value, hash_type seed = 0){
-    hash_type hashCode = qHash(value.value(), seed);
-    hashCode = hashCode * 31 + qHash(value.rotation(), hashCode);
-    return hashCode;
+inline hash_type qHash(const QBarDataItem &value, hash_type seed = 0){
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.value());
+    seed = hash(seed, value.rotation());
+    return seed;
 }
 
-inline hash_type qHash(const QtDataVisualization::QScatterDataItem &value, hash_type seed = 0){
-    hash_type hashCode = qHash(value.position(), seed);
-    hashCode = hashCode * 31 + qHash(value.rotation(), hashCode);
-    return hashCode;
+inline hash_type qHash(const QScatterDataItem &value, hash_type seed = 0){
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.position());
+    seed = hash(seed, value.rotation());
+    return seed;
 }
 
-inline hash_type qHash(const QtDataVisualization::QSurfaceDataItem &value, hash_type seed = 0){
+inline hash_type qHash(const QSurfaceDataItem &value, hash_type seed = 0){
     return qHash(value.position(), seed);
 }
 
-namespace QtJambiPrivate {
-struct QHashCombine {
-    typedef uint result_type;
-    template <typename T>
-    Q_DECL_CONSTEXPR result_type operator()(uint seed, const T &t) const noexcept(noexcept(qHash(t)))
-    // combiner taken from N3876 / boost::hash_combine
-    { return seed ^ (qHash(t) + 0x9e3779b9 + (seed << 6) + (seed >> 2)) ; }
-};
+inline hash_type qHash(const QBarDataRow &value, hash_type seed = 0){
+    return qHashRange(value.begin(), value.end(), seed);
 }
 
-inline hash_type qHash(const QtDataVisualization::QBarDataRow &value, hash_type seed = 0){
-    return std::accumulate(value.begin(), value.end(), seed, QtJambiPrivate::QHashCombine());
+inline hash_type qHash(const QSurfaceDataRow &value, hash_type seed = 0){
+    return qHashRange(value.begin(), value.end(), seed);
 }
 
-inline hash_type qHash(const QtDataVisualization::QSurfaceDataRow &value, hash_type seed = 0){
-    return std::accumulate(value.begin(), value.end(), seed, QtJambiPrivate::QHashCombine());
+inline hash_type qHash(const QScatterDataArray &value, hash_type seed = 0){
+    return qHashRange(value.begin(), value.end(), seed);
 }
-
-inline hash_type qHash(const QtDataVisualization::QScatterDataArray &value, hash_type seed = 0){
-    return std::accumulate(value.begin(), value.end(), seed, QtJambiPrivate::QHashCombine());
 }
+#endif
 #else
 inline bool operator==(const QBarDataItem& a, const QBarDataItem& b){
     return qFuzzyCompare(a.value(), b.value()) && qFuzzyCompare(a.rotation(), b.rotation());
@@ -156,15 +153,11 @@ inline bool operator==(const QSurfaceDataItem& a, const QSurfaceDataItem& b){
 }
 
 inline hash_type qHash(const QBarDataItem &value, hash_type seed = 0){
-    hash_type hashCode = qHash(value.value(), seed);
-    hashCode = hashCode * 31 + qHash(value.rotation(), hashCode);
-    return hashCode;
+    return qHashMulti(seed, value.value(), value.rotation());
 }
 
 inline hash_type qHash(const QScatterDataItem &value, hash_type seed = 0){
-    hash_type hashCode = qHash(value.position(), seed);
-    hashCode = hashCode * 31 + qHash(value.rotation(), hashCode);
-    return hashCode;
+    return qHashMulti(seed, value.position(), value.rotation());
 }
 
 inline hash_type qHash(const QSurfaceDataItem &value, hash_type seed = 0){

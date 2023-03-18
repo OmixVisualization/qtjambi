@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.help"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtHelp"
     module: "qtjambi.help"
     description: "Classes for integrating documentation into applications, similar to Qt Assistant."
@@ -42,17 +42,26 @@ TypeSystem{
         platforms: ["linux", "macos"]
     }
     
-    Rejection{
-        className: "QHelpSearchEngine::SearchHit"
-    }
-    
-    
-    EnumType{
-        name: "QHelpSearchQuery::FieldName"
-    }
-    
     ObjectType{
         name: "QHelpContentItem"
+        ModifyFunction{
+            signature: "child(int)const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "parent()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
     }
     
     
@@ -65,25 +74,28 @@ TypeSystem{
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            Text{content: "#if QT_VERSION < QT_VERSION_CHECK(6,0,0)\n"+
-                          "hash_type qHash(const QMap<QString, QUrl> &value){\n"+
-                          "    hash_type hashCode = qHash(int(value.size()));\n"+
-                          "    for(const QString& key : value.keys()){\n"+
-                          "        hashCode = hashCode * 31 + qHash(key);\n"+
-                          "        hashCode = hashCode * 31 + qHash(value.value(key));\n"+
-                          "    }\n"+
-                          "    return hashCode;\n"+
-                          "}\n"+
-                          "#else\n"+
-                          "hash_type qHash(const QMultiMap<QString, QUrl> &value){\n"+
-                          "    hash_type hashCode = qHash(int(value.keys().size()));\n"+
-                          "    for(const QString& key : value.keys()){\n"+
-                          "        hashCode = hashCode * 31 + qHash(key);\n"+
-                          "        hashCode = hashCode * 31 + qHash(value.values(key));\n"+
-                          "    }\n"+
-                          "    return hashCode;\n"+
-                          "}\n"+
-                          "#endif"}
+            Text{
+                until: 5
+                content: String.raw`inline hash_type qHash(const QMap<QString, QUrl> &value, hash_type seed = 0){
+    QtPrivate::QHashCombineCommutative hash;
+    seed = hash(seed, value.size());
+    for(const QString& key : value.keys()){
+        seed = hash(seed, key);
+        seed = hash(seed, value.value(key));
+    }
+    return seed;
+}`}
+            Text{
+                since: 6
+                content: String.raw`inline hash_type qHash(const QMultiMap<QString, QUrl> &value, hash_type seed = 0){
+    QtPrivate::QHashCombineCommutative hash;
+    seed = hash(seed, value.keys().size());
+    for(const QString& key : value.keys()){
+        seed = hash(seed, key);
+        seed = hash(seed, value.values(key));
+    }
+    return seed;
+}`}
         }
     }
     
@@ -93,6 +105,15 @@ TypeSystem{
     
     ObjectType{
         name: "QHelpContentModel"
+        ModifyFunction{
+            signature: "contentItemAt(QModelIndex)const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
     }
     
     ObjectType{
@@ -127,6 +148,10 @@ TypeSystem{
     
     ObjectType{
         name: "QHelpSearchEngine"
+
+        Rejection{
+            className: "SearchHit"
+        }
         ModifyFunction{
             signature: "QHelpSearchEngine ( QHelpEngineCore *, QObject *)"
             InjectCode{
@@ -142,14 +167,13 @@ TypeSystem{
     
     ValueType{
         name: "QHelpSearchQuery"
+        EnumType{
+            name: "FieldName"
+        }
     }
     
     ValueType{
         name: "QHelpSearchResult"
-        ModifyFunction{
-            signature: "operator=(const QHelpSearchResult &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ObjectType{
@@ -206,19 +230,11 @@ TypeSystem{
     
     ValueType{
         name: "QCompressedHelpInfo"
-        ModifyFunction{
-            signature: "operator=(const QCompressedHelpInfo &)"
-            remove: RemoveFlag.All
-        }
         since: [5, 13]
     }
     
     ValueType{
         name: "QHelpFilterData"
-        ModifyFunction{
-            signature: "operator=(const QHelpFilterData &)"
-            remove: RemoveFlag.All
-        }
         since: [5, 13]
     }
     

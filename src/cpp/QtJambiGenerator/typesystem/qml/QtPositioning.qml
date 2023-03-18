@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.positioning"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtPositioning"
     module: "qtjambi.positioning"
     description: "Provides access to position, satellite and area monitoring classes."
@@ -49,18 +49,10 @@ TypeSystem{
     
     ValueType{
         name: "QGeoAreaMonitorInfo"
-        ModifyFunction{
-            signature: "operator=(const QGeoAreaMonitorInfo &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QGeoAddress"
-        ModifyFunction{
-            signature: "operator=(const QGeoAddress &)"
-            remove: RemoveFlag.All
-        }
     }
     
     EnumType{
@@ -84,10 +76,6 @@ TypeSystem{
             signature: "toString()const"
             access: Modification.NonFinal
         }
-        ModifyFunction{
-            signature: "operator=(const QGeoShape &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
@@ -97,28 +85,16 @@ TypeSystem{
             signature: "center()const"
             remove: RemoveFlag.All
         }
-        ModifyFunction{
-            signature: "operator=(const QGeoCircle &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QGeoPath"
         polymorphicIdExpression: "%1->type() == QGeoShape::PathType"
-        ModifyFunction{
-            signature: "operator=(const QGeoPath &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QGeoPolygon"
         polymorphicIdExpression: "%1->type() == QGeoShape::PolygonType"
-        ModifyFunction{
-            signature: "operator=(const QGeoPolygon &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
@@ -126,10 +102,6 @@ TypeSystem{
         polymorphicIdExpression: "%1->type() == QGeoShape::RectangleType"
         ModifyFunction{
             signature: "center()const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator=(const QGeoRectangle &)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -152,18 +124,10 @@ TypeSystem{
     
     ValueType{
         name: "QGeoCoordinate"
-        ModifyFunction{
-            signature: "operator=(const QGeoCoordinate &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QGeoLocation"
-        ModifyFunction{
-            signature: "operator=(const QGeoLocation &)"
-            remove: RemoveFlag.All
-        }
     }
     
     EnumType{
@@ -176,10 +140,6 @@ TypeSystem{
     
     ValueType{
         name: "QGeoSatelliteInfo"
-        ModifyFunction{
-            signature: "operator=(const QGeoSatelliteInfo &)"
-            remove: RemoveFlag.All
-        }
     }
     
     EnumType{
@@ -188,10 +148,6 @@ TypeSystem{
     
     ValueType{
         name: "QGeoPositionInfo"
-        ModifyFunction{
-            signature: "operator=(const QGeoPositionInfo &)"
-            remove: RemoveFlag.All
-        }
     }
     
     EnumType{
@@ -200,7 +156,6 @@ TypeSystem{
     
     EnumType{
         name: "QGeoAreaMonitorSource::AreaMonitorFeature"
-        flags: "QGeoAreaMonitorSource::AreaMonitorFeatures"
     }
     
     ObjectType{
@@ -259,6 +214,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "io.qt.core.QMetaObject$AbstractSignal"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "QByteArray %out;\n"+
@@ -304,7 +260,6 @@ TypeSystem{
     
     EnumType{
         name: "QGeoPositionInfoSource::PositioningMethod"
-        flags: "QGeoPositionInfoSource::PositioningMethods"
     }
     
     ObjectType{
@@ -416,7 +371,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.positioning.QNmeaPositionInfoSource$Result"
+                    modifiedType: "io.qt.positioning.QNmeaPositionInfoSource$@Nullable Result"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -483,7 +438,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.positioning.QNmeaPositionInfoSource$Result"
+                    modifiedType: "io.qt.positioning.QNmeaPositionInfoSource$@Nullable Result"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -557,6 +512,14 @@ TypeSystem{
     
     ObjectType{
         name: "QNmeaSatelliteInfoSource"
+
+        EnumType{
+            name: "SatelliteInfoParseStatus"
+        }
+
+        EnumType{
+            name: "UpdateMode"
+        }
         ModifyFunction{
             signature: "setDevice(QIODevice*)"
             ModifyArgument{
@@ -578,6 +541,10 @@ TypeSystem{
                 }
             }
             ModifyArgument{
+                index: 3
+                invalidateAfterUse: true
+            }
+            ModifyArgument{
                 index: 4
                 NoNullPointer{
                 }
@@ -588,6 +555,10 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "parseSatelliteInfoFromNmea(QByteArrayView, QList<QGeoSatelliteInfo> &, QGeoSatelliteInfo::SatelliteSystem &)"
+            ModifyArgument{
+                index: 2
+                invalidateAfterUse: true
+            }
             ModifyArgument{
                 index: 3
                 NoNullPointer{
@@ -608,17 +579,11 @@ TypeSystem{
                     lengthParameter: 2
                 }
             }
+            ModifyArgument{
+                index: 3
+                invalidateAfterUse: true
+            }
         }
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QNmeaSatelliteInfoSource::SatelliteInfoParseStatus"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QNmeaSatelliteInfoSource::UpdateMode"
         since: [6, 2]
     }
     

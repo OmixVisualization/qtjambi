@@ -109,7 +109,7 @@ bool PreprocessHandler::handler() {
 // FIXME: If nothing set on cmdline enable #define Q_OS_OS2
 // PROCESS string of "#define name value"
 // FIXME: Replace "null_out" with stdout
-    preprocess.operator()(ba.constData(), ba.constData() + ba.size(), null_out);
+    preprocess.process(ba.constData(), ba.constData() + ba.size(), null_out);
     preprocess.include_paths = includePathList;
     QString currentDir = QDir::current().absolutePath();
 

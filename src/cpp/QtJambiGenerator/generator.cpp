@@ -130,7 +130,8 @@ void messageHandler(QtMsgType type, const QMessageLogContext & /*ctxt*/, const Q
     case QtMsgType::QtWarningMsg:
     case QtMsgType::QtCriticalMsg:
     case QtMsgType::QtFatalMsg:
-        std::cerr << qPrintable(msg) << std::endl;
+        if(!msg.startsWith(QStringLiteral("Trying to construct an instance of an invalid type, type id:")))
+            std::cerr << qPrintable(msg) << std::endl;
         break;
     default: break;
     }
@@ -156,7 +157,9 @@ GeneratorApplication::GeneratorApplication(int& argc, char *argv[]) :
         m_noJava(false),
         m_noCppHeaders(false),
         m_noCppImpl(false),
+        m_noKotlinDelegates(false),
         m_noMetainfo(false),
+        m_nullness(true),
         m_astToXml(false),
         m_dumpObjectTree(false),
         m_database(*TypeDatabase::instance()),
@@ -187,6 +190,8 @@ void GeneratorApplication::parseArguments(){
     QCommandLineOption noNativeIDsOption("no-native-ids", "don't generate code using native ids infavor to object references");
     noNativeIDsOption.setFlags(QCommandLineOption::HiddenFromHelp);
     parser.addOption(noNativeIDsOption);
+    QCommandLineOption noNullnessOption("no-nullness", "don't generate nullness annotation");
+    parser.addOption(noNullnessOption);
     //QCommandLineOption noEclipseWarningsOption("no-java-suppress-warnings", "don't generate java code with eclipse warnings");
     //parser.addOption(noEclipseWarningsOption);
     QCommandLineOption debugLevelOption("debug-level", "level of debugging output [sparse|medium|full|types]", "level");
@@ -220,6 +225,8 @@ void GeneratorApplication::parseArguments(){
     parser.addOption(noCHOption);
     QCommandLineOption noCPOption("no-cpp-impl", "don't generate c++ implementation code");
     parser.addOption(noCPOption);
+    QCommandLineOption noKotlinDelegatesOption("no-kotlin-property-delegates", "don't generate Kotlin-compatible property delegates");
+    parser.addOption(noKotlinDelegatesOption);
     QCommandLineOption noMetaInfoOption("no-metainfo", "don't generate c++ metainfo code");
     parser.addOption(noMetaInfoOption);
     QCommandLineOption staticlibsOption("static", "comma-separated list of statically linked libraries", "libraries");
@@ -391,12 +398,15 @@ void GeneratorApplication::parseArguments(){
     v = parser.value(outputDirectoryOption);
     if(!v.isEmpty())
         m_outputDirectory = v;
-    QDir _outDir(m_outputDirectory);
+    QDir _outDir = m_outputDirectory.isEmpty() ? QDir::current() : QDir(m_outputDirectory);
+    _outDir.mkpath(".");
     v = parser.value(ppfileNameOption);
     if (!v.isEmpty()){
         m_preProcessorFileName = v;
-        if(!QFileInfo(m_preProcessorFileName).isAbsolute()){
+        if(!m_preProcessorFileName.contains('/') && !m_preProcessorFileName.contains('\\')){
             m_preProcessorFileName = _outDir.absoluteFilePath(m_preProcessorFileName);
+        }else if(!QFileInfo(m_preProcessorFileName).isAbsolute()){
+            m_preProcessorFileName = QFileInfo(m_preProcessorFileName).absoluteFilePath();
         }
     }
     /*
@@ -429,7 +439,9 @@ void GeneratorApplication::parseArguments(){
     m_noJava = parser.isSet(noJavaOption);
     m_noCppHeaders = parser.isSet(noCHOption);
     m_noCppImpl = parser.isSet(noCPOption);
+    m_noKotlinDelegates = parser.isSet(noKotlinDelegatesOption);
     m_noMetainfo = parser.isSet(noMetaInfoOption);
+    m_nullness = !parser.isSet(noNullnessOption);
 
     if(parser.isSet(qtjambiVersionOption)){
         v = parser.value(qtjambiVersionOption);
@@ -442,8 +454,8 @@ void GeneratorApplication::parseArguments(){
     if(parser.isSet(typesystemOption)){
         m_typesystemFileName = parser.value(typesystemOption);
         QFileInfo _typesystemFileName(m_typesystemFileName);
-        if(!_typesystemFileName.exists() && !_typesystemFileName.isAbsolute()){
-            m_typesystemFileName = _outDir.absoluteFilePath(m_typesystemFileName);
+        if(_typesystemFileName.exists()){
+            m_typesystemFileName = _typesystemFileName.absoluteFilePath();
         }
     }else{
         printf("No typesystem file specified. Taking default QtJambi typesystem.\n");
@@ -455,8 +467,8 @@ void GeneratorApplication::parseArguments(){
     if(positionalArguments.size()>0){
         m_headerFileName = positionalArguments.takeFirst();
         QFileInfo _fileName(m_headerFileName);
-        if(!_fileName.exists() && !_fileName.isAbsolute()){
-            m_headerFileName = _outDir.absoluteFilePath(m_headerFileName);
+        if(_fileName.exists()){
+            m_headerFileName = _fileName.absoluteFilePath();
         }
     }else{
         printf("No header file specified. Taking default header file to generate QtJambi sources.\n");
@@ -468,326 +480,347 @@ void GeneratorApplication::parseArguments(){
 void dumpMetaJavaClass(const MetaClass *cls);
 
 int GeneratorApplication::generate() {
-    //parse the type system file
-    QSemaphore versionAvailable;
-    QSemaphore docDirectoryAvailable;
-    QFuture<void> typeSystemFuture;
-    QFuture<const DocModel*> docModelFuture;
-    if (!m_astToXml) {
-        typeSystemFuture = QtConcurrent::run([this,&versionAvailable,&docDirectoryAvailable](){
-            versionAvailable.acquire(3);
-            if(m_docsDirectory.isEmpty()){
-                if(m_qtVersionMajor==QT_VERSION_MAJOR && m_qtVersionMinor==QT_VERSION_MINOR){
-    #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                    m_docsDirectory = QLibraryInfo::location(QLibraryInfo::DocumentationPath);
-    #else
-                    m_docsDirectory = QLibraryInfo::path(QLibraryInfo::DocumentationPath);
-    #endif
-                    printf("No docs directory specified. Taking Qt's documentation path instead: %s\n", qPrintable(m_docsDirectory));
+    try{
+        //parse the type system file
+        QSemaphore versionAvailable;
+        QSemaphore docDirectoryAvailable;
+        QFuture<void> typeSystemFuture;
+        QFuture<const DocModel*> docModelFuture;
+        if (!m_astToXml) {
+            typeSystemFuture = QtConcurrent::run([this,&versionAvailable,&docDirectoryAvailable](){
+                versionAvailable.acquire(3);
+                if(m_docsDirectory.isEmpty()){
+                    if(m_qtVersionMajor==QT_VERSION_MAJOR && m_qtVersionMinor==QT_VERSION_MINOR){
+        #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                        m_docsDirectory = QLibraryInfo::location(QLibraryInfo::DocumentationPath);
+        #else
+                        m_docsDirectory = QLibraryInfo::path(QLibraryInfo::DocumentationPath);
+        #endif
+                        printf("No docs directory specified. Taking Qt's documentation path instead: %s\n", qPrintable(m_docsDirectory));
+                    }
+                    docDirectoryAvailable.release();
                 }
-                docDirectoryAvailable.release();
+                ReportHandler::setContext("Typesystem");
+                m_database.setDefined([this](const QString& name)->bool{
+                    for(const DefineUndefine& ddf : m_defineUndefineList){
+                        if(ddf.isSet() && ddf.name()==name){
+                            return true;
+                        }
+                    }
+                    return false;
+                });
+                m_database.initialize(m_typesystemFileName, m_importDirectories, m_typesystemDirectories, QVersionNumber(m_qtVersionMajor, m_qtVersionMinor, m_qtVersionPatch), m_generateTypeSystemQML.isEmpty());
+                analyzeDependencies();
+            });
+            if(!m_dumpObjectTree && m_generateTypeSystemQML.isEmpty()){
+                QThread* targetThread = QThread::currentThread();
+                if(m_docsDirectory.isEmpty()){
+                    docModelFuture = QtConcurrent::run([&docDirectoryAvailable,targetThread,this]() -> const DocModel* {
+                        docDirectoryAvailable.acquire();
+                        QDir docsDirectory(m_docsDirectory);
+                        if(docsDirectory.exists()){
+                            DocIndexReader reader;
+                            return reader.readDocIndexes(docsDirectory, targetThread);
+                        }else return nullptr;
+                    });
+                }else{
+                    docModelFuture = QtConcurrent::run([this, targetThread]() -> const DocModel* {
+                        QDir docsDirectory(m_docsDirectory);
+                        if(docsDirectory.exists()){
+                            DocIndexReader reader;
+                            return reader.readDocIndexes(docsDirectory, targetThread);
+                        }else return nullptr;
+                    });
+                }
             }
-            ReportHandler::setContext("Typesystem");
-            m_database.setDefined([this](const QString& name)->bool{
-                for(const DefineUndefine& ddf : m_defineUndefineList){
-                    if(ddf.isSet() && ddf.name()==name){
-                        return true;
+        }
+
+        ReportHandler::setContext("Preprocessor");
+        rpp::MessageUtil::installMessageHandler(ReportHandler_message_handler);
+        Binder::installMessageHandler(ReportHandler_message_handler);
+
+        //removing file here for theoretical case of wanting to parse two master include files here
+        if(QFileInfo::exists(m_preProcessorFileName))
+            QFile::remove(m_preProcessorFileName);
+        QMap<QString, QString> features;
+        QSet<QString> undefFeatures;
+
+        std::function<void(std::string,std::string,const QFileInfo&,bool)> featureRegistry = [&features, &undefFeatures, &versionAvailable, this](std::string macro, std::string definition, const QFileInfo& file, bool isDefine){
+            QString _macro = QString::fromStdString(macro);
+            if(isDefine){
+                if(_macro.startsWith("QT_FEATURE_")){
+                    QString _file = file.absoluteFilePath();
+                    _macro = _macro.mid(11);
+                    if(features.contains(_macro) && features[_macro]!=_file){
+                        if(!undefFeatures.remove(_macro)){
+                            QFileInfo file1(features[_macro]);
+                            QFileInfo file2(_file);
+                            QString filename = file1.fileName();
+                            if(!file2.absoluteFilePath().endsWith("/private/"+filename.replace(".h", "_p.h")))
+                                qWarning("Feature %s defined twice:\n%s\n%s", qPrintable(_macro), qPrintable(_file), qPrintable(features[_macro]));
+                        }
+                    }else{
+                        features[_macro] = _file;
+                    }
+                }else if(_macro=="QT_VERSION_MAJOR"){
+                    QString _definition = QString::fromStdString(definition);
+                    bool ok = false;
+                    uint v = _definition.toUInt(&ok);
+                    if(ok){
+                        m_qtVersionMajor = v;
+                        versionAvailable.release();
+                    }
+                }else if(_macro=="QT_VERSION_MINOR"){
+                    QString _definition = QString::fromStdString(definition);
+                    bool ok = false;
+                    uint v = _definition.toUInt(&ok);
+                    if(ok){
+                        m_qtVersionMinor = v;
+                        versionAvailable.release();
+                    }
+                }else if(_macro=="QT_VERSION_PATCH"){
+                    QString _definition = QString::fromStdString(definition);
+                    bool ok = false;
+                    uint v = _definition.toUInt(&ok);
+                    if(ok){
+                        m_qtVersionPatch = v;
+                        versionAvailable.release();
                     }
                 }
-                return false;
-            });
-            m_database.initialize(m_typesystemFileName, m_importDirectories, m_typesystemDirectories, QVersionNumber(m_qtVersionMajor, m_qtVersionMinor, m_qtVersionPatch), m_generateTypeSystemQML.isEmpty());
-            analyzeDependencies();
-        });
-        if(!m_dumpObjectTree && m_generateTypeSystemQML.isEmpty()){
-            QThread* targetThread = QThread::currentThread();
-            if(m_docsDirectory.isEmpty()){
-                docModelFuture = QtConcurrent::run([&docDirectoryAvailable,targetThread,this]() -> const DocModel* {
-                    docDirectoryAvailable.acquire();
-                    QDir docsDirectory(m_docsDirectory);
-                    if(docsDirectory.exists()){
-                        DocIndexReader reader;
-                        return reader.readDocIndexes(docsDirectory, targetThread);
-                    }else return nullptr;
-                });
             }else{
-                docModelFuture = QtConcurrent::run([this, targetThread]() -> const DocModel* {
-                    QDir docsDirectory(m_docsDirectory);
-                    if(docsDirectory.exists()){
-                        DocIndexReader reader;
-                        return reader.readDocIndexes(docsDirectory, targetThread);
-                    }else return nullptr;
-                });
-            }
-        }
-    }
-
-    ReportHandler::setContext("Preprocessor");
-    rpp::MessageUtil::installMessageHandler(ReportHandler_message_handler);
-    Binder::installMessageHandler(ReportHandler_message_handler);
-
-    //removing file here for theoretical case of wanting to parse two master include files here
-    if(QFileInfo::exists(m_preProcessorFileName))
-        QFile::remove(m_preProcessorFileName);
-    QMap<QString, QString> features;
-    QSet<QString> undefFeatures;
-
-    std::function<void(std::string,std::string,const QFileInfo&,bool)> featureRegistry = [&features, &undefFeatures, &versionAvailable, this](std::string macro, std::string definition, const QFileInfo& file, bool isDefine){
-        QString _macro = QString::fromStdString(macro);
-        if(isDefine){
-            if(_macro.startsWith("QT_FEATURE_")){
-                QString _file = file.absoluteFilePath();
-                _macro = _macro.mid(11);
-                if(features.contains(_macro) && features[_macro]!=_file){
-                    if(!undefFeatures.remove(_macro))
-                        qWarning("Feature %s defined twice:\n%s\n%s", qPrintable(_macro), qPrintable(_file), qPrintable(features[_macro]));
-                }
-                features[_macro] = _file;
-            }else if(_macro=="QT_VERSION_MAJOR"){
-                QString _definition = QString::fromStdString(definition);
-                bool ok = false;
-                uint v = _definition.toUInt(&ok);
-                if(ok){
-                    m_qtVersionMajor = v;
-                    versionAvailable.release();
-                }
-            }else if(_macro=="QT_VERSION_MINOR"){
-                QString _definition = QString::fromStdString(definition);
-                bool ok = false;
-                uint v = _definition.toUInt(&ok);
-                if(ok){
-                    m_qtVersionMinor = v;
-                    versionAvailable.release();
-                }
-            }else if(_macro=="QT_VERSION_PATCH"){
-                QString _definition = QString::fromStdString(definition);
-                bool ok = false;
-                uint v = _definition.toUInt(&ok);
-                if(ok){
-                    m_qtVersionPatch = v;
-                    versionAvailable.release();
+                if(_macro.startsWith("QT_FEATURE_")){
+                    //QString _file = file.absoluteFilePath();
+                    _macro = _macro.mid(11);
+                    undefFeatures.insert(_macro);
                 }
             }
-        }else{
-            if(_macro.startsWith("QT_FEATURE_")){
-                //QString _file = file.absoluteFilePath();
-                _macro = _macro.mid(11);
-                undefFeatures.insert(_macro);
+        };
+
+        //preprocess using master include, preprocessed file and command line given include paths, if any
+        QByteArray preprocessorOutput;
+        {
+            QBuffer buffer(&preprocessorOutput);
+            buffer.open(QIODevice::Append | QIODevice::Text);
+            bool result = preprocess(buffer, featureRegistry);
+            buffer.close();
+            if(!m_preProcessorFileName.isEmpty()){
+                QFile f(m_preProcessorFileName);
+                if (!f.open(QIODevice::WriteOnly)) {
+                    std::fprintf(stderr, "Failed to write preprocessed file: %s\n", qPrintable(m_preProcessorFileName));
+                }
+                f.write(preprocessorOutput);
+            }
+            if (!result) {
+                fprintf(stderr, "Preprocessor failed on file: '%s'\n", qPrintable(m_headerFileName));
+                return 1;
             }
         }
-    };
-
-    //preprocess using master include, preprocessed file and command line given include paths, if any
-    QByteArray preprocessorOutput;
-    {
-        QBuffer buffer(&preprocessorOutput);
-        buffer.open(QIODevice::Append | QIODevice::Text);
-        if(!m_preProcessorFileName.isEmpty()){
-            QFile f(m_preProcessorFileName);
-            if (!f.open(QIODevice::WriteOnly)) {
-                std::fprintf(stderr, "Failed to write preprocessed file: %s\n", qPrintable(m_preProcessorFileName));
-            }
-            f.write(preprocessorOutput);
-        }
-        bool result = preprocess(buffer, featureRegistry);
-        if (!result) {
-            fprintf(stderr, "Preprocessor failed on file: '%s'\n", qPrintable(m_headerFileName));
-            return 1;
-        }
-    }
-    versionAvailable.release(3);
-
-    FileModelItem dom;
-    {
-        ReportHandler::setContext("Parser");
-        Control control;
-        Parser p(&control);
-        pool __pool;
-        TranslationUnitAST *ast = p.parse(preprocessorOutput, std::size_t(preprocessorOutput.size()), &__pool);
-        CodeModel model;
-        Binder binder(&model, p.location());
-        dom = binder.run(ast);
-        preprocessorOutput.clear();
-    }
-
-    //convert temp preprocessed file to xml
-    if (m_astToXml) {
-        astToXML(QDir(m_outputDirectory).filePath("ast.xml"), dom);
-        dom.reset();
-        return 0;
-    }else{
-        m_metaBuilder.setIncludePathsList(m_includeDirectories);
-        m_metaBuilder.setQtVersion(m_qtVersionMajor, m_qtVersionMinor, m_qtVersionPatch, m_qtjambiVersionPatch);
-        if (!m_outputDirectory.isNull())
-            m_metaBuilder.setOutputDirectory(m_outputDirectory);
-        m_metaBuilder.setFeatures(features);
-        m_metaBuilder.setGenerateTypeSystemQML(m_generateTypeSystemQML);
+        versionAvailable.release(3);
 
         try{
             typeSystemFuture.waitForFinished();
-        }catch(const TypesystemException& exn){
+        }catch(const std::exception& exn){
             fprintf(stderr, "%s\n", exn.what());
+            return -1;
+        }catch(...){
+            fprintf(stderr, "An error has occurred\n");
             return -1;
         }
         typeSystemFuture = {};
-        if(!m_generateTypeSystemQML.isEmpty()){
-            TypeDatabase::instance()->addType(new TypeSystemTypeEntry("generic"));
+
+        QMap<QString,QStringList> requiredFeatures;
+        FileModelItem dom;
+        {
+            ReportHandler::setContext("Parser");
+            Control control;
+            Parser p(&control, requiredFeatures);
+            pool __pool;
+            TranslationUnitAST *ast = p.parse(preprocessorOutput, std::size_t(preprocessorOutput.size()), &__pool);
+            CodeModelPtr model{new CodeModel};
+            Binder binder(m_qtVersionMajor, m_qtVersionMinor, m_qtVersionPatch, m_database, model, p.location());
+            binder.run(ast);
+            preprocessorOutput.clear();
+            dom = model->globalNamespace();
         }
 
-        m_metaBuilder.build(std::move(dom));
-
-        if (m_dumpObjectTree) {
-            for(MetaClass *cls : m_metaBuilder.classes()) {
-                dumpMetaJavaClass(cls);
-            }
+        //convert temp preprocessed file to xml
+        if (m_astToXml) {
+            astToXML(QDir(m_outputDirectory).filePath("ast.xml"), dom);
+            dom.reset();
             return 0;
-        }
-
-        const DocModel* docModel = docModelFuture.result();
-        docModelFuture = {};
-        if(docModel){
-            m_metaBuilder.applyDocs(docModel);
-            if(!docModel->url().isEmpty()){
-                this->m_docsUrl = docModel->url();
-                if(!this->m_docsUrl.endsWith("/"))
-                    this->m_docsUrl += "/";
-            }
-            delete docModel;
-        }
-
-
-        // Code generation
-        QList<AbstractGenerator *> generators;
-        PriGenerator *priGenerator = new PriGenerator(&m_database);
-        JavaGenerator *java_generator = nullptr;
-        CppHeaderGenerator *cpp_header_generator = nullptr;
-        CppImplGenerator *cpp_impl_generator = nullptr;
-        MetaInfoGenerator *metainfo = nullptr;
-
-        QStringList contexts;
-        if (!m_noJava) {
-            java_generator = new JavaGenerator(&m_database);
-            java_generator->setTypeSystemByPackage(m_metaBuilder.typeSystemByPackage());
-            if (!m_javaOutputDirectory.isNull())
-                java_generator->setJavaOutputDirectory(m_javaOutputDirectory);
-            if (!m_outputDirectory.isNull())
-                java_generator->setLogOutputDirectory(m_outputDirectory);
-            java_generator->setDocsUrl(m_docsUrl);
-            generators << java_generator;
-
-            contexts << "JavaGenerator";
-        }
-
-        if (!m_noCppHeaders) {
-            cpp_header_generator = new CppHeaderGenerator(priGenerator);
-            if (!m_cppOutputDirectory.isNull())
-                cpp_header_generator->setCppOutputDirectory(m_cppOutputDirectory);
-            generators << cpp_header_generator;
-            contexts << "CppHeaderGenerator";
-        }
-
-        if (!m_noCppImpl) {
-            cpp_impl_generator = new CppImplGenerator(priGenerator);
-            cpp_impl_generator->setContainerBaseClasses(m_metaBuilder.containerBaseClasses());
-            if (!m_cppOutputDirectory.isNull())
-                cpp_impl_generator->setCppOutputDirectory(m_cppOutputDirectory);
-            generators << cpp_impl_generator;
-            contexts << "CppImplGenerator";
-        }
-
-        if (!m_noMetainfo) {
-            metainfo = new MetaInfoGenerator(priGenerator);
-            metainfo->setStaticLibraries(m_staticLibraries);
-            if (!m_cppOutputDirectory.isNull())
-                metainfo->setCppOutputDirectory(m_cppOutputDirectory);
-            if (!m_javaOutputDirectory.isNull())
-                metainfo->setJavaOutputDirectory(m_javaOutputDirectory);
-            metainfo->setIncludeDirectories(m_includeDirectories);
-            generators << metainfo;
-            contexts << "MetaInfoGenerator";
-        }
-
-        if (!m_cppOutputDirectory.isNull())
-            priGenerator->setCppOutputDirectory(m_cppOutputDirectory);
-
-        QList<QFuture<void>> generated;
-        for (int i = 0; i < generators.size(); ++i) {
-            AbstractGenerator *generator = generators.at(i);
-            generator->setQtVersion(m_qtVersionMajor, m_qtVersionMinor, m_qtVersionPatch, m_qtjambiVersionPatch);
-
-            if (generator->outputDirectory().isNull())
-                generator->setOutputDirectory(m_outputDirectory);
-            generator->setClasses(m_metaBuilder.classes());
-            if (m_printStdout){
-                ReportHandler::setContext(contexts.at(i));
-                generator->printClasses();
-            }else{
-                generated << QtConcurrent::run([](AbstractGenerator *generator, const QString& context){
-                             ReportHandler::setContext(context);
-                             generator->generate();
-                }, generator, contexts.at(i));
-            }
-        }
-        while(!generated.isEmpty()){
-            generated.takeFirst().waitForFinished();
-        }
-
-        if (metainfo && java_generator) {
-            metainfo->writeLibraryInitializers();
-        }
-
-        ReportHandler::setContext("PriGenerator");
-        priGenerator->setQtVersion(m_qtVersionMajor, m_qtVersionMinor, m_qtVersionPatch, m_qtjambiVersionPatch);
-        if (priGenerator->outputDirectory().isNull())
-            priGenerator->setOutputDirectory(m_outputDirectory);
-        priGenerator->setClasses(m_metaBuilder.classes());
-        if (m_printStdout){
-            priGenerator->printClasses();
         }else{
-            priGenerator->generate();
-        }
+            m_metaBuilder.setRequiredFeatures(requiredFeatures);
+            m_metaBuilder.setIncludePathsList(m_includeDirectories);
+            m_metaBuilder.setQtVersion(m_qtVersionMajor, m_qtVersionMinor, m_qtVersionPatch, m_qtjambiVersionPatch);
+            if (!m_outputDirectory.isNull())
+                m_metaBuilder.setOutputDirectory(m_outputDirectory);
+            m_metaBuilder.setFeatures(features);
+            m_metaBuilder.setGenerateTypeSystemQML(m_generateTypeSystemQML);
+            if(!m_generateTypeSystemQML.isEmpty()){
+                TypeDatabase::instance()->addType(new TypeSystemTypeEntry("generic"));
+            }
 
-        QString res;
-        res = QString("Classes in typesystem: %1\n"
-                      "Generated:\n"
-                      "  - java......: %2 (%3)\n"
-                      "  - cpp-impl..: %4 (%5)\n"
-                      "  - cpp-h.....: %6 (%7)\n"
-                      "  - meta-info.: %8 (%9)\n"
-                      "  - pri.......: %10 (%11)\n"
-                     )
-              .arg(m_metaBuilder.classes().size())
-              .arg(java_generator ? java_generator->numGenerated() : 0)
-              .arg(java_generator ? java_generator->numGeneratedAndWritten() : 0)
-              .arg(cpp_impl_generator ? cpp_impl_generator->numGenerated() : 0)
-              .arg(cpp_impl_generator ? cpp_impl_generator->numGeneratedAndWritten() : 0)
-              .arg(cpp_header_generator ? cpp_header_generator->numGenerated() : 0)
-              .arg(cpp_header_generator ? cpp_header_generator->numGeneratedAndWritten() : 0)
-              .arg(metainfo ? metainfo->numGenerated() : 0)
-              .arg(metainfo ? metainfo->numGeneratedAndWritten() : 0)
-              .arg(priGenerator->numGenerated())
-              .arg(priGenerator->numGeneratedAndWritten());
-        printf("%s\n", qPrintable(res));
-        printf("Done, %d warnings (%d known issues)\n", int(ReportHandler::reportedWarnings().size()),
-               ReportHandler::suppressedCount());
+            m_metaBuilder.build(std::move(dom));
 
-        QString fileName("reported_warnings.log");
-        QFile file(fileName);
-        if (!m_outputDirectory.isNull())
-            file.setFileName(QDir(m_outputDirectory).absoluteFilePath(fileName));
-        if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            {
-                QTextStream s(&file);
-                for(const QString& w : ReportHandler::reportedWarnings()){
-                    if(!w.contains("Suppressed warning with no text specified"))
-                        s << w << Qt::endl;
+            if (m_dumpObjectTree) {
+                for(MetaClass *cls : m_metaBuilder.classes()) {
+                    dumpMetaJavaClass(cls);
+                }
+                return 0;
+            }
+
+            const DocModel* docModel = docModelFuture.result();
+            docModelFuture = {};
+            if(docModel){
+                m_metaBuilder.applyDocs(docModel);
+                if(!docModel->url().isEmpty()){
+                    this->m_docsUrl = docModel->url();
+                    if(!this->m_docsUrl.endsWith("/"))
+                        this->m_docsUrl += "/";
+                }
+                delete docModel;
+            }
+
+
+            // Code generation
+            QList<AbstractGenerator *> generators;
+            PriGenerator *priGenerator = new PriGenerator(&m_database);
+            JavaGenerator *java_generator = nullptr;
+            CppHeaderGenerator *cpp_header_generator = nullptr;
+            CppImplGenerator *cpp_impl_generator = nullptr;
+            MetaInfoGenerator *metainfo = nullptr;
+
+            QStringList contexts;
+            if (!m_noJava) {
+                java_generator = new JavaGenerator(&m_database, m_nullness, m_noKotlinDelegates);
+                java_generator->setTypeSystemByPackage(m_metaBuilder.typeSystemByPackage());
+                if (!m_javaOutputDirectory.isNull())
+                    java_generator->setJavaOutputDirectory(m_javaOutputDirectory);
+                if (!m_outputDirectory.isNull())
+                    java_generator->setLogOutputDirectory(m_outputDirectory);
+                java_generator->setDocsUrl(m_docsUrl);
+                generators << java_generator;
+
+                contexts << "JavaGenerator";
+            }
+
+            if (!m_noCppHeaders) {
+                cpp_header_generator = new CppHeaderGenerator(priGenerator);
+                if (!m_cppOutputDirectory.isNull())
+                    cpp_header_generator->setCppOutputDirectory(m_cppOutputDirectory);
+                generators << cpp_header_generator;
+                contexts << "CppHeaderGenerator";
+            }
+
+            if (!m_noCppImpl) {
+                cpp_impl_generator = new CppImplGenerator(priGenerator);
+                if (!m_cppOutputDirectory.isNull())
+                    cpp_impl_generator->setCppOutputDirectory(m_cppOutputDirectory);
+                generators << cpp_impl_generator;
+                contexts << "CppImplGenerator";
+            }
+
+            if (!m_noMetainfo) {
+                metainfo = new MetaInfoGenerator(priGenerator);
+                metainfo->setStaticLibraries(m_staticLibraries);
+                if (!m_cppOutputDirectory.isNull())
+                    metainfo->setCppOutputDirectory(m_cppOutputDirectory);
+                if (!m_javaOutputDirectory.isNull())
+                    metainfo->setJavaOutputDirectory(m_javaOutputDirectory);
+                metainfo->setIncludeDirectories(m_includeDirectories);
+                generators << metainfo;
+                contexts << "MetaInfoGenerator";
+            }
+
+            if (!m_cppOutputDirectory.isNull())
+                priGenerator->setCppOutputDirectory(m_cppOutputDirectory);
+
+            QList<QFuture<void>> generated;
+            for (int i = 0; i < generators.size(); ++i) {
+                AbstractGenerator *generator = generators.at(i);
+                generator->setQtVersion(m_qtVersionMajor, m_qtVersionMinor, m_qtVersionPatch, m_qtjambiVersionPatch);
+
+                if (generator->outputDirectory().isNull())
+                    generator->setOutputDirectory(m_outputDirectory);
+                generator->setClasses(m_metaBuilder.classes());
+                if (m_printStdout){
+                    ReportHandler::setContext(contexts.at(i));
+                    generator->printClasses();
+                }else{
+                    generated << QtConcurrent::run([](AbstractGenerator *generator, const QString& context){
+                                 ReportHandler::setContext(context);
+                                 generator->generate();
+                    }, generator, contexts.at(i));
                 }
             }
-            file.close();
-        }
-    }
+            while(!generated.isEmpty()){
+                generated.takeFirst().waitForFinished();
+            }
 
-    return 0;
+            if (metainfo && java_generator) {
+                ReportHandler::setContext("MetaInfoGenerator");
+                metainfo->writeLibraryInitializers();
+            }
+
+            ReportHandler::setContext("PriGenerator");
+            priGenerator->setQtVersion(m_qtVersionMajor, m_qtVersionMinor, m_qtVersionPatch, m_qtjambiVersionPatch);
+            if (priGenerator->outputDirectory().isNull())
+                priGenerator->setOutputDirectory(m_outputDirectory);
+            priGenerator->setClasses(m_metaBuilder.classes());
+            if (m_printStdout){
+                priGenerator->printClasses();
+            }else{
+                priGenerator->generate();
+            }
+
+            QString res;
+            res = QString("Classes in typesystem: %1\n"
+                          "Generated:\n"
+                          "  - java......: %2 (%3)\n"
+                          "  - cpp-impl..: %4 (%5)\n"
+                          "  - cpp-h.....: %6 (%7)\n"
+                          "  - meta-info.: %8 (%9)\n"
+                          "  - pri.......: %10 (%11)\n"
+                         )
+                  .arg(m_metaBuilder.classes().size())
+                  .arg(java_generator ? java_generator->numGenerated() : 0)
+                  .arg(java_generator ? java_generator->numGeneratedAndWritten() : 0)
+                  .arg(cpp_impl_generator ? cpp_impl_generator->numGenerated() : 0)
+                  .arg(cpp_impl_generator ? cpp_impl_generator->numGeneratedAndWritten() : 0)
+                  .arg(cpp_header_generator ? cpp_header_generator->numGenerated() : 0)
+                  .arg(cpp_header_generator ? cpp_header_generator->numGeneratedAndWritten() : 0)
+                  .arg(metainfo ? metainfo->numGenerated() : 0)
+                  .arg(metainfo ? metainfo->numGeneratedAndWritten() : 0)
+                  .arg(priGenerator->numGenerated())
+                  .arg(priGenerator->numGeneratedAndWritten());
+            printf("%s\n", qPrintable(res));
+            printf("Done, %d warnings (%d known issues)\n", int(ReportHandler::reportedWarnings().size()),
+                   ReportHandler::suppressedCount());
+
+            QString fileName("reported_warnings.log");
+            QFile file(fileName);
+            if (!m_outputDirectory.isNull())
+                file.setFileName(QDir(m_outputDirectory).absoluteFilePath(fileName));
+            file.remove();
+            if(ReportHandler::reportedWarnings().size()){
+                if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                    {
+                        QTextStream s(&file);
+                        for(const QString& w : ReportHandler::reportedWarnings()){
+                            if(!w.contains("Suppressed warning with no text specified"))
+                                s << w << Qt::endl;
+                        }
+                    }
+                    file.close();
+                }
+            }
+        }
+
+        return 0;
+    }catch(const std::exception& exn){
+        fprintf(stderr, "%s\n", exn.what());
+        return -1;
+    }
 }
 
 QStringList readDependencies(const QString& file){
@@ -863,6 +896,19 @@ void GeneratorApplication::analyzeDependencies()
             entry->addRequiredQtLibrary(QString(dependency));
         }
     }
+}
+
+bool GeneratorApplication::nullness() const
+{
+    return m_nullness;
+}
+
+void GeneratorApplication::setNullability(bool newNullability)
+{
+    if (m_nullness == newNullability)
+        return;
+    m_nullness = newNullability;
+    emit nullnessChanged();
 }
 
 void GeneratorApplication::modifyCppDefine(const QString &arg, bool f_set) {
@@ -1227,8 +1273,8 @@ void dumpMetaJavaType(const MetaType *type) {
         if (type->isEnum()) printf(" enum");
         if (type->isQObject()) printf(" q_obj");
         if (type->isNativePointer()) printf(" n_ptr");
-        if (type->isTargetLangString()) printf(" java_string");
-        if (type->isTargetLangStringRef()) printf(" java_string");
+        if (type->isQString()) printf(" java_string");
+        if (type->isQStringRef()) printf(" java_string");
         if (type->isConstant()) printf(" const");
         if (type->isVolatile()) printf(" volatile");
         printf("]");

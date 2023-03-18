@@ -31,142 +31,43 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.qt3d.animation"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "Qt3DAnimation"
     module: "qtjambi.qt3danimation"
     description: "The Qt 3D Animation modules provides a set of prebuilt elements to help you get started with Qt 3D."
-
-    Rejection{
-        className: "Qt3DAnimation::QClipBlendNodeCreatedChange"
-    }
-    
-    Rejection{
-        className: "Qt3DAnimation::QChannelComponent"
-        functionName: "rbegin"
-    }
-    
-    Rejection{
-        className: "Qt3DAnimation::QChannelComponent"
-        functionName: "rend"
-    }
-    
-    Rejection{
-        className: "Qt3DAnimation::QChannelComponent"
-        functionName: "cbegin"
-    }
-    
-    Rejection{
-        className: "Qt3DAnimation::QChannelComponent"
-        functionName: "cend"
-    }
-    
-    Rejection{
-        className: "Qt3DAnimation::QChannelComponent"
-        functionName: "crbegin"
-    }
-    
-    Rejection{
-        className: "Qt3DAnimation::QChannelComponent"
-        functionName: "crend"
-    }
-    
-    Rejection{
-        className: "Qt3DAnimation::QChannel"
-        functionName: "rbegin"
-    }
-    
-    Rejection{
-        className: "Qt3DAnimation::QChannel"
-        functionName: "rend"
-    }
-    
-    Rejection{
-        className: "Qt3DAnimation::QChannel"
-        functionName: "cbegin"
-    }
-    
-    Rejection{
-        className: "Qt3DAnimation::QChannel"
-        functionName: "cend"
-    }
-    
-    Rejection{
-        className: "Qt3DAnimation::QChannel"
-        functionName: "crbegin"
-    }
-    
-    Rejection{
-        className: "Qt3DAnimation::QChannel"
-        functionName: "crend"
-    }
-    
-    Rejection{
-        className: "Qt3DAnimation::QAnimationClipData"
-        functionName: "rbegin"
-    }
-    
-    Rejection{
-        className: "Qt3DAnimation::QAnimationClipData"
-        functionName: "rend"
-    }
-    
-    Rejection{
-        className: "Qt3DAnimation::QAnimationClipData"
-        functionName: "cbegin"
-    }
-    
-    Rejection{
-        className: "Qt3DAnimation::QAnimationClipData"
-        functionName: "cend"
-    }
-    
-    Rejection{
-        className: "Qt3DAnimation::QAnimationClipData"
-        functionName: "crbegin"
-    }
-    
-    Rejection{
-        className: "Qt3DAnimation::QAnimationClipData"
-        functionName: "crend"
-    }
     
     NamespaceType{
         name: "Qt3DAnimation"
+        NamespacePrefix{
+            namingPolicy: NamespacePrefix.Cut
+        }
         generate: false
+        Rejection{ className: "QClipBlendNodeCreatedChange" }
         since: [5, 10]
-    }
-    
-    
-    EnumType{
-        name: "Qt3DAnimation::QAbstractAnimation::AnimationType"
     }
     
     ObjectType{
         name: "Qt3DAnimation::QAbstractAnimation"
-        javaName: "QAbstractAnimation"
+        EnumType{ name: "AnimationType" }
         since: [5, 11]
     }
     
     ObjectType{
         name: "Qt3DAnimation::QAbstractAnimationClip"
-        javaName: "QAbstractAnimationClip"
         since: [5, 11]
     }
     
     ObjectType{
         name: "Qt3DAnimation::QAbstractChannelMapping"
-        javaName: "QAbstractChannelMapping"
         since: [5, 11]
-    }
-    
-    EnumType{
-        name: "Qt3DAnimation::QAbstractClipAnimator::Loops"
-        forceInteger: true
     }
     
     ObjectType{
         name: "Qt3DAnimation::QAbstractClipAnimator"
-        javaName: "QAbstractClipAnimator"
+        EnumType{
+            name: "Loops"
+            forceInteger: true
+        }
         ModifyFunction{
             signature: "setChannelMapper(Qt3DAnimation::QChannelMapper *)"
             ModifyArgument{
@@ -190,13 +91,11 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DAnimation::QAbstractClipBlendNode"
-        javaName: "QAbstractClipBlendNode"
         since: [5, 11]
     }
     
     ObjectType{
         name: "Qt3DAnimation::QAdditiveClipBlend"
-        javaName: "QAdditiveClipBlend"
         ModifyFunction{
             signature: "setBaseClip(Qt3DAnimation::QAbstractClipBlendNode *)"
             ModifyArgument{
@@ -229,32 +128,28 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DAnimation::QAnimationAspect"
-        javaName: "QAnimationAspect"
         since: [5, 11]
     }
     
     ObjectType{
         name: "Qt3DAnimation::QAnimationCallback"
-        javaName: "QAnimationCallback"
+        EnumType{ name: "Flag" }
         since: [5, 11]
-    }
-    
-    EnumType{
-        name: "Qt3DAnimation::QAnimationCallback::Flag"
-        flags: "Qt3DAnimation::QAnimationCallback::Flags"
     }
     
     ObjectType{
         name: "Qt3DAnimation::QAnimationClip"
-        javaName: "QAnimationClip"
         since: [5, 11]
     }
     
     ValueType{
         name: "Qt3DAnimation::QAnimationClipData"
-        javaName: "QAnimationClipData"
-        InjectCode{
-        }
+        Rejection{functionName: "rbegin"}
+        Rejection{functionName: "rend"}
+        Rejection{functionName: "cbegin"}
+        Rejection{functionName: "cend"}
+        Rejection{functionName: "crbegin"}
+        Rejection{functionName: "crend"}
         ModifyFunction{
             signature: "begin() const"
             access: Modification.Protected
@@ -263,36 +158,27 @@ TypeSystem{
             signature: "end() const"
             access: Modification.Protected
         }
-        ModifyFunction{
-            signature: "operator=(const Qt3DAnimation::QAnimationClipData &)"
-            remove: RemoveFlag.All
+
+        IteratorType{
+            name: "iterator"
+            isConst: true
+        }
+
+        IteratorType{
+            name: "const_iterator"
+            isConst: true
         }
         since: [5, 11]
-    }
-
-    IteratorType{
-        name: "Qt3DAnimation::QAnimationClipData::iterator"
-        isConst: true
-    }
-
-    IteratorType{
-        name: "Qt3DAnimation::QAnimationClipData::const_iterator"
-        isConst: true
     }
     
     ObjectType{
         name: "Qt3DAnimation::QAnimationClipLoader"
-        javaName: "QAnimationClipLoader"
+        EnumType{name: "Status"}
         since: [5, 11]
-    }
-    
-    EnumType{
-        name: "Qt3DAnimation::QAnimationClipLoader::Status"
     }
     
     ObjectType{
         name: "Qt3DAnimation::QAnimationController"
-        javaName: "QAnimationController"
         ModifyFunction{
             signature: "setEntity(Qt3DCore::QEntity *)"
             ModifyArgument{
@@ -339,7 +225,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DAnimation::QAnimationGroup"
-        javaName: "QAnimationGroup"
         ModifyFunction{
             signature: "setAnimations(const QVector<Qt3DAnimation::QAbstractAnimation *>&)"
             InjectCode{
@@ -377,7 +262,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DAnimation::QBlendedClipAnimator"
-        javaName: "QBlendedClipAnimator"
         ModifyFunction{
             signature: "setBlendTree(Qt3DAnimation::QAbstractClipBlendNode *)"
             ModifyArgument{
@@ -392,9 +276,8 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DAnimation::QCallbackMapping"
-        javaName: "QCallbackMapping"
         ModifyFunction{
-            signature: "setCallback(int,Qt3DAnimation::QAnimationCallback*,QFlags<Qt3DAnimation::QAnimationCallback::Flag>)"
+            signature: "setCallback(int,Qt3DAnimation::QAnimationCallback*,Qt3DAnimation::QAnimationCallback::Flags)"
             ModifyArgument{
                 index: 2
                 ReferenceCount{
@@ -408,7 +291,12 @@ TypeSystem{
     
     ValueType{
         name: "Qt3DAnimation::QChannel"
-        javaName: "QChannel"
+        Rejection{functionName: "rbegin"}
+        Rejection{functionName: "rend"}
+        Rejection{functionName: "cbegin"}
+        Rejection{functionName: "cend"}
+        Rejection{functionName: "crbegin"}
+        Rejection{functionName: "crend"}
         ModifyFunction{
             signature: "begin() const"
             access: Modification.Protected
@@ -417,20 +305,27 @@ TypeSystem{
             signature: "end() const"
             access: Modification.Protected
         }
-        ModifyFunction{
-            signature: "operator=(const Qt3DAnimation::QChannel &)"
-            remove: RemoveFlag.All
+
+        IteratorType{
+            name: "const_iterator"
         }
         since: [5, 11]
     }
     
-    IteratorType{
-        name: "Qt3DAnimation::QChannel::const_iterator"
-    }
-    
     ValueType{
         name: "Qt3DAnimation::QChannelComponent"
-        javaName: "QChannelComponent"
+
+        Rejection{functionName: "rbegin"}
+        Rejection{functionName: "rend"}
+        Rejection{functionName: "cbegin"}
+        Rejection{functionName: "cend"}
+        Rejection{functionName: "crbegin"}
+        Rejection{functionName: "crend"}
+
+        IteratorType{
+            name: "const_iterator"
+        }
+
         ModifyFunction{
             signature: "begin() const"
             access: Modification.Protected
@@ -438,10 +333,6 @@ TypeSystem{
         ModifyFunction{
             signature: "end() const"
             access: Modification.Protected
-        }
-        ModifyFunction{
-            signature: "operator=(const Qt3DAnimation::QChannelComponent &)"
-            remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "insertKeyFrame(int,Qt3DAnimation::QKeyFrame)"
@@ -455,13 +346,8 @@ TypeSystem{
         since: [5, 11]
     }
     
-    IteratorType{
-        name: "Qt3DAnimation::QChannelComponent::const_iterator"
-    }
-    
     ObjectType{
         name: "Qt3DAnimation::QChannelMapper"
-        javaName: "QChannelMapper"
         ModifyFunction{
             signature: "addMapping(Qt3DAnimation::QAbstractChannelMapping*)"
             ModifyArgument{
@@ -485,7 +371,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DAnimation::QChannelMapping"
-        javaName: "QChannelMapping"
         ModifyFunction{
             signature: "setTarget(Qt3DCore::QNode*)"
             ModifyArgument{
@@ -500,7 +385,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DAnimation::QClipAnimator"
-        javaName: "QClipAnimator"
         ModifyFunction{
             signature: "setClip(Qt3DAnimation::QAbstractAnimationClip*)"
             ModifyArgument{
@@ -515,13 +399,11 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DAnimation::QClipBlendNodeCreatedChangeBase"
-        javaName: "QClipBlendNodeCreatedChange"
         since: [5, 11]
     }
     
     ObjectType{
         name: "Qt3DAnimation::QClipBlendValue"
-        javaName: "QClipBlendValue"
         ModifyFunction{
             signature: "setClip(Qt3DAnimation::QAbstractAnimationClip*)"
             ModifyArgument{
@@ -536,27 +418,22 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DAnimation::QClock"
-        javaName: "QClock"
         since: [5, 11]
     }
     
     ObjectType{
         name: "Qt3DAnimation::QKeyFrame"
-        javaName: "QKeyFrame"
+        EnumType{
+            name: "InterpolationType"
+        }
         since: [5, 11]
-    }
-    
-    EnumType{
-        name: "Qt3DAnimation::QKeyFrame::InterpolationType"
-    }
-    
-    EnumType{
-        name: "Qt3DAnimation::QKeyframeAnimation::RepeatMode"
     }
     
     ObjectType{
         name: "Qt3DAnimation::QKeyframeAnimation"
-        javaName: "QKeyframeAnimation"
+        EnumType{
+            name: "RepeatMode"
+        }
         ModifyFunction{
             signature: "setKeyframes(const QVector<Qt3DCore::QTransform*>&)"
             InjectCode{
@@ -604,7 +481,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DAnimation::QLerpClipBlend"
-        javaName: "QLerpClipBlend"
         ModifyFunction{
             signature: "setStartClip(Qt3DAnimation::QAbstractClipBlendNode*)"
             ModifyArgument{
@@ -632,7 +508,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DAnimation::QMorphingAnimation"
-        javaName: "QMorphingAnimation"
         ModifyFunction{
             signature: "setMorphTargets(const QVector<Qt3DAnimation::QMorphTarget*>&)"
             InjectCode{
@@ -680,7 +555,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DAnimation::QMorphTarget"
-        javaName: "QMorphTarget"
         ModifyFunction{
             signature: "setAttributes(const QVector<Qt3DRender::QAttribute*>&)"
             InjectCode{
@@ -756,7 +630,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DAnimation::QSkeletonMapping"
-        javaName: "QSkeletonMapping"
         ModifyFunction{
             signature: "setSkeleton(Qt3DCore::QAbstractSkeleton *)"
             ModifyArgument{
@@ -771,7 +644,6 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DAnimation::QVertexBlendAnimation"
-        javaName: "QVertexBlendAnimation"
         ModifyFunction{
             signature: "setMorphTargets(const QVector<Qt3DAnimation::QMorphTarget*>&)"
             InjectCode{

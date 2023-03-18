@@ -31,17 +31,10 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.gamepad"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtGamepad"
     module: "qtjambi.gamepad"
     description: "Enables Qt applications to support the use of gamepad hardware."
-    EnumType{
-        name: "QGamepadManager::GamepadButton"
-    }
-    
-    EnumType{
-        name: "QGamepadManager::GamepadAxis"
-    }
     
     ObjectType{
         name: "QGamepad"
@@ -63,6 +56,13 @@ TypeSystem{
     
     ObjectType{
         name: "QGamepadManager"
+        EnumType{
+            name: "GamepadButton"
+        }
+
+        EnumType{
+            name: "GamepadAxis"
+        }
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping *, unmatched *type 'NSData*'"}

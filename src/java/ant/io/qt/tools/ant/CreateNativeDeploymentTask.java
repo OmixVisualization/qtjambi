@@ -253,6 +253,8 @@ public class CreateNativeDeploymentTask extends Task {
 						case Windows:
 							if(!debug && f.endsWith(".dll") && !f.endsWith("d.dll")) {
 								_libraries.add(f);
+							}else if(!debug && forceDebugInfo && f.endsWith(".pdb") && !f.endsWith("d.pdb")) {
+								_libraries.add(f);
 							}else if(debug && (f.endsWith("d.dll") || f.endsWith("d.pdb") || f.endsWith(".dll.debug"))) {
 								_libraries.add(f);
 							}
@@ -444,35 +446,57 @@ public class CreateNativeDeploymentTask extends Task {
 							}
 						}
 					}
-					if(debug) {
-						switch(OSInfo.crossOS()) {
-						case Windows:
-							if(libName.endsWith(".dll")){
-								String pdbName = libName.substring(0, libName.length()-3)+"pdb";
-								java.io.File pdbFile = new java.io.File(new java.io.File(builddir, _libdir), pdbName);
-								if(!pdbFile.exists() && _libdir.equals("bin")) {
-									pdbFile = new java.io.File(new java.io.File(builddir, "lib"), pdbName);
-								}
-								if(pdbFile.exists()) {
+					switch(OSInfo.crossOS()) {
+					case Windows:
+						if(libName.endsWith(".dll")){
+							String pdbName = libName.substring(0, libName.length()-3)+"pdb";
+							java.io.File pdbFile = new java.io.File(new java.io.File(builddir, _libdir), pdbName);
+							if(!pdbFile.exists() && _libdir.equals("bin")) {
+								pdbFile = new java.io.File(new java.io.File(builddir, "lib"), pdbName);
+							}
+							if(pdbFile.exists()) {
+								if(debug || forceDebugInfo) {
 									java.io.File pdbTarget = new java.io.File(targetLibDir, pdbName);
 									Files.copy(pdbFile.toPath(), pdbTarget.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
 									if(!libraryIncludes.isEmpty())
 										libraryIncludes += ",";
 									libraryIncludes += jarpath + "/" + pdbName;
-								}else {
-									pdbFile = new java.io.File(new java.io.File(builddir, _libdir), libName+".debug");
-									if(pdbFile.exists()) {
-										java.io.File pdbTarget = new java.io.File(targetLibDir, libName+".debug");
-										Files.copy(pdbFile.toPath(), pdbTarget.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
-										if(!libraryIncludes.isEmpty())
-											libraryIncludes += ",";
-										libraryIncludes += jarpath + "/" + libName+".debug";
-									}
+								}
+							}else if(debug){
+								pdbFile = new java.io.File(new java.io.File(builddir, _libdir), libName+".debug");
+								if(pdbFile.exists()) {
+									java.io.File pdbTarget = new java.io.File(targetLibDir, libName+".debug");
+									Files.copy(pdbFile.toPath(), pdbTarget.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+									if(!libraryIncludes.isEmpty())
+										libraryIncludes += ",";
+									libraryIncludes += jarpath + "/" + libName+".debug";
 								}
 							}
+						}
+						switch(moduleName) {
+						case "qtjambi.generator":
+						{
+							java.io.File qtjambiLibFile = new java.io.File(new java.io.File(builddir, "lib"), (debug ? "QtJambid" : "QtJambi")+qtMajorVersion+".lib");
+							if(qtjambiLibFile.exists()) {
+								java.io.File targetLibdir = new java.io.File(directory, "lib");
+								targetLibdir.mkdirs();
+								Files.copy(qtjambiLibFile.toPath(), new java.io.File(targetLibdir, qtjambiLibFile.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+								if(!libraryIncludes.isEmpty())
+									libraryIncludes += ",";
+								libraryIncludes += "lib/" + qtjambiLibFile.getName();
+								Element libraryElement = doc.createElement("file");
+								libraryElement.setAttribute("name", "lib/"+qtjambiLibFile.getName());
+								doc.getDocumentElement().appendChild(libraryElement);
+								libraryIncludes += "," + "lib/"+qtjambiLibFile.getName();
+							}
+						}
 							break;
 							default:
+								break;
 						}
+						break;
+						default:
+							break;
 					}
 				}
 				switch(OSInfo.crossOS()) {
@@ -649,31 +673,31 @@ public class CreateNativeDeploymentTask extends Task {
 					libraryElement.setAttribute("name", _libdir+"/"+libName);
 					doc.getDocumentElement().appendChild(libraryElement);
 					
-					if(debug) {
-						switch(OSInfo.crossOS()) {
-						case Windows:
-							if(libName.endsWith(".dll")){
-								String pdbName = libName.substring(0, libName.length()-3)+"pdb";
-								java.io.File pdbFile = new java.io.File(new java.io.File(builddir, _libdir), pdbName);
-								if(!pdbFile.exists() && _libdir.equals("bin")) {
-									pdbFile = new java.io.File(new java.io.File(builddir, "lib"), pdbName);
-								}
-								if(pdbFile.exists()) {
+					switch(OSInfo.crossOS()) {
+					case Windows:
+						if(libName.endsWith(".dll")){
+							String pdbName = libName.substring(0, libName.length()-3)+"pdb";
+							java.io.File pdbFile = new java.io.File(new java.io.File(builddir, _libdir), pdbName);
+							if(!pdbFile.exists() && _libdir.equals("bin")) {
+								pdbFile = new java.io.File(new java.io.File(builddir, "lib"), pdbName);
+							}
+							if(pdbFile.exists()) {
+								if(debug || forceDebugInfo) {
 									libraryElement = doc.createElement("file");
 									libraryElement.setAttribute("name", _libdir+"/"+pdbName);
 									doc.getDocumentElement().appendChild(libraryElement);
-								}else {
-									pdbFile = new java.io.File(new java.io.File(builddir, _libdir), libName+".debug");
-									if(pdbFile.exists()) {
-										libraryElement = doc.createElement("file");
-										libraryElement.setAttribute("name", _libdir+"/"+libName+".debug");
-										doc.getDocumentElement().appendChild(libraryElement);
-									}
+								}
+							}else if(debug){
+								pdbFile = new java.io.File(new java.io.File(builddir, _libdir), libName+".debug");
+								if(pdbFile.exists()) {
+									libraryElement = doc.createElement("file");
+									libraryElement.setAttribute("name", _libdir+"/"+libName+".debug");
+									doc.getDocumentElement().appendChild(libraryElement);
 								}
 							}
-							break;
-							default:
 						}
+						break;
+						default:
 					}
 					
 					String shortName;
@@ -692,22 +716,21 @@ public class CreateNativeDeploymentTask extends Task {
 //								libraryIncludes += "," + jarpath + "/" + libName + "/Contents/Info.plist";
 //								libraryIncludes += "," + jarpath + "/" + libName + "/Contents/PkgInfo";
 								break;
-							}else {
-								symlinkElement = doc.createElement("symlink");
-								shortName = formatQtJambiName(name, debug, -1, -1, -1);
-								symlinkElement.setAttribute("name", _libdir+"/"+shortName);
-								symlinkElement.setAttribute("target", _libdir+"/"+libName);
-								doc.getDocumentElement().appendChild(symlinkElement);
-								try{
-									getProject().log(this, "create symbolic link " + new java.io.File(target.getParentFile(), shortName) + " -> " + libName, Project.MSG_INFO);
-									Files.createSymbolicLink(new java.io.File(target.getParentFile(), shortName).toPath(), Path.of(target.getName()));
-								}catch(java.nio.file.FileAlreadyExistsException ex) {
-								} catch (Exception ex) {
-									ex.printStackTrace();
-								}
 							}
 							//fallthrough:
 						default:
+							symlinkElement = doc.createElement("symlink");
+							shortName = formatQtJambiName(name, debug, -1, -1, -1);
+							symlinkElement.setAttribute("name", _libdir+"/"+shortName);
+							symlinkElement.setAttribute("target", _libdir+"/"+libName);
+							doc.getDocumentElement().appendChild(symlinkElement);
+							try{
+								getProject().log(this, "create symbolic link " + new java.io.File(target.getParentFile(), shortName) + " -> " + libName, Project.MSG_INFO);
+								Files.createSymbolicLink(new java.io.File(target.getParentFile(), shortName).toPath(), Path.of(target.getName()));
+							}catch(java.nio.file.FileAlreadyExistsException ex) {
+							} catch (Exception ex) {
+								ex.printStackTrace();
+							}
 							symlinkElement = doc.createElement("symlink");
 							shortName = formatQtJambiName(name, debug, qtMajorVersion, -1, -1);
 							symlinkElement.setAttribute("name", _libdir+"/"+shortName);
@@ -784,6 +807,7 @@ public class CreateNativeDeploymentTask extends Task {
 	private String moduleName;
 	private String outputDirectory;
 	private boolean debug = false;
+	private boolean forceDebugInfo = false;
 	private boolean plugin = false;
     
     static void copySubdirs(File root, File srcDir, File destDir, boolean debug, List<Map.Entry<String,Boolean>> additionalFiles, boolean allowHeaders) throws IOException {
@@ -1381,4 +1405,10 @@ public class CreateNativeDeploymentTask extends Task {
          }
          throw new BuildException("unhandled case...");
     }
+	public boolean isForceDebugInfo() {
+		return forceDebugInfo;
+	}
+	public void setForceDebugInfo(boolean forceDebugInfo) {
+		this.forceDebugInfo = forceDebugInfo;
+	}
 }

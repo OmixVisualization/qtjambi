@@ -30,123 +30,123 @@
 ****************************************************************************/
 
 class QVideoEncoderSettingsControl__{
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final ContinuousList<Double> supportedFrameRates(io.qt.multimedia.QVideoEncoderSettings settings) {
-        io.qt.QNativePointer continuous = new io.qt.QNativePointer(io.qt.QNativePointer.Type.Boolean);
+        QNativePointer continuous = new QNativePointer(QNativePointer.Type.Boolean);
         java.util.List<Double> supportedFrameRates = supportedFrameRates(settings, continuous);
         return new ContinuousList<Double>(supportedFrameRates, continuous.booleanValue());
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final ContinuousList<io.qt.core.QSize> supportedResolutions(io.qt.multimedia.QVideoEncoderSettings settings) {
-        io.qt.QNativePointer continuous = new io.qt.QNativePointer(io.qt.QNativePointer.Type.Boolean);
+        QNativePointer continuous = new QNativePointer(QNativePointer.Type.Boolean);
         java.util.List<io.qt.core.QSize> supportedResolutions = supportedResolutions(settings, continuous);
         return new ContinuousList<io.qt.core.QSize>(supportedResolutions, continuous.booleanValue());
     }
 }// class
 
 class QImageEncoderControl__{
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final ContinuousList<io.qt.core.QSize> supportedResolutions(io.qt.multimedia.QImageEncoderSettings settings) {
-        io.qt.QNativePointer continuous = new io.qt.QNativePointer(io.qt.QNativePointer.Type.Boolean);
+        QNativePointer continuous = new QNativePointer(QNativePointer.Type.Boolean);
         java.util.List<io.qt.core.QSize> supportedResolutions = supportedResolutions(settings, continuous);
         return new ContinuousList<io.qt.core.QSize>(supportedResolutions, continuous.booleanValue());
     }
 }// class
 
 class QMediaRecorder__{
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final ContinuousList<Double> supportedFrameRates() {
         return supportedFrameRates(new io.qt.multimedia.QVideoEncoderSettings());
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final ContinuousList<Double> supportedFrameRates(io.qt.multimedia.QVideoEncoderSettings settings) {
-        io.qt.QNativePointer continuous = new io.qt.QNativePointer(io.qt.QNativePointer.Type.Boolean);
+        QNativePointer continuous = new QNativePointer(QNativePointer.Type.Boolean);
         java.util.List<Double> supportedFrameRates = supportedFrameRates(settings, continuous);
         return new ContinuousList<Double>(supportedFrameRates, continuous.booleanValue());
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final ContinuousList<io.qt.core.QSize> supportedResolutions() {
         return supportedResolutions(new io.qt.multimedia.QVideoEncoderSettings());
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final ContinuousList<io.qt.core.QSize> supportedResolutions(io.qt.multimedia.QVideoEncoderSettings settings) {
-        io.qt.QNativePointer continuous = new io.qt.QNativePointer(io.qt.QNativePointer.Type.Boolean);
+        QNativePointer continuous = new QNativePointer(QNativePointer.Type.Boolean);
         java.util.List<io.qt.core.QSize> supportedResolutions = supportedResolutions(settings, continuous);
         return new ContinuousList<io.qt.core.QSize>(supportedResolutions, continuous.booleanValue());
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final ContinuousList<Integer> supportedAudioSampleRates() {
         return supportedAudioSampleRates(new io.qt.multimedia.QAudioEncoderSettings());
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final ContinuousList<Integer> supportedAudioSampleRates(io.qt.multimedia.QAudioEncoderSettings settings)    {
-        io.qt.QNativePointer continuous = new io.qt.QNativePointer(io.qt.QNativePointer.Type.Boolean);
+        QNativePointer continuous = new QNativePointer(QNativePointer.Type.Boolean);
         java.util.List<Integer> supportedAudioSampleRates = supportedAudioSampleRates(settings, continuous);
         return new ContinuousList<Integer>(supportedAudioSampleRates, continuous.booleanValue());
     }
 }// class
 
 class QCameraImageCapture__{
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final ContinuousList<io.qt.core.QSize> supportedResolutions() {
         return supportedResolutions(new io.qt.multimedia.QImageEncoderSettings());
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final ContinuousList<io.qt.core.QSize> supportedResolutions(io.qt.multimedia.QImageEncoderSettings settings) {
-        io.qt.QNativePointer continuous = new io.qt.QNativePointer(io.qt.QNativePointer.Type.Boolean);
+        QNativePointer continuous = new QNativePointer(QNativePointer.Type.Boolean);
         java.util.List<io.qt.core.QSize> supportedResolutions = supportedResolutions(settings, continuous);
         return new ContinuousList<io.qt.core.QSize>(supportedResolutions, continuous.booleanValue());
     }
 }// class
 
 class QCameraExposureControl__{
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final ContinuousList<Object> supportedParameterRange(ExposureParameter settings) {
-        io.qt.QNativePointer continuous = new io.qt.QNativePointer(io.qt.QNativePointer.Type.Boolean);
+        QNativePointer continuous = new QNativePointer(QNativePointer.Type.Boolean);
         java.util.List<Object> supportedParameterRange = supportedParameterRange(settings, continuous);
         return new ContinuousList<Object>(supportedParameterRange, continuous.booleanValue());
     }
 }// class
 
 class QCameraExposure__{
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final ContinuousList<Integer> supportedIsoSensitivities()    {
-        io.qt.QNativePointer continuous = new io.qt.QNativePointer(io.qt.QNativePointer.Type.Boolean);
+        QNativePointer continuous = new QNativePointer(QNativePointer.Type.Boolean);
         java.util.List<Integer> supportedIsoSensitivities = supportedIsoSensitivities(continuous);
         return new ContinuousList<Integer>(supportedIsoSensitivities, continuous.booleanValue());
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final ContinuousList<Double> supportedApertures()    {
-        io.qt.QNativePointer continuous = new io.qt.QNativePointer(io.qt.QNativePointer.Type.Boolean);
+        QNativePointer continuous = new QNativePointer(QNativePointer.Type.Boolean);
         java.util.List<Double> supportedApertures = supportedApertures(continuous);
         return new ContinuousList<Double>(supportedApertures, continuous.booleanValue());
     }
     
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final ContinuousList<Double> supportedShutterSpeeds()    {
-        io.qt.QNativePointer continuous = new io.qt.QNativePointer(io.qt.QNativePointer.Type.Boolean);
+        QNativePointer continuous = new QNativePointer(QNativePointer.Type.Boolean);
         java.util.List<Double> supportedShutterSpeeds = supportedShutterSpeeds(continuous);
         return new ContinuousList<Double>(supportedShutterSpeeds, continuous.booleanValue());
     }
 }// class
 
 class QAudioEncoderSettingsControl__{
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final ContinuousList<Integer> supportedSampleRates() {
         return supportedSampleRates(new io.qt.multimedia.QAudioEncoderSettings());
     }
 
-    @io.qt.QtUninvokable
+    @QtUninvokable
     public final ContinuousList<Integer> supportedSampleRates(io.qt.multimedia.QAudioEncoderSettings settings) {
-        io.qt.QNativePointer continuous = new io.qt.QNativePointer(io.qt.QNativePointer.Type.Boolean);
+        QNativePointer continuous = new QNativePointer(QNativePointer.Type.Boolean);
         java.util.List<Integer> supportedSampleRates = supportedSampleRates(settings, continuous);
         return new ContinuousList<Integer>(supportedSampleRates, continuous.booleanValue());
     }
@@ -162,7 +162,7 @@ class QAbstractVideoBuffer__{
             this.bytesPerLine = bytesPerLine;
         }
         
-        @io.qt.NativeAccess
+        @NativeAccess
         private MapResult(java.nio.ByteBuffer data, int bytesPerLine, boolean unused){
             this.data = data;
             this.bytesPerLine = bytesPerLine;
@@ -231,7 +231,7 @@ class QMediaServiceProviderFactoryInterface_java__{
 
 class QMediaService___{
     public static class Result<T>{
-        public Result(T result, boolean continuous) {
+        Result(T result, boolean continuous) {
             super();
             this.result = result;
             this.continuous = continuous;
@@ -240,20 +240,20 @@ class QMediaService___{
         public final boolean continuous;
     }
 
-    public static class ListResult<T> extends Result<java.util.List<T>> implements java.lang.Iterable<T>{
-        public ListResult(java.util.List<T> result, boolean continuous) {
+    public static class ListResult<T> extends Result<io.qt.core.@NonNull QList<T>> implements java.lang.Iterable<T>{
+        ListResult(io.qt.core.QList<T> result, boolean continuous) {
             super(result, continuous);
         }
 
         @Override
-        public java.util.Iterator<T> iterator() {
+        public java.util.@NonNull Iterator<T> iterator() {
             return result.iterator();
         }
     }
 }// class
 
 class QAudioFormat__{
-    public static ChannelConfig channelConfig(AudioChannelPosition... channels) {
+    public static @NonNull ChannelConfig channelConfig(@NonNull AudioChannelPosition @NonNull... channels) {
         int value = 0;
         for (AudioChannelPosition channel : channels) {
             value |= (0x01 << channel.value());
@@ -268,8 +268,8 @@ class QCamera__{
     /**
      * <p>See <a href="http://doc.qt.io/qt-5/qcamera.html#setViewfinder">QCamera::setViewfinder(QVideoWidget*)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final <T extends io.qt.core.QObject & io.qt.multimedia.QMediaBindableInterface> void setViewfinder(T viewfinder){
+    @QtUninvokable
+    public final <T extends io.qt.core.QObject & io.qt.multimedia.QMediaBindableInterface> void setViewfinder(@Nullable T viewfinder){
         setViewfinderImpl((io.qt.core.QObject)viewfinder);
     }
     
@@ -280,8 +280,8 @@ class QMediaPlayer__{
     /**
      * <p>See <a href="http://doc.qt.io/qt-5/qmediaplayer.html#setVideoOutput">QMediaPlayer::setVideoOutput(QVideoWidget*)</a></p>
      */
-    @io.qt.QtUninvokable
-    public final <T extends io.qt.core.QObject & io.qt.multimedia.QMediaBindableInterface> void setVideoOutput(T arg__1){
+    @QtUninvokable
+    public final <T extends io.qt.core.QObject & io.qt.multimedia.QMediaBindableInterface> void setVideoOutput(@Nullable T arg__1){
         setVideoOutputImpl(arg__1);
     }
     

@@ -31,10 +31,17 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.qt3d.logic"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "Qt3DLogic"
     module: "qtjambi.qt3dlogic"
     description: "The Qt 3D Logic module enables synchronizing frames with the Qt 3D backend."
+
+    NamespacePrefix{
+        prefix: "Qt3DLogic"
+        namespace: "Qt3DLogic"
+        namingPolicy: NamespacePrefix.Cut
+    }
+
     NamespaceType{
         name: "Qt3DLogic"
         generate: false
@@ -42,16 +49,13 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DLogic::QLogicAspect"
-        javaName: "QLogicAspect"
     }
     
     ObjectType{
         name: "Qt3DLogic::QFrameAction"
-        javaName: "QFrameAction"
     }
     
     ObjectType{
         name: "Qt3DInput::QLogicComponent"
-        javaName: "QLogicComponent"
     }
 }

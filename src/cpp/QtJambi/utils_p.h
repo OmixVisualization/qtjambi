@@ -61,6 +61,13 @@ typedef QObject*(*SmartPointerQObjectGetter)(const void *);
 typedef std::function<void*(const void *)> SmartPointerGetterFunction;
 typedef void(*SmartPointerDeleter)(void *, bool);
 
+enum class NativeToJavaConversionMode{
+    None,
+    MakeCopyOfValues,
+    TransferOwnership
+};
+
+jobject internal_convertNativeToJavaObject(JNIEnv *env, const void *qt_object, const std::type_info& typeId, const char *qtName, NativeToJavaConversionMode mode, bool *ok = nullptr);
 jobject internal_convertSmartPointerToJavaObject(JNIEnv *env, const char *className,
                             void* ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, SmartPointerGetterFunction sharedPointerGetter);
 jobject internal_convertSmartPointerToJavaInterface(JNIEnv *env, const std::type_info& interfaceType,

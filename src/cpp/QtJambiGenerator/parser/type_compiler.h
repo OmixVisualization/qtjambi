@@ -72,6 +72,7 @@ class TypeCompiler: protected DefaultVisitor {
 
         void run(TypeSpecifierAST *node);
         const TypeInfo& functionalReturnType() const { return _M_functionalReturnType; }
+        const QList<TypeInfo>& templateArgumentTypes() const { return _M_templateArgumentTypes; }
         const QList<TypeInfo>& functionalArgumentTypes() const { return _M_functionalArgumentTypes; }
         const QList<QString>& functionalArgumentNames() const { return _M_functionalArgumentNames; }
 
@@ -88,6 +89,7 @@ class TypeCompiler: protected DefaultVisitor {
         Binder *_M_binder;
         TokenStream *_M_token_stream;
         QStringList _M_type;
+        QList<TypeInfo> _M_templateArgumentTypes;
         TypeInfo _M_functionalReturnType;
         QList<TypeInfo> _M_functionalArgumentTypes;
         QList<QString> _M_functionalArgumentNames;

@@ -368,9 +368,22 @@ QFutureInterfaceBase& QtJambiAPI::getQFutureInterfaceFromQFuture(const QFuture<v
 }
 #endif
 
+bool isVariantFuture(QSharedPointer<QFutureInterfaceBase>& sourceFuture){
+    if(dynamic_cast<QFutureInterface<QVariant>*>(sourceFuture.get()))
+        return true;
+#if defined(Q_OS_ANDROID)
+    QFutureInterfaceBase* sourceObject = sourceFuture.get();
+    QByteArray sourceFutureTypeName = QtJambiAPI::typeName(typeid(*sourceObject));
+    if(sourceFutureTypeName=="QFutureInterface<QVariant>"
+            || sourceFutureTypeName=="QFutureInterface_shell<QVariant>")
+        return true;
+#endif
+    return false;
+}
+
 QFutureInterfaceBase* QtJambiAPI::translateQFutureInterface(QSharedPointer<QFutureInterfaceBase>&& sourceFuture, QSharedPointer<QFutureInterfaceBase>&& targetFuture, const char* translatedType, ResultTranslator resultTranslator, ResultTranslator resultRetranslator){
     if(sourceFuture->d){
-        if(dynamic_cast<QFutureInterface<QVariant>*>(sourceFuture.get())){
+        if(isVariantFuture(sourceFuture)){
             QMutexLocker lock(&sourceFuture->d->m_mutex);
             if(!sourceFuture->d->outputConnections.isEmpty()){
                 for(int i=0; i<sourceFuture->d->outputConnections.size(); ++i){
@@ -379,25 +392,25 @@ QFutureInterfaceBase* QtJambiAPI::translateQFutureInterface(QSharedPointer<QFutu
                         QFutureInterfaceBase* targetObject = targetFuture.get();
                         const std::type_info& sourceType = typeid(*sourceObject);
                         const std::type_info& targetType = typeid(*targetObject);
-                        if(targetType==sourceType){
+                        if(unique_id(targetType)==unique_id(sourceType)){
                             return sourceObject;
                         }else{
                             if(JniEnvironment env{200}){
-                                QString baseType = QLatin1String(QtJambiAPI::typeName(sourceType));
-                                QString requiredType = QLatin1String(QtJambiAPI::typeName(targetType));
+                                QByteArray baseType = QtJambiAPI::typeName(sourceType);
+                                QByteArray requiredType = QtJambiAPI::typeName(targetType);
                                 auto idx = requiredType.indexOf('<');
                                 if(idx>0){
-                                    requiredType = QLatin1String(translatedType) + requiredType.mid(idx);
+                                    requiredType = translatedType + requiredType.mid(idx);
                                 }else{
-                                    requiredType = QLatin1String(translatedType);
+                                    requiredType = translatedType;
                                 }
-                                if(baseType==QLatin1String("QFutureInterfaceBase")
-                                        || baseType==QLatin1String("QFutureInterfaceBase_shell")){
-                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot cast %1<void> to %2.").arg(QLatin1String(translatedType)).arg(requiredType) QTJAMBI_STACKTRACEINFO );
-                                }else if(baseType.startsWith(QLatin1String("QFutureInterface<"))){
-                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot cast %1%2 to %3.").arg(QLatin1String(translatedType)).arg(baseType.mid(16)).arg(requiredType) QTJAMBI_STACKTRACEINFO );
-                                }else if(baseType.startsWith(QLatin1String("QFutureInterface_shell<"))){
-                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot cast %1%2 to %3.").arg(QLatin1String(translatedType)).arg(baseType.mid(22)).arg(requiredType) QTJAMBI_STACKTRACEINFO );
+                                if(baseType=="QFutureInterfaceBase"
+                                        || baseType=="QFutureInterfaceBase_shell"){
+                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot cast %1<void> to %2.").arg(translatedType, requiredType) QTJAMBI_STACKTRACEINFO );
+                                }else if(baseType.startsWith("QFutureInterface<")){
+                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot cast %1%2 to %3.").arg(translatedType, baseType.mid(16), requiredType) QTJAMBI_STACKTRACEINFO );
+                                }else if(baseType.startsWith("QFutureInterface_shell<")){
+                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot cast %1%2 to %3.").arg(translatedType, baseType.mid(22), requiredType) QTJAMBI_STACKTRACEINFO );
                                 }
                             }
                         }
@@ -406,25 +419,25 @@ QFutureInterfaceBase* QtJambiAPI::translateQFutureInterface(QSharedPointer<QFutu
                         QFutureInterfaceBase* targetObject = targetFuture.get();
                         const std::type_info& sourceType = typeid(*sourceObject);
                         const std::type_info& targetType = typeid(*targetObject);
-                        if(targetType==sourceType){
+                        if(unique_id(targetType)==unique_id(sourceType)){
                             return sourceObject;
                         }else{
                             if(JniEnvironment env{200}){
-                                QString baseType = QLatin1String(QtJambiAPI::typeName(sourceType));
-                                QString requiredType = QLatin1String(QtJambiAPI::typeName(targetType));
+                                QByteArray baseType = QtJambiAPI::typeName(sourceType);
+                                QByteArray requiredType = QtJambiAPI::typeName(targetType);
                                 auto idx = requiredType.indexOf('<');
                                 if(idx>0){
-                                    requiredType = QLatin1String(translatedType) + requiredType.mid(idx);
+                                    requiredType = translatedType + requiredType.mid(idx);
                                 }else{
-                                    requiredType = QLatin1String(translatedType);
+                                    requiredType = translatedType;
                                 }
-                                if(baseType==QLatin1String("QFutureInterfaceBase")
-                                        || baseType==QLatin1String("QFutureInterfaceBase_shell")){
-                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot cast %1<void> to %2.").arg(QLatin1String(translatedType)).arg(requiredType) QTJAMBI_STACKTRACEINFO );
-                                }else if(baseType.startsWith(QLatin1String("QFutureInterface<"))){
-                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot cast %1%2 to %3.").arg(QLatin1String(translatedType)).arg(baseType.mid(16)).arg(requiredType) QTJAMBI_STACKTRACEINFO );
-                                }else if(baseType.startsWith(QLatin1String("QFutureInterface_shell<"))){
-                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot cast %1%2 to %3.").arg(QLatin1String(translatedType)).arg(baseType.mid(22)).arg(requiredType) QTJAMBI_STACKTRACEINFO );
+                                if(baseType=="QFutureInterfaceBase"
+                                        || baseType=="QFutureInterfaceBase_shell"){
+                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot cast %1<void> to %2.").arg(translatedType, requiredType) QTJAMBI_STACKTRACEINFO );
+                                }else if(baseType.startsWith("QFutureInterface<")){
+                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot cast %1%2 to %3.").arg(translatedType, baseType.mid(16), requiredType) QTJAMBI_STACKTRACEINFO );
+                                }else if(baseType.startsWith("QFutureInterface_shell<")){
+                                    Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Cannot cast %1%2 to %3.").arg(translatedType, baseType.mid(22), requiredType) QTJAMBI_STACKTRACEINFO );
                                 }
                             }
                         }
@@ -472,21 +485,21 @@ void CoreAPI::invokeAndCatch(JNIEnv *__jni_env, void* ptr, void(*expression)(voi
         if(unique_id(typeid(exn))==unique_id(typeid(QException))){
             Java::QtCore::QException::throwNew(__jni_env, "An exception has been thrown in native code." QTJAMBI_STACKTRACEINFO );
         }else{
-            QString exceptionName(QLatin1String(QtJambiAPI::typeName(typeid(exn))));
+            QByteArray exceptionName(QtJambiAPI::typeName(typeid(exn)));
             const char* what = exn.what();
             const char* original_what = exn.std::exception::what();
-            if(what && QLatin1String(what)!=QLatin1String(original_what) && exceptionName!=QLatin1String(what)){
-                Java::QtCore::QException::throwNew(__jni_env, QString("An exception (%1) has been thrown in native code: %2").arg(exceptionName).arg(QLatin1String(what)) QTJAMBI_STACKTRACEINFO );
+            if(what && QLatin1String(what)!=QLatin1String(original_what) && exceptionName!=what){
+                Java::QtCore::QException::throwNew(__jni_env, QStringLiteral("An exception (%1) has been thrown in native code: %2").arg(QLatin1String(exceptionName), QLatin1String(what)) QTJAMBI_STACKTRACEINFO );
             }else{
-                Java::QtCore::QException::throwNew(__jni_env, QString("An exception (%1) has been thrown in native code.").arg(exceptionName) QTJAMBI_STACKTRACEINFO );
+                Java::QtCore::QException::throwNew(__jni_env, QStringLiteral("An exception (%1) has been thrown in native code.").arg(QLatin1String(exceptionName)) QTJAMBI_STACKTRACEINFO );
             }
         }
     }catch(const std::exception& exn){
-        QString exceptionName(QLatin1String(QtJambiAPI::typeName(typeid(exn))));
-        if(exn.what() && exceptionName!=QLatin1String(exn.what())){
-            Java::QtCore::QUnhandledException::throwNew(__jni_env, QString("An exception (%1) has been thrown in native code: %2").arg(exceptionName).arg(QLatin1String(exn.what())) QTJAMBI_STACKTRACEINFO );
+        QByteArray exceptionName(QtJambiAPI::typeName(typeid(exn)));
+        if(exn.what() && exceptionName!=exn.what()){
+            Java::QtCore::QUnhandledException::throwNew(__jni_env, QStringLiteral("An exception (%1) has been thrown in native code: %2").arg(QLatin1String(exceptionName), QLatin1String(exn.what())) QTJAMBI_STACKTRACEINFO );
         }else{
-            Java::QtCore::QUnhandledException::throwNew(__jni_env, QString("An exception (%1) has been thrown in native code.").arg(exceptionName) QTJAMBI_STACKTRACEINFO );
+            Java::QtCore::QUnhandledException::throwNew(__jni_env, QStringLiteral("An exception (%1) has been thrown in native code.").arg(QLatin1String(exceptionName)) QTJAMBI_STACKTRACEINFO );
         }
     }catch(...){
         Java::QtCore::QUnhandledException::throwNew(__jni_env, "An exception has been thrown in native code." QTJAMBI_STACKTRACEINFO );

@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.dbus"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtDBus"
     module: "qtjambi.dbus"
     description: "Classes for inter-process communication over the D-Bus protocol."
@@ -67,11 +67,6 @@ TypeSystem{
     }
     
     Rejection{
-        className: "QDBusConnection"
-        functionName: "registerVirtualObject"
-    }
-    
-    Rejection{
         className: ""
         functionName: "qDBusReplyFill"
     }
@@ -104,89 +99,11 @@ TypeSystem{
                 location: Include.Global
             }
         }
-    }
-    
-    EnumType{
-        name: "QDBus::CallMode"
-    }
-    
-    EnumType{
-        name: "QDBusConnectionInterface::ServiceQueueOptions"
-    }
-    
-    EnumType{
-        name: "QDBusConnectionInterface::RegisterServiceReply"
-    }
-    
-    EnumType{
-        name: "QDBusConnectionInterface::ServiceReplacementOptions"
-    }
-    
-    EnumType{
-        name: "QDBusConnection::VirtualObjectRegisterOption"
-    }
-    
-    EnumType{
-        name: "QDBusConnection::RegisterOption"
-        flags: "QDBusConnection::RegisterOptions"
-        RejectEnumValue{
-            name: "ExportAllSignal"
+
+        EnumType{
+            name: "CallMode"
         }
     }
-    
-    EnumType{
-        name: "QDBusConnection::UnregisterMode"
-    }
-    
-    
-    EnumType{
-        name: "QDBusArgument::ElementType"
-    }
-    
-    
-    EnumType{
-        name: "QDBusConnection::BusType"
-    }
-    
-    
-    EnumType{
-        name: "QDBusConnection::ConnectionCapability"
-        flags: "QDBusConnection::ConnectionCapabilities"
-    }
-    
-    
-    EnumType{
-        name: "QDBusConnection::RegisterServiceReply"
-    }
-    
-    
-    EnumType{
-        name: "QDBusConnection::ServiceQueueOptions"
-    }
-    
-    
-    EnumType{
-        name: "QDBusConnection::ServiceReplacementOption"
-        flags: "QDBusConnection::ServiceReplacementOptions"
-    }
-    
-    
-    EnumType{
-        name: "QDBusError::ErrorType"
-        RejectEnumValue{
-            name: "LastErrorType"
-        }
-    }
-    
-    EnumType{
-        name: "QDBusMessage::MessageType"
-    }
-    
-    EnumType{
-        name: "QDBusServiceWatcher::WatchModeFlag"
-        flags: "QDBusServiceWatcher::WatchMode"
-    }
-    
     
     ObjectType{
         name: "QDBusServer"
@@ -206,6 +123,18 @@ TypeSystem{
         ModifyFunction{
             signature: "interface() const"
             rename: "interfaceName"
+        }
+        ModifyFunction{
+            signature: "call<Args...>(QString,Args&&)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "call<Args...>(QDBus::CallMode,QString,Args&&)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "asyncCall<Args...>(QString,Args&&)"
+            remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "asyncCall(const QString &, const QVariant &, const QVariant &, const QVariant &, const QVariant &, const QVariant &, const QVariant &, const QVariant &, const QVariant &)"
@@ -231,53 +160,7 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "asyncCallWithArgumentList(const QString &, const QList<QVariant > &)"
-            ModifyArgument{
-                index: "return"
-                ReplaceType{
-                    modifiedType: "io.qt.dbus.QDBusPendingCall"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "QDBusAbstractInterface(const QString &, const QString &, const char *, const QDBusConnection &, QObject *)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "internalPropSet(const char *,const QVariant &)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "internalPropGet(const char *)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
             signature: "callWithCallback(const QString &,const QList<QVariant> &,QObject *, const char *)"
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning
@@ -302,18 +185,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "callWithCallback(const QString &,const QList<QVariant> &,QObject *, const char *, const char *)"
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 5
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning
@@ -350,17 +221,17 @@ TypeSystem{
             }
         }
         InjectCode{
-            Text{content: "@io.qt.QtUninvokable\n"+
+            Text{content: "@QtUninvokable\n"+
                           "public final io.qt.dbus.QDBusPendingCall asyncCall(java.lang.String method, java.lang.Object... args){\n"+
                           "    return asyncCallWithArgumentList(method, java.util.Arrays.asList(args));\n"+
                           "}\n"+
                           "\n"+
-                          "@io.qt.QtUninvokable\n"+
+                          "@QtUninvokable\n"+
                           "public final io.qt.dbus.QDBusMessage call(io.qt.dbus.QDBus.CallMode mode, java.lang.String method, java.lang.Object... args){\n"+
                           "    return callWithArgumentList(mode, method, java.util.Arrays.asList(args));\n"+
                           "}\n"+
                           "\n"+
-                          "@io.qt.QtUninvokable\n"+
+                          "@QtUninvokable\n"+
                           "public final io.qt.dbus.QDBusMessage call(java.lang.String method, java.lang.Object... args){\n"+
                           "    return callWithArgumentList(io.qt.dbus.QDBus.CallMode.AutoDetect, method, java.util.Arrays.asList(args));\n"+
                           "}"}
@@ -377,6 +248,9 @@ TypeSystem{
     
     ValueType{
         name: "QDBusArgument"
+        EnumType{
+            name: "ElementType"
+        }
         ModifyFunction{
             signature: "beginMapEntry() const"
             remove: RemoveFlag.All
@@ -406,19 +280,15 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "operator<<(unsigned long long)"
+            signature: "operator<<(qulonglong)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "operator<<(unsigned short)"
+            signature: "operator<<(ushort)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "operator=(const QDBusArgument &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator>>(unsigned short &)const"
+            signature: "operator>>(ushort &)const"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -426,7 +296,7 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "operator>>(unsigned long long &)const"
+            signature: "operator>>(qulonglong &)const"
             remove: RemoveFlag.All
         }
         InjectCode{
@@ -568,22 +438,14 @@ TypeSystem{
                 position: Position.Beginning
                 Text{content: "qtjambi_dbus_check_write_argument(%env, __qt_this);"}
             }
-            ModifyArgument{
-                index: 0
-                replaceValue: "this"
-            }
         }
         ModifyFunction{
-            signature: "operator<<(long long)"
+            signature: "operator<<(qlonglong)"
             rename: "append"
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
                 Text{content: "qtjambi_dbus_check_write_argument(%env, __qt_this);"}
-            }
-            ModifyArgument{
-                index: 0
-                replaceValue: "this"
             }
         }
         ModifyFunction{
@@ -594,22 +456,14 @@ TypeSystem{
                 position: Position.Beginning
                 Text{content: "qtjambi_dbus_check_write_argument(%env, __qt_this);"}
             }
-            ModifyArgument{
-                index: 0
-                replaceValue: "this"
-            }
         }
         ModifyFunction{
-            signature: "operator<<(unsigned char)"
+            signature: "operator<<(uchar)"
             rename: "append"
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
                 Text{content: "qtjambi_dbus_check_write_argument(%env, __qt_this);"}
-            }
-            ModifyArgument{
-                index: 0
-                replaceValue: "this"
             }
         }
         ModifyFunction{
@@ -620,10 +474,6 @@ TypeSystem{
                 position: Position.Beginning
                 Text{content: "qtjambi_dbus_check_write_argument(%env, __qt_this);"}
             }
-            ModifyArgument{
-                index: 0
-                replaceValue: "this"
-            }
         }
         ModifyFunction{
             signature: "operator<<(double)"
@@ -633,22 +483,20 @@ TypeSystem{
                 position: Position.Beginning
                 Text{content: "qtjambi_dbus_check_write_argument(%env, __qt_this);"}
             }
-            ModifyArgument{
-                index: 0
-                replaceValue: "this"
-            }
         }
         ModifyFunction{
             signature: "operator<<(const QString &)"
             rename: "append"
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "java.lang.@Nullable CharSequence"
+                }
+            }
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
                 Text{content: "qtjambi_dbus_check_write_argument(%env, __qt_this);"}
-            }
-            ModifyArgument{
-                index: 0
-                replaceValue: "this"
             }
         }
         ModifyFunction{
@@ -659,22 +507,18 @@ TypeSystem{
                 position: Position.Beginning
                 Text{content: "qtjambi_dbus_check_write_argument(%env, __qt_this);"}
             }
-            ModifyArgument{
-                index: 0
-                replaceValue: "this"
-            }
         }
         ModifyFunction{
             signature: "operator<<(const QStringList &)"
             rename: "append"
+            ModifyArgument{
+                index: 1
+                replaceType: "java.util.@NonNull List<java.lang.@NonNull String>"
+            }
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
                 Text{content: "qtjambi_dbus_check_write_argument(%env, __qt_this);"}
-            }
-            ModifyArgument{
-                index: 0
-                replaceValue: "this"
             }
         }
         ModifyFunction{
@@ -685,10 +529,6 @@ TypeSystem{
                 position: Position.Beginning
                 Text{content: "qtjambi_dbus_check_write_argument(%env, __qt_this);"}
             }
-            ModifyArgument{
-                index: 0
-                replaceValue: "this"
-            }
         }
         ModifyFunction{
             signature: "operator<<(const QDBusObjectPath &)"
@@ -697,10 +537,6 @@ TypeSystem{
                 target: CodeClass.Native
                 position: Position.Beginning
                 Text{content: "qtjambi_dbus_check_write_argument(%env, __qt_this);"}
-            }
-            ModifyArgument{
-                index: 0
-                replaceValue: "this"
             }
         }
         ModifyFunction{
@@ -711,10 +547,6 @@ TypeSystem{
                 position: Position.Beginning
                 Text{content: "qtjambi_dbus_check_write_argument(%env, __qt_this);"}
             }
-            ModifyArgument{
-                index: 0
-                replaceValue: "this"
-            }
         }
         ModifyFunction{
             signature: "operator<<(const QDBusUnixFileDescriptor &)"
@@ -724,13 +556,9 @@ TypeSystem{
                 position: Position.Beginning
                 Text{content: "qtjambi_dbus_check_write_argument(%env, __qt_this);"}
             }
-            ModifyArgument{
-                index: 0
-                replaceValue: "this"
-            }
         }
         ModifyFunction{
-            signature: "operator>>(unsigned char &)const"
+            signature: "operator>>(uchar &)const"
             rename: "extractByte"
             InjectCode{
                 target: CodeClass.Native
@@ -754,7 +582,7 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jbyte __java_return_value;\n"+
-                                  "unsigned char& %out = *reinterpret_cast<unsigned char*>(&__java_return_value);"}
+                                  "uchar& %out = *reinterpret_cast<uchar*>(&__java_return_value);"}
                 }
             }
         }
@@ -846,7 +674,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "operator>>(long long &)const"
+            signature: "operator>>(qlonglong &)const"
             rename: "extractLong"
             InjectCode{
                 target: CodeClass.Native
@@ -904,7 +732,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "operator>>(QString &)const"
+            signature: "operator>>(uint &)const"
             rename: "extractString"
             InjectCode{
                 target: CodeClass.Native
@@ -933,6 +761,35 @@ TypeSystem{
             }
         }
         ModifyFunction{
+            signature: "operator>>(QString &)const"
+            rename: "extractQString"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+            }
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.core.QString"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
+                                  "%out = QtJambiAPI::convertQStringToJavaObject(%env, __qt_%1);"}
+                }
+            }
+            ModifyArgument{
+                index: 1
+                RemoveArgument{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QString %out;"}
+                }
+            }
+        }
+        ModifyFunction{
             signature: "operator>>(QDBusVariant &)const"
             rename: "extractVariant"
             InjectCode{
@@ -943,7 +800,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.dbus.QDBusVariant"
+                    modifiedType: "io.qt.dbus.@NonNull QDBusVariant"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -972,7 +829,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.dbus.QDBusObjectPath"
+                    modifiedType: "io.qt.dbus.@NonNull QDBusObjectPath"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -1001,7 +858,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.dbus.QDBusObjectPath"
+                    modifiedType: "io.qt.dbus.@NonNull QDBusObjectPath"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -1030,7 +887,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.dbus.QDBusUnixFileDescriptor"
+                    modifiedType: "io.qt.dbus.@NonNull QDBusUnixFileDescriptor"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -1059,7 +916,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.util.List<java.lang.String>"
+                    modifiedType: "io.qt.core.@NonNull QStringList"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -1088,7 +945,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.core.QByteArray"
+                    modifiedType: "io.qt.core.@NonNull QByteArray"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -1106,6 +963,367 @@ TypeSystem{
                 }
             }
         }
+        ModifyFunction{
+            signature: "operator<<(QDBusArgument&,QMap<QString,QVariant>)"
+            ModifyArgument{
+                index: 2
+                replaceType: "java.util.@NonNull NavigableMap<java.lang.@NonNull String, ? extends java.lang.Object>"
+            }
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: "qtjambi_dbus_check_write_argument(%env, __qt_this);"}
+            }
+            since: 6
+        }
+        ModifyFunction{
+            signature: "operator>>(QDBusArgument,QDate &)"
+            rename: "extractDate"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+            }
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.core.@NonNull QDate"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
+                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                }
+            }
+            ModifyArgument{
+                index: 1
+                RemoveArgument{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QDate %out;"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "operator>>(QDBusArgument,QDateTime &)"
+            rename: "extractDateTime"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+            }
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.core.@NonNull QDateTime"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
+                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                }
+            }
+            ModifyArgument{
+                index: 1
+                RemoveArgument{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QDateTime %out;"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "operator>>(QDBusArgument,QLine &)"
+            rename: "extractLine"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+            }
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.core.@NonNull QLine"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
+                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                }
+            }
+            ModifyArgument{
+                index: 1
+                RemoveArgument{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QLine %out;"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "operator>>(QDBusArgument,QLineF &)"
+            rename: "extractLineF"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+            }
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.core.@NonNull QLineF"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
+                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                }
+            }
+            ModifyArgument{
+                index: 1
+                RemoveArgument{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QLineF %out;"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "operator>>(QDBusArgument,QPoint &)"
+            rename: "extractPoint"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+            }
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.core.@NonNull QPoint"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
+                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                }
+            }
+            ModifyArgument{
+                index: 1
+                RemoveArgument{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QPoint %out;"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "operator>>(QDBusArgument,QPointF &)"
+            rename: "extractPointF"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+            }
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.core.@NonNull QPointF"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
+                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                }
+            }
+            ModifyArgument{
+                index: 1
+                RemoveArgument{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QPointF %out;"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "operator>>(QDBusArgument,QRect &)"
+            rename: "extractRect"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+            }
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.core.@NonNull QRect"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
+                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                }
+            }
+            ModifyArgument{
+                index: 1
+                RemoveArgument{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QRect %out;"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "operator>>(QDBusArgument,QRectF &)"
+            rename: "extractRectF"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+            }
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.core.@NonNull QRectF"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
+                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                }
+            }
+            ModifyArgument{
+                index: 1
+                RemoveArgument{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QRectF %out;"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "operator>>(QDBusArgument,QSize &)"
+            rename: "extractSize"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+            }
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.core.@NonNull QSize"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
+                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                }
+            }
+            ModifyArgument{
+                index: 1
+                RemoveArgument{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QSize %out;"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "operator>>(QDBusArgument,QSizeF &)"
+            rename: "extractSizeF"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+            }
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.core.@NonNull QSizeF"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
+                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                }
+            }
+            ModifyArgument{
+                index: 1
+                RemoveArgument{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QSizeF %out;"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "operator>>(QDBusArgument,QTime &)"
+            rename: "extractTime"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+            }
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.core.@NonNull QTime"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
+                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                }
+            }
+            ModifyArgument{
+                index: 1
+                RemoveArgument{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QTime %out;"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "operator>>(QDBusArgument,QVariant &)"
+            rename: "extractObject"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+            }
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.core.@NonNull QVariant"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "Q_UNUSED(__qt_return_value)\n"+
+                                  "%out = qtjambi_cast<jobject>(%env, __qt_%1);"}
+                }
+            }
+            ModifyArgument{
+                index: 1
+                RemoveArgument{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QVariant %out;"}
+                }
+            }
+        }
     }
     
     ValueType{
@@ -1116,6 +1334,47 @@ TypeSystem{
                 location: Include.Global
             }
         }
+
+        Rejection{functionName: "registerVirtualObject"}
+
+        EnumType{
+            name: "VirtualObjectRegisterOption"
+        }
+
+        EnumType{
+            name: "RegisterOption"
+            RejectEnumValue{
+                name: "ExportAllSignal"
+            }
+        }
+
+        EnumType{
+            name: "UnregisterMode"
+        }
+
+        EnumType{
+            name: "BusType"
+        }
+
+
+        EnumType{
+            name: "ConnectionCapability"
+        }
+
+
+        EnumType{
+            name: "RegisterServiceReply"
+        }
+
+
+        EnumType{
+            name: "ServiceQueueOptions"
+        }
+
+        EnumType{
+            name: "ServiceReplacementOption"
+        }
+
         CustomConstructor{
             Text{content: "if(copy){\n"+
                           "    return new(placement) QDBusConnection(*copy);\n"+
@@ -1136,36 +1395,7 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "operator=(const QDBusConnection &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "asyncCall(const QDBusMessage &, int) const"
-            ModifyArgument{
-                index: "return"
-                ReplaceType{
-                    modifiedType: "io.qt.dbus.QDBusPendingCall"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
             signature: "callWithCallback(const QDBusMessage &, QObject *, const char *, const char *, int) const"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning
@@ -1203,12 +1433,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "callWithCallback(const QDBusMessage &, QObject *, const char *, int) const"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning
@@ -1233,12 +1457,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "connect(const QString &, const QString &, const QString &, const QString &, QObject *, const char *)"
-            ModifyArgument{
-                index: 6
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning
@@ -1263,12 +1481,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "connect(const QString &, const QString &, const QString &, const QString &, const QString &, QObject *, const char *)"
-            ModifyArgument{
-                index: 7
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning
@@ -1293,12 +1505,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "connect(const QString &, const QString &, const QString &, const QString &, const QStringList &, const QString &, QObject *, const char *)"
-            ModifyArgument{
-                index: 8
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning
@@ -1323,12 +1529,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "disconnect(const QString &, const QString &, const QString &, const QString &, QObject *, const char *)"
-            ModifyArgument{
-                index: 6
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning
@@ -1353,12 +1553,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "disconnect(const QString &, const QString &, const QString &, const QString &, const QString &, QObject *, const char *)"
-            ModifyArgument{
-                index: 7
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning
@@ -1383,12 +1577,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "disconnect(const QString &, const QString &, const QString &, const QString &, const QStringList &, const QString &, QObject *, const char *)"
-            ModifyArgument{
-                index: 8
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning
@@ -1415,6 +1603,18 @@ TypeSystem{
     
     ObjectType{
         name: "QDBusConnectionInterface"
+
+        EnumType{
+            name: "ServiceQueueOptions"
+        }
+
+        EnumType{
+            name: "RegisterServiceReply"
+        }
+
+        EnumType{
+            name: "ServiceReplacementOptions"
+        }
     }
     
     InterfaceType{
@@ -1480,13 +1680,11 @@ TypeSystem{
     
     ValueType{
         name: "QDBusError"
-        ModifyFunction{
-            signature: "operator=(const QDBusError &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator=(const QDBusMessage &)"
-            remove: RemoveFlag.All
+        EnumType{
+            name: "ErrorType"
+            RejectEnumValue{
+                name: "LastErrorType"
+            }
         }
     }
     
@@ -1496,17 +1694,16 @@ TypeSystem{
     
     ValueType{
         name: "QDBusMessage"
+        EnumType{
+            name: "MessageType"
+        }
         ModifyFunction{
             signature: "interface() const"
             rename: "interfaceName"
         }
         ModifyFunction{
-            signature: "operator=(const QDBusMessage &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
             signature: "operator<<(const QVariant &)"
-            remove: RemoveFlag.All
+            rename: "append"
         }
     }
     
@@ -1547,29 +1744,10 @@ TypeSystem{
             since: [5, 14]
         }
         ModifyFunction{
-            signature: "operator=(const QDBusPendingCall &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
             signature: "QDBusPendingCall(const QDBusPendingCall &)"
             ModifyArgument{
                 index: 1
                 NoNullPointer{
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "swap(QDBusPendingCall &)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.dbus.QDBusPendingCall"
-                }
-                NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QDBusPendingCall& %out = QtJambiAPI::convertJavaInterfaceToNativeReference<QDBusPendingCall>(%env, %in, \"io/qt/dbus/QDBusPendingCall\");"}
                 }
             }
         }
@@ -1601,12 +1779,15 @@ TypeSystem{
     
     ObjectType{
         name: "QDBusServiceWatcher"
+        EnumType{
+            name: "WatchModeFlag"
+        }
         ModifyFunction{
             signature: "connection() const"
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "QDBusServiceWatcher(const QString &,const QDBusConnection &,QFlags<QDBusServiceWatcher::WatchModeFlag>,QObject *)"
+            signature: "QDBusServiceWatcher(const QString &,const QDBusConnection &,QDBusServiceWatcher::WatchMode,QObject *)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -1635,10 +1816,6 @@ TypeSystem{
     
     ValueType{
         name: "QDBusUnixFileDescriptor"
-        ModifyFunction{
-            signature: "operator=(const QDBusUnixFileDescriptor &)"
-            remove: RemoveFlag.All
-        }
     }
     
     Rejection{
@@ -1676,7 +1853,7 @@ TypeSystem{
             }
         }
         InjectCode{
-            Text{content: "@io.qt.QtUninvokable\n"+
+            Text{content: "@QtUninvokable\n"+
                           "final void setMetaTypes(io.qt.core.QMetaType[] metaTypes){\n"+
                           "    int[] metaTypeIDs = new int[metaTypes.length];\n"+
                           "    for(int i=0; i<metaTypes.length; ++i){\n"+
@@ -1723,7 +1900,46 @@ TypeSystem{
     ObjectType{
         name: "QDBusVariant"
     }
-    
+
+    GlobalFunction{
+        signature: "operator<<<T1,T2>(QDBusArgument&,std::pair<T1,T2>)"
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "operator>><T1,T2>(QDBusArgument,std::pair<T1,T2>&)"
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "operator<<<T1,T2>(QDBusArgument&,QPair<T1,T2>)"
+        remove: RemoveFlag.All
+        until: 5
+    }
+
+    GlobalFunction{
+        signature: "operator>><T1,T2>(QDBusArgument,QPair<T1,T2>&)"
+        remove: RemoveFlag.All
+        until: 5
+    }
+
+    GlobalFunction{
+        signature: "operator>><Key,T>(QDBusArgument,QHash<Key,T>&)"
+        remove: RemoveFlag.All
+        until: 5
+    }
+
+    GlobalFunction{
+        signature: "operator>><T>(QDBusArgument,QList<T>&)"
+        remove: RemoveFlag.All
+        until: 5
+    }
+
+    GlobalFunction{
+        signature: "operator>><Key,T>(QDBusArgument,QMap<Key,T>&)"
+        remove: RemoveFlag.All
+        until: 5
+    }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Object type 'QDBusPendingCall' passed as value. Resulting code will not compile.*"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QDBusError::QDBusError', unmatched parameter type '*DBusError*'"}

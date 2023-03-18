@@ -301,7 +301,7 @@ struct BinaryExpressionAST: public ExpressionAST {
     DECLARE_AST_NODE(BinaryExpression)
 
     std::size_t op;
-    bool op2;
+    unsigned opLength;
     ExpressionAST *left_expression;
     ExpressionAST *right_expression;
 };
@@ -646,9 +646,7 @@ struct OperatorAST: public AST {
     DECLARE_AST_NODE(Operator)
 
     std::size_t op;
-    bool op2;
-    std::size_t open;
-    std::size_t close;
+    unsigned opLength;
 };
 
 struct OperatorFunctionIdAST: public AST {
@@ -901,7 +899,6 @@ struct UsingAsAST: public DeclarationAST {
     NameAST *name;
     TypeSpecifierAST* type_specifier;
     DeclaratorAST *declarator;
-    ParameterDeclarationClauseAST *parameters;
 };
 
 struct QGadgetAST: public DeclarationAST {

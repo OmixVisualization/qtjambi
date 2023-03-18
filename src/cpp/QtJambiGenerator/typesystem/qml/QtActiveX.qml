@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.activex"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     targetName: "QtJambiActiveX"
     module: "qtjambi.activex"
     description: "Classes for applications which use ActiveX and COM"
@@ -99,50 +99,6 @@ TypeSystem{
     
     Rejection{
         className: "IAxServerBase"
-    }
-    
-    Rejection{
-        className: "QAxBase::qt_meta_stringdata_QAxBase_t"
-    }
-    
-    Rejection{
-        className: "QAxBase"
-        fieldName: "qt_meta_data_QAxBase"
-    }
-    
-    Rejection{
-        className: "QAxBase"
-        fieldName: "qt_meta_stringdata_QAxBase"
-    }
-    
-    Rejection{
-        className: "QAxBase"
-        functionName: "queryInterface"
-    }
-    
-    Rejection{
-        className: "QAxBaseObject"
-        functionName: "queryInterface"
-    }
-    
-    Rejection{
-        className: "QAxBaseWidget"
-        functionName: "queryInterface"
-    }
-    
-    Rejection{
-        className: "QAxWidget"
-        functionName: "queryInterface"
-    }
-    
-    Rejection{
-        className: "QAxObject"
-        functionName: "queryInterface"
-    }
-    
-    Rejection{
-        className: "QAxScriptEngine"
-        functionName: "queryInterface"
     }
     
     Rejection{
@@ -217,6 +173,10 @@ TypeSystem{
     
     ObjectType{
         name: "QAxBaseObject"
+
+        Rejection{
+            functionName: "queryInterface"
+        }
         ModifyFunction{
             signature: "signal(QString, int, void *)"
             access: Modification.Private
@@ -226,6 +186,10 @@ TypeSystem{
     
     ObjectType{
         name: "QAxBaseWidget"
+
+        Rejection{
+            functionName: "queryInterface"
+        }
         ModifyFunction{
             signature: "signal(QString, int, void *)"
             access: Modification.Private
@@ -235,6 +199,10 @@ TypeSystem{
     
     ObjectType{
         name: "QAxWidget"
+
+        Rejection{
+            functionName: "queryInterface"
+        }
         ModifyFunction{
             signature: "qt_static_metacall(QObject *, QMetaObject::Call, int, void **)"
             remove: RemoveFlag.All
@@ -252,83 +220,33 @@ TypeSystem{
     
     InterfaceType{
         name: "QAxBase"
-        ModifyFunction{
-            signature: "qt_static_metacall(QAxBase *, QMetaObject::Call, int, void **)"
-            remove: RemoveFlag.All
-            until: [5, 15]
+
+        Rejection{
+            className: "qt_meta_stringdata_QAxBase_t"
         }
-        ModifyFunction{
-            signature: "operator=(const QProcessEnvironment&)"
-            remove: RemoveFlag.All
+        Rejection{
+            fieldName: "qt_meta_data_QAxBase"
         }
-        ModifyFunction{
-            signature: "operator<<(QDataStream&,QAxBase)"
-            remove: RemoveFlag.All
+        Rejection{
+            fieldName: "qt_meta_stringdata_QAxBase"
         }
-        ModifyFunction{
-            signature: "operator>>(QDataStream&,QAxBase&)"
-            remove: RemoveFlag.All
+        Rejection{
+            functionName: "queryInterface"
         }
-        ModifyFunction{
-            signature: "propertyWritable(const char*)const"
-            ModifyArgument{
-                index: 1
-                replaceType: "java.lang.String"
-            }
+        Rejection{
+            functionName: "qt_metacall"
         }
-        ModifyFunction{
-            signature: "setPropertyWritable(const char*,bool)"
-            ModifyArgument{
-                index: 1
-                replaceType: "java.lang.String"
-            }
-        }
-        ModifyFunction{
-            signature: "className()const"
-            ModifyArgument{
-                index: 0
-                replaceType: "java.lang.String"
-            }
-        }
-        ModifyFunction{
-            signature: "dynamicCall(const char*,QList<QVariant>&)"
-            ModifyArgument{
-                index: 1
-                replaceType: "java.lang.String"
-            }
-        }
-        ModifyFunction{
-            signature: "dynamicCall(const char*,QList<QVariant>&,uint)"
-            ModifyArgument{
-                index: 1
-                replaceType: "java.lang.String"
-            }
-        }
-        ModifyFunction{
-            signature: "dynamicCall(const char*,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant)"
-            ModifyArgument{
-                index: 1
-                replaceType: "java.lang.String"
-            }
-        }
-        ModifyFunction{
-            signature: "querySubObject(const char*,QList<QVariant>&)"
-            ModifyArgument{
-                index: 1
-                replaceType: "java.lang.String"
-            }
-        }
-        ModifyFunction{
-            signature: "querySubObject(const char*,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant,QVariant)"
-            ModifyArgument{
-                index: 1
-                replaceType: "java.lang.String"
-            }
+        Rejection{
+            functionName: "qt_static_metacall"
         }
     }
     
     ObjectType{
         name: "QAxObject"
+
+        Rejection{
+            functionName: "queryInterface"
+        }
         ModifyFunction{
             signature: "qt_static_metacall(QObject *, QMetaObject::Call, int, void **)"
             remove: RemoveFlag.All
@@ -342,14 +260,22 @@ TypeSystem{
     
     ObjectType{
         name: "QAxScript"
-    }
-    
-    EnumType{
-        name: "QAxScript::FunctionFlags"
+
+        EnumType{
+            name: "FunctionFlags"
+        }
     }
     
     ObjectType{
         name: "QAxScriptEngine"
+
+        Rejection{
+            functionName: "queryInterface"
+        }
+
+        EnumType{
+            name: "State"
+        }
     }
     
     ObjectType{
@@ -377,16 +303,12 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QAxScriptEngine::State"
-    }
-    
     ObjectType{
         name: "QAxSelect"
-    }
-    
-    EnumType{
-        name: "QAxSelect::SandboxingLevel"
+
+        EnumType{
+            name: "SandboxingLevel"
+        }
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'IUnknown*'"}
@@ -395,4 +317,5 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: private virtual function 'metaObject() const' in '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: private virtual function 'qt_metacall(*)' in '*'"}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: Either add or remove specified for reference count variable '__rcObjects' in 'QAxScriptManager' but not both."}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping field 'IID_IAxServerBase' with unmatched type 'GUID'"}
 }

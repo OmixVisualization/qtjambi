@@ -9,6 +9,7 @@ public:
     DocFunction(QObject* parent);
 
     const QString& name() const;
+    const QString& minimalSignature() const;
     const QString& type() const;
     const QStringList& parameters() const;
     bool isConst() const;
@@ -25,6 +26,7 @@ private:
     QStringList m_parameters;
     bool m_const;
     bool m_static;
+    mutable QString m_minimalSignature;
 };
 
 #endif // DOCFUNCTION_H

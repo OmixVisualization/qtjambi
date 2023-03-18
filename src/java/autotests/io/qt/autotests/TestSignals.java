@@ -31,6 +31,7 @@ package io.qt.autotests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -198,7 +199,7 @@ public class TestSignals extends ApplicationInitializer{
 		o.testSignal.emit("test1");
 		assertEquals("test1", receiver.completionPrefix());
 		QMetaMethod m = QMetaMethod.fromSignal(o.testSignal);
-		assertTrue(m!=null);
+		assertTrue(m.isValid());
 		m.invoke(o, "test2");
 		assertEquals("test2", receiver.completionPrefix());
 	}
@@ -212,7 +213,7 @@ public class TestSignals extends ApplicationInitializer{
 		o.testSignal.emit("test1");
 		assertEquals("test1", receiver.completionPrefix());
 		QMetaMethod m = QMetaMethod.fromSignal(o.testSignal);
-		assertTrue(m==null);
+		assertFalse(m.isValid());
 	}
 	
     @Test

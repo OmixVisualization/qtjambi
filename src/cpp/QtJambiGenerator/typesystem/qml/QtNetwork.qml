@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.network"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtNetwork"
     module: "qtjambi.network"
     description: "Classes to make network programming easier and more portable."
@@ -40,7 +40,7 @@ TypeSystem{
         Text{content: "public final int read(byte data[]) {\n"+
                       "    if (data.length == 0) return 0;\n"+
                       "    \n"+
-                      "    io.qt.QNativePointer np = new io.qt.QNativePointer(io.qt.QNativePointer.Type.Byte, data.length);\n"+
+                      "    QNativePointer np = new QNativePointer(QNativePointer.Type.Byte, data.length);\n"+
                       "    int len = (int) read(np, data.length);\n"+
                       "    for (int i=0; i<len; ++i) data[i] = np.byteAt(i);\n"+
                       "    \n"+
@@ -85,7 +85,6 @@ TypeSystem{
     
     EnumType{
         name: "QSsl::SslOption"
-        flags: "QSsl::SslOptions"
     }
     
     EnumType{
@@ -100,7 +99,6 @@ TypeSystem{
     
     EnumType{
         name: "QNetworkProxy::Capability"
-        flags: "QNetworkProxy::Capabilities"
     }
     
     EnumType{
@@ -125,12 +123,10 @@ TypeSystem{
     
     EnumType{
         name: "QAbstractSocket::BindFlag"
-        flags: "QAbstractSocket::BindMode"
     }
     
     EnumType{
         name: "QAbstractSocket::PauseMode"
-        flags: "QAbstractSocket::PauseModes"
     }
     
     EnumType{
@@ -150,7 +146,6 @@ TypeSystem{
     
     EnumType{
         name: "QNetworkInterface::InterfaceFlag"
-        flags: "QNetworkInterface::InterfaceFlags"
     }
     
     EnumType{
@@ -200,13 +195,11 @@ TypeSystem{
     
     EnumType{
         name: "QLocalSocket::SocketOption"
-        flags: "QLocalSocket::SocketOptions"
         since: [6, 2]
     }
     
     EnumType{
         name: "QLocalServer::SocketOption"
-        flags: "QLocalServer::SocketOptions"
     }
     
     EnumType{
@@ -281,7 +274,6 @@ TypeSystem{
     
     EnumType{
         name: "QNetworkConfiguration::StateFlag"
-        flags: "QNetworkConfiguration::StateFlags"
         until: 5
     }
     
@@ -292,7 +284,6 @@ TypeSystem{
     
     EnumType{
         name: "QNetworkConfigurationManager::Capability"
-        flags: "QNetworkConfigurationManager::Capabilities"
         until: 5
     }
     
@@ -308,7 +299,6 @@ TypeSystem{
     
     EnumType{
         name: "QNetworkSession::UsagePolicy"
-        flags: "QNetworkSession::UsagePolicies"
         until: 5
     }
     
@@ -333,7 +323,6 @@ TypeSystem{
     
     EnumType{
         name: "QHostAddress::ConversionModeFlag"
-        flags: "QHostAddress::ConversionMode"
         since: [5, 8]
     }
     
@@ -368,7 +357,6 @@ TypeSystem{
     
     EnumType{
         name: "QHstsPolicy::PolicyFlag"
-        flags: "QHstsPolicy::PolicyFlags"
         since: [5, 9]
     }
     
@@ -398,7 +386,6 @@ TypeSystem{
     
     EnumType{
         name: "QNetworkInformation::Feature"
-        flags: "QNetworkInformation::Features"
         since: [6, 1]
     }
     
@@ -435,10 +422,6 @@ TypeSystem{
     
     ValueType{
         name: "QNetworkCacheMetaData"
-        ModifyFunction{
-            signature: "operator=(QNetworkCacheMetaData)"
-            remove: RemoveFlag.All
-        }
     }
     
     ObjectType{
@@ -457,10 +440,6 @@ TypeSystem{
     
     ValueType{
         name: "QNetworkProxyQuery"
-        ModifyFunction{
-            signature: "operator=(QNetworkProxyQuery)"
-            remove: RemoveFlag.All
-        }
     }
     
     ObjectType{
@@ -479,17 +458,6 @@ TypeSystem{
                 index: 2
                 invalidateAfterUse: true
                 NoNullPointer{
-                }
-                ReplaceType{
-                    modifiedType: "io.qt.network.QAuthenticator"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QAuthenticator* %out  = qtjambi_cast<QAuthenticator*>(%env, %scope, %in);"}
                 }
             }
         }
@@ -512,7 +480,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "setLocalPort(unsigned short)"
+            signature: "setLocalPort(quint16)"
             ModifyArgument{
                 index: 1
                 ReplaceType{
@@ -521,7 +489,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "setPeerPort(unsigned short)"
+            signature: "setPeerPort(quint16)"
             ModifyArgument{
                 index: 1
                 ReplaceType{
@@ -530,7 +498,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "connectToHost(QString, unsigned short, QFlags<QIODevice::OpenModeFlag>,QAbstractSocket::NetworkLayerProtocol)"
+            signature: "connectToHost(QString, quint16, QIODevice::OpenMode,QAbstractSocket::NetworkLayerProtocol)"
             ModifyArgument{
                 index: 2
                 ReplaceType{
@@ -540,7 +508,7 @@ TypeSystem{
             until: 5
         }
         ModifyFunction{
-            signature: "connectToHost(QString, unsigned short, QFlags<QIODeviceBase::OpenModeFlag>,QAbstractSocket::NetworkLayerProtocol)"
+            signature: "connectToHost(QString, quint16, QIODeviceBase::OpenMode,QAbstractSocket::NetworkLayerProtocol)"
             ModifyArgument{
                 index: 2
                 ReplaceType{
@@ -550,7 +518,7 @@ TypeSystem{
             since: 6
         }
         ModifyFunction{
-            signature: "connectToHost(QHostAddress, unsigned short, QFlags<QIODevice::OpenModeFlag>)"
+            signature: "connectToHost(QHostAddress, quint16, QIODevice::OpenMode)"
             ModifyArgument{
                 index: 2
                 ReplaceType{
@@ -560,7 +528,7 @@ TypeSystem{
             until: 5
         }
         ModifyFunction{
-            signature: "connectToHost(QHostAddress, unsigned short, QFlags<QIODeviceBase::OpenModeFlag>)"
+            signature: "connectToHost(QHostAddress, quint16, QIODeviceBase::OpenMode)"
             ModifyArgument{
                 index: 2
                 ReplaceType{
@@ -578,16 +546,16 @@ TypeSystem{
             access: Modification.NonFinal
         }
         ModifyFunction{
-            signature: "setReadBufferSize(long long)"
+            signature: "setReadBufferSize(qint64)"
             access: Modification.NonFinal
         }
         ModifyFunction{
-            signature: "setSocketDescriptor(qintptr,QAbstractSocket::SocketState,QFlags<QIODevice::OpenModeFlag>)"
+            signature: "setSocketDescriptor(qintptr,QAbstractSocket::SocketState,QIODevice::OpenMode)"
             access: Modification.NonFinal
             until: 5
         }
         ModifyFunction{
-            signature: "setSocketDescriptor(qintptr,QAbstractSocket::SocketState,QFlags<QIODeviceBase::OpenModeFlag>)"
+            signature: "setSocketDescriptor(qintptr,QAbstractSocket::SocketState,QIODeviceBase::OpenMode)"
             access: Modification.NonFinal
             since: 6
         }
@@ -600,7 +568,7 @@ TypeSystem{
             access: Modification.NonFinal
         }
         ModifyFunction{
-            signature: "bind(QHostAddress, unsigned short, QFlags<QAbstractSocket::BindFlag>)"
+            signature: "bind(QHostAddress, quint16, QAbstractSocket::BindMode)"
             ModifyArgument{
                 index: 2
                 ReplaceType{
@@ -609,7 +577,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "bind(unsigned short, QFlags<QAbstractSocket::BindFlag>)"
+            signature: "bind(quint16, QAbstractSocket::BindMode)"
             ModifyArgument{
                 index: 1
                 ReplaceType{
@@ -640,7 +608,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "listen(QHostAddress,unsigned short)"
+            signature: "listen(QHostAddress,quint16)"
             ModifyArgument{
                 index: 2
                 ReplaceType{
@@ -699,18 +667,7 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.network.QSslPreSharedKeyAuthenticator"
-                }
                 NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSslPreSharedKeyAuthenticator* %out  = qtjambi_cast<QSslPreSharedKeyAuthenticator*>(%env, %scope, %in);"}
                 }
             }
         }
@@ -733,7 +690,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "readDatagram(char*,long long,QHostAddress*,unsigned short*)"
+            signature: "readDatagram(char*,qint64,QHostAddress*,quint16*)"
             ModifyArgument{
                 index: 0
                 ConversionRule{
@@ -773,13 +730,13 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "unsigned short port(0);\n"+
-                                  "unsigned short* %out = %2 ? &port : nullptr;"}
+                    Text{content: "ushort port(0);\n"+
+                                  "ushort* %out = %2 ? &port : nullptr;"}
                 }
             }
         }
         ModifyFunction{
-            signature: "writeDatagram(const char*,long long,QHostAddress,unsigned short)"
+            signature: "writeDatagram(const char*,qint64,QHostAddress,quint16)"
             ModifyArgument{
                 index: 1
                 ArrayType{
@@ -794,16 +751,9 @@ TypeSystem{
         name: "QHttpPart"
         ModifyFunction{
             signature: "operator=(const QHttpPart &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                replaceValue: "this"
-            }
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
         ModifyFunction{
@@ -889,7 +839,7 @@ TypeSystem{
             ppCondition: "!defined(QT_NO_SSL)"
         }
         ModifyFunction{
-            signature: "connectToHostEncrypted(const QString &, unsigned short, const QSslConfiguration &)"
+            signature: "connectToHostEncrypted(const QString &, quint16, const QSslConfiguration &)"
             ppCondition: "!defined(QT_NO_SSL)"
         }
         ModifyFunction{
@@ -940,18 +890,7 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.network.QAuthenticator"
-                }
                 NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QAuthenticator* %out  = qtjambi_cast<QAuthenticator*>(%env, %scope, %in);"}
                 }
             }
         }
@@ -960,18 +899,7 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.network.QSslPreSharedKeyAuthenticator"
-                }
                 NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSslPreSharedKeyAuthenticator* %out  = qtjambi_cast<QSslPreSharedKeyAuthenticator*>(%env, %scope, %in);"}
                 }
             }
         }
@@ -980,18 +908,16 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.network.QAuthenticator"
-                }
                 NoNullPointer{
                 }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QAuthenticator* %out  = qtjambi_cast<QAuthenticator*>(%env, %scope, %in);"}
+            }
+        }
+        ModifyFunction{
+            signature: "proxyFactory()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
                 }
             }
         }
@@ -1025,19 +951,6 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.network.QSslConfiguration"
-                }
-                NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSslConfiguration& %out  = qtjambi_cast<QSslConfiguration&>(%env, %scope, %in);"}
-                }
             }
         }
         ModifyFunction{
@@ -1045,18 +958,7 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.network.QSslPreSharedKeyAuthenticator"
-                }
                 NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSslPreSharedKeyAuthenticator* %out  = qtjambi_cast<QSslPreSharedKeyAuthenticator*>(%env, %scope, %in);"}
                 }
             }
         }
@@ -1065,38 +967,21 @@ TypeSystem{
     ValueType{
         name: "QHostAddress"
         ModifyFunction{
-            signature: "QHostAddress(unsigned char*)"
+            signature: "QHostAddress(quint8*)"
             remove: RemoveFlag.All
             until: 5
         }
         ModifyFunction{
-            signature: "QHostAddress(const unsigned char*)"
+            signature: "QHostAddress(const quint8*)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "setAddress(unsigned char*)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setAddress(const unsigned char*)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator=(QString)"
+            signature: "setAddress(quint8*)"
             remove: RemoveFlag.All
             until: 5
         }
         ModifyFunction{
-            signature: "operator=(QHostAddress)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator=(const QHostAddress &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator=(QHostAddress::SpecialAddress)"
+            signature: "setAddress(const quint8*)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -1113,10 +998,6 @@ TypeSystem{
                 location: Include.Global
             }
         }
-        ModifyFunction{
-            signature: "operator=(QHostInfo)"
-            remove: RemoveFlag.All
-        }
         InjectCode{
             target: CodeClass.Java
             ImportFile{
@@ -1127,12 +1008,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "lookupHost(QString, QObject*, const char*)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning
@@ -1161,28 +1036,16 @@ TypeSystem{
     
     ValueType{
         name: "QNetworkAddressEntry"
-        ModifyFunction{
-            signature: "operator=(QNetworkAddressEntry)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QNetworkInterface"
-        ModifyFunction{
-            signature: "operator=(QNetworkInterface)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QNetworkProxy"
         ModifyFunction{
-            signature: "operator=(QNetworkProxy)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "QNetworkProxy(QNetworkProxy::ProxyType,QString,unsigned short,QString,QString)"
+            signature: "QNetworkProxy(QNetworkProxy::ProxyType,QString,quint16,QString,QString)"
             access: Modification.Private
             ModifyArgument{
                 index: 3
@@ -1192,7 +1055,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "setPort(unsigned short)"
+            signature: "setPort(quint16)"
             ModifyArgument{
                 index: 1
                 ReplaceType{
@@ -1216,13 +1079,36 @@ TypeSystem{
         name: "QIPv6Address"
         ModifyFunction{
             signature: "operator[](int)const"
-            Remove{
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{
+                    index: 1
+                    metaName: "index"
+                }
+                Text{content: "if(index<0 || index>15)\n"+
+                              "    throw new ArrayIndexOutOfBoundsException(index);"}
             }
         }
         ModifyFunction{
             signature: "operator[](int)"
-            Remove{
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{
+                    index: 1
+                    metaName: "index"
+                }
+                Text{content: "if(index<0 || index>15)\n"+
+                              "    throw new ArrayIndexOutOfBoundsException(index);"}
             }
+        }
+        InjectCode{
+            target: CodeClass.Java
+            Text{content: "public QIPv6Address(byte[] c){\n"+
+                          "    this();\n"+
+                          "    setC(c);\n"+
+                          "}"}
         }
     }
     
@@ -1230,32 +1116,19 @@ TypeSystem{
         name: "QAuthenticator"
         ModifyFunction{
             signature: "operator=(QAuthenticator)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                NoNullPointer{
-                }
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
     }
     
     ValueType{
         name: "QNetworkCookie"
-        ModifyFunction{
-            signature: "operator=(QNetworkCookie)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QNetworkRequest"
-        ModifyFunction{
-            signature: "operator=(QNetworkRequest)"
-            remove: RemoveFlag.All
-        }
         ModifyFunction{
             signature: "setOriginatingObject(QObject*)"
             ModifyArgument{
@@ -1298,10 +1171,6 @@ TypeSystem{
     ValueType{
         name: "QSslCipher"
         ppCondition: "!defined(QT_NO_SSL)"
-        ModifyFunction{
-            signature: "operator=(QSslCipher)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
@@ -1309,14 +1178,9 @@ TypeSystem{
         ppCondition: "!defined(QT_NO_SSL)"
         ModifyFunction{
             signature: "operator=(QSslPreSharedKeyAuthenticator)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                NoNullPointer{
-                }
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
     }
@@ -1330,19 +1194,11 @@ TypeSystem{
     ValueType{
         name: "QSslError"
         ppCondition: "!defined(QT_NO_SSL)"
-        ModifyFunction{
-            signature: "operator=(QSslError)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QSslKey"
         ppCondition: "!defined(QT_NO_SSL)"
-        ModifyFunction{
-            signature: "operator=(QSslKey)"
-            remove: RemoveFlag.All
-        }
         ModifyFunction{
             signature: "QSslKey(Qt::HANDLE, QSsl::KeyType)"
             ModifyArgument{
@@ -1359,41 +1215,10 @@ TypeSystem{
         name: "QSslCertificate"
         ppCondition: "!defined(QT_NO_SSL)"
         ModifyFunction{
-            signature: "operator=(QSslCertificate)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
             signature: "importPkcs12(QIODevice *, QSslKey *, QSslCertificate *, QList<QSslCertificate > *, const QByteArray &)"
             ModifyArgument{
                 index: 2
-                ReplaceType{
-                    modifiedType: "io.qt.network.QSslKey"
-                }
                 NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSslKey* %out  = qtjambi_cast<QSslKey*>(%env, %scope, %in);"}
-                }
-            }
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "io.qt.network.QSslCertificate"
-                }
-                NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSslCertificate* %out  = qtjambi_cast<QSslCertificate*>(%env, %scope, %in);"}
                 }
             }
         }
@@ -1402,10 +1227,6 @@ TypeSystem{
     ValueType{
         name: "QSslCertificateExtension"
         ppCondition: "!defined(QT_NO_SSL)"
-        ModifyFunction{
-            signature: "operator=(QSslCertificateExtension)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
@@ -1427,36 +1248,23 @@ TypeSystem{
             signature: "setDefaultDtlsConfiguration(const QSslConfiguration &)"
             ppCondition: "QT_CONFIG(dtls)"
         }
-        ModifyFunction{
-            signature: "operator=(QSslConfiguration)"
-            remove: RemoveFlag.All
-        }
         ModifyField{
             name: "ALPNProtocolHTTP2"
             read: true
             write: false
             access: Modification.Private
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
         }
         ModifyField{
             name: "NextProtocolHttp1_1"
             read: true
             write: false
             access: Modification.Private
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
         }
         ModifyField{
             name: "NextProtocolSpdy3_0"
             read: true
             write: false
             access: Modification.Private
-            ReplaceType{
-                modifiedType: "java.lang.String"
-            }
             until: 5
         }
         InjectCode{
@@ -1500,10 +1308,6 @@ TypeSystem{
     ValueType{
         name: "QSslDiffieHellmanParameters"
         ppCondition: "!defined(QT_NO_SSL)"
-        ModifyFunction{
-            signature: "operator=(QSslDiffieHellmanParameters)"
-            remove: RemoveFlag.All
-        }
     }
     
     ObjectType{
@@ -1514,18 +1318,7 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.network.QSslPreSharedKeyAuthenticator"
-                }
                 NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSslPreSharedKeyAuthenticator* %out  = qtjambi_cast<QSslPreSharedKeyAuthenticator*>(%env, %scope, %in);"}
                 }
             }
         }
@@ -1533,10 +1326,6 @@ TypeSystem{
     
     ValueType{
         name: "QNetworkConfiguration"
-        ModifyFunction{
-            signature: "operator=(QNetworkConfiguration)"
-            remove: RemoveFlag.All
-        }
         until: 5
     }
     
@@ -1568,67 +1357,35 @@ TypeSystem{
     
     ValueType{
         name: "QDnsDomainNameRecord"
-        ModifyFunction{
-            signature: "operator=(const QDnsDomainNameRecord&)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QDnsHostAddressRecord"
-        ModifyFunction{
-            signature: "operator=(const QDnsHostAddressRecord&)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QDnsMailExchangeRecord"
-        ModifyFunction{
-            signature: "operator=(const QDnsMailExchangeRecord&)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QDnsServiceRecord"
-        ModifyFunction{
-            signature: "operator=(const QDnsServiceRecord&)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QDnsTextRecord"
-        ModifyFunction{
-            signature: "operator=(const QDnsTextRecord&)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QNetworkDatagram"
-        ModifyFunction{
-            signature: "operator=(const QNetworkDatagram&)"
-            remove: RemoveFlag.All
-        }
     }
     
     ValueType{
         name: "QHstsPolicy"
-        ModifyFunction{
-            signature: "operator=(const QHstsPolicy&)"
-            remove: RemoveFlag.All
-        }
         since: [5, 9]
     }
     
     ValueType{
         name: "QOcspResponse"
-        ModifyFunction{
-            signature: "operator=(const QOcspResponse&)"
-            remove: RemoveFlag.All
-        }
         since: [5, 13]
     }
     
@@ -1704,18 +1461,7 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.network.QSslPreSharedKeyAuthenticator"
-                }
                 NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSslPreSharedKeyAuthenticator* %out  = qtjambi_cast<QSslPreSharedKeyAuthenticator*>(%env, %scope, %in);"}
                 }
             }
         }
@@ -1737,7 +1483,7 @@ TypeSystem{
     ObjectType{
         name: "QDtlsClientVerifier"
         ModifyFunction{
-            signature: "verifyClient(QUdpSocket *, const QByteArray &, const QHostAddress &, unsigned short)"
+            signature: "verifyClient(QUdpSocket *, const QByteArray &, const QHostAddress &, quint16)"
             ModifyArgument{
                 index: 1
                 ReferenceCount{
@@ -1750,19 +1496,11 @@ TypeSystem{
     
     ValueType{
         name: "QHttp2Configuration"
-        ModifyFunction{
-            signature: "operator=(const QHttp2Configuration &)"
-            remove: RemoveFlag.All
-        }
         since: [5, 14]
     }
 
     ValueType{
         name: "QHttp1Configuration"
-        ModifyFunction{
-            signature: "operator=(const QHttp1Configuration &)"
-            remove: RemoveFlag.All
-        }
         since: [6, 5]
     }
     

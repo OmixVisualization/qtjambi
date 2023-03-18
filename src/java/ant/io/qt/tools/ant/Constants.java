@@ -55,6 +55,7 @@ public abstract class Constants {
     public static final String TRANSLATIONSDIR          = "qtjambi.qt.translationsdir";
     public static final String RESOURCESDIR             = "qtjambi.qt.resourcesdir";
     public static final String GENERATOR_PREPROC_DEFINES = "qtjambi.generator.preproc.defines";
+    public static final String GENERATOR_PREPROC_FILE    = "qtjambi.generator.preproc.file";
     public static final String GENERATOR_STATICLIBS      = "qtjambi.generator.staticlibs";
     public static final String JAVALIBDIR               = "qtjambi.java.library.path";
     public static final String JAMBILIBDIR              = "qtjambi.jambi.libdir";
@@ -153,6 +154,7 @@ public abstract class Constants {
     public static final String EGLDEVICEINTEGRATION = "qtjambi.egldeviceintegration";
     public static final String WAYLANDCLIENT 	  = "qtjambi.waylandclient";
     public static final String QTJAMBI_MODULES    = "qtjambi.modules";
+    public static final String QTJAMBI_FORCE_DEBUG_INFO    = "qtjambi.force.debug.info";
 
     public static final String PLUGINS_ACCESSIBLE_QTACCESSIBLEWIDGETS  = "qtjambi.plugins.accessible.qtaccessiblewidgets";
 

@@ -39,15 +39,11 @@
 #define CPP_HEADER_GENERATOR
 
 #include "cppgenerator.h"
-#include "metainfogenerator.h"
 #include "metalang.h"
 
 class CppHeaderGenerator : public CppGenerator {
     public:
-        CppHeaderGenerator(PriGenerator *pri)
-            : CppGenerator(pri){
-        }
-
+        CppHeaderGenerator(PriGenerator *pri);
         QString fileNameForClass(const MetaClass *cls) const override;
         QString fileNameForFunctional(const MetaFunctional *cls) const override;
 
@@ -61,19 +57,9 @@ class CppHeaderGenerator : public CppGenerator {
         void writeFieldAccessors(QTextStream &s, const MetaField *java_field);
         static void writeInjectedCode(QTextStream &s, const MetaClass *java_class, const QList<CodeSnip::Position>& positions);
         static void writeInjectedCode(QTextStream &s, const MetaFunctional *java_class, const QList<CodeSnip::Position>& positions);
-
-        bool shouldGenerate(const MetaClass *java_class) const override {
-            return (java_class->generateShellClass()
-                    && CppGenerator::shouldGenerate(java_class))
-                   || (  !java_class->isFake()
-                       && java_class->queryFunctions(MetaClass::Signals).size() > 0
-                       && (java_class->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp));
-        }
-
-        bool shouldGenerate(const MetaFunctional *functional) const override {
-            return (!(functional->typeEntry()->codeGeneration() & TypeEntry::GenerateNoShell)
-                        && CppGenerator::shouldGenerate(functional));
-        }
+        bool shouldGenerate(const MetaClass *java_class) const override;
+        bool shouldGenerate(const MetaFunctional *functional) const override;
+        static bool shouldGenerateHeaders(const MetaClass *java_class);
 };
 
 #endif // CPP_HEADER_GENERATOR

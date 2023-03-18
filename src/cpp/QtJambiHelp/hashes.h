@@ -34,11 +34,12 @@
 #include <QtHelp/QtHelp>
 #include <QtJambi/Global>
 
-inline hash_type qHash(const QHelpFilterData &value)
+inline hash_type qHash(const QHelpFilterData &value, hash_type seed = 0)
 {
-    hash_type hashCode = qHash(value.components());
-    hashCode = hashCode * 31 + qHash(value.versions());
-    return hashCode;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.components());
+    seed = hash(seed, value.versions());
+    return seed;
 }
 
 #endif // QTJAMBI_HELP_HASHES_H

@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.remoteobjects"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtRemoteObjects"
     module: "qtjambi.remoteobjects"
     description: "Provides an easy to use mechanism for sharing a QObject's API (Properties/Signals/Slots) between processes or devices."
@@ -96,7 +96,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "operator<<(QDataStream &, QFlags<QItemSelectionModel::SelectionFlag>)"
+            signature: "operator<<(QDataStream &, QItemSelectionModel::SelectionFlags)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -104,7 +104,7 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "operator>>(QDataStream &, QFlags<QItemSelectionModel::SelectionFlag> &)"
+            signature: "operator>>(QDataStream &, QItemSelectionModel::SelectionFlags &)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -226,18 +226,6 @@ TypeSystem{
     }
     
     EnumType{
-        name: "QRemoteObjectNode::ErrorCode"
-    }
-    
-    EnumType{
-        name: "QRemoteObjectReplica::State"
-    }
-    
-    EnumType{
-        name: "QRemoteObjectReplica::ConstructorType"
-    }
-    
-    EnumType{
         name: "QRemoteObjectPendingCall::Error"
     }
     
@@ -297,6 +285,9 @@ TypeSystem{
     
     ObjectType{
         name: "QRemoteObjectNode"
+        EnumType{
+            name: "ErrorCode"
+        }
         ModifyFunction{
             signature: "setPersistedStore(QRemoteObjectAbstractPersistedStore*)"
             ModifyArgument{
@@ -316,6 +307,10 @@ TypeSystem{
                     action: ReferenceCount.Add
                 }
             }
+        }
+        ModifyFunction{
+            signature: "acquire<ObjectType>(QString)"
+            remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "instances<T>() const"
@@ -353,6 +348,14 @@ TypeSystem{
     
     ObjectType{
         name: "QRemoteObjectReplica"
+        Rejection{fieldName: "d_impl"}
+        EnumType{
+            name: "State"
+        }
+
+        EnumType{
+            name: "ConstructorType"
+        }
         ModifyFunction{
             signature: "setNode(QRemoteObjectNode*)"
             ModifyArgument{
@@ -426,13 +429,23 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.remoteobjects.IoDeviceBase$ReadResult"
+                    modifiedType: "io.qt.remoteobjects.IoDeviceBase$@Nullable ReadResult"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "if(%in){\n"+
                                   "    %out = Java::QtRemoteObjects::IoDeviceBase$ReadResult::newInstance(%env, qtjambi_cast<jobject>(%env, __qt_%1), qtjambi_cast<jobject>(%env, __qt_%2));\n"+
                                   "}"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "stream()"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Dependent
                 }
             }
         }
@@ -484,7 +497,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.remoteobjects.QtROIoDeviceBase$ReadResult"
+                    modifiedType: "io.qt.remoteobjects.QtROIoDeviceBase$@Nullable ReadResult"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -542,7 +555,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.remoteobjects.ServerIoDevice$ReadResult"
+                    modifiedType: "io.qt.remoteobjects.ServerIoDevice$@Nullable ReadResult"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -618,7 +631,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.remoteobjects.ClientIoDevice$ReadResult"
+                    modifiedType: "io.qt.remoteobjects.ClientIoDevice$@Nullable ReadResult"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -653,19 +666,11 @@ TypeSystem{
     
     ValueType{
         name: "QRemoteObjectSourceLocationInfo"
-        ModifyFunction{
-            signature: "operator=(const QRemoteObjectSourceLocationInfo &)"
-            remove: RemoveFlag.All
-        }
     }
     
     InterfaceType{
         name: "QRemoteObjectPendingCall"
         isValue: true
-        ModifyFunction{
-            signature: "operator=(const QRemoteObjectPendingCall &)"
-            remove: RemoveFlag.All
-        }
         ModifyFunction{
             signature: "waitForFinished(int)"
             ModifyArgument{

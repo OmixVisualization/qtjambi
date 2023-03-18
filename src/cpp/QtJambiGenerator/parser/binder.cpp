@@ -64,12 +64,19 @@ void binder_default_message_handler(const std::string &str) {
 
 MessageHandler Binder::_M_message_handler = binder_default_message_handler;
 
-Binder::Binder(CodeModel *__model, LocationManager &__location, Control *__control)
+Binder::Binder(uint qtVersionMajor, uint qtVersionMinor, uint qtVersionPatch, const TS::TypeDatabase& database,
+               CodeModelPtr __model, LocationManager &__location, Control *__control)
         : _M_model(__model),
         _M_location(__location),
         _M_token_stream(&_M_location.token_stream),
         _M_control(__control),
         _M_current_function_type(CodeModel::Normal),
+        _M_current_is_template(false),
+        m_qtVersionMajor(qtVersionMajor),
+        m_qtVersionMinor(qtVersionMinor),
+        m_qtVersionPatch(qtVersionPatch),
+        m_database(database),
+        class_cc(this),
         type_cc(this),
         name_cc(this),
         decl_cc(this) {
@@ -85,18 +92,10 @@ Binder::Binder(CodeModel *__model, LocationManager &__location, Control *__contr
 Binder::~Binder() {
 }
 
-FileModelItem Binder::run(AST *node) {
-    FileModelItem old = _M_current_file;
+void Binder::run(AST *node) {
     _M_current_access = CodeModel::Public;
-
-    _M_current_file = model()->create<FileModelItem>();
-    updateItemPosition(_M_current_file->toItem(), node);
+    updateItemPosition(_M_model->globalNamespace()->toItem(), node);
     visit(node);
-    FileModelItem result = _M_current_file;
-
-    _M_current_file = old; // restore
-
-    return result;
 }
 
 ScopeModelItem Binder::currentScope() {
@@ -105,7 +104,14 @@ ScopeModelItem Binder::currentScope() {
     else if (_M_current_namespace)
         return model_static_cast<ScopeModelItem>(_M_current_namespace);
 
-    return model_static_cast<ScopeModelItem>(_M_current_file);
+    return model_static_cast<ScopeModelItem>(_M_model->globalNamespace());
+}
+
+
+bool Binder::changeIsTemplate(bool currentIsTemplate){
+    bool c = _M_current_is_template;
+    _M_current_is_template = currentIsTemplate;
+    return c;
 }
 
 TemplateParameterList Binder::changeTemplateParameters(TemplateParameterList templateParameters) {
@@ -246,22 +252,71 @@ void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_
 
     CodeModelFinder finder(model(), this);
     ScopeModelItem symbolScope = finder.resolveScope(id, currentScope());
-    if (! symbolScope) {
-        name_cc.run(id);
-        _M_message_handler(std::string("scope not found for symbol: ") + qPrintable(name_cc.name()));
-        return;
+    if (!symbolScope) {
+        name_cc.run(declarator->id);
+        QStringList qualifiedName = name_cc.qualifiedName();
+        QString name = qualifiedName.isEmpty() ? QString() : qualifiedName.takeLast();
+        bool isTemplate = false;
+        for(QString& n : qualifiedName){
+            auto idx = n.indexOf('<');
+            if(idx>0){
+                n = n.mid(0, idx);
+                isTemplate = true;
+            }
+        }
+        if(currentScope()){
+            if(isTemplate){
+                symbolScope = model_dynamic_cast<ScopeModelItem> (model()->findItem(qualifiedName, currentScope()));
+            }
+            if(!symbolScope){
+                if (TypeAliasModelItem __alias = currentScope()->findTypeAlias(qualifiedName.join("::"))){
+                    const TypeInfo& typeInfo = __alias->type();
+                    if(!typeInfo.isConstant()
+                            && !typeInfo.isFunctionPointer()
+                            && !typeInfo.isVariadic()
+                            && !typeInfo.isVolatile()
+                            && typeInfo.getReferenceType()==TypeInfo::NoReference
+                            && typeInfo.indirections().isEmpty()
+                            && typeInfo.arguments().isEmpty()){
+                        QString typeName = typeInfo.toString();
+                        symbolScope = model_dynamic_cast<ScopeModelItem> (model()->findItem(typeInfo.qualifiedName(), currentScope()));
+                    }
+                }
+            }
+        }
+        if(!symbolScope && isTemplate){
+            symbolScope = model_dynamic_cast<ScopeModelItem> (model()->findItem(qualifiedName, model()->globalNamespace()));
+        }
+        if(!symbolScope){
+            if (TypeAliasModelItem __alias = model()->globalNamespace()->findTypeAlias(qualifiedName.join("::"))){
+                const TypeInfo& typeInfo = __alias->type();
+                if(!typeInfo.isConstant()
+                        && !typeInfo.isFunctionPointer()
+                        && !typeInfo.isVariadic()
+                        && !typeInfo.isVolatile()
+                        && typeInfo.getReferenceType()==TypeInfo::NoReference
+                        && typeInfo.indirections().isEmpty()
+                        && typeInfo.arguments().isEmpty()){
+                    QString typeName = typeInfo.toString();
+                    symbolScope = model_dynamic_cast<ScopeModelItem> (model()->findItem(typeInfo.qualifiedName(), model()->globalNamespace()));
+                }
+            }
+        }
+        if (!symbolScope) {
+            if(_M_message_handler && !isTemplate)
+                _M_message_handler(std::string("scope not found for symbol: ") + qPrintable(name_cc.name()));
+            return;
+        }
     }
 
     decl_cc.run(declarator);
 
     if (decl_cc.isFunction()) {
-        name_cc.run(id->unqualified_name);
-
         FunctionModelItem fun = model()->create<FunctionModelItem>();
         updateItemPosition(fun->toItem(), node);
         fun->setAccessPolicy(_M_current_access);
         fun->setFunctionType(_M_current_function_type);
-        fun->setName(name_cc.name());
+        fun->setName(decl_cc.id().split("::").last());
         fun->setAbstract(false);
         if(init_declarator->initializer){
             if(init_declarator->initializer->initializer_clause
@@ -299,7 +354,11 @@ void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_
             }
         }
         fun->setDeclFinal(declarator->decl_final != nullptr);
+        fun->setTemplate(_M_current_is_template);
         fun->setTemplateParameters(_M_current_template_parameters);
+        if(_M_current_is_template){
+            fun->setTemplateInstantiations(name_cc.templateArgumentTypes());
+        }
         applyStorageSpecifiers(node->storage_specifiers, model_static_cast<MemberModelItem>(fun));
         applyFunctionSpecifiers(node->function_specifiers, fun);
         if(fun->isDeprecated() && node->deprecationComment){
@@ -324,13 +383,28 @@ void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_
         }
 
         // build the type
-        TypeInfo typeInfo = CompilerUtils::typeDescription(node->type_specifier,
-                            declarator,
-                            this);
+        type_cc.run(node->type_specifier);
+        TypeInfo typeInfo;
+        typeInfo.setQualifiedName(type_cc.qualifiedName());
+        typeInfo.setVariadic(type_cc.isVariadic());
+        typeInfo.setConstant(type_cc.isConstant());
+        typeInfo.setVolatile(type_cc.isVolatile());
+        typeInfo.setReferenceType(TypeInfo::ReferenceType(decl_cc.getReferenceType()));
+        typeInfo.setIndirections(decl_cc.indirection());
+        typeInfo.setArrayElements(decl_cc.arrayElements());
+        typeInfo.setArguments(type_cc.templateArgumentTypes());
+        typeInfo.setFunctionalArgumentTypes(type_cc.functionalArgumentTypes());
+        typeInfo.setFunctionalArgumentNames(type_cc.functionalArgumentNames());
+        if(!type_cc.functionalReturnType().qualifiedName().isEmpty())
+            typeInfo.setFunctionalReturnType(type_cc.functionalReturnType());
 
         fun->setType(qualifyType(typeInfo, symbolScope->qualifiedName()));
-
-
+        if(decl_cc.operatorType()==OperatorType::TypeCast){
+            if(!decl_cc.operatorCastType().qualifiedName().isEmpty()){
+                fun->setType(decl_cc.operatorCastType());
+            }
+        }
+        fun->setOperatorType(decl_cc.operatorType());
         fun->setVariadics(decl_cc.isVariadics());
 
         // ... and the signature
@@ -361,13 +435,30 @@ void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_
     } else {
         VariableModelItem var = model()->create<VariableModelItem>();
         updateItemPosition(var->toItem(), node);
+        var->setTemplate(_M_current_is_template);
         var->setTemplateParameters(_M_current_template_parameters);
+        if(_M_current_is_template){
+            var->setTemplateInstantiations(name_cc.templateArgumentTypes());
+        }
         var->setAccessPolicy(_M_current_access);
         name_cc.run(id->unqualified_name);
         var->setName(name_cc.name());
-        TypeInfo typeInfo = CompilerUtils::typeDescription(node->type_specifier,
-                            declarator,
-                            this);
+
+        type_cc.run(node->type_specifier);
+        TypeInfo typeInfo;
+        typeInfo.setQualifiedName(type_cc.qualifiedName());
+        typeInfo.setVariadic(type_cc.isVariadic());
+        typeInfo.setConstant(type_cc.isConstant());
+        typeInfo.setVolatile(type_cc.isVolatile());
+        typeInfo.setReferenceType(TypeInfo::ReferenceType(decl_cc.getReferenceType()));
+        typeInfo.setIndirections(decl_cc.indirection());
+        typeInfo.setArrayElements(decl_cc.arrayElements());
+        typeInfo.setArguments(type_cc.templateArgumentTypes());
+        typeInfo.setFunctionalArgumentTypes(type_cc.functionalArgumentTypes());
+        typeInfo.setFunctionalArgumentNames(type_cc.functionalArgumentNames());
+        if(!type_cc.functionalReturnType().qualifiedName().isEmpty())
+            typeInfo.setFunctionalReturnType(type_cc.functionalReturnType());
+
         if (node->type_specifier && node->type_specifier->cv) {
             const ListNode<std::size_t> *it = node->type_specifier->cv->toFront();
             const ListNode<std::size_t> *end = it;
@@ -390,12 +481,15 @@ void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_
         }
         if (declarator != init_declarator->declarator
                 && init_declarator->declarator->parameter_declaration_clause != nullptr) {
-            typeInfo.setFunctionPointer(true);
+            TypeInfo fpTypeInfo;
+            fpTypeInfo.setFunctionPointer(true);
+            fpTypeInfo.setFunctionalReturnType(typeInfo);
             decl_cc.run(init_declarator->declarator);
             for(const DeclaratorCompiler::Parameter& p : decl_cc.parameters()){
-                typeInfo.addArgument(p.type);
-                typeInfo.addArgumentName(p.name);
+                fpTypeInfo.addFunctionalArgumentType(p.type);
+                fpTypeInfo.addFunctionalArgumentName(p.name);
             }
+            typeInfo = fpTypeInfo;
         }
 
         var->setType(qualifyType(typeInfo, _M_context));
@@ -428,20 +522,70 @@ void Binder::visitFunctionDefinition(FunctionDefinitionAST *node) {
     CodeModelFinder finder(model(), this);
 
     ScopeModelItem functionScope = finder.resolveScope(declarator->id, scope);
-    if (_M_message_handler && ! functionScope) {
+    if (!functionScope) {
         name_cc.run(declarator->id);
-        _M_message_handler(std::string("scope not found for function definition: '")
-                           + qPrintable(name_cc.name())
-                           + std::string("' - definition *ignored*"));
-        return;
+        QStringList qualifiedName = name_cc.qualifiedName();
+        QString name = qualifiedName.isEmpty() ? QString() : qualifiedName.takeLast();
+        bool isTemplate = false;
+        for(QString& n : qualifiedName){
+            auto idx = n.indexOf('<');
+            if(idx>0){
+                n = n.mid(0, idx);
+                isTemplate = true;
+            }
+        }
+        if(scope){
+            if(isTemplate){
+                functionScope = model_dynamic_cast<ScopeModelItem> (model()->findItem(qualifiedName, scope));
+            }
+            if(!functionScope){
+                if (TypeAliasModelItem __alias = scope->findTypeAlias(qualifiedName.join("::"))){
+                    TypeInfo typeInfo = __alias->type();
+                    if(!typeInfo.isConstant()
+                            && !typeInfo.isFunctionPointer()
+                            && !typeInfo.isVariadic()
+                            && !typeInfo.isVolatile()
+                            && typeInfo.getReferenceType()==TypeInfo::NoReference
+                            && typeInfo.indirections().isEmpty()
+                            && typeInfo.arguments().isEmpty()){
+                        QString typeName = typeInfo.toString();
+                        functionScope = model_dynamic_cast<ScopeModelItem> (model()->findItem(typeInfo.qualifiedName(), scope));
+                    }
+                }
+            }
+        }
+        if(!functionScope && isTemplate){
+            functionScope = model_dynamic_cast<ScopeModelItem> (model()->findItem(qualifiedName, model()->globalNamespace()));
+        }
+        if(!functionScope){
+            if (TypeAliasModelItem __alias = model()->globalNamespace()->findTypeAlias(qualifiedName.join("::"))){
+                TypeInfo typeInfo = __alias->type();
+                if(!typeInfo.isConstant()
+                        && !typeInfo.isFunctionPointer()
+                        && !typeInfo.isVariadic()
+                        && !typeInfo.isVolatile()
+                        && typeInfo.getReferenceType()==TypeInfo::NoReference
+                        && typeInfo.indirections().isEmpty()
+                        && typeInfo.arguments().isEmpty()){
+                    QString typeName = typeInfo.toString();
+                    functionScope = model_dynamic_cast<ScopeModelItem> (model()->findItem(typeInfo.qualifiedName(), model()->globalNamespace()));
+                }
+            }
+        }
+        if(!functionScope){
+            if(_M_message_handler && !isTemplate)
+                _M_message_handler(std::string("scope not found for function definition: '")
+                               + qPrintable(name_cc.name())
+                               + std::string("' - definition *ignored*"));
+            return;
+        }
     }
 
     decl_cc.run(declarator);
 
     Q_ASSERT(! decl_cc.id().isEmpty());
 
-    FunctionDefinitionModelItem
-    old = changeCurrentFunction(_M_model->create<FunctionDefinitionModelItem>());
+    FunctionDefinitionModelItem old = changeCurrentFunction(_M_model->create<FunctionDefinitionModelItem>());
     _M_current_function->setScope(functionScope->qualifiedName());
     updateItemPosition(_M_current_function->toItem(), node);
 
@@ -450,12 +594,30 @@ void Binder::visitFunctionDefinition(FunctionDefinitionAST *node) {
     QString unqualified_name = name_cc.name();
 
     _M_current_function->setName(unqualified_name);
-    TypeInfo tmp_type = CompilerUtils::typeDescription(node->type_specifier,
-                        declarator, this);
 
-    _M_current_function->setType(qualifyType(tmp_type, _M_context));
+    type_cc.run(node->type_specifier);
+    TypeInfo typeInfo;
+    typeInfo.setQualifiedName(type_cc.qualifiedName());
+    typeInfo.setVariadic(type_cc.isVariadic());
+    typeInfo.setConstant(type_cc.isConstant());
+    typeInfo.setVolatile(type_cc.isVolatile());
+    typeInfo.setReferenceType(TypeInfo::ReferenceType(decl_cc.getReferenceType()));
+    typeInfo.setIndirections(decl_cc.indirection());
+    typeInfo.setArrayElements(decl_cc.arrayElements());
+    typeInfo.setArguments(type_cc.templateArgumentTypes());
+    typeInfo.setFunctionalArgumentTypes(type_cc.functionalArgumentTypes());
+    typeInfo.setFunctionalArgumentNames(type_cc.functionalArgumentNames());
+    if(!type_cc.functionalReturnType().qualifiedName().isEmpty())
+        typeInfo.setFunctionalReturnType(type_cc.functionalReturnType());
+
+    _M_current_function->setType(qualifyType(typeInfo, _M_context));
     _M_current_function->setAccessPolicy(_M_current_access);
     _M_current_function->setFunctionType(_M_current_function_type);
+    _M_current_function->setOperatorType(decl_cc.operatorType());
+    if(_M_current_function->operatorType()==OperatorType::TypeCast){
+        if(!decl_cc.operatorCastType().qualifiedName().isEmpty())
+            _M_current_function->setType(decl_cc.operatorCastType());
+    }
     if(declarator->fun_cv){
         for(int i=0; i<declarator->fun_cv->count(); ++i){
             int kind = decode_token(declarator->fun_cv->at(i)->element);
@@ -476,7 +638,11 @@ void Binder::visitFunctionDefinition(FunctionDefinitionAST *node) {
             _M_current_function->setReferenceType(TypeInfo::Reference);
         }
     }
+    _M_current_function->setTemplate(_M_current_is_template);
     _M_current_function->setTemplateParameters(_M_current_template_parameters);
+    if(_M_current_is_template){
+        _M_current_function->setTemplateInstantiations(name_cc.templateArgumentTypes());
+    }
     _M_current_function->setDeclFinal(declarator->decl_final != nullptr);
     _M_current_function->setHasBody(node->function_body);
 
@@ -553,70 +719,71 @@ void Binder::visitFunctionDefinition(FunctionDefinitionAST *node) {
 
 void Binder::visitTemplateDeclaration(TemplateDeclarationAST *node) {
     const ListNode<TemplateParameterAST*> *it = node->template_parameters;
-    if (!it)
-        return;
 
     TemplateParameterList savedTemplateParameters = changeTemplateParameters(TemplateParameterList());
+    bool oldIsTemplate = changeIsTemplate(true);
+    auto sc = qScopeGuard([&](){
+        changeTemplateParameters(savedTemplateParameters);
+        changeIsTemplate(oldIsTemplate);
+    });
 
-    it = it->toFront();
-    const ListNode<TemplateParameterAST*> *end = it;
+    if (it){
+        it = it->toFront();
+        const ListNode<TemplateParameterAST*> *end = it;
 
-    TemplateParameterList templateParameters;
-    do {
-        TemplateParameterAST *parameter = it->element;
-        TypeParameterAST *type_parameter = parameter->type_parameter;
+        do{
+            TemplateParameterAST *parameter = it->element;
+            TypeParameterAST *type_parameter = parameter->type_parameter;
 
-        QString defaultType;
-        NameAST *name;
-        bool isVariadic = false;
-        if (!type_parameter) {
-            // A hacky hack to work around missing support for parameter declarations in
-            // templates. We just need the to get the name of the variable, since we
-            // aren't actually compiling these anyway. We are still not supporting much
-            // more, but we are refusing to fail for a few more declarations
-            if (parameter->parameter_declaration == nullptr ||
-                    parameter->parameter_declaration->declarator == nullptr ||
-                    parameter->parameter_declaration->declarator->id == nullptr) {
-                changeTemplateParameters(savedTemplateParameters);
-                return;
+            QString defaultType;
+            NameAST *name;
+            bool isVariadic = false;
+            if (!type_parameter) {
+                // A hacky hack to work around missing support for parameter declarations in
+                // templates. We just need the to get the name of the variable, since we
+                // aren't actually compiling these anyway. We are still not supporting much
+                // more, but we are refusing to fail for a few more declarations
+                if (parameter->parameter_declaration == nullptr ||
+                        parameter->parameter_declaration->declarator == nullptr ||
+                        parameter->parameter_declaration->declarator->id == nullptr) {
+                    changeTemplateParameters(savedTemplateParameters);
+                    return;
 
+                }
+
+                isVariadic = parameter->parameter_declaration->declarator->ellipsis!=0 && parameter->parameter_declaration->declarator->ellipsis!=std::numeric_limits<std::size_t>::max();
+                name = parameter->parameter_declaration->declarator->id;
+                if(parameter->parameter_declaration->expression){
+                    defaultType = parameter->parameter_declaration->expression->toString(this->tokenStream());
+                }
+            } else {
+                int tk = decode_token(type_parameter->type);
+                if (tk != Token_typename && tk != Token_class) {
+                    return;
+                }
+                assert(tk == Token_typename || tk == Token_class);
+
+                isVariadic = type_parameter->ellipsis!=0 && type_parameter->ellipsis!=std::numeric_limits<std::size_t>::max();
+                name = type_parameter->name;
+                if(type_parameter->type_id){
+                    defaultType = type_parameter->type_id->toString(this->tokenStream());
+                }else if(type_parameter->type_expression){
+                    defaultType = type_parameter->type_expression->toString(this->tokenStream());
+                }
             }
 
-            isVariadic = parameter->parameter_declaration->declarator->ellipsis!=0 && parameter->parameter_declaration->declarator->ellipsis!=std::numeric_limits<std::size_t>::max();
-            name = parameter->parameter_declaration->declarator->id;
-            if(parameter->parameter_declaration->expression){
-                defaultType = parameter->parameter_declaration->expression->toString(this->tokenStream());
-            }
-        } else {
-            int tk = decode_token(type_parameter->type);
-            if (tk != Token_typename && tk != Token_class) {
-                changeTemplateParameters(savedTemplateParameters);
-                return;
-            }
-            assert(tk == Token_typename || tk == Token_class);
+            TemplateParameterModelItem p = model()->create<TemplateParameterModelItem>();
+            name_cc.run(name);
+            p->setName(name_cc.name());
+            p->setIsVaradic(isVariadic);
+            p->setDefaultValue(defaultType);
 
-            isVariadic = type_parameter->ellipsis!=0 && type_parameter->ellipsis!=std::numeric_limits<std::size_t>::max();
-            name = type_parameter->name;
-            if(type_parameter->type_id){
-                defaultType = type_parameter->type_id->toString(this->tokenStream());
-            }else if(type_parameter->type_expression){
-                defaultType = type_parameter->type_expression->toString(this->tokenStream());
-            }
-        }
-
-        TemplateParameterModelItem p = model()->create<TemplateParameterModelItem>();
-        name_cc.run(name);
-        p->setName(name_cc.name());
-        p->setIsVaradic(isVariadic);
-        p->setDefaultValue(defaultType);
-
-        _M_current_template_parameters.append(p);
-        it = it->next;
-    } while (it != end);
+            _M_current_template_parameters.append(p);
+            it = it->next;
+        }while (it != end);
+    }
 
     visit(node->declaration);
-
-    changeTemplateParameters(savedTemplateParameters);
 }
 
 void Binder::visitTypedef(TypedefAST *node) {
@@ -650,19 +817,23 @@ void Binder::visitTypedef(TypedefAST *node) {
         TypeInfo typeInfo = CompilerUtils::typeDescription(node->type_specifier,
                             init_declarator->declarator,
                             this);
+
         DeclaratorAST *decl = init_declarator->declarator;
         while (decl && decl->sub_declarator)
             decl = decl->sub_declarator;
 
-        if (decl != init_declarator->declarator
+        /*if (decl != init_declarator->declarator
                 && init_declarator->declarator->parameter_declaration_clause != nullptr) {
-            typeInfo.setFunctionPointer(true);
+            TypeInfo fpTypeInfo;
+            fpTypeInfo.setFunctionPointer(true);
+            fpTypeInfo.setFunctionalReturnType(typeInfo);
             decl_cc.run(init_declarator->declarator);
             for(const DeclaratorCompiler::Parameter& p : decl_cc.parameters()){
-                typeInfo.addArgument(p.type);
-                typeInfo.addArgumentName(p.name);
+                fpTypeInfo.addFunctionalArgumentType(p.type);
+                fpTypeInfo.addFunctionalArgumentName(p.name);
             }
-        }
+            typeInfo = fpTypeInfo;
+        }*/
 
         ScopeModelItem scope = currentScope();
         DeclaratorAST *declarator = init_declarator->declarator;
@@ -676,6 +847,13 @@ void Binder::visitTypedef(TypedefAST *node) {
         typeAlias->setScope(typedefScope->qualifiedName());
         typeAlias->setAccessPolicy(_M_current_access);
         _M_qualified_types[typeAlias->qualifiedName().join(".")] = QString();
+        if(m_database.findPrimitiveType(alias_name))
+            continue;
+        /*if(typeAlias->fileName().endsWith("qtypes.h"))
+            continue;
+        if(!typeAlias->fileName().endsWith("qtypes.h")
+                && !typeAlias->fileName().endsWith("qglobal.h"))
+        */
         currentScope()->addTypeAlias(typeAlias);
     } while (it != end);
 }
@@ -683,6 +861,7 @@ void Binder::visitTypedef(TypedefAST *node) {
 void Binder::visitNamespace(NamespaceAST *node) {
     bool anonymous = (node->namespace_name == 0);
 
+    bool isNew = false;
     ScopeModelItem scope = currentScope();
 
     NamespaceModelItem old;
@@ -696,8 +875,14 @@ void Binder::visitNamespace(NamespaceAST *node) {
         qualified_name << name.join("::");
         NamespaceModelItem ns =
             model_safe_cast<NamespaceModelItem>(_M_model->findItem(qualified_name,
-                                                _M_current_file->toItem()));
+                                                scope));
+//        if (!ns) {
+//            if (NamespaceModelItem sc = model_static_cast<NamespaceModelItem>(scope)) {
+//                ns = sc->findNamespace(name.join("::"));
+//            }
+//        }
         if (!ns) {
+            isNew = true;
             ns = _M_model->create<NamespaceModelItem>();
             updateItemPosition(ns->toItem(), node);
             ns->setName(name.join("::"));
@@ -716,8 +901,10 @@ void Binder::visitNamespace(NamespaceAST *node) {
 
         _M_context.removeLast();
 
-        if (NamespaceModelItem ns = model_static_cast<NamespaceModelItem>(scope)) {
-            ns->addNamespace(_M_current_namespace);
+        if(isNew){
+            if (NamespaceModelItem ns = model_static_cast<NamespaceModelItem>(scope)) {
+                ns->addNamespace(_M_current_namespace);
+            }
         }
 
         changeCurrentNamespace(old);
@@ -734,9 +921,7 @@ void Binder::visitForwardDeclarationSpecifier(ForwardDeclarationSpecifierAST *no
 }
 
 void Binder::visitClassSpecifier(ClassSpecifierAST *node) {
-    ClassCompiler class_cc(this);
     class_cc.run(node);
-
     if (class_cc.name().isEmpty()) {
         // anonymous not supported
         return;
@@ -745,52 +930,64 @@ void Binder::visitClassSpecifier(ClassSpecifierAST *node) {
     Q_ASSERT(node->name != nullptr && node->name->unqualified_name != nullptr);
 
     ScopeModelItem scope = currentScope();
+    ClassModelItem thisClass/* = scope->findClass((scope->qualifiedName() << class_cc.name()).join("::"));
+    bool isNewClass = !thisClass;
+    if(isNewClass)
+        thisClass*/ = _M_model->create<ClassModelItem>();
 
-    ClassModelItem old = changeCurrentClass(_M_model->create<ClassModelItem>());
-    updateItemPosition(_M_current_class->toItem(), node);
-    _M_current_class->setName(class_cc.name());
-    _M_current_class->setDeclFinal(node->is_final);
-    _M_current_class->setDeclDeprecated(node->is_deprecated);
-    _M_current_class->setAccessPolicy(_M_current_access);
+    ClassModelItem old = changeCurrentClass(thisClass);
+    updateItemPosition(thisClass->toItem(), node);
+    thisClass->setName(class_cc.name());
+    thisClass->setDeclFinal(node->is_final);
+    thisClass->setDeclDeprecated(node->is_deprecated);
+    thisClass->setAccessPolicy(_M_current_access);
     if(node->deprecationComment)
-        _M_current_class->setDeclDeprecatedComment(node->deprecationComment->toString(tokenStream()));
+        thisClass->setDeclDeprecatedComment(node->deprecationComment->toString(tokenStream()));
 
-    QList<QPair<QString,bool>> baseClasses = class_cc.baseClasses(); TypeInfo info;
+    QList<QPair<TypeInfo,bool>> baseClasses = class_cc.baseClasses();
     for (int i = 0; i < baseClasses.size(); ++i) {
-        info.setQualifiedName(baseClasses.at(i).first.split("::"));
-        baseClasses[i].first = qualifyType(info, scope->qualifiedName()).qualifiedName().join("::");
+        baseClasses[i].first.setQualifiedName(qualifyType(baseClasses.at(i).first, scope->qualifiedName()).qualifiedName());
     }
 
-    _M_current_class->setBaseClasses(baseClasses);
-    _M_current_class->setClassType(decode_class_type(node->class_key));
-    _M_current_class->setTemplateParameters(_M_current_template_parameters);
-    //_M_current_class->setIsGadget(node->);
-
-    if (! _M_current_template_parameters.isEmpty()) {
-        QString name = _M_current_class->name();
-        name += "<";
-        for (int i = 0; i < _M_current_template_parameters.size(); ++i) {
-            if (i != 0)
-                name += ",";
-
-            name += _M_current_template_parameters.at(i)->name();
-        }
-
-        name += ">";
-        _M_current_class->setName(name);
+    thisClass->setBaseClasses(baseClasses);
+    thisClass->setClassType(decode_class_type(node->class_key));
+    thisClass->setIsTemplate(_M_current_is_template);
+    thisClass->setTemplateParameters(_M_current_template_parameters);
+    if(_M_current_is_template){
+        thisClass->setTemplateInstantiations(class_cc.templateArgumentTypes());
     }
+    //thisClass->setIsGadget(node->);
+
+//    if (_M_current_is_template) {
+//        QString name = thisClass->name();
+//        name += "<";
+//        for (int i = 0; i < _M_current_template_parameters.size(); ++i) {
+//            if (i != 0)
+//                name += ",";
+
+//            name += _M_current_template_parameters.at(i)->name();
+//        }
+
+//        name += ">";
+//        thisClass->setName(name);
+//    }
 
     CodeModel::AccessPolicy oldAccessPolicy = changeCurrentAccess(decode_access_policy(node->class_key));
     CodeModel::FunctionType oldFunctionType = changeCurrentFunctionType(CodeModel::Normal);
 
-    _M_current_class->setScope(scope->qualifiedName());
-    _M_qualified_types[_M_current_class->qualifiedName().join(".")] = QString();
+    /*if(isNewClass)*/{
+        thisClass->setScope(scope->qualifiedName());
+        _M_qualified_types[thisClass->qualifiedName().join(".")] = QString();
 
-    scope->addClass(_M_current_class);
+        scope->addClass(thisClass);
+    }
 
-    name_cc.run(node->name->unqualified_name);
-    _M_context.append(name_cc.name());
+    //name_cc.run(node->name->unqualified_name);
+    //_M_context.append(name_cc.name());
+    _M_context.append(class_cc.name());
+    bool oldIsTemplate = changeIsTemplate(false);
     visitNodes(this, node->member_specs);
+    changeIsTemplate(oldIsTemplate);
     _M_context.removeLast();
 
     changeCurrentClass(old);
@@ -816,7 +1013,7 @@ void Binder::visitUsing(UsingAST *node) {
         name_cc.run(node->name);
         QStringList qualifiedName = name_cc.qualifiedName();
         if(!_M_current_class->baseClasses().isEmpty()){
-            QString baseClassName = _M_current_class->baseClasses().first().first;
+            QString baseClassName = _M_current_class->baseClasses().first().first.qualifiedName().last();
             QString methodName = qualifiedName.takeLast();
             QString className = qualifiedName.join("::");
             if((className==baseClassName || className.startsWith(baseClassName+"<"))
@@ -850,15 +1047,18 @@ void Binder::visitUsingAs(UsingAsAST *node) {
         while (decl && decl->sub_declarator)
             decl = decl->sub_declarator;
 
-        if (decl != node->declarator
+        /*if (decl != node->declarator
                 && node->declarator->parameter_declaration_clause != nullptr) {
-            typeInfo.setFunctionPointer(true);
+            TypeInfo fpTypeInfo;
+            fpTypeInfo.setFunctionPointer(true);
+            fpTypeInfo.setFunctionalReturnType(typeInfo);
             decl_cc.run(node->declarator);
             for(const DeclaratorCompiler::Parameter& p : decl_cc.parameters()){
-                typeInfo.addArgument(p.type);
-                typeInfo.addArgumentName(p.name);
+                fpTypeInfo.addFunctionalArgumentType(p.type);
+                fpTypeInfo.addFunctionalArgumentName(p.name);
             }
-        }
+            typeInfo = fpTypeInfo;
+        }*/
 
         ScopeModelItem scope = currentScope();
         DeclaratorAST *declarator = node->declarator;
@@ -872,8 +1072,9 @@ void Binder::visitUsingAs(UsingAsAST *node) {
         typeAlias->setScope(typedefScope->qualifiedName());
         typeAlias->setAccessPolicy(_M_current_access);
         _M_qualified_types[typeAlias->qualifiedName().join(".")] = QString();
+        if(m_database.findPrimitiveType(alias_name))
+            return;
         currentScope()->addTypeAlias(typeAlias);
-        //visitNodes(this, node->template_arguments);
     }
 }
 
@@ -1081,9 +1282,26 @@ void Binder::applyFunctionSpecifiers(const ListNode<std::size_t> *it, FunctionMo
     } while (it != end);
 }
 
-TypeInfo Binder::qualifyType(const TypeInfo &type, const QStringList &context) const {
+TypeInfo Binder::qualifyType(TypeInfo type, const QStringList &context) const {
     // ### Potentially improve to use string list in the name table to
-    if (context.size() == 0) {
+    if(type.functionalReturnType()){
+        type.setFunctionalReturnType(qualifyType(type.functionalReturnType(), context));
+    }
+    if(!type.functionalArgumentTypes().isEmpty()){
+        QList<TypeInfo> functionalArgumentTypes;
+        for(const TypeInfo& functionalArgumentType : type.functionalArgumentTypes()){
+            functionalArgumentTypes << qualifyType(functionalArgumentType, context);
+        }
+        type.setFunctionalArgumentTypes(functionalArgumentTypes);
+    }
+    if(!type.arguments().isEmpty()){
+        QList<TypeInfo> argumentTypes;
+        for(const TypeInfo& argumentType : type.arguments()){
+            argumentTypes << qualifyType(argumentType, context);
+        }
+        type.setArguments(argumentTypes);
+    }
+    if (context.isEmpty() || type.qualifiedName().isEmpty()) {
         // ### We can assume that this means global namespace for now...
         return type;
     } else if (_M_qualified_types.contains(type.qualifiedName().join("."))) {
@@ -1092,17 +1310,16 @@ TypeInfo Binder::qualifyType(const TypeInfo &type, const QStringList &context) c
         QStringList expanded = context;
         expanded << type.qualifiedName();
         if (_M_qualified_types.contains(expanded.join("."))) {
-            TypeInfo modified_type = type;
-            modified_type.setQualifiedName(expanded);
-            return modified_type;
+            type.setQualifiedName(expanded);
+            return type;
         } else {
-            CodeModelItem scope = model()->findItem(context, _M_current_file->toItem());
+            CodeModelItem scope = model()->findItem(context, _M_model->globalNamespace()->toItem());
 
             if (ClassModelItem klass = model_dynamic_cast<ClassModelItem> (scope)) {
-                for(const QPair<QString,bool>& base : klass->baseClasses()) {
+                for(const QPair<TypeInfo,bool>& base : klass->baseClasses()) {
                     QStringList ctx = context;
-                    if(ctx.takeLast()!=base.first){
-                        ctx.append(base.first);
+                    if(ctx.takeLast()!=base.first.qualifiedName().join("::")){
+                        ctx.append(base.first.qualifiedName().join("::"));
 
                         TypeInfo qualified = qualifyType(type, ctx);
                         if (qualified != type)

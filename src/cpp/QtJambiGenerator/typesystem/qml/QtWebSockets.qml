@@ -31,27 +31,24 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.websockets"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtWebSockets"
     module: "qtjambi.websockets"
     description: "Provides WebSocket communication compliant with RFC 6455."
+
     NamespaceType{
         name: "QWebSocketProtocol"
-    }
-    
-    EnumType{
-        name: "QWebSocketServer::SslMode"
-    }
-    
-    EnumType{
-        name: "QWebSocketProtocol::Version"
-        RejectEnumValue{
-            name: "VersionLatest"
+
+        EnumType{
+            name: "Version"
+            RejectEnumValue{
+                name: "VersionLatest"
+            }
         }
-    }
-    
-    EnumType{
-        name: "QWebSocketProtocol::CloseCode"
+
+        EnumType{
+            name: "CloseCode"
+        }
     }
     
     ObjectType{
@@ -78,18 +75,7 @@ TypeSystem{
             signature: "proxyAuthenticationRequired(const QNetworkProxy &, QAuthenticator *)"
             ModifyArgument{
                 index: 2
-                ReplaceType{
-                    modifiedType: "io.qt.network.QAuthenticator"
-                }
                 NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QAuthenticator* %out  = qtjambi_cast<QAuthenticator*>(%env, %scope, %in);"}
                 }
             }
         }
@@ -97,18 +83,7 @@ TypeSystem{
             signature: "preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator *)"
             ModifyArgument{
                 index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.network.QSslPreSharedKeyAuthenticator"
-                }
                 NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSslPreSharedKeyAuthenticator* %out  = qtjambi_cast<QSslPreSharedKeyAuthenticator*>(%env, %scope, %in);"}
                 }
             }
         }
@@ -116,8 +91,11 @@ TypeSystem{
     
     ObjectType{
         name: "QWebSocketServer"
+
+        EnumType{name: "SslMode"}
+
         ModifyFunction{
-            signature: "listen(const QHostAddress &, unsigned short)"
+            signature: "listen(const QHostAddress &, quint16)"
             ModifyArgument{
                 index: 1
                 ReplaceDefaultExpression{
@@ -129,18 +107,7 @@ TypeSystem{
             signature: "originAuthenticationRequired(QWebSocketCorsAuthenticator *)"
             ModifyArgument{
                 index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.websockets.QWebSocketCorsAuthenticator"
-                }
                 NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QWebSocketCorsAuthenticator* %out  = qtjambi_cast<QWebSocketCorsAuthenticator*>(%env, %scope, %in);"}
                 }
             }
         }
@@ -148,18 +115,7 @@ TypeSystem{
             signature: "preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator *)"
             ModifyArgument{
                 index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.network.QSslPreSharedKeyAuthenticator"
-                }
                 NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSslPreSharedKeyAuthenticator* %out  = qtjambi_cast<QSslPreSharedKeyAuthenticator*>(%env, %scope, %in);"}
                 }
             }
         }
@@ -180,14 +136,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(QWebSocketCorsAuthenticator)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                NoNullPointer{
-                }
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
     }
@@ -196,14 +147,9 @@ TypeSystem{
         name: "QWebSocketHandshakeOptions"
         ModifyFunction{
             signature: "operator=(QWebSocketHandshakeOptions)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                NoNullPointer{
-                }
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
         since: [6, 4]

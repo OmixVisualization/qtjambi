@@ -31,7 +31,7 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     packageName: "io.qt.widgets"
-    defaultSuperClass: "io.qt.QtObject"
+    defaultSuperClass: "QtObject"
     qtLibrary: "QtWidgets"
     module: "qtjambi"
     Template{
@@ -208,12 +208,6 @@ TypeSystem{
     }
     
     Rejection{
-        className: "QApplication"
-        functionName: "nativeInterface"
-        since: [6, 2]
-    }
-    
-    Rejection{
         className: "QFileDialogArgs"
     }
     
@@ -290,51 +284,6 @@ TypeSystem{
     }
     
     Rejection{
-        className: "QTreeWidgetItem"
-        functionName: "treeModel"
-    }
-    
-    Rejection{
-        className: "QAbstractItemDelegate"
-        functionName: "operator="
-    }
-    
-    Rejection{
-        className: "QApplication"
-        functionName: "compressEvent"
-    }
-    
-    Rejection{
-        className: "QWidget"
-        functionName: "create"
-    }
-    
-    Rejection{
-        className: "QWidget"
-        functionName: "destroy"
-    }
-    
-    Rejection{
-        className: "QWidget"
-        functionName: "find"
-    }
-    
-    Rejection{
-        className: "QWidget"
-        functionName: "handle"
-    }
-    
-    Rejection{
-        className: "QWidget"
-        functionName: "styleChange"
-    }
-    
-    Rejection{
-        className: "QWidget"
-        functionName: "internalWinId"
-    }
-    
-    Rejection{
         className: "QActionGroup"
         functionName: "selected"
         until: 5
@@ -362,11 +311,6 @@ TypeSystem{
     
     Rejection{
         className: "QStandardItemEditorCreator"
-    }
-    
-    Rejection{
-        className: "QGraphicsItem"
-        enumName: "enum_1"
     }
     
     Rejection{
@@ -743,36 +687,16 @@ TypeSystem{
         enumName: "ItemType"
     }
     
-    Rejection{
-        className: "QTreeWidgetItem"
-        enumName: "ItemType"
-    }
-    
-    EnumType{
-        name: "QTabBar::SelectionBehavior"
-    }
-    
-    EnumType{
-        name: "QTabBar::ButtonPosition"
-    }
-    
     EnumType{
         name: "QInputDialog::InputMode"
     }
     
     EnumType{
         name: "QInputDialog::InputDialogOption"
-        flags: "QInputDialog::InputDialogOptions"
-    }
-    
-    EnumType{
-        name: "QFontDialog::FontDialogOption"
-        flags: "QFontDialog::FontDialogOptions"
     }
     
     EnumType{
         name: "QColorDialog::ColorDialogOption"
-        flags: "QColorDialog::ColorDialogOptions"
     }
     
     EnumType{
@@ -793,7 +717,6 @@ TypeSystem{
     
     EnumType{
         name: "QAbstractItemView::EditTrigger"
-        flags: "QAbstractItemView::EditTriggers"
     }
     
     EnumType{
@@ -825,23 +748,6 @@ TypeSystem{
     }
     
     EnumType{
-        name: "QAbstractSpinBox::ButtonSymbols"
-    }
-    
-    EnumType{
-        name: "QAbstractSpinBox::CorrectionMode"
-    }
-    
-    EnumType{
-        name: "QAbstractSpinBox::StepType"
-    }
-    
-    EnumType{
-        name: "QAbstractSpinBox::StepEnabledFlag"
-        flags: "QAbstractSpinBox::StepEnabled"
-    }
-    
-    EnumType{
         name: "QDirModel::Roles"
         until: 5
     }
@@ -852,7 +758,6 @@ TypeSystem{
     
     EnumType{
         name: "QMdiArea::AreaOption"
-        flags: "QMdiArea::AreaOptions"
     }
     
     EnumType{
@@ -864,24 +769,11 @@ TypeSystem{
     }
     
     EnumType{
-        name: "QFormLayout::FieldGrowthPolicy"
-    }
-    
-    EnumType{
-        name: "QFormLayout::ItemRole"
-    }
-    
-    EnumType{
-        name: "QFormLayout::RowWrapPolicy"
-    }
-    
-    EnumType{
         name: "QPlainTextEdit::LineWrapMode"
     }
     
     EnumType{
         name: "QMdiSubWindow::SubWindowOption"
-        flags: "QMdiSubWindow::SubWindowOptions"
     }
     
     EnumType{
@@ -898,12 +790,6 @@ TypeSystem{
         name: "QAction::Priority"
         until: 5
     }
-    
-    
-    EnumType{
-        name: "QApplication::ColorSpec"
-    }
-    
     
     EnumType{
         name: "QCalendarWidget::HorizontalHeaderFormat"
@@ -939,7 +825,6 @@ TypeSystem{
     
     EnumType{
         name: "QDateTimeEdit::Section"
-        flags: "QDateTimeEdit::Sections"
     }
     
     EnumType{
@@ -968,7 +853,6 @@ TypeSystem{
     
     EnumType{
         name: "QFileDialog::Option"
-        flags: "QFileDialog::Options"
     }
     
     EnumType{
@@ -981,12 +865,10 @@ TypeSystem{
     
     EnumType{
         name: "QFileIconProvider::Option"
-        flags: "QFileIconProvider::Options"
     }
     
     EnumType{
         name: "QFontComboBox::FontFilter"
-        flags: "QFontComboBox::FontFilters"
     }
     
     EnumType{
@@ -1013,7 +895,6 @@ TypeSystem{
     
     EnumType{
         name: "QGraphicsItem::GraphicsItemFlag"
-        flags: "QGraphicsItem::GraphicsItemFlags"
     }
     
     EnumType{
@@ -1030,7 +911,6 @@ TypeSystem{
     
     EnumType{
         name: "QGraphicsView::CacheModeFlag"
-        flags: "QGraphicsView::CacheMode"
     }
     
     EnumType{
@@ -1039,7 +919,6 @@ TypeSystem{
     
     EnumType{
         name: "QGraphicsView::OptimizationFlag"
-        flags: "QGraphicsView::OptimizationFlags"
     }
     
     EnumType{
@@ -1088,7 +967,6 @@ TypeSystem{
     
     EnumType{
         name: "QMainWindow::DockOption"
-        flags: "QMainWindow::DockOptions"
     }
     
     EnumType{
@@ -1117,12 +995,10 @@ TypeSystem{
     
     EnumType{
         name: "QSizePolicy::ControlType"
-        flags: "QSizePolicy::ControlTypes"
     }
     
     EnumType{
         name: "QStyle::SubControl"
-        flags: "QStyle::SubControls"
         extensible: true
         RejectEnumValue{
             name: "SC_SpinBoxUp"
@@ -1267,7 +1143,6 @@ TypeSystem{
     
     EnumType{
         name: "QStyle::StateFlag"
-        flags: "QStyle::State"
     }
     
     EnumType{
@@ -1288,7 +1163,6 @@ TypeSystem{
     
     EnumType{
         name: "QStyleOptionButton::ButtonFeature"
-        flags: "QStyleOptionButton::ButtonFeatures"
     }
     
     EnumType{
@@ -1313,7 +1187,6 @@ TypeSystem{
     
     EnumType{
         name: "QStyleOptionTab::CornerWidget"
-        flags: "QStyleOptionTab::CornerWidgets"
     }
     
     EnumType{
@@ -1326,7 +1199,6 @@ TypeSystem{
     
     EnumType{
         name: "QStyleOptionToolBar::ToolBarFeature"
-        flags: "QStyleOptionToolBar::ToolBarFeatures"
     }
     
     EnumType{
@@ -1335,7 +1207,6 @@ TypeSystem{
     
     EnumType{
         name: "QStyleOptionToolButton::ToolButtonFeature"
-        flags: "QStyleOptionToolButton::ToolButtonFeatures"
         RejectEnumValue{
             name: "MenuButtonPopup"
         }
@@ -1354,10 +1225,6 @@ TypeSystem{
     }
     
     EnumType{
-        name: "QTabBar::Shape"
-    }
-    
-    EnumType{
         name: "QTabWidget::TabPosition"
     }
     
@@ -1370,27 +1237,11 @@ TypeSystem{
     }
     
     EnumType{
-        name: "QTreeWidgetItemIterator::IteratorFlag"
-        flags: "QTreeWidgetItemIterator::IteratorFlags"
-    }
-    
-    EnumType{
-        name: "QWidget::RenderFlag"
-        flags: "QWidget::RenderFlags"
-    }
-    
-    EnumType{
         name: "QGraphicsScene::SceneLayer"
-        flags: "QGraphicsScene::SceneLayers"
-    }
-    
-    EnumType{
-        name: "QTreeWidgetItem::ChildIndicatorPolicy"
     }
     
     EnumType{
         name: "QWizard::WizardOption"
-        flags: "QWizard::WizardOptions"
     }
     
     EnumType{
@@ -1407,7 +1258,6 @@ TypeSystem{
     
     EnumType{
         name: "QGraphicsBlurEffect::BlurHint"
-        flags: "QGraphicsBlurEffect::BlurHints"
     }
     
     EnumType{
@@ -1420,12 +1270,10 @@ TypeSystem{
     
     EnumType{
         name: "QPinchGesture::ChangeFlag"
-        flags: "QPinchGesture::ChangeFlags"
     }
     
     EnumType{
         name: "QGestureRecognizer::ResultFlag"
-        flags: "QGestureRecognizer::Result"
     }
     
     EnumType{
@@ -1450,7 +1298,6 @@ TypeSystem{
     
     EnumType{
         name: "QDialogButtonBox::StandardButton"
-        flags: "QDialogButtonBox::StandardButtons"
         RejectEnumValue{
             name: "FirstButton"
         }
@@ -1479,19 +1326,10 @@ TypeSystem{
     
     EnumType{
         name: "QDockWidget::DockWidgetFeature"
-        flags: "QDockWidget::DockWidgetFeatures"
-    }
-    
-    EnumType{
-        name: "QHeaderView::ResizeMode"
-        RejectEnumValue{
-            name: "Custom"
-        }
     }
     
     EnumType{
         name: "QMessageBox::StandardButton"
-        flags: "QMessageBox::StandardButtons"
         RejectEnumValue{
             name: "FirstButton"
         }
@@ -1526,7 +1364,6 @@ TypeSystem{
     
     EnumType{
         name: "QTextEdit::AutoFormattingFlag"
-        flags: "QTextEdit::AutoFormatting"
     }
     
     EnumType{
@@ -1535,7 +1372,6 @@ TypeSystem{
     
     EnumType{
         name: "QGraphicsEffect::ChangeFlag"
-        flags: "QGraphicsEffect::ChangeFlags"
     }
     
     EnumType{
@@ -1552,7 +1388,6 @@ TypeSystem{
     
     EnumType{
         name: "QStyleOptionViewItem::ViewItemFeature"
-        flags: "QStyleOptionViewItem::ViewItemFeatures"
     }
     
     EnumType{
@@ -1569,7 +1404,6 @@ TypeSystem{
     
     EnumType{
         name: "QStyleOptionTab::TabFeature"
-        flags: "QStyleOptionTab::TabFeatures"
     }
     
     EnumType{
@@ -1578,7 +1412,6 @@ TypeSystem{
     
     EnumType{
         name: "QStyleOptionFrame::FrameFeature"
-        flags: "QStyleOptionFrame::FrameFeatures"
     }
     
     EnumType{
@@ -1631,12 +1464,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QStyleOption &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
     }
@@ -1659,12 +1489,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QStyleOptionComplex &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
             since: [5, 12]
         }
@@ -1679,12 +1506,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QStyleOptionGraphicsItem &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
             since: [5, 12]
         }
@@ -1699,12 +1523,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QStyleOptionSizeGrip &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
             since: [5, 12]
         }
@@ -1719,12 +1540,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QStyleOptionButton &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
             since: [5, 12]
         }
@@ -1739,12 +1557,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QStyleOptionComboBox &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
             since: [5, 12]
         }
@@ -1759,12 +1574,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QStyleOptionDockWidget &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
             since: [5, 12]
         }
@@ -1779,12 +1591,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QStyleOptionFocusRect &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
             since: [5, 12]
         }
@@ -1799,12 +1608,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QStyleOptionFrame &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
             since: [5, 12]
         }
@@ -1819,12 +1625,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QStyleOptionGroupBox &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
             since: [5, 12]
         }
@@ -1839,12 +1642,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QStyleOptionHeader &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
             since: [5, 12]
         }
@@ -1855,12 +1655,9 @@ TypeSystem{
         polymorphicIdExpression: "%1->type == QStyleOptionHeaderV2::Type && %1->version == QStyleOptionHeaderV2::Version"
         ModifyFunction{
             signature: "operator=(const QStyleOptionHeaderV2 &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
         ModifyField{
@@ -1880,12 +1677,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QStyleOptionMenuItem &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
             since: [5, 12]
         }
@@ -1900,12 +1694,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QStyleOptionProgressBar &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
             since: [5, 12]
         }
@@ -1920,12 +1711,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QStyleOptionRubberBand &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
             since: [5, 12]
         }
@@ -1940,12 +1728,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QStyleOptionSlider &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
             since: [5, 12]
         }
@@ -1960,12 +1745,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QStyleOptionSpinBox &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
             since: [5, 12]
         }
@@ -1985,12 +1767,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QStyleOptionTab &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
             since: [5, 12]
         }
@@ -2005,12 +1784,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QStyleOptionTabBarBase &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
             since: [5, 12]
         }
@@ -2025,12 +1801,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QStyleOptionTabWidgetFrame &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
             since: [5, 12]
         }
@@ -2045,12 +1818,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QStyleOptionTitleBar &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
             since: [5, 12]
         }
@@ -2065,12 +1835,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QStyleOptionToolBar &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
             since: [5, 12]
         }
@@ -2085,12 +1852,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QStyleOptionToolBox &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
             since: [5, 12]
         }
@@ -2105,12 +1869,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QStyleOptionToolButton &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
             since: [5, 12]
         }
@@ -2125,12 +1886,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QStyleOptionViewItem &)"
-            rename: "set"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "void"
-                }
+            Delegate{
+                name: "set"
+                deprecated: true
             }
             since: [5, 12]
         }
@@ -2154,12 +1912,6 @@ TypeSystem{
             remove: RemoveFlag.All
             until: 5
         }
-        ModifyFunction{
-            signature: "operator=(const QTableWidgetSelectionRange &)"
-            remove: RemoveFlag.All
-            since: [5, 14]
-            until: 5
-        }
         CustomConstructor{
             type: CustomConstructor.Copy
             Text{content: "new(placement) QTableWidgetSelectionRange(copy->topRow(), copy->leftColumn(), copy->bottomRow(), copy->rightColumn());"}
@@ -2172,10 +1924,6 @@ TypeSystem{
     
     ValueType{
         name: "QColormap"
-        ModifyFunction{
-            signature: "operator=(QColormap)"
-            remove: RemoveFlag.All
-        }
         ModifyFunction{
             signature: "initialize()"
             remove: RemoveFlag.All
@@ -2209,6 +1957,15 @@ TypeSystem{
             read: false
             write: false
         }
+        ModifyFunction{
+            signature: "spacerItem()"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
     }
     
     ObjectType{
@@ -2239,13 +1996,16 @@ TypeSystem{
         }
         InjectCode{
             position: Position.End
-            Text{content: "@io.qt.QtUninvokable\n"+
+            Text{content: "@QtUninvokable\n"+
                           "static native boolean hasWidgetItemV2(QWidget widget);"}
         }
     }
     
     InterfaceType{
         name: "QGraphicsItem"
+        Rejection{
+            enumName: "enum_1"
+        }
         threadAffinity: "getPointerOwner(%1)"
         ExtraIncludes{
             Include{
@@ -2503,23 +2263,6 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *)"
-            ModifyArgument{
-                index: 2
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "const QStyleOptionGraphicsItem *%out = qtjambi_cast<QStyleOptionGraphicsItem *>(%env, %in);"}
-                }
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionGraphicsItem"
-                }
-            }
-        }
-        ModifyFunction{
             signature: "itemTransform(const QGraphicsItem*,bool*)const"
             ModifyArgument{
                 index: 2
@@ -2610,9 +2353,136 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "io.qt.widgets.QGraphicsItem$BlockedByModalPanelInfo"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = Java::QtWidgets::QGraphicsItem$BlockedByModalPanelInfo::newInstance(%env, jboolean(%in), qtjambi_cast<jobject>(%env, modalPanel));"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "commonAncestorItem(const QGraphicsItem*)const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "focusItem()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "focusProxy()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "focusScopeItem()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "group()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "panel()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "parentItem()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "topLevelItem()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "focusProxy()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "focusScopeItem()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "group()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "panel()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "parentItem()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "topLevelItem()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
                 }
             }
         }
@@ -2631,15 +2501,6 @@ TypeSystem{
             signature: "resetMatrix()"
             remove: RemoveFlag.All
             until: 5
-        }
-        ModifyFunction{
-            signature: "setFocusProxy(QGraphicsItem*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    action: ReferenceCount.Ignore
-                }
-            }
         }
         ModifyFunction{
             signature: "QAbstractGraphicsShapeItem(QGraphicsItem*)"
@@ -2711,24 +2572,6 @@ TypeSystem{
                 index: 2
                 invalidateAfterUse: true
             }
-        }
-        ModifyFunction{
-            signature: "initViewItemOption(QStyleOptionViewItem *) const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionViewItem"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionViewItem* %out = qtjambi_cast<QStyleOptionViewItem*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-            since: 6
         }
         ModifyFunction{
             signature: "setIndexWidget(const QModelIndex &,QWidget *)"
@@ -2868,23 +2711,6 @@ TypeSystem{
     
     ObjectType{
         name: "QCheckBox"
-        ModifyFunction{
-            signature: "initStyleOption(QStyleOptionButton*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionButton"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionButton* %out = qtjambi_cast<QStyleOptionButton*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
     }
     
     
@@ -3061,6 +2887,15 @@ TypeSystem{
                 }
             }
         }
+        ModifyFunction{
+            signature: "iconProvider()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
         until: 5
     }
     
@@ -3137,18 +2972,6 @@ TypeSystem{
         ModifyFunction{
             signature: "registerField(const QString &, QWidget *, const char *, const char *)"
             threadAffinity: Affinity.UI
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning
@@ -3182,23 +3005,6 @@ TypeSystem{
                 invalidateAfterUse: true
             }
         }
-        ModifyFunction{
-            signature: "initStyleOption(QStyleOption*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOption"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOption* %out = qtjambi_cast<QStyleOption*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
     }
     
     ObjectType{
@@ -3207,6 +3013,10 @@ TypeSystem{
     
     ObjectType{
         name: "QFontDialog"
+        EnumType{
+            name: "FontDialogOption"
+        }
+
         ModifyFunction{
             signature: "eventFilter(QObject*,QEvent*)"
             ModifyArgument{
@@ -3224,12 +3034,6 @@ TypeSystem{
         ModifyFunction{
             signature: "open(QObject*,const char*)"
             threadAffinity: true
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning
@@ -3237,7 +3041,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "getFont(bool*,QFont,QWidget*,QString,QFlags<QFontDialog::FontDialogOption>)"
+            signature: "getFont(bool*,QFont,QWidget*,QString,QFontDialog::FontDialogOptions)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 0
@@ -3276,6 +3080,10 @@ TypeSystem{
                     Text{content: "bool ok(false);\n"+
                                   "bool* %out = &ok;"}
                 }
+            }
+            ModifyArgument{
+                index: 2
+                RemoveDefaultExpression{}
             }
         }
     }
@@ -3367,6 +3175,15 @@ TypeSystem{
                 ReferenceCount{
                     variableName: "__rcTimeLine"
                     action: ReferenceCount.Set
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "item()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
                 }
             }
         }
@@ -3804,9 +3621,23 @@ TypeSystem{
     
     ObjectType{
         name: "QHeaderView"
+        EnumType{
+            name: "ResizeMode"
+            RejectEnumValue{
+                name: "Custom"
+            }
+        }
         ModifyFunction{
             signature: "setVisible(bool)"
             threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "initStyleOptionForIndex(QStyleOptionHeader*,int)const"
+            ModifyArgument{
+                index: 1
+                invalidateAfterUse: true
+            }
+            since: 6
         }
         ModifyFunction{
             signature: "paintSection(QPainter*,QRect,int)const"
@@ -3826,41 +3657,6 @@ TypeSystem{
                 }
             }
         }
-        ModifyFunction{
-            signature: "initStyleOption(QStyleOptionHeader*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionHeader"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionHeader* %out = qtjambi_cast<QStyleOptionHeader*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "initStyleOptionForIndex(QStyleOptionHeader *, int) const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionHeader"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionHeader* %out = qtjambi_cast<QStyleOptionHeader*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-            since: 6
-        }
     }
     
     ObjectType{
@@ -3876,6 +3672,15 @@ TypeSystem{
                 DefineOwnership{
                     codeClass: CodeClass.Native
                     ownership: Ownership.Java
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "itemEditorFactory()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
                 }
             }
         }
@@ -4006,6 +3811,15 @@ TypeSystem{
                 DefineOwnership{
                     codeClass: CodeClass.Native
                     ownership: Ownership.Cpp
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "defaultFactory()"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
                 }
             }
         }
@@ -4267,7 +4081,7 @@ TypeSystem{
             threadAffinity: Affinity.UI
         }
         ModifyFunction{
-            signature: "addSubWindow(QWidget*,QFlags<Qt::WindowType>)"
+            signature: "addSubWindow(QWidget*,Qt::WindowFlags)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 1
@@ -4346,6 +4160,22 @@ TypeSystem{
     
     ObjectType{
         name: "QMenu"
+        ModifyFunction{
+            signature: "initStyleOption(QStyleOptionMenuItem*,const QAction*)const"
+            ModifyArgument{
+                index: 1
+                invalidateAfterUse: true
+            }
+            since: 6
+        }
+        ModifyFunction{
+            signature: "addAction<Func1>(QIcon,QString,Func1,QKeySequence)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "addAction<Func1>(QString,Func1,QKeySequence)"
+            remove: RemoveFlag.All
+        }
         ModifyFunction{
             signature: "setAsDockMenu()"
             remove: RemoveFlag.All
@@ -4587,27 +4417,23 @@ TypeSystem{
                               "    QtJambi_LibraryUtilities.internal.clearReferenceCount(this, QWidget.class, \"__rcActions\", false);"}
             }
         }
-        ModifyFunction{
-            signature: "initStyleOption(QStyleOptionMenuItem*,const QAction*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionMenuItem"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionMenuItem* %out = qtjambi_cast<QStyleOptionMenuItem*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
     }
     
     ObjectType{
         name: "QMenuBar"
+        ModifyFunction{
+            signature: "initStyleOption(QStyleOptionMenuItem*,const QAction*)const"
+            ModifyArgument{
+                index: 1
+                invalidateAfterUse: true
+            }
+            since: 6
+        }
+        ModifyFunction{
+            signature: "addAction<Func1>(QString,Func1)"
+            remove: RemoveFlag.All
+            until: 6.3
+        }
         ModifyFunction{
             signature: "clear()"
             threadAffinity: true
@@ -4771,23 +4597,6 @@ TypeSystem{
                               "    QtJambi_LibraryUtilities.internal.clearReferenceCount(this, QWidget.class, \"__rcActions\", false);"}
             }
         }
-        ModifyFunction{
-            signature: "initStyleOption(QStyleOptionMenuItem*,const QAction*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionMenuItem"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionMenuItem* %out = qtjambi_cast<QStyleOptionMenuItem*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
     }
     
     
@@ -4804,23 +4613,6 @@ TypeSystem{
             signature: "invertedAppearance()const"
             remove: RemoveFlag.All
         }
-        ModifyFunction{
-            signature: "initStyleOption(QStyleOptionProgressBar*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionProgressBar"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionProgressBar* %out = qtjambi_cast<QStyleOptionProgressBar*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
     }
     
     ObjectType{
@@ -4833,23 +4625,6 @@ TypeSystem{
                 ReferenceCount{
                     variableName: "__rcMenu"
                     action: ReferenceCount.Set
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "initStyleOption(QStyleOptionButton*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionButton"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionButton* %out = qtjambi_cast<QStyleOptionButton*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
                 }
             }
         }
@@ -5214,23 +4989,6 @@ TypeSystem{
                 }
             }
         }
-        ModifyFunction{
-            signature: "initStyleOption(QStyleOptionToolButton*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionToolButton"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionToolButton* %out = qtjambi_cast<QStyleOptionToolButton*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
     }
     
     ObjectType{
@@ -5566,10 +5324,9 @@ TypeSystem{
         name: "QGraphicsSceneContextMenuEvent"
         ModifyFunction{
             signature: "operator=(const QGraphicsSceneContextMenuEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
     }
@@ -5598,10 +5355,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QGraphicsSceneDragDropEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
     }
@@ -5620,10 +5376,9 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "operator=(const QGraphicsSceneEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
     }
@@ -5632,10 +5387,9 @@ TypeSystem{
         name: "QGraphicsSceneMoveEvent"
         ModifyFunction{
             signature: "operator=(const QGraphicsSceneMoveEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
     }
@@ -5644,10 +5398,9 @@ TypeSystem{
         name: "QGraphicsSceneResizeEvent"
         ModifyFunction{
             signature: "operator=(const QGraphicsSceneResizeEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
     }
@@ -5656,10 +5409,9 @@ TypeSystem{
         name: "QGraphicsSceneHelpEvent"
         ModifyFunction{
             signature: "operator=(const QGraphicsSceneHelpEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
     }
@@ -5668,10 +5420,9 @@ TypeSystem{
         name: "QGraphicsSceneHoverEvent"
         ModifyFunction{
             signature: "operator=(const QGraphicsSceneHoverEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
     }
@@ -5680,10 +5431,9 @@ TypeSystem{
         name: "QGraphicsSceneMouseEvent"
         ModifyFunction{
             signature: "operator=(const QGraphicsSceneMouseEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
     }
@@ -5692,10 +5442,9 @@ TypeSystem{
         name: "QGraphicsSceneWheelEvent"
         ModifyFunction{
             signature: "operator=(const QGraphicsSceneWheelEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
     }
@@ -5704,10 +5453,9 @@ TypeSystem{
         name: "QToolBarChangeEvent"
         ModifyFunction{
             signature: "operator=(const QToolBarChangeEvent &)"
-            rename: "set"
-            ModifyArgument{
-                index: "return"
-                replaceType: "void"
+            Delegate{
+                name: "set"
+                deprecated: true
             }
         }
         ModifyFunction{
@@ -5782,42 +5530,12 @@ TypeSystem{
         ModifyFunction{
             signature: "drawControl(QStyle::ControlElement, const QStyleOption *, QPainter *, const QWidget *) const"
             ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOption"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOption *%out = qtjambi_cast<QStyleOption *>(%env, %in);"}
-                }
-            }
-            ModifyArgument{
                 index: 3
                 invalidateAfterUse: true
             }
         }
         ModifyFunction{
             signature: "drawComplexControl(QStyle::ComplexControl, const QStyleOptionComplex *, QPainter *, const QWidget *) const"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionComplex"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionComplex *%out = qtjambi_cast<QStyleOptionComplex *>(%env, %in);"}
-                }
-            }
             ModifyArgument{
                 index: 3
                 invalidateAfterUse: true
@@ -5826,21 +5544,6 @@ TypeSystem{
         ModifyFunction{
             signature: "drawPrimitive(QStyle::PrimitiveElement, const QStyleOption *, QPainter *, const QWidget *) const"
             ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOption"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOption *%out = qtjambi_cast<QStyleOption *>(%env, %in);"}
-                }
-            }
-            ModifyArgument{
                 index: 3
                 invalidateAfterUse: true
             }
@@ -5848,25 +5551,11 @@ TypeSystem{
         ModifyFunction{
             signature: "hitTestComplexControl(QStyle::ComplexControl, const QStyleOptionComplex *, const QPoint &, const QWidget *) const"
             ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionComplex"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionComplex *%out = qtjambi_cast<QStyleOptionComplex *>(%env, %in);"}
-                }
-            }
-            ModifyArgument{
                 index: 0
                 ReplaceType{
                     modifiedType: "io.qt.widgets.QStyle$SubControl"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Shell
                     Text{content: "QStyle::SubControl %out = qtjambi_cast<QStyle::SubControl>(%env, %in);"}
@@ -5878,151 +5567,10 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "pixelMetric(QStyle::PixelMetric, const QStyleOption *, const QWidget *) const"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOption"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOption *%out = qtjambi_cast<QStyleOption *>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "sizeFromContents(QStyle::ContentsType, const QStyleOption *, const QSize &, const QWidget *) const"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOption"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOption *%out = qtjambi_cast<QStyleOption *>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "standardIcon(QStyle::StandardPixmap, const QStyleOption *, const QWidget *) const"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOption"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOption *%out = qtjambi_cast<QStyleOption *>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "standardPixmap(QStyle::StandardPixmap, const QStyleOption *, const QWidget *) const"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOption"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOption *%out = qtjambi_cast<QStyleOption *>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
             signature: "styleHint(QStyle::StyleHint, const QStyleOption *, const QWidget *, QStyleHintReturn *) const"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOption"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOption *%out = qtjambi_cast<QStyleOption *>(%env, %in);"}
-                }
-            }
             ModifyArgument{
                 index: 4
                 invalidateAfterUse: true
-            }
-        }
-        ModifyFunction{
-            signature: "subControlRect(QStyle::ComplexControl, const QStyleOptionComplex *, QStyle::SubControl, const QWidget *) const"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionComplex"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionComplex *%out = qtjambi_cast<QStyleOptionComplex *>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "subElementRect(QStyle::SubElement, const QStyleOption *, const QWidget *) const"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOption"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOption *%out = qtjambi_cast<QStyleOption *>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "generatedIconPixmap(QIcon::Mode,QPixmap,const QStyleOption*)const"
-            ModifyArgument{
-                index: 3
-                invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOption"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOption *%out = qtjambi_cast<QStyleOption *>(%env, %in);"}
-                }
             }
         }
         ModifyFunction{
@@ -6030,53 +5578,6 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QPalette"
-                }
-                NoNullPointer{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %scope, &%in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QPalette &%out = qtjambi_cast<QPalette&>(%env, %scope, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "combinedLayoutSpacing(QFlags<QSizePolicy::ControlType>,QFlags<QSizePolicy::ControlType>,Qt::Orientation,QStyleOption*,QWidget*)const"
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOption"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOption *%out = qtjambi_cast<QStyleOption *>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "layoutSpacing(QSizePolicy::ControlType,QSizePolicy::ControlType,Qt::Orientation,const QStyleOption*,const QWidget*)const"
-            ModifyArgument{
-                index: 4
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOption"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOption *%out = qtjambi_cast<QStyleOption *>(%env, %in);"}
-                }
             }
         }
     }
@@ -6095,7 +5596,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "getColor(const QColor &, QWidget *, const QString &, QFlags<QColorDialog::ColorDialogOption>)"
+            signature: "getColor(const QColor &, QWidget *, const QString &, QColorDialog::ColorDialogOptions)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 1
@@ -6107,12 +5608,6 @@ TypeSystem{
         ModifyFunction{
             signature: "open(QObject*,const char*)"
             threadAffinity: true
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning
@@ -6125,7 +5620,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.lang.Integer"
+                    modifiedType: "java.lang.@Nullable Integer"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -6170,9 +5665,19 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "itemAt(int) const"
+            signature: "itemAt(int)const"
             ModifyArgument{
-                index: "return"
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Shell
+                    ownership: Ownership.Invalidate
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "replaceWidget(QWidget*,QWidget*,Qt::FindChildOptions)"
+            ModifyArgument{
+                index: 0
                 DefineOwnership{
                     codeClass: CodeClass.Shell
                     ownership: Ownership.Invalidate
@@ -6200,7 +5705,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "setAlignment(QWidget*,QFlags<Qt::AlignmentFlag>)"
+            signature: "setAlignment(QWidget*,Qt::Alignment)"
             ModifyArgument{
                 index: 1
                 ReferenceCount{
@@ -6209,7 +5714,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "setAlignment(QLayout*,QFlags<Qt::AlignmentFlag>)"
+            signature: "setAlignment(QLayout*,Qt::Alignment)"
             ModifyArgument{
                 index: 1
                 ReferenceCount{
@@ -6383,6 +5888,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "int[]"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "jsize %out_size = 4;\n"+
@@ -6514,7 +6020,7 @@ TypeSystem{
                 NoNullPointer{
                 }
                 DefineOwnership{
-                    codeClass: CodeClass.Java
+                    codeClass: CodeClass.Native
                     ownership: Ownership.Invalidate
                 }
             }
@@ -6532,7 +6038,7 @@ TypeSystem{
         }
         InjectCode{
             position: Position.End
-            Text{content: "@io.qt.QtUninvokable\n"+
+            Text{content: "@QtUninvokable\n"+
                           "void add_widget(QWidget widget){\n"+
                           "    stackWidget(widget);\n"+
                           "}"}
@@ -6687,7 +6193,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "addWidget(QWidget *, int, QFlags<Qt::AlignmentFlag>)"
+            signature: "addWidget(QWidget *, int, Qt::Alignment)"
             threadAffinity: true
             ModifyArgument{
                 index: 1
@@ -6717,7 +6223,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "insertWidget(int,QWidget*,int,QFlags<Qt::AlignmentFlag>)"
+            signature: "insertWidget(int,QWidget*,int,Qt::Alignment)"
             threadAffinity: true
             ModifyArgument{
                 index: 2
@@ -6744,7 +6250,7 @@ TypeSystem{
     ObjectType{
         name: "QGridLayout"
         ModifyFunction{
-            signature: "addLayout(QLayout *, int, int, QFlags<Qt::AlignmentFlag>)"
+            signature: "addLayout(QLayout *, int, int, Qt::Alignment)"
             ModifyArgument{
                 index: 1
                 ReferenceCount{
@@ -6753,7 +6259,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "addLayout(QLayout *, int, int, int, int, QFlags<Qt::AlignmentFlag>)"
+            signature: "addLayout(QLayout *, int, int, int, int, Qt::Alignment)"
             ModifyArgument{
                 index: 1
                 ReferenceCount{
@@ -6768,6 +6274,15 @@ TypeSystem{
                 DefineOwnership{
                     codeClass: CodeClass.Shell
                     ownership: Ownership.Invalidate
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "itemAtPosition(int,int)const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
                 }
             }
         }
@@ -6802,7 +6317,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "addWidget(QWidget*,int,int,QFlags<Qt::AlignmentFlag>)"
+            signature: "addWidget(QWidget*,int,int,Qt::Alignment)"
             threadAffinity: true
             ModifyArgument{
                 index: 1
@@ -6825,7 +6340,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "addWidget(QWidget*,int,int,int,int,QFlags<Qt::AlignmentFlag>)"
+            signature: "addWidget(QWidget*,int,int,int,int,Qt::Alignment)"
             threadAffinity: true
             ModifyArgument{
                 index: 1
@@ -6878,7 +6393,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "addItem(QLayoutItem *, int, int, int, int, QFlags<Qt::AlignmentFlag>)"
+            signature: "addItem(QLayoutItem *, int, int, int, int, Qt::Alignment)"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
@@ -6953,6 +6468,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "io.qt.widgets.QGridLayout$ItemInfo"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = Java::QtWidgets::QGridLayout$ItemInfo::newInstance(%env, %2, %3, %4, %5);"}
@@ -6970,6 +6486,38 @@ TypeSystem{
     
     ObjectType{
         name: "QFormLayout"
+        ValueType{
+            name: "TakeRowResult"
+            ModifyField{
+                name: "labelItem"
+                read: true
+                write: false
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+            ModifyField{
+                name: "fieldItem"
+                read: true
+                write: false
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        EnumType{
+            name: "FieldGrowthPolicy"
+        }
+
+        EnumType{
+            name: "ItemRole"
+        }
+
+        EnumType{
+            name: "RowWrapPolicy"
+        }
         ModifyFunction{
             signature: "itemAt(int) const"
             ModifyArgument{
@@ -6977,6 +6525,15 @@ TypeSystem{
                 DefineOwnership{
                     codeClass: CodeClass.Shell
                     ownership: Ownership.Invalidate
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "itemAt(int,QFormLayout::ItemRole) const"
+            ModifyArgument{
+                index: "return"
+                DefineOwnership{
+                    ownership: Ownership.Ignore
                 }
             }
         }
@@ -7050,6 +6607,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "io.qt.widgets.QFormLayout$ItemInfo"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = Java::QtWidgets::QFormLayout$ItemInfo::newInstance(%env, %2, qtjambi_cast<jobject>(%env, %3));"}
@@ -7083,6 +6641,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "io.qt.widgets.QFormLayout$ItemInfo"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = Java::QtWidgets::QFormLayout$ItemInfo::newInstance(%env, %2, qtjambi_cast<jobject>(%env, %3));"}
@@ -7116,6 +6675,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "io.qt.widgets.QFormLayout$ItemInfo"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = Java::QtWidgets::QFormLayout$ItemInfo::newInstance(%env, %2, qtjambi_cast<jobject>(%env, %3));"}
@@ -7660,6 +7220,24 @@ TypeSystem{
                 }
             }
         }
+        ModifyFunction{
+            signature: "itemAt(QPoint)const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "itemAt(int,int)const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
     }
     
     ObjectType{
@@ -7674,12 +7252,6 @@ TypeSystem{
         ModifyFunction{
             signature: "open(QObject*,const char*)"
             threadAffinity: true
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning
@@ -7687,12 +7259,12 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "getInt(QWidget*,const QString &,const QString &,int,int,int,int,bool*,QFlags<Qt::WindowType>)"
+            signature: "getInt(QWidget*,const QString &,const QString &,int,int,int,int,bool*,Qt::WindowFlags)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.lang.Integer"
+                    modifiedType: "java.lang.@Nullable Integer"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -7711,12 +7283,12 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "getDouble(QWidget *, const QString &, const QString &, double, double, double, int, bool *, QFlags<Qt::WindowType>)"
+            signature: "getDouble(QWidget *, const QString &, const QString &, double, double, double, int, bool *, Qt::WindowFlags)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.lang.Double"
+                    modifiedType: "java.lang.@Nullable Double"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -7736,12 +7308,12 @@ TypeSystem{
             until: 5
         }
         ModifyFunction{
-            signature: "getDouble(QWidget *, const QString &, const QString &, double, double, double, int, bool *, QFlags<Qt::WindowType>, double)"
+            signature: "getDouble(QWidget *, const QString &, const QString &, double, double, double, int, bool *, Qt::WindowFlags, double)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.lang.Double"
+                    modifiedType: "java.lang.@Nullable Double"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -7760,12 +7332,12 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "getItem(QWidget*,QString,QString,QStringList,int,bool,bool*,QFlags<Qt::WindowType>,QFlags<Qt::InputMethodHint>)"
+            signature: "getItem(QWidget*,QString,QString,QStringList,int,bool,bool*,Qt::WindowFlags,Qt::InputMethodHints)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.lang.String"
+                    modifiedType: "java.lang.@Nullable String"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -7784,12 +7356,12 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "getText(QWidget *, const QString &, const QString &, QLineEdit::EchoMode, const QString &, bool *, QFlags<Qt::WindowType>,QFlags<Qt::InputMethodHint>)"
+            signature: "getText(QWidget *, const QString &, const QString &, QLineEdit::EchoMode, const QString &, bool *, Qt::WindowFlags,Qt::InputMethodHints)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.lang.String"
+                    modifiedType: "java.lang.@Nullable String"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -7808,12 +7380,12 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "getMultiLineText(QWidget *, const QString &, const QString &, const QString &, bool *, QFlags<Qt::WindowType>,QFlags<Qt::InputMethodHint>)"
+            signature: "getMultiLineText(QWidget *, const QString &, const QString &, const QString &, bool *, Qt::WindowFlags,Qt::InputMethodHints)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.lang.String"
+                    modifiedType: "java.lang.@Nullable String"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -8076,7 +7648,29 @@ TypeSystem{
             }
         }
         ModifyFunction{
+            signature: "addEllipse(qreal,qreal,qreal,qreal, const QPen &, const QBrush &)"
+            threadAffinity: true
+            ModifyArgument{
+                index: "return"
+                DefineOwnership{
+                    codeClass: CodeClass.Java
+                    ownership: Ownership.Cpp
+                }
+            }
+        }
+        ModifyFunction{
             signature: "addEllipse(const QRectF &, const QPen &, const QBrush &)"
+            threadAffinity: true
+            ModifyArgument{
+                index: "return"
+                DefineOwnership{
+                    codeClass: CodeClass.Java
+                    ownership: Ownership.Cpp
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "addLine(qreal,qreal,qreal,qreal, const QPen &)"
             threadAffinity: true
             ModifyArgument{
                 index: "return"
@@ -8131,7 +7725,29 @@ TypeSystem{
             }
         }
         ModifyFunction{
+            signature: "addRect(qreal,qreal,qreal,qreal, const QPen &, const QBrush &)"
+            threadAffinity: true
+            ModifyArgument{
+                index: "return"
+                DefineOwnership{
+                    codeClass: CodeClass.Java
+                    ownership: Ownership.Cpp
+                }
+            }
+        }
+        ModifyFunction{
             signature: "addRect(const QRectF &, const QPen &, const QBrush &)"
+            threadAffinity: true
+            ModifyArgument{
+                index: "return"
+                DefineOwnership{
+                    codeClass: CodeClass.Java
+                    ownership: Ownership.Cpp
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "addSimpleText(const QString &, const QFont &)"
             threadAffinity: true
             ModifyArgument{
                 index: "return"
@@ -8153,7 +7769,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "addWidget(QWidget*,QFlags<Qt::WindowType>)"
+            signature: "addWidget(QWidget*,Qt::WindowFlags)"
             threadAffinity: true
             ModifyArgument{
                 index: "return"
@@ -8167,6 +7783,51 @@ TypeSystem{
                 DefineOwnership{
                     codeClass: CodeClass.Java
                     ownership: Ownership.Cpp
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "activePanel()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "focusItem()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "mouseGrabberItem()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "itemAt(QPointF,QTransform)const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "itemAt(qreal,qreal,QTransform)const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
                 }
             }
         }
@@ -8208,67 +7869,6 @@ TypeSystem{
                     ownership: Ownership.Java
                 }
             }
-        }
-        ExtraIncludes{
-            Include{
-                fileName: "io.qt.core.*"
-                location: Include.Java
-            }
-            Include{
-                fileName: "io.qt.gui.*"
-                location: Include.Java
-            }
-        }
-        InjectCode{
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiWidgets.java"
-                quoteAfterLine: "class QGraphicsScene___"
-                quoteBeforeLine: "}// class"
-            }
-        }
-        ModifyFunction{
-            signature: "addEllipse(const QRectF &, const QPen &, const QBrush &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "addEllipse(qreal, qreal, qreal, qreal, const QPen &, const QBrush &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "addLine(const QLineF &, const QPen &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "addLine(qreal, qreal, qreal, qreal, const QPen &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "addPath(const QPainterPath &, const QPen &, const QBrush &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "addPixmap(const QPixmap &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "addPolygon(const QPolygonF &, const QPen &, const QBrush &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "addRect(const QRectF &, const QPen &, const QBrush &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "addRect(qreal, qreal, qreal, qreal, const QPen &, const QBrush &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "addSimpleText(const QString &, const QFont &)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "addText(const QString &, const QFont &)"
-            remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "drawItems(QPainter*,int,QGraphicsItem**,const QStyleOptionGraphicsItem*,QWidget*)"
@@ -8433,7 +8033,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "setCurrentItem(QTreeWidgetItem*,int,QFlags<QItemSelectionModel::SelectionFlag>)"
+            signature: "setCurrentItem(QTreeWidgetItem*,int,QItemSelectionModel::SelectionFlags)"
             ModifyArgument{
                 index: 1
                 ReferenceCount{
@@ -8625,10 +8225,6 @@ TypeSystem{
         name: "QTableWidgetItem"
         threadAffinity: "%1->tableWidget()"
         ModifyFunction{
-            signature: "operator=(const QTableWidgetItem&)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
             signature: "clone() const"
             ModifyArgument{
                 index: "return"
@@ -8738,34 +8334,6 @@ TypeSystem{
         name: "QListWidgetItem"
         threadAffinity: "%1->listWidget()"
         ModifyFunction{
-            signature: "operator<(QListWidgetItem)const"
-            access: Modification.Private
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-        }
-        ModifyFunction{
-            signature: "read(QDataStream&)"
-            access: Modification.Protected
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-        }
-        ModifyFunction{
-            signature: "write(QDataStream&)const"
-            access: Modification.Protected
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-        }
-        ModifyFunction{
-            signature: "operator=(const QListWidgetItem&)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
             signature: "QListWidgetItem(const QListWidgetItem &)"
             remove: RemoveFlag.All
         }
@@ -8857,44 +8425,23 @@ TypeSystem{
         }
     }
     
-    ObjectType{
+    ValueType{
         name: "QTreeWidgetItem"
         implementing: "Iterable<io.qt.widgets.QTreeWidgetItem>"
         threadAffinity: "%1->treeWidget() ? %1->treeWidget()->model() : nullptr"
-        ModifyFunction{
-            signature: "operator<(QTreeWidgetItem)const"
-            access: Modification.Private
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
+
+        Rejection{enumName: "ItemType"}
+        Rejection{functionName: "treeModel"}
+
+        EnumType{
+            name: "ChildIndicatorPolicy"
         }
         ModifyFunction{
-            signature: "read(QDataStream&)"
-            access: Modification.Protected
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-        }
-        ModifyFunction{
-            signature: "write(QDataStream&)const"
-            access: Modification.Protected
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-        }
-        ModifyFunction{
-            signature: "operator=(const QTreeWidgetItem&)"
+            signature: "QTreeWidgetItem(const QTreeWidgetItem &)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "type()const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "QTreeWidgetItem(const QTreeWidgetItem &)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -9262,7 +8809,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "setCurrentItem(QListWidgetItem*,QFlags<QItemSelectionModel::SelectionFlag>)"
+            signature: "setCurrentItem(QListWidgetItem*,QItemSelectionModel::SelectionFlags)"
             ModifyArgument{
                 index: 1
                 ReferenceCount{
@@ -9357,32 +8904,64 @@ TypeSystem{
             until: 5
         }
         ModifyFunction{
-            signature: "addItem(const QString &)"
-            remove: RemoveFlag.All
+            signature: "currentItem()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
         }
         ModifyFunction{
-            signature: "addItems(const QStringList &)"
-            remove: RemoveFlag.All
+            signature: "item(int)const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
         }
         ModifyFunction{
-            signature: "insertItem(int, const QString &)"
-            remove: RemoveFlag.All
+            signature: "itemAt(QPoint)const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
         }
         ModifyFunction{
-            signature: "insertItems(int, const QStringList &)"
-            remove: RemoveFlag.All
+            signature: "itemAt(int,int)const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
         }
-        InjectCode{
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiWidgets.java"
-                quoteAfterLine: "class QListWidget___"
-                quoteBeforeLine: "}// class"
+        ModifyFunction{
+            signature: "itemFromIndex(QModelIndex)const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
             }
         }
     }
     
     ObjectType{
         name: "QWidget"
+
+        Rejection{functionName: "create"}
+        Rejection{functionName: "destroy"}
+        Rejection{functionName: "find"}
+        Rejection{functionName: "handle"}
+        Rejection{functionName: "styleChange"}
+        Rejection{functionName: "internalWinId"}
+        EnumType{
+            name: "RenderFlag"
+        }
         ExtraIncludes{
             Include{
                 fileName: "QIcon"
@@ -9693,7 +9272,7 @@ TypeSystem{
             threadAffinity: Affinity.UI
         }
         ModifyFunction{
-            signature: "setParent(QWidget *, QFlags<Qt::WindowType>)"
+            signature: "setParent(QWidget *, Qt::WindowFlags)"
             threadAffinity: Affinity.UI
         }
         ModifyFunction{
@@ -9837,19 +9416,19 @@ TypeSystem{
             threadAffinity: Affinity.UI
         }
         ModifyFunction{
-            signature: "setWindowFlags(QFlags<Qt::WindowType>)"
+            signature: "setWindowFlags(Qt::WindowFlags)"
             threadAffinity: Affinity.UI
         }
         ModifyFunction{
-            signature: "setWindowState(QFlags<Qt::WindowState>)"
+            signature: "setWindowState(Qt::WindowStates)"
             threadAffinity: Affinity.UI
         }
         ModifyFunction{
-            signature: "overrideWindowState(QFlags<Qt::WindowState>)"
+            signature: "overrideWindowState(Qt::WindowStates)"
             threadAffinity: Affinity.UI
         }
         ModifyFunction{
-            signature: "createWindowContainer(QWindow *, QWidget *, QFlags<Qt::WindowType>)"
+            signature: "createWindowContainer(QWindow *, QWidget *, Qt::WindowFlags)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 0
@@ -10107,7 +9686,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "render(QPaintDevice *, const QPoint &, const QRegion &, QFlags<QWidget::RenderFlag>)"
+            signature: "render(QPaintDevice *, const QPoint &, const QRegion &, QWidget::RenderFlags)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 4
@@ -10117,7 +9696,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "render(QPainter *, const QPoint &, const QRegion &, QFlags<QWidget::RenderFlag>)"
+            signature: "render(QPainter *, const QPoint &, const QRegion &, QWidget::RenderFlags)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 4
@@ -10168,7 +9747,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "setParent(QWidget*,QFlags<Qt::WindowType>)"
+            signature: "setParent(QWidget*,Qt::WindowFlags)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 1
@@ -10280,6 +9859,26 @@ TypeSystem{
                     action: ReferenceCount.Take
                 }
             }
+        }
+        ModifyFunction{
+            signature: "addAction<Args...,>(QIcon,QString,QKeySequence,Args&&)"
+            remove: RemoveFlag.All
+            since: 6.3
+        }
+        ModifyFunction{
+            signature: "addAction<Args...,>(QString,QKeySequence,Args&&)"
+            remove: RemoveFlag.All
+            since: 6.3
+        }
+        ModifyFunction{
+            signature: "addAction<Args...,>(QIcon,QString,Args&&)"
+            remove: RemoveFlag.All
+            since: 6.3
+        }
+        ModifyFunction{
+            signature: "addAction<Args...,>(QString,Args&&)"
+            remove: RemoveFlag.All
+            since: 6.3
         }
         ModifyFunction{
             signature: "addAction(QString)"
@@ -10395,7 +9994,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "grabGesture(Qt::GestureType, QFlags<Qt::GestureFlag>)"
+            signature: "grabGesture(Qt::GestureType, Qt::GestureFlags)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 2
@@ -10429,7 +10028,7 @@ TypeSystem{
                 index: 1
                 rename: "margins"
                 ReplaceType{
-                    modifiedType: "int[]"
+                    modifiedType: "int @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -10536,7 +10135,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "QMessageBox(QString,QString,QMessageBox::Icon,int,int,int,QWidget*,QFlags<Qt::WindowType>)"
+            signature: "QMessageBox(QString,QString,QMessageBox::Icon,int,int,int,QWidget*,Qt::WindowFlags)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -10588,19 +10187,19 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "information(QWidget *, QString, QString, QFlags<QMessageBox::StandardButton>, QMessageBox::StandardButton)"
+            signature: "information(QWidget *, QString, QString, QMessageBox::StandardButtons, QMessageBox::StandardButton)"
             threadAffinity: Affinity.UI
         }
         ModifyFunction{
-            signature: "question(QWidget *, QString, QString, QFlags<QMessageBox::StandardButton>, QMessageBox::StandardButton)"
+            signature: "question(QWidget *, QString, QString, QMessageBox::StandardButtons, QMessageBox::StandardButton)"
             threadAffinity: Affinity.UI
         }
         ModifyFunction{
-            signature: "warning(QWidget *, QString, QString, QFlags<QMessageBox::StandardButton>, QMessageBox::StandardButton)"
+            signature: "warning(QWidget *, QString, QString, QMessageBox::StandardButtons, QMessageBox::StandardButton)"
             threadAffinity: Affinity.UI
         }
         ModifyFunction{
-            signature: "critical(QWidget *, QString, QString, QFlags<QMessageBox::StandardButton>, QMessageBox::StandardButton)"
+            signature: "critical(QWidget *, QString, QString, QMessageBox::StandardButtons, QMessageBox::StandardButton)"
             threadAffinity: Affinity.UI
         }
         ModifyFunction{
@@ -10621,6 +10220,26 @@ TypeSystem{
                 location: Include.Local
             }
         }
+
+        EnumType{
+            name: "ButtonSymbols"
+        }
+
+        EnumType{
+            name: "CorrectionMode"
+        }
+
+        EnumType{
+            name: "StepType"
+        }
+
+        EnumType{
+            name: "StepEnabledFlag"
+        }
+        ModifyFunction{
+            signature: "initStyleOption(QStyleOptionSpinBox*)const"
+            access: Modification.NonFinal
+        }
         ModifyFunction{
             signature: "setReadOnly(bool)"
             threadAffinity: Affinity.UI
@@ -10637,68 +10256,6 @@ TypeSystem{
                 }
             }
         }
-        InjectCode{
-            target: CodeClass.Java
-            position: Position.Beginning
-            Text{content: "@io.qt.QtUninvokable\n"+
-                          "protected final void initStyleOption(io.qt.widgets.QStyleOptionSpinBox option){\n"+
-                          "    if(this instanceof QDateTimeEdit){\n"+
-                          "        ((QDateTimeEdit)this)._initStyleOption(option);\n"+
-                          "        return;\n"+
-                          "    }\n"+
-                          "    _initStyleOption(option);\n"+
-                          "}"}
-        }
-        ModifyFunction{
-            signature: "initStyleOption(QStyleOptionSpinBox*)const"
-            rename: "_initStyleOption"
-            access: Modification.Private
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionSpinBox"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionSpinBox* %out = qtjambi_cast<QStyleOptionSpinBox*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "fixup(QString&)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jstring %out = qtjambi_cast<jstring>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QString %out = qtjambi_cast<QString>(%env, %in);"}
-                }
-            }
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jstring %out = qtjambi_cast<jstring>(%env, __qt_%1);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "%1 = qtjambi_cast<QString>(%env, %in);"}
-                }
-            }
-        }
         ModifyFunction{
             signature: "validate(QString&,int&)const"
             ModifyArgument{
@@ -10706,6 +10263,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "io.qt.gui.QValidator$QValidationData"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Shell
                     InsertTemplate{
@@ -10771,6 +10329,14 @@ TypeSystem{
                 InsertTemplate{
                     name: "gui.cleanup_validationdata_to_java"
                 }
+            }
+        }
+        InjectCode{
+            target: CodeClass.Java
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiWidgets.java"
+                quoteAfterLine: "class QAbstractSpinBox___"
+                quoteBeforeLine: "}// class"
             }
         }
     }
@@ -10848,23 +10414,6 @@ TypeSystem{
                 }
             }
         }
-        ModifyFunction{
-            signature: "initStyleOption(QStyleOptionTabWidgetFrame*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionTabWidgetFrame"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionTabWidgetFrame* %out = qtjambi_cast<QStyleOptionTabWidgetFrame*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
     }
     
     ObjectType{
@@ -10890,46 +10439,10 @@ TypeSystem{
                 }
             }
         }
-        ModifyFunction{
-            signature: "initStyleOption(QStyleOptionSpinBox*)const"
-            rename: "_initStyleOption"
-            access: Modification.Friendly
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionSpinBox"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionSpinBox* %out = qtjambi_cast<QStyleOptionSpinBox*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
     }
     
     ObjectType{
         name: "QSlider"
-        ModifyFunction{
-            signature: "initStyleOption(QStyleOptionSlider*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionSlider"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionSlider* %out = qtjambi_cast<QStyleOptionSlider*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
     }
     
     ObjectType{
@@ -11017,34 +10530,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "picture()const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QPicture"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-            until: [5, 14]
-        }
-        ModifyFunction{
-            signature: "pixmap()const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QPixmap"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-            until: [5, 14]
-        }
-        ModifyFunction{
-            signature: "picture()const"
             remove: RemoveFlag.All
             since: [5, 15]
         }
@@ -11081,14 +10566,13 @@ TypeSystem{
         }
     }
     
-    FunctionalType{
-        name: "QFileDialog::FileContentHandler"
-        generate: false
-        using: "std::function<void(const QString&,const QByteArray&)>"
-    }
-    
     ObjectType{
         name: "QFileDialog"
+        FunctionalType{
+            name: "FileContentHandler"
+            generate: false
+            using: "std::function<void(const QString&,const QByteArray&)>"
+        }
         ExtraIncludes{
             Include{
                 fileName: "QUrl"
@@ -11129,12 +10613,6 @@ TypeSystem{
         ModifyFunction{
             signature: "open(QObject*,const char*)"
             threadAffinity: true
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
             InjectCode{
                 target: CodeClass.Java
                 position: Position.Beginning
@@ -11142,7 +10620,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "getExistingDirectory(QWidget*,QString,QString,QFlags<QFileDialog::Option>)"
+            signature: "getExistingDirectory(QWidget*,QString,QString,QFileDialog::Options)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 0
@@ -11153,7 +10631,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "getExistingDirectoryUrl(QWidget*,QString,QUrl,QFlags<QFileDialog::Option>,QStringList)"
+            signature: "getExistingDirectoryUrl(QWidget*,QString,QUrl,QFileDialog::Options,QStringList)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 0
@@ -11164,7 +10642,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "getOpenFileName(QWidget*,QString,QString,QString,QString*,QFlags<QFileDialog::Option>)"
+            signature: "getOpenFileName(QWidget*,QString,QString,QString,QString*,QFileDialog::Options)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 5
@@ -11179,7 +10657,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.widgets.QFileDialog$Result<java.lang.String>"
+                    modifiedType: "io.qt.widgets.QFileDialog$@NonNull Result<java.lang.@NonNull String>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -11190,7 +10668,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "getOpenFileNames(QWidget*,QString,QString,QString,QString*,QFlags<QFileDialog::Option>)"
+            signature: "getOpenFileNames(QWidget*,QString,QString,QString,QString*,QFileDialog::Options)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 5
@@ -11205,7 +10683,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.widgets.QFileDialog$Result<java.util.List<java.lang.String>>"
+                    modifiedType: "io.qt.widgets.QFileDialog$@NonNull Result<io.qt.core.@NonNull QStringList>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -11216,7 +10694,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "getSaveFileName(QWidget*,QString,QString,QString,QString*,QFlags<QFileDialog::Option>)"
+            signature: "getSaveFileName(QWidget*,QString,QString,QString,QString*,QFileDialog::Options)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 5
@@ -11231,7 +10709,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.widgets.QFileDialog$Result<java.lang.String>"
+                    modifiedType: "io.qt.widgets.QFileDialog$@NonNull Result<java.lang.@NonNull String>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -11242,7 +10720,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "getOpenFileUrl(QWidget*,QString,QUrl,QString,QString*,QFlags<QFileDialog::Option>,QStringList)"
+            signature: "getOpenFileUrl(QWidget*,QString,QUrl,QString,QString*,QFileDialog::Options,QStringList)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 5
@@ -11257,7 +10735,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.widgets.QFileDialog$Result<io.qt.core.QUrl>"
+                    modifiedType: "io.qt.widgets.QFileDialog$@NonNull Result<io.qt.core.@NonNull QUrl>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -11268,7 +10746,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "getOpenFileUrls(QWidget*,QString,QUrl,QString,QString*,QFlags<QFileDialog::Option>,QStringList)"
+            signature: "getOpenFileUrls(QWidget*,QString,QUrl,QString,QString*,QFileDialog::Options,QStringList)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 5
@@ -11283,7 +10761,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.widgets.QFileDialog$Result<java.util.List<io.qt.core.QUrl>>"
+                    modifiedType: "io.qt.widgets.QFileDialog$@NonNull Result<io.qt.core.@NonNull QList<io.qt.core.@NonNull QUrl>>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -11294,7 +10772,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "getSaveFileUrl(QWidget*,QString,QUrl,QString,QString*,QFlags<QFileDialog::Option>,QStringList)"
+            signature: "getSaveFileUrl(QWidget*,QString,QUrl,QString,QString*,QFileDialog::Options,QStringList)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 5
@@ -11309,7 +10787,7 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "io.qt.widgets.QFileDialog$Result<io.qt.core.QUrl>"
+                    modifiedType: "io.qt.widgets.QFileDialog$@NonNull Result<io.qt.core.@NonNull QUrl>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -11328,7 +10806,7 @@ TypeSystem{
                     expression: "null"
                 }
                 ReplaceType{
-                    modifiedType: "java.util.function.BiConsumer<String,io.qt.core.QByteArray>"
+                    modifiedType: "java.util.function.BiConsumer<@NonNull String,io.qt.core.@NonNull QByteArray>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -11337,7 +10815,7 @@ TypeSystem{
                                   "    JObjectWrapper wrapper(%env, %in);\n"+
                                   "    %out = [wrapper](const QString& value1,const QByteArray& value2){\n"+
                                   "                        if(JniEnvironment env{200}){\n"+
-                                  "                            jobject _value1 = qtjambi_cast<jobject>(env, value1);\n"+
+                                  "                            jstring _value1 = qtjambi_cast<jstring>(env, value1);\n"+
                                   "                            jobject _value2 = qtjambi_cast<jobject>(env, value2);\n"+
                                   "                            Java::Runtime::BiConsumer::accept(env, wrapper.object(), _value1, _value2);\n"+
                                   "                        }\n"+
@@ -11378,6 +10856,15 @@ TypeSystem{
                 }
             }
         }
+        ModifyFunction{
+            signature: "iconProvider()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
     }
     
     ObjectType{
@@ -11404,6 +10891,26 @@ TypeSystem{
                 location: Include.Global
             }
         }
+
+        EnumType{
+            name: "Shape"
+        }
+
+        EnumType{
+            name: "SelectionBehavior"
+        }
+
+        EnumType{
+            name: "ButtonPosition"
+        }
+        ModifyFunction{
+            signature: "initStyleOption(QStyleOptionTab*,int)const"
+            ModifyArgument{
+                index: 1
+                invalidateAfterUse: true
+            }
+            since: 6
+        }
         ModifyFunction{
             signature: "setTabButton(int,QTabBar::ButtonPosition,QWidget*)"
             threadAffinity: Affinity.UI
@@ -11414,65 +10921,14 @@ TypeSystem{
                 }
             }
         }
-        ModifyFunction{
-            signature: "initStyleOption(QStyleOptionTab*,int)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionTab"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionTab* %out = qtjambi_cast<QStyleOptionTab*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
     }
     
     ObjectType{
         name: "QRadioButton"
-        ModifyFunction{
-            signature: "initStyleOption(QStyleOptionButton*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionButton"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionButton* %out = qtjambi_cast<QStyleOptionButton*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
     }
     
     ObjectType{
         name: "QScrollBar"
-        ModifyFunction{
-            signature: "initStyleOption(QStyleOptionSlider*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionSlider"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionSlider* %out = qtjambi_cast<QStyleOptionSlider*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
     }
     
     ObjectType{
@@ -11483,7 +10939,7 @@ TypeSystem{
             threadAffinity: Affinity.UI
         }
         ModifyFunction{
-            signature: "addScrollBarWidget(QWidget*,QFlags<Qt::AlignmentFlag>)"
+            signature: "addScrollBarWidget(QWidget*,Qt::Alignment)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 1
@@ -11621,23 +11077,6 @@ TypeSystem{
             rename: "setRubberBandGeometry"
             threadAffinity: Affinity.UI
         }
-        ModifyFunction{
-            signature: "initStyleOption(QStyleOptionRubberBand*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionRubberBand"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionRubberBand* %out = qtjambi_cast<QStyleOptionRubberBand*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
     }
     
     ObjectType{
@@ -11759,7 +11198,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "setCurrentItem(QTableWidgetItem*,QFlags<QItemSelectionModel::SelectionFlag>)"
+            signature: "setCurrentItem(QTableWidgetItem*,QItemSelectionModel::SelectionFlags)"
             threadAffinity: Affinity.UI
             ModifyArgument{
                 index: 1
@@ -11880,6 +11319,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "io.qt.widgets.QSplitter$Range"
                 }
+                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = Java::QtWidgets::QSplitter$Range::newInstance(%env, %2, %3);"}
@@ -11890,23 +11330,6 @@ TypeSystem{
     
     ObjectType{
         name: "QGroupBox"
-        ModifyFunction{
-            signature: "initStyleOption(QStyleOptionGroupBox*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionGroupBox"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionGroupBox* %out = qtjambi_cast<QStyleOptionGroupBox*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
     }
     
     ObjectType{
@@ -11963,23 +11386,6 @@ TypeSystem{
     
     ObjectType{
         name: "QDial"
-        ModifyFunction{
-            signature: "initStyleOption(QStyleOptionSlider*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionSlider"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionSlider* %out = qtjambi_cast<QStyleOptionSlider*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
     }
     
     ObjectType{
@@ -12039,23 +11445,6 @@ TypeSystem{
             Include{
                 fileName: "QtJambi/JavaAPI"
                 location: Include.Global
-            }
-        }
-        ModifyFunction{
-            signature: "initStyleOption(QStyleOptionFrame*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionFrame"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionFrame* %out = qtjambi_cast<QStyleOptionFrame*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
             }
         }
     }
@@ -12144,23 +11533,6 @@ TypeSystem{
                 }
             }
         }
-        ModifyFunction{
-            signature: "initStyleOption(QStyleOptionDockWidget*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionDockWidget"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionDockWidget* %out = qtjambi_cast<QStyleOptionDockWidget*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
     }
     
     ObjectType{
@@ -12169,23 +11541,6 @@ TypeSystem{
     
     ObjectType{
         name: "QFrame"
-        ModifyFunction{
-            signature: "initStyleOption(QStyleOptionFrame*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionFrame"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionFrame* %out = qtjambi_cast<QStyleOptionFrame*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
     }
     
     ObjectType{
@@ -12257,6 +11612,16 @@ TypeSystem{
     
     ObjectType{
         name: "QToolBar"
+        ModifyFunction{
+            signature: "addAction<Func1>(QString,Func1)"
+            remove: RemoveFlag.All
+            until: 6.3
+        }
+        ModifyFunction{
+            signature: "addAction<Func1>(QIcon,QString,Func1)"
+            remove: RemoveFlag.All
+            until: 6.3
+        }
         ModifyFunction{
             signature: "addAction(QAction *)"
             remove: RemoveFlag.All
@@ -12332,23 +11697,6 @@ TypeSystem{
                 location: Include.Java
             }
             until: [6, 2]
-        }
-        ModifyFunction{
-            signature: "initStyleOption(QStyleOptionToolBar*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionToolBar"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionToolBar* %out = qtjambi_cast<QStyleOptionToolBar*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
         }
         InjectCode{
             until: [6, 2]
@@ -12556,24 +11904,7 @@ TypeSystem{
             until: 5
         }
         ModifyFunction{
-            signature: "initStyleOption(QStyleOptionComboBox*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionComboBox"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionComboBox* %out = qtjambi_cast<QStyleOptionComboBox*>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "findData(const QVariant&,int,QFlags<Qt::MatchFlag>)const"
+            signature: "findData(const QVariant&,int,Qt::MatchFlags)const"
             ModifyArgument{
                 index: 3
                 ReplaceDefaultExpression{
@@ -12582,7 +11913,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "findText(const QString&,QFlags<Qt::MatchFlag>)const"
+            signature: "findText(const QString&,Qt::MatchFlags)const"
             ModifyArgument{
                 index: 2
                 ReplaceDefaultExpression{
@@ -12730,6 +12061,15 @@ TypeSystem{
     
     ObjectType{
         name: "QApplication"
+        EnumType{
+            name: "ColorSpec"
+        }
+
+        Rejection{functionName: "compressEvent"}
+        Rejection{
+            functionName: "nativeInterface"
+            since: [6, 2]
+        }
         ExtraIncludes{
             Include{
                 fileName: "QBasicTimer"
@@ -12854,7 +12194,7 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 ReplaceType{
-                    modifiedType: "java.lang.String[]"
+                    modifiedType: "java.lang.@Nullable String @Nullable[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -12896,42 +12236,12 @@ TypeSystem{
                           "}"}
         }
         ModifyFunction{
-            signature: "font(const char*)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
             signature: "setFont(QFont,const char*)"
             threadAffinity: Affinity.UI
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "palette(const char*)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
         }
         ModifyFunction{
             signature: "setPalette(QPalette,const char*)"
             threadAffinity: Affinity.UI
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.lang.String"
-                }
-            }
         }
         ModifyFunction{
             signature: "notify(QObject *, QEvent *)"
@@ -12950,12 +12260,15 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "<QNativeInterface extends io.qt.QtObjectInterface> QNativeInterface"
+                    modifiedType: "<QNativeInterface extends @Nullable QtObjectInterface> QNativeInterface"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = QtJambiAPI::convertNativeToJavaObject(%env, %in, %1, false, false);\n"+
-                                  "CoreAPI::registerDependency(%env, %out, __this_nativeId);"}
+                    Text{content: "jobject %out = QtJambiAPI::convertNativeToJavaObjectAsWrapper(%env, %in, %1);"}
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Dependent
                 }
             }
             ModifyArgument{
@@ -12998,6 +12311,15 @@ TypeSystem{
     
     ObjectType{
         name: "QFileSystemModel"
+        EnumType{
+            name: "Roles"
+            until: 5
+        }
+        EnumType{
+            name: "Option"
+            since: [5, 14]
+            until: 5
+        }
         ModifyFunction{
             signature: "setIconProvider(QFileIconProvider*)"
             ModifyArgument{
@@ -13008,33 +12330,16 @@ TypeSystem{
                 }
             }
         }
-        until: 5
-    }
-    
-    EnumType{
-        name: "QFileSystemModel::Roles"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QFileSystemModel::Option"
-        flags: "QFileSystemModel::Options"
-        since: [5, 14]
-        until: 5
-    }
-    
-    ValueType{
-        name: "QFormLayout::TakeRowResult"
-        ModifyField{
-            name: "labelItem"
-            read: true
-            write: false
+        ModifyFunction{
+            signature: "iconProvider()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
         }
-        ModifyField{
-            name: "fieldItem"
-            read: true
-            write: false
-        }
+        until: 5
     }
     
     ObjectType{
@@ -13047,7 +12352,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "addItem(QGraphicsLayoutItem*,int,int,QFlags<Qt::AlignmentFlag>)"
+            signature: "addItem(QGraphicsLayoutItem*,int,int,Qt::Alignment)"
             threadAffinity: true
             ModifyArgument{
                 index: 1
@@ -13059,7 +12364,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "addItem(QGraphicsLayoutItem*,int,int,int,int,QFlags<Qt::AlignmentFlag>)"
+            signature: "addItem(QGraphicsLayoutItem*,int,int,int,int,Qt::Alignment)"
             threadAffinity: true
             ModifyArgument{
                 index: 1
@@ -13071,7 +12376,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "setAlignment(QGraphicsLayoutItem*,QFlags<Qt::AlignmentFlag>)"
+            signature: "setAlignment(QGraphicsLayoutItem*,Qt::Alignment)"
             threadAffinity: true
             ModifyArgument{
                 index: 1
@@ -13116,6 +12421,15 @@ TypeSystem{
                 }
                 Text{content: "if (%1 instanceof QGraphicsWidget)\n"+
                               "QtJambi_LibraryUtilities.internal.setCppOwnership(%this);"}
+            }
+        }
+        ModifyFunction{
+            signature: "itemAt(int,int)const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
             }
         }
     }
@@ -13208,7 +12522,7 @@ TypeSystem{
                 index: 1
                 rename: "margins"
                 ReplaceType{
-                    modifiedType: "double[]"
+                    modifiedType: "double @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -13264,6 +12578,15 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "qreal* %out = __qt_%1+3;"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "itemAt(int)const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
                 }
             }
         }
@@ -13363,7 +12686,7 @@ TypeSystem{
                 index: 1
                 rename: "margins"
                 ReplaceType{
-                    modifiedType: "double[]"
+                    modifiedType: "double @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -13464,13 +12787,31 @@ TypeSystem{
                               "}"}
             }
         }
+        ModifyFunction{
+            signature: "graphicsItem()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "parentLayoutItem()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
         InjectCode{
             target: CodeClass.JavaInterface
             Text{content: "/**\n"+
                           " * @see #getContentsMargins(double[])\n"+
                           " */\n"+
-                          "@io.qt.QtDeclaredFinal\n"+
-                          "@io.qt.QtUninvokable\n"+
+                          "@QtDeclaredFinal\n"+
+                          "@QtUninvokable\n"+
                           "public default io.qt.core.QMarginsF contentsMargins(){\n"+
                           "    double[] mrg = {0.0, 0.0, 0.0, 0.0};\n"+
                           "    getContentsMargins(mrg);\n"+
@@ -13525,7 +12866,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "setAlignment(QGraphicsLayoutItem*,QFlags<Qt::AlignmentFlag>)"
+            signature: "setAlignment(QGraphicsLayoutItem*,Qt::Alignment)"
             threadAffinity: true
             ModifyArgument{
                 index: 1
@@ -13603,7 +12944,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "addAnchors(QGraphicsLayoutItem *, QGraphicsLayoutItem *, QFlags<Qt::Orientation>)"
+            signature: "addAnchors(QGraphicsLayoutItem *, QGraphicsLayoutItem *, Qt::Orientations)"
             threadAffinity: true
             ModifyArgument{
                 index: 1
@@ -13870,7 +13211,7 @@ TypeSystem{
             threadAffinity: true
         }
         ModifyFunction{
-            signature: "setWindowFlags(QFlags<Qt::WindowType>)"
+            signature: "setWindowFlags(Qt::WindowFlags)"
             threadAffinity: true
         }
         ModifyFunction{
@@ -14101,7 +13442,7 @@ TypeSystem{
                 index: 1
                 rename: "margins"
                 ReplaceType{
-                    modifiedType: "double[]"
+                    modifiedType: "double @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -14193,7 +13534,7 @@ TypeSystem{
                 index: 1
                 rename: "margins"
                 ReplaceType{
-                    modifiedType: "double[]"
+                    modifiedType: "double @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -14237,41 +13578,6 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "initStyleOption(QStyleOption*)const"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOption"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOption *%out = qtjambi_cast<QStyleOption *>(%env, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "paintWindowFrame(QPainter*,const QStyleOptionGraphicsItem*,QWidget*)"
-            ModifyArgument{
-                index: 2
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "const QStyleOptionGraphicsItem *%out = qtjambi_cast<QStyleOptionGraphicsItem *>(%env, %in);"}
-                }
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionGraphicsItem"
-                }
-            }
-        }
-        ModifyFunction{
             signature: "setLayout(QGraphicsLayout*)"
             threadAffinity: true
             ModifyArgument{
@@ -14280,6 +13586,33 @@ TypeSystem{
                 DefineOwnership{
                     codeClass: CodeClass.Java
                     ownership: Ownership.Cpp
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "graphicsItem()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "layout()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "parentLayoutItem()const"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    ownership: Ownership.Ignore
                 }
             }
         }
@@ -14386,6 +13719,13 @@ TypeSystem{
             }
         }
         ModifyFunction{
+            signature: "initStyleOption(QStyleOptionViewItem*,QModelIndex)const"
+            ModifyArgument{
+                index: 1
+                invalidateAfterUse: true
+            }
+        }
+        ModifyFunction{
             signature: "setItemEditorFactory(QItemEditorFactory*)"
             ModifyArgument{
                 index: 1
@@ -14428,23 +13768,6 @@ TypeSystem{
                 invalidateAfterUse: true
             }
         }
-        ModifyFunction{
-            signature: "initStyleOption(QStyleOptionViewItem*,QModelIndex)const"
-            ModifyArgument{
-                index: 1
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOptionViewItem *%out = qtjambi_cast<QStyleOptionViewItem *>(%env, %in);"}
-                }
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOptionViewItem"
-                }
-            }
-        }
     }
     
     
@@ -14456,17 +13779,6 @@ TypeSystem{
                 index: 3
                 invalidateAfterUse: true
                 NoNullPointer{
-                }
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QPicture"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QPicture *%out = qtjambi_cast<QPicture *>(%env, %in);"}
                 }
             }
         }
@@ -14510,24 +13822,6 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
-            }
-        }
-        ModifyFunction{
-            signature: "sourcePixmap(Qt::CoordinateSystem, QPoint *, QGraphicsEffect::PixmapPadMode) const"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.core.QPoint"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QPoint *%out = qtjambi_cast<QPoint *>(%env, %in);"}
-                }
             }
         }
     }
@@ -14659,7 +13953,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "grabGesture(Qt::GestureType, QFlags<Qt::GestureFlag>)"
+            signature: "grabGesture(Qt::GestureType, Qt::GestureFlags)"
             ModifyArgument{
                 index: 2
                 ReplaceDefaultExpression{
@@ -14678,17 +13972,6 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix4x4"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QMatrix4x4 *%out = qtjambi_cast<QMatrix4x4 *>(%env, %in);"}
-                }
             }
         }
     }
@@ -14700,17 +13983,6 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix4x4"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QMatrix4x4 *%out = qtjambi_cast<QMatrix4x4 *>(%env, %in);"}
-                }
             }
         }
     }
@@ -14722,17 +13994,6 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
-                ReplaceType{
-                    modifiedType: "io.qt.gui.QMatrix4x4"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QMatrix4x4 *%out = qtjambi_cast<QMatrix4x4 *>(%env, %in);"}
-                }
             }
         }
     }
@@ -14761,23 +14022,6 @@ TypeSystem{
                 threadAffinity: true
                 ReferenceCount{
                     action: ReferenceCount.Ignore
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "standardPixmap(QStyle::StandardPixmap, const QStyleOption *, const QWidget *) const"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "io.qt.widgets.QStyleOption"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QStyleOption *%out = qtjambi_cast<QStyleOption *>(%env, %in);"}
                 }
             }
         }
@@ -14871,6 +14115,10 @@ TypeSystem{
         name: "QTreeWidgetItemIterator"
         implementing: "Iterable<io.qt.widgets.QTreeWidgetItem>, java.util.Iterator<io.qt.widgets.QTreeWidgetItem>"
         threadAffinity: "getPointerOwner(%1)"
+
+        EnumType{
+            name: "IteratorFlag"
+        }
         ExtraIncludes{
             Include{
                 fileName: "utils_p.h"
@@ -14879,10 +14127,6 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "QTreeWidgetItemIterator(QTreeWidgetItemIterator)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator=(QTreeWidgetItemIterator)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -14915,7 +14159,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "QTreeWidgetItemIterator(QTreeWidget *,QFlags<QTreeWidgetItemIterator::IteratorFlag>)"
+            signature: "QTreeWidgetItemIterator(QTreeWidget *,QTreeWidgetItemIterator::IteratorFlags)"
             ModifyArgument{
                 index: 1
                 NoNullPointer{
@@ -14931,7 +14175,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "QTreeWidgetItemIterator(QTreeWidgetItem *,QFlags<QTreeWidgetItemIterator::IteratorFlag>)"
+            signature: "QTreeWidgetItemIterator(QTreeWidgetItem *,QTreeWidgetItemIterator::IteratorFlags)"
             InjectCode{
                 position: Position.Beginning
                 ArgumentMap{
@@ -14963,7 +14207,7 @@ TypeSystem{
             ModifyArgument{
                 index: "return"
                 ReplaceType{
-                    modifiedType: "io.qt.widgets.QTreeWidgetItem"
+                    modifiedType: "io.qt.widgets.@Nullable QTreeWidgetItem"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -15014,18 +14258,6 @@ TypeSystem{
     
     ValueType{
         name: "QScrollerProperties"
-        ModifyFunction{
-            signature: "operator=(QScrollerProperties)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator==(const QScrollerProperties&)const"
-            access: Modification.Private
-        }
-        ModifyFunction{
-            signature: "operator!=(const QScrollerProperties&)const"
-            access: Modification.Private
-        }
     }
     
     EnumType{
@@ -15056,17 +14288,11 @@ TypeSystem{
     
     NamespaceType{
         name: "QDrawBorderPixmap"
-        generate: false
-    }
-    
-    NamespaceType{
-        name: "QtDrawUtil"
-    }
-    
-    EnumType{
-        name: "QDrawBorderPixmap::DrawingHint"
-        flags: "QDrawBorderPixmap::DrawingHints"
-        javaScope: "QtDrawUtil"
+        javaName: "QtDrawUtil"
+
+        EnumType{
+            name: "DrawingHint"
+        }
     }
     
     GlobalFunction{
@@ -15304,4 +14530,6 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QTileRules."}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QTableWidgetSelectionRange."}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QStyleOption."}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'hasEditFocus()const' for function modification in 'QWidget' not found. Possible candidates: "}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'setEditFocus(bool)' for function modification in 'QWidget' not found. Possible candidates: "}
 }
