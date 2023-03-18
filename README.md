@@ -57,7 +57,7 @@ This saves compilation time. Although QtJambi build process requires the availab
 
 `> set PATH=...\apache-ant-1.10.3\bin;%PATH%`
 
-`> set QTDIR=C:\Qt\6.4.2\msvc2019_64`
+`> set QTDIR=C:\Qt\6.4.3\msvc2019_64`
 
 #### Pre-Build Steps On Linux and macOS
 
@@ -67,9 +67,9 @@ This saves compilation time. Although QtJambi build process requires the availab
 
 `> export JAVA_HOME_TARGET=path to your java jdk`
 
-`> export QTDIR=/opt/Qt/6.4.2/gcc_64` on Linux
+`> export QTDIR=/opt/Qt/6.4.3/gcc_64` on Linux
 
-`> export QTDIR=/opt/Qt/6.4.2/macos` on macOS
+`> export QTDIR=/opt/Qt/6.4.3/macos` on macOS
 
 #### Building Bindings
 
@@ -87,6 +87,19 @@ This saves compilation time. Although QtJambi build process requires the availab
 
 * Finally, find all Java libraries in directory `$VERSION/deployment` and all native libraries in platform- and configuration-specific subdirectory, e.g. `native/windows-x64/release`.
 
+#### Cross-Compilation
+
+After building QtJambi for the running operation system you can additionally cross-compile QtJambi for other platforms.
+For instance if you want to build for Android use the following command (on Windows):
+
+`> ant -Dqmake=C:\Qt\6.4.3\android_x86_64\bin\qmake.bat library.native`
+
+or if you want to build for Linux arm:
+
+`> ant -Dqmake=/opt/Qt/6.4.3/arm-gnueabi/bin/qmake library.native`
+
+Just specify the third-platform cross-compiled qmake with `-Dqmake=path`.
+
 ## How To Use QtJambi
 
 ### Example
@@ -102,7 +115,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `5.15.13`, `6.2.11` or by `6.4.3`).
+(exchange `$VERSION` either by `5.15.14`, `6.2.12` or by `6.4.4`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 
@@ -122,7 +135,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.4.3.jar Test.java
+javac -cp qtjambi-6.4.4.jar Test.java
 ```
 
 ### Execute Example
@@ -141,19 +154,19 @@ In case your Linux distribution provides Qt (of correct version) as system libra
 The example program can be executed this way on Windows:
 
 ``` powershell
-java -cp qtjambi-6.4.3.jar;. -Djava.library.path=C:\Qt\6.4.2\msvc2019_64\bin Test
+java -cp qtjambi-6.4.4.jar;. -Djava.library.path=C:\Qt\6.4.3\msvc2019_64\bin Test
 ```
 
 On Linux it looks this way:
 
 ``` bash
-java -cp qtjambi-6.4.3.jar:. -Djava.library.path=<path to>/Qt/6.4.2/gcc_64/lib Test
+java -cp qtjambi-6.4.4.jar:. -Djava.library.path=<path to>/Qt/6.4.3/gcc_64/lib Test
 ```
 
 On macOS you additionally need to use the start parameter -XstartOnFirstThread:
 
 ``` bash
-java -cp qtjambi-6.4.3.jar:. -Djava.library.path=<path to>/Qt/6.4.2/macos/lib -XstartOnFirstThread Test
+java -cp qtjambi-6.4.4.jar:. -Djava.library.path=<path to>/Qt/6.4.3/macos/lib -XstartOnFirstThread Test
 ```
 
 In general, you can start learning how to use Qt in Java [as it is introduced for C++](https://doc.qt.io/qt-6/gettingstarted.html#create-your-first-applications). 
