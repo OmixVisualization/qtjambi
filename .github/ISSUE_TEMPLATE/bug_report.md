@@ -1,6 +1,7 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Create a report to help us improve. For questions, ideas and other messages
+  not referred to a bug consider using the [Discussions](discussions) section.
 title: "[BUG]"
 labels: bug
 assignees: omix
