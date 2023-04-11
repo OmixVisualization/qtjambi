@@ -112,8 +112,14 @@ public class CreateFunctionPointerQrcTask extends Task {
 				stream.println("</file>");
 				stream.append("        <file alias=\"QVariant(QJSValue const&amp;)\">../lib/").append(String.format(libFormat, "QmlTypeCreatorFunction"));
 				stream.println("</file>");
+				stream.append("        <file alias=\"QUntypedPropertyBinding(QUntypedPropertyData const*,QPropertyBindingSourceLocation const&amp;)\">../lib/").append(String.format(libFormat, "MakeBindingFunction"));
+				stream.println("</file>");
+				stream.append("        <file alias=\"bool(QMetaType,QUntypedPropertyData*,QtPrivate::QPropertyBindingFunction)\">../lib/").append(String.format(libFormat, "PropertyBindingWrapperFunction"));
+				stream.println("</file>");
+				stream.append("        <file alias=\"QUntypedPropertyBinding(QUntypedPropertyData*,QUntypedPropertyBinding const&amp;)\">../lib/").append(String.format(libFormat, "BindingSetterFunction"));
+				stream.println("</file>");
 			}else {
-				stream.append("        <file alias=\"QtMetaTypePrivate::VariantData(const void*const*, int, unsigned int)\">../lib/").append(String.format(libFormat, "VariantDataFunction"));
+				stream.append("        <file alias=\"QtMetaTypePrivate::VariantData(void* const*,int,unsigned int)\">../lib/").append(String.format(libFormat, "VariantDataFunction"));
 				stream.println("</file>");
 			}
 			stream.println("    </qresource>");

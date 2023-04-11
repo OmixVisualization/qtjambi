@@ -28,8 +28,7 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.NativeAccess;
-import io.qt.QtPrimitiveType;
+import io.qt.*;
 import io.qt.QtUtilities.ByteSupplier;
 
 /**
@@ -47,7 +46,7 @@ public final class QBytePropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QBytePropertyBinding</code> with the given functor <code>f</code>.
 	 * @param t
 	 */
-	public QBytePropertyBinding(ByteSupplier f) {
+	public QBytePropertyBinding(@StrictNonNull ByteSupplier f) {
 		super(f);
 	}
 	
@@ -55,7 +54,7 @@ public final class QBytePropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QBytePropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QBytePropertyBinding(QByteProperty property) {
+	public QBytePropertyBinding(@StrictNonNull QByteProperty property) {
 		super(property.bindingData());
 	}
 	
@@ -63,7 +62,7 @@ public final class QBytePropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QBytePropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QBytePropertyBinding(QObject.QByteProperty property) {
+	public QBytePropertyBinding(QObject.@StrictNonNull QByteProperty property) {
 		super(property.bindingData());
 	}
 	
@@ -71,7 +70,7 @@ public final class QBytePropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QBytePropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QBytePropertyBinding(QObject.QComputedByteProperty property) {
+	public QBytePropertyBinding(QObject.@StrictNonNull QComputedByteProperty property) {
 		super(property.bindingData());
 	}
 	
@@ -79,7 +78,7 @@ public final class QBytePropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QBytePropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QBytePropertyBinding(QProperty<@QtPrimitiveType Byte> property) {
+	public QBytePropertyBinding(@StrictNonNull QProperty<@NonNull@QtPrimitiveType Byte> property) {
 		super(check(property.bindingData(), property.valueMetaType()));
 	}
 	
@@ -87,7 +86,7 @@ public final class QBytePropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QBytePropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QBytePropertyBinding(QObject.QProperty<@QtPrimitiveType Byte> property) {
+	public QBytePropertyBinding(QObject.@StrictNonNull QProperty<@NonNull@QtPrimitiveType Byte> property) {
 		super(check(property.bindingData(), property.valueMetaType()));
 	}
 	
@@ -95,7 +94,7 @@ public final class QBytePropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QBytePropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QBytePropertyBinding(QObject.QComputedProperty<@QtPrimitiveType Byte> property) {
+	public QBytePropertyBinding(QObject.@StrictNonNull QComputedProperty<@NonNull@QtPrimitiveType Byte> property) {
 		super(check(property.bindingData(), property.valueMetaType()));
 	}
 	
@@ -103,7 +102,7 @@ public final class QBytePropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QBytePropertyBinding</code> as copy of the given binding.
 	 * @param other
 	 */
-	public QBytePropertyBinding(QBytePropertyBinding other) {
+	public QBytePropertyBinding(@StrictNonNull QBytePropertyBinding other) {
 		super(other);
 	}
 	
@@ -111,7 +110,7 @@ public final class QBytePropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QBytePropertyBinding</code> as copy of the given binding.
 	 * @param other
 	 */
-	public QBytePropertyBinding(QPropertyBinding<@QtPrimitiveType Byte> other) {
+	public QBytePropertyBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Byte> other) {
 		super(check(other, false));
 	}
 

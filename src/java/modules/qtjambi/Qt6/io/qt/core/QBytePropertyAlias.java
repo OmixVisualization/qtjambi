@@ -28,8 +28,7 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.QtPrimitiveType;
-import io.qt.QtUninvokable;
+import io.qt.*;
 
 /**
  * QBytePropertyAlias is primitive-typed version of QPropertyAlias&lt;Byte&gt;.
@@ -37,7 +36,7 @@ import io.qt.QtUninvokable;
  */
 public final class QBytePropertyAlias extends QAbstractPropertyAlias {
 	
-	private static QPropertyAlias<@QtPrimitiveType Byte> check(QPropertyAlias<@QtPrimitiveType Byte> other){
+	private static QPropertyAlias<@NonNull@QtPrimitiveType Byte> check(QPropertyAlias<@NonNull@QtPrimitiveType Byte> other){
 		if(other.iface!=null && !QByteProperty.checkType(other.iface.metaType())) {
 			throw new IllegalArgumentException("Given QPropertyAlias is not of byte type.");
 		}
@@ -55,7 +54,7 @@ public final class QBytePropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided alias.
 	 * @param other
 	 */
-	public QBytePropertyAlias(QPropertyAlias<@QtPrimitiveType Byte> other) {
+	public QBytePropertyAlias(@StrictNonNull QPropertyAlias<@NonNull@QtPrimitiveType Byte> other) {
 		super(check(other));
 	}
 
@@ -63,7 +62,7 @@ public final class QBytePropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QBytePropertyAlias(QByteProperty property) {
+	public QBytePropertyAlias(@StrictNonNull QByteProperty property) {
 		super(property, QByteBindable.bindableInterface(0));
 	}
 	
@@ -71,7 +70,7 @@ public final class QBytePropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QBytePropertyAlias(QObject.QByteProperty property) {
+	public QBytePropertyAlias(QObject.@StrictNonNull QByteProperty property) {
 		super(property, QByteBindable.bindableInterface(1));
 	}
 	
@@ -79,7 +78,7 @@ public final class QBytePropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QBytePropertyAlias(QObject.QComputedByteProperty property) {
+	public QBytePropertyAlias(QObject.@StrictNonNull QComputedByteProperty property) {
 		super(property, QByteBindable.bindableInterface(2));
 	}
 	
@@ -87,7 +86,7 @@ public final class QBytePropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QBytePropertyAlias(QProperty<@QtPrimitiveType Byte> property) {
+	public QBytePropertyAlias(@StrictNonNull QProperty<@NonNull@QtPrimitiveType Byte> property) {
 		super(property, QBindable.bindableInterface(check(property.valueMetaType()).id(), 0));
 	}
 	
@@ -95,7 +94,7 @@ public final class QBytePropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QBytePropertyAlias(QObject.QProperty<@QtPrimitiveType Byte> property) {
+	public QBytePropertyAlias(QObject.@StrictNonNull QProperty<@NonNull@QtPrimitiveType Byte> property) {
 		super(property, QBindable.bindableInterface(check(property.valueMetaType()).id(), 1));
 	}
 	
@@ -103,7 +102,7 @@ public final class QBytePropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QBytePropertyAlias(QObject.QComputedProperty<@QtPrimitiveType Byte> property) {
+	public QBytePropertyAlias(QObject.@StrictNonNull QComputedProperty<@NonNull@QtPrimitiveType Byte> property) {
 		super(property, QBindable.bindableInterface(check(property.valueMetaType()).id(), 2));
 	}
 	
@@ -111,7 +110,7 @@ public final class QBytePropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided alias.
 	 * @param other
 	 */
-	public QBytePropertyAlias(QBytePropertyAlias alias) {
+	public QBytePropertyAlias(@StrictNonNull QBytePropertyAlias alias) {
 		super(alias);
 	}
 	
@@ -119,7 +118,7 @@ public final class QBytePropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided binding's underlying property.
 	 * @param other
 	 */
-	public QBytePropertyAlias(QByteBindable bindable) {
+	public QBytePropertyAlias(@StrictNonNull QByteBindable bindable) {
 		super(bindable.data(), bindable.iface());
 	}
 	
@@ -127,7 +126,7 @@ public final class QBytePropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided binding's underlying property.
 	 * @param other
 	 */
-	public QBytePropertyAlias(QBindable<@QtPrimitiveType Byte> bindable) {
+	public QBytePropertyAlias(@StrictNonNull QBindable<@NonNull@QtPrimitiveType Byte> bindable) {
 		super(bindable.data(), bindable.iface());
 		check(bindable.valueMetaType());
 	}
@@ -152,7 +151,7 @@ public final class QBytePropertyAlias extends QAbstractPropertyAlias {
 	 * @see QByteProperty#setBinding(QBytePropertyBinding)
 	 */
 	@QtUninvokable
-	public QBytePropertyBinding setBinding(QBytePropertyBinding newBinding) {
+	public @NonNull QBytePropertyBinding setBinding(@StrictNonNull QBytePropertyBinding newBinding) {
 		return new QByteBindable(aliasedProperty(), iface).setBinding(newBinding);
     }
 	
@@ -160,7 +159,7 @@ public final class QBytePropertyAlias extends QAbstractPropertyAlias {
 	 * @see QByteProperty#setBinding(QPropertyBinding)
 	 */
 	@QtUninvokable
-	public QBytePropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Byte> newBinding) {
+	public @NonNull QBytePropertyBinding setBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Byte> newBinding) {
 		return new QByteBindable(aliasedProperty(), iface).setBinding(newBinding);
     }
 	
@@ -168,7 +167,7 @@ public final class QBytePropertyAlias extends QAbstractPropertyAlias {
 	 * @see QByteProperty#setBinding(io.qt.QtUtilities.ByteSupplier)
 	 */
 	@QtUninvokable
-	public QBytePropertyBinding setBinding(io.qt.QtUtilities.ByteSupplier functor) {
+	public @NonNull QBytePropertyBinding setBinding(io.qt.QtUtilities.@StrictNonNull ByteSupplier functor) {
         return setBinding(new QBytePropertyBinding(functor));
     }
 	
@@ -176,7 +175,7 @@ public final class QBytePropertyAlias extends QAbstractPropertyAlias {
 	 * @see QByteProperty#binding()
 	 */
 	@QtUninvokable
-	public QBytePropertyBinding binding() {
+	public @NonNull QBytePropertyBinding binding() {
         return new QByteBindable(aliasedProperty(), iface).binding();
     }
 	
@@ -184,7 +183,7 @@ public final class QBytePropertyAlias extends QAbstractPropertyAlias {
 	 * @see QByteProperty#takeBinding()
 	 */
 	@QtUninvokable
-	public QBytePropertyBinding takeBinding() {
+	public @NonNull QBytePropertyBinding takeBinding() {
         return new QByteBindable(aliasedProperty(), iface).takeBinding();
     }
 }

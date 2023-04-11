@@ -1,18 +1,13 @@
-# What's new in QtJambi 6.4.4 / 6.2.12 / 5.15.14
+# What's new in QtJambi 6.5.0
 
 ## Bugfixes
 
 Solved issues:
-* [Issue 129](../../../issues/129): UIC to Kotlin errors and exceptions
-* [Issue 135](../../../issues/135): Decreasing UI performance of QListView
-* [Issue 125](../../../issues/125): Slow/Unresponsive UI starting Jambi 6.4.2
+* [Issue 143](../../../issues/143): QObject.connect methods are non-static with 6.4.4
 
 ## New Features
 
-* QtJambi API now gives information about arguments' nullability.
+* `QJSEngine::CppOwnership` is now renamed to `JavaOwnership` to avoid missunderstanding. When working with Qml, QObjects are either managed by the Java programmer or by the Qml engine.
 * Further improvements of QtJambi generator.
 
-## Compatibility
-
-QtJambi 6.4.4, 6.2.12 and 5.15.14 are source- and binary-compatible to its predecessor releases. 
 

@@ -71,9 +71,8 @@ TypeSystem{
         since: [6, 4]
     }
     
-    ValueType{
+    ObjectType{
         name: "QPdfDestination"
-        noMetaType: true
         generate: "no-shell"
         ModifyFunction{
             signature: "QPdfDestination()"
@@ -192,18 +191,13 @@ TypeSystem{
         }
     }
     
-    ValueType{
+    ObjectType{
         name: "QPdfSelection"
-        noMetaType: true
         ExtraIncludes{
             Include{
                 fileName: "QtJambiGui/hashes.h"
                 location: Include.Global
             }
-        }
-        ModifyFunction{
-            signature: "QPdfSelection(QPdfSelection)"
-            remove: RemoveFlag.All
         }
     }
     

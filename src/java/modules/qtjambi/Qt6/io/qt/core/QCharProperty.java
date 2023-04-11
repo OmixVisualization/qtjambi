@@ -28,8 +28,7 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.QtPrimitiveType;
-import io.qt.QtUninvokable;
+import io.qt.*;
 
 /**
  * QCharProperty is primitive-typed version of QProperty&lt;Character&gt;.
@@ -65,7 +64,7 @@ public final class QCharProperty extends QCharPropertyData {
      * Constructs a <code>char</code>-typed property with the provided binding.
      * @param binding
      */
-	public QCharProperty(QCharPropertyBinding binding) {
+	public QCharProperty(@StrictNonNull QCharPropertyBinding binding) {
 		super();
 		d.setBinding(binding, this);
 	}
@@ -74,7 +73,7 @@ public final class QCharProperty extends QCharPropertyData {
      * Constructs a <code>char</code>-typed property with the provided binding.
      * @param binding
      */
-	public QCharProperty(QPropertyBinding<@QtPrimitiveType Character> binding) {
+	public QCharProperty(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Character> binding) {
 		super();
 		if(checkType(binding.valueMetaType()))
 			d.setBinding(binding, this);
@@ -84,7 +83,7 @@ public final class QCharProperty extends QCharPropertyData {
      * <p>Constructs a <code>char</code>-typed property bound to the provided <code>functor</code>.</p>
      * @param functor
      */
-	public QCharProperty(io.qt.QtUtilities.CharSupplier functor) {
+	public QCharProperty(io.qt.QtUtilities.@StrictNonNull CharSupplier functor) {
 		this(new QCharPropertyBinding(functor));
 	}
 	
@@ -121,7 +120,7 @@ public final class QCharProperty extends QCharPropertyData {
 	 * @return oldBinding
 	 */
 	@QtUninvokable
-	public QCharPropertyBinding setBinding(QCharPropertyBinding newBinding)
+	public @NonNull QCharPropertyBinding setBinding(@StrictNonNull QCharPropertyBinding newBinding)
     {
         QUntypedPropertyBinding oldBinding = d.setBinding(newBinding, this);
         d.notifyObservers(this);
@@ -141,7 +140,7 @@ public final class QCharProperty extends QCharPropertyData {
 	 * @return oldBinding
 	 */
     @QtUninvokable
-    public QCharPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Character> newBinding)
+    public @NonNull QCharPropertyBinding setBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Character> newBinding)
     {
         if(!io.qt.core.QCharProperty.checkType(newBinding.valueMetaType()))
             return new QCharPropertyBinding();
@@ -164,7 +163,7 @@ public final class QCharProperty extends QCharPropertyData {
 	 * @return true if types match, false otherwise.
 	 */
     @QtUninvokable
-    public boolean setBinding(QUntypedPropertyBinding newBinding)
+    public boolean setBinding(@StrictNonNull QUntypedPropertyBinding newBinding)
     {
         if(io.qt.core.QCharProperty.checkType(newBinding.valueMetaType())) {
             d.setBinding(newBinding, this);
@@ -183,13 +182,13 @@ public final class QCharProperty extends QCharPropertyData {
 	 * @return oldBinding
 	 */
 	@QtUninvokable
-	public QCharPropertyBinding setBinding(io.qt.QtUtilities.CharSupplier functor)
+	public @NonNull QCharPropertyBinding setBinding(io.qt.QtUtilities.@StrictNonNull CharSupplier functor)
     {
         return setBinding(new QCharPropertyBinding(functor));
     }
 	
 	@QtUninvokable
-	private QCharPropertyBinding makeBinding()
+	private @NonNull QCharPropertyBinding makeBinding()
     {
         return new QCharPropertyBinding(this::value);
     }
@@ -208,7 +207,7 @@ public final class QCharProperty extends QCharPropertyData {
      * @return binding
      */
 	@QtUninvokable
-	public QCharPropertyBinding binding()
+	public @NonNull QCharPropertyBinding binding()
     {
         return new QCharPropertyBinding(this);
     }
@@ -219,7 +218,7 @@ public final class QCharProperty extends QCharPropertyData {
 	 * @return the removed binding
 	 */
 	@QtUninvokable
-	public QCharPropertyBinding takeBinding()
+	public @NonNull QCharPropertyBinding takeBinding()
     {
         return new QCharPropertyBinding(d.setBinding(new QCharPropertyBinding(), this));
     }
@@ -234,7 +233,7 @@ public final class QCharProperty extends QCharPropertyData {
      * @see QPropertyChangeHandler
      */
 	@QtUninvokable
-	public QPropertyChangeHandler onValueChanged(Runnable f)
+	public @NonNull QPropertyChangeHandler onValueChanged(@StrictNonNull Runnable f)
     {
         return new QPropertyChangeHandler(d, f);
     }
@@ -247,7 +246,7 @@ public final class QCharProperty extends QCharPropertyData {
      * @see #onValueChanged(Runnable)
 	 */
 	@QtUninvokable
-	public QPropertyChangeHandler subscribe(Runnable f)
+	public @NonNull QPropertyChangeHandler subscribe(@StrictNonNull Runnable f)
     {
         f.run();
         return onValueChanged(f);
@@ -263,7 +262,7 @@ public final class QCharProperty extends QCharPropertyData {
      * @see QPropertyNotifier
      */
     @io.qt.QtUninvokable
-    public QPropertyNotifier addNotifier(Runnable f)
+    public @NonNull QPropertyNotifier addNotifier(@StrictNonNull Runnable f)
     {
         return new QPropertyNotifier(d, f);
     }

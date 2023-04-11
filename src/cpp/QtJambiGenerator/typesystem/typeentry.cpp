@@ -251,6 +251,14 @@ QString EnumTypeEntry::javaQualifier() const {
         return m_qualifier;
 }
 
+ContainerTypeEntry::ContainerTypeEntry(const QString &name, Type type)
+        : ComplexTypeEntry(name, ContainerType), m_type(type) {
+    setCodeGeneration(GenerateForSubclass);
+    disableNativeIdUsage();
+}
+
+ContainerTypeEntry::Type ContainerTypeEntry::type() const { return m_type; }
+
 QString ContainerTypeEntry::javaPackage() const {
     if (m_type == PairContainer
             || m_type == StringListContainer

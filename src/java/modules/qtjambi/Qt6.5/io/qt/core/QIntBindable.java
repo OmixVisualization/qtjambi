@@ -28,32 +28,31 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.QtPrimitiveType;
-import io.qt.QtUninvokable;
+import io.qt.*;
 
 /**
- * QFloatBindable is primitive-typed version of QBindable&lt;Float&gt;.
+ * QIntBindable is primitive-typed version of QBindable&lt;Integer&gt;.
  * @see QBindable
  */
-public final class QFloatBindable extends QUntypedBindable {
+public final class QIntBindable extends QUntypedBindable {
 
-	private QFloatBindable(QPrivateConstructor p) {
+	private QIntBindable(QPrivateConstructor p) {
 		super(p);
 	}
 
 	/**
-	 * Creates a new <code>float</code>-typed invalid bindable.
+	 * Creates a new <code>int</code>-typed invalid bindable.
 	 */
-	public QFloatBindable() {
+	public QIntBindable() {
 		super(null, null);
 	}
 	
 	/**
 	 * Creates a copy of the provided bindable. 
-	 * If the type of the other bindable is not <code>float</code> it remains invalid.
+	 * If the type of the other bindable is not <code>int</code> it remains invalid.
 	 * @param other
 	 */
-	public QFloatBindable(QUntypedBindable other) {
+	public QIntBindable(@StrictNonNull QUntypedBindable other) {
 		super(other.data(), other.iface());
 		check();
 	}
@@ -63,8 +62,11 @@ public final class QFloatBindable extends QUntypedBindable {
 		if(iface!=null) {
 			QMetaType metaType = iface.metaType();
 			if(metaType==null 
-					|| (metaType.id()!=QMetaType.Type.Float.value()
-						&& metaType.id()!=QMetaType.Type.Double.value()
+					|| (metaType.id()!=QMetaType.Type.Int.value()
+						&& metaType.id()!=QMetaType.Type.Long.value()
+						&& metaType.id()!=QMetaType.Type.ULong.value()
+						&& metaType.id()!=QMetaType.Type.UInt.value()
+						&& metaType.id()!=QMetaType.Type.Char32.value()
 						&& metaType.id()!=QMetaType.Type.QVariant.value())) {
 				setIface(null);
 				setData(null);
@@ -72,7 +74,7 @@ public final class QFloatBindable extends QUntypedBindable {
 		}
 	}
 
-	QFloatBindable(QUntypedPropertyData d, QBindableInterface i) {
+	QIntBindable(QUntypedPropertyData d, QBindableInterface i) {
 		super(d, i);
 	}
 	
@@ -80,7 +82,7 @@ public final class QFloatBindable extends QUntypedBindable {
 	 * Creates a new bindable from provided property.
 	 * @param property
 	 */
-	public QFloatBindable(QFloatProperty property) {
+	public QIntBindable(@StrictNonNull QIntProperty property) {
 		super(property, bindableInterface(0));
 	}
 	
@@ -88,7 +90,7 @@ public final class QFloatBindable extends QUntypedBindable {
 	 * Creates a new bindable from provided property.
 	 * @param property
 	 */
-	public QFloatBindable(QObject.QFloatProperty property) {
+	public QIntBindable(QObject.@StrictNonNull QIntProperty property) {
 		super(property, bindableInterface(1));
 	}
 	
@@ -96,46 +98,69 @@ public final class QFloatBindable extends QUntypedBindable {
 	 * Creates a new bindable from provided property.
 	 * @param property
 	 */
-	public QFloatBindable(QObject.QComputedFloatProperty property) {
+	public QIntBindable(QObject.@StrictNonNull QComputedIntProperty property) {
 		super(property, bindableInterface(2));
 	}
 	
 	/**
 	 * Creates a new bindable from provided property.
-	 * If the type of the property is not <code>float</code> an {@link IllegalArgumentException} is thrown.
+	 * If the type of the property is not <code>int</code> an {@link IllegalArgumentException} is thrown.
 	 * @param property
 	 */
-	public QFloatBindable(QProperty<@QtPrimitiveType Float> property) {
+	public QIntBindable(@StrictNonNull QProperty<@NonNull@QtPrimitiveType Integer> property) {
 		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 0));
 		check();
 		if(iface()==null)
-			throw new IllegalArgumentException("Given QProperty is not of float type.");
+			throw new IllegalArgumentException("Given property is not an int type.");
 	}
 	
 	/**
 	 * Creates a new bindable from provided property.
-	 * If the type of the property is not <code>float</code> an {@link IllegalArgumentException} is thrown.
+	 * If the type of the property is not <code>int</code> an {@link IllegalArgumentException} is thrown.
 	 * @param property
 	 */
-	public QFloatBindable(QObject.QProperty<@QtPrimitiveType Float> property) {
+	public QIntBindable(QObject.@StrictNonNull QProperty<@NonNull@QtPrimitiveType Integer> property) {
 		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 1));
 		check();
 		if(iface()==null)
-			throw new IllegalArgumentException("Given QProperty is not of float type.");
+			throw new IllegalArgumentException("Given property is not an int type.");
 	}
 	
 	/**
 	 * Creates a new bindable from provided property.
-	 * If the type of the property is not <code>float</code> an {@link IllegalArgumentException} is thrown.
+	 * If the type of the property is not <code>int</code> an {@link IllegalArgumentException} is thrown.
 	 * @param property
 	 */
-	public QFloatBindable(QObject.QComputedProperty<@QtPrimitiveType Float> property) {
+	public QIntBindable(QObject.@StrictNonNull QComputedProperty<@NonNull@QtPrimitiveType Integer> property) {
 		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 2));
 		check();
 		if(iface()==null)
-			throw new IllegalArgumentException("Given QProperty is not of float type.");
+			throw new IllegalArgumentException("Given property is not an int type.");
 	}
 	
+	/**
+	 * Creates a new bindable from provided meta property of given object.
+	 * If the type of the property is not <code>int</code> an {@link IllegalArgumentException} is thrown.
+	 * @param object
+	 * @param property
+	 */
+	public QIntBindable(@StrictNonNull QObject object, @StrictNonNull String property) {
+		this(object, object.metaObject().property(property));
+	}
+	
+	/**
+	 * Creates a new bindable from provided meta property of given object.
+	 * If the type of the property is not <code>int</code> an {@link IllegalArgumentException} is thrown.
+	 * @param object
+	 * @param property
+	 */
+	public QIntBindable(@StrictNonNull QObject object, @StrictNonNull QMetaProperty property) {
+		super(object, property, QBindable.bindableInterface(property));
+		check();
+		if(iface()==null)
+			throw new IllegalArgumentException("Given QMetaProperty is not of int type.");
+	}
+
 	static native QBindableInterface bindableInterface(int propertyType);
 
 	/**
@@ -143,61 +168,61 @@ public final class QFloatBindable extends QUntypedBindable {
 	 */
 	@QtUninvokable
 	@Override
-	public QFloatPropertyBinding makeBinding()
+	public @NonNull QIntPropertyBinding makeBinding()
     {
 		QUntypedPropertyBinding binding = super.makeBinding();
-		if(binding instanceof QFloatPropertyBinding) {
-			return (QFloatPropertyBinding)binding;
+		if(binding instanceof QIntPropertyBinding) {
+			return (QIntPropertyBinding)binding;
 		}else {
-			return new QFloatPropertyBinding(binding);
+			return new QIntPropertyBinding(binding);
 		}
     }
 	
     /**
      * Returns the binding expression that is associated with the underlying property. 
-     * A default constructed {@link QFloatPropertyBinding} will be returned if no such association exists.
+     * A default constructed {@link QIntPropertyBinding} will be returned if no such association exists.
      * @return binding
      */
 	@QtUninvokable
 	@Override
-    public QFloatPropertyBinding binding()
+    public @NonNull QIntPropertyBinding binding()
     {
 		QUntypedPropertyBinding binding = super.binding();
-		if(binding instanceof QFloatPropertyBinding) {
-			return (QFloatPropertyBinding)binding;
+		if(binding instanceof QIntPropertyBinding) {
+			return (QIntPropertyBinding)binding;
 		}else {
-			return new QFloatPropertyBinding(binding);
+			return new QIntPropertyBinding(binding);
 		}
     }
     
 	@QtUninvokable
-	public QFloatPropertyBinding setBinding(QFloatPropertyBinding binding)
+	public @NonNull QIntPropertyBinding setBinding(@StrictNonNull QIntPropertyBinding binding)
     {
 		QUntypedPropertyBinding oldBinding = super.overrideBinding(binding);
-		if(oldBinding instanceof QFloatPropertyBinding) {
-			return (QFloatPropertyBinding)oldBinding;
+		if(oldBinding instanceof QIntPropertyBinding) {
+			return (QIntPropertyBinding)oldBinding;
 		}else {
-			return new QFloatPropertyBinding(oldBinding);
+			return new QIntPropertyBinding(oldBinding);
 		}
     }
     
 	@QtUninvokable
-	public QFloatPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Float> binding)
+	public @NonNull QIntPropertyBinding setBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Integer> binding)
     {
-		if(binding!=null && !QFloatProperty.checkType(binding.valueMetaType()))
-			return new QFloatPropertyBinding();
+		if(binding!=null && !QIntProperty.checkType(binding.valueMetaType()))
+			return new QIntPropertyBinding();
 		QUntypedPropertyBinding oldBinding = super.overrideBinding(binding);
-		if(oldBinding instanceof QFloatPropertyBinding) {
-			return (QFloatPropertyBinding)oldBinding;
+		if(oldBinding instanceof QIntPropertyBinding) {
+			return (QIntPropertyBinding)oldBinding;
 		}else {
-			return new QFloatPropertyBinding(oldBinding);
+			return new QIntPropertyBinding(oldBinding);
 		}
     }
 	
 	@QtUninvokable
-	public QFloatPropertyBinding setBinding(io.qt.QtUtilities.FloatSupplier functor)
+	public @NonNull QIntPropertyBinding setBinding(java.util.function.@StrictNonNull IntSupplier functor)
     {
-		return setBinding(new QFloatPropertyBinding(functor));
+		return setBinding(new QIntPropertyBinding(functor));
     }
 	
 	/**
@@ -206,9 +231,9 @@ public final class QFloatBindable extends QUntypedBindable {
 	 * @return the removed binding
 	 */
 	@QtUninvokable
-    public QFloatPropertyBinding takeBinding()
+    public @NonNull QIntPropertyBinding takeBinding()
     {
-        return setBinding(new QFloatPropertyBinding());
+        return setBinding(new QIntPropertyBinding());
     }
     
 	/**
@@ -216,7 +241,7 @@ public final class QFloatBindable extends QUntypedBindable {
 	 * @return value
 	 */
     @io.qt.QtUninvokable
-    public final float value() {
+    public final int value() {
         return value(QtJambi_LibraryUtilities.internal.nativeId(this.iface()), QtJambi_LibraryUtilities.internal.nativeId(this.data()));
     }
     
@@ -225,13 +250,13 @@ public final class QFloatBindable extends QUntypedBindable {
 	 * @param newValue
 	 */
     @io.qt.QtUninvokable
-    public final void setValue(float value) {
+    public final void setValue(int value) {
         setValue(QtJambi_LibraryUtilities.internal.nativeId(this.iface()), QtJambi_LibraryUtilities.internal.nativeId(this.data()), value);
     }
     
     @io.qt.QtUninvokable
-    static native float value(long ifaceId, long dataId);
+    static native int value(long ifaceId, long dataId);
     
     @io.qt.QtUninvokable
-    static native void setValue(long ifaceId, long dataId, float value);
+    static native void setValue(long ifaceId, long dataId, int value);
 }

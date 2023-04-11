@@ -28,8 +28,7 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.QtPrimitiveType;
-import io.qt.QtUninvokable;
+import io.qt.*;
 
 /**
  * QDoublePropertyAlias is primitive-typed version of QPropertyAlias&lt;Double&gt;.
@@ -37,7 +36,7 @@ import io.qt.QtUninvokable;
  */
 public final class QDoublePropertyAlias extends QAbstractPropertyAlias {
 	
-	private static QPropertyAlias<@QtPrimitiveType Double> check(QPropertyAlias<@QtPrimitiveType Double> other){
+	private static QPropertyAlias<@NonNull@QtPrimitiveType Double> check(QPropertyAlias<@NonNull@QtPrimitiveType Double> other){
 		if(other.iface!=null && !QDoubleProperty.checkType(other.iface.metaType())) {
 			throw new IllegalArgumentException("Given QPropertyAlias is not of double type.");
 		}
@@ -55,7 +54,7 @@ public final class QDoublePropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided alias.
 	 * @param other
 	 */
-	public QDoublePropertyAlias(QPropertyAlias<@QtPrimitiveType Double> other) {
+	public QDoublePropertyAlias(@StrictNonNull QPropertyAlias<@NonNull@QtPrimitiveType Double> other) {
 		super(check(other));
 	}
 
@@ -63,7 +62,7 @@ public final class QDoublePropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QDoublePropertyAlias(QDoubleProperty property) {
+	public QDoublePropertyAlias(@StrictNonNull QDoubleProperty property) {
 		super(property, QDoubleBindable.bindableInterface(0));
 	}
 	
@@ -71,7 +70,7 @@ public final class QDoublePropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QDoublePropertyAlias(QObject.QDoubleProperty property) {
+	public QDoublePropertyAlias(QObject.@StrictNonNull QDoubleProperty property) {
 		super(property, QDoubleBindable.bindableInterface(1));
 	}
 	
@@ -79,7 +78,7 @@ public final class QDoublePropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QDoublePropertyAlias(QObject.QComputedIntProperty property) {
+	public QDoublePropertyAlias(QObject.@StrictNonNull QComputedIntProperty property) {
 		super(property, QDoubleBindable.bindableInterface(2));
 	}
 
@@ -87,7 +86,7 @@ public final class QDoublePropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QDoublePropertyAlias(QProperty<@QtPrimitiveType Double> property) {
+	public QDoublePropertyAlias(@StrictNonNull QProperty<@NonNull@QtPrimitiveType Double> property) {
 		super(property, QBindable.bindableInterface(check(property.valueMetaType()).id(), 0));
 	}
 	
@@ -95,7 +94,7 @@ public final class QDoublePropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QDoublePropertyAlias(QObject.QProperty<@QtPrimitiveType Double> property) {
+	public QDoublePropertyAlias(QObject.@StrictNonNull QProperty<@NonNull@QtPrimitiveType Double> property) {
 		super(property, QBindable.bindableInterface(check(property.valueMetaType()).id(), 1));
 	}
 	
@@ -103,7 +102,7 @@ public final class QDoublePropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QDoublePropertyAlias(QObject.QComputedProperty<@QtPrimitiveType Double> property) {
+	public QDoublePropertyAlias(QObject.@StrictNonNull QComputedProperty<@NonNull@QtPrimitiveType Double> property) {
 		super(property, QBindable.bindableInterface(check(property.valueMetaType()).id(), 2));
 	}
 	
@@ -111,7 +110,7 @@ public final class QDoublePropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided alias.
 	 * @param other
 	 */
-	public QDoublePropertyAlias(QDoublePropertyAlias alias) {
+	public QDoublePropertyAlias(@StrictNonNull QDoublePropertyAlias alias) {
 		super(alias);
 	}
 	
@@ -119,7 +118,7 @@ public final class QDoublePropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided binding's underlying property.
 	 * @param other
 	 */
-	public QDoublePropertyAlias(QDoubleBindable bindable) {
+	public QDoublePropertyAlias(@StrictNonNull QDoubleBindable bindable) {
 		super(bindable.data(), bindable.iface());
 	}
 	
@@ -127,7 +126,7 @@ public final class QDoublePropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided binding's underlying property.
 	 * @param other
 	 */
-	public QDoublePropertyAlias(QBindable<@QtPrimitiveType Double> bindable) {
+	public QDoublePropertyAlias(@StrictNonNull QBindable<@NonNull@QtPrimitiveType Double> bindable) {
 		super(bindable.data(), bindable.iface());
 		check(bindable.valueMetaType());
 	}
@@ -152,7 +151,7 @@ public final class QDoublePropertyAlias extends QAbstractPropertyAlias {
 	 * @see QDoubleProperty#setBinding(QDoublePropertyBinding)
 	 */
 	@QtUninvokable
-	public QDoublePropertyBinding setBinding(QDoublePropertyBinding newBinding) {
+	public @NonNull QDoublePropertyBinding setBinding(@StrictNonNull QDoublePropertyBinding newBinding) {
 		return new QDoubleBindable(aliasedProperty(), iface).setBinding(newBinding);
     }
 	
@@ -160,7 +159,7 @@ public final class QDoublePropertyAlias extends QAbstractPropertyAlias {
 	 * @see QDoubleProperty#setBinding(QPropertyBinding)
 	 */
 	@QtUninvokable
-	public QDoublePropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Double> newBinding) {
+	public @NonNull QDoublePropertyBinding setBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Double> newBinding) {
 		return new QDoubleBindable(aliasedProperty(), iface).setBinding(newBinding);
     }
 	
@@ -168,7 +167,7 @@ public final class QDoublePropertyAlias extends QAbstractPropertyAlias {
 	 * @see QDoubleProperty#setBinding(java.util.function.DoubleSupplier)
 	 */
 	@QtUninvokable
-	public QDoublePropertyBinding setBinding(java.util.function.DoubleSupplier functor) {
+	public @NonNull QDoublePropertyBinding setBinding(java.util.function.@StrictNonNull DoubleSupplier functor) {
         return setBinding(new QDoublePropertyBinding(functor));
     }
 	
@@ -176,7 +175,7 @@ public final class QDoublePropertyAlias extends QAbstractPropertyAlias {
 	 * @see QDoubleProperty#binding()
 	 */
 	@QtUninvokable
-	public QDoublePropertyBinding binding() {
+	public @NonNull QDoublePropertyBinding binding() {
         return new QDoubleBindable(aliasedProperty(), iface).binding();
     }
 	
@@ -184,7 +183,7 @@ public final class QDoublePropertyAlias extends QAbstractPropertyAlias {
 	 * @see QDoubleProperty#takeBinding()
 	 */
 	@QtUninvokable
-	public QDoublePropertyBinding takeBinding() {
+	public @NonNull QDoublePropertyBinding takeBinding() {
         return new QDoubleBindable(aliasedProperty(), iface).takeBinding();
     }
 }

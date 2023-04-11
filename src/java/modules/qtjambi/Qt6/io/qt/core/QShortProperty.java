@@ -28,8 +28,7 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.QtPrimitiveType;
-import io.qt.QtUninvokable;
+import io.qt.*;
 import io.qt.QtUtilities.ShortSupplier;
 
 /**
@@ -66,7 +65,7 @@ public final class QShortProperty extends QShortPropertyData {
      * Constructs a <code>short</code>-typed property with the provided binding.
      * @param binding
      */
-	public QShortProperty(QShortPropertyBinding binding) {
+	public QShortProperty(@StrictNonNull QShortPropertyBinding binding) {
 		super();
 		d.setBinding(binding, this);
 	}
@@ -75,7 +74,7 @@ public final class QShortProperty extends QShortPropertyData {
      * Constructs a <code>short</code>-typed property with the provided binding.
      * @param binding
      */
-	public QShortProperty(QPropertyBinding<@QtPrimitiveType Short> binding) {
+	public QShortProperty(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Short> binding) {
 		super();
 		if(checkType(binding.valueMetaType()))
 			d.setBinding(binding, this);
@@ -85,7 +84,7 @@ public final class QShortProperty extends QShortPropertyData {
      * <p>Constructs a <code>short</code>-typed property bound to the provided <code>functor</code>.</p>
      * @param functor
      */
-	public QShortProperty(ShortSupplier binding) {
+	public QShortProperty(@StrictNonNull ShortSupplier binding) {
 		super();
 		setBinding(binding);
 	}
@@ -123,7 +122,7 @@ public final class QShortProperty extends QShortPropertyData {
 	 * @return oldBinding
 	 */
 	@QtUninvokable
-	public QShortPropertyBinding setBinding(QShortPropertyBinding newBinding)
+	public @NonNull QShortPropertyBinding setBinding(@StrictNonNull QShortPropertyBinding newBinding)
     {
         QUntypedPropertyBinding oldBinding = d.setBinding(newBinding, this);
         d.notifyObservers(this);
@@ -143,7 +142,7 @@ public final class QShortProperty extends QShortPropertyData {
 	 * @return oldBinding
 	 */
     @QtUninvokable
-    public QShortPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Short> newBinding)
+    public @NonNull QShortPropertyBinding setBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Short> newBinding)
     {
         if(!io.qt.core.QShortProperty.checkType(newBinding.valueMetaType()))
             return new QShortPropertyBinding();
@@ -166,7 +165,7 @@ public final class QShortProperty extends QShortPropertyData {
 	 * @return true if types match, false otherwise.
 	 */
     @QtUninvokable
-    public boolean setBinding(QUntypedPropertyBinding newBinding)
+    public boolean setBinding(@StrictNonNull QUntypedPropertyBinding newBinding)
     {
         if(io.qt.core.QShortProperty.checkType(newBinding.valueMetaType())) {
             d.setBinding(newBinding, this);
@@ -185,7 +184,7 @@ public final class QShortProperty extends QShortPropertyData {
 	 * @return oldBinding
 	 */
 	@QtUninvokable
-	public QShortPropertyBinding setBinding(ShortSupplier functor)
+	public @NonNull QShortPropertyBinding setBinding(@StrictNonNull ShortSupplier functor)
     {
         return setBinding(new QShortPropertyBinding(functor));
     }
@@ -209,7 +208,7 @@ public final class QShortProperty extends QShortPropertyData {
      * @return binding
      */
 	@QtUninvokable
-	public QShortPropertyBinding binding()
+	public @NonNull QShortPropertyBinding binding()
     {
         return new QShortPropertyBinding(this);
     }
@@ -220,7 +219,7 @@ public final class QShortProperty extends QShortPropertyData {
 	 * @return the removed binding
 	 */
 	@QtUninvokable
-	public QShortPropertyBinding takeBinding()
+	public @NonNull QShortPropertyBinding takeBinding()
     {
         return new QShortPropertyBinding(d.setBinding(new QShortPropertyBinding(), this));
     }
@@ -235,7 +234,7 @@ public final class QShortProperty extends QShortPropertyData {
      * @see QPropertyChangeHandler
      */
 	@QtUninvokable
-	public QPropertyChangeHandler onValueChanged(Runnable f)
+	public @NonNull QPropertyChangeHandler onValueChanged(@StrictNonNull Runnable f)
     {
         return new QPropertyChangeHandler(d, f);
     }
@@ -248,7 +247,7 @@ public final class QShortProperty extends QShortPropertyData {
      * @see #onValueChanged(Runnable)
 	 */
 	@QtUninvokable
-	public QPropertyChangeHandler subscribe(Runnable f)
+	public @NonNull QPropertyChangeHandler subscribe(@StrictNonNull Runnable f)
     {
         f.run();
         return onValueChanged(f);
@@ -264,7 +263,7 @@ public final class QShortProperty extends QShortPropertyData {
      * @see QPropertyNotifier
      */
     @io.qt.QtUninvokable
-    public QPropertyNotifier addNotifier(Runnable f)
+    public @NonNull QPropertyNotifier addNotifier(@StrictNonNull Runnable f)
     {
         return new QPropertyNotifier(d, f);
     }

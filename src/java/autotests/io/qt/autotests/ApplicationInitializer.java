@@ -305,9 +305,7 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 	        			"-Dio.qt.debug="+(isDebug ? "debug" : "release"),
 	        			"-Djava.util.logging.config.file="+System.getProperty("java.util.logging.config.file", ""),
 	        			"-Xrs",
-	        			"-Dio.qt.log-messages="+System.getProperty("io.qt.log-messages", "ALL"),
-	        			"-Dio.qt.debug.level="+System.getProperty("io.qt.debug.level", "1"),
-	        			"-Dio.qt.verbose-loading="+System.getProperty("io.qt.verbose-loading", "false")
+	        			"-Dio.qt.log-messages="+System.getProperty("io.qt.log-messages", "ALL")
 	            	});
 	    	}else {
 	    		classPath = macosPrefix+"../qtjambi-autotests-"+version+".jar";
@@ -333,9 +331,7 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 	        			"-Dio.qt.debug="+(isDebug ? "debug" : "release"),
 	        			"-Djava.util.logging.config.file="+System.getProperty("java.util.logging.config.file", ""),
 	        			"-Xrs",
-	        			"-Dio.qt.log-messages="+System.getProperty("io.qt.log-messages", "ALL"),
-	        			"-Dio.qt.debug.level="+System.getProperty("io.qt.debug.level", "1"),
-	        			"-Dio.qt.verbose-loading="+System.getProperty("io.qt.verbose-loading", "false")
+	        			"-Dio.qt.log-messages="+System.getProperty("io.qt.log-messages", "ALL")
 	            	});
 	    	}
 	    	File testFile = new File(targetDir, applicationName+".touch.test");

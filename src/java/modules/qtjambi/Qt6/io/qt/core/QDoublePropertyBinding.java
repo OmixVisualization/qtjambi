@@ -31,7 +31,9 @@ package io.qt.core;
 import java.util.function.DoubleSupplier;
 
 import io.qt.NativeAccess;
+import io.qt.NonNull;
 import io.qt.QtPrimitiveType;
+import io.qt.StrictNonNull;
 
 /**
  * QDoublePropertyBinding is primitive-typed version of QPropertyBinding&lt;Double&gt;.
@@ -48,7 +50,7 @@ public final class QDoublePropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QDoublePropertyBinding</code> with the given functor <code>f</code>.
 	 * @param t
 	 */
-	public QDoublePropertyBinding(DoubleSupplier f) {
+	public QDoublePropertyBinding(@StrictNonNull DoubleSupplier f) {
 		super(f);
 	}
 	
@@ -56,7 +58,7 @@ public final class QDoublePropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QDoublePropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QDoublePropertyBinding(QDoubleProperty property) {
+	public QDoublePropertyBinding(@StrictNonNull QDoubleProperty property) {
 		super(property.bindingData());
 	}
 	
@@ -64,7 +66,7 @@ public final class QDoublePropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QDoublePropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QDoublePropertyBinding(QObject.QDoubleProperty property) {
+	public QDoublePropertyBinding(QObject.@StrictNonNull QDoubleProperty property) {
 		super(property.bindingData());
 	}
 	
@@ -72,7 +74,7 @@ public final class QDoublePropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QDoublePropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QDoublePropertyBinding(QObject.QComputedDoubleProperty property) {
+	public QDoublePropertyBinding(QObject.@StrictNonNull QComputedDoubleProperty property) {
 		super(property.bindingData());
 	}
 	
@@ -80,7 +82,7 @@ public final class QDoublePropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QDoublePropertyBinding</code> as copy of the given binding.
 	 * @param other
 	 */
-	public QDoublePropertyBinding(QDoublePropertyBinding other) {
+	public QDoublePropertyBinding(@StrictNonNull QDoublePropertyBinding other) {
 		super(other);
 	}
 	
@@ -88,7 +90,7 @@ public final class QDoublePropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QDoublePropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QDoublePropertyBinding(QProperty<@QtPrimitiveType Double> property) {
+	public QDoublePropertyBinding(@StrictNonNull QProperty<@NonNull@QtPrimitiveType Double> property) {
 		super(check(property.bindingData(), property.valueMetaType()));
 	}
 	
@@ -96,7 +98,7 @@ public final class QDoublePropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QDoublePropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QDoublePropertyBinding(QObject.QProperty<@QtPrimitiveType Double> property) {
+	public QDoublePropertyBinding(QObject.@StrictNonNull QProperty<@NonNull@QtPrimitiveType Double> property) {
 		super(check(property.bindingData(), property.valueMetaType()));
 	}
 	
@@ -104,7 +106,7 @@ public final class QDoublePropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QDoublePropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QDoublePropertyBinding(QObject.QComputedProperty<@QtPrimitiveType Double> property) {
+	public QDoublePropertyBinding(QObject.@StrictNonNull QComputedProperty<@NonNull@QtPrimitiveType Double> property) {
 		super(check(property.bindingData(), property.valueMetaType()));
 	}
 	
@@ -112,7 +114,7 @@ public final class QDoublePropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QDoublePropertyBinding</code> as copy of the given binding.
 	 * @param other
 	 */
-	public QDoublePropertyBinding(QPropertyBinding<@QtPrimitiveType Double> other) {
+	public QDoublePropertyBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Double> other) {
 		super(check(other, false));
 	}
 

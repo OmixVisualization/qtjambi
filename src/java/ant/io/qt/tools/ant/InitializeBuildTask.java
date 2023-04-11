@@ -30,15 +30,14 @@
 
 package io.qt.tools.ant;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -146,13 +145,13 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			_moduleInfos.put("test", new ModuleInfo("QTJAMBI_NO_TEST", "QtTest"));
 			_moduleInfos.put("help", new ModuleInfo("QTJAMBI_NO_HELP", "QtHelp"));
 			_moduleInfos.put("qt3dcore", new ModuleInfo("QTJAMBI_NO_QT3DCORE", "Qt3DCore"));
+			_moduleInfos.put("qt3dextras", new ModuleInfo("QTJAMBI_NO_QT3DEXTRAS", "Qt3DExtras"));
 			_moduleInfos.put("qt3drender", new ModuleInfo("QTJAMBI_NO_QT3DRENDER", "Qt3DRender"));
 			_moduleInfos.put("qt3dinput", new ModuleInfo("QTJAMBI_NO_QT3DINPUT", "Qt3DInput"));
 			_moduleInfos.put("qt3dquick", new ModuleInfo("QTJAMBI_NO_QT3DQUICK", "Qt3DQuick"));
 			_moduleInfos.put("qt3dquickrender", new ModuleInfo("QTJAMBI_NO_QT3DQUICKRENDER", "Qt3DQuickRender"));
 			_moduleInfos.put("qt3dquickscene2d", new ModuleInfo("QTJAMBI_NO_QT3DQUICKSCENE2D", "Qt3DQuickScene2D"));
 			_moduleInfos.put("qt3dquickextras", new ModuleInfo("QTJAMBI_NO_QT3DQUICKEXTRAS", "Qt3DQuickExtras"));
-			_moduleInfos.put("qt3dextras", new ModuleInfo("QTJAMBI_NO_QT3DEXTRAS", "Qt3DExtras"));
 			_moduleInfos.put("qt3dlogic", new ModuleInfo("QTJAMBI_NO_QT3DLOGIC", "Qt3DLogic"));
 			_moduleInfos.put("qt3danimation", new ModuleInfo("QTJAMBI_NO_QT3DANIMATION", "Qt3DAnimation"));
 			_moduleInfos.put("websockets", new ModuleInfo("QTJAMBI_NO_WEBSOCKETS", "QtWebSockets"));
@@ -160,7 +159,11 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			_moduleInfos.put("webenginecore", new ModuleInfo("QTJAMBI_NO_WEBENGINECORE", "QtWebEngineCore"));
 			_moduleInfos.put("webenginewidgets", new ModuleInfo("QTJAMBI_NO_WEBENGINEWIDGETS", "QtWebEngineWidgets"));
 			_moduleInfos.put("webview", new ModuleInfo("QTJAMBI_NO_WEBVIEW", "QtWebView"));
-			_moduleInfos.put("uitools", new ModuleInfo("QTJAMBI_NO_UITOOLS", "QtUiTools"));
+			if(qtMajorVersion==5) {
+				_moduleInfos.put("uitools", new ModuleInfo("QTJAMBI_NO_UITOOLS", "QtUiTools", ModuleInfo.Headers.Public, true));
+			}else {
+				_moduleInfos.put("uitools", new ModuleInfo("QTJAMBI_NO_UITOOLS", "QtUiTools"));
+			}
 			_moduleInfos.put("bodymovin", new ModuleInfo("QTJAMBI_NO_LOTTIE", "QtBodymovin"));
 			_moduleInfos.put("datavisualization", new ModuleInfo("QTJAMBI_NO_DATA_VISUALIZATION", "QtDataVisualization"));
 			_moduleInfos.put("charts", new ModuleInfo("QTJAMBI_NO_CHARTS", "QtCharts"));
@@ -198,8 +201,11 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 					_moduleInfos.put("spatialaudio", new ModuleInfo("QTJAMBI_NO_SPATIALAUDIO", "QtSpatialAudio"));
 				}
 				if((qtMajorVersion==6 && qtMinorVersion>=5) || qtMajorVersion>6) {
+//					up to now there is no easy way to make these modules java-able. They are actually available as raw-Java solution.
 					_moduleInfos.put("grpc", new ModuleInfo("QTJAMBI_NO_GRPC", "QtGrpc"));
-					_moduleInfos.put("protobuff", new ModuleInfo("QTJAMBI_NO_PROTOBUFF", "QtProtobuf"));
+					_moduleInfos.put("protobuf", new ModuleInfo("QTJAMBI_NO_PROTOBUF", "QtProtobuf"));
+					skippedModules.add("grpc");
+					skippedModules.add("protobuf");
 				}
 			}
 			moduleInfos = Collections.unmodifiableMap(_moduleInfos);
@@ -260,6 +266,10 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		String skip = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.skipped.modules");
 		if (skip != null) {
 			for (String s : skip.split(",")) {
+				if("core".equals(s)
+						|| "gui".equals(s)
+						|| "widgets".equals(s))
+					throw new BuildException("It's not possible to exclude module "+s+" from bying generated.");
 				skippedModules.add(s.trim());
 			}
 		}
@@ -721,11 +731,14 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		if (OSInfo.os() == OSInfo.OS.MacOS) {
 			String wantedSdk = AntUtil.getPropertyAsString(propertyHelper, Constants.QTJAMBI_MACOSX_MAC_SDK);
 			detectMacosxSdk(wantedSdk);
+			String generatorIncludepaths = AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_GENERATE_FRAMEWORKS);
+			if(generatorIncludepaths==null || generatorIncludepaths.isEmpty()) {
+				AntUtil.setProperty(propertyHelper, Constants.MAC_OS_GENERATE_FRAMEWORKS, "true");
+			}
 		}
 		{
-			List<String> privateIncludes = new ArrayList<>();
-			String generatorIncludepaths = AntUtil.getPropertyAsString(propertyHelper,
-					Constants.GENERATOR_INCLUDEPATHS);
+			List<String> includePaths = new ArrayList<>();
+			String generatorIncludepaths = AntUtil.getPropertyAsString(propertyHelper, Constants.GENERATOR_INCLUDEPATHS);
 			if (OSInfo.os() == OSInfo.OS.MacOS && useQtFramework) {
 				String libdir = AntUtil.getPropertyAsString(propertyHelper, Constants.LIBDIR);
 				for (File frameworkDir : new File(libdir).listFiles()) {
@@ -739,9 +752,9 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 							headers = new File(frameworkDir, "/Versions/Current/Headers");
 						if (!headers.isDirectory())
 							headers = new File(frameworkDir, "/Headers");
-						if (privateModules.contains(libName) && !privateIncludes.contains(headers.getAbsolutePath()
+						if (privateModules.contains(libName) && !includePaths.contains(headers.getAbsolutePath()
 								+ "/" + qtMajorVersion + "." + qtMinorVersion + "." + qtPatchlevelVersion)) {
-							privateIncludes.add(headers.getAbsolutePath() + "/" + qtMajorVersion + "." + qtMinorVersion
+							includePaths.add(headers.getAbsolutePath() + "/" + qtMajorVersion + "." + qtMinorVersion
 									+ "." + qtPatchlevelVersion);
 						}
 					}
@@ -749,10 +762,10 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			} else {
 				String includedir = AntUtil.getPropertyAsString(propertyHelper, Constants.INCLUDEDIR);
 				for (String privateModule : privateModules) {
-					if (!privateIncludes.contains(new File(new File(includedir),
+					if (!includePaths.contains(new File(new File(includedir),
 							privateModule + "/" + qtMajorVersion + "." + qtMinorVersion + "." + qtPatchlevelVersion)
 									.getAbsolutePath()))
-						privateIncludes.add(new File(new File(includedir),
+						includePaths.add(new File(new File(includedir),
 								privateModule + "/" + qtMajorVersion + "." + qtMinorVersion + "." + qtPatchlevelVersion)
 										.getAbsolutePath());
 				}
@@ -760,14 +773,17 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			if (generatorIncludepaths != null) {
 				for (String path : generatorIncludepaths
 						.split("[;" + (File.pathSeparatorChar == ';' ? "" : File.pathSeparator) + "]")) {
-					if (!privateIncludes.contains(path))
-						privateIncludes.add(path);
+					if (!includePaths.contains(path))
+						includePaths.add(path);
 				}
 			}
+			String path = propertyHelper.replaceProperties(null, "${basedir}/src/cpp", null);
+			if (!includePaths.contains(path))
+				includePaths.add(path);
 			AntUtil.setProperty(propertyHelper, Constants.GENERATOR_INCLUDEPATHS,
-					String.join(File.pathSeparator, privateIncludes));
+					String.join(File.pathSeparator, includePaths));
 			getProject().log(this,
-					Constants.GENERATOR_INCLUDEPATHS + ": " + String.join(File.pathSeparator, privateIncludes),
+					Constants.GENERATOR_INCLUDEPATHS + ": " + String.join(File.pathSeparator, includePaths),
 					Project.MSG_INFO);
 		}
 		if (qtMajorVersion >= 5) {
@@ -790,7 +806,6 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 
 		s = String.valueOf(qtMajorVersion);
 		getProject().log(this, Constants.QT_VERSION_MAJOR + " is " + s, Project.MSG_VERBOSE);
-		AntUtil.setProperty(propertyHelper, "qtjambi.isqt" + s, "true");
 		AntUtil.setProperty(propertyHelper, Constants.QT_VERSION_MAJOR, s);
 		AntUtil.setProperty(propertyHelper, Constants.QT_VERSION_MAJOR_NEXT, String.valueOf(qtMajorVersion + 1));
 		AntUtil.setProperty(propertyHelper, Constants.QT_VERSION_MINOR, String.valueOf(qtMinorVersion));
@@ -820,7 +835,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		{ // Need to detect the version of Qt we a reworking with before deciding
 			// configuration
 			String wantedConfiguration = AntUtil.getPropertyAsString(propertyHelper, Constants.CONFIGURATION);
-			detectConfiguration(wantedConfiguration); // all the magic in in here now
+			detectConfiguration(wantedConfiguration); // all the magic is in here now
 		}
 
 		// Moved until after auto-detect of configuration is complete
@@ -874,9 +889,6 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 					qmakeTargetDefault = "all";
 				else
 					qmakeTargetDefault = ""; // must be set to empty string (avoid ant subst ${qmake.target.default})
-				// FIXME: We want ${qtjambi.configuration} to set from QTDIR build kind *.prl
-				// data
-//                sourceValue = " (set from ${qtjambi.configuration})";
 			}
 			mySetProperty(-1, Constants.QMAKE_TARGET_DEFAULT, sourceValue, qmakeTargetDefault, true); // report value
 		}
@@ -890,7 +902,6 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		String cachekeyVersionSource = " (already set)";
 		if (cachekeyVersion == null || cachekeyVersion.isEmpty()) { // auto-configure
 			cachekeyVersionSource = " (set by init)";
-			// ${qtjambi.compiler}${qtjambi.configuration.dash}-${DSTAMP}-${TSTAMP}
 			cachekeyVersion = propertyHelper.replaceProperties(null,
 					"${qtjambi.compiler}${qtjambi.configuration.dash}-${DSTAMP}-${TSTAMP}", null);
 		}
@@ -1136,18 +1147,8 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		if (generatorIncludepaths == null) // ${generator.includepaths}
 			throw new BuildException("ERROR: " + Constants.GENERATOR_INCLUDEPATHS
 					+ " property is not configured, please ensure you read and edit build.properties");
-		if (!decideGeneratorPreProc())
-			throw new BuildException("Unable to determine generator pre-processor settings");
-		s = listToString(generatorPreProcDefinesList);
-		getProject().log(this, Constants.GENERATOR_PREPROC_DEFINES + " is " + ((s != null) ? s : "<unset>"),
-				Project.MSG_VERBOSE);
-		AntUtil.setProperty(propertyHelper, Constants.GENERATOR_PREPROC_DEFINES,
-				listJoinToString(generatorPreProcDefinesList, ","));
-		s = listToString(generatorStaticLibsList);
-		getProject().log(this, Constants.GENERATOR_STATICLIBS + " is " + ((s != null) ? s : "<unset>"),
-				Project.MSG_VERBOSE);
-		AntUtil.setProperty(propertyHelper, Constants.GENERATOR_STATICLIBS,
-				listJoinToString(generatorStaticLibsList, ","));
+		
+		mySetProperty(-1, "TODAY", null, new SimpleDateFormat("yyyy-MM-dd").format(new Date()), true);
 		
 		java.io.File buildDir = new java.io.File(new java.io.File(qtjambiFullVersion), "build");
 		mySetProperty(-1, "outputDir", null, buildDir.getAbsolutePath(), true);
@@ -1162,8 +1163,22 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			mySetProperty(-1, "generator.builddir", null, new java.io.File(new java.io.File(platformBuildDir, "generator"), "QtJambiGenerator").getAbsolutePath(), true);
 		}
 		mySetProperty(-1, "plugins.builddir", null, new java.io.File(platformBuildDir, "plugins").getAbsolutePath(), true);
-		mySetProperty(-1, "generator.outputdir", null, new java.io.File(buildDir, "generator").getAbsolutePath(), true);
-
+		
+		java.io.File generatorOutputdir = new java.io.File(buildDir, "generator");
+		mySetProperty(-1, "generator.outputdir", null, generatorOutputdir.getAbsolutePath(), true);
+		configureGenerator(generatorOutputdir);
+		
+		s = listToString(generatorPreProcDefinesList);
+		getProject().log(this, Constants.GENERATOR_PREPROC_DEFINES + " is " + ((s != null) ? s : "<unset>"),
+				Project.MSG_VERBOSE);
+		AntUtil.setProperty(propertyHelper, Constants.GENERATOR_PREPROC_DEFINES,
+				listJoinToString(generatorPreProcDefinesList, ","));
+		s = listToString(generatorStaticLibsList);
+		getProject().log(this, Constants.GENERATOR_STATICLIBS + " is " + ((s != null) ? s : "<unset>"),
+				Project.MSG_VERBOSE);
+		AntUtil.setProperty(propertyHelper, Constants.GENERATOR_STATICLIBS,
+				listJoinToString(generatorStaticLibsList, ","));
+		
 		int threads = 1;
 		{
 			String qtjambiJunitThreads = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.junit.threads");
@@ -1220,114 +1235,54 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 
 	private String detectConfiguration(String wantedConfiguration) {
 		String dsoName = "QtCore";
-
-		String dsoPath = doesQtLibExist(dsoName, libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null, null, false);
-		String prlPath = null;
-		if (dsoPath != null) // Ok not look for PRL
-			prlPath = doesQtLibExist(dsoName, libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null, null, true); // prl=true
+		boolean isStatic = false;
+		String dsoPath = doesQtLibExist(dsoName, libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null, Boolean.FALSE, false);
+		if (dsoPath == null)
+			dsoPath = doesQtBinExist(dsoName, libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null, Boolean.FALSE, false);
 		if (dsoPath == null) {
-			dsoPath = doesQtBinExist(dsoName, libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null, null, false);
-			if (dsoPath != null) // if not found look in other directory
-				prlPath = doesQtBinExist(dsoName, libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null, null, true); // prl=true
-			if (prlPath == null) // on windows using legacy Qt SDK types the *.dll are in bin/ and the *.prl in
-				// lib/
-				prlPath = doesQtLibExist(dsoName, libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null, null, true); // prl=true
+			dsoPath = doesQtStaticLibExist(dsoName, libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null, Boolean.FALSE, false);
+			isStatic = dsoPath != null;
 		}
-
+		String dsoDebugPath = doesQtLibExist(dsoName, libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null, Boolean.TRUE, false);
+		if (dsoDebugPath == null)
+			dsoDebugPath = doesQtBinExist(dsoName, libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null, Boolean.TRUE, false);
+		if (dsoDebugPath == null) {
+			dsoDebugPath = doesQtStaticLibExist(dsoName, libInfix, qtMajorVersion, qtMinorVersion, qtPatchlevelVersion, null, Boolean.TRUE, false);
+			isStatic = dsoDebugPath != null;
+		}
 		String thisConfiguration = null;
-		String defaultConfiguration = null;
-		Set<String> foundSet = new HashSet<String>();
 		String sourceValue = null;
-		// Check *.prl add (WARNING: no *.prl)
-		if (prlPath != null) { // open *.prl and examine fields
-			BufferedReader reader = null;
-			try {
-				reader = new BufferedReader(new FileReader(prlPath));
-				String s;
-				while ((s = reader.readLine()) != null) {
-					String name;
-					String value;
-					// find first "="
-					int indexEquals = s.indexOf("=");
-					if (indexEquals < 0)
-						continue;
-					name = s.substring(0, indexEquals);
-					value = s.substring(indexEquals + 1);
-					name = Util.safeFirstWord(name); // skip leading and tailing on name
-					name = name.toUpperCase();
-					if ("QMAKE_PRL_CONFIG".equals(name) == false)
-						continue;
-					StringTokenizer tokenizer = new StringTokenizer(value, " \t\n");
-					while (tokenizer.hasMoreElements()) {
-						String t = tokenizer.nextToken();
-						if (t.length() == 0)
-							continue;
-						t = t.toLowerCase();
-						if (Constants.CONFIG_DEBUG.equals(t)) {
-							foundSet.add(Constants.CONFIG_DEBUG);
-						} else if (Constants.CONFIG_RELEASE.equals(t)) {
-							foundSet.add(Constants.CONFIG_RELEASE);
-						} else if (Constants.CONFIG_DEBUG_AND_RELEASE.equals(t)) {
-							foundSet.add(Constants.CONFIG_DEBUG_AND_RELEASE);
-						}
-					}
-				}
-				reader.close();
-				reader = null;
-			} catch (IOException eat) {
-			} finally {
-				try {
-					if (reader != null)
-						reader.close();
-				} catch (IOException eat) {
-				}
-			}
-			sourceValue = "available configurations:";
-			if (foundSet.contains(Constants.CONFIG_DEBUG_AND_RELEASE)) {
-				if (defaultConfiguration == null)
-					defaultConfiguration = Constants.CONFIG_DEBUG_AND_RELEASE;
-				sourceValue += " " + Constants.CONFIG_DEBUG_AND_RELEASE;
-			}
-			if (foundSet.contains(Constants.CONFIG_RELEASE)) {
-				if (defaultConfiguration == null)
-					defaultConfiguration = Constants.CONFIG_RELEASE;
-				sourceValue += " " + Constants.CONFIG_RELEASE;
-			}
-			if (foundSet.contains(Constants.CONFIG_DEBUG)) {
-				if (defaultConfiguration == null)
-					defaultConfiguration = Constants.CONFIG_DEBUG;
-				sourceValue += " " + Constants.CONFIG_DEBUG;
-			}
-		} else {
-			sourceValue = "WARNING: no *.prl found";
-		}
-
-		if (thisConfiguration == null) {
-			if (wantedConfiguration != null) {
-				// if we parsed *.prl we error on invalid configurations against it
-				if (foundSet.isEmpty() == false && foundSet.contains(wantedConfiguration)) {
-					thisConfiguration = wantedConfiguration;
-				} else if (Constants.CONFIG_DEBUG_AND_RELEASE.equals(wantedConfiguration)) {
-					thisConfiguration = wantedConfiguration;
-				} else if (Constants.CONFIG_RELEASE.equals(wantedConfiguration)) {
-					thisConfiguration = wantedConfiguration;
-				} else if (Constants.CONFIG_DEBUG.equals(wantedConfiguration)) {
-					thisConfiguration = wantedConfiguration;
-				} else if (Constants.CONFIG_TEST.equals(wantedConfiguration)) {
-					thisConfiguration = wantedConfiguration;
-				} else {
-					throw new BuildException(Constants.CONFIGURATION + " could not be set to " + wantedConfiguration
-							+ " try one of " + Constants.CONFIG_RELEASE + ", " + Constants.CONFIG_DEBUG + ", "
-							+ Constants.CONFIG_DEBUG_AND_RELEASE + ", " + Constants.CONFIG_TEST);
-				}
-				sourceValue += "; default is " + defaultConfiguration;
-			} else if (defaultConfiguration != null) {
-				thisConfiguration = defaultConfiguration; // this is the default
-				sourceValue += "; detected default set";
+		if (wantedConfiguration != null) {
+			// if we parsed *.prl we error on invalid configurations against it
+			if (Constants.CONFIG_DEBUG_AND_RELEASE.equals(wantedConfiguration)) {
+				thisConfiguration = wantedConfiguration;
+			} else if (Constants.CONFIG_RELEASE.equals(wantedConfiguration)) {
+				thisConfiguration = wantedConfiguration;
+			} else if (Constants.CONFIG_DEBUG.equals(wantedConfiguration)) {
+				thisConfiguration = wantedConfiguration;
+			} else if (Constants.CONFIG_TEST.equals(wantedConfiguration)) {
+				thisConfiguration = wantedConfiguration;
 			} else {
-				thisConfiguration = Constants.CONFIG_RELEASE; // this is the configuration of last resort
-				sourceValue += "; default of last-resort set";
+				throw new BuildException(Constants.CONFIGURATION + " could not be set to " + wantedConfiguration
+						+ " try one of " + Constants.CONFIG_RELEASE + ", " + Constants.CONFIG_DEBUG + ", "
+						+ Constants.CONFIG_DEBUG_AND_RELEASE + ", " + Constants.CONFIG_TEST);
 			}
+			sourceValue = "default";
+		}else if(isStatic) {
+			thisConfiguration = Constants.CONFIG_DEBUG_AND_RELEASE;
+			sourceValue = "detected";
+		}else if(dsoPath!=null && dsoDebugPath!=null){
+			thisConfiguration = Constants.CONFIG_DEBUG_AND_RELEASE;
+			sourceValue = "detected";
+		}else if(dsoDebugPath!=null) {
+			thisConfiguration = Constants.CONFIG_DEBUG;
+			sourceValue = "detected";			
+		}else if(dsoPath!=null) {
+			thisConfiguration = Constants.CONFIG_RELEASE;
+			sourceValue = "detected";
+		} else {
+			thisConfiguration = Constants.CONFIG_DEBUG_AND_RELEASE; // this is the configuration of last resort
+			sourceValue = "default";
 		}
 		setConfiguration(thisConfiguration);
 		mySetProperty(-1, Constants.CONFIGURATION, " (" + sourceValue + ")", thisConfiguration, true);
@@ -1604,7 +1559,20 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		return specFound;
 	}
 
-	private boolean decideGeneratorPreProc() {
+	private void configureGenerator(java.io.File generatorOutputdir) {
+		String qtsources = AntUtil.getPropertyAsString(propertyHelper, "qtsources");
+		if(qtsources==null || qtsources.isEmpty()) {
+			String qtdir = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.qtdir");
+			if (new File(new File(qtdir),
+					".." + File.separator + "Src" + File.separator + "qtbase").isDirectory()
+					&& new File(new File(qtdir),
+							".." + File.separator + "Src" + File.separator + "qtbase")
+									.listFiles().length > 0) {
+				qtsources = new File(new File(qtdir), ".." + File.separator + "Src").getAbsolutePath();
+				AntUtil.setProperty(propertyHelper, "qtsources", qtsources, false);
+			}
+		}
+		String generatorExtraIncludes = AntUtil.getPropertyAsString(propertyHelper, "generator.extra.includes");
 		String version = AntUtil.getPropertyAsString(propertyHelper, Constants.QT_VERSION);
 		File libPath = new File(AntUtil.getPropertyAsString(propertyHelper, Constants.LIBDIR));
 		File includePath = new File(AntUtil.getPropertyAsString(propertyHelper, Constants.INCLUDEDIR));
@@ -1688,26 +1656,16 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 				case "macextras":
 				case "x11extras":
 				case "winextras":
-					if (skippedModules.contains(module) || qtMajorVersion>5) {
+					if (skippedModules.contains(module) || qtMajorVersion>5 || qtsources==null || qtsources.isEmpty()) {
 						generatorPreProcDefinesList.add(info.preprocdef);
 					} else {
-						String generatorIxtraIncludes = AntUtil.getPropertyAsString(propertyHelper,
-								"generator.extra.includes");
-						String qtdir = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.qtdir");
-						if (new File(new File(qtdir), "qt" + module).isDirectory() || (new File(new File(qtdir),
-								".." + File.separator + "Src" + File.separator + "qt" + module).isDirectory()
-								&& new File(new File(qtdir),
-										".." + File.separator + "Src" + File.separator + "qt" + module)
-												.listFiles().length > 0)) {
-							if (generatorIxtraIncludes == null) {
-								generatorIxtraIncludes = qtdir + "/qtmacextras/include;" + qtdir + "/../Src/qt" + module
-										+ "/include";
-							} else {
-								generatorIxtraIncludes += ";" + qtdir + "/qtmacextras/include;" + qtdir + "/../Src/qt"
-										+ module + "/include";
-							}
-							AntUtil.setProperty(propertyHelper, "generator.extra.includes", generatorIxtraIncludes,
-									false);
+						if (new File(new File(qtsources), "qt" + module).isDirectory()
+								&& new File(new File(qtsources), "qt" + module).listFiles().length > 0) {
+							if (generatorExtraIncludes == null)
+								generatorExtraIncludes = "";
+							if (!generatorExtraIncludes.isEmpty())
+								generatorExtraIncludes += ";";
+							generatorExtraIncludes += qtsources + "/qt" + module + "/include";
 						} else {
 							generatorPreProcDefinesList.add(info.preprocdef);
 						}
@@ -1719,8 +1677,44 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			}
 		}
 		AntUtil.setProperty(propertyHelper, Constants.QTJAMBI_MODULES, String.join(",", modules), false);
-
-		return true;
+		if(((qtMajorVersion==6 && qtMinorVersion>=5) || qtMajorVersion>6) && qtsources!=null) {
+			java.io.File headersdir = new java.io.File(generatorOutputdir, "missing-headers");
+			if(!headersdir.isDirectory()) {
+				java.io.File opengldir = new java.io.File(headersdir, "QtOpenGL");
+				opengldir.mkdirs();
+				File moduleDir = new File(new File(qtsources), "qtbase" + File.separator + "src" + File.separator + "opengl");
+				if (moduleDir.isDirectory()) {
+					for(File file : moduleDir.listFiles(f->f.getName().startsWith("qopenglfunctions_") && f.getName().endsWith(".h"))) {
+						try {
+							Files.copy(file.toPath(), new java.io.File(opengldir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				java.io.File coredir = new java.io.File(headersdir, "QtCore");
+				coredir.mkdirs();
+				moduleDir = new File(new File(qtsources), "qtbase" + File.separator + "src" + File.separator + "corelib" + File.separator + "kernel");
+				if (moduleDir.isDirectory()) {
+					File file = new File(moduleDir, "qpermissions.h");
+					if(file.exists()) {
+						try {
+							Files.copy(file.toPath(), new java.io.File(coredir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}
+			if (generatorExtraIncludes == null)
+				generatorExtraIncludes = "";
+			if (!generatorExtraIncludes.isEmpty())
+				generatorExtraIncludes += ";";
+			generatorExtraIncludes += headersdir.getAbsolutePath();
+		}
+		if(generatorExtraIncludes!=null) {
+			AntUtil.setProperty(propertyHelper, "generator.extra.includes", generatorExtraIncludes, false);
+		}
 	}
 
 	private String doesQtLibExistDir(String librarydir, String name) {
@@ -1840,13 +1834,17 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		if (addQtConfig != null) {
 			if (skippedModules.contains(addQtConfig)) {
 				return false;
-			} else if (addQtConfig.startsWith("3d") && skippedModules.contains("3d")) {
+			} else if (addQtConfig.startsWith("qt3d") && skippedModules.contains("qt3d")) {
 				return false;
 			} else if (addQtConfig.startsWith("multimedia") && skippedModules.contains("multimedia")) {
 				return false;
 			} else if (addQtConfig.startsWith("webengine") && skippedModules.contains("webengine")) {
 				return false;
 			} else if (addQtConfig.startsWith("pdf") && skippedModules.contains("pdf")) {
+				return false;
+			} else if (addQtConfig.startsWith("quick") && (skippedModules.contains("quick") || skippedModules.contains("qml"))) {
+				return false;
+			} else if (addQtConfig.startsWith("svg") && skippedModules.contains("svg")) {
 				return false;
 			} else if ((addQtConfig.equals("opengl") || addQtConfig.startsWith("pdf")) && qtMajorVersion < 6) {
 				return false;

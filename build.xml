@@ -34,6 +34,7 @@
     <property name="antjardir"                   location="antjar"/>
     <property name="extjardir"                   location="extjars"/>
     <property name="java.srcdir"                   location="src/java"/>
+    <property name="native.srcdir"                   location="src/cpp"/>
     <!--
         Initialization tasks. Note that the init.taskdef task depends on a jar
         task, since ant-qtjambi.jar must be set in order for the

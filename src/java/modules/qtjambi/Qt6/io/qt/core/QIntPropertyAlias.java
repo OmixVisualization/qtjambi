@@ -28,8 +28,7 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.QtPrimitiveType;
-import io.qt.QtUninvokable;
+import io.qt.*;
 
 /**
  * QIntPropertyAlias is primitive-typed version of QPropertyAlias&lt;Integer&gt;.
@@ -37,7 +36,7 @@ import io.qt.QtUninvokable;
  */
 public final class QIntPropertyAlias extends QAbstractPropertyAlias {
 	
-	private static QPropertyAlias<@QtPrimitiveType Integer> check(QPropertyAlias<@QtPrimitiveType Integer> other){
+	private static QPropertyAlias<@NonNull@QtPrimitiveType Integer> check(QPropertyAlias<@NonNull@QtPrimitiveType Integer> other){
 		if(other.iface!=null && !QIntProperty.checkType(other.iface.metaType())) {
 			throw new IllegalArgumentException("Given QPropertyAlias is not of int type.");
 		}
@@ -55,7 +54,7 @@ public final class QIntPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided alias.
 	 * @param other
 	 */
-	public QIntPropertyAlias(QPropertyAlias<@QtPrimitiveType Integer> other) {
+	public QIntPropertyAlias(@StrictNonNull QPropertyAlias<@NonNull@QtPrimitiveType Integer> other) {
 		super(check(other));
 	}
 
@@ -63,7 +62,7 @@ public final class QIntPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QIntPropertyAlias(QIntProperty property) {
+	public QIntPropertyAlias(@StrictNonNull QIntProperty property) {
 		super(property, QIntBindable.bindableInterface(0));
 	}
 	
@@ -71,7 +70,7 @@ public final class QIntPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QIntPropertyAlias(QObject.QIntProperty property) {
+	public QIntPropertyAlias(QObject.@StrictNonNull QIntProperty property) {
 		super(property, QIntBindable.bindableInterface(1));
 	}
 	
@@ -79,7 +78,7 @@ public final class QIntPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QIntPropertyAlias(QObject.QComputedIntProperty property) {
+	public QIntPropertyAlias(QObject.@StrictNonNull QComputedIntProperty property) {
 		super(property, QIntBindable.bindableInterface(2));
 	}
 
@@ -87,7 +86,7 @@ public final class QIntPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QIntPropertyAlias(QProperty<@QtPrimitiveType Integer> property) {
+	public QIntPropertyAlias(@StrictNonNull QProperty<@NonNull@QtPrimitiveType Integer> property) {
 		super(property, QBindable.bindableInterface(check(property.valueMetaType()).id(), 0));
 	}
 	
@@ -95,7 +94,7 @@ public final class QIntPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QIntPropertyAlias(QObject.QProperty<@QtPrimitiveType Integer> property) {
+	public QIntPropertyAlias(QObject.@StrictNonNull QProperty<@NonNull@QtPrimitiveType Integer> property) {
 		super(property, QBindable.bindableInterface(check(property.valueMetaType()).id(), 1));
 	}
 	
@@ -103,7 +102,7 @@ public final class QIntPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QIntPropertyAlias(QObject.QComputedProperty<@QtPrimitiveType Integer> property) {
+	public QIntPropertyAlias(QObject.@StrictNonNull QComputedProperty<@NonNull@QtPrimitiveType Integer> property) {
 		super(property, QBindable.bindableInterface(check(property.valueMetaType()).id(), 2));
 	}
 	
@@ -111,7 +110,7 @@ public final class QIntPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided alias.
 	 * @param other
 	 */
-	public QIntPropertyAlias(QIntPropertyAlias alias) {
+	public QIntPropertyAlias(@StrictNonNull QIntPropertyAlias alias) {
 		super(alias);
 	}
 	
@@ -119,7 +118,7 @@ public final class QIntPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided binding's underlying property.
 	 * @param other
 	 */
-	public QIntPropertyAlias(QIntBindable bindable) {
+	public QIntPropertyAlias(@StrictNonNull QIntBindable bindable) {
 		super(bindable.data(), bindable.iface());
 	}
 	
@@ -127,7 +126,7 @@ public final class QIntPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided binding's underlying property.
 	 * @param other
 	 */
-	public QIntPropertyAlias(QBindable<@QtPrimitiveType Integer> bindable) {
+	public QIntPropertyAlias(@StrictNonNull QBindable<@NonNull@QtPrimitiveType Integer> bindable) {
 		super(bindable.data(), bindable.iface());
 		check(bindable.valueMetaType());
 	}
@@ -152,7 +151,7 @@ public final class QIntPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QIntProperty#setBinding(QIntPropertyBinding)
 	 */
 	@QtUninvokable
-	public QIntPropertyBinding setBinding(QIntPropertyBinding newBinding) {
+	public @NonNull QIntPropertyBinding setBinding(@StrictNonNull QIntPropertyBinding newBinding) {
 		return new QIntBindable(aliasedProperty(), iface).setBinding(newBinding);
     }
 	
@@ -160,7 +159,7 @@ public final class QIntPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QIntProperty#setBinding(QPropertyBinding)
 	 */
 	@QtUninvokable
-	public QIntPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Integer> newBinding) {
+	public @NonNull QIntPropertyBinding setBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Integer> newBinding) {
 		return new QIntBindable(aliasedProperty(), iface).setBinding(newBinding);
     }
 	
@@ -168,7 +167,7 @@ public final class QIntPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QIntProperty#setBinding(java.util.function.IntSupplier)
 	 */
 	@QtUninvokable
-	public QIntPropertyBinding setBinding(java.util.function.IntSupplier functor) {
+	public @NonNull QIntPropertyBinding setBinding(java.util.function.@StrictNonNull IntSupplier functor) {
         return setBinding(new QIntPropertyBinding(functor));
     }
 	
@@ -176,7 +175,7 @@ public final class QIntPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QIntProperty#binding()
 	 */
 	@QtUninvokable
-	public QIntPropertyBinding binding() {
+	public @NonNull QIntPropertyBinding binding() {
         return new QIntBindable(aliasedProperty(), iface).binding();
     }
 	
@@ -184,7 +183,7 @@ public final class QIntPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QIntProperty#takeBinding()
 	 */
 	@QtUninvokable
-	public QIntPropertyBinding takeBinding() {
+	public @NonNull QIntPropertyBinding takeBinding() {
         return new QIntBindable(aliasedProperty(), iface).takeBinding();
     }
 }

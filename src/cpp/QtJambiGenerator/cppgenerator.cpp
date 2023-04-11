@@ -1062,9 +1062,8 @@ QString CppGenerator::jni_signature(const MetaType *java_type, JNISignatureForma
         const FunctionalTypeEntry *func = static_cast<const FunctionalTypeEntry *>(java_type->typeEntry());
         if(!func->javaQualifier().isEmpty())
             name = func->javaQualifier()+"$"+name;
-    } else if (java_type->isObject() || java_type->isValue()) {
-        if (const InterfaceTypeEntry *ie
-                = static_cast<const ImplementorTypeEntry *>(java_type->typeEntry())->designatedInterface())
+    } else if (const ImplementorTypeEntry * imptype = dynamic_cast<const ImplementorTypeEntry *>(java_type->typeEntry())) {
+        if (const InterfaceTypeEntry *ie = imptype->designatedInterface())
             name = ie->targetLangName();
     } else if (java_type->isTargetLangEnum()) {
         const EnumTypeEntry *et = static_cast<const EnumTypeEntry *>(java_type->typeEntry());

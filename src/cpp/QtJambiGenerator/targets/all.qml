@@ -103,4 +103,6 @@ TypeSystem{
     LoadTypeSystem{name: "QtPdfWidgets";        generate: true; unless: "QTJAMBI_NO_PDFWIDGETS"}
     LoadTypeSystem{name: "QtHttpServer";        generate: true; unless: "QTJAMBI_NO_HTTPSERVER";       since: [6, 4]}
     LoadTypeSystem{name: "QtSpatialAudio";      generate: true; unless: "QTJAMBI_NO_SPATIALAUDIO";     since: [6, 4]}
+    LoadTypeSystem{name: "QtGrpc";              generate: true; unless: "QTJAMBI_NO_GRPC";             since: [6, 5]}
+    LoadTypeSystem{name: "QtProtobuf";          generate: true; unless: "QTJAMBI_NO_PROTOBUF";         since: [6, 5]}
 }

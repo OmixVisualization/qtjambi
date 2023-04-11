@@ -28,8 +28,11 @@
 ****************************************************************************/
 package io.qt.core;
 
+import io.qt.NonNull;
+import io.qt.Nullable;
 import io.qt.QtPrimitiveType;
 import io.qt.QtUninvokable;
+import io.qt.StrictNonNull;
 
 /**
  * QByteBindable is primitive-typed version of QBindable&lt;Byte&gt;.
@@ -53,7 +56,7 @@ public final class QByteBindable extends QUntypedBindable {
 	 * If the type of the other bindable is not <code>byte</code> it remains invalid.
 	 * @param other
 	 */
-	public QByteBindable(QUntypedBindable other) {
+	public QByteBindable(@StrictNonNull QUntypedBindable other) {
 		super(other.data(), other.iface());
 		check();
 	}
@@ -81,7 +84,7 @@ public final class QByteBindable extends QUntypedBindable {
 	 * Creates a new bindable from provided property.
 	 * @param property
 	 */
-	public QByteBindable(QByteProperty property) {
+	public QByteBindable(@StrictNonNull QByteProperty property) {
 		super(property, bindableInterface(0));
 	}
 	
@@ -89,7 +92,7 @@ public final class QByteBindable extends QUntypedBindable {
 	 * Creates a new bindable from provided property.
 	 * @param property
 	 */
-	public QByteBindable(QObject.QByteProperty property) {
+	public QByteBindable(QObject.@StrictNonNull QByteProperty property) {
 		super(property, bindableInterface(1));
 	}
 	
@@ -97,7 +100,7 @@ public final class QByteBindable extends QUntypedBindable {
 	 * Creates a new bindable from provided property.
 	 * @param property
 	 */
-	public QByteBindable(QObject.QComputedByteProperty property) {
+	public QByteBindable(QObject.@StrictNonNull QComputedByteProperty property) {
 		super(property, bindableInterface(2));
 	}
 	
@@ -106,7 +109,7 @@ public final class QByteBindable extends QUntypedBindable {
 	 * If the type of the property is not <code>byte</code> an {@link IllegalArgumentException} is thrown.
 	 * @param property
 	 */
-	public QByteBindable(QProperty<@QtPrimitiveType Byte> property) {
+	public QByteBindable(@StrictNonNull QProperty<@NonNull@QtPrimitiveType Byte> property) {
 		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 0));
 		check();
 		if(iface()==null)
@@ -118,7 +121,7 @@ public final class QByteBindable extends QUntypedBindable {
 	 * If the type of the property is not <code>byte</code> an {@link IllegalArgumentException} is thrown.
 	 * @param property
 	 */
-	public QByteBindable(QObject.QProperty<@QtPrimitiveType Byte> property) {
+	public QByteBindable(QObject.@StrictNonNull QProperty<@NonNull@QtPrimitiveType Byte> property) {
 		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 1));
 		check();
 		if(iface()==null)
@@ -130,11 +133,34 @@ public final class QByteBindable extends QUntypedBindable {
 	 * If the type of the property is not <code>byte</code> an {@link IllegalArgumentException} is thrown.
 	 * @param property
 	 */
-	public QByteBindable(QObject.QComputedProperty<@QtPrimitiveType Byte> property) {
+	public QByteBindable(QObject.QComputedProperty<@NonNull@QtPrimitiveType Byte> property) {
 		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 2));
 		check();
 		if(iface()==null)
 			throw new IllegalArgumentException("Given QProperty is not of byte type.");
+	}
+	
+	/**
+	 * Creates a new bindable from provided meta property of given object.
+	 * If the type of the property is not <code>byte</code> an {@link IllegalArgumentException} is thrown.
+	 * @param object
+	 * @param property
+	 */
+	public QByteBindable(@StrictNonNull QObject object, @StrictNonNull String property) {
+		this(object, object.metaObject().property(property));
+	}
+	
+	/**
+	 * Creates a new bindable from provided meta property of given object.
+	 * If the type of the property is not <code>byte</code> an {@link IllegalArgumentException} is thrown.
+	 * @param object
+	 * @param property
+	 */
+	public QByteBindable(@StrictNonNull QObject object, @StrictNonNull QMetaProperty property) {
+		super(object, property, QBindable.bindableInterface(property));
+		check();
+		if(iface()==null)
+			throw new IllegalArgumentException("Given QMetaProperty is not of byte type.");
 	}
 	
 	static native QBindableInterface bindableInterface(int propertyType);
@@ -144,7 +170,7 @@ public final class QByteBindable extends QUntypedBindable {
 	 */
 	@QtUninvokable
 	@Override
-	public QBytePropertyBinding makeBinding()
+	public @NonNull QBytePropertyBinding makeBinding()
     {
 		QUntypedPropertyBinding binding = super.makeBinding();
 		if(binding instanceof QBytePropertyBinding) {
@@ -161,7 +187,7 @@ public final class QByteBindable extends QUntypedBindable {
      */
 	@QtUninvokable
 	@Override
-    public QBytePropertyBinding binding()
+    public @NonNull QBytePropertyBinding binding()
     {
 		QUntypedPropertyBinding binding = super.binding();
 		if(binding instanceof QBytePropertyBinding) {
@@ -172,7 +198,7 @@ public final class QByteBindable extends QUntypedBindable {
     }
     
 	@QtUninvokable
-	public QBytePropertyBinding setBinding(QBytePropertyBinding binding)
+	public @NonNull QBytePropertyBinding setBinding(@StrictNonNull QBytePropertyBinding binding)
     {
 		QUntypedPropertyBinding oldBinding = super.overrideBinding(binding);
 		if(oldBinding instanceof QBytePropertyBinding) {
@@ -183,7 +209,7 @@ public final class QByteBindable extends QUntypedBindable {
     }
     
 	@QtUninvokable
-	public QBytePropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Byte> binding)
+	public @NonNull QBytePropertyBinding setBinding(@Nullable QPropertyBinding<@NonNull@QtPrimitiveType Byte> binding)
     {
 		if(binding!=null && !QByteProperty.checkType(binding.valueMetaType()))
 			return new QBytePropertyBinding();
@@ -196,7 +222,7 @@ public final class QByteBindable extends QUntypedBindable {
     }
 	
 	@QtUninvokable
-	public QBytePropertyBinding setBinding(io.qt.QtUtilities.ByteSupplier functor)
+	public @NonNull QBytePropertyBinding setBinding(io.qt.QtUtilities.@StrictNonNull ByteSupplier functor)
     {
 		return setBinding(new QBytePropertyBinding(functor));
     }
@@ -207,7 +233,7 @@ public final class QByteBindable extends QUntypedBindable {
 	 * @return the removed binding
 	 */
 	@QtUninvokable
-    public QBytePropertyBinding takeBinding()
+    public @NonNull QBytePropertyBinding takeBinding()
     {
         return setBinding(new QBytePropertyBinding());
     }

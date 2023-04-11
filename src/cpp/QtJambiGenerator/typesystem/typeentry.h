@@ -1144,6 +1144,9 @@ class ComplexTypeEntry : public TypeEntry {
             ThreadAffine        = 0x02,
             Deprecated          = 0x04,
             ForceFriendly       = 0x10,
+            NestedNonPublic     = 0x20,
+            HasNonPublicFields  = 0x40,
+            HasFields           = 0x80,
         };
         typedef QFlags<TypeFlag> TypeFlags;
 
@@ -1188,8 +1191,53 @@ class ComplexTypeEntry : public TypeEntry {
             m_include = inc;
         }
 
-        void setTypeFlags(TypeFlags flags) {
-            m_type_flags = flags;
+        void setForceAbstract(){
+            m_type_flags.setFlag(ForceAbstract);
+        }
+
+        bool isForceAbstract() const {
+            return m_type_flags.testFlag(ForceAbstract);
+        }
+
+        void setThreadAffine(){
+            m_type_flags.setFlag(ThreadAffine);
+        }
+
+        bool isThreadAffine() const {
+            return m_type_flags.testFlag(ThreadAffine);
+        }
+
+        void setDeprecated(){
+            m_type_flags.setFlag(Deprecated);
+        }
+
+        bool isDeprecated() const {
+            return m_type_flags.testFlag(Deprecated);
+        }
+
+        void setForceFriendly(){
+            m_type_flags.setFlag(ForceFriendly);
+        }
+
+        bool isForceFriendly() const {
+            return m_type_flags.testFlag(ForceFriendly);
+        }
+
+        void setHasNonPublicFields(){
+            m_type_flags.setFlag(HasFields);
+            m_type_flags.setFlag(HasNonPublicFields);
+        }
+
+        bool hasNonPublicFields() const {
+            return m_type_flags.testFlag(HasNonPublicFields);
+        }
+
+        void setHasFields(){
+            m_type_flags.setFlag(HasFields);
+        }
+
+        bool hasFields() const {
+            return m_type_flags.testFlag(HasFields);
         }
 
         TypeFlags typeFlags() const {
@@ -1283,6 +1331,13 @@ class ComplexTypeEntry : public TypeEntry {
         }
         void setQAction(bool qw) {
             m_attributes.setFlag(IsQAction, qw);
+        }
+
+        bool isQMediaControl() const {
+            return m_attributes.testFlag(IsQMediaControl);
+        }
+        void setQMediaControl(bool qw) {
+            m_attributes.setFlag(IsQMediaControl, qw);
         }
 
         bool isQCoreApplication() const {
@@ -1449,55 +1504,178 @@ class ComplexTypeEntry : public TypeEntry {
             m_attributes.setFlag(SkipMetaTypeRegistration, skipMetaTypeRegistration);
         }
 
-        bool hasAnyConstructor(bool nonPrivate = true) const {
-            return m_functionAttributes.testFlag(nonPrivate ? HasAnyNonPrivateConstructor : HasAnyPrivateConstructor);
+        void setHasPrivateConstructors(){
+            m_functionAttributes.setFlag(HasAnyPrivateConstructor);
         }
 
-        void setHasAnyConstructor(bool nonPrivate = true){
-            m_functionAttributes.setFlag(nonPrivate ? HasAnyNonPrivateConstructor : HasAnyPrivateConstructor);
+        void setHasNonPrivateConstructors(){
+            m_functionAttributes.setFlag(HasAnyNonPrivateConstructor);
         }
 
-        bool hasDefaultConstructor(bool _public = true) const {
-            return m_functionAttributes.testFlag(_public ? HasPublicDefaultConstructor : HasProtectedDefaultConstructor);
+        bool hasPrivateConstructors() const {
+            return m_functionAttributes.testFlag(HasAnyPrivateConstructor);
         }
 
-        void setHasDefaultConstructor(bool _public = true){
-            m_functionAttributes.setFlag(_public ? HasPublicDefaultConstructor : HasProtectedDefaultConstructor);
+        bool hasNonPrivateConstructors() const {
+            return m_functionAttributes.testFlag(HasAnyNonPrivateConstructor);
         }
 
-        bool hasCopyConstructor(bool _public = true) const {
-            return m_functionAttributes.testFlag(_public ? HasPublicCopyConstructor : HasProtectedCopyConstructor);
+        bool hasJustPrivateConstructors() const {
+            return hasPrivateConstructors() && !hasNonPrivateConstructors();
         }
 
-        void setHasCopyConstructor(bool _public = true){
-            m_functionAttributes.setFlag(_public ? HasPublicCopyConstructor : HasProtectedCopyConstructor);
+        bool hasPublicDefaultConstructor() const {
+            return m_functionAttributes.testFlag(HasPublicDefaultConstructor);
         }
 
-        bool hasMoveConstructor(bool _public = true) const {
-            return m_functionAttributes.testFlag(_public ? HasPublicMoveConstructor : HasProtectedMoveConstructor);
+        bool hasProtectedDefaultConstructor() const {
+            return m_functionAttributes.testFlag(HasProtectedDefaultConstructor);
         }
 
-        void setHasMoveConstructor(bool _public = true){
-            m_functionAttributes.setFlag(_public ? HasPublicMoveConstructor : HasProtectedMoveConstructor);
+        bool hasPrivateDefaultConstructor() const {
+            return m_functionAttributes.testFlag(HasPrivateDefaultConstructor);
         }
 
-        bool hasMoveAssignment(bool _public = true) const {
-            return m_functionAttributes.testFlag(_public ? HasPublicMoveAssignment : HasProtectedMoveAssignment);
+        void setHasPublicDefaultConstructor(){
+            m_functionAttributes.setFlag(HasProtectedDefaultConstructor, false);
+            m_functionAttributes.setFlag(HasPrivateDefaultConstructor, false);
+            m_functionAttributes.setFlag(HasPublicDefaultConstructor);
         }
 
-        void setHasMoveAssignment(bool _public = true){
-            m_functionAttributes.setFlag(_public ? HasPublicMoveAssignment : HasProtectedMoveAssignment);
+        void setHasProtectedDefaultConstructor(){
+            m_functionAttributes.setFlag(HasPublicDefaultConstructor, false);
+            m_functionAttributes.setFlag(HasPrivateDefaultConstructor, false);
+            m_functionAttributes.setFlag(HasProtectedDefaultConstructor);
         }
 
-        bool hasDefaultAssignment(bool _public = true) const {
-            return m_functionAttributes.testFlag(_public ? HasPublicDefaultAssignment : HasProtectedDefaultAssignment);
+        void setHasPrivateDefaultConstructor(){
+            m_functionAttributes.setFlag(HasProtectedDefaultConstructor, false);
+            m_functionAttributes.setFlag(HasPublicDefaultConstructor, false);
+            m_functionAttributes.setFlag(HasPrivateDefaultConstructor);
         }
 
-        void setHasDefaultAssignment(bool _public = true){
-            m_functionAttributes.setFlag(_public ? HasPublicDefaultAssignment : HasProtectedDefaultAssignment);
+        bool hasPublicCopyConstructor() const {
+            return m_functionAttributes.testFlag(HasPublicCopyConstructor);
+        }
+
+        bool hasProtectedCopyConstructor() const {
+            return m_functionAttributes.testFlag(HasProtectedCopyConstructor);
+        }
+
+        bool hasPrivateCopyConstructor() const {
+            return m_functionAttributes.testFlag(HasPrivateCopyConstructor);
+        }
+
+        void setHasPublicCopyConstructor(){
+            m_functionAttributes.setFlag(HasProtectedCopyConstructor, false);
+            m_functionAttributes.setFlag(HasPrivateCopyConstructor, false);
+            m_functionAttributes.setFlag(HasPublicCopyConstructor);
+        }
+
+        void setHasProtectedCopyConstructor(){
+            m_functionAttributes.setFlag(HasPublicCopyConstructor, false);
+            m_functionAttributes.setFlag(HasPrivateCopyConstructor, false);
+            m_functionAttributes.setFlag(HasProtectedCopyConstructor);
+        }
+
+        void setHasPrivateCopyConstructor(){
+            m_functionAttributes.setFlag(HasProtectedCopyConstructor, false);
+            m_functionAttributes.setFlag(HasPublicCopyConstructor, false);
+            m_functionAttributes.setFlag(HasPrivateCopyConstructor);
+        }
+
+        bool hasPublicMoveConstructor() const {
+            return m_functionAttributes.testFlag(HasPublicMoveConstructor);
+        }
+
+        bool hasProtectedMoveConstructor() const {
+            return m_functionAttributes.testFlag(HasProtectedMoveConstructor);
+        }
+
+        bool hasPrivateMoveConstructor() const {
+            return m_functionAttributes.testFlag(HasPrivateMoveConstructor);
+        }
+
+        void setHasPublicMoveConstructor(){
+            m_functionAttributes.setFlag(HasProtectedMoveConstructor, false);
+            m_functionAttributes.setFlag(HasPrivateMoveConstructor, false);
+            m_functionAttributes.setFlag(HasPublicMoveConstructor);
+        }
+
+        void setHasProtectedMoveConstructor(){
+            m_functionAttributes.setFlag(HasPublicMoveConstructor, false);
+            m_functionAttributes.setFlag(HasPrivateMoveConstructor, false);
+            m_functionAttributes.setFlag(HasProtectedMoveConstructor);
+        }
+
+        void setHasPrivateMoveConstructor(){
+            m_functionAttributes.setFlag(HasProtectedMoveConstructor, false);
+            m_functionAttributes.setFlag(HasPublicMoveConstructor, false);
+            m_functionAttributes.setFlag(HasPrivateMoveConstructor);
+        }
+
+        bool hasPublicMoveAssignment() const {
+            return m_functionAttributes.testFlag(HasPublicMoveAssignment);
+        }
+
+        bool hasProtectedMoveAssignment() const {
+            return m_functionAttributes.testFlag(HasProtectedMoveAssignment);
+        }
+
+        bool hasPrivateMoveAssignment() const {
+            return m_functionAttributes.testFlag(HasPrivateMoveAssignment);
+        }
+
+        void setHasPublicMoveAssignment(){
+            m_functionAttributes.setFlag(HasPrivateMoveAssignment, false);
+            m_functionAttributes.setFlag(HasProtectedMoveAssignment, false);
+            m_functionAttributes.setFlag(HasPublicMoveAssignment);
+        }
+
+        void setHasProtectedMoveAssignment(){
+            m_functionAttributes.setFlag(HasPrivateMoveAssignment, false);
+            m_functionAttributes.setFlag(HasPublicMoveAssignment, false);
+            m_functionAttributes.setFlag(HasProtectedMoveAssignment);
+        }
+
+        void setHasPrivateMoveAssignment(){
+            m_functionAttributes.setFlag(HasPublicMoveAssignment, false);
+            m_functionAttributes.setFlag(HasProtectedMoveAssignment, false);
+            m_functionAttributes.setFlag(HasPrivateMoveAssignment);
+        }
+
+        bool hasPublicDefaultAssignment() const {
+            return m_functionAttributes.testFlag(HasPublicDefaultAssignment);
+        }
+
+        bool hasProtectedDefaultAssignment() const {
+            return m_functionAttributes.testFlag(HasProtectedDefaultAssignment);
+        }
+
+        bool hasPrivateDefaultAssignment() const {
+            return m_functionAttributes.testFlag(HasPrivateDefaultAssignment);
+        }
+
+        void setHasPublicDefaultAssignment(){
+            m_functionAttributes.setFlag(HasPrivateDefaultAssignment, false);
+            m_functionAttributes.setFlag(HasProtectedDefaultAssignment, false);
+            m_functionAttributes.setFlag(HasPublicDefaultAssignment);
+        }
+
+        void setHasProtectedDefaultAssignment(){
+            m_functionAttributes.setFlag(HasPrivateDefaultAssignment, false);
+            m_functionAttributes.setFlag(HasPublicDefaultAssignment, false);
+            m_functionAttributes.setFlag(HasProtectedDefaultAssignment);
+        }
+
+        void setHasPrivateDefaultAssignment(){
+            m_functionAttributes.setFlag(HasPublicDefaultAssignment, false);
+            m_functionAttributes.setFlag(HasProtectedDefaultAssignment, false);
+            m_functionAttributes.setFlag(HasPrivateDefaultAssignment);
         }
 
         void setDestructorPrivate(){
+            m_functionAttributes.setFlag(HasProtectedDestructor, false);
             m_functionAttributes.setFlag(HasPrivateDestructor, true);
         }
 
@@ -1506,6 +1684,7 @@ class ComplexTypeEntry : public TypeEntry {
         }
 
         void setDestructorProtected(){
+            m_functionAttributes.setFlag(HasPrivateDestructor, false);
             m_functionAttributes.setFlag(HasProtectedDestructor, true);
         }
 
@@ -1519,6 +1698,10 @@ class ComplexTypeEntry : public TypeEntry {
 
         bool isDestructorVirtual() const {
             return m_functionAttributes.testFlag(HasVirtualDestructor);
+        }
+
+        bool isDestructorPublic() const {
+            return !m_functionAttributes.testFlag(HasPrivateDestructor) && !m_functionAttributes.testFlag(HasProtectedDestructor);
         }
 
         void setHasEquals(){
@@ -1577,7 +1760,8 @@ protected:
             IsNoImpl = 0x08000,
             IsValueOwner = 0x010000,
             SkipMetaTypeRegistration = 0x20000,
-            ForceMetaTypeRegistration = 0x40000
+            ForceMetaTypeRegistration = 0x40000,
+            IsQMediaControl = 0x80000
         };
         QFlags<ComplexAttributeFlag> m_attributes;
 
@@ -1602,7 +1786,12 @@ protected:
             HasVirtuals = 0x20000,
             HasPureVirtuals = 0x40000,
             HasFinals = 0x80000,
-            HasPrivatePureVirtuals = 0x100000
+            HasPrivatePureVirtuals = 0x100000,
+            HasPrivateDefaultConstructor = 0x200000,
+            HasPrivateCopyConstructor = 0x400000,
+            HasPrivateMoveConstructor = 0x800000,
+            HasPrivateDefaultAssignment = 0x1000000,
+            HasPrivateMoveAssignment = 0x2000000,
         };
         QFlags<FunctionAttributeFlag> m_functionAttributes;
 
@@ -1947,13 +2136,8 @@ class ContainerTypeEntry : public ComplexTypeEntry {
             std_vector
         };
 
-        ContainerTypeEntry(const QString &name, Type type)
-                : ComplexTypeEntry(name, ContainerType), m_type(type) {
-            setCodeGeneration(GenerateForSubclass);
-            disableNativeIdUsage();
-        }
-
-        Type type() const { return m_type; }
+        ContainerTypeEntry(const QString &name, Type type);
+        Type type() const;
         QString targetLangName() const override;
         QString javaPackage() const override;
         QString qualifiedCppName() const override;

@@ -815,7 +815,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNativeObject(JNIEnv
     JavaException ocurredException;
     QtJambiLink* qtJambiLink = new DeletablePointerToContainerLink(env, nativeLink, javaObject,
                                                             LINK_NAME_ARG(qt_name)
-                                                            ptr, created_by_java,
+                                                            ptr, created_by_java, false,
                                                             destructor_function, containerAccess, ocurredException);
     if(ocurredException.object()){
         qtJambiLink->dispose();
@@ -860,7 +860,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNativeObject(JNIEnv
                                                                      interfaceOffsets, interfaceTypes,
                                                                      inheritedInterfaces,
                                                                      LINK_NAME_ARG(qt_name)
-                                                                     ptr, created_by_java,
+                                                                     ptr, created_by_java, false,
                                                                      destructor_function, containerAccess, ocurredException);
     if(ocurredException.object()){
         qtJambiLink->dispose();
@@ -1576,6 +1576,70 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewContainer(JNIEnv
     return *gDefaultPointer;
 }
 
+const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewContainer(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject javaObject, const std::type_info& typeId, void *ptr, const SuperTypeInfos* superTypeInfos, bool created_by_java, bool is_shell, AbstractContainerAccess* containerAccess, PtrDeleterFunction destructor_function, JavaException& ocurredException)
+{
+    if(!ocurredException.object()){
+        Q_ASSERT(env);
+        Q_ASSERT(javaObject);
+        Q_ASSERT(ptr);
+        Q_ASSERT(containerAccess);
+
+        // Initialize the link
+        const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, objectClass, typeId, superTypeInfos);
+        QtJambiLink* qtJambiLink;
+        if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
+            qtJambiLink = new DeletablePointerToContainerInterfaceLink(env, nativeLink, javaObject, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces,
+                                                                       LINK_NAME_ARG(getQtName(typeId))
+                                                                       ptr, created_by_java, is_shell, destructor_function, containerAccess, ocurredException);
+        }else{
+            qtJambiLink = new DeletablePointerToContainerLink(env, nativeLink, javaObject,
+                                                              LINK_NAME_ARG(getQtName(typeId))
+                                                              ptr, created_by_java, is_shell, destructor_function, containerAccess, ocurredException);
+        }
+        if(ocurredException.object()){
+            qtJambiLink->dispose();
+        }else{
+            if(created_by_java){
+                qtJambiLink->setJavaOwnership(env);
+            }
+            return qtJambiLink->getStrongPointer();
+        }
+    }
+    return *gDefaultPointer;
+}
+
+const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewContainer(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject javaObject, const std::type_info& typeId, void *ptr, const SuperTypeInfos* superTypeInfos, bool created_by_java, bool is_shell, AbstractContainerAccess* containerAccess, PtrDeleterFunction destructor_function, PtrOwnerFunction ownerFunction, JavaException& ocurredException)
+{
+    if(!ocurredException.object()){
+        Q_ASSERT(env);
+        Q_ASSERT(javaObject);
+        Q_ASSERT(ptr);
+        Q_ASSERT(containerAccess);
+
+        // Initialize the link
+        const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, objectClass, typeId, superTypeInfos);
+        QtJambiLink* qtJambiLink;
+        if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
+            qtJambiLink = new DeletableOwnedPointerToContainerInterfaceLink(env, nativeLink, javaObject, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces,
+                                                                       LINK_NAME_ARG(getQtName(typeId))
+                                                                       ptr, created_by_java, is_shell, destructor_function, ownerFunction, containerAccess, ocurredException);
+        }else{
+            qtJambiLink = new DeletableOwnedPointerToContainerLink(env, nativeLink, javaObject,
+                                                              LINK_NAME_ARG(getQtName(typeId))
+                                                              ptr, created_by_java, is_shell, destructor_function, ownerFunction, containerAccess, ocurredException);
+        }
+        if(ocurredException.object()){
+            qtJambiLink->dispose();
+        }else{
+            if(created_by_java){
+                qtJambiLink->setJavaOwnership(env);
+            }
+            return qtJambiLink->getStrongPointer();
+        }
+    }
+    return *gDefaultPointer;
+}
+
 const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewObject(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject javaObject, const std::type_info& typeId, void *ptr, const SuperTypeInfos* superTypeInfos, const QMetaType& metaType, bool created_by_java, bool is_shell, JavaException& ocurredException)
 {
     if(!ocurredException.object()){
@@ -1813,11 +1877,11 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForOwnedContainer(JNIE
     if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
         qtJambiLink = new PointerToContainerInterfaceLink(env, nativeLink, javaObject, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces,
                                                        LINK_NAME_ARG(qt_name)
-                                                       ptr, false, containerAccess, ocurredException);
+                                                       ptr, false, false, containerAccess, ocurredException);
     }else{
         qtJambiLink = new PointerToContainerLink(env, nativeLink, javaObject,
                                               LINK_NAME_ARG(qt_name)
-                                              ptr, false, containerAccess, ocurredException);
+                                              ptr, false, false, containerAccess, ocurredException);
     }
     if(ocurredException.object()){
         qtJambiLink->dispose();
@@ -1849,11 +1913,11 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForOwnedContainer(JNIE
     if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
         qtJambiLink = new DeletablePointerToContainerInterfaceLink(env, nativeLink, javaObject, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces,
                                                        LINK_NAME_ARG(qt_name)
-                                                       ptr, false, destructor_function, containerAccess, ocurredException);
+                                                       ptr, false, false, destructor_function, containerAccess, ocurredException);
     }else{
         qtJambiLink = new DeletablePointerToContainerLink(env, nativeLink, javaObject,
                                               LINK_NAME_ARG(qt_name)
-                                              ptr, false, destructor_function, containerAccess, ocurredException);
+                                              ptr, false, false, destructor_function, containerAccess, ocurredException);
     }
     if(ocurredException.object()){
         qtJambiLink->dispose();
@@ -2413,11 +2477,11 @@ MetaTypedPointerToObjectLink::MetaTypedPointerToObjectLink(JNIEnv *env, jobject 
 
 PointerToContainerLink::PointerToContainerLink(JNIEnv *env, jobject nativeLink, jobject jobj,
                     LINK_NAME_ARG(const char* qt_name)
-                    void *ptr, bool created_by_java,
+                    void *ptr, bool created_by_java, bool is_shell,
                     AbstractContainerAccess* containerAccess, JavaException& ocurredException)
     : PointerToObjectLink(env, nativeLink, jobj,
                                                            LINK_NAME_ARG(qt_name)
-                                                           ptr, created_by_java, false, ocurredException), m_containerAccess(containerAccess) {}
+                                                           ptr, created_by_java, is_shell, ocurredException), m_containerAccess(containerAccess) {}
 
 PointerToContainerLink::~PointerToContainerLink(){
     m_containerAccess->dispose();
@@ -2500,7 +2564,7 @@ void MetaTypedPointerToContainerLink::deleteNativeObject(JNIEnv *env, bool force
             if(pointer){
                 QTJAMBI_DEBUG_TRACE_WITH_THREAD("call QMetaType::destroy()")
                 locker.unlock();
-                metaType().destroy(pointer);
+                m_meta_type.destroy(pointer);
                 locker.relock();
                 dispose();
             }
@@ -2536,13 +2600,25 @@ DeletablePointerToObjectLink::DeletablePointerToObjectLink(JNIEnv *env, jobject 
 
 DeletablePointerToContainerLink::DeletablePointerToContainerLink(JNIEnv *env, jobject nativeLink, jobject jobj,
                     LINK_NAME_ARG(const char* qt_name)
-                    void *ptr, bool created_by_java,
+                    void *ptr, bool created_by_java, bool is_shell,
                     PtrDeleterFunction destructor_function, AbstractContainerAccess* containerAccess, JavaException& ocurredException)
     : DeletablePointerToObjectLink(env, nativeLink, jobj,
                                                            LINK_NAME_ARG(qt_name)
-                                                           ptr, created_by_java, false, destructor_function, ocurredException), m_containerAccess(containerAccess) {}
+                                                           ptr, created_by_java, is_shell, destructor_function, ocurredException), m_containerAccess(containerAccess) {}
 
 DeletablePointerToContainerLink::~DeletablePointerToContainerLink(){
+    m_containerAccess->dispose();
+}
+
+DeletableOwnedPointerToContainerLink::DeletableOwnedPointerToContainerLink(JNIEnv *env, jobject nativeLink, jobject jobj,
+                    LINK_NAME_ARG(const char* qt_name)
+                    void *ptr, bool created_by_java, bool is_shell,
+                    PtrDeleterFunction destructor_function, PtrOwnerFunction ownerFunction, AbstractContainerAccess* containerAccess, JavaException& ocurredException)
+    : DeletableOwnedPointerToObjectLink(env, nativeLink, jobj,
+                                                           LINK_NAME_ARG(qt_name)
+                                                           ptr, created_by_java, is_shell, destructor_function, ownerFunction, ocurredException), m_containerAccess(containerAccess) {}
+
+DeletableOwnedPointerToContainerLink::~DeletableOwnedPointerToContainerLink(){
     m_containerAccess->dispose();
 }
 
@@ -2897,7 +2973,7 @@ void MetaTypedPointerToObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
             void* pointer = m_pointer;
             m_pointer = nullptr;
             QTJAMBI_DEBUG_TRACE_WITH_THREAD("call QMetaType::destroy()")
-            metaType().destroy(pointer);
+            m_meta_type.destroy(pointer);
             dispose();
         }else{
             dispose();
@@ -2972,7 +3048,7 @@ void OwnedMetaTypedPointerToObjectLink::deleteNativeObject(JNIEnv *env, bool for
             if(pointer){
                 QTJAMBI_DEBUG_TRACE_WITH_THREAD("call QMetaType::destroy()")
                 locker.unlock();
-                metaType().destroy(pointer);
+                m_meta_type.destroy(pointer);
                 locker.relock();
                 dispose();
             }
@@ -3151,6 +3227,82 @@ void DeletablePointerToObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
             m_deleter_function(pointer, isShell());
         }
         dispose();
+    }
+}
+
+void DeletableOwnedPointerToContainerLink::deleteNativeObject(JNIEnv *env, bool forced)
+{
+    if (m_pointer){
+        QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME("DeletablePointerToObjectLink::deleteNativeObject(JNIEnv *, bool)")
+    #ifdef DEBUG_REFCOUNTING
+        {
+            QWriteLocker locker(gRefCountStaticLock());
+            int currentCount = gRefCountHash()->value(m_meta_type, 0) - 1;
+            gRefCountHash()->insert(m_meta_type, currentCount);
+            qDebug("Deleting QObject [count after: %d]", currentCount);
+        }
+    #endif
+        invalidateDependentObjects(env);
+        unregisterPointer(m_pointer);
+        unregisterOffsets();
+        if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
+            void* pointer = m_pointer;
+            m_pointer = nullptr;
+            QWriteLocker locker(QtJambiLinkUserData::lock());
+            Q_UNUSED(locker)
+            const QObject* obj = m_owner_function(pointer);
+            if(!obj)
+                obj = m_containerAccess->getOwner(pointer);
+            if(obj){
+                const QObjectPrivate* p = QObjectPrivate::get(obj);
+                Q_ASSERT(p);
+                QThread* ownerThread =
+#if QT_VERSION < QT_VERSION_CHECK(5,15,0)
+                        p->threadData->thread;
+#else
+                        p->threadData.loadAcquire()->thread.loadAcquire();
+#endif
+                if (ownerThread->isRunning() && ownerThread != QThread::currentThread()) {
+                    if(ValueOwnerUserData* vud = QTJAMBI_GET_OBJECTUSERDATA(ValueOwnerUserData, obj)){
+                        if(p->wasDeleted){
+                            QTJAMBI_DEBUG_TRACE_WITH_THREAD("call destructor_function")
+                            QTJAMBI_INCREASE_COUNTER_THIS(destructorFunctionCalledCount)
+                            PtrDeleterFunction _deleter_function = m_deleter_function;
+                            void* _pointer = pointer;
+                            bool isShell = this->isShell();
+                            vud->addDeleter([_deleter_function,_pointer, isShell](){
+                                _deleter_function(_pointer, isShell);
+                            });
+                            dispose();
+                        }else{
+                            QTJAMBI_DEBUG_TRACE_WITH_THREAD("use QtJambiDestructor")
+                            setDeleteLater();    // qobject still exists at the time we cut it away (and we have shoved dtor to event system)
+                            QtJambiDestructor* destructor = new QtJambiDestructor(vud->pointer(), m_this, pointer, m_deleter_function, isShell());
+                            destructor->moveToThread(ownerThread->thread());
+                            destructor->deleteLater();
+                        }
+                        pointer = nullptr;
+                    }else if(!p->wasDeleted){
+                        QTJAMBI_DEBUG_TRACE_WITH_THREAD("use QtJambiDestructor")
+                        setDeleteLater();    // qobject still exists at the time we cut it away (and we have shoved dtor to event system)
+                        QtJambiDestructor* destructor = new QtJambiDestructor(obj, m_this, pointer, m_deleter_function, isShell());
+                        destructor->moveToThread(ownerThread->thread());
+                        destructor->deleteLater();
+                        pointer = nullptr;
+                    }
+                }
+            }
+            if(pointer){
+                QTJAMBI_DEBUG_TRACE_WITH_THREAD("call destructor_function")
+                QTJAMBI_INCREASE_COUNTER_THIS(destructorFunctionCalledCount)
+                locker.unlock();
+                m_deleter_function(pointer, isShell());
+                locker.relock();
+                dispose();
+            }
+        }else{
+            dispose();
+        }
     }
 }
 
@@ -4281,10 +4433,10 @@ OwnedMetaTypedPointerToObjectInterfaceLink::OwnedMetaTypedPointerToObjectInterfa
 
 PointerToContainerInterfaceLink::PointerToContainerInterfaceLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMap<size_t, uint>& interfaceOffsets, const QSet<size_t>& interfaces, const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces,
                                                            LINK_NAME_ARG(const char *qt_name)
-                                                           void *ptr, bool created_by_java, AbstractContainerAccess* containerAccess, JavaException& ocurredException)
+                                                           void *ptr, bool created_by_java, bool is_shell, AbstractContainerAccess* containerAccess, JavaException& ocurredException)
     : PointerToContainerLink(env, nativeLink, jobj,
                           LINK_NAME_ARG(qt_name)
-                          ptr, created_by_java, containerAccess, ocurredException), m_interfaceOffsets(interfaceOffsets), m_availableInterfaces(interfaces), m_inheritedInterfaces(inheritedInterfaces)
+                          ptr, created_by_java, is_shell, containerAccess, ocurredException), m_interfaceOffsets(interfaceOffsets), m_availableInterfaces(interfaces), m_inheritedInterfaces(inheritedInterfaces)
 {
 }
 
@@ -4297,10 +4449,10 @@ MetaTypedPointerToContainerInterfaceLink::MetaTypedPointerToContainerInterfaceLi
 
 DeletablePointerToContainerInterfaceLink::DeletablePointerToContainerInterfaceLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMap<size_t, uint>& interfaceOffsets, const QSet<size_t>& interfaces, const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces,
                                                            LINK_NAME_ARG(const char *qt_name)
-                                                           void *ptr, bool created_by_java, PtrDeleterFunction destructor_function, AbstractContainerAccess* containerAccess, JavaException& ocurredException)
+                                                           void *ptr, bool created_by_java, bool is_shell, PtrDeleterFunction destructor_function, AbstractContainerAccess* containerAccess, JavaException& ocurredException)
     : DeletablePointerToContainerLink(env, nativeLink, jobj,
                           LINK_NAME_ARG(qt_name)
-                          ptr, created_by_java, destructor_function, containerAccess, ocurredException), m_interfaceOffsets(interfaceOffsets), m_availableInterfaces(interfaces), m_inheritedInterfaces(inheritedInterfaces)
+                          ptr, created_by_java, is_shell, destructor_function, containerAccess, ocurredException), m_interfaceOffsets(interfaceOffsets), m_availableInterfaces(interfaces), m_inheritedInterfaces(inheritedInterfaces)
 {
 }
 
@@ -4326,6 +4478,15 @@ DeletableOwnedPointerToObjectInterfaceLink::DeletableOwnedPointerToObjectInterfa
     : DeletableOwnedPointerToObjectLink(env, nativeLink, jobj,
                           LINK_NAME_ARG(qt_name)
                           ptr, created_by_java, is_shell, destructor_function, ownerFunction, ocurredException), m_interfaceOffsets(interfaceOffsets), m_availableInterfaces(interfaces), m_inheritedInterfaces(inheritedInterfaces)
+{
+}
+
+DeletableOwnedPointerToContainerInterfaceLink::DeletableOwnedPointerToContainerInterfaceLink(JNIEnv *env, jobject nativeLink, jobject jobj, const QMap<size_t, uint>& interfaceOffsets, const QSet<size_t>& interfaces, const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces,
+                                                           LINK_NAME_ARG(const char *qt_name)
+                                                           void *ptr, bool created_by_java, bool is_shell, PtrDeleterFunction destructor_function, PtrOwnerFunction ownerFunction, AbstractContainerAccess* containerAccess, JavaException& ocurredException)
+    : DeletableOwnedPointerToContainerLink(env, nativeLink, jobj,
+                          LINK_NAME_ARG(qt_name)
+                          ptr, created_by_java, is_shell, destructor_function, ownerFunction, containerAccess, ocurredException), m_interfaceOffsets(interfaceOffsets), m_availableInterfaces(interfaces), m_inheritedInterfaces(inheritedInterfaces)
 {
 }
 
@@ -4527,6 +4688,7 @@ INTERFACE_METHODS(QSharedPointerToContainerInterfaceLink, QSharedPointerToContai
 INTERFACE_METHODS(PointerToContainerInterfaceLink, PointerToContainerLink)
 INTERFACE_METHODS(MetaTypedPointerToContainerInterfaceLink, MetaTypedPointerToContainerLink)
 INTERFACE_METHODS(DeletablePointerToContainerInterfaceLink, DeletablePointerToContainerLink)
+INTERFACE_METHODS(DeletableOwnedPointerToContainerInterfaceLink, DeletableOwnedPointerToContainerLink)
 
 
 QObject* PointerContainer::qobject() const{

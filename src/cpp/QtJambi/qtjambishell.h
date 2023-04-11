@@ -87,6 +87,16 @@ public:
                            size_t size, const std::type_info& typeId, bool isShell,
                            AbstractContainerAccess* containerAccess,
                            jvalue* arguments);
+
+    static void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
+                           size_t size, const std::type_info& typeId, bool isShell,
+                           AbstractContainerAccess* containerAccess,
+                           PtrDeleterFunction delete_function, jvalue* arguments);
+
+    static void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
+                           size_t size, const std::type_info& typeId, bool isShell,
+                           AbstractContainerAccess* containerAccess,
+                           PtrDeleterFunction delete_function, PtrOwnerFunction ownerFunction, jvalue* arguments);
 private:
     QtJambiShell();
     virtual ~QtJambiShell();

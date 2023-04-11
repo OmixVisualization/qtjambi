@@ -38,6 +38,7 @@ import org.junit.Test;
 
 import io.qt.QtUtilities;
 import io.qt.core.QCoreApplication;
+import io.qt.core.QHash;
 import io.qt.core.QResource;
 import io.qt.core.QThread;
 

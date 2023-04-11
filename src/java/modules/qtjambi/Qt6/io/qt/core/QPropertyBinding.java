@@ -36,10 +36,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.function.Supplier;
 
-import io.qt.NativeAccess;
-import io.qt.QtPointerType;
-import io.qt.QtPrimitiveType;
-import io.qt.QtUtilities;
+import io.qt.*;
 import io.qt.internal.ClassAnalyzerUtility;
 
 /**
@@ -63,7 +60,7 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 	 * @param binding
 	 * @return binding copy
 	 */
-	public static QPropertyBinding<@QtPrimitiveType Boolean> fromBinding(QBooleanPropertyBinding binding){
+	public static @NonNull QPropertyBinding<@QtPrimitiveType Boolean> fromBinding(@StrictNonNull QBooleanPropertyBinding binding){
 		return new QPropertyBinding<>(binding);
 	}
 	
@@ -72,7 +69,7 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 	 * @param binding
 	 * @return binding copy
 	 */
-	public static QPropertyBinding<@QtPrimitiveType Byte> fromBinding(QBytePropertyBinding binding){
+	public static @NonNull QPropertyBinding<@QtPrimitiveType Byte> fromBinding(@StrictNonNull QBytePropertyBinding binding){
 		return new QPropertyBinding<>(binding);
 	}
 	
@@ -81,7 +78,7 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 	 * @param binding
 	 * @return binding copy
 	 */
-	public static QPropertyBinding<@QtPrimitiveType Short> fromBinding(QShortPropertyBinding binding){
+	public static @NonNull QPropertyBinding<@QtPrimitiveType Short> fromBinding(@StrictNonNull QShortPropertyBinding binding){
 		return new QPropertyBinding<>(binding);
 	}
 	
@@ -90,7 +87,7 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 	 * @param binding
 	 * @return binding copy
 	 */
-	public static QPropertyBinding<@QtPrimitiveType Integer> fromBinding(QIntPropertyBinding binding){
+	public static @NonNull QPropertyBinding<@QtPrimitiveType Integer> fromBinding(@StrictNonNull QIntPropertyBinding binding){
 		return new QPropertyBinding<>(binding);
 	}
 	
@@ -99,7 +96,7 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 	 * @param binding
 	 * @return binding copy
 	 */
-	public static QPropertyBinding<@QtPrimitiveType Long> fromBinding(QLongPropertyBinding binding){
+	public static @NonNull QPropertyBinding<@QtPrimitiveType Long> fromBinding(@StrictNonNull QLongPropertyBinding binding){
 		return new QPropertyBinding<>(binding);
 	}
 	
@@ -108,7 +105,7 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 	 * @param binding
 	 * @return binding copy
 	 */
-	public static QPropertyBinding<@QtPrimitiveType Float> fromBinding(QFloatPropertyBinding binding){
+	public static @NonNull QPropertyBinding<@QtPrimitiveType Float> fromBinding(@StrictNonNull QFloatPropertyBinding binding){
 		return new QPropertyBinding<>(binding);
 	}
 	
@@ -117,7 +114,7 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 	 * @param binding
 	 * @return binding copy
 	 */
-	public static QPropertyBinding<@QtPrimitiveType Double> fromBinding(QDoublePropertyBinding binding){
+	public static @NonNull QPropertyBinding<@QtPrimitiveType Double> fromBinding(@StrictNonNull QDoublePropertyBinding binding){
 		return new QPropertyBinding<>(binding);
 	}
 	
@@ -126,7 +123,7 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 	 * @param binding
 	 * @return binding copy
 	 */
-	public static QPropertyBinding<@QtPrimitiveType Character> fromBinding(QCharPropertyBinding binding){
+	public static @NonNull QPropertyBinding<@QtPrimitiveType Character> fromBinding(@StrictNonNull QCharPropertyBinding binding){
 		return new QPropertyBinding<>(binding);
 	}
 	
@@ -228,7 +225,7 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 	 * Creates a new <code>QPropertyBinding</code> with the given functor <code>f</code>.
 	 * @param t
 	 */
-	public QPropertyBinding(QtUtilities.Supplier<? extends T> f) {
+	public QPropertyBinding(QtUtilities.@StrictNonNull Supplier<? extends T> f) {
 		super(f);
 	}
 	
@@ -236,7 +233,7 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 	 * Creates a new <code>QPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QPropertyBinding(QProperty<T> property) {
+	public QPropertyBinding(@StrictNonNull QProperty<T> property) {
 		super(property.bindingData());
 	}
 	
@@ -244,7 +241,7 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 	 * Creates a new <code>QPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QPropertyBinding(QObject.QProperty<T> property) {
+	public QPropertyBinding(QObject.@StrictNonNull QProperty<T> property) {
 		super(property.bindingData());
 	}
 	
@@ -252,7 +249,7 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 	 * Creates a new <code>QPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QPropertyBinding(QObject.QComputedProperty<T> property) {
+	public QPropertyBinding(QObject.@StrictNonNull QComputedProperty<T> property) {
 		super(property.bindingData());
 	}
 	
@@ -269,7 +266,7 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 	 * Creates a new generic <code>QPropertyBinding</code> as copy of the given binding.
 	 * @param binding
 	 */
-	public QPropertyBinding(QPropertyBinding<T> other) {
+	public QPropertyBinding(@StrictNonNull QPropertyBinding<T> other) {
 		super(other);
 	}
 

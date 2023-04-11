@@ -1743,12 +1743,6 @@ TypeSystem{
     }
     
     Rejection{
-        className: "QProcess"
-        functionName: "setupChildProcess"
-        since: 6
-    }
-    
-    Rejection{
         className: "QLoggingCategoryMacroHolder"
         since: [6, 3]
     }
@@ -1866,10 +1860,6 @@ TypeSystem{
     
     Rejection{
         className: "QStringBuilder"
-    }
-    
-    Rejection{
-        className: "QProcess::CreateProcessArguments"
     }
     
     Rejection{
@@ -2427,42 +2417,6 @@ TypeSystem{
     }
     
     Rejection{
-        className: "QCoreApplication"
-        functionName: "compressEvent"
-    }
-    
-    Rejection{
-        className: "QCoreApplication"
-        functionName: "eventFilter"
-    }
-    
-    Rejection{
-        className: "QCoreApplication"
-        functionName: "filterEvent"
-    }
-    
-    Rejection{
-        className: "QCoreApplication"
-        functionName: "filterNativeEvent"
-    }
-    
-    Rejection{
-        className: "QCoreApplication"
-        functionName: "setEventFilter"
-    }
-    
-    Rejection{
-        className: "QCoreApplication"
-        functionName: "nativeInterface"
-        since: [6, 2]
-    }
-    
-    Rejection{
-        className: "QCoreApplication"
-        enumName: "enum_1"
-    }
-    
-    Rejection{
         className: "QFile"
         functionName: "setDecodingFunction"
     }
@@ -2470,52 +2424,6 @@ TypeSystem{
     Rejection{
         className: "QFile"
         functionName: "setEncodingFunction"
-    }
-    
-    Rejection{
-        className: "QProcess"
-        functionName: "pid"
-    }
-    
-    Rejection{
-        className: "QProcess"
-        functionName: "childProcessModifier"
-        since: 6
-    }
-    
-    Rejection{
-        className: "QProcess"
-        functionName: "setChildProcessModifier"
-        since: 6
-    }
-    
-    Rejection{
-        className: "QProcess"
-        functionName: "createProcessArgumentsModifier"
-        since: 6
-    }
-    
-    Rejection{
-        className: "QProcess"
-        functionName: "setCreateProcessArgumentsModifier"
-        since: 6
-    }
-    
-    Rejection{
-        className: "QProcess"
-        functionName: "nativeArguments"
-        since: 6
-    }
-    
-    Rejection{
-        className: "QProcess"
-        functionName: "setNativeArguments"
-        since: 6
-    }
-    
-    Rejection{
-        className: "QProcess::CreateProcessArguments"
-        since: 6
     }
     
     Rejection{
@@ -3767,36 +3675,6 @@ TypeSystem{
     }
     
     EnumType{
-        name: "QProcess::ExitStatus"
-        ppCondition: "QT_CONFIG(process)"
-    }
-    
-    EnumType{
-        name: "QProcess::ProcessChannel"
-        ppCondition: "QT_CONFIG(process)"
-    }
-    
-    EnumType{
-        name: "QProcess::ProcessChannelMode"
-        ppCondition: "QT_CONFIG(process)"
-    }
-    
-    EnumType{
-        name: "QProcess::ProcessError"
-        ppCondition: "QT_CONFIG(process)"
-    }
-    
-    EnumType{
-        name: "QProcess::ProcessState"
-        ppCondition: "QT_CONFIG(process)"
-    }
-    
-    EnumType{
-        name: "QProcess::InputChannelMode"
-        ppCondition: "QT_CONFIG(process)"
-    }
-    
-    EnumType{
         name: "QCommandLineParser::SingleDashWordOptionMode"
     }
     
@@ -4213,14 +4091,6 @@ TypeSystem{
     
     EnumType{
         name: "QRegularExpression::PatternOption"
-    }
-    
-    EnumType{
-        name: "QAbstractItemModel::LayoutChangeHint"
-    }
-    
-    EnumType{
-        name: "QAbstractItemModel::CheckIndexOption"
     }
     
     EnumType{
@@ -6023,49 +5893,6 @@ TypeSystem{
     }
     
     ObjectType{
-        name: "QCborStreamReader::StringResult"
-        disableNativeIdUsage: true
-        template: true
-        ModifyFunction{
-            signature: "StringResult()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "StringResult(StringResult)"
-            remove: RemoveFlag.All
-        }
-        TemplateArguments{
-            arguments: ["QVariant"]
-        }
-        since: [5, 12]
-    }
-    
-    ObjectType{
-        name: "QCborStreamReader::StringResult<QVariant>"
-        isGeneric: true
-        generate: "no-shell"
-        ModifyFunction{
-            signature: "StringResult<QVariant>()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "StringResult<QVariant>(StringResult<QVariant>)"
-            remove: RemoveFlag.All
-        }
-        ModifyField{
-            name: "data"
-            read: true
-            write: false
-        }
-        ModifyField{
-            name: "status"
-            read: true
-            write: false
-        }
-        since: [5, 12]
-    }
-    
-    ObjectType{
         name: "QCborStreamReader"
 
         EnumType{
@@ -6084,6 +5911,22 @@ TypeSystem{
         EnumType{
             name: "StringResultCode"
         }
+
+        ObjectType{
+            name: "StringResult"
+            template: true
+            TemplateArguments{
+                arguments: ["QVariant"]
+            }
+            since: [5, 12]
+        }
+
+        ObjectType{
+            name: "StringResult<QVariant>"
+            isGeneric: true
+            since: [5, 12]
+        }
+
         ExtraIncludes{
             Include{
                 fileName: "utils_p.h"
@@ -6244,52 +6087,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "readString()"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.core.QCborStreamReader$@NonNull StringResult<@Nullable String>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QCborStreamReader::StringResult<QVariant>* _%in = new QCborStreamReader::StringResult<QVariant>;\n"+
-                                  "_%in->data = %in.data;\n"+
-                                  "_%in->status = %in.status;\n"+
-                                  "%out = QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper(%env, _%in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "readByteArray()"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.core.QCborStreamReader$@NonNull StringResult<io.qt.core.@Nullable QByteArray>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QCborStreamReader::StringResult<QVariant>* _%in = new QCborStreamReader::StringResult<QVariant>;\n"+
-                                  "_%in->data = %in.data;\n"+
-                                  "_%in->status = %in.status;\n"+
-                                  "%out = QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper(%env, _%in);"}
-                }
-            }
-        }
-        ModifyFunction{
             signature: "readStringChunk(char *, qsizetype)"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.core.QCborStreamReader$@NonNull StringResult<@Nullable Long>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QCborStreamReader::StringResult<QVariant>* _%in = new QCborStreamReader::StringResult<QVariant>;\n"+
-                                  "_%in->data = qint64(%in.data);\n"+
-                                  "_%in->status = %in.status;\n"+
-                                  "%out = QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper(%env, _%in);"}
-                }
-            }
             ModifyArgument{
                 index: 1
                 ArrayType{
@@ -7138,50 +6936,172 @@ TypeSystem{
     
     ObjectType{
         name: "QAbstractItemModel"
+        ExtraIncludes{
+            Include{
+                fileName: "QStringList"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QSize"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/JavaAPI"
+                location: Include.Global
+            }
+        }
+        EnumType{
+            name: "LayoutChangeHint"
+        }
+        EnumType{
+            name: "CheckIndexOption"
+        }
         isValueOwner: true
         ModifyFunction{
             signature: "beginInsertColumns(const QModelIndex &, int, int)"
             access: Modification.NonFinal
+            threadAffinity: true
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                ArgumentMap{index: 1; metaName: "parent"}
+                ArgumentMap{index: 2; metaName: "first"}
+                ArgumentMap{index: 3; metaName: "last"}
+                Text{content: String.raw`if(first<0)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("first>=0 expected: first=%1").arg(first) QTJAMBI_STACKTRACEINFO );
+if(last < first)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("last >= first expected: first=%1, last=%2").arg(first, last) QTJAMBI_STACKTRACEINFO );
+int count = columnCount(__qt_parent);
+if(first > count)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("first <= columnCount(parent) expected: first=%1, columnCount=%2").arg(first, count) QTJAMBI_STACKTRACEINFO );`}
+            }
         }
         ModifyFunction{
             signature: "beginInsertRows(const QModelIndex &, int, int)"
             access: Modification.NonFinal
+            threadAffinity: true
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                ArgumentMap{index: 1; metaName: "parent"}
+                ArgumentMap{index: 2; metaName: "first"}
+                ArgumentMap{index: 3; metaName: "last"}
+                Text{content: String.raw`if(first<0)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("first>=0 expected: first=%1").arg(first) QTJAMBI_STACKTRACEINFO );
+if(last < first)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("last >= first expected: first=%1, last=%2").arg(first, last) QTJAMBI_STACKTRACEINFO );
+int count = rowCount(__qt_parent);
+if(first > count)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("first <= rowCount(parent) expected: first=%1, rowCount=%2").arg(first, count) QTJAMBI_STACKTRACEINFO );`}
+            }
         }
         ModifyFunction{
             signature: "beginRemoveColumns(const QModelIndex &, int, int)"
             access: Modification.NonFinal
-        }
-        ModifyFunction{
-            signature: "beginRemoveColumns(const QModelIndex &, int, int)"
-            access: Modification.NonFinal
+            threadAffinity: true
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                ArgumentMap{index: 1; metaName: "parent"}
+                ArgumentMap{index: 2; metaName: "first"}
+                ArgumentMap{index: 3; metaName: "last"}
+                Text{content: String.raw`if(first<0)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("first>=0 expected: first=%1").arg(first) QTJAMBI_STACKTRACEINFO );
+if(last < first)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("last >= first expected: first=%1, last=%2").arg(first, last) QTJAMBI_STACKTRACEINFO );
+int count = columnCount(__qt_parent);
+if(last >= count)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("last <= columnCount(parent) expected: last=%1, columnCount=%2").arg(first, count) QTJAMBI_STACKTRACEINFO );`}
+            }
         }
         ModifyFunction{
             signature: "beginRemoveRows(const QModelIndex &, int, int)"
             access: Modification.NonFinal
+            threadAffinity: true
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                ArgumentMap{index: 1; metaName: "parent"}
+                ArgumentMap{index: 2; metaName: "first"}
+                ArgumentMap{index: 3; metaName: "last"}
+                Text{content: String.raw`if(first<0)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("first>=0 expected: first=%1").arg(first) QTJAMBI_STACKTRACEINFO );
+if(last < first)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("last >= first expected: first=%1, last=%2").arg(first, last) QTJAMBI_STACKTRACEINFO );
+int count = rowCount(__qt_parent);
+if(last >= count)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("last < rowCount(parent) expected: last=%1, rowCount=%2").arg(last, count) QTJAMBI_STACKTRACEINFO );`}
+            }
+        }
+        ModifyFunction{
+            signature: "beginMoveColumns(const QModelIndex &, int, int, const QModelIndex &, int)"
+            access: Modification.NonFinal
+            threadAffinity: true
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                ArgumentMap{index: 1; metaName: "sourceParent"}
+                ArgumentMap{index: 2; metaName: "sourceFirst"}
+                ArgumentMap{index: 3; metaName: "sourceLast"}
+                ArgumentMap{index: 4; metaName: "destinationParent"}
+                ArgumentMap{index: 5; metaName: "destinationChild"}
+                Text{content: String.raw`if(sourceFirst<0)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("sourceFirst>=0 expected: sourceFirst=%1").arg(sourceFirst) QTJAMBI_STACKTRACEINFO );
+if(sourceLast < sourceFirst)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("sourceLast >= sourceFirst expected: sourceFirst=%1, sourceLast=%2").arg(sourceFirst, sourceLast) QTJAMBI_STACKTRACEINFO );
+if(destinationChild<0)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("destinationChild>=0 expected: destinationChild=%1").arg(destinationChild) QTJAMBI_STACKTRACEINFO );`}
+            }
+        }
+        ModifyFunction{
+            signature: "beginMoveRows(const QModelIndex &, int, int, const QModelIndex &, int)"
+            access: Modification.NonFinal
+            threadAffinity: true
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                ArgumentMap{index: 1; metaName: "sourceParent"}
+                ArgumentMap{index: 2; metaName: "sourceFirst"}
+                ArgumentMap{index: 3; metaName: "sourceLast"}
+                ArgumentMap{index: 4; metaName: "destinationParent"}
+                ArgumentMap{index: 5; metaName: "destinationChild"}
+                Text{content: String.raw`if(sourceFirst<0)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("sourceFirst>=0 expected: sourceFirst=%1").arg(sourceFirst) QTJAMBI_STACKTRACEINFO );
+if(sourceLast < sourceFirst)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("sourceLast >= sourceFirst expected: sourceFirst=%1, sourceLast=%2").arg(sourceFirst, sourceLast) QTJAMBI_STACKTRACEINFO );
+if(destinationChild<0)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("destinationChild>=0 expected: destinationChild=%1").arg(destinationChild) QTJAMBI_STACKTRACEINFO );`}
+            }
         }
         ModifyFunction{
             signature: "beginResetModel()"
             access: Modification.NonFinal
+            threadAffinity: true
         }
         ModifyFunction{
             signature: "endInsertColumns()"
             access: Modification.NonFinal
+            threadAffinity: true
         }
         ModifyFunction{
             signature: "endInsertRows()"
             access: Modification.NonFinal
+            threadAffinity: true
         }
         ModifyFunction{
             signature: "endRemoveColumns()"
             access: Modification.NonFinal
+            threadAffinity: true
         }
         ModifyFunction{
             signature: "endRemoveRows()"
             access: Modification.NonFinal
+            threadAffinity: true
         }
         ModifyFunction{
             signature: "endResetModel()"
             access: Modification.NonFinal
+            threadAffinity: true
         }
         ModifyFunction{
             signature: "resetInternalData()"
@@ -7203,15 +7123,16 @@ TypeSystem{
             remove: RemoveFlag.All
             since: 6
         }
-        ExtraIncludes{
-            Include{
-                fileName: "QStringList"
-                location: Include.Global
+        ModifyFunction{
+            signature: "multiData(const QModelIndex &, QModelRoleDataSpan) const"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                ArgumentMap{index: 1; metaName: "idx"}
+                Text{content: String.raw`if(!%this->checkIndex(__qt_idx, QAbstractItemModel::CheckIndexOption::IndexIsValid))
+    JavaException::raiseIllegalArgumentException(%env, "Index not allowed." QTJAMBI_STACKTRACEINFO );`}
             }
-            Include{
-                fileName: "QSize"
-                location: Include.Global
-            }
+            since: 6
         }
         ModifyFunction{
             signature: "match(QModelIndex,int,QVariant,int,Qt::MatchFlags)const"
@@ -11120,6 +11041,59 @@ TypeSystem{
     ObjectType{
         name: "QProcess"
         ppCondition: "QT_CONFIG(process)"
+        Rejection{
+            className: "CreateProcessArguments"
+        }
+        Rejection{
+            functionName: "setupChildProcess"
+            since: 6
+        }
+        Rejection{
+            functionName: "pid"
+        }
+        Rejection{
+            functionName: "childProcessModifier"
+            since: 6
+        }
+        Rejection{
+            functionName: "setChildProcessModifier"
+            since: 6
+        }
+        Rejection{
+            functionName: "createProcessArgumentsModifier"
+            since: 6
+        }
+        Rejection{
+            functionName: "setCreateProcessArgumentsModifier"
+            since: 6
+        }
+        Rejection{
+            functionName: "nativeArguments"
+            since: 6
+        }
+        Rejection{
+            functionName: "setNativeArguments"
+            since: 6
+        }
+
+        EnumType{
+            name: "ExitStatus"
+        }
+        EnumType{
+            name: "ProcessChannel"
+        }
+        EnumType{
+            name: "ProcessChannelMode"
+        }
+        EnumType{
+            name: "ProcessError"
+        }
+        EnumType{
+            name: "ProcessState"
+        }
+        EnumType{
+            name: "InputChannelMode"
+        }
         ModifyFunction{
             signature: "readChannelMode()const"
             remove: RemoveFlag.All
@@ -12183,6 +12157,35 @@ TypeSystem{
     ObjectType{
         name: "QCoreApplication"
         isValueOwner: true
+
+        Rejection{
+            functionName: "compressEvent"
+        }
+
+        Rejection{
+            functionName: "eventFilter"
+        }
+
+        Rejection{
+            functionName: "filterEvent"
+        }
+
+        Rejection{
+            functionName: "filterNativeEvent"
+        }
+
+        Rejection{
+            functionName: "setEventFilter"
+        }
+
+        Rejection{
+            functionName: "nativeInterface"
+            since: [6, 2]
+        }
+
+        Rejection{
+            enumName: "enum_1"
+        }
         ExtraIncludes{
             Include{
                 fileName: "QStringList"
@@ -18181,15 +18184,15 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
+            signature: "QPartialOrdering(QPartialOrdering)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
             signature: "operator==(QPartialOrdering)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "operator!=(QPartialOrdering)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "qHash(QPartialOrdering)"
             remove: RemoveFlag.All
         }
         ModifyField{
@@ -18597,7 +18600,7 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "QUntypedBindable(QObject*,QMetaProperty,const QtPrivate::QBindableInterface *)"
-            remove: RemoveFlag.All
+            remove: RemoveFlag.JavaOnly
             since: [6, 5]
         }
         ModifyFunction{
@@ -18666,6 +18669,13 @@ TypeSystem{
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
                 quoteAfterLine: "class QUntypedBindable_java__"
+                quoteBeforeLine: "}// class"
+            }
+        }
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QUntypedBindable_java_65_"
                 quoteBeforeLine: "}// class"
             }
         }
@@ -21316,5 +21326,8 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method operator<<<T1,T2>(std::pair<T1,T2>)"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method operator>><T1,T2>(std::pair<T1,T2>&)"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping field 'QSequentialConstIterator::i' with unmatched type '*::Node*'"}
-    SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QTreeWidgetItem."}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QCoreApplication::requestPermission<Slot>', unmatched parameter type 'const QPermission&'"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: namespace 'io.qt.core.Q*Permission' for enum '*' is not declared"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QDebug::operator<<<Args...>', unmatched parameter type 'const std::basic_string<*>&'"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'QPartialOrdering(QPartialOrdering)' for function modification in 'QPartialOrdering' not found. Possible candidates: "}
 }

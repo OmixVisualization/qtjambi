@@ -1192,15 +1192,15 @@ void XmlTypeSystemReaderPrivate::parseAttributesOfComplexType(const QDomElement 
     if (convertBoolean(attributeValue(attributes.removeNamedItem("disable-native-id-usage"), "no"), "disable-native-id-usage", false))
         ctype->disableNativeIdUsage();
     if (convertBoolean(attributeValue(attributes.removeNamedItem("force-abstract"), "no"), "force-abstract", false))
-        ctype->setTypeFlags(ctype->typeFlags() | ComplexTypeEntry::ForceAbstract);
+        ctype->setForceAbstract();
     if (convertBoolean(attributeValue(attributes.removeNamedItem("force-friendly"), "no"), "force-friendly", false))
-        ctype->setTypeFlags(ctype->typeFlags() | ComplexTypeEntry::ForceFriendly);
+        ctype->setForceFriendly();
     if (convertBoolean(attributeValue(attributes.removeNamedItem("deprecated"), "no"), "deprecated", false))
-        ctype->setTypeFlags(ctype->typeFlags() | ComplexTypeEntry::Deprecated);
+        ctype->setDeprecated();
     if(!ctype->isNamespace() && !ctype->isIterator()){
         QString threadAffine = attributeValue(attributes.removeNamedItem("thread-affine"), "");
         if (!threadAffine.trimmed().isEmpty()){
-            ctype->setTypeFlags(ctype->typeFlags() | ComplexTypeEntry::ThreadAffine);
+            ctype->setThreadAffine();
             ctype->setThreadAffinity(threadAffine);
         }
     }
@@ -1252,7 +1252,14 @@ void XmlTypeSystemReaderPrivate::parseAttributesOfComplexType(const QDomElement 
         ctype->designatedInterface()->setTargetLangPackage(package);
         ctype->designatedInterface()->setDefaultSuperclass(defaultSuperclass);
         ctype->designatedInterface()->setImplements(implements);
-        ctype->designatedInterface()->setTypeFlags(ctype->typeFlags());
+        if (ctype->isForceAbstract())
+            ctype->designatedInterface()->setForceAbstract();
+        if (ctype->isForceFriendly())
+            ctype->designatedInterface()->setForceFriendly();
+        if (ctype->isDeprecated())
+            ctype->designatedInterface()->setDeprecated();
+        if(ctype->isThreadAffine())
+            ctype->designatedInterface()->setThreadAffine();
         ctype->designatedInterface()->setThreadAffinity(ctype->threadAffinity());
         ctype->designatedInterface()->setPPCondition(ctype->ppCondition());
         ctype->designatedInterface()->setNativeInterface(ctype->isNativeInterface());

@@ -17,7 +17,6 @@
           pro="${basedir}/src/cpp/QtJambi.pro"
           config="${qtjambi.configuration} ${qtjambi.config.jumptable}"
           qtjambiModules="${qtjambi.modules}"
-          debugTools="${qtjambi.debug-tools}"
           qmakebinary="${qtjambi.qt.qmake.abspath}"/>
   </target>
 

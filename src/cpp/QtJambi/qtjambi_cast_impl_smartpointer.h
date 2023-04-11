@@ -89,7 +89,7 @@ struct qtjambi_shared_pointer_caster<false, has_scope,
     Q_STATIC_ASSERT_X(!(p_is_reference && !p_is_const), "Cannot cast to Pointer<T> &");
 
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        const NativeType* pointer = reinterpret_cast<const NativeType*>(QtJambiAPI::convertJavaObjectToNativeAsSmartPointer(env, in, &createPointer<Pointer, T_content>, &deletePointer<Pointer, T_content>, &getFromPointer<Pointer, T_content>));
+        const NativeType* pointer = reinterpret_cast<const NativeType*>(QtJambiAPI::convertJavaObjectToNativeAsSmartPointer(env, in, &SmartPointerHelper<Pointer, T_content>::createPointer, &SmartPointerHelper<Pointer, T_content>::deletePointer, &SmartPointerHelper<Pointer, T_content>::getFromPointer));
         return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, NativeType>::create(env, scope, pointer);
     }
 };
@@ -130,7 +130,7 @@ struct qtjambi_shared_pointer_caster<false, has_scope,
     Q_STATIC_ASSERT_X(!(p_is_reference && !p_is_const), "Cannot cast to Pointer<T> &");
 
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        const NativeType* pointer = reinterpret_cast<const NativeType*>(QtJambiAPI::convertJavaObjectToNativeAsSmartPointer(env, in, &createPointer<Pointer, T_content>, &deletePointer<Pointer, T_content>, &getFromPointer<Pointer, T_content>));
+        const NativeType* pointer = reinterpret_cast<const NativeType*>(QtJambiAPI::convertJavaObjectToNativeAsSmartPointer(env, in, &SmartPointerHelper<Pointer, T_content>::createPointer, &SmartPointerHelper<Pointer, T_content>::deletePointer, &SmartPointerHelper<Pointer, T_content>::getFromPointer));
         return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, NativeType>::create(env, scope, pointer);
     }
 };
@@ -244,8 +244,8 @@ struct qtjambi_shared_pointer_container1_caster<true, has_scope, Pointer, p_is_p
     static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         return QtJambiAPI::convertQListToJavaObject(env,
                                      new NativeType(deref_ptr<p_is_pointer, NativeType_c>::deref(in)),
-                                     deletePointer<Pointer,C_content>,
-                                     getFromPointer<Pointer,C_content>,
+                                     SmartPointerHelper<Pointer, C_content>::deletePointer,
+                                     SmartPointerHelper<Pointer, C_content>::getFromPointer,
                                      QtJambiAPI::ListType::QList,
                                      QListAccess<T,c_is_const>::newInstance()
                                  );
@@ -273,9 +273,9 @@ struct qtjambi_shared_pointer_container1_caster<false, has_scope, Pointer, p_is_
             if (ContainerAPI::testQList<T>(env, in)) {
                 return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, NativeType>::create(env, scope,
                                                     reinterpret_cast<const NativeType *>(QtJambiAPI::convertJavaObjectToNativeAsSmartPointer(env, in,
-                                                                                                            createPointer<Pointer,C_content>,
-                                                                                                            deletePointer<Pointer,C_content>,
-                                                                                                            getFromPointer<Pointer,C_content>)));
+                                                                                                            SmartPointerHelper<Pointer, C_content>::createPointer,
+                                                                                                            SmartPointerHelper<Pointer, C_content>::deletePointer,
+                                                                                                            SmartPointerHelper<Pointer, C_content>::getFromPointer)));
             } else {
                 QList<T> *list = nullptr;
                 if(c_is_const){
@@ -316,8 +316,8 @@ struct qtjambi_shared_pointer_container1_caster<true, has_scope, Pointer, p_is_p
     static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         jobject result = QtJambiAPI::convertQLinkedListToJavaObject(env,
                                      new NativeType(deref_ptr<p_is_pointer, NativeType_c>::deref(in)),
-                                     deletePointer<Pointer,C_content>,
-                                     getFromPointer<Pointer,C_content>,
+                                     SmartPointerHelper<Pointer, C_content>::deletePointer,
+                                     SmartPointerHelper<Pointer, C_content>::getFromPointer,
                                      QLinkedListAccess<T,c_is_const>::newInstance()
                                  );
         return result;
@@ -345,9 +345,9 @@ struct qtjambi_shared_pointer_container1_caster<false, has_scope, Pointer, p_is_
             if (ContainerAPI::testQLinkedList<T>(env, in)) {
                 return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, NativeType>::create(env, scope,
                                                         reinterpret_cast<const NativeType *>(QtJambiAPI::convertJavaObjectToNativeAsSmartPointer(env, in,
-                                                                                                            createPointer<Pointer,C_content>,
-                                                                                                            deletePointer<Pointer,C_content>,
-                                                                                                            getFromPointer<Pointer,C_content>)));
+                                                                                                            SmartPointerHelper<Pointer, C_content>::createPointer,
+                                                                                                            SmartPointerHelper<Pointer, C_content>::deletePointer,
+                                                                                                            SmartPointerHelper<Pointer, C_content>::getFromPointer)));
             } else {
                 QLinkedList<T> *list = nullptr;
                 if(c_is_const){
@@ -389,8 +389,8 @@ struct qtjambi_shared_pointer_container1_caster<true, has_scope, Pointer, p_is_p
     static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         jobject result = QtJambiAPI::convertQSetToJavaObject(env,
                                      new NativeType(deref_ptr<p_is_pointer, NativeType_c>::deref(in)),
-                                     deletePointer<Pointer,C_content>,
-                                     getFromPointer<Pointer,C_content>,
+                                     SmartPointerHelper<Pointer, C_content>::deletePointer,
+                                     SmartPointerHelper<Pointer, C_content>::getFromPointer,
                                      QSetAccess<T,c_is_const>::newInstance()
                                  );
         return result;
@@ -418,9 +418,9 @@ struct qtjambi_shared_pointer_container1_caster<false, has_scope, Pointer, p_is_
             if (ContainerAPI::testQSet<T>(env, in)) {
                 return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, NativeType>::create(env, scope,
                                                 reinterpret_cast<const NativeType *>(QtJambiAPI::convertJavaObjectToNativeAsSmartPointer(env, in,
-                                                                                                            createPointer<Pointer,C_content>,
-                                                                                                            deletePointer<Pointer,C_content>,
-                                                                                                            getFromPointer<Pointer,C_content>)));
+                                                                                                            SmartPointerHelper<Pointer, C_content>::createPointer,
+                                                                                                            SmartPointerHelper<Pointer, C_content>::deletePointer,
+                                                                                                            SmartPointerHelper<Pointer, C_content>::getFromPointer)));
             } else {
                 QSet<T> *list = nullptr;
                 if(c_is_const){
@@ -462,16 +462,16 @@ struct qtjambi_shared_pointer_container1_caster<true, has_scope, Pointer, p_is_p
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         return QtJambiAPI::convertQVectorToJavaObject(env,
                                      new NativeType(deref_ptr<p_is_pointer, NativeType_c>::deref(in)),
-                                     deletePointer<Pointer,C_content>,
-                                     getFromPointer<Pointer,C_content>,
+                                     SmartPointerHelper<Pointer, C_content>::deletePointer,
+                                     SmartPointerHelper<Pointer, C_content>::getFromPointer,
                                      QtJambiAPI::VectorType::QStack,
                                      QVectorAccess<T,c_is_const>::newInstance()
                                  );
 #else
         return QtJambiAPI::convertQListToJavaObject(env,
                                      new NativeType(deref_ptr<p_is_pointer, NativeType_c>::deref(in)),
-                                     deletePointer<Pointer,C_content>,
-                                     getFromPointer<Pointer,C_content>,
+                                     SmartPointerHelper<Pointer, C_content>::deletePointer,
+                                     SmartPointerHelper<Pointer, C_content>::getFromPointer,
                                      QtJambiAPI::ListType::QStack,
                                      QListAccess<T,c_is_const>::newInstance()
                                  );
@@ -502,9 +502,9 @@ struct qtjambi_shared_pointer_container1_caster<false, has_scope, Pointer, p_is_
             if (ContainerAPI::testQStack<T>(env, in)) {
                 return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, NativeType>::create(env, scope,
                                             reinterpret_cast<const NativeType *>(QtJambiAPI::convertJavaObjectToNativeAsSmartPointer(env, in,
-                                                                                                            createPointer<Pointer,C_content>,
-                                                                                                            deletePointer<Pointer,C_content>,
-                                                                                                            getFromPointer<Pointer,C_content>)));
+                                                                                                            SmartPointerHelper<Pointer, C_content>::createPointer,
+                                                                                                            SmartPointerHelper<Pointer, C_content>::deletePointer,
+                                                                                                            SmartPointerHelper<Pointer, C_content>::getFromPointer)));
             } else {
                 QStack<T> *list = nullptr;
                 if(c_is_const){
@@ -545,8 +545,8 @@ struct qtjambi_shared_pointer_container1_caster<true, has_scope, Pointer, p_is_p
     static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         return QtJambiAPI::convertQListToJavaObject(env,
                                      new NativeType(deref_ptr<p_is_pointer, NativeType_c>::deref(in)),
-                                     deletePointer<Pointer,C_content>,
-                                     getFromPointer<Pointer,C_content>,
+                                     SmartPointerHelper<Pointer, C_content>::deletePointer,
+                                     SmartPointerHelper<Pointer, C_content>::getFromPointer,
                                      QtJambiAPI::ListType::QQueue,
                                      QListAccess<T,c_is_const>::newInstance()
                                  );
@@ -574,9 +574,9 @@ struct qtjambi_shared_pointer_container1_caster<false, has_scope, Pointer, p_is_
             if (ContainerAPI::testQQueue<T>(env, in)) {
                 return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, NativeType>::create(env, scope,
                                                 reinterpret_cast<const NativeType *>(QtJambiAPI::convertJavaObjectToNativeAsSmartPointer(env, in,
-                                                                                                            createPointer<Pointer,C_content>,
-                                                                                                            deletePointer<Pointer,C_content>,
-                                                                                                            getFromPointer<Pointer,C_content>)));
+                                                                                                            SmartPointerHelper<Pointer, C_content>::createPointer,
+                                                                                                            SmartPointerHelper<Pointer, C_content>::deletePointer,
+                                                                                                            SmartPointerHelper<Pointer, C_content>::getFromPointer)));
             } else {
                 QQueue<T> *list = nullptr;
                 if(c_is_const){
@@ -619,8 +619,8 @@ struct qtjambi_shared_pointer_container1_caster<true, has_scope, Pointer, p_is_p
     static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         return QtJambiAPI::convertQVectorToJavaObject(env,
                                      new NativeType(deref_ptr<p_is_pointer, NativeType_c>::deref(in)),
-                                     deletePointer<Pointer,C_content>,
-                                     getFromPointer<Pointer,C_content>,
+                                     SmartPointerHelper<Pointer, C_content>::deletePointer,
+                                     SmartPointerHelper<Pointer, C_content>::getFromPointer,
                                      QtJambiAPI::VectorType::QVector,
                                      QVectorAccess<T,c_is_const>::newInstance()
                                  );
@@ -650,9 +650,9 @@ struct qtjambi_shared_pointer_container1_caster<false, has_scope, Pointer, p_is_
             if (ContainerAPI::testQVector<T>(env, in)) {
                 return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, NativeType>::create(env, scope,
                                                         reinterpret_cast<const NativeType *>(QtJambiAPI::convertJavaObjectToNativeAsSmartPointer(env, in,
-                                                                                                            createPointer<Pointer,C_content>,
-                                                                                                            deletePointer<Pointer,C_content>,
-                                                                                                            getFromPointer<Pointer,C_content>)));
+                                                                                                            SmartPointerHelper<Pointer, C_content>::createPointer,
+                                                                                                            SmartPointerHelper<Pointer, C_content>::deletePointer,
+                                                                                                            SmartPointerHelper<Pointer, C_content>::getFromPointer)));
             } else {
                 QVector<T> *list = nullptr;
                 if(c_is_const){
@@ -702,8 +702,8 @@ struct qtjambi_shared_pointer_container2_caster<true, has_scope,
     static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         return QtJambiAPI::convertQMapToJavaObject(env,
                                      new NativeType(deref_ptr<p_is_pointer, NativeType_c>::deref(in)),
-                                     deletePointer<Pointer,C_content>,
-                                     getFromPointer<Pointer,C_content>,
+                                     SmartPointerHelper<Pointer, C_content>::deletePointer,
+                                     SmartPointerHelper<Pointer, C_content>::getFromPointer,
                                      QMapAccess<K,T,c_is_const>::newInstance()
                                  );
     }
@@ -739,9 +739,9 @@ struct qtjambi_shared_pointer_container2_caster<false, has_scope,
             if (ContainerAPI::testQMap<K,T>(env, in)) {
                 return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, NativeType>::create(env, scope,
                                                     reinterpret_cast<const NativeType *>(QtJambiAPI::convertJavaObjectToNativeAsSmartPointer(env, in,
-                                                                                                            createPointer<Pointer,C_content>,
-                                                                                                            deletePointer<Pointer,C_content>,
-                                                                                                            getFromPointer<Pointer,C_content>)));
+                                                                                                            SmartPointerHelper<Pointer, C_content>::createPointer,
+                                                                                                            SmartPointerHelper<Pointer, C_content>::deletePointer,
+                                                                                                            SmartPointerHelper<Pointer, C_content>::getFromPointer)));
             } else {
                 QMap<K,T> *map = nullptr;
                 if(c_is_const){
@@ -790,8 +790,8 @@ struct qtjambi_shared_pointer_container2_caster<true, has_scope,
     static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         return QtJambiAPI::convertQMultiMapToJavaObject(env,
                                      new NativeType(deref_ptr<p_is_pointer, NativeType_c>::deref(in)),
-                                     deletePointer<Pointer,C_content>,
-                                     getFromPointer<Pointer,C_content>,
+                                     SmartPointerHelper<Pointer, C_content>::deletePointer,
+                                     SmartPointerHelper<Pointer, C_content>::getFromPointer,
                                      QMultiMapAccess<K,T,c_is_const>::newInstance()
                                  );
     }
@@ -827,9 +827,9 @@ struct qtjambi_shared_pointer_container2_caster<false, has_scope,
             if (ContainerAPI::testQMultiMap<K,T>(env, in)) {
                 return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, NativeType>::create(env, scope,
                                                     reinterpret_cast<const NativeType *>(QtJambiAPI::convertJavaObjectToNativeAsSmartPointer(env, in,
-                                                                                                            createPointer<Pointer,C_content>,
-                                                                                                            deletePointer<Pointer,C_content>,
-                                                                                                            getFromPointer<Pointer,C_content>)));
+                                                                                                            SmartPointerHelper<Pointer, C_content>::createPointer,
+                                                                                                            SmartPointerHelper<Pointer, C_content>::deletePointer,
+                                                                                                            SmartPointerHelper<Pointer, C_content>::getFromPointer)));
             } else {
                 QMultiMap<K,T> *map = nullptr;
                 if(c_is_const){
@@ -878,8 +878,8 @@ struct qtjambi_shared_pointer_container2_caster<true, has_scope,
     static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         return QtJambiAPI::convertQHashToJavaObject(env,
                                      new NativeType(deref_ptr<p_is_pointer, NativeType_c>::deref(in)),
-                                     deletePointer<Pointer,C_content>,
-                                     getFromPointer<Pointer,C_content>,
+                                     SmartPointerHelper<Pointer, C_content>::deletePointer,
+                                     SmartPointerHelper<Pointer, C_content>::getFromPointer,
                                      QHashAccess<K,T,c_is_const>::newInstance()
                                  );
     }
@@ -915,9 +915,9 @@ struct qtjambi_shared_pointer_container2_caster<false, has_scope,
             if (ContainerAPI::testQHash<K,T>(env, in)) {
                 return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, NativeType>::create(env, scope,
                                                             reinterpret_cast<const NativeType *>(QtJambiAPI::convertJavaObjectToNativeAsSmartPointer(env, in,
-                                                                                                            createPointer<Pointer,C_content>,
-                                                                                                            deletePointer<Pointer,C_content>,
-                                                                                                            getFromPointer<Pointer,C_content>)));
+                                                                                                            SmartPointerHelper<Pointer, C_content>::createPointer,
+                                                                                                            SmartPointerHelper<Pointer, C_content>::deletePointer,
+                                                                                                            SmartPointerHelper<Pointer, C_content>::getFromPointer)));
             } else {
                 QHash<K,T> *map = nullptr;
                 if(c_is_const){
@@ -966,8 +966,8 @@ struct qtjambi_shared_pointer_container2_caster<true, has_scope,
     static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
         return QtJambiAPI::convertQMultiHashToJavaObject(env,
                                      new NativeType(deref_ptr<p_is_pointer, NativeType_c>::deref(in)),
-                                     deletePointer<Pointer,C_content>,
-                                     getFromPointer<Pointer,C_content>,
+                                     SmartPointerHelper<Pointer, C_content>::deletePointer,
+                                     SmartPointerHelper<Pointer, C_content>::getFromPointer,
                                      QMultiHashAccess<K,T,c_is_const>::newInstance()
                                  );
     }
@@ -1003,9 +1003,9 @@ struct qtjambi_shared_pointer_container2_caster<false, has_scope,
             if (ContainerAPI::testQMultiHash<K,T>(env, in)) {
                 return create_container_pointer<p_is_pointer, p_is_const, p_is_reference, has_scope && p_is_pointer && !p_is_const, NativeType>::create(env, scope,
                                                         reinterpret_cast<const NativeType *>(QtJambiAPI::convertJavaObjectToNativeAsSmartPointer(env, in,
-                                                                                                            createPointer<Pointer,C_content>,
-                                                                                                            deletePointer<Pointer,C_content>,
-                                                                                                            getFromPointer<Pointer,C_content>)));
+                                                                                                            SmartPointerHelper<Pointer, C_content>::createPointer,
+                                                                                                            SmartPointerHelper<Pointer, C_content>::deletePointer,
+                                                                                                            SmartPointerHelper<Pointer, C_content>::getFromPointer)));
             } else {
                 QMultiHash<K,T> *map = nullptr;
                 if(c_is_const){

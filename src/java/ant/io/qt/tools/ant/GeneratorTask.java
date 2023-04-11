@@ -81,7 +81,7 @@ public class GeneratorTask extends Task {
     }
 
     private String generatorExecutable() {
-    	boolean generator_debug = "debug".equals(getProject().getProperty("generator.configuration"));
+    	boolean generator_debug = "true".equals(getProject().getProperty("generator.debug.run"));
         if(generatorExe != null) {
             File fileExe = new File(generatorExe);
             if(fileExe.isFile() /*&& fileExe.isExecutable()*/)

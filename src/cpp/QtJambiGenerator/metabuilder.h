@@ -138,10 +138,10 @@ class MetaBuilder {
         void checkFunctionModifications();
 
         void parseQ_Property(MetaClass *meta_class, const QStringList &declarations);
+        void setupConstructorAvailability(MetaClass *meta_class);
         void setupEquals(MetaClass *meta_class);
         void setupBeginEnd(MetaClass *meta_class);
         void setupComparable(MetaClass *meta_class);
-        void setupClonable(MetaClass *cls);
 
         QString translateDefaultValue(const QString& defaultValueExpression, MetaType *type,
                                       MetaFunction *fnc, MetaClass *,

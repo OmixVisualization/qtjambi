@@ -548,6 +548,12 @@ public abstract class AbstractInitializeTask extends Task {
          Constants.CONFIG_TEST.equals(configuration) || Constants.CONFIG_DEBUG_AND_RELEASE.equals(configuration)) {
             this.configurationViaSetter = true;
             setConfigurationInternal(configuration);
+            if(Constants.CONFIG_DEBUG_AND_RELEASE.equals(configuration)) {
+            	String debugBundles = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.debug.bundles");
+            	if(debugBundles==null || debugBundles.isEmpty()) {
+            		AntUtil.setProperty(propertyHelper, "qtjambi.debug.bundles", "true");
+            	}
+            }
             return;
         }
         throw new BuildException("invalid value for 'configuration' of '" + prettyValue(configuration) + "' allowed settings 'debug', 'release', 'test', 'debug_and_release'");

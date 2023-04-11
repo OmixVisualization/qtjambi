@@ -65,6 +65,7 @@ public:
 
 private:
     static PolymorphicObjectType *m_lastInstance;
+    Q_DISABLE_COPY_MOVE(PolymorphicObjectType);
 };
 
 class PolymorphicOwnedObjectType
@@ -82,6 +83,7 @@ public:
 
 private:
     static PolymorphicOwnedObjectType *m_lastInstance;
+    Q_DISABLE_COPY_MOVE(PolymorphicOwnedObjectType);
 };
 
 class QObjectType : public QObject
@@ -98,6 +100,7 @@ public:
 
 private:
     static QObjectType *m_lastInstance;
+    Q_DISABLE_COPY_MOVE(QObjectType);
 };
 
 class NonPolymorphicObjectType
@@ -113,6 +116,7 @@ public:
 
 private:
     static NonPolymorphicObjectType *m_lastInstance;
+    Q_DISABLE_COPY_MOVE(NonPolymorphicObjectType);
 };
 
 class NonPolymorphicOwnedObjectType
@@ -130,6 +134,7 @@ public:
 
 private:
     static NonPolymorphicOwnedObjectType *m_lastInstance;
+    Q_DISABLE_COPY_MOVE(NonPolymorphicOwnedObjectType);
 };
 
 class ValueType

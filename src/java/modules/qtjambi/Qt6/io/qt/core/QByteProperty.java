@@ -28,8 +28,7 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.QtPrimitiveType;
-import io.qt.QtUninvokable;
+import io.qt.*;
 
 /**
  * QByteProperty is primitive-typed version of QProperty&lt;Byte&gt;.
@@ -64,7 +63,7 @@ public final class QByteProperty extends QBytePropertyData {
      * Constructs a <code>byte</code>-typed property with the provided binding.
      * @param binding
      */
-	public QByteProperty(QBytePropertyBinding binding) {
+	public QByteProperty(@StrictNonNull QBytePropertyBinding binding) {
 		super();
 		d.setBinding(binding, this);
 	}
@@ -73,7 +72,7 @@ public final class QByteProperty extends QBytePropertyData {
      * Constructs a <code>byte</code>-typed property with the provided binding.
      * @param binding
      */
-	public QByteProperty(QPropertyBinding<@QtPrimitiveType Byte> binding) {
+	public QByteProperty(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Byte> binding) {
 		super();
 		if(checkType(binding.valueMetaType()))
 			d.setBinding(binding, this);
@@ -83,7 +82,7 @@ public final class QByteProperty extends QBytePropertyData {
      * <p>Constructs a <code>byte</code>-typed property bound to the provided <code>functor</code>.</p>
      * @param functor
      */
-	public QByteProperty(io.qt.QtUtilities.ByteSupplier functor) {
+	public QByteProperty(io.qt.QtUtilities.@StrictNonNull ByteSupplier functor) {
 		this(new QBytePropertyBinding(functor));
 	}
 	
@@ -120,7 +119,7 @@ public final class QByteProperty extends QBytePropertyData {
 	 * @return oldBinding
 	 */
 	@QtUninvokable
-	public QBytePropertyBinding setBinding(QBytePropertyBinding newBinding)
+	public @NonNull QBytePropertyBinding setBinding(@StrictNonNull QBytePropertyBinding newBinding)
     {
 		QUntypedPropertyBinding oldBinding = d.setBinding(newBinding, this);
         d.notifyObservers(this);
@@ -140,7 +139,7 @@ public final class QByteProperty extends QBytePropertyData {
 	 * @return oldBinding
 	 */
     @QtUninvokable
-    public QBytePropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Byte> newBinding)
+    public @NonNull QBytePropertyBinding setBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Byte> newBinding)
     {
         if(!io.qt.core.QByteProperty.checkType(newBinding.valueMetaType()))
             return new QBytePropertyBinding();
@@ -163,7 +162,7 @@ public final class QByteProperty extends QBytePropertyData {
 	 * @return true if types match, false otherwise.
 	 */
     @QtUninvokable
-    public boolean setBinding(QUntypedPropertyBinding newBinding)
+    public boolean setBinding(@StrictNonNull QUntypedPropertyBinding newBinding)
     {
         if(io.qt.core.QByteProperty.checkType(newBinding.valueMetaType())) {
             d.setBinding(newBinding, this);
@@ -182,13 +181,13 @@ public final class QByteProperty extends QBytePropertyData {
 	 * @return oldBinding
 	 */
 	@QtUninvokable
-	public QBytePropertyBinding setBinding(io.qt.QtUtilities.ByteSupplier functor)
+	public @NonNull QBytePropertyBinding setBinding(io.qt.QtUtilities.@StrictNonNull ByteSupplier functor)
     {
         return setBinding(new QBytePropertyBinding(functor));
     }
 	
 	@QtUninvokable
-	private QBytePropertyBinding makeBinding()
+	private @NonNull QBytePropertyBinding makeBinding()
     {
         return new QBytePropertyBinding(this::value);
     }
@@ -206,7 +205,7 @@ public final class QByteProperty extends QBytePropertyData {
      * @return binding
      */
 	@QtUninvokable
-	public QBytePropertyBinding binding()
+	public @NonNull QBytePropertyBinding binding()
     {
         return new QBytePropertyBinding(this);
     }
@@ -217,7 +216,7 @@ public final class QByteProperty extends QBytePropertyData {
 	 * @return the removed binding
 	 */
 	@QtUninvokable
-	public QBytePropertyBinding takeBinding()
+	public @NonNull QBytePropertyBinding takeBinding()
     {
         return new QBytePropertyBinding(d.setBinding(new QBytePropertyBinding(), this));
     }
@@ -232,7 +231,7 @@ public final class QByteProperty extends QBytePropertyData {
      * @see QPropertyChangeHandler
      */
 	@QtUninvokable
-	public QPropertyChangeHandler onValueChanged(Runnable f)
+	public @NonNull QPropertyChangeHandler onValueChanged(@StrictNonNull Runnable f)
     {
         return new QPropertyChangeHandler(d, f);
     }
@@ -245,7 +244,7 @@ public final class QByteProperty extends QBytePropertyData {
      * @see #onValueChanged(Runnable)
 	 */
 	@QtUninvokable
-	public QPropertyChangeHandler subscribe(Runnable f)
+	public @NonNull QPropertyChangeHandler subscribe(@StrictNonNull Runnable f)
     {
         f.run();
         return onValueChanged(f);
@@ -261,7 +260,7 @@ public final class QByteProperty extends QBytePropertyData {
      * @see QPropertyNotifier
      */
     @io.qt.QtUninvokable
-    public QPropertyNotifier addNotifier(Runnable f)
+    public @NonNull QPropertyNotifier addNotifier(@StrictNonNull Runnable f)
     {
         return new QPropertyNotifier(d, f);
     }

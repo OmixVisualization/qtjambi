@@ -29,7 +29,9 @@
 package io.qt.core;
 
 import io.qt.NativeAccess;
+import io.qt.NonNull;
 import io.qt.QtPrimitiveType;
+import io.qt.StrictNonNull;
 import io.qt.QtUtilities.FloatSupplier;
 
 /**
@@ -47,7 +49,7 @@ public final class QFloatPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QFloatPropertyBinding</code> with the given functor <code>f</code>.
 	 * @param t
 	 */
-	public QFloatPropertyBinding(FloatSupplier f) {
+	public QFloatPropertyBinding(@StrictNonNull FloatSupplier f) {
 		super(f);
 	}
 	
@@ -55,7 +57,7 @@ public final class QFloatPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QFloatPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QFloatPropertyBinding(QFloatProperty property) {
+	public QFloatPropertyBinding(@StrictNonNull QFloatProperty property) {
 		super(property.bindingData());
 	}
 	
@@ -63,7 +65,7 @@ public final class QFloatPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QFloatPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QFloatPropertyBinding(QObject.QFloatProperty property) {
+	public QFloatPropertyBinding(QObject.@StrictNonNull QFloatProperty property) {
 		super(property.bindingData());
 	}
 	
@@ -71,7 +73,7 @@ public final class QFloatPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QFloatPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QFloatPropertyBinding(QObject.QComputedFloatProperty property) {
+	public QFloatPropertyBinding(QObject.@StrictNonNull QComputedFloatProperty property) {
 		super(property.bindingData());
 	}
 	
@@ -79,7 +81,7 @@ public final class QFloatPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QFloatPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QFloatPropertyBinding(QProperty<@QtPrimitiveType Float> property) {
+	public QFloatPropertyBinding(@StrictNonNull QProperty<@NonNull@QtPrimitiveType Float> property) {
 		super(check(property.bindingData(), property.valueMetaType()));
 	}
 	
@@ -87,7 +89,7 @@ public final class QFloatPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QFloatPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QFloatPropertyBinding(QObject.QProperty<@QtPrimitiveType Float> property) {
+	public QFloatPropertyBinding(QObject.@StrictNonNull QProperty<@NonNull@QtPrimitiveType Float> property) {
 		super(check(property.bindingData(), property.valueMetaType()));
 	}
 	
@@ -95,7 +97,7 @@ public final class QFloatPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QFloatPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QFloatPropertyBinding(QObject.QComputedProperty<@QtPrimitiveType Float> property) {
+	public QFloatPropertyBinding(QObject.@StrictNonNull QComputedProperty<@NonNull@QtPrimitiveType Float> property) {
 		super(check(property.bindingData(), property.valueMetaType()));
 	}
 	
@@ -103,7 +105,7 @@ public final class QFloatPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QFloatPropertyBinding</code> as copy of the given binding.
 	 * @param other
 	 */
-	public QFloatPropertyBinding(QFloatPropertyBinding other) {
+	public QFloatPropertyBinding(@StrictNonNull QFloatPropertyBinding other) {
 		super(other);
 	}
 	
@@ -111,7 +113,7 @@ public final class QFloatPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QFloatPropertyBinding</code> as copy of the given binding.
 	 * @param other
 	 */
-	public QFloatPropertyBinding(QPropertyBinding<@QtPrimitiveType Float> other) {
+	public QFloatPropertyBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Float> other) {
 		super(check(other, false));
 	}
 

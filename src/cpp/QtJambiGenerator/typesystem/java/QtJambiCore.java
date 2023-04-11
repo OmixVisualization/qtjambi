@@ -2825,7 +2825,7 @@ class QObject___ extends QObject {
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal0 signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal0 signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2839,7 +2839,7 @@ class QObject___ extends QObject {
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal1<?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal1<?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2868,7 +2868,7 @@ class QObject___ extends QObject {
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2913,7 +2913,7 @@ class QObject___ extends QObject {
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2975,7 +2975,7 @@ class QObject___ extends QObject {
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3055,7 +3055,7 @@ class QObject___ extends QObject {
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3154,7 +3154,7 @@ class QObject___ extends QObject {
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3273,7 +3273,7 @@ class QObject___ extends QObject {
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3413,7 +3413,7 @@ class QObject___ extends QObject {
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<?,?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<?,?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3575,7 +3575,7 @@ class QObject___ extends QObject {
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<?,?,?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<?,?,?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -4529,7 +4529,7 @@ class QObject___ extends QObject {
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      */
-    public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal0 signal, QMetaObject.Connectable0 connectSignal, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal0 signal, QMetaObject.Connectable0 connectSignal, Qt.ConnectionType... connectionType) {
         return signal.connect(connectSignal, connectionType);
     }
     
@@ -5626,12 +5626,12 @@ class QObject___ extends QObject {
      * (Make sure 'MyType' is registered using qRegisterMetaType().)
      * </code></p>
      * 
-     * <p>call {@link QMetaType#registerMetaType(Class)} to register the data type before you
+     * <p>call {@link QMetaType#qRegisterMetaType(Class, QMetaType...)} to register the data type before you
      * establish the connection.</p>
      * 
      * @see #disconnect()
      * @see #sender()
-     * @see QMetaType#registerMetaType(Class)
+     * @see QMetaType#qRegisterMetaType(Class, QMetaType...)
      */
     public static QMetaObject.@NonNull Connection connect(@StrictNonNull QObject sender, @StrictNonNull String signal, @StrictNonNull QObject receiver, @StrictNonNull String slot, Qt.ConnectionType... connectionType) {
         if(signal.isEmpty())
@@ -6433,7 +6433,7 @@ class QObject_6__ extends QObject {
         
         /**
          * Returns the binding expression that is associated with this property. 
-         * A default constructed {@link QPropertyBinding&lt;T>} will be returned if no such association exists.
+         * A default constructed {@link QPropertyBinding}&lt;T> will be returned if no such association exists.
          * @return binding
          */
         @QtUninvokable
@@ -7001,7 +7001,7 @@ class QObject_6__ extends QObject {
         
         /**
          * <p>Associates the value of this property with the provided <code>functor</code> and returns the previously associated binding.</p>
-         * <p>The first time the property value is read, the binding is evaluated by invoking {@link java.util.function.ByteSupplier#getAsByte()} of <code>functor</code>.
+         * <p>The first time the property value is read, the binding is evaluated by invoking {@link QtUtilities.ByteSupplier#getAsByte()} of <code>functor</code>.
          * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
          * @param functor
          * @return oldBinding
@@ -9907,21 +9907,21 @@ class QTimer___ extends QTimer {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtimer.html#callOnTimeout">QObject::callOnTimeout(Args&amp&;amp;...)</a></p>
+     * <p>See <a href="@docRoot/qtimer.html#callOnTimeout">QObject::callOnTimeout(Args&amp;&amp;...)</a></p>
      */
     public final QMetaObject.@NonNull Connection callOnTimeout(QMetaObject.@NonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type){
         return timeout.connect(slot, type);
     }
 
     /**
-     * <p>See <a href="@docRoot/qtimer.html#callOnTimeout">QObject::callOnTimeout(Args&amp&;amp;...)</a></p>
+     * <p>See <a href="@docRoot/qtimer.html#callOnTimeout">QObject::callOnTimeout(Args&amp;&amp;...)</a></p>
      */
     public final QMetaObject.@NonNull Connection callOnTimeout(QMetaObject.@NonNull Connectable0 connectable, Qt.@NonNull ConnectionType @NonNull... type){
         return timeout.connect(connectable, type);
     }
 
     /**
-     * <p>See <a href="@docRoot/qtimer.html#callOnTimeout">QObject::callOnTimeout(Args&amp&;amp;...)</a></p>
+     * <p>See <a href="@docRoot/qtimer.html#callOnTimeout">QObject::callOnTimeout(Args&amp;&amp;...)</a></p>
      */
     public final QMetaObject.@NonNull Connection callOnTimeout(@Nullable QObject receiver, @NonNull String method, Qt.@NonNull ConnectionType @NonNull... type){
         return timeout.connect(receiver, method, type);
@@ -15792,7 +15792,7 @@ class QMetaProperty___{
     public native final Object readOnGadget(@StrictNonNull Object object);
     
     /**
-     * <p>See <a href="@docRoot/qmetaproperty.html#writeOnGadget">QMetaProperty::writeOnGadget(void *, const QVariant &) const</a></p>
+     * <p>See <a href="@docRoot/qmetaproperty.html#writeOnGadget">QMetaProperty::writeOnGadget(void *, const QVariant &amp;) const</a></p>
      */
     @QtUninvokable
     public native final boolean writeOnGadget(@StrictNonNull Object object, Object value);
@@ -17146,7 +17146,7 @@ class QThread___{
     
     /**
      * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
-     * @see Thread#Thread(Runnable, String, long)
+     * @see Thread#Thread(Runnable, String)
      */
     public static @NonNull QThread create(@StrictNonNull Runnable runnable, @Nullable String name, long stackSize, @Nullable QObject parent) {
         return create(null, runnable, name, stackSize, parent);
@@ -17154,7 +17154,7 @@ class QThread___{
     
     /**
      * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
-     * @see Thread#Thread(Runnable, String, long)
+     * @see Thread#Thread(Runnable, String)
      */
     public static @NonNull QThread create(@StrictNonNull Runnable runnable, @Nullable String name, long stackSize) {
         return create(null, runnable, name, stackSize, null);
@@ -17614,7 +17614,7 @@ class QUntypedBindable_java__{
         super((QPrivateConstructor)null);
         initialize_native(this, d, i);
     }
-    
+    @QtUninvokable
     private native static void initialize_native(QUntypedBindable instance, QUntypedPropertyData d, QBindableInterface i);
     
     /**
@@ -17673,6 +17673,15 @@ class QUntypedBindable_java__{
     @QtUninvokable
     private native QUntypedPropertyBinding overrideBinding(QBindableInterface iface, QUntypedPropertyData data, QUntypedPropertyBinding binding);
     
+}// class
+
+class QUntypedBindable_java_65_{
+    QUntypedBindable(QObject object, QMetaProperty property, QBindableInterface i){
+        super((QPrivateConstructor)null);
+        initialize_native(this, object, property, i);
+    }
+    @QtUninvokable
+    private native static void initialize_native(QUntypedBindable instance, QObject object, QMetaProperty property, QBindableInterface i);
 }// class
 
 class QBindableInterface__{

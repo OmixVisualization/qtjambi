@@ -1931,30 +1931,36 @@ int qtjambi_qmlRegisterUncreatableType(JNIEnv *env, jclass clazz, int metaObject
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 
-QQmlPrivate::ConstructionMode constructionMode(JNIEnv *env, jclass type, jclass wrapperType, bool singleton, jmethodID& method){
+#if QT_VERSION < QT_VERSION_CHECK(6,5,0)
+namespace QQmlPrivate{
+using SingletonConstructionMode = ConstructionMode;
+}
+#endif
+
+QQmlPrivate::SingletonConstructionMode singletonConstructionMode(JNIEnv *env, jclass type, jclass wrapperType, bool singleton, jmethodID& method){
     if(!Java::QtCore::QObject::isAssignableFrom(env, type))
-        return QQmlPrivate::ConstructionMode::None;
+        return QQmlPrivate::SingletonConstructionMode::None;
     if(!env->IsSameObject(type, wrapperType)
             && (method = JavaAPI::resolveMethod(env, "create", qPrintable(QStringLiteral("(Lio/qt/qml/QJSValue;)L%1;").arg(QtJambiAPI::getClassName(env, type).replace('.', '/'))), wrapperType, true))){
-        return QQmlPrivate::ConstructionMode::FactoryWrapper;
+        return QQmlPrivate::SingletonConstructionMode::FactoryWrapper;
     }
     if(singleton){
         if ((method = JavaAPI::resolveMethod(env, "<init>", "()V", type, false)))
-            return QQmlPrivate::ConstructionMode::Constructor;
+            return QQmlPrivate::SingletonConstructionMode::Constructor;
     }else{
         if ((method = findConstructor(env, type, QtJambiAPI::getClassName(env, type).replace('.', '/'))))
-            return QQmlPrivate::ConstructionMode::Constructor;
+            return QQmlPrivate::SingletonConstructionMode::Constructor;
     }
     if ((method = JavaAPI::resolveMethod(env, "create", qPrintable(QStringLiteral("(Lio/qt/qml/QJSValue;)L%1;").arg(QtJambiAPI::getClassName(env, type).replace('.', '/'))), type, true)))
-        return QQmlPrivate::ConstructionMode::Factory;
-    return QQmlPrivate::ConstructionMode::None;
+        return QQmlPrivate::SingletonConstructionMode::Factory;
+    return QQmlPrivate::SingletonConstructionMode::None;
 }
 
 std::function<QObject*(QQmlEngine *, QJSEngine *)> getCreateSingletonFunction(JNIEnv *env, jclass type, jclass wrapperType){
     jmethodID method{nullptr};
     jclass factoryType = type;
-    switch(constructionMode(env, type, wrapperType, true, method)){
-    case QQmlPrivate::ConstructionMode::Constructor:
+    switch(singletonConstructionMode(env, type, wrapperType, true, method)){
+    case QQmlPrivate::SingletonConstructionMode::Constructor:
         type = JavaAPI::toGlobalReference(env, type);
         return [type, method](QQmlEngine *, QJSEngine *)->QObject*{
             QObject* result{nullptr};
@@ -1965,10 +1971,10 @@ std::function<QObject*(QQmlEngine *, QJSEngine *)> getCreateSingletonFunction(JN
             }
             return result;
         };
-    case QQmlPrivate::ConstructionMode::FactoryWrapper:
+    case QQmlPrivate::SingletonConstructionMode::FactoryWrapper:
         factoryType = wrapperType;
         Q_FALLTHROUGH();
-    case QQmlPrivate::ConstructionMode::Factory:
+    case QQmlPrivate::SingletonConstructionMode::Factory:
         factoryType = JavaAPI::toGlobalReference(env, factoryType);
         return [factoryType, method](QQmlEngine * qe, QJSEngine * je)->QObject*{
             QObject* result{nullptr};
@@ -2377,8 +2383,8 @@ void qtjambi_qmlRegisterTypesAndRevisions(JNIEnv *env, jobjectArray types, const
             jmethodID constructor{nullptr};
             void (*create)(void *, void *) = nullptr;
             void* userdata = nullptr;
-            switch(constructionMode(env, resolvedClass, resolvedClass, false, constructor)){
-            case QQmlPrivate::ConstructionMode::Constructor:
+            switch(singletonConstructionMode(env, resolvedClass, resolvedClass, false, constructor)){
+            case QQmlPrivate::SingletonConstructionMode::Constructor:
                 create = &createQmlObject;
                 userdata = creatorFunctionMetaData(env, resolved_meta_object, resolvedClass, constructor, objectSize, psCast, vsCast, viCast, fhCast);
                 break;

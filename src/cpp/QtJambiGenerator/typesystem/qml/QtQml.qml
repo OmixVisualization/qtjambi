@@ -178,10 +178,6 @@ TypeSystem{
     }
     
     EnumType{
-        name: "QQmlEngine::ObjectOwnership"
-    }
-    
-    EnumType{
         name: "QQmlAbstractUrlInterceptor::DataType"
     }
     
@@ -643,6 +639,24 @@ TypeSystem{
         Rejection{functionName: "objectById"}
         EnumType{
             name: "ObjectOwnership"
+            RenameEnumValue{
+                name: "CppOwnership"
+                rename: "JavaOwnership"
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                Text{content: String.raw`/**
+ * @deprecated The native name of this enum entry is misleading. Use {@link ObjectOwnership#JavaOwnership} instead.
+ */
+@Deprecated
+public static final ObjectOwnership CppOwnership = JavaOwnership;
+/**
+ * Equivalent to {@link ObjectOwnership#JavaOwnership}.
+ */
+public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
+            }
+
             since: 6
         }
         EnumType{
@@ -819,7 +833,7 @@ TypeSystem{
                 }
                 Text{content: "if (%1 != null && %2 != null){\n"+
                               "    switch(%2){\n"+
-                              "    case CppOwnership:\n"+
+                              "    case JavaOwnership:\n"+
                               "        if(%1.parent()==null){\n"+
                               "            QtJambi_LibraryUtilities.internal.setJavaOwnership(%1);\n"+
                               "        }\n"+
@@ -870,6 +884,28 @@ TypeSystem{
                 fileName: "hashes.h"
                 location: Include.Local
             }
+        }
+        EnumType{
+            name: "ObjectOwnership"
+            RenameEnumValue{
+                name: "CppOwnership"
+                rename: "JavaOwnership"
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                Text{content: String.raw`/**
+ * @deprecated The native name of this enum entry is misleading. Use {@link ObjectOwnership#JavaOwnership} instead.
+ */
+@Deprecated
+public static final ObjectOwnership CppOwnership = JavaOwnership;
+/**
+ * Equivalent to {@link ObjectOwnership#JavaOwnership}.
+ */
+public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
+            }
+
+            until: 5
         }
         ModifyFunction{
             signature: "addImageProvider(QString,QQmlImageProviderBase*)"
@@ -937,7 +973,7 @@ TypeSystem{
                 }
                 Text{content: "if (%1 != null && %2 != null){\n"+
                               "switch(%2){\n"+
-                              "    case CppOwnership:\n"+
+                              "    case JavaOwnership:\n"+
                               "        if(%1.parent()==null){\n"+
                               "            QtJambi_LibraryUtilities.internal.setJavaOwnership(%1);\n"+
                               "        }\n"+

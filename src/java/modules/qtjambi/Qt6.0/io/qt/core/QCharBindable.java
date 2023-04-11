@@ -28,32 +28,34 @@
 ****************************************************************************/
 package io.qt.core;
 
+import io.qt.NonNull;
 import io.qt.QtPrimitiveType;
 import io.qt.QtUninvokable;
+import io.qt.StrictNonNull;
 
 /**
- * QIntBindable is primitive-typed version of QBindable&lt;Integer&gt;.
+ * QCharBindable is primitive-typed version of QBindable&lt;Character&gt;.
  * @see QBindable
  */
-public final class QIntBindable extends QUntypedBindable {
+public final class QCharBindable extends QUntypedBindable {
 
-	private QIntBindable(QPrivateConstructor p) {
+	private QCharBindable(QPrivateConstructor p) {
 		super(p);
 	}
 
 	/**
-	 * Creates a new <code>int</code>-typed invalid bindable.
+	 * Creates a new <code>char</code>-typed invalid bindable.
 	 */
-	public QIntBindable() {
+	public QCharBindable() {
 		super(null, null);
 	}
 	
 	/**
 	 * Creates a copy of the provided bindable. 
-	 * If the type of the other bindable is not <code>int</code> it remains invalid.
+	 * If the type of the other bindable is not <code>char</code> it remains invalid.
 	 * @param other
 	 */
-	public QIntBindable(QUntypedBindable other) {
+	public QCharBindable(@StrictNonNull QUntypedBindable other) {
 		super(other.data(), other.iface());
 		check();
 	}
@@ -63,27 +65,22 @@ public final class QIntBindable extends QUntypedBindable {
 		if(iface!=null) {
 			QMetaType metaType = iface.metaType();
 			if(metaType==null 
-					|| (metaType.id()!=QMetaType.Type.Int.value()
-						&& metaType.id()!=QMetaType.Type.Long.value()
-						&& metaType.id()!=QMetaType.Type.ULong.value()
-						&& metaType.id()!=QMetaType.Type.UInt.value()
-						&& metaType.id()!=QMetaType.Type.Char32.value()
+					|| (metaType.id()!=QMetaType.Type.QChar.value()
+						&& metaType.id()!=QMetaType.Type.Char16.value()
+						&& metaType.id()!=QMetaType.Type.Short.value()
+						&& metaType.id()!=QMetaType.Type.UShort.value()
 						&& metaType.id()!=QMetaType.Type.QVariant.value())) {
 				setIface(null);
 				setData(null);
 			}
 		}
 	}
-
-	QIntBindable(QUntypedPropertyData d, QBindableInterface i) {
-		super(d, i);
-	}
 	
 	/**
 	 * Creates a new bindable from provided property.
 	 * @param property
 	 */
-	public QIntBindable(QIntProperty property) {
+	public QCharBindable(@StrictNonNull QCharProperty property) {
 		super(property, bindableInterface(0));
 	}
 	
@@ -91,7 +88,7 @@ public final class QIntBindable extends QUntypedBindable {
 	 * Creates a new bindable from provided property.
 	 * @param property
 	 */
-	public QIntBindable(QObject.QIntProperty property) {
+	public QCharBindable(QObject.@StrictNonNull QCharProperty property) {
 		super(property, bindableInterface(1));
 	}
 	
@@ -99,108 +96,112 @@ public final class QIntBindable extends QUntypedBindable {
 	 * Creates a new bindable from provided property.
 	 * @param property
 	 */
-	public QIntBindable(QObject.QComputedIntProperty property) {
+	public QCharBindable(QObject.@StrictNonNull QComputedCharProperty property) {
 		super(property, bindableInterface(2));
 	}
 	
 	/**
 	 * Creates a new bindable from provided property.
-	 * If the type of the property is not <code>int</code> an {@link IllegalArgumentException} is thrown.
+	 * If the type of the property is not <code>char</code> an {@link IllegalArgumentException} is thrown.
 	 * @param property
 	 */
-	public QIntBindable(QProperty<@QtPrimitiveType Integer> property) {
+	public QCharBindable(@StrictNonNull QProperty<@NonNull@QtPrimitiveType Character> property) {
 		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 0));
 		check();
 		if(iface()==null)
-			throw new IllegalArgumentException("Given property is not an int type.");
+			throw new IllegalArgumentException("Given QProperty is not of char type.");
 	}
 	
 	/**
 	 * Creates a new bindable from provided property.
-	 * If the type of the property is not <code>int</code> an {@link IllegalArgumentException} is thrown.
+	 * If the type of the property is not <code>char</code> an {@link IllegalArgumentException} is thrown.
 	 * @param property
 	 */
-	public QIntBindable(QObject.QProperty<@QtPrimitiveType Integer> property) {
+	public QCharBindable(QObject.@StrictNonNull QProperty<@NonNull@QtPrimitiveType Character> property) {
 		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 1));
 		check();
 		if(iface()==null)
-			throw new IllegalArgumentException("Given property is not an int type.");
+			throw new IllegalArgumentException("Given QProperty is not of char type.");
 	}
 	
 	/**
 	 * Creates a new bindable from provided property.
-	 * If the type of the property is not <code>int</code> an {@link IllegalArgumentException} is thrown.
+	 * If the type of the property is not <code>char</code> an {@link IllegalArgumentException} is thrown.
 	 * @param property
 	 */
-	public QIntBindable(QObject.QComputedProperty<@QtPrimitiveType Integer> property) {
+	public QCharBindable(QObject.@StrictNonNull QComputedProperty<@NonNull@QtPrimitiveType Character> property) {
 		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 2));
 		check();
 		if(iface()==null)
-			throw new IllegalArgumentException("Given property is not an int type.");
+			throw new IllegalArgumentException("Given QProperty is not of char type.");
 	}
 	
 	static native QBindableInterface bindableInterface(int propertyType);
+
+	QCharBindable(QUntypedPropertyData d, QBindableInterface i) {
+		super(d, i);
+	}
 
 	/**
 	 * Creates a binding to the underlying property.
 	 */
 	@QtUninvokable
 	@Override
-	public QIntPropertyBinding makeBinding()
+	public QCharPropertyBinding makeBinding()
     {
 		QUntypedPropertyBinding binding = super.makeBinding();
-		if(binding instanceof QIntPropertyBinding) {
-			return (QIntPropertyBinding)binding;
+		if(binding instanceof QCharPropertyBinding) {
+			return (QCharPropertyBinding)binding;
 		}else {
-			return new QIntPropertyBinding(binding);
+			return new QCharPropertyBinding(binding);
 		}
     }
 	
     /**
      * Returns the binding expression that is associated with the underlying property. 
-     * A default constructed {@link QIntPropertyBinding} will be returned if no such association exists.
+     * A default constructed {@link QCharPropertyBinding} will be returned if no such association exists.
      * @return binding
      */
 	@QtUninvokable
 	@Override
-    public QIntPropertyBinding binding()
+    public QCharPropertyBinding binding()
     {
 		QUntypedPropertyBinding binding = super.binding();
-		if(binding instanceof QIntPropertyBinding) {
-			return (QIntPropertyBinding)binding;
+		if(binding instanceof QCharPropertyBinding) {
+			return (QCharPropertyBinding)binding;
 		}else {
-			return new QIntPropertyBinding(binding);
+			return new QCharPropertyBinding(binding);
 		}
     }
     
 	@QtUninvokable
-	public QIntPropertyBinding setBinding(QIntPropertyBinding binding)
+	public @NonNull QCharPropertyBinding setBinding(@StrictNonNull QCharPropertyBinding binding)
     {
 		QUntypedPropertyBinding oldBinding = super.overrideBinding(binding);
-		if(oldBinding instanceof QIntPropertyBinding) {
-			return (QIntPropertyBinding)oldBinding;
+		if(oldBinding instanceof QCharPropertyBinding) {
+			return (QCharPropertyBinding)oldBinding;
 		}else {
-			return new QIntPropertyBinding(oldBinding);
+			return new QCharPropertyBinding(oldBinding);
 		}
     }
     
 	@QtUninvokable
-	public QIntPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Integer> binding)
+	public @NonNull QCharPropertyBinding setBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Character> binding)
     {
-		if(binding!=null && !QIntProperty.checkType(binding.valueMetaType()))
-			return new QIntPropertyBinding();
+		if(binding!=null && !QCharProperty.checkType(binding.valueMetaType()))
+			return new QCharPropertyBinding();
 		QUntypedPropertyBinding oldBinding = super.overrideBinding(binding);
-		if(oldBinding instanceof QIntPropertyBinding) {
-			return (QIntPropertyBinding)oldBinding;
+		if(oldBinding instanceof QCharPropertyBinding) {
+			return (QCharPropertyBinding)oldBinding;
 		}else {
-			return new QIntPropertyBinding(oldBinding);
+			return new QCharPropertyBinding(oldBinding);
 		}
     }
 	
 	@QtUninvokable
-	public QIntPropertyBinding setBinding(java.util.function.IntSupplier functor)
+	public @NonNull QCharPropertyBinding setBinding(io.qt.QtUtilities.@StrictNonNull CharSupplier functor)
     {
-		return setBinding(new QIntPropertyBinding(functor));
+		return setBinding(new QCharPropertyBinding(functor));
     }
 	
 	/**
@@ -209,9 +210,9 @@ public final class QIntBindable extends QUntypedBindable {
 	 * @return the removed binding
 	 */
 	@QtUninvokable
-    public QIntPropertyBinding takeBinding()
+    public @NonNull QCharPropertyBinding takeBinding()
     {
-        return setBinding(new QIntPropertyBinding());
+        return setBinding(new QCharPropertyBinding());
     }
     
 	/**
@@ -219,7 +220,7 @@ public final class QIntBindable extends QUntypedBindable {
 	 * @return value
 	 */
     @io.qt.QtUninvokable
-    public final int value() {
+    public final char value() {
         return value(QtJambi_LibraryUtilities.internal.nativeId(this.iface()), QtJambi_LibraryUtilities.internal.nativeId(this.data()));
     }
     
@@ -228,13 +229,13 @@ public final class QIntBindable extends QUntypedBindable {
 	 * @param newValue
 	 */
     @io.qt.QtUninvokable
-    public final void setValue(int value) {
+    public final void setValue(char value) {
         setValue(QtJambi_LibraryUtilities.internal.nativeId(this.iface()), QtJambi_LibraryUtilities.internal.nativeId(this.data()), value);
     }
     
     @io.qt.QtUninvokable
-    static native int value(long ifaceId, long dataId);
+    static native char value(long ifaceId, long dataId);
     
     @io.qt.QtUninvokable
-    static native void setValue(long ifaceId, long dataId, int value);
+    static native void setValue(long ifaceId, long dataId, char value);
 }

@@ -68,7 +68,7 @@
 
 #define QSETTINGS_H
 #include <QtCore/QtCore>
-#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0) && !defined(QPERMISSIONS_H)
 #include <QtCore/qpermissions.h>
 #endif
 #include <QtCore/qfloat16.h>
@@ -87,6 +87,7 @@
 #define QACCESSIBLE_H
 typedef struct __GLsync *GLsync;
 #include <QtGui/QtGui>
+typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QtGui/QOpenGLFunctions_1_0>
 #include <QtGui/QOpenGLFunctions_1_1>
@@ -212,25 +213,6 @@ typedef struct __GLsync *GLsync;
 #       define QSGTEXTURE_PLATFORM_H
 #       include <QtQuick/QtQuick>
 #       undef QSGTEXTURE_PLATFORM_H
-#       ifndef Q_OS_WIN
-#           define Q_OS_WIN
-#               ifndef __OBJC__
-#                   define __OBJC__
-#                   include <QtQuick/qsgtexture_platform.h>
-#                   undef __OBJC__
-#               else
-#                   include <QtQuick/qsgtexture_platform.h>
-#               endif
-#           undef Q_OS_WIN
-#       else
-#           ifndef __OBJC__
-#               define __OBJC__
-#               include <QtQuick/qsgtexture_platform.h>
-#               undef __OBJC__
-#           else
-#               include <QtQuick/qsgtexture_platform.h>
-#           endif
-#       endif
 #   endif
 #	include <QtQuick/private/qquickevents_p_p.h>
 #   include <QtJambiQuick/hashes.h>
@@ -549,13 +531,20 @@ typedef struct __GLsync *GLsync;
 #define QT_WEBSOCKETS_LIB
 #include <QtHttpServer/QtHttpServer>
 #endif
+
 #ifndef QTJAMBI_NO_SPATIALAUDIO
 #include <QtSpatialAudio/QtSpatialAudio>
 #endif
 
-#ifndef QTJAMBI_NO_OPENGL
+#ifndef QTJAMBI_NO_GRPC
+#include <QtGrpc/QtGrpc>
+#endif
 
-typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
+#ifndef QTJAMBI_NO_PROTOBUF
+#include <QtProtobuf/QtProtobuf>
+#endif
+
+#ifndef QTJAMBI_NO_OPENGL
 
 #include <QtOpenGL/QtOpenGL>
 #include <QtJambiOpenGL/hashes.h>
@@ -622,10 +611,12 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #define Q_OS_MACOS
 #define Q_CLANG_QDOC
 #define Q_OS_WEBOS
+#define __OBJC__
 
 #undef QCOREAPPLICATION_PLATFORM_H
 #include <QtCore/qcoreapplication_platform.h>
 
+#ifndef QTJAMBI_NO_GUI
 #undef QGUIAPPLICATION_P_H
 #include <QtGui/private/qguiapplication_p.h>
 #undef QGUIAPPLICATION_PLATFORM_H
@@ -637,9 +628,11 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 
 #include <QtGui/qpa/qplatformwindow_p.h>
 #include <QtGui/qpa/qplatformscreen_p.h>
-
+#endif
+#ifndef QTJAMBI_NO_QUICK
 #undef QSGTEXTURE_PLATFORM_H
 #include <QtQuick/qsgtexture_platform.h>
+#endif
 
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 

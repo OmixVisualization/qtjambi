@@ -86,3 +86,14 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_network
     }QTJAMBI_TRY_END
     return _result;
 }
+
+class QHttpMultiPartIODevice{
+public:
+    static const void* d(const QHttpPart &value){
+        return value.d.data();
+    }
+};
+
+size_t qHash(const QHttpPart &value, size_t seed){
+    return qHash(qintptr(QHttpMultiPartIODevice::d(value)), seed);
+}

@@ -77,6 +77,8 @@ public class CreateNativeDeploymentTask extends Task {
         PropertyHelper propertyHelper = PropertyHelper.getPropertyHelper(getProject());
         boolean useFrameworks = Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_GENERATE_FRAMEWORKS));
     	String libraryIncludes = "";
+    	String sourcesIncludes = "";
+    	List<String> sourcesPaths = new ArrayList<>();
     	java.io.File targetLibDir = null;
         List<String> _libraries = Collections.emptyList();
         int qtMajorVersion = Integer.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.QT_VERSION_MAJOR));
@@ -98,6 +100,9 @@ public class CreateNativeDeploymentTask extends Task {
 					null
 				);
 			java.io.File builddir = new java.io.File(AntUtil.getPropertyAsString(propertyHelper, "qtjambi.builddir"));
+			java.io.File cppsourcedir = new java.io.File(AntUtil.getPropertyAsString(propertyHelper, "native.srcdir"));
+			java.io.File sourcestargetdir = new java.io.File(directory, "sources");
+			java.io.File cppoutputdir = new java.io.File(new java.io.File(AntUtil.getPropertyAsString(propertyHelper, "generator.outputdir")), "cpp");
 			doc.getDocumentElement().setAttribute("module", moduleName);
 			doc.getDocumentElement().setAttribute("system", AntUtil.getPropertyAsString(propertyHelper, Constants.OSNAME));
 			doc.getDocumentElement().setAttribute("version", String.format("%1$s.%2$s.%3$s", qtMajorVersion, qtMinorVersion, qtjambiPatchlevelVersion));
@@ -378,6 +383,30 @@ public class CreateNativeDeploymentTask extends Task {
 				if(!libraryIncludes.isEmpty())
 					libraryIncludes += ",";
 				libraryIncludes += jarpath + "/" + libName;
+				
+				if(debug || forceDebugInfo) {
+					java.io.File libsourcedir = new java.io.File(cppsourcedir, name);
+					java.io.File libsourcetargetdir = new java.io.File(sourcestargetdir, name);
+					if(libsourcedir.isDirectory()) {
+						if(!sourcesPaths.contains(cppsourcedir.getAbsolutePath()))
+							sourcesPaths.add(cppsourcedir.getAbsolutePath());
+						libsourcetargetdir.mkdirs();
+						copySubdirs(sourcestargetdir, libsourcedir, libsourcetargetdir, false, new ArrayList<>(), true);
+					}
+					libsourcedir = new java.io.File(cppoutputdir, name);
+					if(libsourcedir.isDirectory()) {
+						if(!sourcesPaths.contains(cppoutputdir.getAbsolutePath()))
+							sourcesPaths.add(cppoutputdir.getAbsolutePath());
+						libsourcetargetdir.mkdirs();
+						copySubdirs(sourcestargetdir, libsourcedir, libsourcetargetdir, false, new ArrayList<>(), true);
+					}
+					if(libsourcetargetdir.isDirectory()) {
+						if(!sourcesIncludes.isEmpty())
+							sourcesIncludes += ",";
+						sourcesIncludes += "sources/" + name+"/*";
+					}
+				}
+				
 //				if(isMacBundle && "QtJambiLauncher".equals(name)) {
 //					libraryIncludes += "/Contents/MacOS/QtJambiLauncher";
 //					if(debug)
@@ -800,6 +829,8 @@ public class CreateNativeDeploymentTask extends Task {
 		}finally {
 //			System.out.println("library.includes="+libraryIncludes);
 			getProject().setProperty("library.includes", libraryIncludes);
+			getProject().setProperty("sources.includes", sourcesIncludes);
+			getProject().setProperty("sources.paths", String.join(File.pathSeparator, sourcesPaths));
 		}
 	}
 	
@@ -814,7 +845,8 @@ public class CreateNativeDeploymentTask extends Task {
     	if(srcDir.isDirectory()) {
 	    	for(File content : srcDir.listFiles()) {
 	    		if((debug || (!content.getName().endsWith(".prl") && !content.getName().endsWith(".dSYM")))
-	    				&& (allowHeaders || !content.getName().equals("Headers"))) {
+	    				&& (allowHeaders || !content.getName().equals("Headers"))
+	    				&& !content.getName().endsWith(".pri") && !content.getName().endsWith(".pro")) {
 	    			if(!Files.isSymbolicLink(content.toPath())){
 	    				if(content.isDirectory()) {
 	        				copySubdirs(root, new File(srcDir, content.getName()), new File(destDir, content.getName()), debug, additionalFiles, allowHeaders);

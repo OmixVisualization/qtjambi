@@ -28,32 +28,31 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.QtPrimitiveType;
-import io.qt.QtUninvokable;
+import io.qt.*;
 
 /**
- * QBooleanBindable is primitive-typed version of QBindable&lt;Boolean&gt;.
+ * QIntBindable is primitive-typed version of QBindable&lt;Integer&gt;.
  * @see QBindable
  */
-public final class QBooleanBindable extends QUntypedBindable {
-	
-	private QBooleanBindable(QPrivateConstructor p) {
+public final class QIntBindable extends QUntypedBindable {
+
+	private QIntBindable(QPrivateConstructor p) {
 		super(p);
 	}
 
 	/**
-	 * Creates a new <code>boolean</code>-typed invalid bindable.
+	 * Creates a new <code>int</code>-typed invalid bindable.
 	 */
-	public QBooleanBindable() {
+	public QIntBindable() {
 		super(null, null);
 	}
 	
 	/**
 	 * Creates a copy of the provided bindable. 
-	 * If the type of the other bindable is not <code>boolean</code> it remains invalid.
+	 * If the type of the other bindable is not <code>int</code> it remains invalid.
 	 * @param other
 	 */
-	public QBooleanBindable(QUntypedBindable other) {
+	public QIntBindable(@StrictNonNull QUntypedBindable other) {
 		super(other.data(), other.iface());
 		check();
 	}
@@ -62,19 +61,28 @@ public final class QBooleanBindable extends QUntypedBindable {
 		QBindableInterface iface = iface();
 		if(iface!=null) {
 			QMetaType metaType = iface.metaType();
-			if(!QBooleanProperty.checkType(metaType)
-					&& metaType.id()!=QMetaType.Type.QVariant.value()) {
+			if(metaType==null 
+					|| (metaType.id()!=QMetaType.Type.Int.value()
+						&& metaType.id()!=QMetaType.Type.Long.value()
+						&& metaType.id()!=QMetaType.Type.ULong.value()
+						&& metaType.id()!=QMetaType.Type.UInt.value()
+						&& metaType.id()!=QMetaType.Type.Char32.value()
+						&& metaType.id()!=QMetaType.Type.QVariant.value())) {
 				setIface(null);
 				setData(null);
 			}
 		}
+	}
+
+	QIntBindable(QUntypedPropertyData d, QBindableInterface i) {
+		super(d, i);
 	}
 	
 	/**
 	 * Creates a new bindable from provided property.
 	 * @param property
 	 */
-	public QBooleanBindable(QBooleanProperty property) {
+	public QIntBindable(@StrictNonNull QIntProperty property) {
 		super(property, bindableInterface(0));
 	}
 	
@@ -82,7 +90,7 @@ public final class QBooleanBindable extends QUntypedBindable {
 	 * Creates a new bindable from provided property.
 	 * @param property
 	 */
-	public QBooleanBindable(QObject.QBooleanProperty property) {
+	public QIntBindable(QObject.@StrictNonNull QIntProperty property) {
 		super(property, bindableInterface(1));
 	}
 	
@@ -90,112 +98,108 @@ public final class QBooleanBindable extends QUntypedBindable {
 	 * Creates a new bindable from provided property.
 	 * @param property
 	 */
-	public QBooleanBindable(QObject.QComputedBooleanProperty property) {
+	public QIntBindable(QObject.@StrictNonNull QComputedIntProperty property) {
 		super(property, bindableInterface(2));
 	}
 	
 	/**
 	 * Creates a new bindable from provided property.
-	 * If the type of the property is not <code>boolean</code> an {@link IllegalArgumentException} is thrown.
+	 * If the type of the property is not <code>int</code> an {@link IllegalArgumentException} is thrown.
 	 * @param property
 	 */
-	public QBooleanBindable(QProperty<@QtPrimitiveType Boolean> property) {
+	public QIntBindable(@StrictNonNull QProperty<@NonNull@QtPrimitiveType Integer> property) {
 		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 0));
 		check();
 		if(iface()==null)
-			throw new IllegalArgumentException("Given QProperty is not of boolean type.");
+			throw new IllegalArgumentException("Given property is not an int type.");
 	}
 	
 	/**
 	 * Creates a new bindable from provided property.
-	 * If the type of the property is not <code>boolean</code> an {@link IllegalArgumentException} is thrown.
+	 * If the type of the property is not <code>int</code> an {@link IllegalArgumentException} is thrown.
 	 * @param property
 	 */
-	public QBooleanBindable(QObject.QProperty<@QtPrimitiveType Boolean> property) {
+	public QIntBindable(QObject.@StrictNonNull QProperty<@NonNull@QtPrimitiveType Integer> property) {
 		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 1));
 		check();
 		if(iface()==null)
-			throw new IllegalArgumentException("Given QProperty is not of boolean type.");
+			throw new IllegalArgumentException("Given property is not an int type.");
 	}
 	
 	/**
 	 * Creates a new bindable from provided property.
-	 * If the type of the property is not <code>boolean</code> an {@link IllegalArgumentException} is thrown.
+	 * If the type of the property is not <code>int</code> an {@link IllegalArgumentException} is thrown.
 	 * @param property
 	 */
-	public QBooleanBindable(QObject.QComputedProperty<@QtPrimitiveType Boolean> property) {
+	public QIntBindable(QObject.@StrictNonNull QComputedProperty<@NonNull@QtPrimitiveType Integer> property) {
 		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 2));
 		check();
 		if(iface()==null)
-			throw new IllegalArgumentException("Given QProperty is not of boolean type.");
+			throw new IllegalArgumentException("Given property is not an int type.");
 	}
-	
-	static native QBindableInterface bindableInterface(int propertyType);
 
-	QBooleanBindable(QUntypedPropertyData d, QBindableInterface i) {
-		super(d, i);
-	}
+	static native QBindableInterface bindableInterface(int propertyType);
 
 	/**
 	 * Creates a binding to the underlying property.
 	 */
 	@QtUninvokable
 	@Override
-	public QBooleanPropertyBinding makeBinding()
+	public @NonNull QIntPropertyBinding makeBinding()
     {
 		QUntypedPropertyBinding binding = super.makeBinding();
-		if(binding instanceof QBooleanPropertyBinding) {
-			return (QBooleanPropertyBinding)binding;
+		if(binding instanceof QIntPropertyBinding) {
+			return (QIntPropertyBinding)binding;
 		}else {
-			return new QBooleanPropertyBinding(binding);
+			return new QIntPropertyBinding(binding);
 		}
     }
 	
     /**
      * Returns the binding expression that is associated with the underlying property. 
-     * A default constructed {@link QBooleanPropertyBinding} will be returned if no such association exists.
+     * A default constructed {@link QIntPropertyBinding} will be returned if no such association exists.
      * @return binding
      */
 	@QtUninvokable
 	@Override
-    public QBooleanPropertyBinding binding()
+    public @NonNull QIntPropertyBinding binding()
     {
 		QUntypedPropertyBinding binding = super.binding();
-		if(binding instanceof QBooleanPropertyBinding) {
-			return (QBooleanPropertyBinding)binding;
+		if(binding instanceof QIntPropertyBinding) {
+			return (QIntPropertyBinding)binding;
 		}else {
-			return new QBooleanPropertyBinding(binding);
+			return new QIntPropertyBinding(binding);
 		}
     }
     
 	@QtUninvokable
-	public QBooleanPropertyBinding setBinding(QBooleanPropertyBinding binding)
+	public @NonNull QIntPropertyBinding setBinding(@StrictNonNull QIntPropertyBinding binding)
     {
 		QUntypedPropertyBinding oldBinding = super.overrideBinding(binding);
-		if(oldBinding instanceof QBooleanPropertyBinding) {
-			return (QBooleanPropertyBinding)oldBinding;
+		if(oldBinding instanceof QIntPropertyBinding) {
+			return (QIntPropertyBinding)oldBinding;
 		}else {
-			return new QBooleanPropertyBinding(oldBinding);
+			return new QIntPropertyBinding(oldBinding);
 		}
     }
     
 	@QtUninvokable
-	public QBooleanPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Boolean> binding)
+	public @NonNull QIntPropertyBinding setBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Integer> binding)
     {
-		if(binding!=null && !QBooleanProperty.checkType(binding.valueMetaType()))
-			return new QBooleanPropertyBinding();
+		if(binding!=null && !QIntProperty.checkType(binding.valueMetaType()))
+			return new QIntPropertyBinding();
 		QUntypedPropertyBinding oldBinding = super.overrideBinding(binding);
-		if(oldBinding instanceof QBooleanPropertyBinding) {
-			return (QBooleanPropertyBinding)oldBinding;
+		if(oldBinding instanceof QIntPropertyBinding) {
+			return (QIntPropertyBinding)oldBinding;
 		}else {
-			return new QBooleanPropertyBinding(oldBinding);
+			return new QIntPropertyBinding(oldBinding);
 		}
     }
 	
 	@QtUninvokable
-	public QBooleanPropertyBinding setBinding(java.util.function.BooleanSupplier functor)
+	public @NonNull QIntPropertyBinding setBinding(java.util.function.@StrictNonNull IntSupplier functor)
     {
-		return setBinding(new QBooleanPropertyBinding(functor));
+		return setBinding(new QIntPropertyBinding(functor));
     }
 	
 	/**
@@ -204,17 +208,17 @@ public final class QBooleanBindable extends QUntypedBindable {
 	 * @return the removed binding
 	 */
 	@QtUninvokable
-    public QBooleanPropertyBinding takeBinding()
+    public @NonNull QIntPropertyBinding takeBinding()
     {
-        return setBinding(new QBooleanPropertyBinding());
+        return setBinding(new QIntPropertyBinding());
     }
-	
+    
 	/**
 	 * Returns the value of the underlying property. This may evaluate a binding expression that is tied to the property, before returning the value.
 	 * @return value
 	 */
     @io.qt.QtUninvokable
-    public final boolean value() {
+    public final int value() {
         return value(QtJambi_LibraryUtilities.internal.nativeId(this.iface()), QtJambi_LibraryUtilities.internal.nativeId(this.data()));
     }
     
@@ -223,13 +227,13 @@ public final class QBooleanBindable extends QUntypedBindable {
 	 * @param newValue
 	 */
     @io.qt.QtUninvokable
-    public final void setValue(boolean value) {
+    public final void setValue(int value) {
         setValue(QtJambi_LibraryUtilities.internal.nativeId(this.iface()), QtJambi_LibraryUtilities.internal.nativeId(this.data()), value);
     }
     
     @io.qt.QtUninvokable
-    static native boolean value(long ifaceId, long dataId);
+    static native int value(long ifaceId, long dataId);
     
     @io.qt.QtUninvokable
-    static native void setValue(long ifaceId, long dataId, boolean value);
+    static native void setValue(long ifaceId, long dataId, int value);
 }

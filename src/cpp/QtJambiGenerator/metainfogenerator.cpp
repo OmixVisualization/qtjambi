@@ -61,9 +61,9 @@ bool MetaInfoGenerator::shouldGenerate(const TypeEntry *entry) const {
     return entry != nullptr && !entry->isIterator() && !entry->isNamespace() && !entry->isEnum() && (entry->codeGeneration() & TypeEntry::GenerateCpp);
 }
 
-bool MetaInfoGenerator::shouldGenerate(const MetaClass *cls) const {
-    return (!cls->isInterface() && cls->typeEntry()->isValue() && !cls->typeEntry()->isIterator()
-            && !cls->isAbstract() && (cls->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp));
+bool MetaInfoGenerator::shouldGenerate(const MetaClass *) const {
+    return true; //(!cls->isInterface() && cls->typeEntry()->isValue() && !cls->typeEntry()->isIterator()
+            //&& !cls->isAbstract() && (cls->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp));
 }
 
 QString MetaInfoGenerator::fileNameForClass(const MetaClass *) const {

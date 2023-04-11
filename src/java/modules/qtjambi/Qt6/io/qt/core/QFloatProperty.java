@@ -28,8 +28,7 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.QtPrimitiveType;
-import io.qt.QtUninvokable;
+import io.qt.*;
 
 /**
  * QFloatProperty is primitive-typed version of QProperty&lt;Float&gt;.
@@ -63,7 +62,7 @@ public final class QFloatProperty extends QFloatPropertyData {
      * Constructs a <code>float</code>-typed property with the provided binding.
      * @param binding
      */
-	public QFloatProperty(QFloatPropertyBinding binding) {
+	public QFloatProperty(@StrictNonNull QFloatPropertyBinding binding) {
 		super();
 		d.setBinding(binding, this);
 	}
@@ -72,7 +71,7 @@ public final class QFloatProperty extends QFloatPropertyData {
      * Constructs a <code>float</code>-typed property with the provided binding.
      * @param binding
      */
-	public QFloatProperty(QPropertyBinding<@QtPrimitiveType Float> binding) {
+	public QFloatProperty(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Float> binding) {
 		super();
 		if(checkType(binding.valueMetaType()))
 			d.setBinding(binding, this);
@@ -82,7 +81,7 @@ public final class QFloatProperty extends QFloatPropertyData {
      * <p>Constructs a <code>float</code>-typed property bound to the provided <code>functor</code>.</p>
      * @param functor
      */
-	public QFloatProperty(io.qt.QtUtilities.FloatSupplier functor) {
+	public QFloatProperty(io.qt.QtUtilities.@StrictNonNull FloatSupplier functor) {
 		this(new QFloatPropertyBinding(functor));
 	}
 	
@@ -119,7 +118,7 @@ public final class QFloatProperty extends QFloatPropertyData {
 	 * @return oldBinding
 	 */
     @QtUninvokable
-    public QFloatPropertyBinding setBinding(QFloatPropertyBinding newBinding)
+    public @NonNull QFloatPropertyBinding setBinding(@StrictNonNull QFloatPropertyBinding newBinding)
     {
         QUntypedPropertyBinding oldBinding = d.setBinding(newBinding, this);
         d.notifyObservers(this);
@@ -139,7 +138,7 @@ public final class QFloatProperty extends QFloatPropertyData {
 	 * @return oldBinding
 	 */
     @QtUninvokable
-    public QFloatPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Float> newBinding)
+    public @NonNull QFloatPropertyBinding setBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Float> newBinding)
     {
         if(!io.qt.core.QFloatProperty.checkType(newBinding.valueMetaType()))
             return new QFloatPropertyBinding();
@@ -162,7 +161,7 @@ public final class QFloatProperty extends QFloatPropertyData {
 	 * @return true if types match, false otherwise.
 	 */
     @QtUninvokable
-    public boolean setBinding(QUntypedPropertyBinding newBinding)
+    public boolean setBinding(@StrictNonNull QUntypedPropertyBinding newBinding)
     {
         if(io.qt.core.QFloatProperty.checkType(newBinding.valueMetaType())) {
             d.setBinding(newBinding, this);
@@ -181,13 +180,13 @@ public final class QFloatProperty extends QFloatPropertyData {
 	 * @return oldBinding
 	 */
 	@QtUninvokable
-	public QFloatPropertyBinding setBinding(io.qt.QtUtilities.FloatSupplier functor)
+	public @NonNull QFloatPropertyBinding setBinding(io.qt.QtUtilities.@StrictNonNull FloatSupplier functor)
     {
         return setBinding(new QFloatPropertyBinding(functor));
     }
 	
 	@QtUninvokable
-	private QFloatPropertyBinding makeBinding()
+	private @NonNull QFloatPropertyBinding makeBinding()
     {
         return new QFloatPropertyBinding(this::value);
     }
@@ -206,7 +205,7 @@ public final class QFloatProperty extends QFloatPropertyData {
      * @return binding
      */
 	@QtUninvokable
-	public QFloatPropertyBinding binding()
+	public @NonNull QFloatPropertyBinding binding()
     {
         return new QFloatPropertyBinding(this);
     }
@@ -217,7 +216,7 @@ public final class QFloatProperty extends QFloatPropertyData {
 	 * @return the removed binding
 	 */
 	@QtUninvokable
-	public QFloatPropertyBinding takeBinding()
+	public @NonNull QFloatPropertyBinding takeBinding()
     {
         return new QFloatPropertyBinding(d.setBinding(new QFloatPropertyBinding(), this));
     }
@@ -232,7 +231,7 @@ public final class QFloatProperty extends QFloatPropertyData {
      * @see QPropertyChangeHandler
      */
 	@QtUninvokable
-	public QPropertyChangeHandler onValueChanged(Runnable f)
+	public @NonNull QPropertyChangeHandler onValueChanged(@StrictNonNull Runnable f)
     {
         return new QPropertyChangeHandler(d, f);
     }
@@ -245,7 +244,7 @@ public final class QFloatProperty extends QFloatPropertyData {
      * @see #onValueChanged(Runnable)
 	 */
 	@QtUninvokable
-	public QPropertyChangeHandler subscribe(Runnable f)
+	public @NonNull QPropertyChangeHandler subscribe(@StrictNonNull Runnable f)
     {
         f.run();
         return onValueChanged(f);
@@ -261,7 +260,7 @@ public final class QFloatProperty extends QFloatPropertyData {
      * @see QPropertyNotifier
      */
     @io.qt.QtUninvokable
-    public QPropertyNotifier addNotifier(Runnable f)
+    public @NonNull QPropertyNotifier addNotifier(@StrictNonNull Runnable f)
     {
         return new QPropertyNotifier(d, f);
     }

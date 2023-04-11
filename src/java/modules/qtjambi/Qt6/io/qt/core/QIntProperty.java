@@ -28,8 +28,7 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.QtPrimitiveType;
-import io.qt.QtUninvokable;
+import io.qt.*;
 
 /**
  * QIntProperty is primitive-typed version of QProperty&lt;Integer&gt;.
@@ -65,7 +64,7 @@ public final class QIntProperty extends QIntPropertyData {
      * Constructs an <code>int</code>-typed property with the provided binding.
      * @param binding
      */
-	public QIntProperty(QIntPropertyBinding binding) {
+	public QIntProperty(@StrictNonNull QIntPropertyBinding binding) {
 		super();
 		d.setBinding(binding, this);
 	}
@@ -74,7 +73,7 @@ public final class QIntProperty extends QIntPropertyData {
      * Constructs an <code>int</code>-typed property with the provided binding.
      * @param binding
      */
-	public QIntProperty(QPropertyBinding<@QtPrimitiveType Integer> binding) {
+	public QIntProperty(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Integer> binding) {
 		super();
 		if(checkType(binding.valueMetaType()))
 			d.setBinding(binding, this);
@@ -84,7 +83,7 @@ public final class QIntProperty extends QIntPropertyData {
      * <p>Constructs an <code>int</code>-typed property bound to the provided <code>functor</code>.</p>
      * @param functor
      */
-	public QIntProperty(java.util.function.IntSupplier binding) {
+	public QIntProperty(java.util.function.@StrictNonNull IntSupplier binding) {
 		this(new QIntPropertyBinding(binding));
 	}
 	
@@ -121,7 +120,7 @@ public final class QIntProperty extends QIntPropertyData {
 	 * @return oldBinding
 	 */
 	@QtUninvokable
-	public QIntPropertyBinding setBinding(QIntPropertyBinding newBinding)
+	public @NonNull QIntPropertyBinding setBinding(@StrictNonNull QIntPropertyBinding newBinding)
     {
 		QUntypedPropertyBinding oldBinding = d.setBinding(newBinding, this);
         d.notifyObservers(this);
@@ -141,7 +140,7 @@ public final class QIntProperty extends QIntPropertyData {
 	 * @return oldBinding
 	 */
     @QtUninvokable
-    public QIntPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Integer> newBinding)
+    public @NonNull QIntPropertyBinding setBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Integer> newBinding)
     {
         if(!io.qt.core.QIntProperty.checkType(newBinding.valueMetaType()))
             return new QIntPropertyBinding();
@@ -164,7 +163,7 @@ public final class QIntProperty extends QIntPropertyData {
 	 * @return true if types match, false otherwise.
 	 */
     @QtUninvokable
-    public boolean setBinding(QUntypedPropertyBinding newBinding)
+    public boolean setBinding(@StrictNonNull QUntypedPropertyBinding newBinding)
     {
         if(io.qt.core.QIntProperty.checkType(newBinding.valueMetaType())) {
             d.setBinding(newBinding, this);
@@ -183,7 +182,7 @@ public final class QIntProperty extends QIntPropertyData {
 	 * @return oldBinding
 	 */
 	@QtUninvokable
-	public QIntPropertyBinding setBinding(java.util.function.IntSupplier functor)
+	public @NonNull QIntPropertyBinding setBinding(java.util.function.@StrictNonNull IntSupplier functor)
     {
         return setBinding(new QIntPropertyBinding(functor));
     }
@@ -207,7 +206,7 @@ public final class QIntProperty extends QIntPropertyData {
      * @return binding
      */
 	@QtUninvokable
-	public QIntPropertyBinding binding()
+	public @NonNull QIntPropertyBinding binding()
     {
         return new QIntPropertyBinding(this);
     }
@@ -218,7 +217,7 @@ public final class QIntProperty extends QIntPropertyData {
 	 * @return the removed binding
 	 */
 	@QtUninvokable
-	public QIntPropertyBinding takeBinding()
+	public @NonNull QIntPropertyBinding takeBinding()
     {
         return new QIntPropertyBinding(d.setBinding(new QIntPropertyBinding(), this));
     }
@@ -233,7 +232,7 @@ public final class QIntProperty extends QIntPropertyData {
      * @see QPropertyChangeHandler
      */
 	@QtUninvokable
-	public QPropertyChangeHandler onValueChanged(Runnable f)
+	public @NonNull QPropertyChangeHandler onValueChanged(@StrictNonNull Runnable f)
     {
         return new QPropertyChangeHandler(d, f);
     }
@@ -246,7 +245,7 @@ public final class QIntProperty extends QIntPropertyData {
      * @see #onValueChanged(Runnable)
 	 */
 	@QtUninvokable
-	public QPropertyChangeHandler subscribe(Runnable f)
+	public @NonNull QPropertyChangeHandler subscribe(@StrictNonNull Runnable f)
     {
         f.run();
         return onValueChanged(f);
@@ -262,7 +261,7 @@ public final class QIntProperty extends QIntPropertyData {
      * @see QPropertyNotifier
      */
     @io.qt.QtUninvokable
-    public QPropertyNotifier addNotifier(Runnable f)
+    public @NonNull QPropertyNotifier addNotifier(@StrictNonNull Runnable f)
     {
         return new QPropertyNotifier(d, f);
     }

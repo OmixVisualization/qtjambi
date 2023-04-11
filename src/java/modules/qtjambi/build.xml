@@ -22,12 +22,23 @@
 						<available file="${extjardir}/jsr305.jar" type="file"/>
 					</not>
 					<then>
-						<get src="${jsr305.url}" dest="${extjardir}/jsr305.jar" verbose="true"/>
+						<trycatch>
+							<try>
+								<get src="${jsr305.url}" dest="${extjardir}/jsr305.jar" verbose="true"/>
+							</try>
+							<catch>
+								<echo>Unable to download ${jsr305.url}. Defaulting to no-jsr305.</echo>
+								<property name="qtjambi.no.jsr305" value="true"/>
+							</catch>
+						</trycatch>
 					</then>
 				</if>
 				<if>
 					<not>
-						<available file="${extjardir}/kotlin-annotations-jvm.jar" type="file"/>
+						<or>
+							<available file="${extjardir}/kotlin-annotations-jvm.jar" type="file"/>
+							<istrue value="${qtjambi.no.jsr305}"/>
+						</or>
 					</not>
 					<then>
 						<get src="${kotlin-annotations-jvm.url}" dest="${extjardir}/kotlin-annotations-jvm.jar" verbose="true"/>
@@ -42,7 +53,7 @@
         <condition property="jsr305-dir" value="non-jsr305" else="jsr305">
 			<istrue value="${qtjambi.no.jsr305}"/>
         </condition>
-        <condition property="no-permission" value="io/qt/core/QPermission*" else="">
+        <condition property="subversion" value="0" else="5">
 			<and>
 				<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
 				<less arg1="${qtjambi.soname.version.minor}" arg2="5"/>
@@ -55,11 +66,12 @@
             <pathelement location="${antfile.dir}/main"/>
             <pathelement location="${antfile.dir}/${qtjambi-retro}"/>
             <pathelement location="${antfile.dir}/Qt${qtjambi.soname.version.major}"/>
+            <pathelement location="${antfile.dir}/Qt${qtjambi.soname.version.major}.${subversion}"/>
             <pathelement location="${antfile.dir}/${jsr305-dir}"/>
         </path>
         <ant antfile="${basedir}/../modules.xml" inheritrefs="true" target="build-impl">
-            <property name="jar.excludes" value="${no-permission}"/>
-            <property name="module.excludes" value="${no-permission}"/>
+            <property name="jar.excludes" value=""/>
+            <property name="module.excludes" value=""/>
         </ant>
         <if>
 			<and>

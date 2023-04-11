@@ -480,6 +480,25 @@
 					</manifest>
 					<fileset dir="${qtjambi-native-bundle-path}" includes="${library.includes}"/>
 				</jar>
+				<if>
+					<not>
+						<equals arg1="${sources.includes}" arg2=""/>
+					</not>
+					<then>
+						<jar destfile="${deploymentdir}/${moduledash}-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.jar.version}-sources.jar">
+							<manifest>
+								<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
+								<attribute name="Bundle-Name"      value="Sources of ${module} platform bundle"/>
+								<attribute name="Bundle-Description"      value="Sources of ${module} platform bundle"/>
+								<attribute name="Bundle-License"         value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999"/>
+								<attribute name="Bundle-Version"          value="${qtjambi.jar.version}"/>
+								<attribute name="Bundle-ManifestVersion" value="2"/>
+								<attribute name="Original-Source-Paths"          value="${sources.paths}"/>
+							</manifest>
+							<fileset dir="${qtjambi-native-bundle-path}" includes="${sources.includes}"/>
+						</jar>
+					</then>
+				</if>
 			</then>
         </if>
     </target>

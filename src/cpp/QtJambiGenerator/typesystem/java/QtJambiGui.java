@@ -846,7 +846,7 @@ class QTransform___{
 
 class QPixmapCache___{
     /**
-     * @see #find(io.qt.gui.QPixmapCache.Key,QPixmap)
+     * @see #find(Key,QPixmap)
      */
     public static io.qt.gui.@Nullable QPixmap find(io.qt.gui.QPixmapCache.@NonNull Key key){
         QPixmap pm = new QPixmap();
@@ -856,7 +856,7 @@ class QPixmapCache___{
     }
 
     /**
-     * @see #find(io.qt.gui.QPixmapCache.Key,String)
+     * @see #find(String,QPixmap)
      */
     public static io.qt.gui.@Nullable QPixmap find(java.lang.@NonNull String key){
         QPixmap pm = new QPixmap();

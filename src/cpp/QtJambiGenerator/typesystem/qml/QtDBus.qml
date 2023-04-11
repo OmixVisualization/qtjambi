@@ -1953,4 +1953,5 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QDBusReply::*', unmatched *type '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: template baseclass '*' of 'QDBusPendingReplyBase' is not known"}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QDBus*."}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Class 'QDBusVariant' has equals operators but no qHash() function. Hashcode of objects will consistently be 0."}
 }

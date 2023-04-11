@@ -28,8 +28,7 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.QtPrimitiveType;
-import io.qt.QtUninvokable;
+import io.qt.*;
 
 /**
  * <code>QBooleanPropertyAlias</code> is primitive-typed version of <code>QPropertyAlias&lt;Boolean&gt;</code>.
@@ -37,7 +36,7 @@ import io.qt.QtUninvokable;
  */
 public final class QBooleanPropertyAlias extends QAbstractPropertyAlias {
 	
-	private static QPropertyAlias<@QtPrimitiveType Boolean> check(QPropertyAlias<@QtPrimitiveType Boolean> other){
+	private static QPropertyAlias<@NonNull@QtPrimitiveType Boolean> check(QPropertyAlias<@NonNull@QtPrimitiveType Boolean> other){
 		if(other.iface!=null && !QBooleanProperty.checkType(other.iface.metaType())) {
 			throw new IllegalArgumentException("Given QPropertyAlias is not of boolean type.");
 		}
@@ -55,7 +54,7 @@ public final class QBooleanPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided alias.
 	 * @param other
 	 */
-	public QBooleanPropertyAlias(QPropertyAlias<@QtPrimitiveType Boolean> other) {
+	public QBooleanPropertyAlias(@StrictNonNull QPropertyAlias<@NonNull@QtPrimitiveType Boolean> other) {
 		super(check(other));
 	}
 
@@ -63,7 +62,7 @@ public final class QBooleanPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QBooleanPropertyAlias(QBooleanProperty property) {
+	public QBooleanPropertyAlias(@StrictNonNull QBooleanProperty property) {
 		super(property, QBooleanBindable.bindableInterface(0));
 	}
 	
@@ -71,7 +70,7 @@ public final class QBooleanPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QBooleanPropertyAlias(QObject.QBooleanProperty property) {
+	public QBooleanPropertyAlias(QObject.@StrictNonNull QBooleanProperty property) {
 		super(property, QBooleanBindable.bindableInterface(1));
 	}
 	
@@ -79,7 +78,7 @@ public final class QBooleanPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QBooleanPropertyAlias(QObject.QComputedBooleanProperty property) {
+	public QBooleanPropertyAlias(QObject.@StrictNonNull QComputedBooleanProperty property) {
 		super(property, QBooleanBindable.bindableInterface(2));
 	}
 
@@ -87,7 +86,7 @@ public final class QBooleanPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QBooleanPropertyAlias(QProperty<@QtPrimitiveType Boolean> property) {
+	public QBooleanPropertyAlias(@StrictNonNull QProperty<@NonNull@QtPrimitiveType Boolean> property) {
 		super(property, QBindable.bindableInterface(check(property.valueMetaType()).id(), 0));
 	}
 	
@@ -95,7 +94,7 @@ public final class QBooleanPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QBooleanPropertyAlias(QObject.QProperty<@QtPrimitiveType Boolean> property) {
+	public QBooleanPropertyAlias(QObject.@StrictNonNull QProperty<@NonNull@QtPrimitiveType Boolean> property) {
 		super(property, QBindable.bindableInterface(check(property.valueMetaType()).id(), 1));
 	}
 	
@@ -103,7 +102,7 @@ public final class QBooleanPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QBooleanPropertyAlias(QObject.QComputedProperty<@QtPrimitiveType Boolean> property) {
+	public QBooleanPropertyAlias(QObject.@StrictNonNull QComputedProperty<@NonNull@QtPrimitiveType Boolean> property) {
 		super(property, QBindable.bindableInterface(check(property.valueMetaType()).id(), 2));
 	}
 	
@@ -111,7 +110,7 @@ public final class QBooleanPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided alias.
 	 * @param other
 	 */
-	public QBooleanPropertyAlias(QBooleanPropertyAlias alias) {
+	public QBooleanPropertyAlias(@StrictNonNull QBooleanPropertyAlias alias) {
 		super(alias);
 	}
 	
@@ -119,7 +118,7 @@ public final class QBooleanPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided binding's underlying property.
 	 * @param other
 	 */
-	public QBooleanPropertyAlias(QBooleanBindable bindable) {
+	public QBooleanPropertyAlias(@StrictNonNull QBooleanBindable bindable) {
 		super(bindable.data(), bindable.iface());
 	}
 	
@@ -127,7 +126,7 @@ public final class QBooleanPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided binding's underlying property.
 	 * @param other
 	 */
-	public QBooleanPropertyAlias(QBindable<@QtPrimitiveType Boolean> bindable) {
+	public QBooleanPropertyAlias(@StrictNonNull QBindable<@NonNull@QtPrimitiveType Boolean> bindable) {
 		super(bindable.data(), bindable.iface());
 		check(bindable.valueMetaType());
 	}
@@ -152,7 +151,7 @@ public final class QBooleanPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QBooleanProperty#setBinding(QBooleanPropertyBinding)
 	 */
 	@QtUninvokable
-	public QBooleanPropertyBinding setBinding(QBooleanPropertyBinding newBinding) {
+	public @NonNull QBooleanPropertyBinding setBinding(@StrictNonNull QBooleanPropertyBinding newBinding) {
 		return new QBooleanBindable(aliasedProperty(), iface).setBinding(newBinding);
     }
 	
@@ -160,7 +159,7 @@ public final class QBooleanPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QBooleanProperty#setBinding(QPropertyBinding)
 	 */
 	@QtUninvokable
-	public QBooleanPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Boolean> newBinding) {
+	public @NonNull QBooleanPropertyBinding setBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Boolean> newBinding) {
 		return new QBooleanBindable(aliasedProperty(), iface).setBinding(newBinding);
     }
 	
@@ -168,7 +167,7 @@ public final class QBooleanPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QBooleanProperty#setBinding(java.util.function.BooleanSupplier)
 	 */
 	@QtUninvokable
-	public QBooleanPropertyBinding setBinding(java.util.function.BooleanSupplier functor) {
+	public @NonNull QBooleanPropertyBinding setBinding(java.util.function.@StrictNonNull BooleanSupplier functor) {
         return setBinding(new QBooleanPropertyBinding(functor));
     }
 	
@@ -176,7 +175,7 @@ public final class QBooleanPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QBooleanProperty#binding()
 	 */
 	@QtUninvokable
-	public QBooleanPropertyBinding binding() {
+	public @NonNull QBooleanPropertyBinding binding() {
         return new QBooleanBindable(aliasedProperty(), iface).binding();
     }
 	
@@ -184,7 +183,7 @@ public final class QBooleanPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QBooleanProperty#takeBinding()
 	 */
 	@QtUninvokable
-	public QBooleanPropertyBinding takeBinding() {
+	public @NonNull QBooleanPropertyBinding takeBinding() {
         return new QBooleanBindable(aliasedProperty(), iface).takeBinding();
     }
 }

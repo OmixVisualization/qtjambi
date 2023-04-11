@@ -28,8 +28,7 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.QtPrimitiveType;
-import io.qt.QtUninvokable;
+import io.qt.*;
 
 /**
  * QLongPropertyAlias is primitive-typed version of QPropertyAlias&lt;Long&gt;.
@@ -37,7 +36,7 @@ import io.qt.QtUninvokable;
  */
 public final class QLongPropertyAlias extends QAbstractPropertyAlias {
 	
-	private static QPropertyAlias<@QtPrimitiveType Long> check(QPropertyAlias<@QtPrimitiveType Long> other){
+	private static QPropertyAlias<@NonNull@QtPrimitiveType Long> check(QPropertyAlias<@NonNull@QtPrimitiveType Long> other){
 		if(other.iface!=null && !QLongProperty.checkType(other.iface.metaType())) {
 			throw new IllegalArgumentException("Given QPropertyAlias is not of long type.");
 		}
@@ -55,7 +54,7 @@ public final class QLongPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided alias.
 	 * @param other
 	 */
-	public QLongPropertyAlias(QPropertyAlias<@QtPrimitiveType Long> other) {
+	public QLongPropertyAlias(@StrictNonNull QPropertyAlias<@NonNull@QtPrimitiveType Long> other) {
 		super(check(other));
 	}
 
@@ -63,7 +62,7 @@ public final class QLongPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QLongPropertyAlias(QLongProperty property) {
+	public QLongPropertyAlias(@StrictNonNull QLongProperty property) {
 		super(property, QLongBindable.bindableInterface(0));
 	}
 	
@@ -71,7 +70,7 @@ public final class QLongPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QLongPropertyAlias(QObject.QLongProperty property) {
+	public QLongPropertyAlias(QObject.@StrictNonNull QLongProperty property) {
 		super(property, QLongBindable.bindableInterface(1));
 	}
 	
@@ -79,7 +78,7 @@ public final class QLongPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QLongPropertyAlias(QObject.QComputedIntProperty property) {
+	public QLongPropertyAlias(QObject.@StrictNonNull QComputedIntProperty property) {
 		super(property, QLongBindable.bindableInterface(2));
 	}
 
@@ -87,7 +86,7 @@ public final class QLongPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QLongPropertyAlias(QProperty<@QtPrimitiveType Long> property) {
+	public QLongPropertyAlias(@StrictNonNull QProperty<@NonNull@QtPrimitiveType Long> property) {
 		super(property, QBindable.bindableInterface(check(property.valueMetaType()).id(), 0));
 	}
 	
@@ -95,7 +94,7 @@ public final class QLongPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QLongPropertyAlias(QObject.QProperty<@QtPrimitiveType Long> property) {
+	public QLongPropertyAlias(QObject.@StrictNonNull QProperty<@NonNull@QtPrimitiveType Long> property) {
 		super(property, QBindable.bindableInterface(check(property.valueMetaType()).id(), 1));
 	}
 	
@@ -103,7 +102,7 @@ public final class QLongPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QLongPropertyAlias(QObject.QComputedProperty<@QtPrimitiveType Long> property) {
+	public QLongPropertyAlias(QObject.@StrictNonNull QComputedProperty<@NonNull@QtPrimitiveType Long> property) {
 		super(property, QBindable.bindableInterface(check(property.valueMetaType()).id(), 2));
 	}
 	
@@ -111,7 +110,7 @@ public final class QLongPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided alias.
 	 * @param other
 	 */
-	public QLongPropertyAlias(QLongPropertyAlias alias) {
+	public QLongPropertyAlias(@StrictNonNull QLongPropertyAlias alias) {
 		super(alias);
 	}
 	
@@ -119,7 +118,7 @@ public final class QLongPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided binding's underlying property.
 	 * @param other
 	 */
-	public QLongPropertyAlias(QLongBindable bindable) {
+	public QLongPropertyAlias(@StrictNonNull QLongBindable bindable) {
 		super(bindable.data(), bindable.iface());
 	}
 	
@@ -127,7 +126,7 @@ public final class QLongPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided binding's underlying property.
 	 * @param other
 	 */
-	public QLongPropertyAlias(QBindable<@QtPrimitiveType Long> bindable) {
+	public QLongPropertyAlias(@StrictNonNull QBindable<@NonNull@QtPrimitiveType Long> bindable) {
 		super(bindable.data(), bindable.iface());
 		check(bindable.valueMetaType());
 	}
@@ -152,7 +151,7 @@ public final class QLongPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QLongProperty#setBinding(QLongPropertyBinding)
 	 */
 	@QtUninvokable
-	public QLongPropertyBinding setBinding(QLongPropertyBinding newBinding) {
+	public @NonNull QLongPropertyBinding setBinding(@StrictNonNull QLongPropertyBinding newBinding) {
 		return new QLongBindable(aliasedProperty(), iface).setBinding(newBinding);
     }
 	
@@ -160,7 +159,7 @@ public final class QLongPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QLongProperty#setBinding(QPropertyBinding)
 	 */
 	@QtUninvokable
-	public QLongPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Long> newBinding) {
+	public @NonNull QLongPropertyBinding setBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Long> newBinding) {
 		return new QLongBindable(aliasedProperty(), iface).setBinding(newBinding);
     }
 	
@@ -168,7 +167,7 @@ public final class QLongPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QLongProperty#setBinding(java.util.function.LongSupplier)
 	 */
 	@QtUninvokable
-	public QLongPropertyBinding setBinding(java.util.function.LongSupplier functor) {
+	public @NonNull QLongPropertyBinding setBinding(java.util.function.@StrictNonNull LongSupplier functor) {
         return setBinding(new QLongPropertyBinding(functor));
     }
 	
@@ -176,7 +175,7 @@ public final class QLongPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QLongProperty#binding()
 	 */
 	@QtUninvokable
-	public QLongPropertyBinding binding() {
+	public @NonNull QLongPropertyBinding binding() {
         return new QLongBindable(aliasedProperty(), iface).binding();
     }
 	
@@ -184,7 +183,7 @@ public final class QLongPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QLongProperty#takeBinding()
 	 */
 	@QtUninvokable
-	public QLongPropertyBinding takeBinding() {
+	public @NonNull QLongPropertyBinding takeBinding() {
         return new QLongBindable(aliasedProperty(), iface).takeBinding();
     }
 }

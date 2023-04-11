@@ -337,7 +337,12 @@ TypeSystem{
                 fileName: "QSize"
                 location: Include.Global
             }
+            Include{
+                fileName: "QtJambi/JavaAPI"
+                location: Include.Global
+            }
         }
+
     }
     
     ObjectType{

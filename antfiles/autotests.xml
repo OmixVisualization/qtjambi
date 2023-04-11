@@ -6,7 +6,6 @@
 
     <target name="load-properties">
         <property environment="env"/>
-
         <tstamp/>
         <condition property="test.includes" value="${test}" else="*">
             <and>
@@ -16,10 +15,21 @@
                 </not>
             </and>
         </condition>
+        <condition property="qtjambi.isqt65" value="true">
+			<or>
+				<less arg1="6" arg2="${qtjambi.soname.version.major}"/>
+				<and>
+					<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+					<less arg1="4" arg2="${qtjambi.soname.version.minor}"/>
+				</and>
+			</or>
+        </condition>
+		<property name="qtjambi.isqt${qtjambi.soname.version.major}" value="true"/>
         <fileset id="qtjambi.autotest.classes" dir="${java.srcdir}/autotests">
             <include name="io/qt/**/Test${test.includes}.java"/>
             <exclude name="io/qt/**/Test*Qt5.java" unless="${qtjambi.isqt5}"/>
             <exclude name="io/qt/**/Test*Qt6.java" unless="${qtjambi.isqt6}"/>
+            <exclude name="io/qt/**/Test*Qt65.java" unless="${qtjambi.isqt65}"/>
             <exclude name="io/qt/**/Test*Qml.java" unless="${qtjambi.qml.any.true}"/>
             <exclude name="io/qt/**/Test*ActiveX.java" unless="${qtjambi.activex.any.true}"/>
             <exclude name="io/qt/**/Test*OpenGL.java" unless="${qtjambi.opengl.any.true}"/>
@@ -158,7 +168,17 @@
     </target>
 
     <target name="check.junit">
-        <available property="junit.path" type="file" file="${tests.junit}"/>
+		<if>
+			<not>
+				<available type="file" file="extjars/junit.jar"/>
+			</not>
+			<then>
+				<mkdir dir="extjars"/>
+				<get src="${junit.url}" dest="extjars/junit.jar" verbose="true"/>
+				<get src="${hamcrest.url}" dest="extjars/hamcrest.jar" verbose="true"/>
+			</then>
+		</if>
+        <available property="junit.path" type="file" file="extjars/junit.jar"/>
         <fail message="Path to JUnit is required to build the Unit Tests. Specify the path in tests.properties">
             <condition>
                 <not>
@@ -216,7 +236,6 @@
         <qmake  dir="${outputDir}/${qtjambi.osname}/tests/autotests"
                 pro="${basedir}/src/cpp/autotests/autotests.pro"
                 config="${qtjambi.configuration}"
-                debugTools="${qtjambi.debug-tools}"
                 qmakebinary="${qtjambi.qt.qmake.abspath}"/>
         <make dir="${outputDir}/${qtjambi.osname}/tests/autotests" target="${qtjambi.qmake.target.default}"/>
         <if>
@@ -357,18 +376,6 @@
     <target name="compile.java.impl" depends="load-properties">
         <delete dir="${test.java.outdir}" failonerror="no"/>
         <mkdir dir="${test.java.outdir}"/>
-        <!-- encoding="UTF-8" required due to some file tests (I18N) using
-        no ASCII/ISO-8859-1 characters and the MacOSX Java using "MacRoman"
-        character set by default. -->
-        <path id="qtjambi.classpath">
-            <fileset dir="${deploymentdir}">
-                <include name="qtjambi*-${qtjambi.jar.version}.jar"/>
-                <exclude name="qtjambi-*native-*.jar"/>
-            </fileset>
-            <pathelement location="${tests.junit}" />
-            <pathelement location="${tests.hamcrest}" />
-            <pathelement location="${jna.lib}" />
-        </path>
         <delete dir="${test.java.srcoutdir}"/>
         <mkdir dir="${test.java.srcoutdir}"/>
         <copy todir="${test.java.srcoutdir}">
@@ -390,7 +397,14 @@
             <compilerarg value="-Xlint:deprecation" />
             <compilerarg value="-Xlint:unchecked" />
             <compilerarg value="-Xlint:-options" />
-            <classpath refid="qtjambi.classpath"/>
+            <classpath>
+				<fileset dir="${deploymentdir}">
+					<include name="qtjambi*-${qtjambi.jar.version}.jar"/>
+					<exclude name="qtjambi-*native-*.jar"/>
+				</fileset>
+				<pathelement location="extjars/junit.jar" />
+				<pathelement location="extjars/hamcrest.jar" />
+            </classpath>
         </javac>
         <antcall inheritrefs="true" target="copy-resources">
             <param name="src" value="${basedir}/src/java/autotests"/>
@@ -537,18 +551,6 @@
 								<fail message="No jdk8 available. Please specify JAVA8_HOME_TARGET environment variable."/>
 							</then>
 						</if>
-						<path id="qtjambi.classpath">
-							<fileset dir="${deploymentdir}">
-								<include name="qtjambi*-${qtjambi.jar.version}.jar"/>
-								<exclude name="qtjambi-*native-*.jar"/>
-							</fileset>
-							<pathelement location="${tests.junit}" />
-							<pathelement location="${tests.hamcrest}" />
-							<pathelement location="${sqlite.jdbc}" />
-							<pathelement location="${jna.lib}" />
-							<pathelement path="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-${qtjambi.jar.version}.jar" />
-							<!--pathelement path="${absOutputDir}/${qtjambi.osname}/tests/java" /-->
-						</path>
 					</then>
 					<else>
 						<if>
@@ -582,18 +584,6 @@
 								<property name="test.jvm" location="java"/>
 							</then>
 						</if>
-						<path id="qtjambi.classpath">
-							<fileset dir="${deploymentdir}">
-								<include name="qtjambi*-${qtjambi.jar.version}.jar"/>
-								<exclude name="qtjambi-*native-*.jar"/>
-							</fileset>
-							<pathelement location="${tests.junit}" />
-							<pathelement location="${tests.hamcrest}" />
-							<pathelement location="${sqlite.jdbc}" />
-							<pathelement location="${jna.lib}" />
-							<pathelement path="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-${qtjambi.jar.version}.jar" />
-							<!--pathelement path="${absOutputDir}/${qtjambi.osname}/tests/java" /-->
-						</path>
 					</else>
 				</if>
 				
@@ -623,22 +613,36 @@
 							<istrue value="${qtjambi.debug.trace}"/>
 						</condition>
 						<if>
-							<available type="file" file="${sqlite.jdbc}"/>
+							<available type="file" file="extjars/sqlite-jdbc.jar"/>
 							<then>
 							</then>
 							<else>
 								<mkdir dir="extjars"/>
-								<get src="${sqlite.jdbc.download.url}" dest="${sqlite.jdbc}" verbose="true"/>
+								<trycatch>
+									<try>
+										<get src="${sqlite.jdbc.download.url}" dest="extjars/sqlite-jdbc.jar" verbose="true"/>
+									</try>
+									<catch>
+										<echo>Unable to download ${sqlite.jdbc.download.url}</echo>
+									</catch>
+								</trycatch>
 							</else>
 						</if>
-						<property name="testJdbcPath"   location="${sqlite.jdbc}" />
+						<property name="testJdbcPath"   location="extjars/sqlite-jdbc.jar" />
 						<if>
-							<available type="file" file="${jna.lib}"/>
+							<available type="file" file="extjars/jna.jar"/>
 							<then>
 							</then>
 							<else>
 								<mkdir dir="extjars"/>
-								<get src="${jna.lib.download.url}" dest="${jna.lib}" verbose="true"/>
+								<trycatch>
+									<try>
+										<get src="${jna.lib.download.url}" dest="extjars/jna.jar" verbose="true"/>
+									</try>
+									<catch>
+										<echo>Unable to download ${jna.lib.download.url}</echo>
+									</catch>
+								</trycatch>
 							</else>
 						</if>
 						<if>
@@ -680,7 +684,17 @@
 							<try>
 								<mkdir dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}"/>
 								<junit fork="yes" jvm="${test.jvm}" printsummary="true" dir="${outputDir}/${qtjambi.osname}/tests/${kind}/" haltonfailure="no" timeout="${qtjambi.junit.timeout}" showoutput="yes" logfailedtests="yes" threads="${qtjambi.junit.threads}">
-									<classpath refid="qtjambi.classpath"/>
+									<classpath>
+										<fileset dir="${deploymentdir}">
+											<include name="qtjambi*-${qtjambi.jar.version}.jar"/>
+											<exclude name="qtjambi-*native-*.jar"/>
+										</fileset>
+										<pathelement location="extjars/junit.jar" />
+										<pathelement location="extjars/hamcrest.jar" />
+										<pathelement location="extjars/sqlite-jdbc.jar" />
+										<pathelement location="extjars/jna.jar" />
+										<pathelement path="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-${qtjambi.jar.version}.jar" />
+									</classpath>
 									<jvmarg value="-Dio.qt.library-path-override=${qtPath}${psep}${qtJambiPath}${psep}${testLibPath}"/>
 									<jvmarg value="-Dio.qt.verbose-loading=${io.qt.verbose-loading}"/>
 									<jvmarg value="-Dio.qt.debug=${kind}"/><!-- This should not be needed now, it loads default from MANIFEST.MF -->

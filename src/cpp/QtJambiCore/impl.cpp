@@ -3185,6 +3185,66 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QU
 }
 
 void __qt_construct_QUntypedBindable_1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments);
+#if QT_VERSION >= QT_VERSION_CHECK(6,5,0)
+void __qt_construct_QUntypedBindable_2(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments);
+#define BINDABLE_CONSTRUCT __qt_construct_QUntypedBindable_2
+
+
+// QUntypedBindable::QUntypedBindable(QObject*,QMetaProperty,const QtPrivate::QBindableInterface*)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QUntypedBindable_initialize_1native__Lio_qt_core_QUntypedBindable_2Lio_qt_core_QObject_2Lio_qt_core_QMetaProperty_2Lio_qt_core_QBindableInterface_2)
+(JNIEnv *__jni_env,
+ jclass __jni_class,
+ jobject __jni_object,
+ jobject obj0,
+ jobject property1,
+ jobject i2)
+{
+    QTJAMBI_DEBUG_METHOD_PRINT("native", "QUntypedBindable::QUntypedBindable(QObject*,QMetaProperty,const QtPrivate::QBindableInterface*)")
+    QTJAMBI_TRY {
+        const std::type_info* typeId;
+        if(Java::QtCore::QBooleanBindable::isInstanceOf(__jni_env, __jni_object)){
+            __jni_class = Java::QtCore::QBooleanBindable::getClass(__jni_env);
+            typeId = &typeid(QBindable<bool>);
+        }else if(Java::QtCore::QByteBindable::isInstanceOf(__jni_env, __jni_object)){
+            __jni_class = Java::QtCore::QByteBindable::getClass(__jni_env);
+            typeId = &typeid(QBindable<qint8>);
+        }else if(Java::QtCore::QShortBindable::isInstanceOf(__jni_env, __jni_object)){
+            __jni_class = Java::QtCore::QShortBindable::getClass(__jni_env);
+            typeId = &typeid(QBindable<qint16>);
+        }else if(Java::QtCore::QIntBindable::isInstanceOf(__jni_env, __jni_object)){
+            __jni_class = Java::QtCore::QIntBindable::getClass(__jni_env);
+            typeId = &typeid(QBindable<qint32>);
+        }else if(Java::QtCore::QLongBindable::isInstanceOf(__jni_env, __jni_object)){
+            __jni_class = Java::QtCore::QLongBindable::getClass(__jni_env);
+            typeId = &typeid(QBindable<qint64>);
+        }else if(Java::QtCore::QFloatBindable::isInstanceOf(__jni_env, __jni_object)){
+            __jni_class = Java::QtCore::QFloatBindable::getClass(__jni_env);
+            typeId = &typeid(QBindable<float>);
+        }else if(Java::QtCore::QDoubleBindable::isInstanceOf(__jni_env, __jni_object)){
+            __jni_class = Java::QtCore::QDoubleBindable::getClass(__jni_env);
+            typeId = &typeid(QBindable<double>);
+        }else if(Java::QtCore::QCharBindable::isInstanceOf(__jni_env, __jni_object)){
+            __jni_class = Java::QtCore::QCharBindable::getClass(__jni_env);
+            typeId = &typeid(QBindable<QChar>);
+        }else if(Java::QtCore::QBindable::isInstanceOf(__jni_env, __jni_object)){
+            __jni_class = Java::QtCore::QBindable::getClass(__jni_env);
+            typeId = &typeid(QBindable<QVariant>);
+        }else{
+            typeId = &typeid(QUntypedBindable);
+        }
+        jvalue arguments[3];
+        arguments[0].l = obj0;
+        arguments[1].l = property1;
+        arguments[2].l = i2;
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QUntypedBindable_1, sizeof(QUntypedBindable), *typeId, true, arguments);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+
+}
+#else
+#define BINDABLE_CONSTRUCT __qt_construct_QUntypedBindable_1
+#endif
 
 // QUntypedBindable::QUntypedBindable(QUntypedPropertyData * d, const QtPrivate::QBindableInterface * i)
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QUntypedBindable_initialize_1native__Lio_qt_core_QUntypedBindable_2Lio_qt_core_QUntypedPropertyData_2Lio_qt_core_QBindableInterface_2)
@@ -3230,7 +3290,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QU
         }else{
             typeId = &typeid(QUntypedBindable);
         }
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QUntypedBindable_1, sizeof(QUntypedBindable), *typeId, true, arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &BINDABLE_CONSTRUCT, sizeof(QUntypedBindable), *typeId, true, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -3248,11 +3308,10 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         const QtPrivate::QBindableInterface *iface = QtJambiAPI::convertJavaObjectToNative<QtPrivate::QBindableInterface>(__jni_env, _iface);
         QUntypedPropertyData *data = QtJambiAPI::convertJavaObjectToNative<QUntypedPropertyData>(__jni_env, _data);
         QUntypedPropertyBinding* __qt_binding0 = QtJambiAPI::convertJavaObjectToNative<QUntypedPropertyBinding>(__jni_env, binding0);
-        if(_iface)
-            QtJambiAPI::checkPointer(__jni_env, iface);
-        QtJambiAPI::checkPointer(__jni_env, data);
-        if(_iface)
+        if(_iface){
+            QtJambiAPI::checkPointer(__jni_env, data);
             QtJambiAPI::checkPointer(__jni_env, __qt_binding0);
+        }
         if(iface && iface->setBinding && __qt_binding0) {
             result = qtjambi_cast<jobject>(__jni_env, iface->setBinding(data, *__qt_binding0));
         }else{
@@ -4195,6 +4254,25 @@ Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gLock, (QReadWriteLock::Recursive))
 typedef QMap<size_t, const QtPrivate::QBindableInterface *> BindableInterfacesHash;
 Q_GLOBAL_STATIC(BindableInterfacesHash, gBindableInterfacesHash)
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#define CASE3(TYPE)\
+case 3:{\
+    static QtPrivate::QBindableInterface _iface = {\
+                                            &QtPrivate::PropertyAdaptorSlotObjectHelpers::getter,\
+                                            &QtPrivate::PropertyAdaptorSlotObjectHelpers::setter,\
+                                            &QtPrivate::PropertyAdaptorSlotObjectHelpers::getBinding,\
+                                            &QtPrivate::PropertyAdaptorSlotObjectHelpers::setBinding<TYPE>,\
+                                            &QtPrivate::PropertyAdaptorSlotObjectHelpers::makeBinding<TYPE>,\
+                                            &QtPrivate::PropertyAdaptorSlotObjectHelpers::setObserver,\
+                                            &QMetaType::fromType<TYPE>,\
+                                        };\
+    iface = &_iface;\
+}\
+break;
+#else
+#define CASE3(TYPE)
+#endif
+
 #define BUILTIN_BINDING_INTERFACE(TYPE)\
     switch(propertyType){\
     case 0:{\
@@ -4212,6 +4290,7 @@ Q_GLOBAL_STATIC(BindableInterfacesHash, gBindableInterfacesHash)
         iface = &_iface;\
     }\
     break;\
+    CASE3(TYPE)\
     }
 
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QBindable_bindableInterface)
@@ -4260,8 +4339,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         case QMetaType::QObjectStar:    BUILTIN_BINDING_INTERFACE(QObject*) break;
         case QMetaType::VoidStar:       BUILTIN_BINDING_INTERFACE(void*) break;
         default: {
-                hash_type _hash = qHash(metaType);
-                _hash = _hash * 31 + qHash(propertyType);
+                hash_type _hash = qHashMulti(0, metaType, propertyType);
                 {
                     QReadLocker locker(gLock());
                     Q_UNUSED(locker)
@@ -4303,6 +4381,55 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
                                 getMetaType
                         };
                         break;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+                    case 3:{
+                        QtPrivate::QPropertyBindingWrapper wrapper = qtjambi_function_pointer<32,bool(QMetaType,QUntypedPropertyData*,QtPrivate::QPropertyBindingFunction)>([metaType](QMetaType type, QUntypedPropertyData *d,
+                                                                                                                                                                            QtPrivate::QPropertyBindingFunction binding)->bool {
+                            QUntypedPropertyData temp;
+                            QVariant variant = QVariant(QMetaType(metaType), nullptr);
+                            return QtPrivate::PropertyAdaptorSlotObjectHelpers::bindingWrapper(type, d, binding, &temp, variant.data());
+                        }, hash_type(metaType));
+                        QtPrivate::QBindableInterface::BindingSetter bindingSetter = qtjambi_function_pointer<32,QUntypedPropertyBinding(QUntypedPropertyData *, const QUntypedPropertyBinding&)>([wrapper](QUntypedPropertyData *d, const QUntypedPropertyBinding &binding)->QUntypedPropertyBinding {
+                                                                                    return QtPrivate::PropertyAdaptorSlotObjectHelpers::setBinding(d, binding, wrapper);
+                                                                                }, qHash(quintptr(wrapper)));
+                        QtPrivate::QBindableInterface::MakeBinding makeBinding = qtjambi_function_pointer<32,QUntypedPropertyBinding(const QUntypedPropertyData *, const QPropertyBindingSourceLocation&)>([metaType](const QUntypedPropertyData *d, const QPropertyBindingSourceLocation &location)->QUntypedPropertyBinding {
+                                                                                        static QtPrivate::BindingFunctionVTable vtable{
+                                                                                            /*call=*/[](QMetaType metaType, QUntypedPropertyData *dataPtr, void *f)->bool{
+                                                                                                const QUntypedPropertyData *d = *static_cast<QUntypedPropertyData**>(f);
+                                                                                                QVariant v(metaType, nullptr);
+                                                                                                QtPrivate::PropertyAdaptorSlotObjectHelpers::getter(d, v.data());
+                                                                                                if(metaType.iface()->equals){
+                                                                                                    if(metaType.iface()->equals(metaType.iface(), dataPtr, v.data()))
+                                                                                                        return false;
+                                                                                                }
+                                                                                                metaType.destruct(dataPtr);
+                                                                                                if(metaType.iface()->moveCtr){
+                                                                                                    metaType.iface()->moveCtr(metaType.iface(), dataPtr, v.data());
+                                                                                                }else{
+                                                                                                    metaType.construct(dataPtr, v.data());
+                                                                                                }
+                                                                                                return true;
+                                                                                            },
+                                                                                            /*destroy*/[](void *){},
+                                                                                            /*moveConstruct*/[](void *addr, void *other){
+                                                                                                new (addr) QUntypedPropertyData*(std::move(*static_cast<QUntypedPropertyData**>(other)));
+                                                                                            },
+                                                                                            /*size*/sizeof(QUntypedPropertyData**)
+                                                                                        };
+                                                                                        return QUntypedPropertyBinding(QMetaType(metaType), &vtable, &d, location);
+                                                                                }, hash_type(metaType));
+                        iface = new QtPrivate::QBindableInterface{
+                                &QtPrivate::PropertyAdaptorSlotObjectHelpers::getter,
+                                &QtPrivate::PropertyAdaptorSlotObjectHelpers::setter,
+                                &QtPrivate::PropertyAdaptorSlotObjectHelpers::getBinding,
+                                bindingSetter,
+                                makeBinding,
+                                &QtPrivate::PropertyAdaptorSlotObjectHelpers::setObserver,
+                                getMetaType
+                        };
+                        break;
+                    }
+#endif
                     }
 
                     QWriteLocker locker(gLock());
