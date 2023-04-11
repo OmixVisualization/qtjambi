@@ -117,84 +117,39 @@ class LocationTable {
 };
 
 class TokenStream {
-    private:
-        TokenStream(const TokenStream &);
-        void operator = (const TokenStream &);
-
     public:
-        inline TokenStream(std::size_t size = 1024)
-                : tokens(nullptr),
-                index(0),
-                token_count(0) {
-            resize(size);
-        }
-
-        inline ~TokenStream()
-        { ::free(tokens); }
-
-        inline std::size_t size() const
-        { return token_count; }
-
-        inline std::size_t cursor() const
-        { return index; }
-
-        inline void rewind(std::size_t i)
-        { index = i; }
-
-        void resize(std::size_t size) {
-            Q_ASSERT(size > 0);
-            tokens = reinterpret_cast<Token*>(::realloc(tokens, sizeof(Token) * size));
-            token_count = size;
-        }
-
-        inline std::size_t nextToken()
-        { return index++; }
-
-        inline int lookAhead(std::size_t i = 0) const
-        {
-            return tokens[index + i].kind;
-        }
-
-        inline int kind(std::size_t i) const
-        { return tokens[i].kind; }
-
-        inline std::size_t position(std::size_t i) const
-        { return tokens[i].position; }
-
-        inline const NameSymbol *symbol(std::size_t i) const
-        { return tokens[i].extra.symbol; }
-
-        inline std::size_t matchingBrace(std::size_t i) const
-        { return tokens[i].extra.right_brace; }
-
-        inline Token &operator[](std::size_t index)
-        { return tokens[index]; }
-
-        inline const Token &token(std::size_t index) const
-        { return tokens[index]; }
-
+        TokenStream(std::size_t size = 1024);
+        ~TokenStream();
+        std::size_t size() const;
+        std::size_t cursor() const;
+        void rewind(std::size_t i);
+        void resize(std::size_t size);
+        std::size_t nextToken();
+        int lookAhead(std::size_t i = 0) const;
+        int kind(std::size_t i) const;
+        std::size_t position(std::size_t i) const;
+        const NameSymbol *symbol(std::size_t i) const;
+        std::size_t matchingBrace(std::size_t i) const;
+        Token &operator[](std::size_t index);
+        const Token &token(std::size_t index) const;
     private:
-        Token *tokens;
+        QVector<Token> tokens;
         std::size_t index;
         std::size_t token_count;
+        Token* currentToken;
+        const char* currentText;
 
     private:
         friend class Lexer;
+        Q_DISABLE_COPY_MOVE(TokenStream)
 };
 
 class LocationManager {
-        LocationManager(LocationManager const &__other);
-        void operator = (LocationManager const &__other);
-
     public:
         LocationManager(TokenStream &__token_stream,
                         LocationTable &__location_table,
                         LocationTable &__line_table,
-                        QMap<QString,QStringList>& requiredFeatures):
-                token_stream(__token_stream),
-                location_table(__location_table),
-                line_table(__line_table),
-                _M_requiredFeatures(requiredFeatures) {}
+                        QMap<QString,QStringList>& requiredFeatures);
 
         void positionAt(std::size_t offset, int *line, int *column,
                         QString *filename) const;
@@ -203,24 +158,19 @@ class LocationManager {
 
         void extract_line(int offset, int *line, QString *filename) const;
 
-        const QMap<QString,QStringList>& requiredFeatures() const { return _M_requiredFeatures; }
+        const QMap<QString,QStringList>& requiredFeatures() const;
 
         TokenStream &token_stream;
         LocationTable &location_table;
         LocationTable &line_table;
     private:
         QMap<QString,QStringList>& _M_requiredFeatures;
+        Q_DISABLE_COPY_MOVE(LocationManager)
 };
 
 class Lexer {
     public:
-        Lexer(LocationManager &__location, Control *__control):
-                _M_location(__location),
-                token_stream(_M_location.token_stream),
-                location_table(_M_location.location_table),
-                line_table(_M_location.line_table),
-                control(__control) {}
-
+        Lexer(LocationManager &__location, Control *__control);
         void tokenize(const char *contents, std::size_t size);
 
         LocationManager &_M_location;
@@ -301,6 +251,7 @@ class Lexer {
         static scan_fun_ptr s_scan_table[];
         static scan_fun_ptr s_scan_keyword_table[];
         static bool s_initialized;
+        Q_DISABLE_COPY_MOVE(Lexer)
 };
 
 #endif // LEXER_H

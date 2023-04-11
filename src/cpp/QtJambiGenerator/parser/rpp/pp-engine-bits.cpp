@@ -188,7 +188,7 @@ QFileInfo rpp::pp::find_include_file(QString const &p_input_filename,
     }
 
     QDir curentPath = env.current_file.isDir() ? QDir(env.current_file.absoluteFilePath()) : env.current_file.dir();
-    for(QDir path : include_paths){
+    for(QDir path : qAsConst(include_paths)){
         if(p_skip_current_path && path==curentPath)
             continue;
 #ifdef Q_OS_MAC

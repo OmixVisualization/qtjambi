@@ -45,9 +45,52 @@
 
 static const char* GLOBAL_PACKAGE = "package_global";
 
-static QString strip_template_args(const QString &name) {
+inline QString strip_template_args(const QString &name) {
     auto pos = name.indexOf('<');
     return pos < 0 ? name : name.left(pos);
+}
+
+inline void hide_functions(const MetaFunctionList &l) {
+    for(MetaFunction *f : l) {
+        if(!f->declaringClass()->isInterface()
+                && !f->isAbstract()
+                && f->name().startsWith("operator_")){
+            FunctionModification mod;
+            mod.signature = f->minimalSignature();
+            if(f->implementingClass()->isInterface())
+                mod.modifiers = FunctionModification::Friendly;
+            else
+                mod.modifiers = FunctionModification::Private;
+            const_cast<ComplexTypeEntry *>(static_cast<const ComplexTypeEntry *>(f->implementingClass()->typeEntry()))->addFunctionModification(mod);
+        }
+    }
+}
+
+inline void remove_function(MetaFunction *f) {
+    FunctionModification mod;
+    mod.removal = TS::All;
+    mod.signature = f->minimalSignature();
+    const_cast<ComplexTypeEntry *>(static_cast<const ComplexTypeEntry *>(f->implementingClass()->typeEntry()))->addFunctionModification(mod);
+}
+
+template<typename Functor>
+void applyOnType(ComplexTypeEntry* type, Functor&& functor){
+    functor(type);
+    for(const ComplexTypeEntry* ins : type->instantiations()){
+        functor(const_cast<ComplexTypeEntry*>(ins));
+    }
+    if(type->designatedInterface()){
+        functor(type->designatedInterface());
+        for(const ComplexTypeEntry* ins : type->designatedInterface()->instantiations()){
+            functor(const_cast<ComplexTypeEntry*>(ins));
+        }
+    }else if(type->isInterface()){
+        InterfaceTypeEntry* itype = dynamic_cast<InterfaceTypeEntry*>(type);
+        functor(itype->origin());
+        for(const ComplexTypeEntry* ins : itype->origin()->instantiations()){
+            functor(const_cast<ComplexTypeEntry*>(ins));
+        }
+    }
 }
 
 const QString &MetaBuilder::generateTypeSystemQML() const
@@ -577,8 +620,10 @@ bool MetaBuilder::build(FileModelItem&& dom) {
                     constructor->setOriginalName(constructor->name());
                     if(cls->usingPublicBaseConstructors()){
                         constructor->setVisibility(MetaAttributes::Public);
+                        applyOnType(cls->typeEntry(), [](auto c){c->setHasPublicDefaultConstructor();});
                     }else{
                         constructor->setVisibility(MetaAttributes::Protected);
+                        applyOnType(cls->typeEntry(), [](auto c){c->setHasProtectedDefaultConstructor();});
                     }
                     cls->addFunction(constructor);
                 }
@@ -588,7 +633,11 @@ bool MetaBuilder::build(FileModelItem&& dom) {
 
     fixMissingIterator();
 
+    for(MetaClass *cls : qAsConst(m_templates)) {
+        setupConstructorAvailability(cls);
+    }
     for(MetaClass *cls : qAsConst(m_meta_classes)) {
+        setupConstructorAvailability(cls);
         fixFunctions(cls);
     }
 
@@ -714,13 +763,11 @@ bool MetaBuilder::build(FileModelItem&& dom) {
     for(MetaClass *cls : qAsConst(m_templates)) {
         setupEquals(cls);
         setupComparable(cls);
-        setupClonable(cls);
         setupBeginEnd(cls);
     }
     for(MetaClass *cls : qAsConst(m_meta_classes)) {
         setupEquals(cls);
         setupComparable(cls);
-        setupClonable(cls);
         setupBeginEnd(cls);
     }
     dumpLog();
@@ -3533,12 +3580,20 @@ MetaEnum *MetaBuilder::traverseEnum(EnumModelItem enum_item, MetaClass *enclosin
     }
     if(!enum_item->requiredFeatures().isEmpty()){
         QStringList ppConditions;
-        if(!meta_enum->typeEntry()->ppCondition().isEmpty()){
+        if(!meta_enum->typeEntry()->ppCondition().isEmpty())
             ppConditions << meta_enum->typeEntry()->ppCondition();
-        }
+        if (m_current_class && !m_current_class->typeEntry()->ppCondition().isEmpty())
+            ppConditions << m_current_class->typeEntry()->ppCondition();
         for(const QString& feature : enum_item->requiredFeatures()){
             ppConditions << QString("QT_CONFIG(%1)").arg(feature);
         }
+        ppConditions.removeDuplicates();
+        static_cast<EnumTypeEntry *>(type_entry)->setPPCondition(ppConditions.join(" && "));
+    }else if (m_current_class && !m_current_class->typeEntry()->ppCondition().isEmpty()){
+        QStringList ppConditions;
+        ppConditions << m_current_class->typeEntry()->ppCondition();
+        if(!meta_enum->typeEntry()->ppCondition().isEmpty())
+            ppConditions << meta_enum->typeEntry()->ppCondition();
         ppConditions.removeDuplicates();
         static_cast<EnumTypeEntry *>(type_entry)->setPPCondition(ppConditions.join(" && "));
     }
@@ -3720,6 +3775,8 @@ MetaClass *MetaBuilder::traverseClass(ClassModelItem class_item, QList<PendingCl
             type->setQCoreApplication(true);
         }else if(full_class_name==QLatin1String("QAction")){
             type->setQAction(true);
+        }else if(full_class_name==QLatin1String("QMediaControl")){
+            type->setQMediaControl(true);
         }
     }
 
@@ -3858,6 +3915,8 @@ MetaClass *MetaBuilder::traverseClass(ClassModelItem class_item, QList<PendingCl
                             instantiation->setQAction(true);
                         }else if(meta_class->typeEntry()->isQCoreApplication()){
                             instantiation->setQCoreApplication(true);
+                        }else if(meta_class->typeEntry()->isQMediaControl()){
+                            instantiation->setQMediaControl(true);
                         }
                     }
                 }
@@ -3965,30 +4024,67 @@ void MetaBuilder::traverseFields(ScopeModelItem scope_item) {
         MetaField *meta_field = traverseField(field);
 
         if (meta_field) {
+            if(meta_field->type()->isPointerContainer()){
+                if(field->type().toString().startsWith("QScopedPointer<")
+                        || field->type().toString().startsWith("QScopedArrayPointer<")
+                        || field->type().toString().startsWith("std::unique_ptr<")){
+                    if(!m_current_class->typeEntry()->hasPrivateCopyConstructor()
+                        && !m_current_class->typeEntry()->hasProtectedCopyConstructor()
+                        && !m_current_class->typeEntry()->hasPublicCopyConstructor()){
+                        applyOnType(m_current_class->typeEntry(), [](auto c){c->setHasPrivateCopyConstructor();});
+                    }
+                    if(!m_current_class->typeEntry()->hasPrivateMoveConstructor()
+                        && !m_current_class->typeEntry()->hasProtectedMoveConstructor()
+                        && !m_current_class->typeEntry()->hasPublicMoveConstructor()){
+                        applyOnType(m_current_class->typeEntry(), [](auto c){c->setHasPrivateMoveConstructor();});
+                    }
+                }
+            }
             meta_field->setOriginalAttributes(meta_field->attributes());
             if(m_current_class){
                 if(m_current_class->typeEntry()->designatedInterface()){
                     m_current_class->extractInterface()->addField(meta_field);
+                    if(meta_field->isPublic()){
+                        applyOnType(m_current_class->typeEntry(), [](auto c){c->setHasFields();});
+                    }else{
+                        applyOnType(m_current_class->typeEntry(), [](auto c){c->setHasNonPublicFields();});
+                    }
                 }else{
                     m_current_class->addField(meta_field);
+                    if(meta_field->isPublic()){
+                        applyOnType(m_current_class->typeEntry(), [](auto c){c->setHasFields();});
+                    }else{
+                        applyOnType(m_current_class->typeEntry(), [](auto c){c->setHasNonPublicFields();});
+                    }
                 }
             }else{
                 m_rejected_fields.insert({meta_field->name(), field->fileName()}, IsGlobal);
+            }
+        }else{
+            if(m_current_class){
+                applyOnType(m_current_class->typeEntry(), [](auto c){c->setHasFields();});
+                if (field->accessPolicy() != CodeModel::Public)
+                    applyOnType(m_current_class->typeEntry(), [](auto c){c->setHasNonPublicFields();});
+                if(field->type().toString().startsWith("QScopedPointer<")
+                        || field->type().toString().startsWith("QScopedArrayPointer<")
+                        || field->type().toString().startsWith("std::unique_ptr<")){
+                    if(!m_current_class->typeEntry()->hasPrivateCopyConstructor()
+                        && !m_current_class->typeEntry()->hasProtectedCopyConstructor()
+                        && !m_current_class->typeEntry()->hasPublicCopyConstructor()){
+                        applyOnType(m_current_class->typeEntry(), [](auto c){c->setHasPrivateCopyConstructor();});
+                    }
+                    if(!m_current_class->typeEntry()->hasPrivateMoveConstructor()
+                        && !m_current_class->typeEntry()->hasProtectedMoveConstructor()
+                        && !m_current_class->typeEntry()->hasPublicMoveConstructor()){
+                        applyOnType(m_current_class->typeEntry(), [](auto c){c->setHasPrivateMoveConstructor();});
+                    }
+                }
             }
         }
     }
 }
 
 void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
-    // if there are just private constructors avoid generating the shell class
-    bool hasPrivateConstructors = false;
-    bool hasJustPrivateConstructors = false;
-    // detect virtual destructor
-    bool hasVirtualDestructor = false;
-    // information about public descructor is required to detect the deletable supertype of a class
-    bool hasPublicDestructor = true;
-    // if there is a private descructor don't generate shell class
-    bool hasPrivateDestructor = false;
     // if there is a pure virtual function which is private don't generate shell class
     QSet<QString> unimplementablePureVirtualFunctions;
 
@@ -4221,30 +4317,32 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                     }
                 }
                 if(meta_function->isDestructor()){
-                    hasVirtualDestructor = function_item->isVirtual() && !function_item->isDeleted();
-                    hasPrivateDestructor = meta_function->isPrivate() || function_item->isDeleted();
-                    hasPublicDestructor = meta_function->isPublic() && !function_item->isDeleted();
-                    if(function_item->isDeleted() || meta_function->isPrivate()){
-                        targetClass->typeEntry()->setDestructorPrivate();
-                    }else if(meta_function->isProtected()){
-                        targetClass->typeEntry()->setDestructorProtected();
+                    if(function_item->isDeleted() || (function_item->accessPolicy() & CodeModel::Private)){
+                        applyOnType(targetClass->typeEntry(), [](auto c){c->setDestructorPrivate();});
+                    }else if(function_item->accessPolicy() & CodeModel::Protected){
+                        applyOnType(targetClass->typeEntry(), [](auto c){c->setDestructorProtected();});
                     }
                     if(function_item->isVirtual())
-                        targetClass->typeEntry()->setDestructorVirtual();
+                        applyOnType(targetClass->typeEntry(), [](auto c){c->setDestructorVirtual();});
+                    delete meta_function;
+                    meta_function = nullptr;
+                    continue;
                 }else if(meta_function->isConstructor()){
-                    if(meta_function->isInvalid() || meta_function->isPrivate() || function_item->isDeleted()){
-                        if(!targetClass->typeEntry()->hasAnyConstructor(false))
-                            targetClass->typeEntry()->setHasAnyConstructor(false);
-                    }else{
-                        bool isDefaultConstructor = false;
-                        bool isCopyConstructor = false;
-                        bool isMoveConstructor = false;
+                    bool isDefaultConstructor = false;
+                    bool isCopyConstructor = false;
+                    bool isMoveConstructor = false;
+                    if(!meta_function->isInvalid()){
                         const MetaArgumentList& arguments = meta_function->arguments();
                         if(arguments.isEmpty()){
                             isDefaultConstructor = true;
                         }else if(arguments.size()==1){
                             MetaArgument* arg = arguments[0];
-                            if(arg->type()->typeEntry()==targetClass->typeEntry() && arg->type()->indirections().isEmpty()){
+                            isDefaultConstructor = !arg->originalDefaultValueExpression().isEmpty();
+                            if(!isDefaultConstructor
+                                    && (arg->type()->typeEntry()==targetClass->typeEntry()
+                                        || arg->type()->typeEntry()==targetClass->typeEntry()->designatedInterface()
+                                        || arg->type()->typeEntry()->designatedInterface()==targetClass->typeEntry())
+                                    && arg->type()->indirections().isEmpty()){
                                 if(arg->type()->isConstant() && arg->type()->getReferenceType()==MetaType::Reference){
                                     isCopyConstructor = true;
                                 }else if(!arg->type()->isConstant() && arg->type()->getReferenceType()==MetaType::RReference){
@@ -4260,20 +4358,60 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                                 }
                             }
                         }
-                        if(!targetClass->typeEntry()->hasAnyConstructor(true))
-                            targetClass->typeEntry()->setHasAnyConstructor(true);
-                        if(isDefaultConstructor)
-                            targetClass->typeEntry()->setHasDefaultConstructor(meta_function->isPublic());
-                        else if(isCopyConstructor)
-                            targetClass->typeEntry()->setHasCopyConstructor(meta_function->isPublic());
-                        else if(isMoveConstructor)
-                            targetClass->typeEntry()->setHasMoveConstructor(meta_function->isPublic());
                     }
-                    hasPrivateConstructors |= meta_function->isInvalid() || meta_function->isPrivate() || function_item->isDeleted();
+                    if((function_item->accessPolicy() & CodeModel::Private) || function_item->isDeleted()){
+                        if(isDefaultConstructor){
+                            applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPrivateDefaultConstructor();});
+                        }else if(isCopyConstructor){
+                            applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPrivateCopyConstructor();});
+                        }else if(isMoveConstructor){
+                            applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPrivateMoveConstructor();});
+                        }else{
+                            if(!targetClass->typeEntry()->hasPublicDefaultConstructor()
+                                    && !targetClass->typeEntry()->hasProtectedDefaultConstructor()){
+                                applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPrivateDefaultConstructor();});
+                            }
+                        }
+                    }else if((function_item->accessPolicy() & CodeModel::Protected)){
+                        if(isDefaultConstructor){
+                            applyOnType(targetClass->typeEntry(), [](auto c){c->setHasProtectedDefaultConstructor();});
+                        }else if(isCopyConstructor){
+                            applyOnType(targetClass->typeEntry(), [](auto c){c->setHasProtectedCopyConstructor();});
+                        }else if(isMoveConstructor){
+                            applyOnType(targetClass->typeEntry(), [](auto c){c->setHasProtectedMoveConstructor();});
+                        }else{
+                            if(!targetClass->typeEntry()->hasPublicDefaultConstructor()
+                                    && !targetClass->typeEntry()->hasProtectedDefaultConstructor()){
+                                applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPrivateDefaultConstructor();});
+                            }
+                        }
+                    }else{
+                        if(isDefaultConstructor){
+                            applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPublicDefaultConstructor();});
+                        }else if(isCopyConstructor){
+                            applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPublicCopyConstructor();});
+                        }else if(isMoveConstructor){
+                            applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPublicMoveConstructor();});
+                        }else{
+                            if(!targetClass->typeEntry()->hasPublicDefaultConstructor()
+                                    && !targetClass->typeEntry()->hasProtectedDefaultConstructor()){
+                                applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPrivateDefaultConstructor();});
+                            }
+                        }
+                    }
+                    if(meta_function->isInvalid() || (function_item->accessPolicy() & CodeModel::Private) || function_item->isDeleted()){
+                        if(!targetClass->typeEntry()->hasPrivateConstructors()){
+                            applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPrivateConstructors();});
+                        }
+                    }else{
+                        if(!targetClass->typeEntry()->hasNonPrivateConstructors()){
+                            applyOnType(targetClass->typeEntry(), [](auto c){c->setHasNonPrivateConstructors();});
+                        }
+                    }
                 }else if((/*meta_function->isPrivate() ||*/ meta_function->isInvalid()) && meta_function->isAbstract()){
                     ReportHandler::warning("Unimplementable pure virtual function: "+targetClass->qualifiedCppName()+"::"+_function_name);
                     unimplementablePureVirtualFunctions << meta_function->signature();
-                }else if(!(meta_function->isInvalid() || meta_function->isPrivate() || function_item->isDeleted())){
+                }else if(!meta_function->isInvalid()){
                     if(meta_function->operatorType()==OperatorType::Assign){
                         bool isDefaultAssignment = false;
                         bool isMoveAssignment = false;
@@ -4288,16 +4426,29 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                                 }
                             }
                         }
-                        if(isDefaultAssignment)
-                            targetClass->typeEntry()->setHasDefaultAssignment(meta_function->isPublic());
-                        else if(isMoveAssignment)
-                            targetClass->typeEntry()->setHasMoveAssignment(meta_function->isPublic());
+                        if(meta_function->isPrivate() || function_item->isDeleted()){
+                            if(isDefaultAssignment)
+                                applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPrivateDefaultAssignment();});
+                            else if(isMoveAssignment)
+                                applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPrivateMoveAssignment();});
+                        }else if(meta_function->isProtected()){
+                            if(isDefaultAssignment)
+                                applyOnType(targetClass->typeEntry(), [](auto c){c->setHasProtectedDefaultAssignment();});
+                            else if(isMoveAssignment)
+                                applyOnType(targetClass->typeEntry(), [](auto c){c->setHasProtectedMoveAssignment();});
+                        }else{
+                            if(isDefaultAssignment)
+                                applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPublicDefaultAssignment();});
+                            else if(isMoveAssignment)
+                                applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPublicMoveAssignment();});
+                        }
                     }else if((meta_function->operatorType()==OperatorType::Equals
                                  || meta_function->operatorType()==OperatorType::NotEquals)
                             && meta_function->arguments().size()==1){
                         MetaArgument* arg = meta_function->arguments()[0];
                         if(arg->type()->typeEntry()==targetClass->typeEntry() && arg->type()->indirections().isEmpty()
-                                && arg->type()->isConstant() && arg->type()->getReferenceType()==MetaType::Reference){
+                                && arg->type()->isConstant() && arg->type()->getReferenceType()==MetaType::Reference
+                                && !meta_function->isPrivate() && !function_item->isDeleted()){
                             targetClass->typeEntry()->setHasEquals();
                         }
                     }
@@ -4624,7 +4775,6 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                             if (MetaClass *cls = argumentToClass(arguments.at(0)->type())) {
                                 addInclude(cls->typeEntry(), function_item->fileName(), true);
                                 cls->typeEntry()->setHasHash();
-                                cls->setHasHashFunction(true);
                                 cls->setNeedsHashWorkaround(isWorkaround);
                                 cls->setQHashScope(m_current_class ? m_current_class->qualifiedCppName() : QString{});
                                 skip = true;
@@ -4808,13 +4958,6 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
         }
     }
     if(m_current_class){
-        if(hasPrivateConstructors){
-            MetaFunctionList functions = m_current_class->queryFunctions(MetaClass::Constructors);
-            // do not generate derived class when only copy constructor is available
-            if(functions.isEmpty() || (functions.size()==1 && functions.at(0)->isCopyConstructor())){
-                hasJustPrivateConstructors = true;
-            }
-        }
         // remove duplicates by rvalue
         for(MetaFunction *meta_function : qAsConst(rValueFunctions)){
             for(MetaFunction * other : m_current_class->functions()){
@@ -4957,33 +5100,30 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                 }
             }
         }
-        if(hasJustPrivateConstructors || hasPrivateDestructor){
+        if(m_current_class->typeEntry()->hasJustPrivateConstructors() || m_current_class->typeEntry()->isDestructorPrivate()){
             *m_current_class += MetaAttributes::Final;
         }
-        m_current_class->setHasPublicDestructor(hasPublicDestructor);
-        m_current_class->setHasPrivateDestructor(hasPrivateDestructor);
-        m_current_class->setHasVirtualDestructor(hasVirtualDestructor);
-        m_current_class->setHasJustPrivateConstructors(hasJustPrivateConstructors);
+        if(m_current_class->typeEntry()->isDestructorVirtual())
+            m_current_class->setHasVirtuals(true);
+        m_current_class->setHasJustPrivateConstructors(m_current_class->typeEntry()->hasJustPrivateConstructors());
         m_current_class->setUnimplmentablePureVirtualFunctions(unimplementablePureVirtualFunctions);
         if(m_current_class->isInterface()){
             MetaClass *ifaceImpl = m_current_class->extractInterfaceImpl();
-            if(hasJustPrivateConstructors || hasPrivateDestructor){
+            if(m_current_class->typeEntry()->hasJustPrivateConstructors() || m_current_class->typeEntry()->isDestructorPrivate()){
                 *ifaceImpl += MetaAttributes::Final;
             }
-            ifaceImpl->setHasPublicDestructor(hasPublicDestructor);
-            ifaceImpl->setHasPrivateDestructor(hasPrivateDestructor);
-            ifaceImpl->setHasVirtualDestructor(hasVirtualDestructor);
-            ifaceImpl->setHasJustPrivateConstructors(hasJustPrivateConstructors);
+            if(m_current_class->typeEntry()->isDestructorVirtual())
+                ifaceImpl->setHasVirtuals(true);
+            ifaceImpl->setHasJustPrivateConstructors(m_current_class->typeEntry()->hasJustPrivateConstructors());
             ifaceImpl->setUnimplmentablePureVirtualFunctions(unimplementablePureVirtualFunctions);
         }else if(m_current_class->typeEntry()->designatedInterface()){
             MetaClass *iface = m_current_class->extractInterface();
-            if(hasJustPrivateConstructors || hasPrivateDestructor){
+            if(m_current_class->typeEntry()->hasJustPrivateConstructors() || m_current_class->typeEntry()->isDestructorPrivate()){
                 *iface += MetaAttributes::Final;
             }
-            iface->setHasPublicDestructor(hasPublicDestructor);
-            iface->setHasPrivateDestructor(hasPrivateDestructor);
-            iface->setHasVirtualDestructor(hasVirtualDestructor);
-            iface->setHasJustPrivateConstructors(hasJustPrivateConstructors);
+            if(m_current_class->typeEntry()->isDestructorVirtual())
+                iface->setHasVirtuals(true);
+            iface->setHasJustPrivateConstructors(m_current_class->typeEntry()->hasJustPrivateConstructors());
             iface->setUnimplmentablePureVirtualFunctions(unimplementablePureVirtualFunctions);
         }
     }
@@ -5224,6 +5364,7 @@ void MetaBuilder::fixFunctions(MetaClass * cls) {
                         MetaField *new_field = field->copy();
                         new_field->setEnclosingClass(cls);
                         cls->addField(new_field);
+                        cls->typeEntry()->setHasNonPublicFields();
                     }
                 }
             }else{
@@ -5478,8 +5619,6 @@ void MetaBuilder::fixFunctions(MetaClass * cls) {
             iface_idx++;
     }
 
-    bool hasPrivateConstructors = false;
-    bool hasPublicConstructors = false;
     for(MetaFunction *func : funcs) {
         FunctionModificationList mods = func->modifications(cls);
         for(const FunctionModification &mod : mods) {
@@ -5493,19 +5632,12 @@ void MetaBuilder::fixFunctions(MetaClass * cls) {
             (*cls) += MetaAttributes::Abstract;
             (*cls) -= MetaAttributes::Final;
         }
-
-        if (func->isConstructor()) {
-            if (func->isPrivate())
-                hasPrivateConstructors = true;
-            else
-                hasPublicConstructors = true;
-        }
     }
 
-    if (hasPrivateConstructors && !hasPublicConstructors) {
+    /*if (cls->typeEntry()->hasJustPrivateConstructors()) {
         (*cls) += MetaAttributes::Abstract;
         (*cls) -= MetaAttributes::Final;
-    }
+    }*/
 
     for(MetaFunction *f1 : funcs) {
         for(MetaFunction *f2 : funcs) {
@@ -5536,9 +5668,6 @@ void MetaBuilder::fixFunctions(MetaClass * cls) {
 
     if (!cls->typeEntry()) {
         ReportHandler::warning(QString("class '%1' does not have an entry in the type system").arg(cls->name()));
-    } else {
-        if (!cls->hasConstructors() && !cls->isFinalInCpp() && !cls->isInterface() && !cls->isNamespace())
-            cls->addDefaultConstructor();
     }
 
     if (cls->isAbstract() && !cls->isInterface()) {
@@ -5876,14 +6005,9 @@ MetaClass * MetaBuilder::instantiateIterator(IteratorTypeEntry *iteratorTypeEntr
             instantiationClass->setTypeEntry(newIteratorTypeEntry);
             instantiationClass->setAttributes(iteratorClass->attributes());
             instantiationClass->setOriginalAttributes(iteratorClass->originalAttributes());
-            instantiationClass->setHasCloneOperator(iteratorClass->hasCloneOperator());
             instantiationClass->setHasEqualsOperator(iteratorClass->hasEqualsOperator());
-            instantiationClass->setHasHashFunction(iteratorClass->hasHashFunction());
             instantiationClass->setHasJustPrivateConstructors(iteratorClass->hasJustPrivateConstructors());
-            instantiationClass->setHasPrivateDestructor(iteratorClass->hasPrivateDestructor());
-            instantiationClass->setHasVirtualDestructor(iteratorClass->hasVirtualDestructor());
             instantiationClass->setUnimplmentablePureVirtualFunctions(iteratorClass->unimplmentablePureVirtualFunctions());
-            instantiationClass->setHasPublicDestructor(iteratorClass->hasPublicDestructor());
             instantiationClass->setToStringCapability(iteratorClass->toStringCapability());
             instantiationClass->setHasVirtuals(iteratorClass->hasVirtuals());
             instantiationClass->setHasVirtualSlots(iteratorClass->hasVirtualSlots());
@@ -6299,7 +6423,7 @@ MetaFunction *MetaBuilder::traverseFunction(FunctionModelItem function_item, con
 
         ArgumentModification argumentModification(int(meta_arguments.size()+1));
 
-        if(m_current_class && m_current_class->typeEntry()->isValue() &&
+        /*if(m_current_class && m_current_class->typeEntry()->isComplex() &&
                 arguments.size()==1 &&
                 argumentType->getReferenceType()==MetaType::Reference &&
                 !argumentType->isConstant() &&
@@ -6307,7 +6431,7 @@ MetaFunction *MetaBuilder::traverseFunction(FunctionModelItem function_item, con
                 meta_function->name()=="swap"){
             argumentType->setTypeUsagePattern(MetaType::ValuePattern);
             argumentModification.no_null_pointers = true;
-        }
+        }*/
         if(m_database->isPixmapType(argumentType->typeEntry())){
             argumentModification.thread_affine = ThreadAffinity::Pixmap;
         }
@@ -7401,7 +7525,6 @@ void MetaBuilder::fixMissingIterator(){
 
 void MetaBuilder::decideUsagePattern(MetaType *meta_type) {
     const TypeEntry *type = meta_type->typeEntry();
-
     if(meta_type->getReferenceType()==MetaType::RReference){
         meta_type->setTypeUsagePattern(MetaType::RValuePattern);
 
@@ -7589,7 +7712,7 @@ void MetaBuilder::decideUsagePattern(MetaType *meta_type) {
 QString MetaBuilder::translateDefaultValue(const QString& defaultValueExpression, MetaType *type,
         MetaFunction *fnc, MetaClass *implementing_class,
         int argument_index) {
-    QString function_name = fnc->name();
+    //QString function_name = fnc->name();
     QString class_name;
     QString replaced_expression;
     if(implementing_class){
@@ -7605,7 +7728,7 @@ QString MetaBuilder::translateDefaultValue(const QString& defaultValueExpression
     QString expr = defaultValueExpression;
     if(type->isTemplateArgument()){
         return expr;
-    }else if (type->isPrimitive()) {
+    }else if (type->isPrimitive() || type->isQChar()) {
         if (type->name() == "boolean") {
             if (expr == "false" || expr == "true") {
                 return expr;
@@ -7619,17 +7742,23 @@ QString MetaBuilder::translateDefaultValue(const QString& defaultValueExpression
                 else
                     return "false";
             }
+        } else if (expr == "QChar()") {
+            return "'\\0'";
         } else if (expr == "ULONG_MAX") {
             return "Long.MAX_VALUE";
         } else if (expr.startsWith("u'") && expr.endsWith("'")) {
             return expr.mid(1);
+        } else if (expr.startsWith("QChar(u'") && expr.endsWith("')")) {
+            return expr.chopped(1).mid(7);
+        } else if (expr.startsWith("QChar('") && expr.endsWith("')")) {
+            return expr.chopped(1).mid(6);
         } else if (expr.startsWith("QLatin1Char('") && expr.endsWith("')")) {
             return expr.chopped(1).mid(12);
         } else if (expr == "QVariant::Invalid") {
             return "0";
         } else {
             if(expr == type->name()+"()" || expr == "{}"){
-                return "0";
+                return type->isQChar() ? "'\\0'" : "0";
             }
             // This can be an enum or flag so I need to delay the
             // translation untill all namespaces are completly
@@ -7678,7 +7807,14 @@ QString MetaBuilder::translateDefaultValue(const QString& defaultValueExpression
             TypeEntry *typeEntry = m_database->findType(expr.left(expr.indexOf("::")));
             if (typeEntry)
                 return typeEntry->qualifiedTargetLangName().replace("$", ".") + "." + expr.right(expr.length() - expr.indexOf("::") - 2);
-        } else if (expr.endsWith(")") && type->isValue()) {
+        } else if (expr.endsWith(")") && type->typeEntry()->isComplex()
+                   && !(type->typeEntry()->isContainer()
+                        || type->typeEntry()->isQChar()
+                        || type->isQString()
+                        || type->isCharString()
+                        || type->isQStringView()
+                        || type->isQAnyStringView()
+                        || type->isQUtf8StringView())) {
             auto pos = expr.indexOf("(");
 
             TypeEntry *typeEntry = m_database->findType(expr.left(pos));
@@ -7727,7 +7863,7 @@ QString MetaBuilder::translateDefaultValue(const QString& defaultValueExpression
                 expr = "\"" + expr + "\"";
             }
             return expr;
-        } else if (type->isObject() || type->isValue() || expr.contains("::")) { // like Qt::black passed to a QColor
+        } else if ((type->typeEntry()->isComplex() && !type->typeEntry()->isContainer() && !type->typeEntry()->isQChar()) || expr.contains("::")) { // like Qt::black passed to a QColor
             if(type->isObject() && expr == type->name()+"()"){
                 return "null";
             }
@@ -8265,6 +8401,8 @@ void MetaBuilder::inheritHiddenBaseType(MetaClass *subclass, const MetaClass *hi
         }
         f->setEnclosingClass(subclass);
         subclass->addField(f);
+        if(!f->isPublic())
+            subclass->typeEntry()->setHasNonPublicFields();
     }
 
     if(hidden_base_class->typeEntry()->qualifiedCppName()=="QStack"
@@ -8295,9 +8433,6 @@ void MetaBuilder::inheritHiddenBaseType(MetaClass *subclass, const MetaClass *hi
         }
     }
     subclass->setHasJustPrivateConstructors(hidden_base_class->hasJustPrivateConstructors());
-    subclass->setHasPublicDestructor(hidden_base_class->hasPublicDestructor());
-    subclass->setHasVirtualDestructor(hidden_base_class->hasVirtualDestructor());
-    subclass->setHasPrivateDestructor(hidden_base_class->hasPrivateDestructor());
 }
 
 void MetaBuilder::parseQ_Property(MetaClass *meta_class, const QStringList &declarations) {
@@ -8567,29 +8702,6 @@ void MetaBuilder::parseQ_Property(MetaClass *meta_class, const QStringList &decl
     }
 }
 
-static void hide_functions(const MetaFunctionList &l) {
-    for(MetaFunction *f : l) {
-        if(!f->declaringClass()->isInterface()
-                && !f->isAbstract()
-                && f->name().startsWith("operator_")){
-            FunctionModification mod;
-            mod.signature = f->minimalSignature();
-            if(f->implementingClass()->isInterface())
-                mod.modifiers = FunctionModification::Friendly;
-            else
-                mod.modifiers = FunctionModification::Private;
-            const_cast<ComplexTypeEntry *>(static_cast<const ComplexTypeEntry *>(f->implementingClass()->typeEntry()))->addFunctionModification(mod);
-        }
-    }
-}
-
-static void remove_function(MetaFunction *f) {
-    FunctionModification mod;
-    mod.removal = TS::All;
-    mod.signature = f->minimalSignature();
-    const_cast<ComplexTypeEntry *>(static_cast<const ComplexTypeEntry *>(f->implementingClass()->typeEntry()))->addFunctionModification(mod);
-}
-
 static MetaFunctionList filter_functions(const MetaFunctionList &lst, QSet<QString> *signatures) {
     MetaFunctionList functions;
     for(MetaFunction *f : lst) {
@@ -8669,7 +8781,11 @@ void MetaBuilder::setupEquals(MetaClass *cls) {
     }
 
     if (equals.size() || nequals.size()) {
-        if (!cls->hasHashFunction() && cls->typeEntry()->isValue() && cls->typeEntry()->codeGeneration()==TypeEntry::GenerateAll) {
+        if (!cls->hasHashFunction()
+                && cls->typeEntry()->hasEquals()
+                && cls->typeEntry()->codeGeneration()==TypeEntry::GenerateAll
+                && (cls->typeEntry()->isValue()
+                    || (cls->typeEntry()->hasPublicDefaultConstructor() && cls->typeEntry()->hasPublicCopyConstructor() && cls->typeEntry()->isDestructorPublic()))) {
             ReportHandler::warning(QString::fromLatin1("Class '%1' has equals operators but no qHash() function. Hashcode of objects will consistently be 0.")
                                    .arg(cls->qualifiedCppName()));
         }
@@ -8778,23 +8894,71 @@ void MetaBuilder::setupComparable(MetaClass *cls) {
 
 }
 
-void MetaBuilder::setupClonable(MetaClass *cls) {
-    // All value types are required to have a copy constructor,
-    // or they will not work as value types (it won't even compile,
-    // because of calls to qRegisterMetaType(). Thus all value types
-    // should be cloneable.
-    if (cls->typeEntry()->isValue()) {
-        MetaFunctionList functions = cls->queryFunctions(MetaClass::ClassImplements | MetaClass::Public | MetaClass::Constructors);
-        for(MetaFunction *f : functions) {
-            const MetaArgumentList& arguments = f->arguments();
-            if (f->actualMinimumArgumentCount() == 1) {
-                if (cls->typeEntry()->qualifiedCppName() == arguments.at(0)->type()->typeEntry()->qualifiedCppName()) {
-                    remove_function(f);
-                }
+void MetaBuilder::setupConstructorAvailability(MetaClass *meta_class){
+    if(meta_class && meta_class->isInterface())
+        meta_class = meta_class->extractInterfaceImpl();
+    if(meta_class && !meta_class->isNamespace()){
+        bool hasSuperClasses = false;
+        bool inheritingPublicDefaultConstructor = true;
+        bool inheritingPublicCopyConstructor = true;
+        bool inheritingPublicMoveConstructor = true;
+        bool inheritingPublicDefaultAssignment = true;
+        bool inheritingPublicMoveAssignment = true;
+        if(meta_class->baseClass()){
+            hasSuperClasses = true;
+            setupConstructorAvailability(meta_class->baseClass());
+            inheritingPublicDefaultConstructor &= meta_class->baseClass()->typeEntry()->hasPublicDefaultConstructor();
+            inheritingPublicCopyConstructor &= meta_class->baseClass()->typeEntry()->hasPublicCopyConstructor();
+            inheritingPublicMoveConstructor &= meta_class->baseClass()->typeEntry()->hasPublicMoveConstructor();
+            inheritingPublicDefaultAssignment &= meta_class->baseClass()->typeEntry()->hasPublicDefaultAssignment();
+            inheritingPublicMoveAssignment &= meta_class->baseClass()->typeEntry()->hasPublicMoveAssignment();
+        }
+        for(MetaClass * ifc : meta_class->interfaces()){
+            if(ifc->extractInterfaceImpl()!=meta_class){
+                hasSuperClasses = true;
+                setupConstructorAvailability(ifc);
+                inheritingPublicDefaultConstructor &= ifc->typeEntry()->hasPublicDefaultConstructor();
+                inheritingPublicCopyConstructor &= ifc->typeEntry()->hasPublicCopyConstructor();
+                inheritingPublicMoveConstructor &= ifc->typeEntry()->hasPublicMoveConstructor();
+                inheritingPublicDefaultAssignment &= ifc->typeEntry()->hasPublicDefaultAssignment();
+                inheritingPublicMoveAssignment &= ifc->typeEntry()->hasPublicMoveAssignment();
             }
         }
-        cls->setHasCloneOperator(true);
-        return;
+        if(inheritingPublicDefaultConstructor
+                && !meta_class->typeEntry()->hasPublicDefaultConstructor()
+                && !meta_class->typeEntry()->hasPrivateDefaultConstructor()
+                && !meta_class->typeEntry()->hasProtectedDefaultConstructor()
+                && meta_class->typeEntry()->isDestructorPublic()){
+            meta_class->addDefaultConstructor();
+            applyOnType(meta_class->typeEntry(), [](auto c){c->setHasPublicDefaultConstructor();});
+        }
+        if(inheritingPublicCopyConstructor
+                && !meta_class->typeEntry()->hasPublicCopyConstructor()
+                && !meta_class->typeEntry()->hasPrivateCopyConstructor()
+                && !meta_class->typeEntry()->hasProtectedCopyConstructor()
+                && meta_class->typeEntry()->isDestructorPublic()
+                && (hasSuperClasses || meta_class->typeEntry()->hasFields())){
+            applyOnType(meta_class->typeEntry(), [](auto c){c->setHasPublicCopyConstructor();});
+            if(inheritingPublicMoveConstructor
+                    && !meta_class->typeEntry()->hasPublicMoveConstructor()
+                    && !meta_class->typeEntry()->hasPrivateMoveConstructor()
+                    && !meta_class->typeEntry()->hasProtectedMoveConstructor()){
+                applyOnType(meta_class->typeEntry(), [](auto c){c->setHasPublicMoveConstructor();});
+            }
+        }
+        if(inheritingPublicDefaultAssignment
+                && !meta_class->typeEntry()->hasPublicDefaultAssignment()
+                && !meta_class->typeEntry()->hasProtectedDefaultAssignment()
+                && !meta_class->typeEntry()->hasPrivateDefaultAssignment()
+                && (hasSuperClasses || meta_class->typeEntry()->hasFields())){
+            applyOnType(meta_class->typeEntry(), [](auto c){c->setHasPublicDefaultAssignment();});
+            if(inheritingPublicMoveAssignment
+                    && !meta_class->typeEntry()->hasPublicMoveAssignment()
+                    && !meta_class->typeEntry()->hasProtectedMoveAssignment()
+                    && !meta_class->typeEntry()->hasPrivateMoveAssignment()){
+                applyOnType(meta_class->typeEntry(), [](auto c){c->setHasPublicMoveAssignment();});
+            }
+        }
     }
 }
 

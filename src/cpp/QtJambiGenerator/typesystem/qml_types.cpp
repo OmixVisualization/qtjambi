@@ -500,12 +500,12 @@ void IteratorType::setIsConst(bool newIsConst)
     emit isConstChanged();
 }
 
-bool ValueType::getNoMetaType() const
+bool ComplexType::getNoMetaType() const
 {
     return noMetaType;
 }
 
-void ValueType::setNoMetaType(bool newNoMetaType)
+void ComplexType::setNoMetaType(bool newNoMetaType)
 {
     if (noMetaType == newNoMetaType)
         return;
@@ -550,19 +550,6 @@ void InterfaceType::setIsValue(bool newIsValue)
         return;
     isValue = newIsValue;
     emit isValueChanged();
-}
-
-bool InterfaceType::getNoMetaType() const
-{
-    return noMetaType;
-}
-
-void InterfaceType::setNoMetaType(bool newNoMetaType)
-{
-    if (noMetaType == newNoMetaType)
-        return;
-    noMetaType = newNoMetaType;
-    emit noMetaTypeChanged();
 }
 
 bool InterfaceType::getNoImpl() const

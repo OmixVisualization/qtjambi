@@ -30,7 +30,7 @@ package io.qt.core;
 
 import java.util.Objects;
 
-import io.qt.QtUninvokable;
+import io.qt.*;
 
 abstract class QAbstractPropertyAlias extends QPropertyObserver {
 	
@@ -58,7 +58,7 @@ abstract class QAbstractPropertyAlias extends QPropertyObserver {
 	 * @see QProperty#setBinding(QUntypedPropertyBinding)
 	 */
 	@QtUninvokable
-	public final boolean setBinding(QUntypedPropertyBinding newBinding) {
+	public final boolean setBinding(@StrictNonNull QUntypedPropertyBinding newBinding) {
 		return new QUntypedBindable(aliasedProperty(), iface).setBinding(newBinding);
     }
 	
@@ -72,7 +72,7 @@ abstract class QAbstractPropertyAlias extends QPropertyObserver {
 	 * @see QProperty#onValueChanged(Runnable)
 	 */
 	@QtUninvokable
-	public final QPropertyChangeHandler onValueChanged(Runnable f) {
+	public final @NonNull QPropertyChangeHandler onValueChanged(@StrictNonNull Runnable f) {
         return new QUntypedBindable(aliasedProperty(), iface).onValueChanged(f);
     }
 	
@@ -80,7 +80,7 @@ abstract class QAbstractPropertyAlias extends QPropertyObserver {
 	 * @see QProperty#addNotifier(Runnable)
 	 */    
     @io.qt.QtUninvokable
-    public QPropertyNotifier addNotifier(Runnable f) {
+    public @NonNull QPropertyNotifier addNotifier(@StrictNonNull Runnable f) {
     	return new QUntypedBindable(aliasedProperty(), iface).addNotifier(f);
     }
 
@@ -88,7 +88,7 @@ abstract class QAbstractPropertyAlias extends QPropertyObserver {
 	 * @see QProperty#subscribe(Runnable)
 	 */
 	@QtUninvokable
-	public final QPropertyChangeHandler subscribe(Runnable f) {
+	public final @NonNull QPropertyChangeHandler subscribe(@StrictNonNull Runnable f) {
         f.run();
         return onValueChanged(f);
     }

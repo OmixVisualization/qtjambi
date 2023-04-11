@@ -1010,7 +1010,7 @@ class QSignalSpy__{
     }
 
     /**
-     * @see io.qt.core.QList#append(java.util.Collection)
+     * @see io.qt.core.QList#append(java.lang.Object)
      */
     @QtUninvokable
     public final void append(java.util.Collection<java.util.List<java.lang.Object>> t) {
@@ -1036,7 +1036,7 @@ class QSignalSpy__{
     }
 
     /**
-     * @see io.qt.core.QList#append(java.util.List)
+     * @see io.qt.core.QList#append(java.lang.Object)
      */
     @QtUninvokable
     public final void append(java.util.List<java.lang.Object> t) {
@@ -1096,7 +1096,7 @@ class QSignalSpy__{
     }
 
     /**
-     * @see io.qt.core.QList#count(java.util.List)
+     * @see io.qt.core.QList#count(java.lang.Object)
      */
     @QtUninvokable
     public final int count(java.util.List<java.lang.Object> t) {
@@ -1104,7 +1104,7 @@ class QSignalSpy__{
     }
 
     /**
-     * @see io.qt.core.QList#endsWith(java.util.List)
+     * @see io.qt.core.QList#endsWith(java.lang.Object)
      */
     @QtUninvokable
     public final boolean endsWith(java.util.List<java.lang.Object> t) {
@@ -1120,7 +1120,7 @@ class QSignalSpy__{
     }
 
     /**
-     * @see io.qt.core.QList#indexOf(java.util.List,int)
+     * @see io.qt.core.QList#indexOf(java.lang.Object,int)
      */
     @QtUninvokable
     public final int indexOf(java.util.List<java.lang.Object> t, int from) {
@@ -1128,7 +1128,7 @@ class QSignalSpy__{
     }
 
     /**
-     * @see io.qt.core.QList#insert(int,java.util.List)
+     * @see io.qt.core.QList#insert(int,java.lang.Object)
      */
     @QtUninvokable
     public final void insert(int i, java.util.List<java.lang.Object> t) {
@@ -1162,7 +1162,7 @@ class QSignalSpy__{
     }
 
     /**
-     * @see io.qt.core.QList#lastIndexOf(java.util.List,int)
+     * @see io.qt.core.QList#lastIndexOf(java.lang.Object,int)
      */
     @QtUninvokable
     public final int lastIndexOf(java.util.List<java.lang.Object> t, int from) {
@@ -1202,7 +1202,7 @@ class QSignalSpy__{
     }
 
     /**
-     * @see io.qt.core.QList#prepend(java.util.List)
+     * @see io.qt.core.QList#prepend(java.lang.Object)
      */
     @QtUninvokable
     public final void prepend(java.util.List<java.lang.Object> t) {
@@ -1210,7 +1210,7 @@ class QSignalSpy__{
     }
 
     /**
-     * @see io.qt.core.QList#removeAll(java.util.List)
+     * @see io.qt.core.QList#removeAll(java.lang.Object)
      */
     @QtUninvokable
     public final int removeAll(java.util.List<java.lang.Object> t) {
@@ -1226,7 +1226,7 @@ class QSignalSpy__{
     }
 
     /**
-     * @see io.qt.core.QList#removeOnt(java.util.List)
+     * @see io.qt.core.QList#removeOne(java.lang.Object)
      */
     @QtUninvokable
     public final boolean removeOne(java.util.List<java.lang.Object> t) {
@@ -1234,7 +1234,7 @@ class QSignalSpy__{
     }
 
     /**
-     * @see io.qt.core.QList#replace(int,java.util.List)
+     * @see io.qt.core.QList#replace(int,java.lang.Object)
      */
     @QtUninvokable
     public final void replace(int i, java.util.List<java.lang.Object> t) {
@@ -1259,7 +1259,7 @@ class QSignalSpy__{
     }
 
     /**
-     * @see io.qt.core.QList#startsWith(java.util.List)
+     * @see io.qt.core.QList#startsWith(java.lang.Object)
      */
     @QtUninvokable
     public final boolean startsWith(java.util.List<java.lang.Object> t) {
@@ -1299,7 +1299,7 @@ class QSignalSpy__{
     }
 
     /**
-     * @see io.qt.core.QList#value(int,java.util.List)
+     * @see io.qt.core.QList#value(int,java.lang.Object)
      */
     @QtUninvokable
     public final java.util.List<java.lang.Object> value(int i, java.util.List<java.lang.Object> defaultValue) {
@@ -1485,7 +1485,7 @@ class QSignalSpy_5_{
 
 class QSignalSpy_6_{
     /**
-     * @see io.qt.core.QList#fill(java.util.List)
+     * @see io.qt.core.QList#fill(java.lang.Object)
      */
     @QtUninvokable
     public final void fill(java.util.List<java.lang.Object> t) {
@@ -1493,7 +1493,7 @@ class QSignalSpy_6_{
     }
 
     /**
-     * @see io.qt.core.QList#fill(java.util.List,int)
+     * @see io.qt.core.QList#fill(java.lang.Object,int)
      */
     @QtUninvokable
     public final void fill(java.util.List<java.lang.Object> t, int size) {
@@ -1501,7 +1501,7 @@ class QSignalSpy_6_{
     }
 
     /**
-     * @see io.qt.core.QList#insert(int,int,java.util.List)
+     * @see io.qt.core.QList#insert(int,int,java.lang.Object)
      */
     @QtUninvokable
     public final void insert(int i, int n, java.util.List<java.lang.Object> t) {

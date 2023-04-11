@@ -684,9 +684,12 @@ const std::type_info* getInterfaceTypeForIID(const char*interface_iid)
 
 bool isInterface(const std::type_info& typeId)
 {
-    QReadLocker locker(gLock());
-    Q_UNUSED(locker)
-    return gEntryTypesHash->value(unique_id(typeId), EntryTypes::Unspecific) == EntryTypes::InterfaceTypeInfo;
+    EntryTypes entryType;
+    {
+        QReadLocker locker(gLock());
+        entryType = gEntryTypesHash->value(unique_id(typeId), EntryTypes::Unspecific);
+    }
+    return entryType == EntryTypes::InterfaceTypeInfo || entryType == EntryTypes::InterfaceValueTypeInfo;
 }
 
 bool isQObject(const std::type_info& typeId)

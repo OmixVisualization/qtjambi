@@ -28,8 +28,7 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.QtPrimitiveType;
-import io.qt.QtUninvokable;
+import io.qt.*;
 
 /**
  * QBooleanProperty is primitive-typed version of QProperty&lt;Boolean&gt;.
@@ -61,7 +60,7 @@ public final class QBooleanProperty extends QBooleanPropertyData {
      * Constructs a <code>boolean</code>-typed property with the provided binding.
      * @param binding
      */
-	public QBooleanProperty(QBooleanPropertyBinding binding) {
+	public QBooleanProperty(@StrictNonNull QBooleanPropertyBinding binding) {
 		super();
 		d.setBinding(binding, this);
 	}
@@ -70,7 +69,7 @@ public final class QBooleanProperty extends QBooleanPropertyData {
      * Constructs a <code>boolean</code>-typed property with the provided binding.
      * @param binding
      */
-	public QBooleanProperty(QPropertyBinding<@QtPrimitiveType Boolean> binding) {
+	public QBooleanProperty(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Boolean> binding) {
 		super();
 		if(checkType(binding.valueMetaType()))
 			d.setBinding(binding, this);
@@ -80,7 +79,7 @@ public final class QBooleanProperty extends QBooleanPropertyData {
      * <p>Constructs a <code>boolean</code>-typed property bound to the provided <code>functor</code>.</p>
      * @param functor
      */
-	public QBooleanProperty(java.util.function.BooleanSupplier functor) {
+	public QBooleanProperty(java.util.function.@StrictNonNull BooleanSupplier functor) {
 		this(new QBooleanPropertyBinding(functor));
 	}
 	
@@ -117,7 +116,7 @@ public final class QBooleanProperty extends QBooleanPropertyData {
 	 * @return oldBinding
 	 */
 	@QtUninvokable
-	public QBooleanPropertyBinding setBinding(QBooleanPropertyBinding newBinding)
+	public @NonNull QBooleanPropertyBinding setBinding(@StrictNonNull QBooleanPropertyBinding newBinding)
     {
 		QUntypedPropertyBinding oldBinding = d.setBinding(newBinding, this);
         d.notifyObservers(this);
@@ -137,7 +136,7 @@ public final class QBooleanProperty extends QBooleanPropertyData {
 	 * @return oldBinding
 	 */
     @QtUninvokable
-    public QBooleanPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Boolean> newBinding)
+    public @NonNull QBooleanPropertyBinding setBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Boolean> newBinding)
     {
         if(!io.qt.core.QBooleanProperty.checkType(newBinding.valueMetaType()))
             return new QBooleanPropertyBinding();
@@ -160,7 +159,7 @@ public final class QBooleanProperty extends QBooleanPropertyData {
 	 * @return true if types match, false otherwise.
 	 */
     @QtUninvokable
-    public boolean setBinding(QUntypedPropertyBinding newBinding)
+    public boolean setBinding(@StrictNonNull QUntypedPropertyBinding newBinding)
     {
         if(io.qt.core.QBooleanProperty.checkType(newBinding.valueMetaType())) {
             d.setBinding(newBinding, this);
@@ -179,7 +178,7 @@ public final class QBooleanProperty extends QBooleanPropertyData {
 	 * @return oldBinding
 	 */
 	@QtUninvokable
-	public QBooleanPropertyBinding setBinding(java.util.function.BooleanSupplier functor)
+	public @NonNull QBooleanPropertyBinding setBinding(java.util.function.@StrictNonNull BooleanSupplier functor)
     {
         return setBinding(new QBooleanPropertyBinding(functor));
     }
@@ -203,7 +202,7 @@ public final class QBooleanProperty extends QBooleanPropertyData {
      * @return binding
      */
 	@QtUninvokable
-	public QBooleanPropertyBinding binding()
+	public @NonNull QBooleanPropertyBinding binding()
     {
         return new QBooleanPropertyBinding(this);
     }
@@ -214,7 +213,7 @@ public final class QBooleanProperty extends QBooleanPropertyData {
 	 * @return the removed binding
 	 */
 	@QtUninvokable
-	public QBooleanPropertyBinding takeBinding()
+	public @NonNull QBooleanPropertyBinding takeBinding()
     {
         return new QBooleanPropertyBinding(d.setBinding(new QBooleanPropertyBinding(), this));
     }
@@ -229,7 +228,7 @@ public final class QBooleanProperty extends QBooleanPropertyData {
      * @see QPropertyChangeHandler
      */
 	@QtUninvokable
-	public QPropertyChangeHandler onValueChanged(Runnable f)
+	public @NonNull QPropertyChangeHandler onValueChanged(@StrictNonNull Runnable f)
     {
         return new QPropertyChangeHandler(d, f);
     }
@@ -242,7 +241,7 @@ public final class QBooleanProperty extends QBooleanPropertyData {
      * @see #onValueChanged(Runnable)
 	 */
 	@QtUninvokable
-	public QPropertyChangeHandler subscribe(Runnable f)
+	public @NonNull QPropertyChangeHandler subscribe(@StrictNonNull Runnable f)
     {
         f.run();
         return onValueChanged(f);
@@ -258,7 +257,7 @@ public final class QBooleanProperty extends QBooleanPropertyData {
      * @see QPropertyNotifier
      */
     @io.qt.QtUninvokable
-    public QPropertyNotifier addNotifier(Runnable f)
+    public @NonNull QPropertyNotifier addNotifier(@StrictNonNull Runnable f)
     {
         return new QPropertyNotifier(d, f);
     }

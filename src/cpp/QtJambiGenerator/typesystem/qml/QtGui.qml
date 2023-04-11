@@ -14278,6 +14278,14 @@ TypeSystem{
                 fileName: "QtJambi/CoreAPI"
                 location: Include.Global
             }
+            Include{
+                fileName: "QtJambi/CoreAPI"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QSet"
+                location: Include.Global
+            }
         }
         ModifyFunction{
             signature: "makeCurrent(QSurface *)"
@@ -14287,12 +14295,6 @@ TypeSystem{
             signature: "openGLModuleHandle()"
             remove: RemoveFlag.All
             until: 5
-        }
-        ExtraIncludes{
-            Include{
-                fileName: "QSet"
-                location: Include.Global
-            }
         }
         ModifyFunction{
             signature: "extraFunctions()const"
@@ -14337,12 +14339,6 @@ TypeSystem{
                 ReferenceCount{
                     action: ReferenceCount.Ignore
                 }
-            }
-        }
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambi/CoreAPI"
-                location: Include.Global
             }
         }
         ModifyFunction{

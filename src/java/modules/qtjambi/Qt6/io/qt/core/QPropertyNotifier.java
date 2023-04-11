@@ -31,6 +31,7 @@ package io.qt.core;
 import java.util.Objects;
 
 import io.qt.NativeAccess;
+import io.qt.StrictNonNull;
 
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qpropertynotifier.html">QPropertyNotifier</a></p>
@@ -43,7 +44,7 @@ import io.qt.NativeAccess;
 public final class QPropertyNotifier extends QPropertyObserver {
 	private final Runnable functor;
 
-	public QPropertyNotifier(Runnable functor) {
+	public QPropertyNotifier(@StrictNonNull Runnable functor) {
 		super((QPrivateConstructor)null);
 		initialize(this);
 		this.functor = Objects.requireNonNull(functor);

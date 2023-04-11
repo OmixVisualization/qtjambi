@@ -30,8 +30,7 @@ package io.qt.core;
 
 import java.util.function.BooleanSupplier;
 
-import io.qt.NativeAccess;
-import io.qt.QtPrimitiveType;
+import io.qt.*;
 
 /**
  * QBooleanPropertyBinding is primitive-typed version of QPropertyBinding&lt;Boolean&gt;.
@@ -48,7 +47,7 @@ public final class QBooleanPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QBooleanPropertyBinding</code> with the given functor <code>f</code>.
 	 * @param t
 	 */
-	public QBooleanPropertyBinding(BooleanSupplier f) {
+	public QBooleanPropertyBinding(@StrictNonNull BooleanSupplier f) {
 		super(f);
 	}
 	
@@ -56,7 +55,7 @@ public final class QBooleanPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QBooleanPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QBooleanPropertyBinding(QBooleanProperty property) {
+	public QBooleanPropertyBinding(@StrictNonNull QBooleanProperty property) {
 		super(property.bindingData());
 	}
 	
@@ -64,7 +63,7 @@ public final class QBooleanPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QBooleanPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QBooleanPropertyBinding(QObject.QBooleanProperty property) {
+	public QBooleanPropertyBinding(QObject.@StrictNonNull QBooleanProperty property) {
 		super(property.bindingData());
 	}
 	
@@ -72,7 +71,7 @@ public final class QBooleanPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QBooleanPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QBooleanPropertyBinding(QObject.QComputedBooleanProperty property) {
+	public QBooleanPropertyBinding(QObject.@StrictNonNull QComputedBooleanProperty property) {
 		super(property.bindingData());
 	}
 	
@@ -80,7 +79,7 @@ public final class QBooleanPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QBooleanPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QBooleanPropertyBinding(QProperty<@QtPrimitiveType Boolean> property) {
+	public QBooleanPropertyBinding(@StrictNonNull QProperty<@NonNull@QtPrimitiveType Boolean> property) {
 		super(check(property.bindingData(), property.valueMetaType()));
 	}
 	
@@ -88,7 +87,7 @@ public final class QBooleanPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QBooleanPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QBooleanPropertyBinding(QObject.QProperty<@QtPrimitiveType Boolean> property) {
+	public QBooleanPropertyBinding(QObject.@StrictNonNull QProperty<@NonNull@QtPrimitiveType Boolean> property) {
 		super(check(property.bindingData(), property.valueMetaType()));
 	}
 	
@@ -96,7 +95,7 @@ public final class QBooleanPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QBooleanPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QBooleanPropertyBinding(QObject.QComputedProperty<@QtPrimitiveType Boolean> property) {
+	public QBooleanPropertyBinding(QObject.@StrictNonNull QComputedProperty<@NonNull@QtPrimitiveType Boolean> property) {
 		super(check(property.bindingData(), property.valueMetaType()));
 	}
 	
@@ -104,7 +103,7 @@ public final class QBooleanPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QBooleanPropertyBinding</code> as copy of the given binding.
 	 * @param other
 	 */
-	public QBooleanPropertyBinding(QBooleanPropertyBinding other) {
+	public QBooleanPropertyBinding(@StrictNonNull QBooleanPropertyBinding other) {
 		super(other);
 	}
 	
@@ -112,7 +111,7 @@ public final class QBooleanPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QBooleanPropertyBinding</code> as copy of the given binding.
 	 * @param other
 	 */
-	public QBooleanPropertyBinding(QPropertyBinding<@QtPrimitiveType Boolean> other) {
+	public QBooleanPropertyBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Boolean> other) {
 		super(check(other, false));
 	}
 

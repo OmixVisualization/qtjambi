@@ -31,7 +31,9 @@ package io.qt.core;
 import java.util.function.IntSupplier;
 
 import io.qt.NativeAccess;
+import io.qt.NonNull;
 import io.qt.QtPrimitiveType;
+import io.qt.StrictNonNull;
 
 /**
  * QIntPropertyBinding is primitive-typed version of QPropertyBinding&lt;Integer&gt;.
@@ -48,7 +50,7 @@ public final class QIntPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QIntPropertyBinding</code> with the given functor <code>f</code>.
 	 * @param t
 	 */
-	public QIntPropertyBinding(IntSupplier f) {
+	public QIntPropertyBinding(@StrictNonNull IntSupplier f) {
 		super(f);
 	}
 	
@@ -56,7 +58,7 @@ public final class QIntPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QIntPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QIntPropertyBinding(QIntProperty property) {
+	public QIntPropertyBinding(@StrictNonNull QIntProperty property) {
 		super(property.bindingData());
 	}
 	
@@ -64,7 +66,7 @@ public final class QIntPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QIntPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QIntPropertyBinding(QObject.QIntProperty property) {
+	public QIntPropertyBinding(QObject.@StrictNonNull QIntProperty property) {
 		super(property.bindingData());
 	}
 	
@@ -72,7 +74,7 @@ public final class QIntPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QIntPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QIntPropertyBinding(QObject.QComputedIntProperty property) {
+	public QIntPropertyBinding(QObject.@StrictNonNull QComputedIntProperty property) {
 		super(property.bindingData());
 	}
 	
@@ -80,7 +82,7 @@ public final class QIntPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QIntPropertyBinding</code> as copy of the given binding.
 	 * @param other
 	 */
-	public QIntPropertyBinding(QIntPropertyBinding other) {
+	public QIntPropertyBinding(@StrictNonNull QIntPropertyBinding other) {
 		super(other);
 	}
 	
@@ -88,7 +90,7 @@ public final class QIntPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QIntPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QIntPropertyBinding(QProperty<@QtPrimitiveType Integer> property) {
+	public QIntPropertyBinding(@StrictNonNull QProperty<@NonNull@QtPrimitiveType Integer> property) {
 		super(check(property.bindingData(), property.valueMetaType()));
 	}
 	
@@ -96,7 +98,7 @@ public final class QIntPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QIntPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QIntPropertyBinding(QObject.QProperty<@QtPrimitiveType Integer> property) {
+	public QIntPropertyBinding(QObject.@StrictNonNull QProperty<@NonNull@QtPrimitiveType Integer> property) {
 		super(check(property.bindingData(), property.valueMetaType()));
 	}
 	
@@ -104,7 +106,7 @@ public final class QIntPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QIntPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QIntPropertyBinding(QObject.QComputedProperty<@QtPrimitiveType Integer> property) {
+	public QIntPropertyBinding(QObject.@StrictNonNull QComputedProperty<@NonNull@QtPrimitiveType Integer> property) {
 		super(check(property.bindingData(), property.valueMetaType()));
 	}
 	
@@ -112,7 +114,7 @@ public final class QIntPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QIntPropertyBinding</code> as copy of the given binding.
 	 * @param other
 	 */
-	public QIntPropertyBinding(QPropertyBinding<@QtPrimitiveType Integer> other) {
+	public QIntPropertyBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Integer> other) {
 		super(check(other, false));
 	}
 

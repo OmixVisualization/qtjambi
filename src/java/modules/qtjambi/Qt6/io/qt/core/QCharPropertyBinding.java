@@ -29,12 +29,14 @@
 package io.qt.core;
 
 import io.qt.NativeAccess;
+import io.qt.NonNull;
 import io.qt.QtPrimitiveType;
+import io.qt.StrictNonNull;
 import io.qt.QtUtilities.CharSupplier;
 
 /**
  * QCharPropertyBinding is primitive-typed version of QPropertyBinding&lt;Character&gt;.
- * @see QBindingProperty
+ * @see QPropertyBinding
  */
 public final class QCharPropertyBinding extends QUntypedPropertyBinding {
 	
@@ -47,7 +49,7 @@ public final class QCharPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QCharPropertyBinding</code> with the given functor <code>f</code>.
 	 * @param t
 	 */
-	public QCharPropertyBinding(CharSupplier f) {
+	public QCharPropertyBinding(@StrictNonNull CharSupplier f) {
 		super(f);
 	}
 	
@@ -55,7 +57,7 @@ public final class QCharPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QCharPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QCharPropertyBinding(QCharProperty property) {
+	public QCharPropertyBinding(@StrictNonNull QCharProperty property) {
 		super(property.bindingData());
 	}
 	
@@ -63,7 +65,7 @@ public final class QCharPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QCharPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QCharPropertyBinding(QObject.QCharProperty property) {
+	public QCharPropertyBinding(QObject.@StrictNonNull QCharProperty property) {
 		super(property.bindingData());
 	}
 	
@@ -71,7 +73,7 @@ public final class QCharPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QCharPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QCharPropertyBinding(QObject.QComputedCharProperty property) {
+	public QCharPropertyBinding(QObject.@StrictNonNull QComputedCharProperty property) {
 		super(property.bindingData());
 	}
 	
@@ -79,7 +81,7 @@ public final class QCharPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QCharPropertyBinding</code> as copy of the given binding.
 	 * @param other
 	 */
-	public QCharPropertyBinding(QCharPropertyBinding other) {
+	public QCharPropertyBinding(@StrictNonNull QCharPropertyBinding other) {
 		super(other);
 	}
 	
@@ -87,7 +89,7 @@ public final class QCharPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QCharPropertyBinding</code> as copy of the given binding.
 	 * @param other
 	 */
-	public QCharPropertyBinding(QPropertyBinding<@QtPrimitiveType Character> other) {
+	public QCharPropertyBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Character> other) {
 		super(check(other, false));
 	}
 	
@@ -95,7 +97,7 @@ public final class QCharPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QCharPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QCharPropertyBinding(QProperty<@QtPrimitiveType Character> property) {
+	public QCharPropertyBinding(@StrictNonNull QProperty<@NonNull@QtPrimitiveType Character> property) {
 		super(check(property.bindingData(), property.valueMetaType()));
 	}
 	
@@ -103,7 +105,7 @@ public final class QCharPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QCharPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QCharPropertyBinding(QObject.QProperty<@QtPrimitiveType Character> property) {
+	public QCharPropertyBinding(QObject.@StrictNonNull QProperty<@NonNull@QtPrimitiveType Character> property) {
 		super(check(property.bindingData(), property.valueMetaType()));
 	}
 	
@@ -111,7 +113,7 @@ public final class QCharPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QCharPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QCharPropertyBinding(QObject.QComputedProperty<@QtPrimitiveType Character> property) {
+	public QCharPropertyBinding(QObject.@StrictNonNull QComputedProperty<@NonNull@QtPrimitiveType Character> property) {
 		super(check(property.bindingData(), property.valueMetaType()));
 	}
 

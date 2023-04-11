@@ -34,6 +34,8 @@
 #include <QtCore/QDeadlineTimer>
 #include <QtJambi/Global>
 
+size_t qHash(const QHttpPart &value, size_t seed = 0);
+
 inline hash_type qHash(const QHstsPolicy& p, hash_type seed = 0){
     QtPrivate::QHashCombine hash;
     seed = hash(seed, p.expiry());

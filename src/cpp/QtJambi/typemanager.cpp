@@ -2376,8 +2376,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         if(ptr){
                             p->l = internal_convertQObjectSmartPointerToJavaObject(env, *typeId,
                                                                        new QSharedPointer<QObject>(*ptr),
-                                                                       &QtJambiPrivate::deletePointer<QSharedPointer, QObject>,
-                                                                       &QtJambiPrivate::getFromPointer<QSharedPointer, void*>);
+                                                                       &QtJambiPrivate::SmartPointerHelper<QSharedPointer, QObject>::deletePointer,
+                                                                       &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::getFromPointer);
                         }
                         return true;
                     };
@@ -2387,8 +2387,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         if(ptr){
                             p->l = internal_convertQObjectSmartPointerToJavaObject(env, *typeId,
                                                                        new QSharedPointer<QObject>(*ptr),
-                                                                       &QtJambiPrivate::deletePointer<QSharedPointer, QObject>,
-                                                                       &QtJambiPrivate::getFromPointer<QSharedPointer, void*>);
+                                                                       &QtJambiPrivate::SmartPointerHelper<QSharedPointer, QObject>::deletePointer,
+                                                                       &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::getFromPointer);
                         }
                         return true;
                     };
@@ -2398,8 +2398,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         if(ptr){
                             p->l = internal_convertQObjectSmartPointerToJavaObject(env, *typeId,
                                                                        new std::shared_ptr<QObject>(*ptr),
-                                                                       &QtJambiPrivate::deletePointer<std::shared_ptr, QObject>,
-                                                                       &QtJambiPrivate::getFromPointer<std::shared_ptr, void*>);
+                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, QObject>::deletePointer,
+                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::getFromPointer);
                         }
                         return true;
                     };
@@ -2409,8 +2409,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         if(ptr){
                             p->l = internal_convertQObjectSmartPointerToJavaObject(env, *typeId,
                                                                        new std::shared_ptr<QObject>(*ptr),
-                                                                       &QtJambiPrivate::deletePointer<std::shared_ptr, QObject>,
-                                                                       &QtJambiPrivate::getFromPointer<std::shared_ptr, void*>);
+                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, QObject>::deletePointer,
+                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::getFromPointer);
                         }
                         return true;
                     };
@@ -2452,8 +2452,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                             p->l = internal_convertSmartPointerToJavaInterface(env,
                                                                       *typeId,
                                                                       new QSharedPointer<void*>(*ptr),
-                                                                      &QtJambiPrivate::deletePointer<QSharedPointer, void*>,
-                                                                      &QtJambiPrivate::getFromPointer<QSharedPointer, void*>);
+                                                                      &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::deletePointer,
+                                                                      &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::getFromPointer);
                         }
                         return true;
                     };
@@ -2464,8 +2464,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                             p->l = internal_convertSmartPointerToJavaInterface(env,
                                                                       *typeId,
                                                                       new QSharedPointer<void*>(*ptr),
-                                                                      &QtJambiPrivate::deletePointer<QSharedPointer, void*>,
-                                                                      &QtJambiPrivate::getFromPointer<QSharedPointer, void*>);
+                                                                      &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::deletePointer,
+                                                                      &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::getFromPointer);
                         }
                         return true;
                     };
@@ -2475,8 +2475,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         if(ptr){
                             p->l = internal_convertSmartPointerToJavaInterface(env, *typeId,
                                                                        new std::shared_ptr<void*>(*ptr),
-                                                                       &QtJambiPrivate::deletePointer<std::shared_ptr, void*>,
-                                                                       &QtJambiPrivate::getFromPointer<std::shared_ptr, void*>);
+                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::deletePointer,
+                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::getFromPointer);
                         }
                         return true;
                     };
@@ -2486,8 +2486,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         if(ptr){
                             p->l = internal_convertSmartPointerToJavaInterface(env, *typeId,
                                                                        new std::shared_ptr<void*>(*ptr),
-                                                                       &QtJambiPrivate::deletePointer<std::shared_ptr, void*>,
-                                                                       &QtJambiPrivate::getFromPointer<std::shared_ptr, void*>);
+                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::deletePointer,
+                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::getFromPointer);
                         }
                         return true;
                     };
@@ -2564,8 +2564,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                             p->l = QtJambiAPI::convertSmartPointerToJavaObject(env,
                                                                       *typeId,
                                                                       new QSharedPointer<void*>(*ptr),
-                                                                      &QtJambiPrivate::deletePointer<QSharedPointer, void*>,
-                                                                      &QtJambiPrivate::getFromPointer<QSharedPointer, void*>);
+                                                                      &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::deletePointer,
+                                                                      &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::getFromPointer);
                         }
                         return true;
                     };
@@ -2576,8 +2576,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                             p->l = QtJambiAPI::convertSmartPointerToJavaObject(env,
                                                                       *typeId,
                                                                       new QSharedPointer<void*>(*ptr),
-                                                                      &QtJambiPrivate::deletePointer<QSharedPointer, void*>,
-                                                                      &QtJambiPrivate::getFromPointer<QSharedPointer, void*>);
+                                                                      &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::deletePointer,
+                                                                      &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::getFromPointer);
                         }
                         return true;
                     };
@@ -2587,8 +2587,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         if(ptr){
                             p->l = QtJambiAPI::convertSmartPointerToJavaObject(env, *typeId,
                                                                        new std::shared_ptr<void*>(*ptr),
-                                                                       &QtJambiPrivate::deletePointer<std::shared_ptr, void*>,
-                                                                       &QtJambiPrivate::getFromPointer<std::shared_ptr, void*>);
+                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::deletePointer,
+                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::getFromPointer);
                         }
                         return true;
                     };
@@ -2598,8 +2598,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         if(ptr){
                             p->l = QtJambiAPI::convertSmartPointerToJavaObject(env, *typeId,
                                                                        new std::shared_ptr<void*>(*ptr),
-                                                                       &QtJambiPrivate::deletePointer<std::shared_ptr, void*>,
-                                                                       &QtJambiPrivate::getFromPointer<std::shared_ptr, void*>);
+                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::deletePointer,
+                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::getFromPointer);
                         }
                         return true;
                     };
@@ -2722,8 +2722,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         if(ptr){
                             p->l = internal_convertQObjectSmartPointerToJavaObject(env, className,
                                                                        new QSharedPointer<QObject>(*ptr),
-                                                                       &QtJambiPrivate::deletePointer<QSharedPointer, QObject>,
-                                                                       &QtJambiPrivate::getFromPointer<QSharedPointer, void*>);
+                                                                       &QtJambiPrivate::SmartPointerHelper<QSharedPointer, QObject>::deletePointer,
+                                                                       &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::getFromPointer);
                         }
                         return true;
                     };
@@ -2733,8 +2733,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         if(ptr){
                             p->l = internal_convertQObjectSmartPointerToJavaObject(env, className,
                                                                        new QSharedPointer<QObject>(*ptr),
-                                                                       &QtJambiPrivate::deletePointer<QSharedPointer, QObject>,
-                                                                       &QtJambiPrivate::getFromPointer<QSharedPointer, void*>);
+                                                                       &QtJambiPrivate::SmartPointerHelper<QSharedPointer, QObject>::deletePointer,
+                                                                       &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::getFromPointer);
                         }
                         return true;
                     };
@@ -2744,8 +2744,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         if(ptr){
                             p->l = internal_convertQObjectSmartPointerToJavaObject(env, className,
                                                                        new std::shared_ptr<QObject>(*ptr),
-                                                                       &QtJambiPrivate::deletePointer<std::shared_ptr, QObject>,
-                                                                       &QtJambiPrivate::getFromPointer<std::shared_ptr, void*>);
+                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, QObject>::deletePointer,
+                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::getFromPointer);
                         }
                         return true;
                     };
@@ -2755,8 +2755,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         if(ptr){
                             p->l = internal_convertQObjectSmartPointerToJavaObject(env, className,
                                                                        new std::shared_ptr<QObject>(*ptr),
-                                                                       &QtJambiPrivate::deletePointer<std::shared_ptr, QObject>,
-                                                                       &QtJambiPrivate::getFromPointer<std::shared_ptr, void*>);
+                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, QObject>::deletePointer,
+                                                                       &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::getFromPointer);
                         }
                         return true;
                     };
@@ -2797,8 +2797,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         p->l = internal_convertSmartPointerToJavaObject(env,
                                                                   className,
                                                                   new QSharedPointer<void*>(*ptr),
-                                                                  &QtJambiPrivate::deletePointer<QSharedPointer, void*>,
-                                                                  &QtJambiPrivate::getFromPointer<QSharedPointer, void*>);
+                                                                  &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::deletePointer,
+                                                                  &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::getFromPointer);
                     }
                     return true;
                 };
@@ -2809,8 +2809,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         p->l = internal_convertSmartPointerToJavaObject(env,
                                                                   className,
                                                                   new QSharedPointer<void*>(*ptr),
-                                                                  &QtJambiPrivate::deletePointer<QSharedPointer, void*>,
-                                                                  &QtJambiPrivate::getFromPointer<QSharedPointer, void*>);
+                                                                  &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::deletePointer,
+                                                                  &QtJambiPrivate::SmartPointerHelper<QSharedPointer, void*>::getFromPointer);
                     }
                     return true;
                 };
@@ -2820,8 +2820,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                     if(ptr){
                         p->l = internal_convertSmartPointerToJavaObject(env, className,
                                                                    new std::shared_ptr<void*>(*ptr),
-                                                                   &QtJambiPrivate::deletePointer<std::shared_ptr, void*>,
-                                                                   &QtJambiPrivate::getFromPointer<std::shared_ptr, void*>);
+                                                                   &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::deletePointer,
+                                                                   &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::getFromPointer);
                     }
                     return true;
                 };
@@ -2831,8 +2831,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                     if(ptr){
                         p->l = internal_convertSmartPointerToJavaObject(env, className,
                                                                    new std::shared_ptr<void*>(*ptr),
-                                                                   &QtJambiPrivate::deletePointer<std::shared_ptr, void*>,
-                                                                   &QtJambiPrivate::getFromPointer<std::shared_ptr, void*>);
+                                                                   &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::deletePointer,
+                                                                   &QtJambiPrivate::SmartPointerHelper<std::shared_ptr, void*>::getFromPointer);
                     }
                     return true;
                 };

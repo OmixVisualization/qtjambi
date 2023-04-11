@@ -1,5 +1,6 @@
 package io.qt.core;
 
+import io.qt.NonNull;
 import io.qt.QtObject;
 
 /**
@@ -11,5 +12,5 @@ public abstract class QPermission extends QtObject implements java.lang.Cloneabl
 	}
 
 	@Override
-	public abstract QPermission clone();
+	public abstract @NonNull QPermission clone();
 }

@@ -28,32 +28,34 @@
 ****************************************************************************/
 package io.qt.core;
 
+import io.qt.NonNull;
 import io.qt.QtPrimitiveType;
 import io.qt.QtUninvokable;
+import io.qt.StrictNonNull;
 
 /**
- * QDoubleBindable is primitive-typed version of QBindable&lt;Double&gt;.
+ * QBooleanBindable is primitive-typed version of QBindable&lt;Boolean&gt;.
  * @see QBindable
  */
-public final class QDoubleBindable extends QUntypedBindable {
-
-	private QDoubleBindable(QPrivateConstructor p) {
+public final class QBooleanBindable extends QUntypedBindable {
+	
+	private QBooleanBindable(QPrivateConstructor p) {
 		super(p);
 	}
 
 	/**
-	 * Creates a new <code>double</code>-typed invalid bindable.
+	 * Creates a new <code>boolean</code>-typed invalid bindable.
 	 */
-	public QDoubleBindable() {
+	public QBooleanBindable() {
 		super(null, null);
 	}
 	
 	/**
 	 * Creates a copy of the provided bindable. 
-	 * If the type of the other bindable is not <code>double</code> it remains invalid.
+	 * If the type of the other bindable is not <code>boolean</code> it remains invalid.
 	 * @param other
 	 */
-	public QDoubleBindable(QUntypedBindable other) {
+	public QBooleanBindable(@StrictNonNull QUntypedBindable other) {
 		super(other.data(), other.iface());
 		check();
 	}
@@ -62,25 +64,19 @@ public final class QDoubleBindable extends QUntypedBindable {
 		QBindableInterface iface = iface();
 		if(iface!=null) {
 			QMetaType metaType = iface.metaType();
-			if(metaType==null 
-					|| (metaType.id()!=QMetaType.Type.Double.value()
-						&& metaType.id()!=QMetaType.Type.Float.value()
-						&& metaType.id()!=QMetaType.Type.QVariant.value())) {
+			if(!QBooleanProperty.checkType(metaType)
+					&& metaType.id()!=QMetaType.Type.QVariant.value()) {
 				setIface(null);
 				setData(null);
 			}
 		}
-	}
-
-	QDoubleBindable(QUntypedPropertyData d, QBindableInterface i) {
-		super(d, i);
 	}
 	
 	/**
 	 * Creates a new bindable from provided property.
 	 * @param property
 	 */
-	public QDoubleBindable(QDoubleProperty property) {
+	public QBooleanBindable(@StrictNonNull QBooleanProperty property) {
 		super(property, bindableInterface(0));
 	}
 	
@@ -88,7 +84,7 @@ public final class QDoubleBindable extends QUntypedBindable {
 	 * Creates a new bindable from provided property.
 	 * @param property
 	 */
-	public QDoubleBindable(QObject.QDoubleProperty property) {
+	public QBooleanBindable(QObject.@StrictNonNull QBooleanProperty property) {
 		super(property, bindableInterface(1));
 	}
 	
@@ -96,108 +92,112 @@ public final class QDoubleBindable extends QUntypedBindable {
 	 * Creates a new bindable from provided property.
 	 * @param property
 	 */
-	public QDoubleBindable(QObject.QComputedDoubleProperty property) {
+	public QBooleanBindable(QObject.@StrictNonNull QComputedBooleanProperty property) {
 		super(property, bindableInterface(2));
 	}
 	
 	/**
 	 * Creates a new bindable from provided property.
-	 * If the type of the property is not <code>double</code> an {@link IllegalArgumentException} is thrown.
+	 * If the type of the property is not <code>boolean</code> an {@link IllegalArgumentException} is thrown.
 	 * @param property
 	 */
-	public QDoubleBindable(QProperty<@QtPrimitiveType Double> property) {
+	public QBooleanBindable(@StrictNonNull QProperty<@NonNull@QtPrimitiveType Boolean> property) {
 		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 0));
 		check();
 		if(iface()==null)
-			throw new IllegalArgumentException("Given QProperty is not of double type.");
+			throw new IllegalArgumentException("Given QProperty is not of boolean type.");
 	}
 	
 	/**
 	 * Creates a new bindable from provided property.
-	 * If the type of the property is not <code>double</code> an {@link IllegalArgumentException} is thrown.
+	 * If the type of the property is not <code>boolean</code> an {@link IllegalArgumentException} is thrown.
 	 * @param property
 	 */
-	public QDoubleBindable(QObject.QProperty<@QtPrimitiveType Double> property) {
+	public QBooleanBindable(QObject.@StrictNonNull QProperty<@NonNull@QtPrimitiveType Boolean> property) {
 		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 1));
 		check();
 		if(iface()==null)
-			throw new IllegalArgumentException("Given QProperty is not of double type.");
+			throw new IllegalArgumentException("Given QProperty is not of boolean type.");
 	}
 	
 	/**
 	 * Creates a new bindable from provided property.
-	 * If the type of the property is not <code>double</code> an {@link IllegalArgumentException} is thrown.
+	 * If the type of the property is not <code>boolean</code> an {@link IllegalArgumentException} is thrown.
 	 * @param property
 	 */
-	public QDoubleBindable(QObject.QComputedProperty<@QtPrimitiveType Double> property) {
+	public QBooleanBindable(QObject.@StrictNonNull QComputedProperty<@NonNull@QtPrimitiveType Boolean> property) {
 		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 2));
 		check();
 		if(iface()==null)
-			throw new IllegalArgumentException("Given QProperty is not of double type.");
+			throw new IllegalArgumentException("Given QProperty is not of boolean type.");
 	}
 	
 	static native QBindableInterface bindableInterface(int propertyType);
+
+	QBooleanBindable(QUntypedPropertyData d, QBindableInterface i) {
+		super(d, i);
+	}
 
 	/**
 	 * Creates a binding to the underlying property.
 	 */
 	@QtUninvokable
 	@Override
-	public QDoublePropertyBinding makeBinding()
+	public @NonNull QBooleanPropertyBinding makeBinding()
     {
 		QUntypedPropertyBinding binding = super.makeBinding();
-		if(binding instanceof QDoublePropertyBinding) {
-			return (QDoublePropertyBinding)binding;
+		if(binding instanceof QBooleanPropertyBinding) {
+			return (QBooleanPropertyBinding)binding;
 		}else {
-			return new QDoublePropertyBinding(binding);
+			return new QBooleanPropertyBinding(binding);
 		}
     }
 	
     /**
      * Returns the binding expression that is associated with the underlying property. 
-     * A default constructed {@link QDoublePropertyBinding} will be returned if no such association exists.
+     * A default constructed {@link QBooleanPropertyBinding} will be returned if no such association exists.
      * @return binding
      */
 	@QtUninvokable
 	@Override
-    public QDoublePropertyBinding binding()
+    public @NonNull QBooleanPropertyBinding binding()
     {
 		QUntypedPropertyBinding binding = super.binding();
-		if(binding instanceof QDoublePropertyBinding) {
-			return (QDoublePropertyBinding)binding;
+		if(binding instanceof QBooleanPropertyBinding) {
+			return (QBooleanPropertyBinding)binding;
 		}else {
-			return new QDoublePropertyBinding(binding);
+			return new QBooleanPropertyBinding(binding);
 		}
     }
     
 	@QtUninvokable
-	public QDoublePropertyBinding setBinding(QDoublePropertyBinding binding)
+	public @NonNull QBooleanPropertyBinding setBinding(@StrictNonNull QBooleanPropertyBinding binding)
     {
 		QUntypedPropertyBinding oldBinding = super.overrideBinding(binding);
-		if(oldBinding instanceof QDoublePropertyBinding) {
-			return (QDoublePropertyBinding)oldBinding;
+		if(oldBinding instanceof QBooleanPropertyBinding) {
+			return (QBooleanPropertyBinding)oldBinding;
 		}else {
-			return new QDoublePropertyBinding(oldBinding);
+			return new QBooleanPropertyBinding(oldBinding);
+		}
+    }
+    
+	@QtUninvokable
+	public @NonNull QBooleanPropertyBinding setBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Boolean> binding)
+    {
+		if(binding!=null && !QBooleanProperty.checkType(binding.valueMetaType()))
+			return new QBooleanPropertyBinding();
+		QUntypedPropertyBinding oldBinding = super.overrideBinding(binding);
+		if(oldBinding instanceof QBooleanPropertyBinding) {
+			return (QBooleanPropertyBinding)oldBinding;
+		}else {
+			return new QBooleanPropertyBinding(oldBinding);
 		}
     }
 	
 	@QtUninvokable
-	public QDoublePropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Double> binding)
+	public @NonNull QBooleanPropertyBinding setBinding(java.util.function.@StrictNonNull BooleanSupplier functor)
     {
-		if(binding!=null && !QDoubleProperty.checkType(binding.valueMetaType()))
-			return new QDoublePropertyBinding();
-		QUntypedPropertyBinding oldBinding = super.overrideBinding(binding);
-		if(oldBinding instanceof QDoublePropertyBinding) {
-			return (QDoublePropertyBinding)oldBinding;
-		}else {
-			return new QDoublePropertyBinding(oldBinding);
-		}
-    }
-	
-	@QtUninvokable
-	public QDoublePropertyBinding setBinding(java.util.function.DoubleSupplier functor)
-    {
-		return setBinding(new QDoublePropertyBinding(functor));
+		return setBinding(new QBooleanPropertyBinding(functor));
     }
 	
 	/**
@@ -206,17 +206,17 @@ public final class QDoubleBindable extends QUntypedBindable {
 	 * @return the removed binding
 	 */
 	@QtUninvokable
-    public QDoublePropertyBinding takeBinding()
+    public @NonNull QBooleanPropertyBinding takeBinding()
     {
-        return setBinding(new QDoublePropertyBinding());
+        return setBinding(new QBooleanPropertyBinding());
     }
-    
+	
 	/**
 	 * Returns the value of the underlying property. This may evaluate a binding expression that is tied to the property, before returning the value.
 	 * @return value
 	 */
     @io.qt.QtUninvokable
-    public final double value() {
+    public final boolean value() {
         return value(QtJambi_LibraryUtilities.internal.nativeId(this.iface()), QtJambi_LibraryUtilities.internal.nativeId(this.data()));
     }
     
@@ -225,13 +225,13 @@ public final class QDoubleBindable extends QUntypedBindable {
 	 * @param newValue
 	 */
     @io.qt.QtUninvokable
-    public final void setValue(double value) {
+    public final void setValue(boolean value) {
         setValue(QtJambi_LibraryUtilities.internal.nativeId(this.iface()), QtJambi_LibraryUtilities.internal.nativeId(this.data()), value);
     }
     
     @io.qt.QtUninvokable
-    static native double value(long ifaceId, long dataId);
+    static native boolean value(long ifaceId, long dataId);
     
     @io.qt.QtUninvokable
-    static native void setValue(long ifaceId, long dataId, double value);
+    static native void setValue(long ifaceId, long dataId, boolean value);
 }

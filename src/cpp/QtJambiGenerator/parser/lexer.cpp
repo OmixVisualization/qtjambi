@@ -66,6 +66,72 @@ scan_fun_ptr Lexer::s_scan_keyword_table[] = {
     &Lexer::scanKeyword20
 };
 
+TokenStream::TokenStream(std::size_t size)
+        : index(0),
+        token_count(0), currentToken(nullptr), currentText(nullptr) {
+    resize(size);
+}
+
+TokenStream::~TokenStream(){}
+
+std::size_t TokenStream::size() const
+{ return token_count; }
+
+std::size_t TokenStream::cursor() const
+{ return index; }
+
+void TokenStream::rewind(std::size_t i)
+{ index = i; }
+
+void TokenStream::resize(std::size_t size) {
+    Q_ASSERT(size > 0);
+    tokens.resize(size);
+    currentToken = &tokens[0];
+    token_count = size;
+}
+
+std::size_t TokenStream::nextToken()
+{
+    auto result = index++;
+    currentToken = &tokens[index];
+    currentText = currentToken->text + currentToken->position;
+    return result;
+}
+
+int TokenStream::lookAhead(std::size_t i) const
+{
+    return tokens[index + i].kind;
+}
+
+int TokenStream::kind(std::size_t i) const
+{ return tokens[i].kind; }
+
+std::size_t TokenStream::position(std::size_t i) const
+{ return tokens[i].position; }
+
+const NameSymbol *TokenStream::symbol(std::size_t i) const
+{ return tokens[i].extra.symbol; }
+
+std::size_t TokenStream::matchingBrace(std::size_t i) const
+{ return tokens[i].extra.right_brace; }
+
+Token &TokenStream::operator[](std::size_t index)
+{ return tokens[index]; }
+
+const Token &TokenStream::token(std::size_t index) const
+{ return tokens[index]; }
+
+LocationManager::LocationManager(TokenStream &__token_stream,
+                LocationTable &__location_table,
+                LocationTable &__line_table,
+                QMap<QString,QStringList>& requiredFeatures):
+        token_stream(__token_stream),
+        location_table(__location_table),
+        line_table(__line_table),
+        _M_requiredFeatures(requiredFeatures) {}
+
+const QMap<QString,QStringList>& LocationManager::requiredFeatures() const { return _M_requiredFeatures; }
+
 void LocationManager::extract_line(int offset, int *line, QString *filename) const {
     *line = 0;
     if (token_stream.size() < 1)
@@ -133,6 +199,13 @@ void LocationManager::positionAt(std::size_t offset, int *line, int *column,
 
 scan_fun_ptr Lexer::s_scan_table[256];
 bool Lexer::s_initialized = false;
+
+Lexer::Lexer(LocationManager &__location, Control *__control):
+        _M_location(__location),
+        token_stream(_M_location.token_stream),
+        location_table(_M_location.location_table),
+        line_table(_M_location.line_table),
+        control(__control) {}
 
 void Lexer::tokenize(const char *contents, std::size_t size) {
     if (!s_initialized)

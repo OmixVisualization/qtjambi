@@ -28,8 +28,7 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.QtPrimitiveType;
-import io.qt.QtUninvokable;
+import io.qt.*;
 
 /**
  * QDoubleProperty is primitive-typed version of QProperty&lt;Double&gt;.
@@ -63,7 +62,7 @@ public final class QDoubleProperty extends QDoublePropertyData {
      * Constructs a <code>double</code>-typed property with the provided binding.
      * @param binding
      */
-	public QDoubleProperty(QDoublePropertyBinding binding) {
+	public QDoubleProperty(@StrictNonNull QDoublePropertyBinding binding) {
 		super();
 		d.setBinding(binding, this);
 	}
@@ -72,7 +71,7 @@ public final class QDoubleProperty extends QDoublePropertyData {
      * Constructs a <code>double</code>-typed property with the provided binding.
      * @param binding
      */
-	public QDoubleProperty(QPropertyBinding<@QtPrimitiveType Double> binding) {
+	public QDoubleProperty(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Double> binding) {
 		super();
 		if(checkType(binding.valueMetaType()))
 			d.setBinding(binding, this);
@@ -82,7 +81,7 @@ public final class QDoubleProperty extends QDoublePropertyData {
      * <p>Constructs a <code>double</code>-typed property bound to the provided <code>functor</code>.</p>
      * @param functor
      */
-	public QDoubleProperty(java.util.function.DoubleSupplier functor) {
+	public QDoubleProperty(java.util.function.@StrictNonNull DoubleSupplier functor) {
 		this(new QDoublePropertyBinding(functor));
 	}
 	
@@ -119,7 +118,7 @@ public final class QDoubleProperty extends QDoublePropertyData {
 	 * @return oldBinding
 	 */
 	@QtUninvokable
-	public QDoublePropertyBinding setBinding(QDoublePropertyBinding newBinding)
+	public @NonNull QDoublePropertyBinding setBinding(@StrictNonNull QDoublePropertyBinding newBinding)
     {
         QUntypedPropertyBinding oldBinding = d.setBinding(newBinding, this);
         d.notifyObservers(this);
@@ -139,7 +138,7 @@ public final class QDoubleProperty extends QDoublePropertyData {
 	 * @return oldBinding
 	 */
     @QtUninvokable
-    public QDoublePropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Double> newBinding)
+    public @NonNull QDoublePropertyBinding setBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Double> newBinding)
     {
         if(!io.qt.core.QDoubleProperty.checkType(newBinding.valueMetaType()))
             return new QDoublePropertyBinding();
@@ -162,7 +161,7 @@ public final class QDoubleProperty extends QDoublePropertyData {
 	 * @return true if types match, false otherwise.
 	 */
     @QtUninvokable
-    public boolean setBinding(QUntypedPropertyBinding newBinding)
+    public boolean setBinding(@StrictNonNull QUntypedPropertyBinding newBinding)
     {
         if(io.qt.core.QDoubleProperty.checkType(newBinding.valueMetaType())) {
             d.setBinding(newBinding, this);
@@ -181,13 +180,13 @@ public final class QDoubleProperty extends QDoublePropertyData {
 	 * @return oldBinding
 	 */
 	@QtUninvokable
-	public QDoublePropertyBinding setBinding(java.util.function.DoubleSupplier functor)
+	public @NonNull QDoublePropertyBinding setBinding(java.util.function.@StrictNonNull DoubleSupplier functor)
     {
         return setBinding(new QDoublePropertyBinding(functor));
     }
 	
 	@QtUninvokable
-	private QDoublePropertyBinding makeBinding()
+	private @NonNull QDoublePropertyBinding makeBinding()
     {
         return new QDoublePropertyBinding(this::value);
     }
@@ -206,7 +205,7 @@ public final class QDoubleProperty extends QDoublePropertyData {
      * @return binding
      */
 	@QtUninvokable
-	public QDoublePropertyBinding binding()
+	public @NonNull QDoublePropertyBinding binding()
     {
         return new QDoublePropertyBinding(this);
     }
@@ -217,7 +216,7 @@ public final class QDoubleProperty extends QDoublePropertyData {
 	 * @return the removed binding
 	 */
 	@QtUninvokable
-	public QDoublePropertyBinding takeBinding()
+	public @NonNull QDoublePropertyBinding takeBinding()
     {
         return new QDoublePropertyBinding(d.setBinding(new QDoublePropertyBinding(), this));
     }
@@ -232,7 +231,7 @@ public final class QDoubleProperty extends QDoublePropertyData {
      * @see QPropertyChangeHandler
      */
 	@QtUninvokable
-	public QPropertyChangeHandler onValueChanged(Runnable f)
+	public @NonNull QPropertyChangeHandler onValueChanged(@StrictNonNull Runnable f)
     {
         return new QPropertyChangeHandler(d, f);
     }
@@ -245,7 +244,7 @@ public final class QDoubleProperty extends QDoublePropertyData {
      * @see #onValueChanged(Runnable)
 	 */
 	@QtUninvokable
-	public QPropertyChangeHandler subscribe(Runnable f)
+	public @NonNull QPropertyChangeHandler subscribe(@StrictNonNull Runnable f)
     {
         f.run();
         return onValueChanged(f);
@@ -261,7 +260,7 @@ public final class QDoubleProperty extends QDoublePropertyData {
      * @see QPropertyNotifier
      */
     @io.qt.QtUninvokable
-    public QPropertyNotifier addNotifier(Runnable f)
+    public @NonNull QPropertyNotifier addNotifier(@StrictNonNull Runnable f)
     {
         return new QPropertyNotifier(d, f);
     }

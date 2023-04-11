@@ -34,26 +34,28 @@ import java.util.Deque;
 import java.util.NoSuchElementException;
 
 import io.qt.NativeAccess;
+import io.qt.NonNull;
 import io.qt.QtUninvokable;
+import io.qt.StrictNonNull;
 
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qstack.html">QStack</a></p>
  */
 public class QStack<T> extends QList<T> implements Deque<T>
 {
-    public QStack(QMetaType metaType) {
+    public QStack(@StrictNonNull QMetaType metaType) {
         super(metaType);
     }
     
-    public QStack(QMetaType.Type metaType) {
+    public QStack(QMetaType.@StrictNonNull Type metaType) {
 		this(new QMetaType(metaType));
 	}
 
-    public QStack(Class<T> elementType) {
+    public QStack(@StrictNonNull Class<T> elementType) {
         super(elementType);
     }
 
-    public QStack(Collection<T> other) {
+    public QStack(@StrictNonNull Collection<T> other) {
         super(other);
     }
     
@@ -62,12 +64,12 @@ public class QStack<T> extends QList<T> implements Deque<T>
         super(elementMetaType, other);
     }
     
-    public static QStack<Object> createVariantStack(){
+    public static @NonNull QStack<Object> createVariantStack(){
         return new QStack<>(new QMetaType(QMetaType.Type.QVariant));
     }
     
     @Override
-    public QStack<T> clone(){
+    public @NonNull QStack<T> clone(){
         return new QStack<>(this);
     }
 
@@ -225,7 +227,7 @@ public class QStack<T> extends QList<T> implements Deque<T>
      *
      */
     @SafeVarargs
-    public static <T> QStack<T> of(T element0, T...elements) {
+    public static <T> @NonNull QStack<T> of(T element0, T @StrictNonNull...elements) {
 		QMetaType metaType = QList.findElementMetaType(element0, elements);
 		if(metaType==null || metaType.id()==0)
 			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QStack.");

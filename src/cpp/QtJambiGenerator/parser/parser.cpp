@@ -1937,7 +1937,7 @@ bool Parser::parseTypeParameter(TypeParameterAST *&node) {
                 token_stream.nextToken();
 
                 if (!parseTypeId(ast->type_id)) {
-                    if(!parseExpression(ast->type_expression)){
+                    if(!parseConditionalExpression(ast->type_expression, true)){
                         //syntaxError();
                         token_stream.rewind(start);
                         return false;
@@ -3055,6 +3055,10 @@ bool Parser::parseStringLiteral(StringLiteralAST *&node) {
 
     while (token_stream.lookAhead() == Token_string_literal || token_stream.lookAhead() == Token_rawstring_literal) {
         ast->literals = snoc(ast->literals, token_stream.cursor(), _M_pool);
+        token_stream.nextToken();
+    }
+    auto const & tk = token_stream.token(token_stream.cursor());
+    if(tk.kind == Token_identifier && tk.text[tk.position]=='_'){
         token_stream.nextToken();
     }
 

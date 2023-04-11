@@ -35,7 +35,7 @@
 #include <QtCore/QtCore>
 #include <QtJambi/Global>
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0) && QT_CONFIG(permissions)
-#include <QtCore/QPermission>
+#include <QtCore/qpermissions.h>
 #endif
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && defined(QTJAMBI_GENERATOR_RUNNING)
@@ -309,11 +309,6 @@ inline hash_type qHash(const QLineF &line, hash_type seed = 0)
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-inline hash_type qHash(const QPartialOrdering &value, hash_type seed = 0)
-{
-    return qHash(reinterpret_cast<const qint8&>(value), seed);
-}
-
 inline hash_type qHash(const QItemSelectionRange &value, hash_type seed = 0)
 {
     QtPrivate::QHashCombine hash;

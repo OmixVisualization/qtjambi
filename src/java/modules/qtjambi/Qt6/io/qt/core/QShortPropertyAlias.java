@@ -28,8 +28,7 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.QtPrimitiveType;
-import io.qt.QtUninvokable;
+import io.qt.*;
 import io.qt.QtUtilities.ShortSupplier;
 
 /**
@@ -38,7 +37,7 @@ import io.qt.QtUtilities.ShortSupplier;
  */
 public final class QShortPropertyAlias extends QAbstractPropertyAlias {
 	
-	private static QPropertyAlias<@QtPrimitiveType Short> check(QPropertyAlias<@QtPrimitiveType Short> other){
+	private static QPropertyAlias<@NonNull@QtPrimitiveType Short> check(QPropertyAlias<@NonNull@QtPrimitiveType Short> other){
 		if(other.iface!=null && !QShortProperty.checkType(other.iface.metaType())) {
 			throw new IllegalArgumentException("Given QPropertyAlias is not of short type.");
 		}
@@ -56,7 +55,7 @@ public final class QShortPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided alias.
 	 * @param other
 	 */
-	public QShortPropertyAlias(QPropertyAlias<@QtPrimitiveType Short> other) {
+	public QShortPropertyAlias(@StrictNonNull QPropertyAlias<@NonNull@QtPrimitiveType Short> other) {
 		super(check(other));
 	}
 
@@ -64,7 +63,7 @@ public final class QShortPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QShortPropertyAlias(QShortProperty property) {
+	public QShortPropertyAlias(@StrictNonNull QShortProperty property) {
 		super(property, QShortBindable.bindableInterface(0));
 	}
 	
@@ -72,7 +71,7 @@ public final class QShortPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QShortPropertyAlias(QObject.QShortProperty property) {
+	public QShortPropertyAlias(QObject.@StrictNonNull QShortProperty property) {
 		super(property, QShortBindable.bindableInterface(1));
 	}
 	
@@ -80,7 +79,7 @@ public final class QShortPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QShortPropertyAlias(QObject.QComputedShortProperty property) {
+	public QShortPropertyAlias(QObject.@StrictNonNull QComputedShortProperty property) {
 		super(property, QShortBindable.bindableInterface(2));
 	}
 
@@ -88,7 +87,7 @@ public final class QShortPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QShortPropertyAlias(QProperty<@QtPrimitiveType Short> property) {
+	public QShortPropertyAlias(@StrictNonNull QProperty<@NonNull@QtPrimitiveType Short> property) {
 		super(property, QBindable.bindableInterface(check(property.valueMetaType()).id(), 0));
 	}
 	
@@ -96,7 +95,7 @@ public final class QShortPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QShortPropertyAlias(QObject.QProperty<@QtPrimitiveType Short> property) {
+	public QShortPropertyAlias(QObject.@StrictNonNull QProperty<@NonNull@QtPrimitiveType Short> property) {
 		super(property, QBindable.bindableInterface(check(property.valueMetaType()).id(), 1));
 	}
 	
@@ -104,7 +103,7 @@ public final class QShortPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QShortPropertyAlias(QObject.QComputedProperty<@QtPrimitiveType Short> property) {
+	public QShortPropertyAlias(QObject.@StrictNonNull QComputedProperty<@NonNull@QtPrimitiveType Short> property) {
 		super(property, QBindable.bindableInterface(check(property.valueMetaType()).id(), 2));
 	}
 	
@@ -112,7 +111,7 @@ public final class QShortPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided alias.
 	 * @param other
 	 */
-	public QShortPropertyAlias(QShortPropertyAlias alias) {
+	public QShortPropertyAlias(@StrictNonNull QShortPropertyAlias alias) {
 		super(alias);
 	}
 	
@@ -120,7 +119,7 @@ public final class QShortPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided binding's underlying property.
 	 * @param other
 	 */
-	public QShortPropertyAlias(QShortBindable bindable) {
+	public QShortPropertyAlias(@StrictNonNull QShortBindable bindable) {
 		super(bindable.data(), bindable.iface());
 	}
 	
@@ -128,7 +127,7 @@ public final class QShortPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided binding's underlying property.
 	 * @param other
 	 */
-	public QShortPropertyAlias(QBindable<@QtPrimitiveType Short> bindable) {
+	public QShortPropertyAlias(@StrictNonNull QBindable<@NonNull@QtPrimitiveType Short> bindable) {
 		super(bindable.data(), bindable.iface());
 		check(bindable.valueMetaType());
 	}
@@ -153,7 +152,7 @@ public final class QShortPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QShortProperty#setBinding(QShortPropertyBinding)
 	 */
 	@QtUninvokable
-	public QShortPropertyBinding setBinding(QShortPropertyBinding newBinding) {
+	public @NonNull QShortPropertyBinding setBinding(@StrictNonNull QShortPropertyBinding newBinding) {
 		return new QShortBindable(aliasedProperty(), iface).setBinding(newBinding);
     }
 	
@@ -161,7 +160,7 @@ public final class QShortPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QShortProperty#setBinding(QPropertyBinding)
 	 */
 	@QtUninvokable
-	public QShortPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Short> newBinding) {
+	public @NonNull QShortPropertyBinding setBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Short> newBinding) {
 		return new QShortBindable(aliasedProperty(), iface).setBinding(newBinding);
     }
 	
@@ -169,7 +168,7 @@ public final class QShortPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QShortProperty#setBinding(ShortSupplier)
 	 */
 	@QtUninvokable
-	public QShortPropertyBinding setBinding(ShortSupplier functor) {
+	public @NonNull QShortPropertyBinding setBinding(@StrictNonNull ShortSupplier functor) {
         return setBinding(new QShortPropertyBinding(functor));
     }
 	
@@ -177,7 +176,7 @@ public final class QShortPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QShortProperty#binding()
 	 */
 	@QtUninvokable
-	public QShortPropertyBinding binding() {
+	public @NonNull QShortPropertyBinding binding() {
         return new QShortBindable(aliasedProperty(), iface).binding();
     }
 	
@@ -185,7 +184,7 @@ public final class QShortPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QShortProperty#takeBinding()
 	 */
 	@QtUninvokable
-	public QShortPropertyBinding takeBinding() {
+	public @NonNull QShortPropertyBinding takeBinding() {
         return new QShortBindable(aliasedProperty(), iface).takeBinding();
     }
 }

@@ -28,9 +28,7 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.QtPrimitiveType;
-import io.qt.QtUninvokable;
-import io.qt.QtUtilities;
+import io.qt.*;
 
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qpropertyalias.html">QPropertyAlias</a></p>
@@ -54,7 +52,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param property
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Boolean> fromProperty(QBooleanProperty property){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Boolean> fromProperty(@StrictNonNull QBooleanProperty property){
 		return new QPropertyAlias<>(property, QBooleanBindable.bindableInterface(0));
 	}
 	
@@ -63,7 +61,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param property
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Byte> fromProperty(QByteProperty property){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Byte> fromProperty(@StrictNonNull QByteProperty property){
 		return new QPropertyAlias<>(property, QByteBindable.bindableInterface(0));
 	}
 	
@@ -72,7 +70,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param property
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Short> fromProperty(QShortProperty property){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Short> fromProperty(@StrictNonNull QShortProperty property){
 		return new QPropertyAlias<>(property, QShortBindable.bindableInterface(0));
 	}
 	
@@ -81,7 +79,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param property
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Integer> fromProperty(QIntProperty property){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Integer> fromProperty(@StrictNonNull QIntProperty property){
 		return new QPropertyAlias<>(property, QIntBindable.bindableInterface(0));
 	}
 	
@@ -90,7 +88,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param property
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Long> fromProperty(QLongProperty property){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Long> fromProperty(@StrictNonNull QLongProperty property){
 		return new QPropertyAlias<>(property, QLongBindable.bindableInterface(0));
 	}
 	
@@ -99,7 +97,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param property
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Float> fromProperty(QFloatProperty property){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Float> fromProperty(@StrictNonNull QFloatProperty property){
 		return new QPropertyAlias<>(property, QFloatBindable.bindableInterface(0));
 	}
 	
@@ -108,7 +106,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param property
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Double> fromProperty(QDoubleProperty property){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Double> fromProperty(@StrictNonNull QDoubleProperty property){
 		return new QPropertyAlias<>(property, QDoubleBindable.bindableInterface(0));
 	}
 	
@@ -117,7 +115,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param property
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Character> fromProperty(QCharProperty property){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Character> fromProperty(@StrictNonNull QCharProperty property){
 		return new QPropertyAlias<>(property, QCharBindable.bindableInterface(0));
 	}
 	
@@ -126,7 +124,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param alias
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Boolean> fromAlias(QBooleanPropertyAlias alias){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Boolean> fromAlias(@StrictNonNull QBooleanPropertyAlias alias){
 		return new QPropertyAlias<>(alias);
 	}
 	
@@ -135,7 +133,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param alias
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Byte> fromAlias(QBytePropertyAlias alias){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Byte> fromAlias(@StrictNonNull QBytePropertyAlias alias){
 		return new QPropertyAlias<>(alias);
 	}
 	
@@ -144,7 +142,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param alias
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Short> fromAlias(QShortPropertyAlias alias){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Short> fromAlias(@StrictNonNull QShortPropertyAlias alias){
 		return new QPropertyAlias<>(alias);
 	}
 	
@@ -153,7 +151,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param alias
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Integer> fromAlias(QIntPropertyAlias alias){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Integer> fromAlias(@StrictNonNull QIntPropertyAlias alias){
 		return new QPropertyAlias<>(alias);
 	}
 	
@@ -162,7 +160,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param alias
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Long> fromAlias(QLongPropertyAlias alias){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Long> fromAlias(@StrictNonNull QLongPropertyAlias alias){
 		return new QPropertyAlias<>(alias);
 	}
 	
@@ -171,7 +169,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param alias
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Float> fromAlias(QFloatPropertyAlias alias){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Float> fromAlias(@StrictNonNull QFloatPropertyAlias alias){
 		return new QPropertyAlias<>(alias);
 	}
 	
@@ -180,7 +178,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param alias
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Double> fromAlias(QDoublePropertyAlias alias){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Double> fromAlias(@StrictNonNull QDoublePropertyAlias alias){
 		return new QPropertyAlias<>(alias);
 	}
 	
@@ -189,7 +187,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param alias
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Character> fromAlias(QCharPropertyAlias alias){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Character> fromAlias(@StrictNonNull QCharPropertyAlias alias){
 		return new QPropertyAlias<>(alias);
 	}
 	
@@ -198,7 +196,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param property
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Boolean> fromProperty(QObject.QBooleanProperty property){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Boolean> fromProperty(QObject.@StrictNonNull QBooleanProperty property){
 		return new QPropertyAlias<>(property, QBooleanBindable.bindableInterface(1));
 	}
 	
@@ -207,7 +205,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param property
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Byte> fromProperty(QObject.QByteProperty property){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Byte> fromProperty(QObject.@StrictNonNull QByteProperty property){
 		return new QPropertyAlias<>(property, QByteBindable.bindableInterface(1));
 	}
 	
@@ -216,7 +214,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param property
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Short> fromProperty(QObject.QShortProperty property){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Short> fromProperty(QObject.@StrictNonNull QShortProperty property){
 		return new QPropertyAlias<>(property, QShortBindable.bindableInterface(1));
 	}
 	
@@ -225,7 +223,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param property
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Integer> fromProperty(QObject.QIntProperty property){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Integer> fromProperty(QObject.@StrictNonNull QIntProperty property){
 		return new QPropertyAlias<>(property, QIntBindable.bindableInterface(1));
 	}
 	
@@ -234,7 +232,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param property
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Long> fromProperty(QObject.QLongProperty property){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Long> fromProperty(QObject.@StrictNonNull QLongProperty property){
 		return new QPropertyAlias<>(property, QLongBindable.bindableInterface(1));
 	}
 	
@@ -243,7 +241,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param property
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Float> fromProperty(QObject.QFloatProperty property){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Float> fromProperty(QObject.@StrictNonNull QFloatProperty property){
 		return new QPropertyAlias<>(property, QFloatBindable.bindableInterface(1));
 	}
 	
@@ -252,7 +250,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param property
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Double> fromProperty(QObject.QDoubleProperty property){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Double> fromProperty(QObject.@StrictNonNull QDoubleProperty property){
 		return new QPropertyAlias<>(property, QDoubleBindable.bindableInterface(1));
 	}
 	
@@ -261,7 +259,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param property
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Character> fromProperty(QObject.QCharProperty property){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Character> fromProperty(QObject.@StrictNonNull QCharProperty property){
 		return new QPropertyAlias<>(property, QCharBindable.bindableInterface(1));
 	}
 	
@@ -270,7 +268,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param property
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Boolean> fromProperty(QObject.QComputedBooleanProperty property){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Boolean> fromProperty(QObject.@StrictNonNull QComputedBooleanProperty property){
 		return new QPropertyAlias<>(property, QBooleanBindable.bindableInterface(2));
 	}
 	
@@ -279,7 +277,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param property
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Byte> fromProperty(QObject.QComputedByteProperty property){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Byte> fromProperty(QObject.@StrictNonNull QComputedByteProperty property){
 		return new QPropertyAlias<>(property, QByteBindable.bindableInterface(2));
 	}
 	
@@ -288,7 +286,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param property
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Short> fromProperty(QObject.QComputedShortProperty property){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Short> fromProperty(QObject.@StrictNonNull QComputedShortProperty property){
 		return new QPropertyAlias<>(property, QShortBindable.bindableInterface(2));
 	}
 	
@@ -297,7 +295,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param property
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Integer> fromProperty(QObject.QComputedIntProperty property){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Integer> fromProperty(QObject.@StrictNonNull QComputedIntProperty property){
 		return new QPropertyAlias<>(property, QIntBindable.bindableInterface(2));
 	}
 	
@@ -306,7 +304,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param property
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Long> fromProperty(QObject.QComputedLongProperty property){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Long> fromProperty(QObject.@StrictNonNull QComputedLongProperty property){
 		return new QPropertyAlias<>(property, QLongBindable.bindableInterface(2));
 	}
 	
@@ -315,7 +313,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param property
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Float> fromProperty(QObject.QComputedFloatProperty property){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Float> fromProperty(QObject.@StrictNonNull QComputedFloatProperty property){
 		return new QPropertyAlias<>(property, QFloatBindable.bindableInterface(2));
 	}
 	
@@ -324,7 +322,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param property
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Double> fromProperty(QObject.QComputedDoubleProperty property){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Double> fromProperty(QObject.@StrictNonNull QComputedDoubleProperty property){
 		return new QPropertyAlias<>(property, QDoubleBindable.bindableInterface(2));
 	}
 	
@@ -333,7 +331,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @param property
 	 * @return new alias
 	 */
-	public static QPropertyAlias<@QtPrimitiveType Character> fromProperty(QObject.QComputedCharProperty property){
+	public static @NonNull QPropertyAlias<@NonNull@QtPrimitiveType Character> fromProperty(QObject.@StrictNonNull QComputedCharProperty property){
 		return new QPropertyAlias<>(property, QCharBindable.bindableInterface(2));
 	}
 	
@@ -349,7 +347,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QPropertyAlias(QProperty<T> property) {
+	public QPropertyAlias(@StrictNonNull QProperty<T> property) {
 		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 0));
 	}
 	
@@ -357,7 +355,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QPropertyAlias(QObject.QProperty<T> property) {
+	public QPropertyAlias(QObject.@StrictNonNull QProperty<T> property) {
 		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 1));
 	}
 	
@@ -365,7 +363,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QPropertyAlias(QObject.QComputedProperty<T> property) {
+	public QPropertyAlias(QObject.@StrictNonNull QComputedProperty<T> property) {
 		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 2));
 	}
 	
@@ -373,11 +371,11 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided alias.
 	 * @param other
 	 */
-	public QPropertyAlias(QPropertyAlias<T> alias) {
+	public QPropertyAlias(@StrictNonNull QPropertyAlias<T> alias) {
 		super(alias);
 	}
 	
-	public QPropertyAlias(QBindable<T> bindable) {
+	public QPropertyAlias(@StrictNonNull QBindable<T> bindable) {
 		super(bindable.data(), bindable.iface());
 	}
 	
@@ -401,7 +399,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @see QProperty#setBinding(QPropertyBinding)
 	 */
 	@QtUninvokable
-	public QPropertyBinding<T> setBinding(QPropertyBinding<T> newBinding) {
+	public @NonNull QPropertyBinding<T> setBinding(@StrictNonNull QPropertyBinding<T> newBinding) {
 		return new QBindable<T>(aliasedProperty(), iface).setBinding(newBinding);
     }
 	
@@ -409,7 +407,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @see QProperty#setBinding(io.qt.QtUtilities.Supplier)
 	 */
 	@QtUninvokable
-	public QPropertyBinding<T> setBinding(QtUtilities.Supplier<T> functor) {
+	public @NonNull QPropertyBinding<T> setBinding(QtUtilities.@StrictNonNull Supplier<T> functor) {
         return setBinding(new QPropertyBinding<>(functor));
     }
 	
@@ -417,7 +415,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @see QProperty#binding()
 	 */
 	@QtUninvokable
-	public QPropertyBinding<T> binding() {
+	public @NonNull QPropertyBinding<T> binding() {
         return new QBindable<T>(aliasedProperty(), iface).binding();
     }
 	
@@ -425,7 +423,7 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * @see QProperty#takeBinding()
 	 */
 	@QtUninvokable
-	public QPropertyBinding<T> takeBinding() {
+	public @NonNull QPropertyBinding<T> takeBinding() {
         return new QBindable<T>(aliasedProperty(), iface).takeBinding();
     }
 }

@@ -319,7 +319,7 @@ public class ForeachVersionTask extends Task {
 												break;
 											case Windows:
 												if(compiler==null) {
-													qtDirs.add(new java.io.File(versionDir, "msvc2019_64"));
+													qtDir = new java.io.File(versionDir, "msvc2019_64");
 												}else switch(compiler) {
 												case MinGW_W64:
 													qtDir = new java.io.File(versionDir, "mingw_64");
@@ -336,6 +336,7 @@ public class ForeachVersionTask extends Task {
 											default:
 												break;
 											}
+											System.out.println("--> qtDir: "+qtDir);
 											if(qtDir!=null) {
 												toolsBin = new java.io.File(qtDir, "bin").getAbsolutePath();
 												toolsLib = new java.io.File(qtDir, "lib").getAbsolutePath();

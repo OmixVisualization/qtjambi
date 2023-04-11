@@ -31,7 +31,9 @@ package io.qt.core;
 import java.util.function.LongSupplier;
 
 import io.qt.NativeAccess;
+import io.qt.NonNull;
 import io.qt.QtPrimitiveType;
+import io.qt.StrictNonNull;
 
 /**
  * QLongPropertyBinding is primitive-typed version of QPropertyBinding&lt;Long&gt;.
@@ -48,7 +50,7 @@ public final class QLongPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QLongPropertyBinding</code> with the given functor <code>f</code>.
 	 * @param t
 	 */
-	public QLongPropertyBinding(LongSupplier f) {
+	public QLongPropertyBinding(@StrictNonNull LongSupplier f) {
 		super(f);
 	}
 	
@@ -56,7 +58,7 @@ public final class QLongPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QLongPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QLongPropertyBinding(QLongProperty property) {
+	public QLongPropertyBinding(@StrictNonNull QLongProperty property) {
 		super(property.bindingData());
 	}
 	
@@ -64,7 +66,7 @@ public final class QLongPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QLongPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QLongPropertyBinding(QObject.QLongProperty property) {
+	public QLongPropertyBinding(QObject.@StrictNonNull QLongProperty property) {
 		super(property.bindingData());
 	}
 	
@@ -72,7 +74,7 @@ public final class QLongPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QLongPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QLongPropertyBinding(QObject.QComputedLongProperty property) {
+	public QLongPropertyBinding(QObject.@StrictNonNull QComputedLongProperty property) {
 		super(property.bindingData());
 	}
 	
@@ -80,7 +82,7 @@ public final class QLongPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QLongPropertyBinding</code> as copy of the given binding.
 	 * @param other
 	 */
-	public QLongPropertyBinding(QLongPropertyBinding other) {
+	public QLongPropertyBinding(@StrictNonNull QLongPropertyBinding other) {
 		super(other);
 	}
 	
@@ -88,7 +90,7 @@ public final class QLongPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QLongPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QLongPropertyBinding(QProperty<@QtPrimitiveType Long> property) {
+	public QLongPropertyBinding(@StrictNonNull QProperty<@NonNull@QtPrimitiveType Long> property) {
 		super(check(property.bindingData(), property.valueMetaType()));
 	}
 	
@@ -96,7 +98,7 @@ public final class QLongPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QLongPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QLongPropertyBinding(QObject.QProperty<@QtPrimitiveType Long> property) {
+	public QLongPropertyBinding(QObject.@StrictNonNull QProperty<@NonNull@QtPrimitiveType Long> property) {
 		super(check(property.bindingData(), property.valueMetaType()));
 	}
 	
@@ -104,7 +106,7 @@ public final class QLongPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QLongPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QLongPropertyBinding(QObject.QComputedProperty<@QtPrimitiveType Long> property) {
+	public QLongPropertyBinding(QObject.@StrictNonNull QComputedProperty<@NonNull@QtPrimitiveType Long> property) {
 		super(check(property.bindingData(), property.valueMetaType()));
 	}
 	
@@ -112,7 +114,7 @@ public final class QLongPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QLongPropertyBinding</code> as copy of the given binding.
 	 * @param other
 	 */
-	public QLongPropertyBinding(QPropertyBinding<@QtPrimitiveType Long> other) {
+	public QLongPropertyBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Long> other) {
 		super(check(other, false));
 	}
 

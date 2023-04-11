@@ -803,18 +803,19 @@ void QmlTypeSystemReaderPrivate::parseAttributesOfComplexType(ComplexType* eleme
     if (!targetType.isEmpty()){
         ctype->setTargetType(targetType);
     }
+    ctype->setSkipMetaTypeRegistration(element->getNoMetaType());
     if (element->getDisableNativeIdUsage())
         ctype->disableNativeIdUsage();
     if (element->getForceAbstract())
-        ctype->setTypeFlags(ctype->typeFlags() | ComplexTypeEntry::ForceAbstract);
+        ctype->setForceAbstract();
     if (element->getForceFriendly())
-        ctype->setTypeFlags(ctype->typeFlags() | ComplexTypeEntry::ForceFriendly);
+        ctype->setForceFriendly();
     if (element->getDeprecated())
-        ctype->setTypeFlags(ctype->typeFlags() | ComplexTypeEntry::Deprecated);
+        ctype->setDeprecated();
     if(!ctype->isNamespace() && !ctype->isIterator()){
         QString threadAffine = element->getThreadAffinity();
         if (!threadAffine.trimmed().isEmpty()){
-            ctype->setTypeFlags(ctype->typeFlags() | ComplexTypeEntry::ThreadAffine);
+            ctype->setThreadAffine();
             ctype->setThreadAffinity(threadAffine);
         }
     }
@@ -863,7 +864,14 @@ void QmlTypeSystemReaderPrivate::parseAttributesOfComplexType(ComplexType* eleme
         ctype->designatedInterface()->setTargetLangPackage(package);
         ctype->designatedInterface()->setDefaultSuperclass(defaultSuperclass);
         ctype->designatedInterface()->setImplements(implements);
-        ctype->designatedInterface()->setTypeFlags(ctype->typeFlags());
+        if (ctype->isForceAbstract())
+            ctype->designatedInterface()->setForceAbstract();
+        if (ctype->isForceFriendly())
+            ctype->designatedInterface()->setForceFriendly();
+        if (ctype->isDeprecated())
+            ctype->designatedInterface()->setDeprecated();
+        if(ctype->isThreadAffine())
+            ctype->designatedInterface()->setThreadAffine();
         ctype->designatedInterface()->setThreadAffinity(ctype->threadAffinity());
         ctype->designatedInterface()->setPPCondition(ctype->ppCondition());
         ctype->designatedInterface()->setNativeInterface(ctype->isNativeInterface());
@@ -2415,7 +2423,6 @@ void QmlTypeSystemReaderPrivate::parseValueType(const QString& nameSpace, ValueT
 //            }
             if(!targetName.isEmpty())
                 entry->setTargetLangName(targetName.replace("::", "$"));
-            entry->setSkipMetaTypeRegistration(element->getNoMetaType());
             entry->setIsPolymorphicBase(element->getIsPolymorphicBase());
             entry->setPolymorphicIdValue(element->getPolymorphicIdExpression());
             parseAttributesOfComplexType(element, entry.get());
@@ -2520,11 +2527,10 @@ void QmlTypeSystemReaderPrivate::parseInterfaceType(const QString& nameSpace, In
             }
             std::unique_ptr<ImplementorTypeEntry> otype;
             if(element->getIsValue()){
-                ValueTypeEntry* ventry = new ValueTypeEntry(implName);
-                ventry->setSkipMetaTypeRegistration(element->getNoMetaType());
-                otype.reset(ventry);
+                otype.reset(new ValueTypeEntry(implName));
             }else
                 otype.reset(new ObjectTypeEntry(implName));
+            otype->setSkipMetaTypeRegistration(element->getNoMetaType());
             std::unique_ptr<InterfaceTypeEntry> itype(new InterfaceTypeEntry(name));
             if(!targetName.isEmpty())
                 itype->setTargetLangName(targetName);
@@ -2619,6 +2625,7 @@ void QmlTypeSystemReaderPrivate::parseEnumType(const QString& nameSpace, EnumTyp
             eentry->setForceInteger(element->getForceInteger());
             eentry->setExtensible(element->getExtensible());
             eentry->setHiddenMetaObject(element->getHiddenMetaobject());
+            eentry->setPPCondition(element->getPpCondition());
 
             const QList<AbstractObject*>& childrenList = element->childrenList();
             for(int i=0; i<childrenList.size(); ++i){

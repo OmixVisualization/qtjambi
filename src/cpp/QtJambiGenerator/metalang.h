@@ -1059,7 +1059,6 @@ class MetaClass : public MetaAttributes {
         bool hasMetaObjectFunction() const { return m_has_metaObject; }
         bool hasMetaCallFunction() const { return m_has_metacall; }
         bool hasMetaCastFunction() const { return m_has_metacast; }
-        bool hasPrivateDestructor() const { return m_has_private_destructor; }
         bool hasVirtualDestructor() const {
             if(baseClass() && baseClass()->hasVirtualDestructor())
                 return true;
@@ -1067,10 +1066,8 @@ class MetaClass : public MetaAttributes {
                 if(iface->hasVirtualDestructor())
                     return true;
             }
-            return m_has_virtual_destructor;
+            return m_type_entry->isDestructorVirtual();
         }
-        void setHasPublicDestructor(bool on) { m_has_public_destructor = on; }
-        bool hasPublicDestructor() const { return m_has_public_destructor; }
 
         MetaFunctionList queryFunctionsByName(const QString &name) const;
         MetaFunctionList queryFunctionsByOriginalName(const QString &name) const;
@@ -1154,8 +1151,6 @@ class MetaClass : public MetaAttributes {
         bool inheritsFrom(const MetaClass *other) const;
         bool inheritsFromInterface(const MetaClass *other) const;
 
-        void setHasPrivateDestructor(bool on) { m_has_private_destructor = on; }
-        void setHasVirtualDestructor(bool on) { m_has_virtuals |= on; m_has_virtual_destructor = on; }
         void setHasVirtuals(bool on) { m_has_virtuals = on; }
         void setHasVirtualSlots(bool on) { m_has_virtual_slots = on; }
         bool generateShellClass() const;
@@ -1183,7 +1178,6 @@ class MetaClass : public MetaAttributes {
         ComplexTypeEntry *typeEntry() { return m_type_entry; }
         void setTypeEntry(ComplexTypeEntry *type) { m_type_entry = type; }
 
-        void setHasHashFunction(bool on) { m_has_hash_function = on; }
         bool hasHashFunction() const;
 
         void setNeedsHashWorkaround(bool on) { m_needs_hash_workaround = on; }
@@ -1197,7 +1191,6 @@ class MetaClass : public MetaAttributes {
         void setHasEqualsOperator(bool on) { m_has_equals_operator = on; }
         bool hasEqualsOperator() const;
 
-        void setHasCloneOperator(bool on) { m_has_clone_operator = on; }
         bool hasCloneOperator() const;
 
         void addPropertySpec(QPropertySpec *spec) { m_property_specs << spec; }
@@ -1263,7 +1256,7 @@ class MetaClass : public MetaAttributes {
 
         void setHas_Q_OBJECT(bool isOBJECT){m_has_Q_OBJECT = isOBJECT;}
         bool has_Q_OBJECT() const {return m_has_Q_OBJECT;}
-        bool isDeprecated() const {return isDeclDeprecated() || (typeEntry()->typeFlags() & ComplexTypeEntry::Deprecated);}
+        bool isDeprecated() const {return isDeclDeprecated() || typeEntry()->isDeprecated();}
 
         void setHasSubClasses(bool subClasses){m_has_subClasses = subClasses;}
         bool hasSubClasses() const {return m_has_subClasses;}
@@ -1304,19 +1297,14 @@ private:
     mutable int m_has_publicassignment : 2;
     uint m_has_unimplmentablePureVirtualFunctions : 1;
     QSet<QString> m_unimplmentablePureVirtualFunctions;
-    uint m_has_public_destructor : 1;
-    uint m_has_private_destructor : 1;
     uint m_has_metaObject : 1;
     uint m_has_metacall : 1;
     uint m_has_metacast : 1;
     uint m_has_private_metaObject : 1;
     uint m_has_private_metacall : 1;
     uint m_has_private_metacast : 1;
-    uint m_has_virtual_destructor : 1;
-    uint m_has_hash_function : 1;
     uint m_needs_hash_workaround : 1;
     uint m_has_equals_operator : 1;
-    uint m_has_clone_operator : 1;
     uint m_is_type_alias : 1;
     uint m_has_Q_GADGET : 1;
     uint m_has_Q_OBJECT : 1;

@@ -29,7 +29,9 @@
 package io.qt.core;
 
 import io.qt.NativeAccess;
+import io.qt.NonNull;
 import io.qt.QtPrimitiveType;
+import io.qt.StrictNonNull;
 import io.qt.QtUtilities.ShortSupplier;
 
 /**
@@ -47,7 +49,7 @@ public final class QShortPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QShortPropertyBinding</code> with the given functor <code>f</code>.
 	 * @param t
 	 */
-	public QShortPropertyBinding(ShortSupplier f) {
+	public QShortPropertyBinding(@StrictNonNull ShortSupplier f) {
 		super(f);
 	}
 	
@@ -55,7 +57,7 @@ public final class QShortPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QShortPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QShortPropertyBinding(QShortProperty property) {
+	public QShortPropertyBinding(@StrictNonNull QShortProperty property) {
 		super(property.bindingData());
 	}
 	
@@ -63,7 +65,7 @@ public final class QShortPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QShortPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QShortPropertyBinding(QObject.QShortProperty property) {
+	public QShortPropertyBinding(QObject.@StrictNonNull QShortProperty property) {
 		super(property.bindingData());
 	}
 	
@@ -71,7 +73,7 @@ public final class QShortPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QShortPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QShortPropertyBinding(QObject.QComputedShortProperty property) {
+	public QShortPropertyBinding(QObject.@StrictNonNull QComputedShortProperty property) {
 		super(property.bindingData());
 	}
 	
@@ -79,7 +81,7 @@ public final class QShortPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QShortPropertyBinding</code> as copy of the given binding.
 	 * @param other
 	 */
-	public QShortPropertyBinding(QShortPropertyBinding other) {
+	public QShortPropertyBinding(@StrictNonNull QShortPropertyBinding other) {
 		super(other);
 	}
 	
@@ -87,7 +89,7 @@ public final class QShortPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QShortPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QShortPropertyBinding(QProperty<@QtPrimitiveType Short> property) {
+	public QShortPropertyBinding(@StrictNonNull QProperty<@NonNull@QtPrimitiveType Short> property) {
 		super(check(property.bindingData(), property.valueMetaType()));
 	}
 	
@@ -95,7 +97,7 @@ public final class QShortPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QShortPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QShortPropertyBinding(QObject.QProperty<@QtPrimitiveType Short> property) {
+	public QShortPropertyBinding(QObject.@StrictNonNull QProperty<@NonNull@QtPrimitiveType Short> property) {
 		super(check(property.bindingData(), property.valueMetaType()));
 	}
 	
@@ -103,7 +105,7 @@ public final class QShortPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QShortPropertyBinding</code> as copy of the property's available binding.
 	 * @param property
 	 */
-	public QShortPropertyBinding(QObject.QComputedProperty<@QtPrimitiveType Short> property) {
+	public QShortPropertyBinding(QObject.@StrictNonNull QComputedProperty<@NonNull@QtPrimitiveType Short> property) {
 		super(check(property.bindingData(), property.valueMetaType()));
 	}
 	
@@ -111,7 +113,7 @@ public final class QShortPropertyBinding extends QUntypedPropertyBinding {
 	 * Creates a new <code>QShortPropertyBinding</code> as copy of the given binding.
 	 * @param other
 	 */
-	public QShortPropertyBinding(QPropertyBinding<@QtPrimitiveType Short> other) {
+	public QShortPropertyBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Short> other) {
 		super(check(other, false));
 	}
 

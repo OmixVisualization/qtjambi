@@ -428,16 +428,6 @@ TypeSystem{
     }
     
     Rejection{
-        className: "QStyleOptionButton"
-        enumName: "StyleOptionType"
-    }
-    
-    Rejection{
-        className: "QStyleOptionButton"
-        enumName: "StyleOptionVersion"
-    }
-    
-    Rejection{
         className: "QStyleOptionComboBox"
         enumName: "StyleOptionType"
     }
@@ -554,16 +544,6 @@ TypeSystem{
     
     Rejection{
         className: "QStyleOptionRubberBand"
-        enumName: "StyleOptionVersion"
-    }
-    
-    Rejection{
-        className: "QStyleOptionSizeGrip"
-        enumName: "StyleOptionType"
-    }
-    
-    Rejection{
-        className: "QStyleOptionSizeGrip"
         enumName: "StyleOptionVersion"
     }
     
@@ -1162,10 +1142,6 @@ TypeSystem{
     }
     
     EnumType{
-        name: "QStyleOptionButton::ButtonFeature"
-    }
-    
-    EnumType{
         name: "QStyleOptionHeader::SectionPosition"
     }
     
@@ -1516,6 +1492,8 @@ TypeSystem{
     
     ValueType{
         name: "QStyleOptionSizeGrip"
+        Rejection{enumName: "StyleOptionType"}
+        Rejection{enumName: "StyleOptionVersion"}
         polymorphicIdExpression: "%1->type == QStyleOptionSizeGrip::Type"
         ModifyFunction{
             signature: "QStyleOptionSizeGrip(int)"
@@ -1533,6 +1511,11 @@ TypeSystem{
     
     ValueType{
         name: "QStyleOptionButton"
+        Rejection{enumName: "StyleOptionType"}
+        Rejection{enumName: "StyleOptionVersion"}
+        EnumType{
+            name: "ButtonFeature"
+        }
         polymorphicIdExpression: "%1->type == QStyleOptionButton::Type"
         ModifyFunction{
             signature: "QStyleOptionButton(int)"
@@ -14532,4 +14515,5 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QStyleOption."}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'hasEditFocus()const' for function modification in 'QWidget' not found. Possible candidates: "}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'setEditFocus(bool)' for function modification in 'QWidget' not found. Possible candidates: "}
+    SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QTreeWidgetItem."}
 }

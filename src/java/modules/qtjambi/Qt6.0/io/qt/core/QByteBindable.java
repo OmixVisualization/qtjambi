@@ -28,32 +28,35 @@
 ****************************************************************************/
 package io.qt.core;
 
+import io.qt.NonNull;
+import io.qt.Nullable;
 import io.qt.QtPrimitiveType;
 import io.qt.QtUninvokable;
+import io.qt.StrictNonNull;
 
 /**
- * QCharBindable is primitive-typed version of QBindable&lt;Character&gt;.
+ * QByteBindable is primitive-typed version of QBindable&lt;Byte&gt;.
  * @see QBindable
  */
-public final class QCharBindable extends QUntypedBindable {
+public final class QByteBindable extends QUntypedBindable {
 
-	private QCharBindable(QPrivateConstructor p) {
+	private QByteBindable(QPrivateConstructor p) {
 		super(p);
 	}
 
 	/**
-	 * Creates a new <code>char</code>-typed invalid bindable.
+	 * Creates a new <code>byte</code>-typed invalid bindable.
 	 */
-	public QCharBindable() {
+	public QByteBindable() {
 		super(null, null);
 	}
 	
 	/**
 	 * Creates a copy of the provided bindable. 
-	 * If the type of the other bindable is not <code>char</code> it remains invalid.
+	 * If the type of the other bindable is not <code>byte</code> it remains invalid.
 	 * @param other
 	 */
-	public QCharBindable(QUntypedBindable other) {
+	public QByteBindable(@StrictNonNull QUntypedBindable other) {
 		super(other.data(), other.iface());
 		check();
 	}
@@ -63,22 +66,25 @@ public final class QCharBindable extends QUntypedBindable {
 		if(iface!=null) {
 			QMetaType metaType = iface.metaType();
 			if(metaType==null 
-					|| (metaType.id()!=QMetaType.Type.QChar.value()
-						&& metaType.id()!=QMetaType.Type.Char16.value()
-						&& metaType.id()!=QMetaType.Type.Short.value()
-						&& metaType.id()!=QMetaType.Type.UShort.value()
+					|| (metaType.id()!=QMetaType.Type.SChar.value()
+						&& metaType.id()!=QMetaType.Type.Char.value()
+						&& metaType.id()!=QMetaType.Type.UChar.value()
 						&& metaType.id()!=QMetaType.Type.QVariant.value())) {
 				setIface(null);
 				setData(null);
 			}
 		}
 	}
+
+	QByteBindable(QUntypedPropertyData d, QBindableInterface i) {
+		super(d, i);
+	}
 	
 	/**
 	 * Creates a new bindable from provided property.
 	 * @param property
 	 */
-	public QCharBindable(QCharProperty property) {
+	public QByteBindable(@StrictNonNull QByteProperty property) {
 		super(property, bindableInterface(0));
 	}
 	
@@ -86,7 +92,7 @@ public final class QCharBindable extends QUntypedBindable {
 	 * Creates a new bindable from provided property.
 	 * @param property
 	 */
-	public QCharBindable(QObject.QCharProperty property) {
+	public QByteBindable(QObject.@StrictNonNull QByteProperty property) {
 		super(property, bindableInterface(1));
 	}
 	
@@ -94,112 +100,108 @@ public final class QCharBindable extends QUntypedBindable {
 	 * Creates a new bindable from provided property.
 	 * @param property
 	 */
-	public QCharBindable(QObject.QComputedCharProperty property) {
+	public QByteBindable(QObject.@StrictNonNull QComputedByteProperty property) {
 		super(property, bindableInterface(2));
 	}
 	
 	/**
 	 * Creates a new bindable from provided property.
-	 * If the type of the property is not <code>char</code> an {@link IllegalArgumentException} is thrown.
+	 * If the type of the property is not <code>byte</code> an {@link IllegalArgumentException} is thrown.
 	 * @param property
 	 */
-	public QCharBindable(QProperty<@QtPrimitiveType Character> property) {
+	public QByteBindable(@StrictNonNull QProperty<@NonNull@QtPrimitiveType Byte> property) {
 		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 0));
 		check();
 		if(iface()==null)
-			throw new IllegalArgumentException("Given QProperty is not of char type.");
+			throw new IllegalArgumentException("Given QProperty is not of byte type.");
 	}
 	
 	/**
 	 * Creates a new bindable from provided property.
-	 * If the type of the property is not <code>float</code> an {@link IllegalArgumentException} is thrown.
+	 * If the type of the property is not <code>byte</code> an {@link IllegalArgumentException} is thrown.
 	 * @param property
 	 */
-	public QCharBindable(QObject.QProperty<@QtPrimitiveType Character> property) {
+	public QByteBindable(QObject.@StrictNonNull QProperty<@NonNull@QtPrimitiveType Byte> property) {
 		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 1));
 		check();
 		if(iface()==null)
-			throw new IllegalArgumentException("Given QProperty is not of char type.");
+			throw new IllegalArgumentException("Given QProperty is not of byte type.");
 	}
 	
 	/**
 	 * Creates a new bindable from provided property.
-	 * If the type of the property is not <code>float</code> an {@link IllegalArgumentException} is thrown.
+	 * If the type of the property is not <code>byte</code> an {@link IllegalArgumentException} is thrown.
 	 * @param property
 	 */
-	public QCharBindable(QObject.QComputedProperty<@QtPrimitiveType Character> property) {
+	public QByteBindable(QObject.QComputedProperty<@NonNull@QtPrimitiveType Byte> property) {
 		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 2));
 		check();
 		if(iface()==null)
-			throw new IllegalArgumentException("Given QProperty is not of char type.");
+			throw new IllegalArgumentException("Given QProperty is not of byte type.");
 	}
 	
 	static native QBindableInterface bindableInterface(int propertyType);
-
-	QCharBindable(QUntypedPropertyData d, QBindableInterface i) {
-		super(d, i);
-	}
 
 	/**
 	 * Creates a binding to the underlying property.
 	 */
 	@QtUninvokable
 	@Override
-	public QCharPropertyBinding makeBinding()
+	public @NonNull QBytePropertyBinding makeBinding()
     {
 		QUntypedPropertyBinding binding = super.makeBinding();
-		if(binding instanceof QCharPropertyBinding) {
-			return (QCharPropertyBinding)binding;
+		if(binding instanceof QBytePropertyBinding) {
+			return (QBytePropertyBinding)binding;
 		}else {
-			return new QCharPropertyBinding(binding);
+			return new QBytePropertyBinding(binding);
 		}
     }
 	
     /**
      * Returns the binding expression that is associated with the underlying property. 
-     * A default constructed {@link QCharPropertyBinding} will be returned if no such association exists.
+     * A default constructed {@link QBytePropertyBinding} will be returned if no such association exists.
      * @return binding
      */
 	@QtUninvokable
 	@Override
-    public QCharPropertyBinding binding()
+    public @NonNull QBytePropertyBinding binding()
     {
 		QUntypedPropertyBinding binding = super.binding();
-		if(binding instanceof QCharPropertyBinding) {
-			return (QCharPropertyBinding)binding;
+		if(binding instanceof QBytePropertyBinding) {
+			return (QBytePropertyBinding)binding;
 		}else {
-			return new QCharPropertyBinding(binding);
+			return new QBytePropertyBinding(binding);
 		}
     }
     
 	@QtUninvokable
-	public QCharPropertyBinding setBinding(QCharPropertyBinding binding)
+	public @NonNull QBytePropertyBinding setBinding(@StrictNonNull QBytePropertyBinding binding)
     {
 		QUntypedPropertyBinding oldBinding = super.overrideBinding(binding);
-		if(oldBinding instanceof QCharPropertyBinding) {
-			return (QCharPropertyBinding)oldBinding;
+		if(oldBinding instanceof QBytePropertyBinding) {
+			return (QBytePropertyBinding)oldBinding;
 		}else {
-			return new QCharPropertyBinding(oldBinding);
+			return new QBytePropertyBinding(oldBinding);
 		}
     }
     
 	@QtUninvokable
-	public QCharPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Character> binding)
+	public @NonNull QBytePropertyBinding setBinding(@Nullable QPropertyBinding<@NonNull@QtPrimitiveType Byte> binding)
     {
-		if(binding!=null && !QCharProperty.checkType(binding.valueMetaType()))
-			return new QCharPropertyBinding();
+		if(binding!=null && !QByteProperty.checkType(binding.valueMetaType()))
+			return new QBytePropertyBinding();
 		QUntypedPropertyBinding oldBinding = super.overrideBinding(binding);
-		if(oldBinding instanceof QCharPropertyBinding) {
-			return (QCharPropertyBinding)oldBinding;
+		if(oldBinding instanceof QBytePropertyBinding) {
+			return (QBytePropertyBinding)oldBinding;
 		}else {
-			return new QCharPropertyBinding(oldBinding);
+			return new QBytePropertyBinding(oldBinding);
 		}
     }
 	
 	@QtUninvokable
-	public QCharPropertyBinding setBinding(io.qt.QtUtilities.CharSupplier functor)
+	public @NonNull QBytePropertyBinding setBinding(io.qt.QtUtilities.@StrictNonNull ByteSupplier functor)
     {
-		return setBinding(new QCharPropertyBinding(functor));
+		return setBinding(new QBytePropertyBinding(functor));
     }
 	
 	/**
@@ -208,9 +210,9 @@ public final class QCharBindable extends QUntypedBindable {
 	 * @return the removed binding
 	 */
 	@QtUninvokable
-    public QCharPropertyBinding takeBinding()
+    public @NonNull QBytePropertyBinding takeBinding()
     {
-        return setBinding(new QCharPropertyBinding());
+        return setBinding(new QBytePropertyBinding());
     }
     
 	/**
@@ -218,7 +220,7 @@ public final class QCharBindable extends QUntypedBindable {
 	 * @return value
 	 */
     @io.qt.QtUninvokable
-    public final char value() {
+    public final byte value() {
         return value(QtJambi_LibraryUtilities.internal.nativeId(this.iface()), QtJambi_LibraryUtilities.internal.nativeId(this.data()));
     }
     
@@ -227,13 +229,13 @@ public final class QCharBindable extends QUntypedBindable {
 	 * @param newValue
 	 */
     @io.qt.QtUninvokable
-    public final void setValue(char value) {
+    public final void setValue(byte value) {
         setValue(QtJambi_LibraryUtilities.internal.nativeId(this.iface()), QtJambi_LibraryUtilities.internal.nativeId(this.data()), value);
     }
     
     @io.qt.QtUninvokable
-    static native char value(long ifaceId, long dataId);
+    static native byte value(long ifaceId, long dataId);
     
     @io.qt.QtUninvokable
-    static native void setValue(long ifaceId, long dataId, char value);
+    static native void setValue(long ifaceId, long dataId, byte value);
 }

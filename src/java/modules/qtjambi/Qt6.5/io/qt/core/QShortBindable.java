@@ -28,32 +28,35 @@
 ****************************************************************************/
 package io.qt.core;
 
+import io.qt.NonNull;
 import io.qt.QtPrimitiveType;
 import io.qt.QtUninvokable;
+import io.qt.StrictNonNull;
+import io.qt.QtUtilities.ShortSupplier;
 
 /**
- * QLongBindable is primitive-typed version of QBindable&lt;Long&gt;.
+ * QShortBindable is primitive-typed version of QBindable&lt;Short&gt;.
  * @see QBindable
  */
-public final class QLongBindable extends QUntypedBindable {
-	
-	private QLongBindable(QPrivateConstructor p) {
+public final class QShortBindable extends QUntypedBindable {
+
+	private QShortBindable(QPrivateConstructor p) {
 		super(p);
 	}
 
 	/**
-	 * Creates a new <code>long</code>-typed invalid bindable.
+	 * Creates a new <code>short</code>-typed invalid bindable.
 	 */
-	public QLongBindable() {
+	public QShortBindable() {
 		super(null, null);
 	}
 	
 	/**
 	 * Creates a copy of the provided bindable. 
-	 * If the type of the other bindable is not <code>long</code> it remains invalid.
+	 * If the type of the other bindable is not <code>short</code> it remains invalid.
 	 * @param other
 	 */
-	public QLongBindable(QUntypedBindable other) {
+	public QShortBindable(@StrictNonNull QUntypedBindable other) {
 		super(other.data(), other.iface());
 		check();
 	}
@@ -63,10 +66,10 @@ public final class QLongBindable extends QUntypedBindable {
 		if(iface!=null) {
 			QMetaType metaType = iface.metaType();
 			if(metaType==null 
-					|| (metaType.id()!=QMetaType.Type.LongLong.value()
-						&& metaType.id()!=QMetaType.Type.Long.value()
-						&& metaType.id()!=QMetaType.Type.ULong.value()
-						&& metaType.id()!=QMetaType.Type.ULongLong.value()
+					|| (metaType.id()!=QMetaType.Type.QChar.value()
+						&& metaType.id()!=QMetaType.Type.Char16.value()
+						&& metaType.id()!=QMetaType.Type.Short.value()
+						&& metaType.id()!=QMetaType.Type.UShort.value()
 						&& metaType.id()!=QMetaType.Type.QVariant.value())) {
 				setIface(null);
 				setData(null);
@@ -74,7 +77,7 @@ public final class QLongBindable extends QUntypedBindable {
 		}
 	}
 
-	QLongBindable(QUntypedPropertyData d, QBindableInterface i) {
+	QShortBindable(QUntypedPropertyData d, QBindableInterface i) {
 		super(d, i);
 	}
 	
@@ -82,7 +85,7 @@ public final class QLongBindable extends QUntypedBindable {
 	 * Creates a new bindable from provided property.
 	 * @param property
 	 */
-	public QLongBindable(QLongProperty property) {
+	public QShortBindable(@StrictNonNull QShortProperty property) {
 		super(property, bindableInterface(0));
 	}
 	
@@ -90,7 +93,7 @@ public final class QLongBindable extends QUntypedBindable {
 	 * Creates a new bindable from provided property.
 	 * @param property
 	 */
-	public QLongBindable(QObject.QLongProperty property) {
+	public QShortBindable(QObject.@StrictNonNull QShortProperty property) {
 		super(property, bindableInterface(1));
 	}
 	
@@ -98,46 +101,69 @@ public final class QLongBindable extends QUntypedBindable {
 	 * Creates a new bindable from provided property.
 	 * @param property
 	 */
-	public QLongBindable(QObject.QComputedLongProperty property) {
+	public QShortBindable(QObject.@StrictNonNull QComputedShortProperty property) {
 		super(property, bindableInterface(2));
 	}
 	
 	/**
 	 * Creates a new bindable from provided property.
-	 * If the type of the property is not <code>long</code> an {@link IllegalArgumentException} is thrown.
+	 * If the type of the property is not <code>short</code> an {@link IllegalArgumentException} is thrown.
 	 * @param property
 	 */
-	public QLongBindable(QProperty<@QtPrimitiveType Long> property) {
+	public QShortBindable(@StrictNonNull QProperty<@NonNull@QtPrimitiveType Short> property) {
 		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 0));
 		check();
 		if(iface()==null)
-			throw new IllegalArgumentException("Given QProperty is not of long type.");
+			throw new IllegalArgumentException("Given QProperty is not of short type.");
 	}
 	
 	/**
 	 * Creates a new bindable from provided property.
-	 * If the type of the property is not <code>long</code> an {@link IllegalArgumentException} is thrown.
+	 * If the type of the property is not <code>short</code> an {@link IllegalArgumentException} is thrown.
 	 * @param property
 	 */
-	public QLongBindable(QObject.QProperty<@QtPrimitiveType Long> property) {
+	public QShortBindable(QObject.@StrictNonNull QProperty<@NonNull@QtPrimitiveType Short> property) {
 		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 1));
 		check();
 		if(iface()==null)
-			throw new IllegalArgumentException("Given QProperty is not of long type.");
+			throw new IllegalArgumentException("Given QProperty is not of short type.");
 	}
 	
 	/**
 	 * Creates a new bindable from provided property.
-	 * If the type of the property is not <code>long</code> an {@link IllegalArgumentException} is thrown.
+	 * If the type of the property is not <code>short</code> an {@link IllegalArgumentException} is thrown.
 	 * @param property
 	 */
-	public QLongBindable(QObject.QComputedProperty<@QtPrimitiveType Long> property) {
+	public QShortBindable(QObject.@StrictNonNull QComputedProperty<@NonNull@QtPrimitiveType Short> property) {
 		super(property, QBindable.bindableInterface(property.valueMetaType().id(), 2));
 		check();
 		if(iface()==null)
-			throw new IllegalArgumentException("Given QProperty is not of long type.");
+			throw new IllegalArgumentException("Given QProperty is not of short type.");
 	}
 	
+	/**
+	 * Creates a new bindable from provided meta property of given object.
+	 * If the type of the property is not <code>short</code> an {@link IllegalArgumentException} is thrown.
+	 * @param object
+	 * @param property
+	 */
+	public QShortBindable(@StrictNonNull QObject object, @StrictNonNull String property) {
+		this(object, object.metaObject().property(property));
+	}
+	
+	/**
+	 * Creates a new bindable from provided meta property of given object.
+	 * If the type of the property is not <code>short</code> an {@link IllegalArgumentException} is thrown.
+	 * @param object
+	 * @param property
+	 */
+	public QShortBindable(@StrictNonNull QObject object, @StrictNonNull QMetaProperty property) {
+		super(object, property, QBindable.bindableInterface(property));
+		check();
+		if(iface()==null)
+			throw new IllegalArgumentException("Given QMetaProperty is not of short type.");
+	}
+
 	static native QBindableInterface bindableInterface(int propertyType);
 
 	/**
@@ -145,61 +171,61 @@ public final class QLongBindable extends QUntypedBindable {
 	 */
 	@QtUninvokable
 	@Override
-	public QLongPropertyBinding makeBinding()
+	public @NonNull QShortPropertyBinding makeBinding()
     {
 		QUntypedPropertyBinding binding = super.makeBinding();
-		if(binding instanceof QLongPropertyBinding) {
-			return (QLongPropertyBinding)binding;
+		if(binding instanceof QShortPropertyBinding) {
+			return (QShortPropertyBinding)binding;
 		}else {
-			return new QLongPropertyBinding(binding);
+			return new QShortPropertyBinding(binding);
 		}
     }
 	
     /**
      * Returns the binding expression that is associated with the underlying property. 
-     * A default constructed {@link QLongPropertyBinding} will be returned if no such association exists.
+     * A default constructed {@link QShortPropertyBinding} will be returned if no such association exists.
      * @return binding
      */
 	@QtUninvokable
 	@Override
-    public QLongPropertyBinding binding()
+    public @NonNull QShortPropertyBinding binding()
     {
 		QUntypedPropertyBinding binding = super.binding();
-		if(binding instanceof QLongPropertyBinding) {
-			return (QLongPropertyBinding)binding;
+		if(binding instanceof QShortPropertyBinding) {
+			return (QShortPropertyBinding)binding;
 		}else {
-			return new QLongPropertyBinding(binding);
+			return new QShortPropertyBinding(binding);
 		}
     }
     
 	@QtUninvokable
-	public QLongPropertyBinding setBinding(QLongPropertyBinding binding)
+	public @NonNull QShortPropertyBinding setBinding(@StrictNonNull QShortPropertyBinding binding)
     {
 		QUntypedPropertyBinding oldBinding = super.overrideBinding(binding);
-		if(oldBinding instanceof QLongPropertyBinding) {
-			return (QLongPropertyBinding)oldBinding;
+		if(oldBinding instanceof QShortPropertyBinding) {
+			return (QShortPropertyBinding)oldBinding;
 		}else {
-			return new QLongPropertyBinding(oldBinding);
+			return new QShortPropertyBinding(oldBinding);
 		}
     }
 	
 	@QtUninvokable
-	public QLongPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Long> binding)
+	public @NonNull QShortPropertyBinding setBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Short> binding)
     {
-		if(binding!=null && !QLongProperty.checkType(binding.valueMetaType()))
-			return new QLongPropertyBinding();
+		if(binding!=null && !QShortProperty.checkType(binding.valueMetaType()))
+			return new QShortPropertyBinding();
 		QUntypedPropertyBinding oldBinding = super.overrideBinding(binding);
-		if(oldBinding instanceof QLongPropertyBinding) {
-			return (QLongPropertyBinding)oldBinding;
+		if(oldBinding instanceof QShortPropertyBinding) {
+			return (QShortPropertyBinding)oldBinding;
 		}else {
-			return new QLongPropertyBinding(oldBinding);
+			return new QShortPropertyBinding(oldBinding);
 		}
     }
 	
 	@QtUninvokable
-	public QLongPropertyBinding setBinding(java.util.function.LongSupplier functor)
+	public @NonNull QShortPropertyBinding setBinding(@StrictNonNull ShortSupplier functor)
     {
-		return setBinding(new QLongPropertyBinding(functor));
+		return setBinding(new QShortPropertyBinding(functor));
     }
 	
 	/**
@@ -208,9 +234,9 @@ public final class QLongBindable extends QUntypedBindable {
 	 * @return the removed binding
 	 */
 	@QtUninvokable
-    public QLongPropertyBinding takeBinding()
+    public @NonNull QShortPropertyBinding takeBinding()
     {
-        return setBinding(new QLongPropertyBinding());
+        return setBinding(new QShortPropertyBinding());
     }
     
 	/**
@@ -218,7 +244,7 @@ public final class QLongBindable extends QUntypedBindable {
 	 * @return value
 	 */
     @io.qt.QtUninvokable
-    public final long value() {
+    public final short value() {
         return value(QtJambi_LibraryUtilities.internal.nativeId(this.iface()), QtJambi_LibraryUtilities.internal.nativeId(this.data()));
     }
     
@@ -227,13 +253,13 @@ public final class QLongBindable extends QUntypedBindable {
 	 * @param newValue
 	 */
     @io.qt.QtUninvokable
-    public final void setValue(long value) {
+    public final void setValue(short value) {
         setValue(QtJambi_LibraryUtilities.internal.nativeId(this.iface()), QtJambi_LibraryUtilities.internal.nativeId(this.data()), value);
     }
     
     @io.qt.QtUninvokable
-    static native long value(long ifaceId, long dataId);
+    static native short value(long ifaceId, long dataId);
     
     @io.qt.QtUninvokable
-    static native void setValue(long ifaceId, long dataId, long value);
+    static native void setValue(long ifaceId, long dataId, short value);
 }

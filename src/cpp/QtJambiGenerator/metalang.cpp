@@ -1816,23 +1816,18 @@ MetaClass *MetaClass::extractInterface() const {
  * interface and returns it...
  */
 MetaClass *MetaClass::extractInterfaceImpl() {
-    Q_ASSERT(typeEntry()->isInterface());
-    const InterfaceTypeEntry* itype = static_cast<const InterfaceTypeEntry*>(typeEntry());
-    Q_ASSERT(itype->origin());
-
     if (!m_extracted_interface_impl) {
+        Q_ASSERT(typeEntry()->isInterface());
+        const InterfaceTypeEntry* itype = static_cast<const InterfaceTypeEntry*>(typeEntry());
+        Q_ASSERT(itype->origin());
+
         MetaClass *ifaceImpl = new MetaClass;
         ifaceImpl->setAttributes(attributes());
         ifaceImpl->setBaseClass(nullptr);
         ifaceImpl->setOriginalAttributes(originalAttributes());
         ifaceImpl->setAttributes(attributes());
-        ifaceImpl->setHasCloneOperator(hasCloneOperator());
         ifaceImpl->setHasEqualsOperator(hasEqualsOperator());
-        ifaceImpl->setHasHashFunction(hasHashFunction());
         ifaceImpl->setHasJustPrivateConstructors(hasJustPrivateConstructors());
-        ifaceImpl->setHasPrivateDestructor(hasPrivateDestructor());
-        ifaceImpl->setHasVirtualDestructor(hasVirtualDestructor());
-        ifaceImpl->setHasPublicDestructor(hasPublicDestructor());
         ifaceImpl->setHasVirtuals(hasVirtuals());
         ifaceImpl->setHasVirtualSlots(hasVirtualSlots());
         ifaceImpl->setHas_Q_GADGET(has_Q_GADGET());
@@ -1854,7 +1849,6 @@ MetaClass *MetaClass::extractInterfaceImpl() {
             ifaceImpl->m_extracted_interface = this;
         }
     }
-
     return m_extracted_interface_impl;
 }
 
@@ -2089,7 +2083,10 @@ void MetaClass::setBaseClass(MetaClass *base_class) {
             m_type_entry->setQCoreApplication(true);
         if(base_class->typeEntry()->isQAction())
             m_type_entry->setQAction(true);
+        if(base_class->typeEntry()->isQMediaControl())
+            m_type_entry->setQMediaControl(true);
         base_class->m_has_subClasses = true;
+        m_type_entry->setHasNonPublicFields();
     }
 }
 
@@ -2236,7 +2233,7 @@ bool MetaClass::hasHashFunction() const {
             return has_hash;
         }
     }
-    return m_has_hash_function;
+    return m_type_entry->hasHash();
 }
 
 bool MetaClass::hasEqualsOperator() const {
@@ -2261,7 +2258,15 @@ bool MetaClass::hasEqualsOperator() const {
 bool MetaClass::hasCloneOperator() const {
     if(m_template_base_class && m_template_base_class->hasCloneOperator())
         return true;
-    return m_has_clone_operator;
+    if(this->isPublic() && !this->isAbstract() && !m_type_entry->isInterface() && m_type_entry->hasPublicCopyConstructor()){
+        QString signature = QLatin1String("%1(%2)").arg(m_type_entry->qualifiedCppName().split("::").last(), m_type_entry->qualifiedCppName());
+        for(FunctionModification mod : m_type_entry->functionModifications(signature)){
+            if(mod.isRemoveModifier())
+                return false;
+        }
+        return true;
+    }
+    return m_type_entry->isValue();
 }
 
 bool MetaClass::hasProtectedFieldAccessors() const {
@@ -2761,19 +2766,14 @@ MetaClass::MetaClass()
         m_has_explicitcopyconstructor(0),
         m_has_unimplmentablePureVirtualFunctions(false),
         m_unimplmentablePureVirtualFunctions(),
-        m_has_public_destructor(true),
-        m_has_private_destructor(false),
         m_has_metaObject(false),
         m_has_metacall(false),
         m_has_metacast(false),
         m_has_private_metaObject(false),
         m_has_private_metacall(false),
         m_has_private_metacast(false),
-        m_has_virtual_destructor(false),
-        m_has_hash_function(false),
         m_needs_hash_workaround(false),
         m_has_equals_operator(false),
-        m_has_clone_operator(false),
         m_is_type_alias(false),
         m_has_Q_GADGET(false),
         m_has_Q_OBJECT(false),

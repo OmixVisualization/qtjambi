@@ -129,6 +129,9 @@ public:
     const QString &getPpCondition() const;
     void setPpCondition(const QString &newPpCondition);
 
+    bool getNoMetaType() const;
+    void setNoMetaType(bool newNoMetaType);
+
 signals:
     void packageNameChanged();
 
@@ -164,6 +167,8 @@ signals:
 
     void ppConditionChanged();
 
+    void noMetaTypeChanged();
+
 private:
     QString packageName;
     QString implementing;
@@ -182,6 +187,7 @@ private:
     QVariant generate = true;
     QString extendType;
     QString ppCondition;
+    bool noMetaType = false;
     Q_PROPERTY(QString packageName READ getPackageName WRITE setPackageName NOTIFY packageNameChanged)
     Q_PROPERTY(QString implementing READ getImplementing WRITE setImplementing NOTIFY implementingChanged)
     Q_PROPERTY(QString using READ getUsing WRITE setUsing NOTIFY usingChanged)
@@ -199,6 +205,7 @@ private:
     Q_PROPERTY(QVariant generate READ getGenerate WRITE setGenerate NOTIFY generateChanged)
     Q_PROPERTY(QString extendType READ getExtendType WRITE setExtendType NOTIFY extendTypeChanged)
     Q_PROPERTY(QString ppCondition READ getPpCondition WRITE setPpCondition NOTIFY ppConditionChanged)
+    Q_PROPERTY(bool noMetaType READ getNoMetaType WRITE setNoMetaType NOTIFY noMetaTypeChanged)
 };
 
 class ObjectType : public ComplexType
@@ -357,8 +364,6 @@ class ValueType : public ComplexType
     QML_ELEMENT
 public:
     explicit ValueType(QObject *parent = nullptr):ComplexType{parent}{}
-    bool getNoMetaType() const;
-    void setNoMetaType(bool newNoMetaType);
 
     bool getIsPolymorphicBase() const;
     void setIsPolymorphicBase(bool newIsPolymorphicBase);
@@ -367,17 +372,14 @@ public:
     void setPolymorphicIdExpression(const QString &newPolymorphicIdExpression);
 
 signals:
-    void noMetaTypeChanged();
 
     void isPolymorphicBaseChanged();
 
     void polymorphicIdExpressionChanged();
 
 private:
-    bool noMetaType = false;
     bool isPolymorphicBase = false;
     QString polymorphicIdExpression;
-    Q_PROPERTY(bool noMetaType READ getNoMetaType WRITE setNoMetaType NOTIFY noMetaTypeChanged)
     Q_PROPERTY(bool isPolymorphicBase READ getIsPolymorphicBase WRITE setIsPolymorphicBase NOTIFY isPolymorphicBaseChanged)
     Q_PROPERTY(QString polymorphicIdExpression READ getPolymorphicIdExpression WRITE setPolymorphicIdExpression NOTIFY polymorphicIdExpressionChanged)
 };
@@ -401,25 +403,18 @@ public:
     bool getIsValue() const;
     void setIsValue(bool newIsValue);
 
-    bool getNoMetaType() const;
-    void setNoMetaType(bool newNoMetaType);
-
     bool getNoImpl() const;
     void setNoImpl(bool newNoImpl);
 
 signals:
     void isValueChanged();
 
-    void noMetaTypeChanged();
-
     void noImplChanged();
 
 private:
     bool isValue = false;
-    bool noMetaType = false;
     bool noImpl = false;
     Q_PROPERTY(bool isValue READ getIsValue WRITE setIsValue NOTIFY isValueChanged)
-    Q_PROPERTY(bool noMetaType READ getNoMetaType WRITE setNoMetaType NOTIFY noMetaTypeChanged)
     Q_PROPERTY(bool noImpl READ getNoImpl WRITE setNoImpl NOTIFY noImplChanged)
 };
 

@@ -529,6 +529,7 @@ namespace rpp {
                             "QtX11Extras/QtX11Extras",
                             "QtX11Extras/QX11Info",
                             "QtWinExtras/QtWinExtras",
+                            "QtGui/qopengles2ext.h",
                             "time.h",
                             "inttypes.h",
                             "typeinfo",

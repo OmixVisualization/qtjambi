@@ -962,28 +962,25 @@ TypeSystem{
         since: [6,5]
     }
 
-    ValueType{
+    ObjectType{
         name: "QCanMessageDescription"
         since: [6,5]
     }
 
-    ValueType{
+    ObjectType{
         name: "QCanSignalDescription"
         ValueType{
             name: "MultiplexValueRange"
-            /*ModifyFunction{
-                signature: "operator<<(QDebug, const QCanSignalDescription::MultiplexValueRange &)"
-                remove: RemoveFlag.All
-            }*/
         }
         since: [6,5]
     }
 
-    ValueType{
+    ObjectType{
         name: "QCanUniqueIdDescription"
         since: [6,5]
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QModbusPdu::encode*', unmatched parameter type 'const QList*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QModbusPdu::encode', unmatched parameter type '*'"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Class 'QCanSignalDescription::MultiplexValueRange' has equals operators but no qHash() function. Hashcode of objects will consistently be 0."}
 }

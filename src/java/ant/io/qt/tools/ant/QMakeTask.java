@@ -64,7 +64,6 @@ public class QMakeTask extends Task {
     private String qmakebinary;
 
     private boolean recursive;
-    private boolean debugTools;
 
     public static String executableName() {
         String exe;
@@ -148,10 +147,6 @@ public class QMakeTask extends Task {
 
         if(recursive)
             arguments.add("-r");
-
-        if(debugTools)
-            arguments.add("DEFINES+=QTJAMBI_DEBUG_TOOLS");
-
         return arguments;
     }
 
@@ -167,6 +162,8 @@ public class QMakeTask extends Task {
             		parameters.add("QTJAMBI_MODULE+=" + cfg);
             }
         }
+        if("true".equals(AntUtil.getPropertyAsString(propertyHelper, Constants.QTJAMBI_DEBUG_TOOLS)))
+        	parameters.add("DEFINES+=QTJAMBI_DEBUG_TOOLS");
         if(OSInfo.crossOS()==OSInfo.OS.MacOS) {
         	if(Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_GENERATE_FRAMEWORKS))) {
             	parameters.add("QTJAMBI_GENERATE_FRAMEWORKS=true");
@@ -342,10 +339,6 @@ public class QMakeTask extends Task {
         this.pro = pro;
     }
 
-    public void setDebugTools(boolean debugTools) {
-        this.debugTools = debugTools;
-    }
-    
     public void setTools(boolean tools) {
     	isTools = tools;
     }

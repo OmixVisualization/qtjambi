@@ -38,7 +38,7 @@ import java.lang.annotation.Target;
 import io.qt.core.QMetaType;
 
 /**
- * This annotation marks a parameter to be of certain {@linkplain QMetaType} by name or {@link QMetaType$Type}.
+ * This annotation marks a parameter to be of certain {@linkplain QMetaType} by name or {@link QMetaType.Type}.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

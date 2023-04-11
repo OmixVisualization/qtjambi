@@ -30,9 +30,7 @@ package io.qt.core;
 
 import java.util.Objects;
 
-import io.qt.QNativePointer;
-import io.qt.QtUninvokable;
-import io.qt.QtUtilities;
+import io.qt.*;
 
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qproperty.html">QProperty</a></p>
@@ -141,7 +139,7 @@ public final class QProperty<T> extends QPropertyData<T> {
      * @param type class type
      * @param instantiations optional instantiations for container classes like {@link QList} and {@link QMap}
      */
-	public QProperty(T initialValue, Class<T> type, QMetaType... instantiations) {
+	public QProperty(T initialValue, @StrictNonNull Class<T> type, @StrictNonNull QMetaType @StrictNonNull... instantiations) {
 		super(null);
 		QMetaType metaType = QMetaType.fromType(type, instantiations);
 		if(metaType.flags().testFlag(QMetaType.TypeFlag.IsPointer) || metaType.name().contains("*")) {
@@ -157,7 +155,7 @@ public final class QProperty<T> extends QPropertyData<T> {
      * @param type class type
      * @param instantiations optional instantiations for container classes like {@link QList} and {@link QMap}
      */
-	public QProperty(Class<T> type, QMetaType... instantiations) {
+	public QProperty(@StrictNonNull Class<T> type, @StrictNonNull QMetaType @StrictNonNull... instantiations) {
 		this((T)null, type, instantiations);
 	}
 	
@@ -165,7 +163,7 @@ public final class QProperty<T> extends QPropertyData<T> {
      * Constructs a property with the provided initialValue. The property type is extracted from <code>initialValue</code>.
      * @param initialValue initial value must not be <code>null</code>
      */
-	public QProperty(T initialValue) {
+	public QProperty(@StrictNonNull T initialValue) {
 		super(null);
 		QMetaType metaType = valueMetaType(Objects.requireNonNull(initialValue));
 		if(metaType.flags().testFlag(QMetaType.TypeFlag.IsPointer) || metaType.name().contains("*")) {
@@ -190,7 +188,7 @@ public final class QProperty<T> extends QPropertyData<T> {
      * Constructs a property with the provided binding. The property type corresponds to the type of <code>binding</code>.
      * @param binding must not be <code>null</code>
      */
-	public QProperty(QPropertyBinding<T> binding) {
+	public QProperty(@StrictNonNull QPropertyBinding<T> binding) {
 		super(null);
 		QMetaType metaType = binding.valueMetaType();
 		if(metaType.flags().testFlag(QMetaType.TypeFlag.IsPointer) || metaType.name().contains("*")) {
@@ -207,7 +205,7 @@ public final class QProperty<T> extends QPropertyData<T> {
      * <p>The property type corresponds to the return type of the <code>functor</code>'s {@link java.util.function.Supplier#get()}.</p>
      * @param functor
      */
-	public QProperty(QtUtilities.Supplier<T> functor) {
+	public QProperty(QtUtilities.@StrictNonNull Supplier<T> functor) {
 		this(new QPropertyBinding<>(functor));
 	}
 
@@ -218,7 +216,7 @@ public final class QProperty<T> extends QPropertyData<T> {
      * @param type class type
      * @param instantiations optional instantiations for container classes like {@link QList} and {@link QMap}
      */
-	public QProperty(QtUtilities.Supplier<T> functor, Class<T> type, QMetaType... instantiations) {
+	public QProperty(QtUtilities.@StrictNonNull Supplier<T> functor, @StrictNonNull Class<T> type, @StrictNonNull QMetaType @StrictNonNull... instantiations) {
 		super(null);
 		QMetaType metaType = QMetaType.fromType(type, instantiations);
 		if(metaType.flags().testFlag(QMetaType.TypeFlag.IsPointer) || metaType.name().contains("*")) {
@@ -342,7 +340,7 @@ public final class QProperty<T> extends QPropertyData<T> {
 	 */
 	@SuppressWarnings("unchecked")
 	@QtUninvokable
-    public QPropertyBinding<T> setBinding(QPropertyBinding<T> newBinding)
+    public @NonNull QPropertyBinding<T> setBinding(@StrictNonNull QPropertyBinding<T> newBinding)
     {
 		if(newBinding!=null && !checkType(valueMetaType(), newBinding.valueMetaType()))
 			return new QPropertyBinding<>();
@@ -366,7 +364,7 @@ public final class QProperty<T> extends QPropertyData<T> {
 	 * @return true if types match, false otherwise.
 	 */
 	@QtUninvokable
-	public boolean setBinding(QUntypedPropertyBinding newBinding)
+	public boolean setBinding(@StrictNonNull QUntypedPropertyBinding newBinding)
     {
 		if(newBinding!=null && !checkType(valueMetaType(), newBinding.valueMetaType()))
 			return false;
@@ -383,7 +381,7 @@ public final class QProperty<T> extends QPropertyData<T> {
 	 * @return oldBinding
 	 */
 	@QtUninvokable
-	public QPropertyBinding<T> setBinding(QtUtilities.Supplier<T> functor)
+	public @NonNull QPropertyBinding<T> setBinding(QtUtilities.@StrictNonNull Supplier<T> functor)
     {
 		try {
 			QPropertyBinding.setPendingMetaType(this::valueMetaType);
@@ -413,11 +411,11 @@ public final class QProperty<T> extends QPropertyData<T> {
 	
     /**
      * Returns the binding expression that is associated with this property. 
-     * A default constructed {@link QPropertyBinding&lt;T>} will be returned if no such association exists.
+     * A default constructed {@link QPropertyBinding}&lt;T> will be returned if no such association exists.
      * @return binding
      */
 	@QtUninvokable
-	public QPropertyBinding<T> binding()
+	public @NonNull QPropertyBinding<T> binding()
     {
         return new QPropertyBinding<>(this);
     }
@@ -428,7 +426,7 @@ public final class QProperty<T> extends QPropertyData<T> {
 	 * @return the removed binding
 	 */
 	@QtUninvokable
-	public QPropertyBinding<T> takeBinding()
+	public @NonNull QPropertyBinding<T> takeBinding()
     {
         return new QPropertyBinding<>(d.setBinding(new QPropertyBinding<>(), this));
     }
@@ -443,7 +441,7 @@ public final class QProperty<T> extends QPropertyData<T> {
      * @see QPropertyChangeHandler
      */
 	@QtUninvokable
-	public QPropertyChangeHandler onValueChanged(Runnable f)
+	public @NonNull QPropertyChangeHandler onValueChanged(@StrictNonNull Runnable f)
     {
         return new QPropertyChangeHandler(d, f);
     }
@@ -456,7 +454,7 @@ public final class QProperty<T> extends QPropertyData<T> {
      * @see #onValueChanged(Runnable)
 	 */
 	@QtUninvokable
-	public QPropertyChangeHandler subscribe(Runnable f)
+	public @NonNull QPropertyChangeHandler subscribe(@StrictNonNull Runnable f)
     {
         f.run();
         return onValueChanged(f);
@@ -472,7 +470,7 @@ public final class QProperty<T> extends QPropertyData<T> {
      * @see QPropertyNotifier
      */
     @io.qt.QtUninvokable
-    public QPropertyNotifier addNotifier(Runnable f)
+    public @NonNull QPropertyNotifier addNotifier(@StrictNonNull Runnable f)
     {
         return new QPropertyNotifier(d, f);
     }

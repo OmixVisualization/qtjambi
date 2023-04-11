@@ -70,7 +70,7 @@ class CppImplGenerator : public CppGenerator {
 
         void writeAssignment(QTextStream &s, const QString &destName, const QString &srcName,
                              const MetaType *java_type);
-        static void writeCustomStructors(QTextStream &s, const ComplexTypeEntry *entry);
+        void writeCustomStructors(QTextStream &s, const ComplexTypeEntry *entry);
         void writeCodeInjections(QTextStream &s,
                                  const TypeEntry *typeEntry,
                                  CodeSnip::Position position,
@@ -90,7 +90,7 @@ class CppImplGenerator : public CppGenerator {
         bool hasCodeInjections(const MetaFunctional *java_function,
                                  const QSet<CodeSnip::Position>& positions,
                                  TS::Language language);
-        void writeExtraFunctions(QTextStream &s, const MetaClass *java_class);
+        void writeClassCodeInjections(QTextStream &s, const MetaClass *java_class, CodeSnip::Position position);
         void writeToStringFunction(QTextStream &s, const MetaClass *java_class);
         void writeCloneFunction(QTextStream &s, const MetaClass *java_class);
         void writeShellConstructor(QTextStream &s, bool isInterface, const MetaFunction *java_function, Option options = NoOption);
@@ -246,8 +246,6 @@ class CppImplGenerator : public CppGenerator {
                                     const QString& __jni_env = "__jni_env",
                                     const QString& qtjambi_scope = "",
                                     Option option = NoOption);
-
-        bool hasCustomDestructor(const MetaClass *java_class) const;
 
         QString jniReturnName(const MetaFunction *java_function) const;
         bool shouldGenerate(const MetaClass *java_class) const override;

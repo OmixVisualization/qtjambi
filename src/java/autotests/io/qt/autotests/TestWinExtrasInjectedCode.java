@@ -41,8 +41,8 @@ public class TestWinExtrasInjectedCode extends ApplicationInitializer {
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {
-        ApplicationInitializer.testInitializeWithWidgets();
 		Assume.assumeTrue("Can only run on Windows.", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows));
+        ApplicationInitializer.testInitializeWithWidgets();
     }
 	
     @Test

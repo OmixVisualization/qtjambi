@@ -264,6 +264,7 @@ QtJambiTypeEntryPtr get_type_entry(JNIEnv* env, const std::type_info& typeId, bo
             NewContainerAccessFunction containerAccessFactory = getSequentialContainerAccessFactory(typeId);
             PtrOwnerFunction owner_function = registeredOwnerFunction(typeId);
             const QVector<const FunctionInfo>* _virtualFunctions = virtualFunctions(typeId);
+            PtrDeleterFunction _deleter = deleter(typeId);
             Destructor destructor = registeredDestructor(typeId);
             QMetaType qt_meta_type(registeredMetaTypeID(typeId));
             QList<const PolymorphicIdHandler*> polymorphicIdHandlers = getPolymorphicIdHandlers(typeId);
@@ -287,12 +288,12 @@ QtJambiTypeEntryPtr get_type_entry(JNIEnv* env, const std::type_info& typeId, bo
                     Q_ASSERT(qt_meta_type.isValid());
                     if(interfaceOffsetInfo.offsets.isEmpty()){
                         result = new ObjectAbstractContainerTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
-                                                             shell_size, containerAccessFactory, owner_function, _virtualFunctions,
+                                                             shell_size, containerAccessFactory, _deleter, owner_function, _virtualFunctions,
                                                              destructor, polymorphicIdHandlers, qt_meta_type, java_wrapper_class
                                                          );
                     }else{
                         result = new ObjectAbstractContainerIFTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
-                                                             shell_size, containerAccessFactory, owner_function, _virtualFunctions,
+                                                             shell_size, containerAccessFactory, _deleter, owner_function, _virtualFunctions,
                                                              destructor, polymorphicIdHandlers, qt_meta_type, java_wrapper_class,
                                                              interfaceOffsetInfo.offsets, interfaceOffsetInfo.interfaces, interfaceOffsetInfo.inheritedInterfaces
                                                          );
@@ -301,12 +302,12 @@ QtJambiTypeEntryPtr get_type_entry(JNIEnv* env, const std::type_info& typeId, bo
                     if(qt_meta_type.isValid()){
                         if(interfaceOffsetInfo.offsets.isEmpty()){
                             result = new ObjectAbstractValueTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
-                                                                 shell_size, owner_function, _virtualFunctions,
+                                                                 shell_size, _deleter, owner_function, _virtualFunctions,
                                                                  destructor, polymorphicIdHandlers, qt_meta_type, java_wrapper_class
                                                              );
                         }else{
                             result = new ObjectAbstractValueIFTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
-                                                                 shell_size, owner_function, _virtualFunctions,
+                                                                 shell_size, _deleter, owner_function, _virtualFunctions,
                                                                  destructor, polymorphicIdHandlers, qt_meta_type, java_wrapper_class,
                                                                  interfaceOffsetInfo.offsets, interfaceOffsetInfo.interfaces, interfaceOffsetInfo.inheritedInterfaces
                                                              );
@@ -338,12 +339,12 @@ QtJambiTypeEntryPtr get_type_entry(JNIEnv* env, const std::type_info& typeId, bo
                     Q_ASSERT(qt_meta_type.isValid());
                     if(interfaceOffsetInfo.offsets.isEmpty()){
                         result = new ObjectContainerTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
-                                                             shell_size, containerAccessFactory, owner_function, _virtualFunctions,
+                                                             shell_size, containerAccessFactory, _deleter, owner_function, _virtualFunctions,
                                                              destructor, polymorphicIdHandlers, qt_meta_type
                                                          );
                     }else{
                         result = new ObjectContainerIFTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
-                                                                shell_size, containerAccessFactory, owner_function, _virtualFunctions,
+                                                                shell_size, containerAccessFactory, _deleter, owner_function, _virtualFunctions,
                                                                 destructor, polymorphicIdHandlers, qt_meta_type,
                                                                 interfaceOffsetInfo.offsets, interfaceOffsetInfo.interfaces, interfaceOffsetInfo.inheritedInterfaces
                                                          );
@@ -352,18 +353,18 @@ QtJambiTypeEntryPtr get_type_entry(JNIEnv* env, const std::type_info& typeId, bo
                     if(qt_meta_type.isValid()){
                         if(unique_id(typeId)==unique_id(typeid(QModelIndex))){
                             result = new QModelIndexTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
-                                                              shell_size, owner_function, _virtualFunctions,
+                                                              shell_size, _deleter, owner_function, _virtualFunctions,
                                                               destructor, polymorphicIdHandlers, qt_meta_type
                                                              );
                         }else{
                             if(interfaceOffsetInfo.offsets.isEmpty()){
                                 result = new ObjectValueTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
-                                                                  shell_size, owner_function, _virtualFunctions,
+                                                                  shell_size, _deleter, owner_function, _virtualFunctions,
                                                                   destructor, polymorphicIdHandlers, qt_meta_type
                                                                  );
                             }else{
                                 result = new ObjectValueIFTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
-                                                                    shell_size, owner_function, _virtualFunctions,
+                                                                    shell_size, _deleter, owner_function, _virtualFunctions,
                                                                     destructor, polymorphicIdHandlers, qt_meta_type,
                                                                     interfaceOffsetInfo.offsets, interfaceOffsetInfo.interfaces, interfaceOffsetInfo.inheritedInterfaces
                                                                  );
@@ -1176,6 +1177,7 @@ ObjectValueTypeEntry::ObjectValueTypeEntry(JNIEnv* env,
                 size_t value_size,
                 const std::type_info* super_type,
                 size_t shell_size,
+                PtrDeleterFunction deleter,
                 PtrOwnerFunction owner_function,
                 const QVector<const FunctionInfo>* virtualFunctions,
                 Destructor destructor,
@@ -1191,7 +1193,7 @@ ObjectValueTypeEntry::ObjectValueTypeEntry(JNIEnv* env,
                      value_size,
                      super_type,
                      shell_size,
-                     nullptr,
+                     deleter,
                      owner_function,
                      virtualFunctions,
                      destructor,
@@ -1216,6 +1218,7 @@ ObjectContainerIFTypeEntry::ObjectContainerIFTypeEntry(JNIEnv* env,
                                                        const std::type_info* super_type,
                                                        size_t shell_size,
                                                        NewContainerAccessFunction containerAccessFactory,
+                                                       PtrDeleterFunction deleter,
                                                        PtrOwnerFunction owner_function,
                                                        const QVector<const FunctionInfo>* virtualFunctions,
                                                        Destructor destructor,
@@ -1234,6 +1237,7 @@ ObjectContainerIFTypeEntry::ObjectContainerIFTypeEntry(JNIEnv* env,
                                                             value_size,
                                                             super_type,
                                                             shell_size,
+                                                            deleter,
                                                             owner_function,
                                                             virtualFunctions,
                                                             destructor,
@@ -1257,6 +1261,7 @@ ObjectAbstractValueIFTypeEntry::ObjectAbstractValueIFTypeEntry(JNIEnv* env,
                 size_t value_size,
                 const std::type_info* super_type,
                 size_t shell_size,
+                PtrDeleterFunction deleter,
                 PtrOwnerFunction owner_function,
                 const QVector<const FunctionInfo>* virtualFunctions,
                 Destructor destructor,
@@ -1276,6 +1281,7 @@ ObjectAbstractValueIFTypeEntry::ObjectAbstractValueIFTypeEntry(JNIEnv* env,
                      value_size,
                      super_type,
                      shell_size,
+                     deleter,
                      owner_function,
                      virtualFunctions,
                      destructor,
@@ -1299,6 +1305,7 @@ ObjectAbstractValueTypeEntry::ObjectAbstractValueTypeEntry(JNIEnv* env,
                 size_t value_size,
                 const std::type_info* super_type,
                 size_t shell_size,
+                PtrDeleterFunction deleter,
                 PtrOwnerFunction owner_function,
                 const QVector<const FunctionInfo>* virtualFunctions,
                 Destructor destructor,
@@ -1315,6 +1322,7 @@ ObjectAbstractValueTypeEntry::ObjectAbstractValueTypeEntry(JNIEnv* env,
                      value_size,
                      super_type,
                      shell_size,
+                     deleter,
                      owner_function,
                      virtualFunctions,
                      destructor,
@@ -1832,17 +1840,55 @@ QtJambiTypeEntry::NativeToJavaResult InterfaceValueTypeEntry::convertToJava(JNIE
             JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
         output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
-        const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(
-                env,
-                output->l,
-                copy,
-                m_qt_meta_type,
-                false,
-                false,
-                m_owner_function,
-                makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
-            );
-        return {link};
+        if(makeCopyOfValues || !m_deleter){
+            if(m_owner_function){
+                return QtJambiLink::createLinkForNativeObject(
+                        env,
+                        output->l,
+                        copy,
+                        m_qt_meta_type,
+                        false,
+                        false,
+                        m_owner_function,
+                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
+                    );
+            }else{
+                return QtJambiLink::createLinkForNativeObject(
+                        env,
+                        output->l,
+                        copy,
+                        m_qt_meta_type,
+                        false,
+                        false,
+                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
+                    );
+            }
+        }else{
+            if(m_owner_function){
+                return QtJambiLink::createLinkForNativeObject(
+                        env,
+                        output->l,
+                        copy,
+                        LINK_NAME_ARG(qtName())
+                        false,
+                        false,
+                        m_deleter,
+                        m_owner_function,
+                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
+                    );
+            }else{
+                return QtJambiLink::createLinkForNativeObject(
+                        env,
+                        output->l,
+                        copy,
+                        LINK_NAME_ARG(qtName())
+                        false,
+                        false,
+                        m_deleter,
+                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
+                    );
+            }
+        }
     }
 }
 
@@ -2016,19 +2062,67 @@ QtJambiTypeEntry::NativeToJavaResult InterfaceValueIFTypeEntry::convertToJava(JN
             JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
         output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
-        return QtJambiLink::createLinkForNativeObject(
-                env,
-                output->l,
-                copy,
-                m_qt_meta_type,
-                false,
-                false,
-                m_owner_function,
-                makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None,
-                m_interfaceOffsets,
-                m_interfaceTypes,
-                m_inheritedInterfaces
-            );
+        if(makeCopyOfValues || !m_deleter){
+            if(m_owner_function){
+                return QtJambiLink::createLinkForNativeObject(
+                        env,
+                        output->l,
+                        copy,
+                        m_qt_meta_type,
+                        false,
+                        false,
+                        m_owner_function,
+                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None,
+                        m_interfaceOffsets,
+                        m_interfaceTypes,
+                        m_inheritedInterfaces
+                    );
+            }else{
+                return QtJambiLink::createLinkForNativeObject(
+                        env,
+                        output->l,
+                        copy,
+                        m_qt_meta_type,
+                        false,
+                        false,
+                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None,
+                        m_interfaceOffsets,
+                        m_interfaceTypes,
+                        m_inheritedInterfaces
+                    );
+            }
+        }else{
+            if(m_owner_function){
+                return QtJambiLink::createLinkForNativeObject(
+                        env,
+                        output->l,
+                        copy,
+                        LINK_NAME_ARG(qtName())
+                        false,
+                        false,
+                        m_deleter,
+                        m_owner_function,
+                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None,
+                        m_interfaceOffsets,
+                        m_interfaceTypes,
+                        m_inheritedInterfaces
+                    );
+            }else{
+                return QtJambiLink::createLinkForNativeObject(
+                        env,
+                        output->l,
+                        copy,
+                        LINK_NAME_ARG(qtName())
+                        false,
+                        false,
+                        m_deleter,
+                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None,
+                        m_interfaceOffsets,
+                        m_interfaceTypes,
+                        m_inheritedInterfaces
+                    );
+            }
+        }
     }
 }
 
@@ -2332,8 +2426,9 @@ QtJambiTypeEntry::NativeToJavaResult ObjectValueTypeEntry::convertToJava(JNIEnv 
             JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
         output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
-        return m_owner_function ?
-                    QtJambiLink::createLinkForNativeObject(
+        if(makeCopyOfValues || !m_deleter){
+            if(m_owner_function){
+                return QtJambiLink::createLinkForNativeObject(
                         env,
                         output->l,
                         copy,
@@ -2342,15 +2437,44 @@ QtJambiTypeEntry::NativeToJavaResult ObjectValueTypeEntry::convertToJava(JNIEnv 
                         false,
                         m_owner_function,
                         makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
-                    ) : QtJambiLink::createLinkForNativeObject(
+                    );
+            }else{
+                return QtJambiLink::createLinkForNativeObject(
                         env,
                         output->l,
                         copy,
                         m_qt_meta_type,
                         false,
-                        makeCopyOfValues,
+                        false,
                         makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
                     );
+            }
+        }else{
+            if(m_owner_function){
+                return QtJambiLink::createLinkForNativeObject(
+                        env,
+                        output->l,
+                        copy,
+                        LINK_NAME_ARG(qtName())
+                        false,
+                        false,
+                        m_deleter,
+                        m_owner_function,
+                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
+                    );
+            }else{
+                return QtJambiLink::createLinkForNativeObject(
+                        env,
+                        output->l,
+                        copy,
+                        LINK_NAME_ARG(qtName())
+                        false,
+                        false,
+                        m_deleter,
+                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
+                    );
+            }
+        }
     }
 }
 
@@ -2451,6 +2575,7 @@ ObjectValueIFTypeEntry::ObjectValueIFTypeEntry(JNIEnv* env,
                                                    size_t value_size,
                                                    const std::type_info* super_type,
                                                    size_t shell_size,
+                                                   PtrDeleterFunction deleter,
                                                    PtrOwnerFunction owner_function,
                                                    const QVector<const FunctionInfo>* virtualFunctions,
                                                    Destructor destructor,
@@ -2469,7 +2594,7 @@ ObjectValueIFTypeEntry::ObjectValueIFTypeEntry(JNIEnv* env,
                         value_size,
                         super_type,
                         shell_size,
-                        nullptr,
+                        deleter,
                         owner_function,
                         virtualFunctions,
                         destructor,
@@ -2518,8 +2643,9 @@ QtJambiTypeEntry::NativeToJavaResult ObjectValueIFTypeEntry::convertToJava(JNIEn
             JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
         output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
-        return m_owner_function ?
-                    QtJambiLink::createLinkForNativeObject(
+        if(makeCopyOfValues || !m_deleter){
+            if(m_owner_function){
+                return QtJambiLink::createLinkForNativeObject(
                         env,
                         output->l,
                         copy,
@@ -2531,7 +2657,9 @@ QtJambiTypeEntry::NativeToJavaResult ObjectValueIFTypeEntry::convertToJava(JNIEn
                         m_interfaceOffsets,
                         m_interfaceTypes,
                         m_inheritedInterfaces
-                    ) : QtJambiLink::createLinkForNativeObject(
+                    );
+            }else{
+                return QtJambiLink::createLinkForNativeObject(
                         env,
                         output->l,
                         copy,
@@ -2543,6 +2671,39 @@ QtJambiTypeEntry::NativeToJavaResult ObjectValueIFTypeEntry::convertToJava(JNIEn
                         m_interfaceTypes,
                         m_inheritedInterfaces
                     );
+            }
+        }else{
+            if(m_owner_function){
+                return QtJambiLink::createLinkForNativeObject(
+                        env,
+                        output->l,
+                        copy,
+                        LINK_NAME_ARG(qtName())
+                        false,
+                        false,
+                        m_deleter,
+                        m_owner_function,
+                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None,
+                        m_interfaceOffsets,
+                        m_interfaceTypes,
+                        m_inheritedInterfaces
+                    );
+            }else{
+                return QtJambiLink::createLinkForNativeObject(
+                        env,
+                        output->l,
+                        copy,
+                        LINK_NAME_ARG(qtName())
+                        false,
+                        false,
+                        m_deleter,
+                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None,
+                        m_interfaceOffsets,
+                        m_interfaceTypes,
+                        m_inheritedInterfaces
+                    );
+            }
+        }
     }
 }
 
@@ -2556,6 +2717,7 @@ ObjectContainerTypeEntry::ObjectContainerTypeEntry(JNIEnv* env,
                 const std::type_info* super_type,
                 size_t shell_size,
                 NewContainerAccessFunction containerAccessFactory,
+                PtrDeleterFunction deleter,
                 PtrOwnerFunction owner_function,
                 const QVector<const FunctionInfo>* virtualFunctions,
                 Destructor destructor,
@@ -2570,6 +2732,7 @@ ObjectContainerTypeEntry::ObjectContainerTypeEntry(JNIEnv* env,
                            value_size,
                            super_type,
                            shell_size,
+                           deleter,
                            owner_function,
                            virtualFunctions,
                            destructor,
@@ -2588,6 +2751,7 @@ ObjectAbstractContainerTypeEntry::ObjectAbstractContainerTypeEntry(JNIEnv* env,
                 const std::type_info* super_type,
                 size_t shell_size,
                 NewContainerAccessFunction containerAccessFactory,
+                PtrDeleterFunction deleter,
                 PtrOwnerFunction owner_function,
                 const QVector<const FunctionInfo>* virtualFunctions,
                 Destructor destructor,
@@ -2603,6 +2767,7 @@ ObjectAbstractContainerTypeEntry::ObjectAbstractContainerTypeEntry(JNIEnv* env,
                            value_size,
                            super_type,
                            shell_size,
+                           deleter,
                            owner_function,
                            virtualFunctions,
                            destructor,
@@ -2647,16 +2812,30 @@ QtJambiTypeEntry::NativeToJavaResult ObjectContainerTypeEntry::convertToJava(JNI
             JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
         output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
-        return QtJambiLink::createLinkForNativeObject(
-                        env,
-                        output->l,
-                        copy,
-                        m_qt_meta_type,
-                        false,
-                        false,
-                        m_containerAccessFactory(),
-                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
-                    );
+        if(makeCopyOfValues || !m_deleter){
+            return QtJambiLink::createLinkForNativeObject(
+                            env,
+                            output->l,
+                            copy,
+                            m_qt_meta_type,
+                            false,
+                            false,
+                            m_containerAccessFactory(),
+                            makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
+                        );
+        }else{
+            return QtJambiLink::createLinkForNativeObject(
+                            env,
+                            output->l,
+                            copy,
+                            LINK_NAME_ARG(qtName())
+                            false,
+                            false,
+                            m_deleter,
+                            m_containerAccessFactory(),
+                            makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
+                        );
+        }
     }
 }
 
@@ -2773,19 +2952,36 @@ QtJambiTypeEntry::NativeToJavaResult ObjectContainerIFTypeEntry::convertToJava(J
             JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
         output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
-        return QtJambiLink::createLinkForNativeObject(
-                        env,
-                        output->l,
-                        copy,
-                        m_qt_meta_type,
-                        false,
-                        false,
-                        m_containerAccessFactory(),
-                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None,
-                        m_interfaceOffsets,
-                        m_interfaceTypes,
-                        m_inheritedInterfaces
-                    );
+        if(makeCopyOfValues || !m_deleter){
+            return QtJambiLink::createLinkForNativeObject(
+                            env,
+                            output->l,
+                            copy,
+                            m_qt_meta_type,
+                            false,
+                            false,
+                            m_containerAccessFactory(),
+                            makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None,
+                            m_interfaceOffsets,
+                            m_interfaceTypes,
+                            m_inheritedInterfaces
+                        );
+        }else{
+            return QtJambiLink::createLinkForNativeObject(
+                            env,
+                            output->l,
+                            copy,
+                            LINK_NAME_ARG(qtName())
+                            false,
+                            false,
+                            m_deleter,
+                            m_containerAccessFactory(),
+                            makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None,
+                            m_interfaceOffsets,
+                            m_interfaceTypes,
+                            m_inheritedInterfaces
+                        );
+        }
     }
 }
 
@@ -2824,16 +3020,30 @@ QtJambiTypeEntry::NativeToJavaResult ObjectAbstractContainerTypeEntry::convertTo
             JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
         output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
-        return QtJambiLink::createLinkForNativeObject(
-                        env,
-                        output->l,
-                        copy,
-                        m_qt_meta_type,
-                        false,
-                        false,
-                        m_containerAccessFactory(),
-                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
-                    );
+        if(makeCopyOfValues || !m_deleter){
+            return QtJambiLink::createLinkForNativeObject(
+                            env,
+                            output->l,
+                            copy,
+                            m_qt_meta_type,
+                            false,
+                            false,
+                            m_containerAccessFactory(),
+                            makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
+                        );
+        }else{
+            return QtJambiLink::createLinkForNativeObject(
+                            env,
+                            output->l,
+                            copy,
+                            LINK_NAME_ARG(qtName())
+                            false,
+                            false,
+                            m_deleter,
+                            m_containerAccessFactory(),
+                            makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
+                        );
+        }
     }
 }
 
@@ -2925,6 +3135,7 @@ ObjectAbstractContainerIFTypeEntry::ObjectAbstractContainerIFTypeEntry(JNIEnv* e
                 const std::type_info* super_type,
                 size_t shell_size,
                 NewContainerAccessFunction containerAccessFactory,
+                PtrDeleterFunction deleter,
                 PtrOwnerFunction owner_function,
                 const QVector<const FunctionInfo>* virtualFunctions,
                 Destructor destructor,
@@ -2943,6 +3154,7 @@ ObjectAbstractContainerIFTypeEntry::ObjectAbstractContainerIFTypeEntry(JNIEnv* e
                            value_size,
                            super_type,
                            shell_size,
+                           deleter,
                            owner_function,
                            virtualFunctions,
                            destructor,
@@ -2990,19 +3202,36 @@ QtJambiTypeEntry::NativeToJavaResult ObjectAbstractContainerIFTypeEntry::convert
             JavaException::raiseError(env, "Uncreatable type" QTJAMBI_STACKTRACEINFO );
         output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
-        return QtJambiLink::createLinkForNativeObject(
-                        env,
-                        output->l,
-                        copy,
-                        m_qt_meta_type,
-                        false,
-                        false,
-                        m_containerAccessFactory(),
-                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None,
-                        m_interfaceOffsets,
-                        m_interfaceTypes,
-                        m_inheritedInterfaces
-                    );
+        if(makeCopyOfValues || !m_deleter){
+            return QtJambiLink::createLinkForNativeObject(
+                            env,
+                            output->l,
+                            copy,
+                            m_qt_meta_type,
+                            false,
+                            false,
+                            m_containerAccessFactory(),
+                            makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None,
+                            m_interfaceOffsets,
+                            m_interfaceTypes,
+                            m_inheritedInterfaces
+                        );
+        }else{
+            return QtJambiLink::createLinkForNativeObject(
+                            env,
+                            output->l,
+                            copy,
+                            LINK_NAME_ARG(qtName())
+                            false,
+                            false,
+                            m_deleter,
+                            m_containerAccessFactory(),
+                            makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None,
+                            m_interfaceOffsets,
+                            m_interfaceTypes,
+                            m_inheritedInterfaces
+                        );
+        }
     }
 }
 
@@ -4291,6 +4520,7 @@ QModelIndexTypeEntry::QModelIndexTypeEntry(JNIEnv* env,
                                            size_t value_size,
                                            const std::type_info* super_type,
                                            size_t shell_size,
+                                           PtrDeleterFunction deleter,
                                            PtrOwnerFunction owner_function,
                                            const QVector<const FunctionInfo>* virtualFunctions,
                                            Destructor destructor,
@@ -4305,6 +4535,7 @@ QModelIndexTypeEntry::QModelIndexTypeEntry(JNIEnv* env,
                            value_size,
                            super_type,
                            shell_size,
+                           deleter,
                            owner_function,
                            virtualFunctions,
                            destructor,
@@ -4349,48 +4580,55 @@ QtJambiTypeEntry::NativeToJavaResult QModelIndexTypeEntry::convertToJava(JNIEnv 
         const QModelIndex* index = reinterpret_cast<const QModelIndex*>(qt_object);
         output->l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
-        return index->model() ?
-                (m_owner_function ?
-                    QtJambiLink::createLinkForDependentObject(
-                        env,
-                        output->l,
-                        copy,
-                        m_qt_meta_type,
-                        false,
-                        false,
-                        m_owner_function,
-                        index->model(),
-                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
-                    ) : QtJambiLink::createLinkForDependentObject(
-                        env,
-                        output->l,
-                        copy,
-                        m_qt_meta_type,
-                        false,
-                        false,
-                        index->model(),
-                        makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
-                    ))
-                  :
-                    (m_owner_function ?
-                     QtJambiLink::createLinkForNativeObject(
-                         env,
-                         output->l,
-                         copy,
-                         m_qt_meta_type,
-                         false,
-                         false,
-                         m_owner_function,
-                         makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
-                     ) : QtJambiLink::createLinkForNativeObject(
-                         env,
-                         output->l,
-                         copy,
-                         m_qt_meta_type,
-                         false,
-                         false,
-                         makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
-                     ));
+        if(index->model()){
+            if(m_owner_function){
+                return QtJambiLink::createLinkForDependentObject(
+                            env,
+                            output->l,
+                            copy,
+                            m_qt_meta_type,
+                            false,
+                            false,
+                            m_owner_function,
+                            index->model(),
+                            makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
+                        );
+            }else{
+                return QtJambiLink::createLinkForDependentObject(
+                            env,
+                            output->l,
+                            copy,
+                            m_qt_meta_type,
+                            false,
+                            false,
+                            index->model(),
+                            makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
+                        );
+            }
+        }else{
+            if(m_owner_function){
+                return QtJambiLink::createLinkForNativeObject(
+                            env,
+                            output->l,
+                            copy,
+                            m_qt_meta_type,
+                            false,
+                            false,
+                            m_owner_function,
+                            makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
+                        );
+            }else{
+                return QtJambiLink::createLinkForNativeObject(
+                            env,
+                            output->l,
+                            copy,
+                            m_qt_meta_type,
+                            false,
+                            false,
+                            makeCopyOfValues ? QtJambiLink::Ownership::Java : QtJambiLink::Ownership::None
+                        );
+            }
+        }
     }
 }
 

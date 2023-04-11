@@ -63,29 +63,40 @@ QString QtJambiAPI::getObjectClassName(JNIEnv *env, jobject java_object)
 }
 
 #ifndef Q_CC_MSVC
-QByteArray analyze_type_name(QByteArray& typeName);
-QByteArray analyze_functionpointer(QByteArray& typeName);
-QByteArray analyze_functiondecl(QByteArray& typeName);
-QByteArrayList analyze_namespace(QByteArray& typeName);
-QByteArrayList analyze_instantiations(QByteArray& typeName);
+QByteArray analyze_type_name(QByteArray& typeName, QList<QByteArray>& types);
+QByteArray analyze_functionpointer(QByteArray& typeName, QList<QByteArray>& types);
+QByteArray analyze_functiondecl(QByteArray& typeName, QList<QByteArray>& types);
+QByteArrayList analyze_namespace(QByteArray& typeName, QList<QByteArray>& types);
+QByteArrayList analyze_instantiations(QByteArray& typeName, QList<QByteArray>& types);
 
-QByteArray analyze_type_name(QByteArray& typeName){
+QByteArray analyze_type_name(QByteArray& typeName, QList<QByteArray>& types){
     if(!typeName.isEmpty()){
-        bool isPointer = false;
-        bool isReference = false;
         if(typeName.startsWith("PF")){
-            return analyze_functionpointer(typeName);
+            return analyze_functionpointer(typeName, types);
         }else if(typeName.startsWith("F")){
-            return analyze_functiondecl(typeName);
+            return analyze_functiondecl(typeName, types);
         }else if(typeName.startsWith("PK")){
-            isPointer = true;
             typeName = typeName.mid(2);
+            QByteArray result = analyze_type_name(typeName, types);
+            types << result + "*";
+            types << result + " const*";
+            return result + " const*";
         }else if(typeName.startsWith("P")){
-            isPointer = true;
             typeName = typeName.mid(1);
+            QByteArray result = analyze_type_name(typeName, types);
+            types << result + "*";
+            return result + "*";
+        }else if(typeName.startsWith("RK")){
+            typeName = typeName.mid(2);
+            QByteArray result = analyze_type_name(typeName, types);
+            types << result + "&";
+            types << result + " const&";
+            return result + " const&";
         }else if(typeName.startsWith("R")){
-            isReference = true;
             typeName = typeName.mid(1);
+            QByteArray result = analyze_type_name(typeName, types);
+            types << result + "&";
+            return result + "&";
         }
         if(!typeName.isEmpty()){
             QByteArray result;
@@ -118,6 +129,28 @@ QByteArray analyze_type_name(QByteArray& typeName){
                     result += typeName.mid(0, count);
                     typeName = typeName.mid(count);
                 }
+                break;
+            case 'S':{
+                int idx = typeName.indexOf('_');
+                if(idx>0){
+                    typeName = typeName.mid(1);
+                    --idx;
+                    QString number = QLatin1String(typeName.mid(0, idx));
+                    typeName = typeName.mid(idx+1);
+                    if(number.isEmpty()){
+                        if(!types.isEmpty()){
+                            return types[0];
+                        }
+                    }else{
+                        bool ok = false;
+                        int n = number.toInt(&ok) + 1;
+                        if(ok && n>0 && types.size()>n){
+                            return types[n];
+                        }
+                    }
+                    return "";
+                }
+            }
                 break;
             case 'b':
                 result = "bool";
@@ -172,21 +205,16 @@ QByteArray analyze_type_name(QByteArray& typeName){
                 typeName = typeName.mid(1);
                 break;
             case 'N':
-                result = analyze_namespace(typeName).join("::");
+                result = analyze_namespace(typeName, types).join("::");
                 break;
             default:break;
             }
             if(!result.isEmpty()){
                 if(!typeName.isEmpty() && typeName[0]=='I'){
-                    QByteArrayList instantiations = analyze_instantiations(typeName);
+                    QByteArrayList instantiations = analyze_instantiations(typeName, types);
                     if(!instantiations.isEmpty()){
                         result += "<" + instantiations.join(",") + ">";
                     }
-                }
-                if(isPointer){
-                    result += "*";
-                }else if(isReference){
-                    result += "&";
                 }
                 return result;
             }
@@ -195,8 +223,8 @@ QByteArray analyze_type_name(QByteArray& typeName){
     return typeName;
 }
 
-QByteArray analyze_functionpointer(QByteArray& typeName){
-    QByteArrayList types;
+QByteArray analyze_functionpointer(QByteArray& typeName, QList<QByteArray>& types){
+    QByteArrayList funtypes;
     typeName = typeName.mid(2);//PF
     while(!typeName.isEmpty()){
         if(typeName[0]=='E'){
@@ -204,7 +232,7 @@ QByteArray analyze_functionpointer(QByteArray& typeName){
             break;
         }else{
             auto size1 = typeName.size();
-            types << analyze_type_name(typeName);
+            funtypes << analyze_type_name(typeName, types);
             auto size2 = typeName.size();
             if(size1==size2){
                 auto idx = typeName.indexOf('E');
@@ -216,18 +244,18 @@ QByteArray analyze_functionpointer(QByteArray& typeName){
         }
     }
     QByteArray result;
-    if(!types.isEmpty()){
-        result += types.takeFirst() + "(*)(";
-        if(types.size()>1 || types[0]!="void"){
-            result += types.join(",");
+    if(!funtypes.isEmpty()){
+        result += funtypes.takeFirst() + "(*)(";
+        if(funtypes.size()>1 || funtypes[0]!="void"){
+            result += funtypes.join(",");
         }
         result += ")";
     }
     return result;
 }
 
-QByteArray analyze_functiondecl(QByteArray& typeName){
-    QByteArrayList types;
+QByteArray analyze_functiondecl(QByteArray& typeName, QList<QByteArray>& types){
+    QByteArrayList funtypes;
     typeName = typeName.mid(1);//F
     while(!typeName.isEmpty()){
         if(typeName[0]=='E'){
@@ -235,7 +263,7 @@ QByteArray analyze_functiondecl(QByteArray& typeName){
             break;
         }else{
             auto size1 = typeName.size();
-            types << analyze_type_name(typeName);
+            funtypes << analyze_type_name(typeName, types);
             auto size2 = typeName.size();
             if(size1==size2){
                 auto idx = typeName.indexOf('E');
@@ -247,17 +275,17 @@ QByteArray analyze_functiondecl(QByteArray& typeName){
         }
     }
     QByteArray result;
-    if(!types.isEmpty()){
-        result += types.takeFirst() + "(";
-        if(types.size()>1 || types[0]!="void"){
-            result += types.join(",");
+    if(!funtypes.isEmpty()){
+        result += funtypes.takeFirst() + "(";
+        if(funtypes.size()>1 || funtypes[0]!="void"){
+            result += funtypes.join(",");
         }
         result += ")";
     }
     return result;
 }
 
-QByteArrayList analyze_namespace(QByteArray& typeName){
+QByteArrayList analyze_namespace(QByteArray& typeName, QList<QByteArray>& types){
     QByteArrayList result;
     typeName = typeName.mid(1);//N
     while(!typeName.isEmpty()){
@@ -267,7 +295,7 @@ QByteArrayList analyze_namespace(QByteArray& typeName){
             break;
         }else{
             auto size1 = typeName.size();
-            result << analyze_type_name(typeName);
+            result << analyze_type_name(typeName, types);
             auto size2 = typeName.size();
             if(size1==size2){
                 auto idx = typeName.indexOf('E');
@@ -281,7 +309,7 @@ QByteArrayList analyze_namespace(QByteArray& typeName){
     return result;
 }
 
-QByteArrayList analyze_instantiations(QByteArray& typeName){
+QByteArrayList analyze_instantiations(QByteArray& typeName, QList<QByteArray>& types){
     QByteArrayList result;
     typeName = typeName.mid(1);//I
     while(!typeName.isEmpty()){
@@ -293,7 +321,7 @@ QByteArrayList analyze_instantiations(QByteArray& typeName){
             break;
         }else{
             auto size1 = typeName.size();
-            result << analyze_type_name(typeName);
+            result << analyze_type_name(typeName, types);
             auto size2 = typeName.size();
             if(size1==size2){
                 auto idx = typeName.indexOf('E');
@@ -318,12 +346,13 @@ QByteArray QtJambiAPI::typeName(const std::type_info& typeId){
     typeName = typeName.replace("union ", "");
     typeName = typeName.replace("enum ", "");
     typeName = typeName.replace(" & __ptr64", "&");
-    typeName = typeName.replace(" const * __ptr64", "*");
+//    typeName = typeName.replace(" const * __ptr64", "*");
     typeName = typeName.replace(" * __ptr64", "*");
     typeName = typeName.replace("(void)", "()");
     typeName = typeName.replace("__int64", "long long");
 #else
-    typeName = analyze_type_name(typeName);
+    QList<QByteArray> types;
+    typeName = analyze_type_name(typeName, types);
 #endif
     return typeName;
 }

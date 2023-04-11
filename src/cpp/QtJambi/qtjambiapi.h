@@ -239,21 +239,21 @@ const T& getDefaultValue(){
 }
 
 template<template <typename> class Pointer, typename Instantiation>
-inline void deletePointer(void* pointer,bool){
-    Pointer<Instantiation>* _pointer = reinterpret_cast<Pointer<Instantiation>*>(pointer);
-    delete _pointer;
-}
+struct SmartPointerHelper{
+    static void deletePointer(void* pointer,bool){
+        Pointer<Instantiation>* _pointer = reinterpret_cast<Pointer<Instantiation>*>(pointer);
+        delete _pointer;
+    }
 
-template<template <typename> class Pointer, typename Instantiation>
-inline void* createPointer(void* pointer){
-    return new Pointer<Instantiation>(reinterpret_cast<Instantiation*>(pointer));
-}
+    static void* createPointer(void* pointer){
+        return new Pointer<Instantiation>(reinterpret_cast<Instantiation*>(pointer));
+    }
 
-template<template <typename> class Pointer, typename Instantiation>
-inline typename std::conditional<std::is_base_of<QObject, Instantiation>::value, QObject, void>::type* getFromPointer(const void* pointer){
-    const Pointer<typename std::remove_const<Instantiation>::type>& _pointer = *reinterpret_cast<const Pointer<typename std::remove_const<Instantiation>::type>*>(pointer);
-    return &*_pointer;
-}
+    static typename std::conditional<std::is_base_of<QObject, Instantiation>::value, QObject, void>::type* getFromPointer(const void* pointer){
+        const Pointer<typename std::remove_const<Instantiation>::type>& _pointer = *reinterpret_cast<const Pointer<typename std::remove_const<Instantiation>::type>*>(pointer);
+        return &*_pointer;
+    }
+};
 
 }//namespace QtJambiPrivate
 
@@ -270,8 +270,8 @@ inline jobject convertSmartPointerToJavaObject(JNIEnv *env, const Pointer<O> & q
     return convertSmartPointerToJavaObject(env,
                                 typeid(O),
                                 new Pointer<O>(qt_shared_pointer),
-                                &QtJambiPrivate::deletePointer<Pointer, O>,
-                                &QtJambiPrivate::getFromPointer<Pointer, void*>);
+                                &QtJambiPrivate::SmartPointerHelper<Pointer, O>::deletePointer,
+                                &QtJambiPrivate::SmartPointerHelper<Pointer, void*>::getFromPointer);
 }
 
 QTJAMBI_EXPORT void setQQmlListPropertyElementType(JNIEnv *env, jobject list, jobject elementType);

@@ -28,8 +28,7 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.QtPrimitiveType;
-import io.qt.QtUninvokable;
+import io.qt.*;
 
 /**
  * QLongProperty is primitive-typed version of QProperty&lt;Long&gt;.
@@ -65,7 +64,7 @@ public final class QLongProperty extends QLongPropertyData {
      * Constructs a <code>long</code>-typed property with the provided binding.
      * @param binding
      */
-	public QLongProperty(QLongPropertyBinding binding) {
+	public QLongProperty(@StrictNonNull QLongPropertyBinding binding) {
 		super();
 		d.setBinding(binding, this);
 	}
@@ -74,7 +73,7 @@ public final class QLongProperty extends QLongPropertyData {
      * Constructs a <code>long</code>-typed property with the provided binding.
      * @param binding
      */
-	public QLongProperty(QPropertyBinding<@QtPrimitiveType Long> binding) {
+	public QLongProperty(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Long> binding) {
 		super();
 		if(checkType(binding.valueMetaType()))
 			d.setBinding(binding, this);
@@ -84,7 +83,7 @@ public final class QLongProperty extends QLongPropertyData {
      * <p>Constructs a <code>long</code>-typed property bound to the provided <code>functor</code>.</p>
      * @param functor
      */
-	public QLongProperty(java.util.function.LongSupplier functor) {
+	public QLongProperty(java.util.function.@StrictNonNull LongSupplier functor) {
 		this(new QLongPropertyBinding(functor));
 	}
 	
@@ -121,7 +120,7 @@ public final class QLongProperty extends QLongPropertyData {
 	 * @return oldBinding
 	 */
     @QtUninvokable
-    public QLongPropertyBinding setBinding(QLongPropertyBinding newBinding)
+    public @NonNull QLongPropertyBinding setBinding(@StrictNonNull QLongPropertyBinding newBinding)
     {
         QUntypedPropertyBinding oldBinding = d.setBinding(newBinding, this);
         d.notifyObservers(this);
@@ -141,7 +140,7 @@ public final class QLongProperty extends QLongPropertyData {
 	 * @return oldBinding
 	 */
     @QtUninvokable
-    public QLongPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Long> newBinding)
+    public @NonNull QLongPropertyBinding setBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Long> newBinding)
     {
         if(!io.qt.core.QLongProperty.checkType(newBinding.valueMetaType()))
             return new QLongPropertyBinding();
@@ -164,7 +163,7 @@ public final class QLongProperty extends QLongPropertyData {
 	 * @return true if types match, false otherwise.
 	 */
     @QtUninvokable
-    public boolean setBinding(QUntypedPropertyBinding newBinding)
+    public boolean setBinding(@StrictNonNull QUntypedPropertyBinding newBinding)
     {
         if(io.qt.core.QLongProperty.checkType(newBinding.valueMetaType())) {
             d.setBinding(newBinding, this);
@@ -183,7 +182,7 @@ public final class QLongProperty extends QLongPropertyData {
 	 * @return oldBinding
 	 */
 	@QtUninvokable
-	public QLongPropertyBinding setBinding(java.util.function.LongSupplier functor)
+	public @NonNull QLongPropertyBinding setBinding(java.util.function.@StrictNonNull LongSupplier functor)
     {
         return setBinding(new QLongPropertyBinding(functor));
     }
@@ -207,7 +206,7 @@ public final class QLongProperty extends QLongPropertyData {
      * @return binding
      */
 	@QtUninvokable
-	public QLongPropertyBinding binding()
+	public @NonNull QLongPropertyBinding binding()
     {
         return new QLongPropertyBinding(this);
     }
@@ -218,7 +217,7 @@ public final class QLongProperty extends QLongPropertyData {
 	 * @return the removed binding
 	 */
 	@QtUninvokable
-	public QLongPropertyBinding takeBinding()
+	public @NonNull QLongPropertyBinding takeBinding()
     {
         return new QLongPropertyBinding(d.setBinding(new QLongPropertyBinding(), this));
     }
@@ -233,7 +232,7 @@ public final class QLongProperty extends QLongPropertyData {
      * @see QPropertyChangeHandler
      */
 	@QtUninvokable
-	public QPropertyChangeHandler onValueChanged(Runnable f)
+	public @NonNull QPropertyChangeHandler onValueChanged(@StrictNonNull Runnable f)
     {
         return new QPropertyChangeHandler(d, f);
     }
@@ -246,7 +245,7 @@ public final class QLongProperty extends QLongPropertyData {
      * @see #onValueChanged(Runnable)
 	 */
 	@QtUninvokable
-	public QPropertyChangeHandler subscribe(Runnable f)
+	public @NonNull QPropertyChangeHandler subscribe(@StrictNonNull Runnable f)
     {
         f.run();
         return onValueChanged(f);
@@ -262,7 +261,7 @@ public final class QLongProperty extends QLongPropertyData {
      * @see QPropertyNotifier
      */
     @io.qt.QtUninvokable
-    public QPropertyNotifier addNotifier(Runnable f)
+    public @NonNull QPropertyNotifier addNotifier(@StrictNonNull Runnable f)
     {
         return new QPropertyNotifier(d, f);
     }

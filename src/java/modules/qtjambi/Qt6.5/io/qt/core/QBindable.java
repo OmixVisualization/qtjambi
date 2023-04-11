@@ -28,10 +28,7 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.NativeAccess;
-import io.qt.QtPrimitiveType;
-import io.qt.QtUninvokable;
-import io.qt.QtUtilities;
+import io.qt.*;
 
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qbindable.html">QBindable</a></p>
@@ -98,7 +95,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Boolean> fromProperty(QBooleanProperty property){
+	public static @NonNull QBindable<@QtPrimitiveType Boolean> fromProperty(@StrictNonNull QBooleanProperty property){
 		return new QBindable<>(property, QBooleanBindable.bindableInterface(0));
 	}
 	
@@ -107,7 +104,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Byte> fromProperty(QByteProperty property){
+	public static @NonNull QBindable<@QtPrimitiveType Byte> fromProperty(@StrictNonNull QByteProperty property){
 		return new QBindable<>(property, QByteBindable.bindableInterface(0));
 	}
 	
@@ -116,7 +113,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Short> fromProperty(QShortProperty property){
+	public static @NonNull QBindable<@QtPrimitiveType Short> fromProperty(@StrictNonNull QShortProperty property){
 		return new QBindable<>(property, QShortBindable.bindableInterface(0));
 	}
 	
@@ -125,7 +122,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Integer> fromProperty(QIntProperty property){
+	public static @NonNull QBindable<@QtPrimitiveType Integer> fromProperty(@StrictNonNull QIntProperty property){
 		return new QBindable<>(property, QIntBindable.bindableInterface(0));
 	}
 	
@@ -134,7 +131,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Long> fromProperty(QLongProperty property){
+	public static @NonNull QBindable<@QtPrimitiveType Long> fromProperty(@StrictNonNull QLongProperty property){
 		return new QBindable<>(property, QLongBindable.bindableInterface(0));
 	}
 	
@@ -143,7 +140,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Float> fromProperty(QFloatProperty property){
+	public static @NonNull QBindable<@QtPrimitiveType Float> fromProperty(@StrictNonNull QFloatProperty property){
 		return new QBindable<>(property, QFloatBindable.bindableInterface(0));
 	}
 	
@@ -152,7 +149,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Double> fromProperty(QDoubleProperty property){
+	public static @NonNull QBindable<@QtPrimitiveType Double> fromProperty(@StrictNonNull QDoubleProperty property){
 		return new QBindable<>(property, QDoubleBindable.bindableInterface(0));
 	}
 	
@@ -161,7 +158,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Character> fromProperty(QCharProperty property){
+	public static @NonNull QBindable<@QtPrimitiveType Character> fromProperty(@StrictNonNull QCharProperty property){
 		return new QBindable<>(property, QCharBindable.bindableInterface(0));
 	}
 	
@@ -170,7 +167,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Boolean> fromProperty(QObject.QBooleanProperty property){
+	public static @NonNull QBindable<@QtPrimitiveType Boolean> fromProperty(@StrictNonNull QObject.QBooleanProperty property){
 		return new QBindable<>(property, QBooleanBindable.bindableInterface(1));
 	}
 	
@@ -179,7 +176,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Byte> fromProperty(QObject.QByteProperty property){
+	public static @NonNull QBindable<@QtPrimitiveType Byte> fromProperty(@StrictNonNull QObject.QByteProperty property){
 		return new QBindable<>(property, QByteBindable.bindableInterface(1));
 	}
 	
@@ -188,7 +185,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Short> fromProperty(QObject.QShortProperty property){
+	public static @NonNull QBindable<@QtPrimitiveType Short> fromProperty(@StrictNonNull QObject.QShortProperty property){
 		return new QBindable<>(property, QShortBindable.bindableInterface(1));
 	}
 	
@@ -197,7 +194,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Integer> fromProperty(QObject.QIntProperty property){
+	public static @NonNull QBindable<@QtPrimitiveType Integer> fromProperty(@StrictNonNull QObject.QIntProperty property){
 		return new QBindable<>(property, QIntBindable.bindableInterface(1));
 	}
 	
@@ -206,7 +203,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Long> fromProperty(QObject.QLongProperty property){
+	public static @NonNull QBindable<@QtPrimitiveType Long> fromProperty(@StrictNonNull QObject.QLongProperty property){
 		return new QBindable<>(property, QLongBindable.bindableInterface(1));
 	}
 	
@@ -215,7 +212,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Float> fromProperty(QObject.QFloatProperty property){
+	public static @NonNull QBindable<@QtPrimitiveType Float> fromProperty(@StrictNonNull QObject.QFloatProperty property){
 		return new QBindable<>(property, QFloatBindable.bindableInterface(1));
 	}
 	
@@ -224,7 +221,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Double> fromProperty(QObject.QDoubleProperty property){
+	public static @NonNull QBindable<@QtPrimitiveType Double> fromProperty(@StrictNonNull QObject.QDoubleProperty property){
 		return new QBindable<>(property, QDoubleBindable.bindableInterface(1));
 	}
 	
@@ -233,7 +230,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Character> fromProperty(QObject.QCharProperty property){
+	public static @NonNull QBindable<@QtPrimitiveType Character> fromProperty(@StrictNonNull QObject.QCharProperty property){
 		return new QBindable<>(property, QCharBindable.bindableInterface(1));
 	}
 	
@@ -242,7 +239,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Boolean> fromProperty(QObject.QComputedBooleanProperty property){
+	public static @NonNull QBindable<@QtPrimitiveType Boolean> fromProperty(@StrictNonNull QObject.QComputedBooleanProperty property){
 		return new QBindable<>(property, QBooleanBindable.bindableInterface(2));
 	}
 	
@@ -251,7 +248,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Byte> fromProperty(QObject.QComputedByteProperty property){
+	public static @NonNull QBindable<@QtPrimitiveType Byte> fromProperty(@StrictNonNull QObject.QComputedByteProperty property){
 		return new QBindable<>(property, QByteBindable.bindableInterface(2));
 	}
 	
@@ -260,7 +257,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Short> fromProperty(QObject.QComputedShortProperty property){
+	public static @NonNull QBindable<@QtPrimitiveType Short> fromProperty(@StrictNonNull QObject.QComputedShortProperty property){
 		return new QBindable<>(property, QShortBindable.bindableInterface(2));
 	}
 	
@@ -269,7 +266,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Integer> fromProperty(QObject.QComputedIntProperty property){
+	public static @NonNull QBindable<@QtPrimitiveType Integer> fromProperty(@StrictNonNull QObject.QComputedIntProperty property){
 		return new QBindable<>(property, QIntBindable.bindableInterface(2));
 	}
 	
@@ -278,7 +275,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Long> fromProperty(QObject.QComputedLongProperty property){
+	public static @NonNull QBindable<@QtPrimitiveType Long> fromProperty(@StrictNonNull QObject.QComputedLongProperty property){
 		return new QBindable<>(property, QLongBindable.bindableInterface(2));
 	}
 	
@@ -287,7 +284,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Float> fromProperty(QObject.QComputedFloatProperty property){
+	public static @NonNull QBindable<@QtPrimitiveType Float> fromProperty(@StrictNonNull QObject.QComputedFloatProperty property){
 		return new QBindable<>(property, QFloatBindable.bindableInterface(2));
 	}
 	
@@ -296,7 +293,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Double> fromProperty(QObject.QComputedDoubleProperty property){
+	public static @NonNull QBindable<@QtPrimitiveType Double> fromProperty(@StrictNonNull QObject.QComputedDoubleProperty property){
 		return new QBindable<>(property, QDoubleBindable.bindableInterface(2));
 	}
 	
@@ -305,7 +302,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Character> fromProperty(QObject.QComputedCharProperty property){
+	public static @NonNull QBindable<@QtPrimitiveType Character> fromProperty(@StrictNonNull QObject.QComputedCharProperty property){
 		return new QBindable<>(property, QCharBindable.bindableInterface(2));
 	}
 	
@@ -314,7 +311,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Boolean> fromProperty(QBooleanPropertyAlias property){
+	public static @NonNull QBindable<@QtPrimitiveType Boolean> fromProperty(@StrictNonNull QBooleanPropertyAlias property){
 		return new QBindable<>(property.aliasedProperty(), property.iface);
 	}
 	
@@ -323,7 +320,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Byte> fromProperty(QBytePropertyAlias property){
+	public static @NonNull QBindable<@QtPrimitiveType Byte> fromProperty(@StrictNonNull QBytePropertyAlias property){
 		return new QBindable<>(property.aliasedProperty(), property.iface);
 	}
 	
@@ -332,7 +329,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Short> fromProperty(QShortPropertyAlias property){
+	public static @NonNull QBindable<@QtPrimitiveType Short> fromProperty(@StrictNonNull QShortPropertyAlias property){
 		return new QBindable<>(property.aliasedProperty(), property.iface);
 	}
 	
@@ -341,7 +338,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Integer> fromProperty(QIntPropertyAlias property){
+	public static @NonNull QBindable<@QtPrimitiveType Integer> fromProperty(@StrictNonNull QIntPropertyAlias property){
 		return new QBindable<>(property.aliasedProperty(), property.iface);
 	}
 	
@@ -350,7 +347,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Long> fromProperty(QLongPropertyAlias property){
+	public static @NonNull QBindable<@QtPrimitiveType Long> fromProperty(@StrictNonNull QLongPropertyAlias property){
 		return new QBindable<>(property.aliasedProperty(), property.iface);
 	}
 	
@@ -359,7 +356,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Float> fromProperty(QFloatPropertyAlias property){
+	public static @NonNull QBindable<@QtPrimitiveType Float> fromProperty(@StrictNonNull QFloatPropertyAlias property){
 		return new QBindable<>(property.aliasedProperty(), property.iface);
 	}
 	
@@ -368,7 +365,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Double> fromProperty(QDoublePropertyAlias property){
+	public static @NonNull QBindable<@QtPrimitiveType Double> fromProperty(@StrictNonNull QDoublePropertyAlias property){
 		return new QBindable<>(property.aliasedProperty(), property.iface);
 	}
 	
@@ -377,8 +374,45 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
-	public static QBindable<@QtPrimitiveType Character> fromProperty(QCharPropertyAlias property){
+	public static @NonNull QBindable<@QtPrimitiveType Character> fromProperty(@StrictNonNull QCharPropertyAlias property){
 		return new QBindable<>(property.aliasedProperty(), property.iface);
+	}
+	
+	public static <T> @NonNull QBindable<T> fromProperty(QtUtilities.Supplier<T> propertyGetter){
+		io.qt.internal.ClassAnalyzerUtility.LambdaInfo info = io.qt.internal.ClassAnalyzerUtility.lambdaInfo(propertyGetter);
+		if(info!=null && info.qobject!=null && info.reflectiveMethod!=null && !info.reflectiveMethod.isSynthetic()) {
+			QtPropertyReader pr = info.reflectiveMethod.getAnnotation(QtPropertyReader.class);
+			if(pr!=null) {
+				if(pr.enabled() && !pr.name().isEmpty()) {
+					QMetaProperty prp = info.qobject.metaObject().property(pr.name());
+					if(prp!=null && prp.isValid()) {
+						return new QBindable<>(info.qobject, prp);
+					}
+				}
+			}else{
+				int[] lambdaMetaTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(QtUtilities.Supplier.class, propertyGetter);
+				if(lambdaMetaTypes!=null && lambdaMetaTypes.length==1) {
+					QMetaProperty prp = info.qobject.metaObject().property(info.reflectiveMethod.getName());
+					if(prp!=null && prp.isValid() && lambdaMetaTypes[0]==prp.typeId()) {
+						return new QBindable<>(info.qobject, prp);
+					}
+					boolean isIs = false;
+					if(info.reflectiveMethod.getName().startsWith("get") || info.reflectiveMethod.getName().startsWith("has") || (isIs = info.reflectiveMethod.getName().startsWith("is"))) {
+						String name = info.reflectiveMethod.getName().substring(isIs ? 2 : 3);
+						if(name.length()>1) {
+							name = Character.toLowerCase(name.charAt(0)) + name.substring(1);
+							prp = info.qobject.metaObject().property(name);
+							if(prp!=null && prp.isValid() && lambdaMetaTypes[0]==prp.typeId()) {
+								return new QBindable<>(info.qobject, prp);
+							}
+						}
+					}
+				}
+			}
+			throw new IllegalArgumentException(String.format("Unable to determine property from method %1$s.", info.reflectiveMethod.toGenericString()));
+		}else {
+			throw new IllegalArgumentException("Unable to determine property from given method.");
+		}
 	}
 
 	private QBindable(QPrivateConstructor p) {
@@ -396,7 +430,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * Creates a new <code>QBindable</code> from provided property.
 	 * @param property
 	 */
-	public QBindable(QProperty<T> property) {
+	public QBindable(@StrictNonNull QProperty<T> property) {
 		super(property.valueMetaType().isValid() ? property : null, property.valueMetaType().isValid() ? bindableInterface(property.valueMetaType().id(), 0) : null);
 	}
 	
@@ -404,7 +438,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * Creates a new <code>QBindable</code> from provided property.
 	 * @param property
 	 */
-	public QBindable(QObject.QProperty<T> property) {
+	public QBindable(QObject.@StrictNonNull QProperty<T> property) {
 		super(property.valueMetaType().isValid() ? property : null, property.valueMetaType().isValid() ? bindableInterface(property.valueMetaType().id(), 1) : null);
 	}
 	
@@ -412,7 +446,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * Creates a new <code>QBindable</code> from provided property.
 	 * @param property
 	 */
-	public QBindable(QObject.QComputedProperty<T> property) {
+	public QBindable(QObject.@StrictNonNull QComputedProperty<T> property) {
 		super(property.valueMetaType().isValid() ? property : null, property.valueMetaType().isValid() ? bindableInterface(property.valueMetaType().id(), 2) : null);
 	}
 	
@@ -420,8 +454,46 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * Creates a new <code>QBindable</code> from provided property.
 	 * @param property
 	 */
-	public QBindable(QPropertyAlias<T> property) {
+	public QBindable(@StrictNonNull QPropertyAlias<T> property) {
 		super(property.aliasedProperty(), property.iface);
+	}
+	
+	/**
+	 * Creates a new bindable from provided meta property of given object.
+	 * If the type of the property is not <code>short</code> an {@link IllegalArgumentException} is thrown.
+	 * @param object
+	 * @param property
+	 */
+	public QBindable(@StrictNonNull QObject object, @StrictNonNull String property, @StrictNonNull Class<T> type, @StrictNonNull QMetaType @StrictNonNull... instantiations) {
+		this(object, object.metaObject().property(property), type, instantiations);
+	}
+	
+	/**
+	 * Creates a new bindable from provided meta property of given object.
+	 * If the type of the property is not <code>short</code> an {@link IllegalArgumentException} is thrown.
+	 * @param object
+	 * @param property
+	 */
+	public QBindable(@StrictNonNull QObject object, @StrictNonNull QMetaProperty property, @StrictNonNull Class<T> type, @StrictNonNull QMetaType @StrictNonNull... instantiations) {
+		super(object, property, QBindable.bindableInterface(property, QMetaType.fromType(type, instantiations)));
+	}
+	
+	private QBindable(@StrictNonNull QObject object, @StrictNonNull QMetaProperty property) {
+		super(object, property, QBindable.bindableInterface(property));
+	}
+
+	private static QBindableInterface bindableInterface(QMetaProperty property, QMetaType metaType) {
+		QBindableInterface result = bindableInterface(property);
+		if(!result.metaType().equals(metaType)) {
+			throw new IllegalArgumentException(String.format("Cannot create bindable of type %1$s to property of type %2$s", metaType.name(), result.metaType().name()));
+		}
+		return result;
+	}
+
+	static QBindableInterface bindableInterface(QMetaProperty property) {
+		if(property==null || !property.isValid())
+			throw new IllegalArgumentException("Given QMetaProperty is invalid.");
+		return bindableInterface(property.typeId(), 3);
 	}
 	
 	static native QBindableInterface bindableInterface(int metaType, int propertyType);
@@ -435,7 +507,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 */
 	@QtUninvokable
 	@Override
-	public QPropertyBinding<T> makeBinding()
+	public @NonNull QPropertyBinding<T> makeBinding()
     {
         return new QPropertyBinding<>(super.makeBinding());
     }
@@ -447,7 +519,7 @@ public final class QBindable<T> extends QUntypedBindable {
      */
 	@QtUninvokable
 	@Override
-    public QPropertyBinding<T> binding()
+    public @NonNull QPropertyBinding<T> binding()
     {
         return new QPropertyBinding<>(super.binding());
     }
@@ -458,7 +530,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @return the removed binding
 	 */
 	@QtUninvokable
-    public QPropertyBinding<T> takeBinding()
+    public @NonNull QPropertyBinding<T> takeBinding()
     {
         return setBinding(new QPropertyBinding<>());
     }
@@ -474,7 +546,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 */
 	@SuppressWarnings("unchecked")
 	@QtUninvokable
-	public QPropertyBinding<T> setBinding(QPropertyBinding<T> binding)
+	public @NonNull QPropertyBinding<T> setBinding(@NonNull QPropertyBinding<T> binding)
     {
 		if(iface()!=null && binding!=null && !io.qt.core.QProperty.checkType(iface().metaType(), binding.valueMetaType()))
 			return new QPropertyBinding<>();
@@ -494,7 +566,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @return oldBinding
 	 */
 	@QtUninvokable
-	public QPropertyBinding<T> setBinding(QtUtilities.Supplier<T> functor)
+	public @NonNull QPropertyBinding<T> setBinding(QtUtilities.@StrictNonNull Supplier<T> functor)
     {
 		try {
 			QPropertyBinding.setPendingMetaType(this::metaType);

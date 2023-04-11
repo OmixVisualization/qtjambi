@@ -1929,6 +1929,84 @@ struct qtjambi_jnitype_template1_cast<false, has_scope,
 };
 #endif // QFUTURE_H
 
+#ifdef QCBORSTREAMREADER_H
+
+template<bool has_scope,
+         bool is_pointer, bool is_const, bool is_reference,
+         typename T>
+struct qtjambi_jnitype_template1_cast<true, has_scope,
+                                 jobject,
+                                 QCborStreamReader::StringResult, is_pointer, is_const, is_reference,
+                                 T>{
+    typedef QCborStreamReader::StringResult<T> NativeType;
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
+
+    static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope*){
+         NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
+         QCborStreamReader::StringResult<QVariant>* ___qt_return_value = new QCborStreamReader::StringResult<QVariant>;
+         ___qt_return_value->data = _in.data;
+         ___qt_return_value->status = _in.status;
+         return QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper(env, ___qt_return_value);
+    }
+};
+
+template<bool has_scope,
+         bool is_pointer, bool is_const, bool is_reference>
+struct qtjambi_jnitype_template1_cast<true, has_scope,
+                                 jobject,
+                                 QCborStreamReader::StringResult, is_pointer, is_const, is_reference,
+                                 QVariant> : qtjambi_move_or_copy_decider<QCborStreamReader::StringResult<QVariant>, is_const>{
+};
+
+template<bool has_scope,
+         bool is_pointer, bool is_const, bool is_reference>
+struct qtjambi_jnitype_template1_cast<false, has_scope,
+                                 jobject,
+                                 QCborStreamReader::StringResult, is_pointer, is_const, is_reference,
+                                 QVariant>{
+    typedef QCborStreamReader::StringResult<QVariant> NativeType;
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_cr>::type, NativeType_cr>::type NativeType_ptr;
+
+    static NativeType_ptr cast(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope* scope){
+        QCborStreamReader::StringResult<QVariant>* result = nullptr;
+        if(!QtJambiAPI::convertJavaToNative(env, typeid(NativeType), nativeTypeName, in, &result, scope)){
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast object of type %1 to %2").arg(in ? QtJambiAPI::getObjectClassName(env, in) : QStringLiteral("null")).arg(QLatin1String(QtJambiAPI::typeName(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
+        }
+        return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, result);
+    }
+};
+
+template<bool has_scope,
+         bool is_pointer, bool is_const, bool is_reference,
+         typename T>
+struct qtjambi_jnitype_template1_cast<false, has_scope,
+                                 jobject,
+                                 QCborStreamReader::StringResult, is_pointer, is_const, is_reference,
+                                 T>{
+    typedef QCborStreamReader::StringResult<T> NativeType;
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_cr>::type, NativeType_cr>::type NativeType_ptr;
+
+    static NativeType_ptr cast(JNIEnv *env, jobject in, const char* nativeTypeName, QtJambiScope* scope){
+        QCborStreamReader::StringResult<QVariant>* result = nullptr;
+        if(!QtJambiAPI::convertJavaToNative(env, typeid(QCborStreamReader::StringResult<QVariant>), nativeTypeName, in, &result, scope)){
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast object of type %1 to %2").arg(in ? QtJambiAPI::getObjectClassName(env, in) : QStringLiteral("null")).arg(QLatin1String(QtJambiAPI::typeName(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
+        }
+        QCborStreamReader::StringResult<T> tresult;
+        tresult.status = result->status;
+        tresult.data = result->data.value<T>();
+        return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, &tresult);
+    }
+};
+
+#endif //def QCBORSTREAMREADER_H
+
 #if defined(_OPTIONAL_) || defined(_OPTIONAL) || (defined(_LIBCPP_OPTIONAL) && _LIBCPP_STD_VER > 14) || defined(_GLIBCXX_OPTIONAL)
 
 template<bool has_scope, bool is_pointer, bool is_const, bool is_reference,

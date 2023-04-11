@@ -51,7 +51,7 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	 * See <a href="https://doc.qt.io/qt/qflags.html#QFlags-3">QFlags::QFlags(std::initializer_list&lt;Enum>)</a>
 	 */
 	@SafeVarargs
-	protected QFlags(T... args) {
+	protected QFlags(@Nullable T @NonNull... args) {
 		set(args);
 	}
 
@@ -66,7 +66,7 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	 * Clones the flags
 	 */
 	@SuppressWarnings("unchecked")
-	public QFlags<T> clone() {
+	public @Nullable QFlags<T> clone() {
 		try {
 			return (QFlags<T>) super.clone();
 		} catch (CloneNotSupportedException e) {
@@ -77,7 +77,7 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	/**
 	 * See <a href="https://doc.qt.io/qt/qflags.html#operator-7c">QFlags::operator|(Enum) const</a>
 	 */
-	public QFlags<T> combined(T flag) {
+	public @StrictNonNull QFlags<T> combined(@Nullable T flag) {
 		QFlags<T> result = clone();
 		result.set(flag);
 		return result;
@@ -86,7 +86,7 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	/**
 	 * See <a href="https://doc.qt.io/qt/qflags.html#operator-7c-1">QFlags::operator|=(QFlags&lt;T>)</a>
 	 */
-	public final void set(QFlags<T> flag) {
+	public final void set(@StrictNonNull QFlags<T> flag) {
 		value |= flag.value();
 	}
 
@@ -97,14 +97,14 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	 * <code>on = true</code>.
 	 * </p>
 	 */
-	public QFlags<T> setFlag(T flag) {
+	public @NonNull QFlags<T> setFlag(@Nullable T flag) {
 		return setFlag(flag, true);
 	}
 
 	/**
 	 * See <a href="https://doc.qt.io/qt/qflags.html#setFlag">QFlags::setFlag(Enum, bool)</a>
 	 */
-	public QFlags<T> setFlag(T flag, boolean on) {
+	public @NonNull QFlags<T> setFlag(@Nullable T flag, boolean on) {
 		if (on) {
 			if (flag instanceof QtFlagEnumerator) {
 				value |= ((QtFlagEnumerator) flag).value();
@@ -133,7 +133,7 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	 * See <a href="https://doc.qt.io/qt/qflags.html#operator-7c-eq-1">QFlags::operator|=(Enum)</a>
 	 */
 	@SafeVarargs
-	public final void set(T... ts) {
+	public final void set(@Nullable T @NonNull... ts) {
 		for (T flag : ts) {
 			if (flag instanceof QtFlagEnumerator) {
 				value |= ((QtFlagEnumerator) flag).value();
@@ -151,7 +151,7 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	 * @deprecated Use {@link #testFlags(QFlags)} instead.
 	 */
 	@Deprecated
-	public final boolean isSet(QFlags<T> other) {
+	public final boolean isSet(@StrictNonNull QFlags<T> other) {
 		return testFlags(other);
 	}
 
@@ -160,7 +160,7 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	 */
 	@Deprecated
 	@SafeVarargs
-	public final boolean isSet(T... flags) {
+	public final boolean isSet(@Nullable T @NonNull... flags) {
 		return testFlags(flags);
 	}
 
@@ -168,7 +168,7 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	 * See
 	 * <a href="https://doc.qt.io/qt/qflags.html#testFlag">QFlags::testFlag(Enum)const</a>
 	 */
-	public final boolean testFlag(T flag) {
+	public final boolean testFlag(@Nullable T flag) {
 		if (flag instanceof QtFlagEnumerator) {
 			QtFlagEnumerator t = (QtFlagEnumerator) flag;
 			return (value & t.value()) == t.value();
@@ -189,7 +189,7 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	 * See <a href="https://doc.qt.io/qt/qflags.html#testFlags">QFlags::testFlags(QFlags&lt;T>)const</a>
 	 */
 	@SafeVarargs
-	public final boolean testFlags(T... flags) {
+	public final boolean testFlags(@Nullable T @NonNull... flags) {
 		QFlags<T> f = this.clone();
 		f.clearAll();
 		f.set(flags);
@@ -199,14 +199,14 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	/**
 	 * See <a href="https://doc.qt.io/qt/qflags.html#testFlags">QFlags::testFlags(QFlags&lt;T>)const</a>
 	 */
-	public final boolean testFlags(QFlags<T> flags) {
+	public final boolean testFlags(@StrictNonNull QFlags<T> flags) {
 		return (value & flags.value()) == flags.value();
 	}
 
 	/**
 	 * See <a href="https://doc.qt.io/qt/qflags.html#testAnyFlags">QFlags::testAnyFlags(QFlags&lt;T>)const</a>
 	 */
-	public final boolean testAnyFlags(QFlags<T> flags) {
+	public final boolean testAnyFlags(@StrictNonNull QFlags<T> flags) {
 		return (value & flags.value()) != 0;
 	}
 
@@ -214,7 +214,7 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	 * See <a href="https://doc.qt.io/qt/qflags.html#testAnyFlags">QFlags::testAnyFlags(QFlags&lt;T>)const</a>
 	 */
 	@SafeVarargs
-	public final boolean testAnyFlags(T... flags) {
+	public final boolean testAnyFlags(@Nullable T @NonNull... flags) {
 		QFlags<T> f = this.clone();
 		f.clearAll();
 		f.set(flags);
@@ -224,7 +224,7 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	/**
 	 * Clears the flag <code>other</code>.
 	 */
-	public final void clear(QFlags<T> other) {
+	public final void clear(@StrictNonNull QFlags<T> other) {
 		value &= ~other.value();
 	}
 
@@ -232,7 +232,7 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	 * Clears all flags in <code>ts</code>.
 	 */
 	@SafeVarargs
-	public final void clear(T... ts) {
+	public final void clear(@Nullable T @NonNull... ts) {
 		for (T flag : ts) {
 			if (flag instanceof QtFlagEnumerator) {
 				value &= ~((QtFlagEnumerator) flag).value();
@@ -283,7 +283,7 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	 * Returns an array of flag objects represented by this QFlags.
 	 * @return array of enum entries
 	 */
-	public T[] flags() {
+	public @NonNull T@NonNull[] flags() {
 		return flags(EnumUtility.flagConstants(this));
 	}
 
@@ -291,7 +291,7 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	 * Returns an unmodifiable set of flag objects represented by this QFlags.
 	 * @return array of enum entries
 	 */
-	protected final T[] flags(T[] possibleValues) {
+	protected final @NonNull T@NonNull[] flags(@Nullable T @StrictNonNull[] possibleValues) {
 		if (possibleValues == null || possibleValues.length == 0)
 			return possibleValues;
 		java.util.List<T> result = new ArrayList<>();
@@ -345,7 +345,7 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final String toString() {
+	public final @NonNull String toString() {
 		QtAbstractFlagEnumerator[] flags = flags();
 		String className = this.getClass().getName();
 		int idx = className.lastIndexOf('.');
@@ -396,7 +396,7 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 			super(value);
 		}
 
-		public QtFlagEnumerator[] flags() {
+		public @NonNull QtFlagEnumerator @NonNull[] flags() {
 			return new QtFlagEnumerator[] { new QtFlagEnumerator() {
 				@Override
 				public int value() {
@@ -421,18 +421,29 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 		}
 
 		@Override
-		public ConcreteWrapper clone() {
+		public @NonNull ConcreteWrapper clone() {
 			return new ConcreteWrapper(value());
 		}
 
 		@Override
-		public ConcreteWrapper combined(QtFlagEnumerator flag) {
+		public @NonNull ConcreteWrapper combined(@StrictNonNull QtFlagEnumerator flag) {
 			return new ConcreteWrapper(value() | flag.value());
 		}
 
 		@Override
-		public int compareTo(QFlags<?> o) {
+		public int compareTo(@StrictNonNull QFlags<?> o) {
 			return Integer.compare(value(), o.value());
 		}
 	}
+	
+	/**
+     * Compares two QFlags values numerically.
+     * The value returned is identical to what would be returned by:
+     * <pre>
+     *    Integer.compare(a.value(), b.value())
+     * </pre>
+     */
+    public static <E extends QtAbstractFlagEnumerator> int compare(@StrictNonNull QFlags<E> a, @StrictNonNull QFlags<E> b) {
+        return Integer.compare(a.value(), b.value());
+    }
 }

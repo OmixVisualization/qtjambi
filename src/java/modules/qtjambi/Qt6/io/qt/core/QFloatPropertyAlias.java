@@ -28,8 +28,7 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.QtPrimitiveType;
-import io.qt.QtUninvokable;
+import io.qt.*;
 
 /**
  * QFloatPropertyAlias is primitive-typed version of QPropertyAlias&lt;Float&gt;.
@@ -37,7 +36,7 @@ import io.qt.QtUninvokable;
  */
 public final class QFloatPropertyAlias extends QAbstractPropertyAlias {
 	
-	private static QPropertyAlias<@QtPrimitiveType Float> check(QPropertyAlias<@QtPrimitiveType Float> other){
+	private static QPropertyAlias<@NonNull@QtPrimitiveType Float> check(QPropertyAlias<@NonNull@QtPrimitiveType Float> other){
 		if(other.iface!=null && !QFloatProperty.checkType(other.iface.metaType())) {
 			throw new IllegalArgumentException("Given QPropertyAlias is not of float type.");
 		}
@@ -55,7 +54,7 @@ public final class QFloatPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided alias.
 	 * @param other
 	 */
-	public QFloatPropertyAlias(QPropertyAlias<@QtPrimitiveType Float> other) {
+	public QFloatPropertyAlias(@StrictNonNull QPropertyAlias<@NonNull@QtPrimitiveType Float> other) {
 		super(check(other));
 	}
 
@@ -63,7 +62,7 @@ public final class QFloatPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QFloatPropertyAlias(QFloatProperty property) {
+	public QFloatPropertyAlias(@StrictNonNull QFloatProperty property) {
 		super(property, QFloatBindable.bindableInterface(0));
 	}
 	
@@ -71,7 +70,7 @@ public final class QFloatPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QFloatPropertyAlias(QObject.QFloatProperty property) {
+	public QFloatPropertyAlias(QObject.@StrictNonNull QFloatProperty property) {
 		super(property, QFloatBindable.bindableInterface(1));
 	}
 	
@@ -79,7 +78,7 @@ public final class QFloatPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QFloatPropertyAlias(QObject.QComputedIntProperty property) {
+	public QFloatPropertyAlias(QObject.@StrictNonNull QComputedIntProperty property) {
 		super(property, QFloatBindable.bindableInterface(2));
 	}
 
@@ -87,7 +86,7 @@ public final class QFloatPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QFloatPropertyAlias(QProperty<@QtPrimitiveType Float> property) {
+	public QFloatPropertyAlias(@StrictNonNull QProperty<@NonNull@QtPrimitiveType Float> property) {
 		super(property, QBindable.bindableInterface(check(property.valueMetaType()).id(), 0));
 	}
 	
@@ -95,7 +94,7 @@ public final class QFloatPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QFloatPropertyAlias(QObject.QProperty<@QtPrimitiveType Float> property) {
+	public QFloatPropertyAlias(QObject.@StrictNonNull QProperty<@NonNull@QtPrimitiveType Float> property) {
 		super(property, QBindable.bindableInterface(check(property.valueMetaType()).id(), 1));
 	}
 	
@@ -103,7 +102,7 @@ public final class QFloatPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QFloatPropertyAlias(QObject.QComputedProperty<@QtPrimitiveType Float> property) {
+	public QFloatPropertyAlias(QObject.@StrictNonNull QComputedProperty<@NonNull@QtPrimitiveType Float> property) {
 		super(property, QBindable.bindableInterface(check(property.valueMetaType()).id(), 2));
 	}
 	
@@ -111,7 +110,7 @@ public final class QFloatPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided alias.
 	 * @param other
 	 */
-	public QFloatPropertyAlias(QFloatPropertyAlias alias) {
+	public QFloatPropertyAlias(@StrictNonNull QFloatPropertyAlias alias) {
 		super(alias);
 	}
 	
@@ -119,7 +118,7 @@ public final class QFloatPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided binding's underlying property.
 	 * @param other
 	 */
-	public QFloatPropertyAlias(QFloatBindable bindable) {
+	public QFloatPropertyAlias(@StrictNonNull QFloatBindable bindable) {
 		super(bindable.data(), bindable.iface());
 	}
 	
@@ -127,7 +126,7 @@ public final class QFloatPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided binding's underlying property.
 	 * @param other
 	 */
-	public QFloatPropertyAlias(QBindable<@QtPrimitiveType Float> bindable) {
+	public QFloatPropertyAlias(@StrictNonNull QBindable<@NonNull@QtPrimitiveType Float> bindable) {
 		super(bindable.data(), bindable.iface());
 		check(bindable.valueMetaType());
 	}
@@ -152,7 +151,7 @@ public final class QFloatPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QFloatProperty#setBinding(QFloatPropertyBinding)
 	 */
 	@QtUninvokable
-	public QFloatPropertyBinding setBinding(QFloatPropertyBinding newBinding) {
+	public @NonNull QFloatPropertyBinding setBinding(@StrictNonNull QFloatPropertyBinding newBinding) {
 		return new QFloatBindable(aliasedProperty(), iface).setBinding(newBinding);
     }
 	
@@ -160,7 +159,7 @@ public final class QFloatPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QFloatProperty#setBinding(QPropertyBinding)
 	 */
 	@QtUninvokable
-	public QFloatPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Float> newBinding) {
+	public @NonNull QFloatPropertyBinding setBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Float> newBinding) {
 		return new QFloatBindable(aliasedProperty(), iface).setBinding(newBinding);
     }
 	
@@ -168,7 +167,7 @@ public final class QFloatPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QFloatProperty#setBinding(io.qt.QtUtilities.FloatSupplier)
 	 */
 	@QtUninvokable
-	public QFloatPropertyBinding setBinding(io.qt.QtUtilities.FloatSupplier functor) {
+	public @NonNull QFloatPropertyBinding setBinding(io.qt.QtUtilities.@StrictNonNull FloatSupplier functor) {
         return setBinding(new QFloatPropertyBinding(functor));
     }
 	
@@ -176,7 +175,7 @@ public final class QFloatPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QFloatProperty#binding()
 	 */
 	@QtUninvokable
-	public QFloatPropertyBinding binding() {
+	public @NonNull QFloatPropertyBinding binding() {
         return new QFloatBindable(aliasedProperty(), iface).binding();
     }
 	
@@ -184,7 +183,7 @@ public final class QFloatPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QFloatProperty#takeBinding()
 	 */
 	@QtUninvokable
-	public QFloatPropertyBinding takeBinding() {
+	public @NonNull QFloatPropertyBinding takeBinding() {
         return new QFloatBindable(aliasedProperty(), iface).takeBinding();
     }
 }

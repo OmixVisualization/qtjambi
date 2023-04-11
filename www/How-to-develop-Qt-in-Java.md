@@ -13,7 +13,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `5.15.14`, `6.2.12` or by `6.4.4`).
+(exchange `$VERSION` either by `5.15.14` or by `6.5.0`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 Find the [list of all available QtJambi modules](www/Modules.md).
@@ -36,7 +36,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.4.4.jar Test.java
+javac -cp qtjambi-6.5.0.jar Test.java
 ```
 
 ## Executing Example
@@ -46,7 +46,7 @@ instance, if you are working on Windows download the *windows-x64*
 binaries. Additionally, you need *Qt*. Use the [Qt
 installer](https://www.qt.io/download-qt-installer) to install Qt on
 your system. Make sure you are using the same Qt version and QtJambi
-version (e.g. 5.15 or 6.3). On Linux, you can alternatively use Qt system libraries (correct version provided).
+version (e.g. 5.15 or 6.5). On Linux, you can alternatively use Qt system libraries (correct version provided).
 The required DLLs are to be found in the `bin` folder on Windows and `lib` folder on Linux and macOS, respectively. 
 
 When running a QtJambi application you have to make the locations of Qt
@@ -57,19 +57,19 @@ macOS) or the Java runtime property **java.library.path**.
 The example program can be executed this way on Windows:
 
 ``` powershell
-java -cp qtjambi-6.4.4.jar;qtjambi-native-windows-x64-6.4.4.jar;. -Djava.library.path=C:\Qt\6.4.3\msvc2019_64\bin Test
+java -cp qtjambi-6.5.0.jar;qtjambi-native-windows-x64-6.5.0.jar;. -Djava.library.path=C:\Qt\6.5.0\msvc2019_64\bin Test
 ```
 
 On Linux it looks this way:
 
 ``` bash
-java -cp qtjambi-6.4.4.jar:qtjambi-native-linux-x64-6.4.4.jar:. -Djava.library.path=<path to>/Qt/6.4.3/gcc_64/lib Test
+java -cp qtjambi-6.5.0.jar:qtjambi-native-linux-x64-6.5.0.jar:. -Djava.library.path=<path to>/Qt/6.5.0/gcc_64/lib Test
 ```
 
 On macOS you additionally need to use the start parameter -XstartOnFirstThread:
 
 ``` bash
-java -cp qtjambi-6.4.4.jar:qtjambi-native-macos-6.4.4.jar:. -Djava.library.path=<path to>/Qt/6.4.3/macos/lib -XstartOnFirstThread Test
+java -cp qtjambi-6.5.0.jar:qtjambi-native-macos-6.5.0.jar:. -Djava.library.path=<path to>/Qt/6.5.0/macos/lib -XstartOnFirstThread Test
 ```
 
 ### Native Components
@@ -95,10 +95,8 @@ here](How-to-deploy-QtJambi-applications.md).
 
 See [QtJambi 5.15 API Reference
 Documentation](https://doc.qtjambi.io/5.15.14/),
-[QtJambi 6.2 API Reference
-Documentation](https://doc.qtjambi.io/6.2.12/)
-and [QtJambi 6.4 API Reference
-Documentation](https://doc.qtjambi.io/6.4.4/)
+and [QtJambi 6.5 API Reference
+Documentation](https://doc.qtjambi.io/6.5.0/)
 
 ## Useful Java System Properties for QtJambi
 

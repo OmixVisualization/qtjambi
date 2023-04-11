@@ -32,8 +32,10 @@ package io.qt.core;
 import java.util.Objects;
 
 import io.qt.NativeAccess;
+import io.qt.NonNull;
 import io.qt.QNoImplementationException;
 import io.qt.QtObject;
+import io.qt.StrictNonNull;
 
 /**
  * <p>Way to store computation results to be accessed by QFuture</p>
@@ -86,7 +88,7 @@ public final class QPromise<T>
         registerPromise(this);
     }
     
-    public QPromise(io.qt.core.QFutureInterface<T> other){
+    public QPromise(io.qt.core.@StrictNonNull QFutureInterface<T> other){
     	d = other.clone();
     	registerPromise(this);
     }
@@ -108,7 +110,7 @@ public final class QPromise<T>
      * <p>See <a href="https://doc.qt.io/qt/qpromise.html#future">QPromise::future()const</a></p>
      */
     @io.qt.QtUninvokable
-    public final io.qt.core.QFuture<T> future(){
+    public final io.qt.core.@NonNull QFuture<T> future(){
     	return new QFuture<>(d.clone(), true);
     }
     
@@ -164,13 +166,13 @@ public final class QPromise<T>
      * <p>See <a href="https://doc.qt.io/qt/qpromise.html#swap">QPromise::swap(QPromise&lt;T&gt;&amp;)</a></p>
      */
     @io.qt.QtUninvokable
-    public final void swap(io.qt.core.QPromise<T> other){
+    public final void swap(io.qt.core.@StrictNonNull QPromise<T> other){
         java.util.Objects.requireNonNull(other, "Argument 'other': null not expected.");
         d.swap(other.d);
     }
     
     @io.qt.QtUninvokable
-    public final void setException(Throwable e) {
+    public final void setException(@StrictNonNull Throwable e) {
         d.reportException(e);
     }
     

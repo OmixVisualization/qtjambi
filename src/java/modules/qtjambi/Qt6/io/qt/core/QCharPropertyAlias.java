@@ -28,8 +28,7 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.QtPrimitiveType;
-import io.qt.QtUninvokable;
+import io.qt.*;
 
 /**
  * QCharPropertyAlias is primitive-typed version of QPropertyAlias&lt;Character&gt;.
@@ -37,7 +36,7 @@ import io.qt.QtUninvokable;
  */
 public final class QCharPropertyAlias extends QAbstractPropertyAlias {
 	
-	private static QPropertyAlias<@QtPrimitiveType Character> check(QPropertyAlias<@QtPrimitiveType Character> other){
+	private static QPropertyAlias<@NonNull@QtPrimitiveType Character> check(QPropertyAlias<@NonNull@QtPrimitiveType Character> other){
 		if(other.iface!=null && !QCharProperty.checkType(other.iface.metaType())) {
 			throw new IllegalArgumentException("Given QPropertyAlias is not of char type.");
 		}
@@ -55,7 +54,7 @@ public final class QCharPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided alias.
 	 * @param other
 	 */
-	public QCharPropertyAlias(QPropertyAlias<@QtPrimitiveType Character> other) {
+	public QCharPropertyAlias(@StrictNonNull QPropertyAlias<@NonNull@QtPrimitiveType Character> other) {
 		super(check(other));
 	}
 
@@ -63,7 +62,7 @@ public final class QCharPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QCharPropertyAlias(QCharProperty property) {
+	public QCharPropertyAlias(@StrictNonNull QCharProperty property) {
 		super(property, QCharBindable.bindableInterface(0));
 	}
 	
@@ -71,7 +70,7 @@ public final class QCharPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QCharPropertyAlias(QObject.QCharProperty property) {
+	public QCharPropertyAlias(QObject.@StrictNonNull QCharProperty property) {
 		super(property, QCharBindable.bindableInterface(1));
 	}
 	
@@ -79,7 +78,7 @@ public final class QCharPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QCharPropertyAlias(QObject.QComputedCharProperty property) {
+	public QCharPropertyAlias(QObject.@StrictNonNull QComputedCharProperty property) {
 		super(property, QCharBindable.bindableInterface(2));
 	}
 
@@ -87,7 +86,7 @@ public final class QCharPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QCharPropertyAlias(QProperty<@QtPrimitiveType Character> property) {
+	public QCharPropertyAlias(@StrictNonNull QProperty<@NonNull@QtPrimitiveType Character> property) {
 		super(property, QBindable.bindableInterface(check(property.valueMetaType()).id(), 0));
 	}
 	
@@ -95,7 +94,7 @@ public final class QCharPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QCharPropertyAlias(QObject.QProperty<@QtPrimitiveType Character> property) {
+	public QCharPropertyAlias(QObject.@StrictNonNull QProperty<@NonNull@QtPrimitiveType Character> property) {
 		super(property, QBindable.bindableInterface(check(property.valueMetaType()).id(), 1));
 	}
 	
@@ -103,7 +102,7 @@ public final class QCharPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided property.
 	 * @param property
 	 */
-	public QCharPropertyAlias(QObject.QComputedProperty<@QtPrimitiveType Character> property) {
+	public QCharPropertyAlias(QObject.@StrictNonNull QComputedProperty<@NonNull@QtPrimitiveType Character> property) {
 		super(property, QBindable.bindableInterface(check(property.valueMetaType()).id(), 2));
 	}
 	
@@ -111,7 +110,7 @@ public final class QCharPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided alias.
 	 * @param other
 	 */
-	public QCharPropertyAlias(QCharPropertyAlias alias) {
+	public QCharPropertyAlias(@StrictNonNull QCharPropertyAlias alias) {
 		super(alias);
 	}
 	
@@ -119,7 +118,7 @@ public final class QCharPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided binding's underlying property.
 	 * @param other
 	 */
-	public QCharPropertyAlias(QCharBindable bindable) {
+	public QCharPropertyAlias(@StrictNonNull QCharBindable bindable) {
 		super(bindable.data(), bindable.iface());
 	}
 	
@@ -127,7 +126,7 @@ public final class QCharPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided binding's underlying property.
 	 * @param other
 	 */
-	public QCharPropertyAlias(QBindable<@QtPrimitiveType Character> bindable) {
+	public QCharPropertyAlias(@StrictNonNull QBindable<@NonNull@QtPrimitiveType Character> bindable) {
 		super(bindable.data(), bindable.iface());
 		check(bindable.valueMetaType());
 	}
@@ -152,7 +151,7 @@ public final class QCharPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QCharProperty#setBinding(QCharPropertyBinding)
 	 */
 	@QtUninvokable
-	public QCharPropertyBinding setBinding(QCharPropertyBinding newBinding) {
+	public @NonNull QCharPropertyBinding setBinding(@StrictNonNull QCharPropertyBinding newBinding) {
 		return new QCharBindable(aliasedProperty(), iface).setBinding(newBinding);
     }
 	
@@ -160,7 +159,7 @@ public final class QCharPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QCharProperty#setBinding(QPropertyBinding)
 	 */
 	@QtUninvokable
-	public QCharPropertyBinding setBinding(QPropertyBinding<@QtPrimitiveType Character> newBinding) {
+	public @NonNull QCharPropertyBinding setBinding(@StrictNonNull QPropertyBinding<@NonNull@QtPrimitiveType Character> newBinding) {
 		return new QCharBindable(aliasedProperty(), iface).setBinding(newBinding);
     }
 	
@@ -168,7 +167,7 @@ public final class QCharPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QCharProperty#setBinding(io.qt.QtUtilities.CharSupplier)
 	 */
 	@QtUninvokable
-	public QCharPropertyBinding setBinding(io.qt.QtUtilities.CharSupplier functor) {
+	public @NonNull QCharPropertyBinding setBinding(io.qt.QtUtilities.@StrictNonNull CharSupplier functor) {
         return setBinding(new QCharPropertyBinding(functor));
     }
 	
@@ -176,7 +175,7 @@ public final class QCharPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QCharProperty#binding()
 	 */
 	@QtUninvokable
-	public QCharPropertyBinding binding() {
+	public @NonNull QCharPropertyBinding binding() {
         return new QCharBindable(aliasedProperty(), iface).binding();
     }
 	
@@ -184,7 +183,7 @@ public final class QCharPropertyAlias extends QAbstractPropertyAlias {
 	 * @see QCharProperty#takeBinding()
 	 */
 	@QtUninvokable
-	public QCharPropertyBinding takeBinding() {
+	public @NonNull QCharPropertyBinding takeBinding() {
         return new QCharBindable(aliasedProperty(), iface).takeBinding();
     }
 }

@@ -319,7 +319,18 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
     if(java_class->enclosingClass()){
         writeInclude(s, java_class->enclosingClass()->typeEntry()->include(), included);
     }
+
+    bool requiresEndif = false;
+    if(!java_class->typeEntry()->ppCondition().isEmpty()){
+        if(java_class->typeEntry()->include().requiredFeatures.isEmpty() && java_class->typeEntry()->include().type==Include::IncludePath){
+            s << "#if __has_include(<" << java_class->typeEntry()->include().name << ">)" << Qt::endl;
+            requiresEndif = true;
+        }
+    }
     writeInclude(s, java_class->typeEntry()->include(), included);
+    if(requiresEndif){
+        s << "#endif" << Qt::endl;
+    }
     writeInclude(s, Include(Include::IncludePath, "QtJambi/QtJambiAPI"), included);
 
     IncludeList list = java_class->typeEntry()->extraIncludes();
@@ -355,7 +366,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
           << "{" << Qt::endl;
         writeInjectedCode(s, java_class, {CodeSnip::Beginning});
         s << "public:" << Qt::endl;
-        if(!java_class->hasPrivateDestructor() && java_class->instantiateShellClass()){
+        if(!java_class->typeEntry()->isDestructorPrivate() && java_class->instantiateShellClass()){
             for(const MetaFunction *function : java_class->functions()) {
                 if (function->isConstructor() && !function->wasPrivate()){
                     QStringList ppConditions;
