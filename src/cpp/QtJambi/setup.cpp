@@ -44,6 +44,7 @@ QT_WARNING_DISABLE_DEPRECATED
 #endif
 #include "registryutil_p.h"
 #include "java_p.h"
+#include "utils_p.h"
 #include "qtjambilink_p.h"
 
 #include "qtjambi_cast.h"
@@ -206,9 +207,21 @@ const std::type_info& registerContainerTypeInfo(const char *qt_name, const char 
     return id;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+Q_DECLARE_METATYPE(jobject)
+Q_DECLARE_METATYPE(jobjectArray)
+Q_DECLARE_METATYPE(jintArray)
+Q_DECLARE_METATYPE(jshortArray)
+Q_DECLARE_METATYPE(jbyteArray)
+Q_DECLARE_METATYPE(jlongArray)
+Q_DECLARE_METATYPE(jbooleanArray)
+Q_DECLARE_METATYPE(jcharArray)
+Q_DECLARE_METATYPE(jfloatArray)
+Q_DECLARE_METATYPE(jdoubleArray)
+#endif
+
 extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM *vm, void *)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QtJambi::JNI_OnLoad(JavaVM *, void *)")
     using namespace RegistryAPI;
     if(std::atomic<bool>* atm = getJVMLoaded()){
         if(atm->load())
@@ -240,18 +253,15 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             if(env){
                 JniLocalFrame __jniLocalFrame(env, 200);
-                if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("qt.disable.thread.affinity.check"))
-                        || Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.disable-thread-affinity-check"))){
-                    disableThreadAffinity();
-                    QInternal::registerCallback(QInternal::EventNotifyCallback, &simpleEventNotify);
-                }else if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("qt.disable.event.thread.affinity.check"))
-                         || Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.disable-event-thread-affinity-check"))){
-                    QInternal::registerCallback(QInternal::EventNotifyCallback, &simpleEventNotify);
-                }else{
+                enableThreadAffinity(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-thread-affinity-check")));
+                if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-event-thread-affinity-check"))){
                     QInternal::registerCallback(QInternal::EventNotifyCallback, &threadAffineEventNotify);
+                }else{
+                    QInternal::registerCallback(QInternal::EventNotifyCallback, &simpleEventNotify);
                 }
             }else{
-                QInternal::registerCallback(QInternal::EventNotifyCallback, &threadAffineEventNotify);
+                enableThreadAffinity(false);
+                QInternal::registerCallback(QInternal::EventNotifyCallback, &simpleEventNotify);
             }
 
             registerPointerContainerAccess();
@@ -309,6 +319,16 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
             }
             registerMetaTypeID(typeid(QObject*), typeid(QObject), QMetaType::QObjectStar);
             registerMetaType<JNIEnv*>("JNIEnv*");
+            registerMetaType<jobject>("jobject");
+            registerMetaType<jobjectArray>("jobjectArray");
+            registerMetaType<jintArray>("jintArray");
+            registerMetaType<jshortArray>("jshortArray");
+            registerMetaType<jbyteArray>("jbyteArray");
+            registerMetaType<jlongArray>("jlongArray");
+            registerMetaType<jbooleanArray>("jbooleanArray");
+            registerMetaType<jcharArray>("jcharArray");
+            registerMetaType<jfloatArray>("jfloatArray");
+            registerMetaType<jdoubleArray>("jdoubleArray");
             registerSpecialTypeInfo<void*>("void*", "io/qt/QNativePointer");
             registerMetaTypeID(typeid(void*), QMetaType::VoidStar);
             {
@@ -350,7 +370,6 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
             QMetaType::registerConverter<JCharArrayWrapper,QString>([](const JCharArrayWrapper& w) -> QString {return w.toString();});
             QMetaType::registerConverter<JDoubleArrayWrapper,QString>([](const JDoubleArrayWrapper& w) -> QString {return w.toString();});
             QMetaType::registerConverter<JFloatArrayWrapper,QString>([](const JFloatArrayWrapper& w) -> QString {return w.toString();});
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
             QMetaType::registerConverter<JObjectWrapper,jobject>([](const JObjectWrapper& w) -> jobject {return w;});
             QMetaType::registerConverter<JCollectionWrapper,jobject>([](const JObjectWrapper& w) -> jobject {return w;});
             QMetaType::registerConverter<JMapWrapper,jobject>([](const JMapWrapper& w) -> jobject {return w;});
@@ -511,7 +530,13 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
             QMetaType::registerConverter<JObjectWrapper,std::nullptr_t>([](const JObjectWrapper&) -> std::nullptr_t {
                 return nullptr;
             });
-#endif
+            QMetaType::registerConverter<jobject,JObjectWrapper>([](jobject o) -> JObjectWrapper {
+                if(JniEnvironment env{200}){
+                    return {env, o};
+                }else{
+                    return {};
+                }
+            });
             QMetaType::registerConverter<JMapWrapper,QMap<QVariant,QVariant>>(&JMapWrapper::toMap);
             QMetaType::registerConverter<JMapWrapper,QMap<QString,QVariant>>(&JMapWrapper::toStringMap);
             QMetaType::registerConverter<JMapWrapper,QHash<QString,QVariant>>(&JMapWrapper::toStringHash);
@@ -805,7 +830,6 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
 
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnUnload)(JavaVM *, void *)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QtJambi::JNI_OnUnload(JavaVM *, void *)")
     DefaultJniEnvironment env{32};
     shutdown(env);
     clearGlobalClassPointersAtShutdown(env);

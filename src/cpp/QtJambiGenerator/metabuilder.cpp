@@ -620,10 +620,10 @@ bool MetaBuilder::build(FileModelItem&& dom) {
                     constructor->setOriginalName(constructor->name());
                     if(cls->usingPublicBaseConstructors()){
                         constructor->setVisibility(MetaAttributes::Public);
-                        applyOnType(cls->typeEntry(), [](auto c){c->setHasPublicDefaultConstructor();});
+                        applyOnType(cls->typeEntry(), [](ComplexTypeEntry* c){c->setHasPublicDefaultConstructor();});
                     }else{
                         constructor->setVisibility(MetaAttributes::Protected);
-                        applyOnType(cls->typeEntry(), [](auto c){c->setHasProtectedDefaultConstructor();});
+                        applyOnType(cls->typeEntry(), [](ComplexTypeEntry* c){c->setHasProtectedDefaultConstructor();});
                     }
                     cls->addFunction(constructor);
                 }
@@ -4031,12 +4031,12 @@ void MetaBuilder::traverseFields(ScopeModelItem scope_item) {
                     if(!m_current_class->typeEntry()->hasPrivateCopyConstructor()
                         && !m_current_class->typeEntry()->hasProtectedCopyConstructor()
                         && !m_current_class->typeEntry()->hasPublicCopyConstructor()){
-                        applyOnType(m_current_class->typeEntry(), [](auto c){c->setHasPrivateCopyConstructor();});
+                        applyOnType(m_current_class->typeEntry(), [](ComplexTypeEntry* c){c->setHasPrivateCopyConstructor();});
                     }
                     if(!m_current_class->typeEntry()->hasPrivateMoveConstructor()
                         && !m_current_class->typeEntry()->hasProtectedMoveConstructor()
                         && !m_current_class->typeEntry()->hasPublicMoveConstructor()){
-                        applyOnType(m_current_class->typeEntry(), [](auto c){c->setHasPrivateMoveConstructor();});
+                        applyOnType(m_current_class->typeEntry(), [](ComplexTypeEntry* c){c->setHasPrivateMoveConstructor();});
                     }
                 }
             }
@@ -4045,16 +4045,16 @@ void MetaBuilder::traverseFields(ScopeModelItem scope_item) {
                 if(m_current_class->typeEntry()->designatedInterface()){
                     m_current_class->extractInterface()->addField(meta_field);
                     if(meta_field->isPublic()){
-                        applyOnType(m_current_class->typeEntry(), [](auto c){c->setHasFields();});
+                        applyOnType(m_current_class->typeEntry(), [](ComplexTypeEntry* c){c->setHasFields();});
                     }else{
-                        applyOnType(m_current_class->typeEntry(), [](auto c){c->setHasNonPublicFields();});
+                        applyOnType(m_current_class->typeEntry(), [](ComplexTypeEntry* c){c->setHasNonPublicFields();});
                     }
                 }else{
                     m_current_class->addField(meta_field);
                     if(meta_field->isPublic()){
-                        applyOnType(m_current_class->typeEntry(), [](auto c){c->setHasFields();});
+                        applyOnType(m_current_class->typeEntry(), [](ComplexTypeEntry* c){c->setHasFields();});
                     }else{
-                        applyOnType(m_current_class->typeEntry(), [](auto c){c->setHasNonPublicFields();});
+                        applyOnType(m_current_class->typeEntry(), [](ComplexTypeEntry* c){c->setHasNonPublicFields();});
                     }
                 }
             }else{
@@ -4062,21 +4062,21 @@ void MetaBuilder::traverseFields(ScopeModelItem scope_item) {
             }
         }else{
             if(m_current_class){
-                applyOnType(m_current_class->typeEntry(), [](auto c){c->setHasFields();});
+                applyOnType(m_current_class->typeEntry(), [](ComplexTypeEntry* c){c->setHasFields();});
                 if (field->accessPolicy() != CodeModel::Public)
-                    applyOnType(m_current_class->typeEntry(), [](auto c){c->setHasNonPublicFields();});
+                    applyOnType(m_current_class->typeEntry(), [](ComplexTypeEntry* c){c->setHasNonPublicFields();});
                 if(field->type().toString().startsWith("QScopedPointer<")
                         || field->type().toString().startsWith("QScopedArrayPointer<")
                         || field->type().toString().startsWith("std::unique_ptr<")){
                     if(!m_current_class->typeEntry()->hasPrivateCopyConstructor()
                         && !m_current_class->typeEntry()->hasProtectedCopyConstructor()
                         && !m_current_class->typeEntry()->hasPublicCopyConstructor()){
-                        applyOnType(m_current_class->typeEntry(), [](auto c){c->setHasPrivateCopyConstructor();});
+                        applyOnType(m_current_class->typeEntry(), [](ComplexTypeEntry* c){c->setHasPrivateCopyConstructor();});
                     }
                     if(!m_current_class->typeEntry()->hasPrivateMoveConstructor()
                         && !m_current_class->typeEntry()->hasProtectedMoveConstructor()
                         && !m_current_class->typeEntry()->hasPublicMoveConstructor()){
-                        applyOnType(m_current_class->typeEntry(), [](auto c){c->setHasPrivateMoveConstructor();});
+                        applyOnType(m_current_class->typeEntry(), [](ComplexTypeEntry* c){c->setHasPrivateMoveConstructor();});
                     }
                 }
             }
@@ -4318,12 +4318,12 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                 }
                 if(meta_function->isDestructor()){
                     if(function_item->isDeleted() || (function_item->accessPolicy() & CodeModel::Private)){
-                        applyOnType(targetClass->typeEntry(), [](auto c){c->setDestructorPrivate();});
+                        applyOnType(targetClass->typeEntry(), [](ComplexTypeEntry* c){c->setDestructorPrivate();});
                     }else if(function_item->accessPolicy() & CodeModel::Protected){
-                        applyOnType(targetClass->typeEntry(), [](auto c){c->setDestructorProtected();});
+                        applyOnType(targetClass->typeEntry(), [](ComplexTypeEntry* c){c->setDestructorProtected();});
                     }
                     if(function_item->isVirtual())
-                        applyOnType(targetClass->typeEntry(), [](auto c){c->setDestructorVirtual();});
+                        applyOnType(targetClass->typeEntry(), [](ComplexTypeEntry* c){c->setDestructorVirtual();});
                     delete meta_function;
                     meta_function = nullptr;
                     continue;
@@ -4361,51 +4361,51 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                     }
                     if((function_item->accessPolicy() & CodeModel::Private) || function_item->isDeleted()){
                         if(isDefaultConstructor){
-                            applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPrivateDefaultConstructor();});
+                            applyOnType(targetClass->typeEntry(), [](ComplexTypeEntry* c){c->setHasPrivateDefaultConstructor();});
                         }else if(isCopyConstructor){
-                            applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPrivateCopyConstructor();});
+                            applyOnType(targetClass->typeEntry(), [](ComplexTypeEntry* c){c->setHasPrivateCopyConstructor();});
                         }else if(isMoveConstructor){
-                            applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPrivateMoveConstructor();});
+                            applyOnType(targetClass->typeEntry(), [](ComplexTypeEntry* c){c->setHasPrivateMoveConstructor();});
                         }else{
                             if(!targetClass->typeEntry()->hasPublicDefaultConstructor()
                                     && !targetClass->typeEntry()->hasProtectedDefaultConstructor()){
-                                applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPrivateDefaultConstructor();});
+                                applyOnType(targetClass->typeEntry(), [](ComplexTypeEntry* c){c->setHasPrivateDefaultConstructor();});
                             }
                         }
                     }else if((function_item->accessPolicy() & CodeModel::Protected)){
                         if(isDefaultConstructor){
-                            applyOnType(targetClass->typeEntry(), [](auto c){c->setHasProtectedDefaultConstructor();});
+                            applyOnType(targetClass->typeEntry(), [](ComplexTypeEntry* c){c->setHasProtectedDefaultConstructor();});
                         }else if(isCopyConstructor){
-                            applyOnType(targetClass->typeEntry(), [](auto c){c->setHasProtectedCopyConstructor();});
+                            applyOnType(targetClass->typeEntry(), [](ComplexTypeEntry* c){c->setHasProtectedCopyConstructor();});
                         }else if(isMoveConstructor){
-                            applyOnType(targetClass->typeEntry(), [](auto c){c->setHasProtectedMoveConstructor();});
+                            applyOnType(targetClass->typeEntry(), [](ComplexTypeEntry* c){c->setHasProtectedMoveConstructor();});
                         }else{
                             if(!targetClass->typeEntry()->hasPublicDefaultConstructor()
                                     && !targetClass->typeEntry()->hasProtectedDefaultConstructor()){
-                                applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPrivateDefaultConstructor();});
+                                applyOnType(targetClass->typeEntry(), [](ComplexTypeEntry* c){c->setHasPrivateDefaultConstructor();});
                             }
                         }
                     }else{
                         if(isDefaultConstructor){
-                            applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPublicDefaultConstructor();});
+                            applyOnType(targetClass->typeEntry(), [](ComplexTypeEntry* c){c->setHasPublicDefaultConstructor();});
                         }else if(isCopyConstructor){
-                            applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPublicCopyConstructor();});
+                            applyOnType(targetClass->typeEntry(), [](ComplexTypeEntry* c){c->setHasPublicCopyConstructor();});
                         }else if(isMoveConstructor){
-                            applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPublicMoveConstructor();});
+                            applyOnType(targetClass->typeEntry(), [](ComplexTypeEntry* c){c->setHasPublicMoveConstructor();});
                         }else{
                             if(!targetClass->typeEntry()->hasPublicDefaultConstructor()
                                     && !targetClass->typeEntry()->hasProtectedDefaultConstructor()){
-                                applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPrivateDefaultConstructor();});
+                                applyOnType(targetClass->typeEntry(), [](ComplexTypeEntry* c){c->setHasPrivateDefaultConstructor();});
                             }
                         }
                     }
                     if(meta_function->isInvalid() || (function_item->accessPolicy() & CodeModel::Private) || function_item->isDeleted()){
                         if(!targetClass->typeEntry()->hasPrivateConstructors()){
-                            applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPrivateConstructors();});
+                            applyOnType(targetClass->typeEntry(), [](ComplexTypeEntry* c){c->setHasPrivateConstructors();});
                         }
                     }else{
                         if(!targetClass->typeEntry()->hasNonPrivateConstructors()){
-                            applyOnType(targetClass->typeEntry(), [](auto c){c->setHasNonPrivateConstructors();});
+                            applyOnType(targetClass->typeEntry(), [](ComplexTypeEntry* c){c->setHasNonPrivateConstructors();});
                         }
                     }
                 }else if((/*meta_function->isPrivate() ||*/ meta_function->isInvalid()) && meta_function->isAbstract()){
@@ -4428,19 +4428,19 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                         }
                         if(meta_function->isPrivate() || function_item->isDeleted()){
                             if(isDefaultAssignment)
-                                applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPrivateDefaultAssignment();});
+                                applyOnType(targetClass->typeEntry(), [](ComplexTypeEntry* c){c->setHasPrivateDefaultAssignment();});
                             else if(isMoveAssignment)
-                                applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPrivateMoveAssignment();});
+                                applyOnType(targetClass->typeEntry(), [](ComplexTypeEntry* c){c->setHasPrivateMoveAssignment();});
                         }else if(meta_function->isProtected()){
                             if(isDefaultAssignment)
-                                applyOnType(targetClass->typeEntry(), [](auto c){c->setHasProtectedDefaultAssignment();});
+                                applyOnType(targetClass->typeEntry(), [](ComplexTypeEntry* c){c->setHasProtectedDefaultAssignment();});
                             else if(isMoveAssignment)
-                                applyOnType(targetClass->typeEntry(), [](auto c){c->setHasProtectedMoveAssignment();});
+                                applyOnType(targetClass->typeEntry(), [](ComplexTypeEntry* c){c->setHasProtectedMoveAssignment();});
                         }else{
                             if(isDefaultAssignment)
-                                applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPublicDefaultAssignment();});
+                                applyOnType(targetClass->typeEntry(), [](ComplexTypeEntry* c){c->setHasPublicDefaultAssignment();});
                             else if(isMoveAssignment)
-                                applyOnType(targetClass->typeEntry(), [](auto c){c->setHasPublicMoveAssignment();});
+                                applyOnType(targetClass->typeEntry(), [](ComplexTypeEntry* c){c->setHasPublicMoveAssignment();});
                         }
                     }else if((meta_function->operatorType()==OperatorType::Equals
                                  || meta_function->operatorType()==OperatorType::NotEquals)
@@ -8930,7 +8930,7 @@ void MetaBuilder::setupConstructorAvailability(MetaClass *meta_class){
                 && !meta_class->typeEntry()->hasProtectedDefaultConstructor()
                 && meta_class->typeEntry()->isDestructorPublic()){
             meta_class->addDefaultConstructor();
-            applyOnType(meta_class->typeEntry(), [](auto c){c->setHasPublicDefaultConstructor();});
+            applyOnType(meta_class->typeEntry(), [](ComplexTypeEntry* c){c->setHasPublicDefaultConstructor();});
         }
         if(inheritingPublicCopyConstructor
                 && !meta_class->typeEntry()->hasPublicCopyConstructor()
@@ -8938,12 +8938,12 @@ void MetaBuilder::setupConstructorAvailability(MetaClass *meta_class){
                 && !meta_class->typeEntry()->hasProtectedCopyConstructor()
                 && meta_class->typeEntry()->isDestructorPublic()
                 && (hasSuperClasses || meta_class->typeEntry()->hasFields())){
-            applyOnType(meta_class->typeEntry(), [](auto c){c->setHasPublicCopyConstructor();});
+            applyOnType(meta_class->typeEntry(), [](ComplexTypeEntry* c){c->setHasPublicCopyConstructor();});
             if(inheritingPublicMoveConstructor
                     && !meta_class->typeEntry()->hasPublicMoveConstructor()
                     && !meta_class->typeEntry()->hasPrivateMoveConstructor()
                     && !meta_class->typeEntry()->hasProtectedMoveConstructor()){
-                applyOnType(meta_class->typeEntry(), [](auto c){c->setHasPublicMoveConstructor();});
+                applyOnType(meta_class->typeEntry(), [](ComplexTypeEntry* c){c->setHasPublicMoveConstructor();});
             }
         }
         if(inheritingPublicDefaultAssignment
@@ -8951,12 +8951,12 @@ void MetaBuilder::setupConstructorAvailability(MetaClass *meta_class){
                 && !meta_class->typeEntry()->hasProtectedDefaultAssignment()
                 && !meta_class->typeEntry()->hasPrivateDefaultAssignment()
                 && (hasSuperClasses || meta_class->typeEntry()->hasFields())){
-            applyOnType(meta_class->typeEntry(), [](auto c){c->setHasPublicDefaultAssignment();});
+            applyOnType(meta_class->typeEntry(), [](ComplexTypeEntry* c){c->setHasPublicDefaultAssignment();});
             if(inheritingPublicMoveAssignment
                     && !meta_class->typeEntry()->hasPublicMoveAssignment()
                     && !meta_class->typeEntry()->hasProtectedMoveAssignment()
                     && !meta_class->typeEntry()->hasPrivateMoveAssignment()){
-                applyOnType(meta_class->typeEntry(), [](auto c){c->setHasPublicMoveAssignment();});
+                applyOnType(meta_class->typeEntry(), [](ComplexTypeEntry* c){c->setHasPublicMoveAssignment();});
             }
         }
     }

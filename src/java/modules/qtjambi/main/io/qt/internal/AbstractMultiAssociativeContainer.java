@@ -35,11 +35,10 @@ import java.util.List;
 import java.util.Map;
 
 import io.qt.NativeAccess;
-import io.qt.QtObject;
 import io.qt.QtUninvokable;
 import io.qt.core.QPair;
 
-public abstract class AbstractMultiAssociativeContainer<K,V> extends QtObject implements Map<K,List<V>>, Iterable<QPair<K,V>> {
+public abstract class AbstractMultiAssociativeContainer<K,V> extends AbstractContainer<V> implements Map<K,List<V>>, Iterable<QPair<K,V>>, Cloneable {
 
 	@NativeAccess
 	private static boolean putMultiMap(Map<Object, List<Object>> map, Object key, Object value) {
@@ -84,9 +83,12 @@ public abstract class AbstractMultiAssociativeContainer<K,V> extends QtObject im
 		return constBegin().toJavaMapIterator();
 	}
 	
-    protected AbstractMultiAssociativeContainer(QPrivateConstructor p) {
+    AbstractMultiAssociativeContainer(QPrivateConstructor p) {
 		super(p);
 	}
+    
+    @Override
+    public abstract AbstractMultiAssociativeContainer<K,V> clone();
     
     @QtUninvokable
 	public String toString() {

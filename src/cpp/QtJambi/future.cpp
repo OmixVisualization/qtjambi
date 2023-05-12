@@ -392,7 +392,7 @@ QFutureInterfaceBase* QtJambiAPI::translateQFutureInterface(QSharedPointer<QFutu
                         QFutureInterfaceBase* targetObject = targetFuture.get();
                         const std::type_info& sourceType = typeid(*sourceObject);
                         const std::type_info& targetType = typeid(*targetObject);
-                        if(unique_id(targetType)==unique_id(sourceType)){
+                        if(typeid_equals(targetType, sourceType)){
                             return sourceObject;
                         }else{
                             if(JniEnvironment env{200}){
@@ -419,7 +419,7 @@ QFutureInterfaceBase* QtJambiAPI::translateQFutureInterface(QSharedPointer<QFutu
                         QFutureInterfaceBase* targetObject = targetFuture.get();
                         const std::type_info& sourceType = typeid(*sourceObject);
                         const std::type_info& targetType = typeid(*targetObject);
-                        if(unique_id(targetType)==unique_id(sourceType)){
+                        if(typeid_equals(targetType, sourceType)){
                             return sourceObject;
                         }else{
                             if(JniEnvironment env{200}){
@@ -482,7 +482,7 @@ void CoreAPI::invokeAndCatch(JNIEnv *__jni_env, void* ptr, void(*expression)(voi
 #endif
         Java::QtCore::QUnhandledException::throwNew(__jni_env, "An exception has been thrown in native code." QTJAMBI_STACKTRACEINFO );
     }catch(const QException& exn){
-        if(unique_id(typeid(exn))==unique_id(typeid(QException))){
+        if(typeid_equals(typeid(exn), typeid(QException))){
             Java::QtCore::QException::throwNew(__jni_env, "An exception has been thrown in native code." QTJAMBI_STACKTRACEINFO );
         }else{
             QByteArray exceptionName(QtJambiAPI::typeName(typeid(exn)));

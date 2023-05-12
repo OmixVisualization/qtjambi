@@ -46,6 +46,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QL
 (JNIEnv * env, jobject _this, jclass elementType, QtJambiNativeID elementMetaType, jobject other)
 {
     QTJAMBI_TRY{
+        QTJAMBI_NATIVE_METHOD_CALL("QLinkedList<T>::initialize()")
         CoreAPI::initializeQLinkedList(env, _this, elementType, elementMetaType, other);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
@@ -58,7 +59,8 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
     jobject result{nullptr};
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::elementMetaType()", container.first)
         AbstractLinkedListAccess* containerAccess = dynamic_cast<AbstractLinkedListAccess*>(container.second);
         Q_ASSERT(containerAccess);
         result = qtjambi_cast<jobject>(env, containerAccess->elementMetaType());
@@ -76,10 +78,10 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QL
  QtJambiNativeID __this_nativeId,
  jobject t0)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QLinkedList<T>::append(const T & t)")
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::append(const T & t)", container.first)
         dynamic_cast<AbstractLinkedListAccess*>(container.second)->append(__jni_env, container.first, t0);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -93,10 +95,10 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
  QtJambiNativeID __this_nativeId)
 {
     jobject result{nullptr};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QLinkedList<T>::first() const")
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::first() const", container.first)
         result = dynamic_cast<AbstractLinkedListAccess*>(container.second)->first(__jni_env, container.first);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -111,10 +113,10 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
  QtJambiNativeID __this_nativeId)
 {
     jobject result{nullptr};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QLinkedList<T>::last() const")
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::last() const", container.first)
         result = dynamic_cast<AbstractLinkedListAccess*>(container.second)->last(__jni_env, container.first);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -129,10 +131,10 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
  QtJambiNativeID __this_nativeId)
 {
     jobject result{nullptr};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QLinkedList<T>::begin()")
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::begin()", container.first)
         result = dynamic_cast<AbstractLinkedListAccess*>(container.second)->begin(__jni_env, __this_nativeId, container.first);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -147,10 +149,10 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
  QtJambiNativeID __this_nativeId)
 {
     jobject result{nullptr};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QLinkedList<T>::end()")
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::end()", container.first)
         result = dynamic_cast<AbstractLinkedListAccess*>(container.second)->end(__jni_env, __this_nativeId, container.first);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -165,10 +167,10 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
  QtJambiNativeID __this_nativeId)
 {
     jobject result{nullptr};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QLinkedList<T>::constBegin() const")
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::constBegin() const", container.first)
         result = dynamic_cast<AbstractLinkedListAccess*>(container.second)->constBegin(__jni_env, __this_nativeId, container.first);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -183,10 +185,10 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
  QtJambiNativeID __this_nativeId)
 {
     jobject result{nullptr};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QLinkedList<T>::constEnd() const")
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::constEnd() const", container.first)
         result = dynamic_cast<AbstractLinkedListAccess*>(container.second)->constEnd(__jni_env, __this_nativeId, container.first);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -200,10 +202,10 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QL
  jclass,
  QtJambiNativeID __this_nativeId)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QLinkedList<T>::clear()")
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::clear()", container.first)
         dynamic_cast<AbstractLinkedListAccess*>(container.second)->clear(__jni_env, container.first);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -218,10 +220,10 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
  jobject t0)
 {
     jboolean result{false};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QLinkedList<T>::contains(const T & t) const")
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::contains(const T & t) const", container.first)
         result = dynamic_cast<AbstractLinkedListAccess*>(container.second)->contains(__jni_env, container.first, t0);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -237,10 +239,10 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QL
  jobject t0)
 {
     jint result{0};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QLinkedList<T>::count(const T & t) const")
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::count(const T & t) const", container.first)
         result = dynamic_cast<AbstractLinkedListAccess*>(container.second)->count(__jni_env, container.first, t0);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -256,10 +258,10 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
  jobject t0)
 {
     jboolean result{false};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QLinkedList<T>::endsWith(const T & t) const")
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::endsWith(const T & t) const", container.first)
         result = dynamic_cast<AbstractLinkedListAccess*>(container.second)->endsWith(__jni_env, container.first, t0);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -275,10 +277,10 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
  jobject l0)
 {
     jboolean result{false};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QLinkedList<T>::operator==(const QLinkedList<T> & l) const")
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::operator==(const QLinkedList<T> & l) const", container.first)
         result = dynamic_cast<AbstractLinkedListAccess*>(container.second)->equal(__jni_env, container.first, l0);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -293,10 +295,10 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QL
  QtJambiNativeID __this_nativeId,
  jobject t0)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QLinkedList<T>::prepend(const T & t)")
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::prepend(const T & t)", container.first)
         dynamic_cast<AbstractLinkedListAccess*>(container.second)->prepend(__jni_env, container.first, t0);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -311,10 +313,10 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QL
  jobject t0)
 {
     jint result{-1};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QLinkedList<T>::removeAll(const T & t)")
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::removeAll(const T & t)", container.first)
         result = dynamic_cast<AbstractLinkedListAccess*>(container.second)->removeAll(__jni_env, container.first, t0);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -328,10 +330,10 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QL
  jclass,
  QtJambiNativeID __this_nativeId)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QLinkedList<T>::removeFirst()")
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::removeFirst()", container.first)
         dynamic_cast<AbstractLinkedListAccess*>(container.second)->removeFirst(__jni_env, container.first);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -344,10 +346,10 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QL
  jclass,
  QtJambiNativeID __this_nativeId)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QLinkedList<T>::removeLast()")
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::removeLast()", container.first)
         dynamic_cast<AbstractLinkedListAccess*>(container.second)->removeLast(__jni_env, container.first);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -362,10 +364,10 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
  jobject t0)
 {
     jboolean result{false};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QLinkedList<T>::removeOne(const T & t)")
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::removeOne(const T & t)", container.first)
         result = dynamic_cast<AbstractLinkedListAccess*>(container.second)->removeOne(__jni_env, container.first, t0);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -380,10 +382,10 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QL
  QtJambiNativeID __this_nativeId)
 {
     jint result{0};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QLinkedList<T>::size() const")
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::size() const", container.first)
         result = dynamic_cast<AbstractLinkedListAccess*>(container.second)->size(__jni_env, container.first);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -399,10 +401,10 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
  jobject t0)
 {
     jboolean result{false};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QLinkedList<T>::startsWith(const T & t) const")
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::startsWith(const T & t) const", container.first)
         result = dynamic_cast<AbstractLinkedListAccess*>(container.second)->startsWith(__jni_env, container.first, t0);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -417,10 +419,10 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
  QtJambiNativeID __this_nativeId)
 {
     jobject result{nullptr};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QLinkedList<T>::takeFirst()")
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::takeFirst()", container.first)
         result = dynamic_cast<AbstractLinkedListAccess*>(container.second)->takeFirst(__jni_env, container.first);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -435,10 +437,10 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
  QtJambiNativeID __this_nativeId)
 {
     jobject result{nullptr};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QLinkedList<T>::takeLast()")
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::takeLast()", container.first)
         result = dynamic_cast<AbstractLinkedListAccess*>(container.second)->takeLast(__jni_env, container.first);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -455,7 +457,8 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QL
     QTJAMBI_TRY{
         const QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         QDataStream* stream = QtJambiAPI::objectFromNativeId<QDataStream>(stream0);
-        QtJambiAPI::checkPointer(__jni_env, stream, typeid(QDataStream));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("operator << (QDataStream&, QLinkedList<T>)", container.first)
+        QtJambiAPI::checkNullPointer(__jni_env, stream);
         QByteArray containerName = "QLinkedList<";
         containerName += dynamic_cast<AbstractLinkedListAccess*>(container.second)->elementMetaType().name();
         containerName += ">";
@@ -477,9 +480,10 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QL
 {
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("operator >> (QDataStream&, QLinkedList<T>&)", container.first)
         QDataStream* stream = QtJambiAPI::objectFromNativeId<QDataStream>(stream0);
-        QtJambiAPI::checkPointer(__jni_env, stream, typeid(QDataStream));
+        QtJambiAPI::checkNullPointer(__jni_env, stream);
         QByteArray containerName = "QLinkedList<";
         containerName += dynamic_cast<AbstractLinkedListAccess*>(container.second)->elementMetaType().name();
         containerName += ">";
@@ -501,7 +505,8 @@ extern "C" Q_DECL_EXPORT jstring JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
     jstring result{nullptr};
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("operator << (QDebug, QLinkedList<T>)", container.first)
         AbstractLinkedListAccess* containerAccess = dynamic_cast<AbstractLinkedListAccess*>(container.second);
         Q_ASSERT(containerAccess);
         QString strg;
@@ -532,7 +537,8 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QL
     jint result{0};
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("qHash(QLinkedList<T>)", container.first)
         AbstractLinkedListAccess* containerAccess = dynamic_cast<AbstractLinkedListAccess*>(container.second);
         Q_ASSERT(containerAccess);
         QByteArray containerName = "QLinkedList<";

@@ -57,7 +57,13 @@ import io.qt.core.Qt;
 import io.qt.internal.TestUtility;
 import io.qt.widgets.QWidget;
 
-public class TestThreads extends ApplicationInitializer {
+public class TestThreads extends ApplicationInitializer{
+	
+	static {
+		System.setProperty("io.qt.enable-thread-affinity-check", "true");
+		System.setProperty("io.qt.enable-event-thread-affinity-check", "true");
+	}
+	
     @Before
     public void setUp() {
         // This class is known to fail when we messed with this setting in a previous testcase running in the same JVM

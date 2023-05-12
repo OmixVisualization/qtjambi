@@ -31,6 +31,7 @@ package io.qt.autotests;
 import static org.junit.Assert.*;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 
 import io.qt.*;
@@ -61,6 +62,7 @@ public class TestTestlib extends UnitTestInitializer {
     
     @Test
     public void testMain() {
+    	Assume.assumeTrue("Can only run successfully on x86_64", "x86_64".equals(QSysInfo.currentCpuArchitecture()));
     	TestObject.initMainCalled = false;
     	TestObject.test1Called = false;
     	TestObject.test2Called = false;

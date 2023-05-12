@@ -2548,7 +2548,7 @@ TypeAnalysisResult analyzeType(JNIEnv* env, const QMetaType& metaType, const QBy
 }
 
 AbstractListAccess* checkContainerAccess(JNIEnv * env, AbstractListAccess* containerAccess){
-    QtJambiAPI::checkPointer(env, containerAccess);
+    QtJambiAPI::checkNullPointer(env, containerAccess);
     if(!dynamic_cast<WrapperListAccess*>(containerAccess)){
         if(containerAccess->elementMetaType().id() >= QMetaType::HighestInternalId
                 || containerAccess->elementMetaType().id() == QMetaType::QObjectStar
@@ -2567,7 +2567,7 @@ AbstractListAccess* checkContainerAccess(JNIEnv * env, AbstractListAccess* conta
 }
 
 AbstractSetAccess* checkContainerAccess(JNIEnv * env, AbstractSetAccess* containerAccess){
-    QtJambiAPI::checkPointer(env, containerAccess);
+    QtJambiAPI::checkNullPointer(env, containerAccess);
     if(!dynamic_cast<WrapperSetAccess*>(containerAccess)){
         int id = containerAccess->elementMetaType().id();
         if(id != QMetaType::QPoint
@@ -2588,7 +2588,7 @@ AbstractSetAccess* checkContainerAccess(JNIEnv * env, AbstractSetAccess* contain
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 AbstractLinkedListAccess* checkContainerAccess(JNIEnv * env, AbstractLinkedListAccess* containerAccess){
-    QtJambiAPI::checkPointer(env, containerAccess);
+    QtJambiAPI::checkNullPointer(env, containerAccess);
     if(!dynamic_cast<WrapperLinkedListAccess*>(containerAccess)){
         if(AbstractContainerAccess::isPointerType(containerAccess->elementMetaType())){
             containerAccess = new PointerRCLinkedListAccess(containerAccess);
@@ -2603,7 +2603,7 @@ AbstractLinkedListAccess* checkContainerAccess(JNIEnv * env, AbstractLinkedListA
 }
 
 AbstractVectorAccess* checkContainerAccess(JNIEnv * env, AbstractVectorAccess* containerAccess){
-    QtJambiAPI::checkPointer(env, containerAccess);
+    QtJambiAPI::checkNullPointer(env, containerAccess);
     if(!dynamic_cast<WrapperVectorAccess*>(containerAccess)){
         if(AbstractContainerAccess::isPointerType(containerAccess->elementMetaType())){
             containerAccess = new PointerRCVectorAccess(containerAccess);
@@ -2618,7 +2618,7 @@ AbstractVectorAccess* checkContainerAccess(JNIEnv * env, AbstractVectorAccess* c
 }
 #endif
 AbstractHashAccess* checkContainerAccess(JNIEnv * env, AbstractHashAccess* containerAccess){
-    QtJambiAPI::checkPointer(env, containerAccess);
+    QtJambiAPI::checkNullPointer(env, containerAccess);
     if(!dynamic_cast<WrapperHashAccess*>(containerAccess)){
         if(AbstractContainerAccess::isPointerType(containerAccess->keyMetaType())){
             if(AbstractContainerAccess::isPointerType(containerAccess->valueMetaType())){
@@ -2652,7 +2652,7 @@ AbstractHashAccess* checkContainerAccess(JNIEnv * env, AbstractHashAccess* conta
 }
 
 AbstractMapAccess* checkContainerAccess(JNIEnv * env, AbstractMapAccess* containerAccess){
-    QtJambiAPI::checkPointer(env, containerAccess);
+    QtJambiAPI::checkNullPointer(env, containerAccess);
     if(!dynamic_cast<WrapperMapAccess*>(containerAccess)){
         if(AbstractContainerAccess::isPointerType(containerAccess->keyMetaType())){
             if(AbstractContainerAccess::isPointerType(containerAccess->valueMetaType())){
@@ -2686,7 +2686,7 @@ AbstractMapAccess* checkContainerAccess(JNIEnv * env, AbstractMapAccess* contain
 }
 
 AbstractMultiHashAccess* checkContainerAccess(JNIEnv * env, AbstractMultiHashAccess* containerAccess){
-    QtJambiAPI::checkPointer(env, containerAccess);
+    QtJambiAPI::checkNullPointer(env, containerAccess);
     if(!dynamic_cast<WrapperMultiHashAccess*>(containerAccess)){
         if(AbstractContainerAccess::isPointerType(containerAccess->keyMetaType())){
             if(AbstractContainerAccess::isPointerType(containerAccess->valueMetaType())){
@@ -2720,7 +2720,7 @@ AbstractMultiHashAccess* checkContainerAccess(JNIEnv * env, AbstractMultiHashAcc
 }
 
 AbstractMultiMapAccess* checkContainerAccess(JNIEnv * env, AbstractMultiMapAccess* containerAccess){
-    QtJambiAPI::checkPointer(env, containerAccess);
+    QtJambiAPI::checkNullPointer(env, containerAccess);
     if(!dynamic_cast<WrapperMultiMapAccess*>(containerAccess)){
         if(AbstractContainerAccess::isPointerType(containerAccess->keyMetaType())){
             if(AbstractContainerAccess::isPointerType(containerAccess->valueMetaType())){

@@ -37,6 +37,8 @@
 #include <QtConcurrent/QtConcurrent>
 #include <QtJambi/qtjambi_cast.h>
 
+Q_LOGGING_CATEGORY(CATEGORY, "io.qt.concurrent", QtWarningMsg)
+
 namespace Java{
 namespace QtConcurrent{
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QtConcurrent,
@@ -371,8 +373,7 @@ public:
                     }
                 }
             } else {
-                qWarning("Map functor called with invalid data. JNI Environment == %p, java functor object == %p",
-                        env.environment(), m_functor.object());
+                qCWarning(CATEGORY) << "Map functor called with invalid data. JNI Environment == " << env.environment() << ", java functor object == " << m_functor.object();
             }
         }
     }
@@ -399,8 +400,7 @@ public:
                 }
                 return QVariant::fromValue(JObjectWrapper(env, javaResult));
             } else {
-                qWarning("Mapped functor called with invalid data. JNI Environment == %p, java functor object == %p",
-                        env.environment(), m_functor.object());
+                qCWarning(CATEGORY) << "Mapped functor called with invalid data. JNI Environment == " << env.environment() << ", java functor object == " << m_functor.object();
             }
         }
         return QVariant();
@@ -442,8 +442,7 @@ public:
                 }
                 result = QVariant::fromValue(JObjectWrapper(env, javaResult));
             } else {
-                qWarning("Reduce functor called with invalid data. JNI Environment == %p, java functor object == %p",
-                        env.environment(), m_functor.object());
+                qCWarning(CATEGORY) << "Reduce functor called with invalid data. JNI Environment == " << env.environment() << ", java functor object == " << m_functor.object();
             }
         }
     }
@@ -470,8 +469,7 @@ public:
                 }
                 return result;
             } else {
-                qWarning("Filtered functor called with invalid data. JNI Environment == %p, java functor object == %p",
-                        env.environment(), m_functor.object());
+                qCWarning(CATEGORY) << "Filtered functor called with invalid data. JNI Environment == " << env.environment() << ", java functor object == " << m_functor.object();
             }
         }
         return false;
@@ -674,8 +672,7 @@ public:
                 }
 #endif
             } else {
-                qWarning("Run functor called with invalid data. JNI Environment == %p, method id == %p",
-                         env.environment(), m_functor.object());
+                qCWarning(CATEGORY) << "Run functor called with invalid data. JNI Environment == " << env.environment() << ", java functor object == " << m_functor.object();
             }
         }
     }
@@ -762,8 +759,7 @@ public:
 #endif
                 return javaResult ? QVariant::fromValue(JObjectWrapper(env, javaResult)) : QVariant();
             } else {
-                qWarning("Run functor called with invalid data. JNI Environment == %p, method id == %p",
-                         env.environment(), m_functor.object());
+                qCWarning(CATEGORY) << "Run functor called with invalid data. JNI Environment == " << env.environment() << ", java functor object == " << m_functor.object();
             }
         }
         return QVariant();

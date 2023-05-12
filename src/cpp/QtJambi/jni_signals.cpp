@@ -388,7 +388,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_emitNativeSignal)
  jint defaults,
  jobjectArray args)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("java", "SignalUtility::emitNativeSignal(...)")
+    QTJAMBI_NATIVE_METHOD_CALL("SignalUtility::emitNativeSignal(...)")
     JniLocalFrame __jniLocalFrame(env, 1024);
     QtJambiScope scope(env, sender);
     try{

@@ -57,7 +57,6 @@ import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QIODevice;
 import io.qt.core.QObject;
-import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QProcess;
 import io.qt.core.QProcessEnvironment;
 import io.qt.core.QResource;
@@ -479,7 +478,8 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
     private static Consumer<Runtime> runFinalization;
     static{
     	Consumer<Runtime> _runFinalization = null;
-    	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+    	if(System.getProperty("os.name").toLowerCase().startsWith("linux")
+    			&& System.getProperty("java.runtime.name").toLowerCase().startsWith("android")) {
 	    	try{
 	    		Method runFinalization = Runtime.class.getMethod("runFinalization");
 	    		_runFinalization = runtime->{

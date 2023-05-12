@@ -1386,7 +1386,7 @@ jobject AutoHashAccess::constFind(JNIEnv * env, QtJambiNativeID ownerId, const v
             auto it = d->find(*this, key);
             if (it.isUnused())
                 it = d->end(*this);
-            return createIterator(env, ownerId, new iterator(it));
+            return createConstIterator(env, ownerId, new iterator(it));
         }
     }
     return createConstIterator(env, ownerId, new iterator(*this));

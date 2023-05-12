@@ -676,3 +676,16 @@ QGraphicsItem* Variants::convertInterface(QGraphicsObject* object) {
 }
 #endif
 
+QObject* Variants::convertJavaObject(jobject obj){
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QVariant variant = QVariant::fromValue<jobject>(obj);
+    if(variant.convert(QMetaType::fromName("JObjectWrapper"))){
+#else
+    QVariant variant(QMetaType::type("jobject"), &obj);
+    if(variant.convert(QMetaType::type("JObjectWrapper"))){
+#endif
+        return variant.value<QObject*>();
+    }
+    return nullptr;
+}
+

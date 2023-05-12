@@ -114,10 +114,10 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_quic
  jobject _this)
 {
     jobject _result{nullptr};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QSGGeometry::vertexData() const")
     QTJAMBI_TRY{
         QSGGeometry *__qt_this = QtJambiAPI::convertJavaObjectToNative<QSGGeometry>(__jni_env, _this);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QSGGeometry::vertexData() const", __qt_this)
         if(__qt_this->attributeCount() == 1
                 && __qt_this->sizeOfVertex() == 2 * sizeof(float)
                 && __qt_this->attributes()[0].tupleSize == 2

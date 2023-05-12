@@ -275,10 +275,7 @@ struct ptr2ref<false,O>{
 
 template<typename O>
 struct ptr2ref<true,O>{
-    static O& value(JNIEnv *env, O* o){
-        QtJambiAPI::checkPointer<O>(env, o);
-        return *o;
-    }
+    static constexpr auto value = &QtJambiAPI::checkedAddressOf<O>;
 };
 
 template<bool is_pointer,typename O>
@@ -341,8 +338,8 @@ template<typename O, bool has_std_constructor, bool has_copy_constructor, bool i
 struct qtjambi_deref_value{
     Q_STATIC_ASSERT_X(!has_std_constructor && false, "Cannot deref type");
     typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type O_const;
-    static O_const& deref(JNIEnv *, O* o){
-        return *o;
+    static O_const& deref(JNIEnv *env, O* o){
+        return QtJambiAPI::checkedAddressOf(env, o);
     }
 };
 
@@ -350,22 +347,25 @@ template<typename O, bool is_const>
 struct qtjambi_deref_value<O,false, true, is_const, false>{
     typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type O_const;
     static O_const deref(JNIEnv *env, O* o){
-        QtJambiAPI::checkPointer<O>(env, o);
-        return O(*o);
-    }
-};
-
-template<typename O, bool has_copy_constructor, bool is_const>
-struct qtjambi_deref_value<O,false, has_copy_constructor, is_const, true>{
-    typedef typename std::conditional<is_const, typename std::add_const<O>::type, O>::type O_const;
-    static O_const& deref(JNIEnv *env, O* o){
-        QtJambiAPI::checkPointer<O>(env, o);
-        return *o;
+        return O(QtJambiAPI::checkedAddressOf(env, o));
     }
 };
 
 template<typename O, bool has_copy_constructor>
-struct qtjambi_deref_value<O,true, has_copy_constructor,true,true>{
+struct qtjambi_deref_value<O,false/*has_std_constructor*/, has_copy_constructor, false/*is_const*/, true>{
+    static constexpr auto deref = &QtJambiAPI::checkedAddressOf<O>;
+};
+
+template<typename O, bool has_copy_constructor>
+struct qtjambi_deref_value<O,false/*has_std_constructor*/, has_copy_constructor, true/*is_const*/, true>{
+    typedef typename std::add_const<O>::type O_const;
+    static O_const& deref(JNIEnv *env, O* o){
+        return QtJambiAPI::checkedAddressOf(env, o);
+    }
+};
+
+template<typename O, bool has_copy_constructor>
+struct qtjambi_deref_value<O,true/*has_std_constructor*/, has_copy_constructor,true/*is_const*/,true>{
     typedef typename std::add_const<O>::type O_const;
     static O_const& deref(JNIEnv *, O_const* o){
         return o ? *o : getDefaultValue<typename std::remove_const<O>::type>();
@@ -373,11 +373,8 @@ struct qtjambi_deref_value<O,true, has_copy_constructor,true,true>{
 };
 
 template<typename O, bool has_copy_constructor>
-struct qtjambi_deref_value<O,true,has_copy_constructor,false,true>{
-    static O& deref(JNIEnv *env, O* o){
-        QtJambiAPI::checkPointer<O>(env, o);
-        return *o;
-    }
+struct qtjambi_deref_value<O,true/*has_std_constructor*/,has_copy_constructor,false/*is_const*/,true>{
+    static constexpr auto deref = &QtJambiAPI::checkedAddressOf<O>;
 };
 
 template<typename O, bool is_const>

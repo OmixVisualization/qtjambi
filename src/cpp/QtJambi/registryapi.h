@@ -305,6 +305,7 @@ typedef void (*AfterRegistrationFunction)(int);
 typedef AbstractContainerAccess*(*NewContainerAccessFunction)();
 typedef bool (*PolymorphyHandler)(void *object, qintptr& offset);
 typedef jobject(* FunctionalResolver)(JNIEnv*,const void*);
+typedef const std::type_info& (*TypeInfoSupplier)(const void *object);
 
 namespace RegistryAPI{
 
@@ -625,6 +626,19 @@ int registerMetaType(const char *typeName,
 
 namespace Private{
 
+template<typename T, bool = std::is_polymorphic<T>::value>
+struct PolymorphicTypeInfoSupplier{
+    static const std::type_info& value(const void *ptr) {
+        const T* object = reinterpret_cast<const T*>(ptr);
+        return typeid(*object);
+    };
+};
+
+template<typename T>
+struct PolymorphicTypeInfoSupplier<T,false>{
+    static constexpr TypeInfoSupplier value = nullptr;
+};
+
 template<typename T, bool = QMetaTypeId<T>::Defined>
 struct MetaTypeUtil{
     static int registerMetaType(const char *typeName){
@@ -785,6 +799,23 @@ QTJAMBI_EXPORT void registerInterfaceOffset(const std::type_info& qt_base, const
 
 QTJAMBI_EXPORT void registerFunctionalResolver(const std::type_info& typeId, FunctionalResolver resolver);
 
+QTJAMBI_EXPORT void registerTypeInfoSupplier(const std::type_info& typeId, TypeInfoSupplier resolver);
+
+template<typename Super, typename Class>
+void registerDefaultPolymorphyHandler(){
+    registerPolymorphyHandler(typeid(Super), typeid(Class), [](void *ptr, qintptr& offset) -> bool {
+        Super* object = reinterpret_cast<Super*>(ptr);
+        Q_ASSERT(object);
+        offset = 0;
+        bool _result = false;
+        try{
+            _result = dynamic_cast<Class*>(object);
+        }catch(...){
+        }
+        return _result;
+    });
+}
+
 template<typename T>
 const std::type_info& registerValueTypeInfo(const char *qt_name, const char *java_name)
 {
@@ -792,6 +823,7 @@ const std::type_info& registerValueTypeInfo(const char *qt_name, const char *jav
     registerValueTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name);
     registerSizeOfType(id, sizeof(T));
     registerAlignmentOfType(id, Q_ALIGNOF(T));
+    registerTypeInfoSupplier(id, Private::PolymorphicTypeInfoSupplier<T>::value);
     return id;
 }
 
@@ -802,6 +834,7 @@ const std::type_info& registerObjectTypeInfo(const char *qt_name, const char *ja
     registerObjectTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name);
     registerSizeOfType(id, sizeof(T));
     registerAlignmentOfType(id, Q_ALIGNOF(T));
+    registerTypeInfoSupplier(id, Private::PolymorphicTypeInfoSupplier<T>::value);
     return id;
 }
 
@@ -812,6 +845,7 @@ const std::type_info& registerQObjectTypeInfo(const char *qt_name, const char *j
     registerQObjectTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name);
     registerSizeOfType(id, sizeof(T));
     registerAlignmentOfType(id, Q_ALIGNOF(T));
+    registerTypeInfoSupplier(id, Private::PolymorphicTypeInfoSupplier<T>::value);
     return id;
 }
 
@@ -822,6 +856,7 @@ const std::type_info& registerInterfaceTypeInfo(const char *qt_name, const char 
     registerInterfaceTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name, QtJambiPrivate::interfaceIID<T>());
     registerSizeOfType(id, sizeof(T));
     registerAlignmentOfType(id, Q_ALIGNOF(T));
+    registerTypeInfoSupplier(id, Private::PolymorphicTypeInfoSupplier<T>::value);
     return id;
 }
 
@@ -832,6 +867,7 @@ const std::type_info& registerInterfaceValueTypeInfo(const char *qt_name, const 
     registerInterfaceValueTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name, QtJambiPrivate::interfaceIID<T>());
     registerSizeOfType(id, sizeof(T));
     registerAlignmentOfType(id, Q_ALIGNOF(T));
+    registerTypeInfoSupplier(id, Private::PolymorphicTypeInfoSupplier<T>::value);
     return id;
 }
 
@@ -1094,6 +1130,7 @@ const std::type_info& registerUnspecificTypeInfo(const char *qt_name, const char
     registerUnspecificTypeInfo(id, QtJambiTypeInfo::of<T>(), qt_name, java_name);
     registerSizeOfType(id, sizeof(T));
     registerAlignmentOfType(id, Q_ALIGNOF(T));
+    registerTypeInfoSupplier(id, Private::PolymorphicTypeInfoSupplier<T>::value);
     return id;
 }
 

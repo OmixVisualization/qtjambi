@@ -77,7 +77,9 @@ public class TestQml2 extends ApplicationInitializer{
 		
 	    @QtPropertyReader(name="testObjects")	    
 		public QQmlListProperty<QObject> testObjects() {
-			return new QQmlListProperty<>(this, _testObjects);
+	    	QQmlListProperty<QObject> list = new QQmlListProperty<>(this, _testObjects);
+	    	System.out.println("TestQml2.TestObjects.testObjects() returning list can append: "+list.canAppend());
+	    	return list;
 		}
 	}
 	
@@ -112,6 +114,9 @@ public class TestQml2 extends ApplicationInitializer{
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		QObject root = component.create();
+		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
+		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
+		Assert.assertTrue(root!=null);
 		Assert.assertTrue(root instanceof TestObjects);
 		TestObjects backEnd = (TestObjects)root;
 		Assert.assertEquals(3, backEnd._testObjects.size());

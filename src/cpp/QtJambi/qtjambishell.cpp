@@ -278,6 +278,17 @@ jmethodID QtJambiShell::javaMethod(const std::type_info& typeId, int pos) const
     return static_cast<const QtJambiShellImpl*>(this)->m_vtable->javaMethod(typeId, pos);
 }
 
+bool QtJambiShell::tryDeleteShell(const std::type_info& typeId){
+    if(enabledDanglingPointerCheck()){
+        if(!checkedGetTypeInfo(QtJambiPrivate::CheckPointer<QtJambiShell>::supplyType, this)){
+            qWarning("Possible memory leak while deleting %s: Cannot delete shell at %p", qPrintable(QtJambiAPI::typeName(typeId)), this);
+            return false;
+        }
+    }
+    deleteShell();
+    return true;
+}
+
 const QMetaObject* QtJambiShell::metaObject() const
 {
     Q_ASSERT(static_cast<const QtJambiShellImpl*>(this)->m_vtable);

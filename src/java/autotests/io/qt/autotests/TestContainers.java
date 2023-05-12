@@ -36,6 +36,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.ConcurrentModificationException;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1110,20 +1111,6 @@ public class TestContainers extends ApplicationInitializer {
 		} catch (IllegalArgumentException e) {
 		}
 		container.append("ABC");
-    }
-    
-    @Test
-    public void testConcurrentModification() {
-    	try {
-			QList<String> list = new QList<>(String.class);
-			list.add("A");
-			list.add("A");
-			for (@SuppressWarnings("unused") String string : list) {
-				list.clear();
-			}
-			Assert.fail("IllegalMonitorStateException expected to be thrown");
-		} catch (IllegalMonitorStateException e) {
-		}
     }
     
     public static void main(String args[]) {

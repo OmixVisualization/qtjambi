@@ -94,68 +94,7 @@ class QtJambi_LibraryUtilities_2_{
             }
         }
     } catch(UnsatisfiedLinkError t) {
-        switch(LibraryUtility.operatingSystem) {
-        case MacOS:
-            if(coreLib!=null) {
-                java.io.File prl = new java.io.File(coreLib.getParentFile(), "Resources/QtCore.prl");
-                if(prl.exists()) {
-                    Properties prlProp = new Properties();
-                    try(java.io.FileInputStream inStream = new java.io.FileInputStream(prl)){
-                        prlProp.load(inStream);
-                    } catch(Throwable t2) {}
-                    String version = prlProp.getProperty("QMAKE_PRL_VERSION", "");
-                    if(!version.isEmpty()) {
-                        if(!version.startsWith(qtMajorVersion + "." + qtMinorVersion + ".")) {
-                            throw new LinkageError("Cannot combine QtJambi " + qtMajorVersion + "." + qtMinorVersion + " with Qt " + version + "." + t.getMessage(), t);
-                        }
-                    }
-                }
-            }
-            break;
-        case Windows:
-            if(coreLib!=null) {
-                java.io.File prl = new java.io.File(coreLib.getParentFile(), "Qt"+qtMajorVersion+"Core.prl");
-                if(!prl.exists()) {
-                    prl = new java.io.File(coreLib.getParentFile().getParentFile(), "lib\\Qt"+qtMajorVersion+"Core.prl");
-                }
-                if(prl.exists()) {
-                    Properties prlProp = new Properties();
-                    try(java.io.FileInputStream inStream = new java.io.FileInputStream(prl)){
-                        prlProp.load(inStream);
-                    } catch(Throwable t2) {}
-                    String version = prlProp.getProperty("QMAKE_PRL_VERSION", "");
-                    if(!version.isEmpty()) {
-                        if(!version.startsWith(qtMajorVersion + "." + qtMinorVersion + ".")) {
-                            throw new LinkageError("Cannot combine QtJambi " + qtMajorVersion + "." + qtMinorVersion + " with Qt " + version + ". " + t.getMessage(), t);
-                        }
-                    }
-                }
-                if(new java.io.File(coreLib.getParentFile(), "libstdc++-6.dll").exists() || LibraryUtility.isMinGWBuilt()) {
-                    throw new LinkageError("Cannot combine msvc-based QtJambi with mingw-based Qt library. Please install and use Qt (MSVC 2019 x64) instead. " + t.getMessage(), t);
-                }else {
-                    throw new LinkageError("Cannot combine mingw-based QtJambi with msvc-based Qt library. Please install and use Qt (MinGW x64) instead. " + t.getMessage(), t);
-                }
-            }
-            break;
-        default:
-            if(coreLib!=null) {
-                java.io.File prl = new java.io.File(coreLib.getParentFile(), "Qt"+qtMajorVersion+"Core.prl");
-                if(prl.exists()) {
-                    Properties prlProp = new Properties();
-                    try(java.io.FileInputStream inStream = new java.io.FileInputStream(prl)){
-                        prlProp.load(inStream);
-                    } catch(Throwable t2) {}
-                    String version = prlProp.getProperty("QMAKE_PRL_VERSION", "");
-                    if(!version.isEmpty()) {
-                        if(!version.startsWith(qtMajorVersion + "." + qtMinorVersion + ".")) {
-                            throw new LinkageError("Cannot combine QtJambi " + qtMajorVersion + "." + qtMinorVersion + " with Qt " + version + ". " + t.getMessage(), t);
-                        }
-                    }
-                }
-            }
-            break;
-        }
-        throw t;
+        LibraryUtility.analyzeUnsatisfiedLinkError(t, coreLib);
     }
 }// class
 
@@ -17594,8 +17533,8 @@ class QPropertyObserver_native__{
 QPropertyObserver_shell::QPropertyObserver_shell(QPropertyObserverBase::ChangeHandler changeHandler0)
     : QPropertyObserver(changeHandler0)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT_WHERE("shell", "QPropertyObserver_shell::QPropertyObserver_shell(QPropertyObserverBase::ChangeHandler changeHandler0)", __shell())
-    __shell()->constructed(typeid(QPropertyObserver));
+    QTJAMBI_IN_CONSTRUCTOR_CALL("QPropertyObserver_shell::QPropertyObserver_shell(QPropertyObserverBase::ChangeHandler changeHandler0)", QPropertyObserver_shell::__shell())
+    QPropertyObserver_shell::__shell()->constructed(typeid(QPropertyObserver));
 }
 
 void __qt_construct_QPropertyObserver_with_ChangeHandler(void* __qtjambi_ptr, void (*changeHandler)(QPropertyObserver*, QUntypedPropertyData *))

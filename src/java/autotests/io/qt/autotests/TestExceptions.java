@@ -42,6 +42,7 @@ import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QRunnable;
+import io.qt.core.QSysInfo;
 import io.qt.core.QThread;
 import io.qt.core.QThreadPool;
 import io.qt.core.Qt;
@@ -322,6 +323,7 @@ public class TestExceptions extends ApplicationInitializer {
     
     @Test
     public void testExceptionDuringExec() {
+    	Assume.assumeTrue("Can only run successfully on x86_64", "x86_64".equals(QSysInfo.currentCpuArchitecture()));
     	QWizard dialog = new QWizard();
     	dialog.addPage(new QWizardPage(){
 

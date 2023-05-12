@@ -50,7 +50,7 @@ extern "C" Q_DECL_EXPORT void JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_QtJambi_1LibraryUtilities_shutdown)
 (JNIEnv * env, jclass)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QtJambi_LibraryUtilities::shutdown()")
+    QTJAMBI_NATIVE_METHOD_CALL("QtJambi_LibraryUtilities::shutdown()")
     try{
         if(QThread* mainThread = QCoreApplicationPrivate::theMainThread.loadRelaxed()){
             QThread* currentThread = QThread::currentThread();
@@ -75,12 +75,6 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtJa
     return nullptr;
 }
 
-#ifdef Q_OS_ANDROID
-#define unique_id(id) qHash(QLatin1String((id).name()))
-#else
-#define unique_id(id) (id).hash_code()
-#endif
-
 extern "C" Q_DECL_EXPORT jobject JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_ExceptionUtility_convertNativeException)
 (JNIEnv *env,
@@ -89,7 +83,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_ExceptionUtility_convertNativeExcept
 {
     if(exception){
         const std::exception* exn = reinterpret_cast<const std::exception*>(exception);
-        if(unique_id(typeid(*exn))==unique_id(typeid(JavaException))){
+        if(typeid_equals(typeid(*exn), typeid(JavaException))){
             const JavaException* jexn = reinterpret_cast<const JavaException*>(exception);
             return jexn->object();
         }else{

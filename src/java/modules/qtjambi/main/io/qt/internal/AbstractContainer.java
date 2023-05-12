@@ -27,34 +27,29 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************/
-package io.qt.uic;
+package io.qt.internal;
 
-import io.qt.core.QDir;
+import io.qt.QtObject;
+import io.qt.QtUninvokable;
 
-public class Option {
-	public boolean copyrightHeader = true;
-	public boolean generateImplemetation;
-	public boolean generateNamespace = true;
-	public boolean autoConnection = true;
-	public boolean dependencies;
-	public boolean limitXPM_LineLength;
-	public boolean idBased;
-	public boolean forceMemberFnPtrConnectionSyntax;
-	public boolean forceStringConnectionSyntax;
-	public boolean forceOutput;
-	public boolean noShellClass;
-	public String inputFile = "";
-	public String outputDir = "";
-	public String targetPackage = "";
-	public String qrcOutputFile = "";
-	public String indent = "    ";
-	public String prefix = "Ui_";
-	public String postfix = "";
-	public String translateFunction = "";
-	public String imports = "";
+public abstract class AbstractContainer<E> extends QtObject implements Cloneable{
 	
-	public String messagePrefix()
-	{
-	    return inputFile==null || inputFile.isEmpty() ? "stdin" : QDir.toNativeSeparators(inputFile);
+    @QtUninvokable
+	public abstract int size();
+
+    @QtUninvokable
+	public abstract boolean isEmpty();
+	
+    @QtUninvokable
+    protected abstract AbstractSequentialConstIterator<E> constBegin();
+
+    @QtUninvokable
+	protected abstract AbstractSequentialConstIterator<E> constEnd();
+
+    AbstractContainer(QPrivateConstructor p) {
+		super(p);
 	}
+    
+    @Override
+    public abstract AbstractContainer<E> clone();
 }

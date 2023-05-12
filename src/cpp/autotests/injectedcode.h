@@ -149,6 +149,7 @@ public:
     mutable ConverterState *receivedState;
 
 protected:
+    TextCodecSubclass() : QTextCodec() {}
     QString convertToUnicode(const char *data, int size, ConverterState *state) const {
         receivedState = state;
 

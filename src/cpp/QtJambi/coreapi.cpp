@@ -221,7 +221,7 @@ jobject CoreAPI::invokeMetaMethodOnGadget(JNIEnv * env, jobject _metaMethod,
                     typeId = &typeid(JObjectWrapper);
                     ptr = link->pointer();
                 }
-                QtJambiAPI::checkPointer(env, ptr, *typeId);
+                QtJambiAPI::checkNullPointer(env, ptr, *typeId);
             }else{
                 Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, object).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
             }
@@ -325,7 +325,7 @@ jboolean CoreAPI::resetMetaPropertyOnGadget(JNIEnv *env, jobject _this, jobject 
                 if(link){
                     ptr = link->typedPointer(*typeId);
                 }
-                QtJambiAPI::checkPointer(env, ptr, *typeId);
+                QtJambiAPI::checkNullPointer(env, ptr, *typeId);
             }else{
                 wrapper = JObjectWrapper(env, gadget);
                 ptr = &wrapper;
@@ -360,7 +360,7 @@ jobject CoreAPI::readMetaPropertyOnGadget(JNIEnv *env, jobject _this, jobject ga
                 if(link){
                     ptr = link->typedPointer(*typeId);
                 }
-                QtJambiAPI::checkPointer(env, ptr, *typeId);
+                QtJambiAPI::checkNullPointer(env, ptr, *typeId);
             }else{
                 wrapper = JObjectWrapper(env, gadget);
                 ptr = &wrapper;
@@ -430,7 +430,7 @@ jboolean CoreAPI::writeMetaPropertyOnGadget(JNIEnv *env, jobject _this, jobject 
                 if(link){
                     ptr = link->typedPointer(*typeId);
                 }
-                QtJambiAPI::checkPointer(env, ptr, *typeId);
+                QtJambiAPI::checkNullPointer(env, ptr, *typeId);
             }else{
                 wrapper = JObjectWrapper(env, gadget);
                 ptr = &wrapper;
@@ -678,7 +678,7 @@ jobject CoreAPI::metaObjectCast(JNIEnv *env, jobject object, jclass targetType){
                     }
                     if(!targetTypePointer){
                         for(const PolymorphicIdHandler* handler : getPolymorphicIdHandlers(typeid(QObject))){
-                            if(unique_id(handler->m_targetTypeId)==unique_id(*targetTypeId)){
+                            if(typeid_equals(handler->m_targetTypeId, *targetTypeId)){
                                 qintptr offset(0);
                                 if(handler->m_polymorphyHandler(sourceTypePointer, offset) && offset!=qintptr(sourceTypePointer)){
                                     targetTypePointer = reinterpret_cast<void*>(qintptr(sourceTypePointer) - offset);
@@ -706,7 +706,7 @@ jobject CoreAPI::metaObjectCast(JNIEnv *env, jobject object, jclass targetType){
                                 if(isInterface(*sourceTypeId)){
                                     const std::type_info& qobjectId = typeid(QObject);
                                     for(const PolymorphicIdHandler* handler : getPolymorphicIdHandlers(*sourceTypeId)){
-                                        if(unique_id(handler->m_targetTypeId)==unique_id(qobjectId)){
+                                        if(typeid_equals(handler->m_targetTypeId, qobjectId)){
                                             qintptr offset(0);
                                             if(handler->m_polymorphyHandler(sourceTypePointer, offset) && offset!=qintptr(sourceTypePointer)){
                                                 targetTypePointer = reinterpret_cast<void*>(qintptr(sourceTypePointer) - offset);
@@ -1234,7 +1234,7 @@ int CoreAPI::registerMetaType(JNIEnv *env, jclass containerType, jobjectArray in
                 break;
             default:
                 containerAccess = dynamic_cast<AbstractPairAccess*>(containerAccess);
-                QtJambiAPI::checkPointer(env, containerAccess);
+                QtJambiAPI::checkNullPointer(env, containerAccess);
                 break;
             }
             int id = 0;

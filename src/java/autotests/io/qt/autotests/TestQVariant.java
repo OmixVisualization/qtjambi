@@ -2058,6 +2058,13 @@ public class TestQVariant extends ApplicationInitializer {
     	QGraphicsItem item = io.qt.autotests.generated.Variants.convertInterface(object);
     	Assert.assertTrue(item==object);
     }
+    
+    @Test
+    public void testConvertJavaObject() {
+    	QObject qobject = new QWidget();
+    	QObject result = Variants.convertJavaObject(qobject);
+    	Assert.assertTrue(result==qobject);
+    }
 
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestQVariant.class.getName());

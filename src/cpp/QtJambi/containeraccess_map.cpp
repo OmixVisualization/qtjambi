@@ -2,12 +2,94 @@
 #include <QtCore/QReadWriteLock>
 #include <QtCore/QMap>
 #include <QtCore/QSharedPointer>
+#include <QtCore/QAssociativeIterable>
 #include "containeraccess_p.h"
 #include "functionpointer.h"
 #include "registryutil_p.h"
 #include "java_p.h"
 #include "utils_p.h"
 #include "coreapi.h"
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+#else
+typedef QtPrivate::QExplicitlySharedDataPointerV2<QSharedData> MapDataPointer;
+typedef QMap<int, QSharedPointer<class AutoMapAccess>> MapAccessHash;
+Q_GLOBAL_STATIC(MapAccessHash, gMapAccessHash)
+typedef QMap<int, QtMetaContainerPrivate::QMetaAssociationInterface> MetaAssociationHash;
+Q_GLOBAL_STATIC(MetaAssociationHash, gMetaAssociationHash)
+Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gLock, (QReadWriteLock::Recursive))
+
+void registerAccess(int newMetaType, const QSharedPointer<class AutoMapAccess>& access){
+    QWriteLocker locker(gLock());
+    gMapAccessHash->insert(newMetaType, access);
+}
+
+QSharedPointer<class AutoMapAccess> getMapAccess(const QtPrivate::QMetaTypeInterface *iface){
+    QSharedPointer<class AutoMapAccess> access;
+    {
+        QReadLocker locker(gLock());
+        access = gMapAccessHash->value(iface->typeId.loadAcquire());
+    }
+    return access;
+}
+void AutoMapAccess::defaultCtr(const QtPrivate::QMetaTypeInterface *iface, void *ptr){
+    if(QSharedPointer<class AutoMapAccess> access = getMapAccess(iface)){
+        access->constructContainer(ptr);
+    }
+}
+void AutoMapAccess::copyCtr(const QtPrivate::QMetaTypeInterface *iface, void *ptr, const void *other){
+    if(QSharedPointer<class AutoMapAccess> access = getMapAccess(iface)){
+        access->constructContainer(ptr, other);
+    }
+}
+void AutoMapAccess::moveCtr(const QtPrivate::QMetaTypeInterface *iface, void *ptr, void *other){
+    if(QSharedPointer<class AutoMapAccess> access = getMapAccess(iface)){
+        access->constructContainer(ptr, other);
+    }
+}
+void AutoMapAccess::dtor(const QtPrivate::QMetaTypeInterface *iface, void *ptr){
+    if(QSharedPointer<class AutoMapAccess> access = getMapAccess(iface)){
+        access->destructContainer(ptr);
+    }
+}
+bool AutoMapAccess::equalsFn(const QtPrivate::QMetaTypeInterface *iface, const void *ptr1, const void *ptr2){
+    if(QSharedPointer<class AutoMapAccess> access = getMapAccess(iface)){
+        return access->equal(ptr1, ptr2);
+    }
+    return false;
+}
+void AutoMapAccess::debugStreamFn(const QtPrivate::QMetaTypeInterface *iface, QDebug &s, const void *ptr){
+    if(QSharedPointer<class AutoMapAccess> access = getMapAccess(iface)){
+        access->debugStream(s, ptr);
+    }
+}
+void AutoMapAccess::dataStreamOutFn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &s, const void *ptr){
+    if(QSharedPointer<class AutoMapAccess> access = getMapAccess(iface)){
+        access->dataStreamOut(s, ptr);
+    }
+}
+void AutoMapAccess::dataStreamInFn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &s, void *ptr){
+    if(QSharedPointer<class AutoMapAccess> access = getMapAccess(iface)){
+        access->dataStreamIn(s, ptr);
+    }
+}
+
+void* AutoMapAccess::constructContainer(void* result, void* container) {
+//    QHashData*& d = *reinterpret_cast<QHashData**>(container);
+//    result = new(result) const QHashData*(d);
+//    d = nullptr;
+//    return result;
+}
+
+void AutoMapAccess::debugStream(QDebug &dbg, const void *ptr){
+}
+
+void AutoMapAccess::dataStreamOut(QDataStream &s, const void *ptr){
+}
+
+void AutoMapAccess::dataStreamIn(QDataStream &s, void *ptr){
+}
+#endif
 
 AutoMapAccess::AutoMapAccess(const AutoMapAccess & other)
     :AbstractMapAccess(),
@@ -119,11 +201,18 @@ const QMetaType& AutoMapAccess::keyMetaType(){ return m_keyMetaType; }
 const QMetaType& AutoMapAccess::valueMetaType(){ return m_valueMetaType; }
 
 jint AutoMapAccess::size(JNIEnv *,const void* container){
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container);
     return (*map)->size;
+#else
+    const MapDataPointer* mp = reinterpret_cast<const MapDataPointer *>(container);
+    const QSharedData* data = mp->data();
+    return 0;
+#endif
 }
 
 void AutoMapAccess::insert(JNIEnv *env, void* container, jobject key, jobject value){
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QMapDataBase ** map = reinterpret_cast<QMapDataBase **>(container);
     QMapDataBase*& d = *map;
 
@@ -159,10 +248,13 @@ void AutoMapAccess::insert(JNIEnv *env, void* container, jobject key, jobject va
     m_keyMetaType.construct(newNodeData + m_offset1, akey);
     m_valueMetaType.construct(newNodeData + m_offset2);
     assignValue(env, value, newNode);
+#else
+#endif
 }
 
 jboolean AutoMapAccess::contains(JNIEnv *env,const void* container, jobject key)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container);
     QMapDataBase * d = *map;
     jvalue jv;
@@ -171,25 +263,36 @@ jboolean AutoMapAccess::contains(JNIEnv *env,const void* container, jobject key)
     QtJambiScope scope;
     if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l))
         return findNode(d, akey) != nullptr;
+#else
+#endif
     return false;
 }
 
 jobject AutoMapAccess::begin(JNIEnv * env, QtJambiNativeID ownerId, void* container)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QMapDataBase ** map = reinterpret_cast<QMapDataBase **>(container);
     detach(map);
-    return createIterator(env, ownerId, new void*(beginNode(map)));
+    Node* begin = beginNode(map);
+    return createIterator(env, ownerId, new void*(begin));
+#else
+#endif
 }
 
 jobject AutoMapAccess::end(JNIEnv * env, QtJambiNativeID ownerId, void* container)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QMapDataBase ** map = reinterpret_cast<QMapDataBase **>(container);
     detach(map);
-    return createIterator(env, ownerId, new void*(endNode(map)));
+    Node* end = endNode(map);
+    return createIterator(env, ownerId, new void*(end));
+#else
+#endif
 }
 
 jobject AutoMapAccess::find(JNIEnv * env, QtJambiNativeID ownerId, void* container, jobject key)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QMapDataBase ** map = reinterpret_cast<QMapDataBase **>(container);
     detach(map);
     QMapDataBase* d = *map;
@@ -202,22 +305,33 @@ jobject AutoMapAccess::find(JNIEnv * env, QtJambiNativeID ownerId, void* contain
         return createIterator(env, ownerId, new void*(n ? n : endNode(map)));
     }
     return createIterator(env, ownerId, new void*(endNode(map)));
+#else
+#endif
 }
 
 jobject AutoMapAccess::constBegin(JNIEnv * env, QtJambiNativeID ownerId, const void* container)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container);
-    return createIterator(env, ownerId, new void*(beginNode(map)));
+    Node* begin = beginNode(map);
+    return createConstIterator(env, ownerId, new void*(begin));
+#else
+#endif
 }
 
 jobject AutoMapAccess::constEnd(JNIEnv * env, QtJambiNativeID ownerId, const void* container)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container);
-    return createIterator(env, ownerId, new void*(endNode(map)));
+    Node* end = endNode(map);
+    return createConstIterator(env, ownerId, new void*(end));
+#else
+#endif
 }
 
 jobject AutoMapAccess::constFind(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container);
     QMapDataBase* d = *map;
     jvalue jv;
@@ -226,13 +340,16 @@ jobject AutoMapAccess::constFind(JNIEnv * env, QtJambiNativeID ownerId, const vo
     void* akey = nullptr;
     if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
         Node *n = findNode(d, akey);
-        return createIterator(env, ownerId, new void*(n ? n : endNode(map)));
+        return createConstIterator(env, ownerId, new void*(n ? n : endNode(map)));
     }
-    return createIterator(env, ownerId, new void*(endNode(map)));
+    return createConstIterator(env, ownerId, new void*(endNode(map)));
+#else
+#endif
 }
 
 jobject AutoMapAccess::constLowerBound(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container);
     QMapDataBase * d = *map;
     jvalue jv;
@@ -243,13 +360,16 @@ jobject AutoMapAccess::constLowerBound(JNIEnv * env, QtJambiNativeID ownerId, co
         Node *lb = rootNode(&d) ? lowerBound(rootNode(&d), akey) : nullptr;
         if (!lb)
             lb = endNode(&d);
-        return createIterator(env, ownerId, new void*(lb));
+        return createConstIterator(env, ownerId, new void*(lb));
     }
-    return createIterator(env, ownerId, new void*(endNode(map)));
+    return createConstIterator(env, ownerId, new void*(endNode(map)));
+#else
+#endif
 }
 
 jobject AutoMapAccess::constUpperBound(JNIEnv * env, QtJambiNativeID ownerId, const void* container, jobject key)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container);
     QMapDataBase * d = *map;
     jvalue jv;
@@ -260,13 +380,16 @@ jobject AutoMapAccess::constUpperBound(JNIEnv * env, QtJambiNativeID ownerId, co
         Node *ub = rootNode(&d) ? upperBound(rootNode(&d), akey) : nullptr;
         if (!ub)
             ub = endNode(&d);
-        return createIterator(env, ownerId, new void*(ub));
+        return createConstIterator(env, ownerId, new void*(ub));
     }
-    return createIterator(env, ownerId, new void*(endNode(map)));
+    return createConstIterator(env, ownerId, new void*(endNode(map)));
+#else
+#endif
 }
 
 bool AutoMapAccess::keyLessThan(JNIEnv * env, jobject key1, jobject key2)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     jvalue jv;
     jv.l = key1;
     QtJambiScope scope;
@@ -279,31 +402,43 @@ bool AutoMapAccess::keyLessThan(JNIEnv * env, jobject key1, jobject key2)
         }
     }
     return false;
+#else
+#endif
 }
 
 void AutoMapAccess::clear(JNIEnv *, void* container)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     const QMapDataBase* empty = &QMapDataBase::shared_null;
     assign(container, &empty);
+#else
+#endif
 }
 
 void* AutoMapAccess::constructContainer(void* result, const void* container)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     new(result) const QMapDataBase*(&QMapDataBase::shared_null);
     if(container)
         assign(result, container);
     return result;
+#else
+#endif
 }
 
 bool AutoMapAccess::destructContainer(void* container){
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QMapDataBase ** map = reinterpret_cast<QMapDataBase **>(container);
     QMapDataBase*& d = *map;
     if (!d->ref.deref()) destroy(d);
     return true;
+#else
+#endif
 }
 
 jint AutoMapAccess::count(JNIEnv *env, const void* container, jobject key)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container);
     QMapDataBase* d = *map;
     jint result = 0;
@@ -322,50 +457,65 @@ jint AutoMapAccess::count(JNIEnv *env, const void* container, jobject key)
         }
     }
     return result;
+#else
+#endif
 }
 
 jobject AutoMapAccess::first(JNIEnv * env, const void* container)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container);
     QMapDataBase* d = *map;
     if(d->size==0)
         return nullptr;
     Node* first = beginNode(map);
     return nodeValue(env, first);
+#else
+#endif
 }
 
 jobject AutoMapAccess::firstKey(JNIEnv *env, const void* container)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container);
     QMapDataBase* d = *map;
     if(d->size==0)
         return nullptr;
     Node* first = beginNode(map);
     return nodeKey(env, first);
+#else
+#endif
 }
 
 jobject AutoMapAccess::last(JNIEnv * env, const void* container)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container);
     QMapDataBase* d = *map;
     if(d->size==0)
         return nullptr;
     Node* end = endNode(map);
     return nodeValue(env, end->previousNode());
+#else
+#endif
 }
 
 jobject AutoMapAccess::lastKey(JNIEnv *env, const void* container)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container);
     QMapDataBase* d = *map;
     if(d->size==0)
         return nullptr;
     Node* end = endNode(map);
     return nodeKey(env, end->previousNode());
+#else
+#endif
 }
 
 jobject AutoMapAccess::key(JNIEnv *env, const void* container, jobject value, jobject defaultKey)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container);
     jvalue jv;
     jv.l = value;
@@ -382,10 +532,13 @@ jobject AutoMapAccess::key(JNIEnv *env, const void* container, jobject value, jo
         }
     }
     return defaultKey;
+#else
+#endif
 }
 
 jobject AutoMapAccess::value(JNIEnv *env, const void* container, jobject key, jobject defaultValue)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container);
     QMapDataBase* d = *map;
     jvalue jv;
@@ -398,10 +551,13 @@ jobject AutoMapAccess::value(JNIEnv *env, const void* container, jobject key, jo
     }else{
         return defaultValue;
     }
+#else
+#endif
 }
 
 void AutoMapAccess::assign(void* container, const void* other)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QMapDataBase ** map = reinterpret_cast<QMapDataBase **>(container);
     QMapDataBase*& d = *map;
     QMapDataBase *const* map2 = reinterpret_cast<QMapDataBase *const*>(other);
@@ -411,10 +567,13 @@ void AutoMapAccess::assign(void* container, const void* other)
             destroy(d);
         d = d2;
     }
+#else
+#endif
 }
 
 void AutoMapAccess::analyzeEntries(const void* container, EntryAnalyzer analyzer, void* data)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container);
     Node *firstNode(beginNode(map));
     Node *lastNode(endNode(map));
@@ -425,6 +584,8 @@ void AutoMapAccess::analyzeEntries(const void* container, EntryAnalyzer analyzer
         if(!analyzer(key, value, data))
             break;
     }
+#else
+#endif
 }
 
 IsBiContainerFunction AutoMapAccess::getIsBiContainerFunction(){
@@ -432,6 +593,7 @@ IsBiContainerFunction AutoMapAccess::getIsBiContainerFunction(){
 }
 
 bool AutoMapAccess::equal(const void* a, const void* b){
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(a);
     QMapDataBase* d = *map;
     QMapDataBase *const* map2 = reinterpret_cast<QMapDataBase *const*>(b);
@@ -457,10 +619,13 @@ bool AutoMapAccess::equal(const void* a, const void* b){
         firstNode2 = firstNode2->nextNode();
     }
     return true;
+#else
+#endif
 }
 
 jboolean AutoMapAccess::equal(JNIEnv *env, const void* container, jobject other)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     if ((*getIsBiContainerFunction())(env, other, keyMetaType(), valueMetaType())) {
         if(void* ptr = QtJambiAPI::convertJavaObjectToNative(env, other)){
             return equal(container, ptr);
@@ -497,6 +662,8 @@ jboolean AutoMapAccess::equal(JNIEnv *env, const void* container, jobject other)
         }
         return firstNode == lastNode && !QtJambiAPI::hasJavaIteratorNext(env, iterator);
     }
+#else
+#endif
 }
 
 int AutoMapAccess::registerContainer(const QByteArray& typeName)
@@ -566,6 +733,7 @@ int AutoMapAccess::registerContainer(const QByteArray& typeName)
                                             (const void* ptr, hash_type seed)->hash_type{
                                                 if(ptr){
                                                     hash_type hashCode = seed;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                                                     QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(ptr);
                                                     Node *firstNode(beginNode(map));
                                                     Node *lastNode(endNode(map));
@@ -580,6 +748,7 @@ int AutoMapAccess::registerContainer(const QByteArray& typeName)
                                                         hashCode = hashCode + pairSeed;
                                                         firstNode = firstNode->nextNode();
                                                     }
+#endif
                                                     return hashCode;
                                                 }else{
                                                     return 0;
@@ -805,39 +974,33 @@ int AutoMapAccess::registerContainer(const QByteArray& typeName)
         }
 #else
         {
-            const QMetaType to = QMetaType::fromType<QtMetaTypePrivate::QPairVariantInterfaceImpl>();
-            QMetaType::ConverterFunction o = [access](const void *src, void *target)->bool{
-                QtMetaTypePrivate::QPairVariantInterfaceImpl* impl = new(target) QtMetaTypePrivate::QPairVariantInterfaceImpl();
-                impl->_pair = src;
-                impl->_metaType_first = access->m_keyMetaType;
-                impl->_metaType_second = access->m_valueMetaType;
-                impl->_getFirst = qtjambi_function_pointer<16,void(const void * const *, void *)>(
-                            [access](const void * const *pair, void *dataPtr){
-                                const void* fst = reinterpret_cast<const char*>(*pair);
-                                access->m_keyMetaType.construct(dataPtr, fst);
-                            }, newMetaType);
-                impl->_getSecond = qtjambi_function_pointer<16,void(const void * const *, void *)>(
-                            [access](const void * const *pair, void *dataPtr) {
-                                const void* snd = reinterpret_cast<const char*>(*pair)+access->m_offset;
-                                access->m_valueMetaType.construct(dataPtr, snd);
-                            }, newMetaType);
+            const QMetaType to = QMetaType::fromType<QAssociativeIterable>();
+            QMetaType::registerMutableViewFunction([newMetaType](void *src, void *target)->bool{
+                new(target) QIterable<QMetaAssociation>(QMetaAssociation(createMetaAssociationInterface(newMetaType)), reinterpret_cast<void **>(src));
                 return true;
-            };
-            QMetaType::registerConverterFunction(o, QMetaType(newMetaType), to);
+            }, QMetaType(newMetaType), to);
+            QMetaType::registerConverterFunction([newMetaType](const void *src, void *target)->bool{
+                new(target) QIterable<QMetaAssociation>(QMetaAssociation(createMetaAssociationInterface(newMetaType)), reinterpret_cast<void const*const*>(src));
+                return true;
+            }, QMetaType(newMetaType), to);
         }
-        {
-            QWriteLocker locker(gLock());
-            gPairAccessHash->insert(newMetaType, access);
-        }
+        registerAccess(newMetaType, access);
 #endif
     }
     return newMetaType;
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+QtMetaContainerPrivate::QMetaAssociationInterface* AutoMapAccess::createMetaAssociationInterface(int newMetaType){
+}
+#endif
+
 jobject AutoMapAccess::keys(JNIEnv *env, const void* container)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container);
     QMapDataBase* d = *map;
+#endif
     AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(AbstractContainerAccess::create(env, SequentialContainerType::QList, m_keyMetaType));
     if(!listAccess)
         listAccess = dynamic_cast<AbstractListAccess*>(AbstractContainerAccess::create(
@@ -858,6 +1021,7 @@ jobject AutoMapAccess::keys(JNIEnv *env, const void* container)
                                                                            m_keyExternalToInternalConverter
                                                                            ));
     if(listAccess){
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         void* listContainer = listAccess->createContainer();
         listAccess = checkContainerAccess(env, listAccess);
         Node *firstNode(beginNode(map));
@@ -869,13 +1033,16 @@ jobject AutoMapAccess::keys(JNIEnv *env, const void* container)
             firstNode = firstNode->nextNode();
         }
         return ContainerAccessAPI::objectFromQList(env, listContainer, listAccess);
+#endif
     }
     return nullptr;
 }
 
 jobject AutoMapAccess::keys(JNIEnv *env, const void* container, jobject value)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container);
+#endif
     AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(AbstractContainerAccess::create(env, SequentialContainerType::QList, m_keyMetaType));
     if(!listAccess)
         listAccess = dynamic_cast<AbstractListAccess*>(AbstractContainerAccess::create(
@@ -896,6 +1063,7 @@ jobject AutoMapAccess::keys(JNIEnv *env, const void* container, jobject value)
                                                                            m_keyExternalToInternalConverter
                                                                            ));
     if(listAccess){
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         QtJambiScope scope;
         jvalue _value;
         void *_qvaluePtr;
@@ -915,12 +1083,14 @@ jobject AutoMapAccess::keys(JNIEnv *env, const void* container, jobject value)
             }
         }
         return ContainerAccessAPI::objectFromQList(env, listContainer, listAccess);
+#endif
     }
     return nullptr;
 }
 
 jint AutoMapAccess::remove(JNIEnv *env, void* container, jobject key)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     QMapDataBase ** map = reinterpret_cast<QMapDataBase **>(container);
     QMapDataBase*& d = *map;
     jvalue jv;
@@ -936,10 +1106,12 @@ jint AutoMapAccess::remove(JNIEnv *env, void* container, jobject key)
         }
     }
     return n;
+#endif
 }
 
 jobject AutoMapAccess::take(JNIEnv *env, void* container, jobject key)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     QMapDataBase ** map = reinterpret_cast<QMapDataBase **>(container);
     QMapDataBase*& d = *map;
     jvalue jv;
@@ -953,12 +1125,15 @@ jobject AutoMapAccess::take(JNIEnv *env, void* container, jobject key)
         deleteNode(d, node);
         return result;
     }
+#endif
     return nullptr;
 }
 
 jobject AutoMapAccess::values(JNIEnv *env, const void* container)
 {
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container);
+#endif
     AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(AbstractContainerAccess::create(env, SequentialContainerType::QList, m_valueMetaType));
     if(!listAccess)
         listAccess = dynamic_cast<AbstractListAccess*>(AbstractContainerAccess::create(
@@ -979,6 +1154,7 @@ jobject AutoMapAccess::values(JNIEnv *env, const void* container)
                                                                            m_valueExternalToInternalConverter
                                                                            ));
     if(listAccess){
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         void* listContainer = listAccess->createContainer();
         listAccess = checkContainerAccess(env, listAccess);
         Node *firstNode(beginNode(map));
@@ -989,10 +1165,12 @@ jobject AutoMapAccess::values(JNIEnv *env, const void* container)
             firstNode = firstNode->nextNode();
         }
         return ContainerAccessAPI::objectFromQList(env, listContainer, listAccess);
+#endif
     }
     return nullptr;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 void AutoMapAccess::deleteNode(QMapDataBase * d, Node* node){
     m_keyMetaType.destruct(reinterpret_cast<char*>(node) + m_offset1);
     m_valueMetaType.destruct(reinterpret_cast<char*>(node) + m_offset2);
@@ -1172,11 +1350,13 @@ bool AutoMapAccess::qMapLessThanKey(const void* akey, const Node& right){
 bool AutoMapAccess::qMapLessThanKey(const Node& left, const void* akey){
     return isLessThan(m_keyMetaType, reinterpret_cast<const char*>(&left) + m_offset1, akey);
 }
+#endif
 
 jobject AutoMapAccess::createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr)
 {
     size_t offset1 = m_offset1;
     size_t offset2 = m_offset2;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     AutoAssociativeConstIteratorAccess* containerAccess = new AutoAssociativeConstIteratorAccess(m_valueInternalToExternalConverter,
                                                                      [](void*ptr){
                                                                         Node* cursor = *reinterpret_cast<Node**>(ptr);
@@ -1203,12 +1383,14 @@ jobject AutoMapAccess::createConstIterator(JNIEnv * env, QtJambiNativeID ownerId
     return QtJambiAPI::convertQAssociativeIteratorToJavaObject(env, ownerId, iteratorPtr, [](void* ptr,bool){
         delete reinterpret_cast<void**>(ptr);
     }, containerAccess);
+#endif
 }
 
 jobject AutoMapAccess::createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr)
 {
     size_t offset1 = m_offset1;
     size_t offset2 = m_offset2;
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     AbstractAssociativeIteratorAccess* containerAccess = new AutoAssociativeIteratorAccess(m_valueInternalToExternalConverter,
                                                                      [](void*ptr){
                                                                         Node* cursor = *reinterpret_cast<Node**>(ptr);
@@ -1224,7 +1406,9 @@ jobject AutoMapAccess::createIterator(JNIEnv * env, QtJambiNativeID ownerId, voi
                                                                      },
                                                                      {},
                                                                      [](const void*ptr1,const void*ptr2)->bool{
-                                                                        return *reinterpret_cast<Node*const*>(ptr1)==*reinterpret_cast<Node*const*>(ptr2);
+                                                                        Node* n1 = *reinterpret_cast<Node*const*>(ptr1);
+                                                                        Node* n2 = *reinterpret_cast<Node*const*>(ptr2);
+                                                                        return n1==n2;
                                                                      },
                                                                      m_keyInternalToExternalConverter,
                                                                      [offset1](const void*ptr)->const void*{
@@ -1240,6 +1424,7 @@ jobject AutoMapAccess::createIterator(JNIEnv * env, QtJambiNativeID ownerId, voi
     return QtJambiAPI::convertQAssociativeIteratorToJavaObject(env, ownerId, iteratorPtr, [](void* ptr,bool){
         delete reinterpret_cast<void**>(ptr);
     }, containerAccess);
+#endif
 }
 
 size_t AutoMapAccess::sizeOf() {

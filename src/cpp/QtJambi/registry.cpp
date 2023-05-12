@@ -169,6 +169,9 @@ Q_GLOBAL_STATIC(RenamedMethodsHash, gRenamedMethodsHash)
 typedef QMap<size_t, FunctionalResolver> FunctionalResolverHash;
 Q_GLOBAL_STATIC(FunctionalResolverHash, gFunctionalResolverHash)
 
+typedef QMap<size_t, TypeInfoSupplier> TypeInfoSupplierHash;
+Q_GLOBAL_STATIC(TypeInfoSupplierHash, gTypeInfoSupplierHash)
+
 Q_GLOBAL_STATIC(TypeStringHash, gMediaControlIIDHash)
 Q_GLOBAL_STATIC(StringTypeHash, gMediaControlIIDClassHash)
 
@@ -1980,6 +1983,18 @@ QMetaMethodRenamer registeredMetaMethodRenamer(const QMetaObject* metaObject)
     }else{
         return nullptr;
     }
+}
+
+void RegistryAPI::registerTypeInfoSupplier(const std::type_info& typeId, TypeInfoSupplier resolver){
+    QWriteLocker locker(gLock());
+    Q_UNUSED(locker)
+    gTypeInfoSupplierHash->insert(unique_id(typeId), resolver);
+}
+
+TypeInfoSupplier registeredTypeInfoSupplier(const std::type_info& typeId){
+    QReadLocker locker(gLock());
+    Q_UNUSED(locker)
+    return gTypeInfoSupplierHash->value(unique_id(typeId), nullptr);
 }
 
 void RegistryAPI::registerFunctionalResolver(const std::type_info& typeId, FunctionalResolver resolver)

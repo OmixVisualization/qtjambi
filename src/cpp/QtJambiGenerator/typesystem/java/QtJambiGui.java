@@ -346,7 +346,7 @@ class QImage___ extends QImage {
 class QImage::JNI{
 
 void __qt_create_new_QImage_7(void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue* arguments){
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "new QImage(unsigned char * data, int width, int height, QImage::Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr)");
+    QTJAMBI_NATIVE_METHOD_CALL("construct QImage(unsigned char * data, int width, int height, QImage::Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr)");
     jobject data = arguments[0].l;
     jint width = arguments[1].i;
     jint height = arguments[2].i;
@@ -357,7 +357,7 @@ void __qt_create_new_QImage_7(void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue*
 }
 
 void __qt_create_new_QImage_8(void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue* arguments){
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "new QImage(unsigned char * data, int width, int height, QImage::Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr)");
+    QTJAMBI_NATIVE_METHOD_CALL("construct QImage(unsigned char * data, int width, int height, QImage::Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr)");
     jobject data = arguments[0].l;
     jint width = arguments[1].i;
     jint height = arguments[2].i;
@@ -369,7 +369,7 @@ void __qt_create_new_QImage_8(void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue*
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QImage_initialize_1native__Lio_qt_gui_QImage_2_3BIILio_qt_gui_QImage_00024Format_2)
 (JNIEnv *env, jclass __jni_class, jobject java_object, jobject data, jint width, jint height, jobject format)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QImage::QImage(unsigned char * data, int width, int height, QImage::Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr)");
+    QTJAMBI_NATIVE_METHOD_CALL("QImage::QImage(unsigned char * data, int width, int height, QImage::Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr)");
     QTJAMBI_TRY{
         jvalue arguments[4];
         arguments[0].l = data;
@@ -386,7 +386,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QIm
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QImage_initialize_1native__Lio_qt_gui_QImage_2Ljava_nio_Buffer_2IILio_qt_gui_QImage_00024Format_2)
 (JNIEnv *env, jclass __jni_class, jobject java_object, jobject data, jint width, jint height, jobject format)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QImage::QImage(unsigned char * data, int width, int height, QImage::Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr)");
+    QTJAMBI_NATIVE_METHOD_CALL("QImage::QImage(unsigned char * data, int width, int height, QImage::Format format, QImageCleanupFunction cleanupFunction = nullptr, void *cleanupInfo = nullptr)");
     QTJAMBI_TRY{
         jvalue arguments[4];
         arguments[0].l = data;
@@ -541,12 +541,6 @@ class QPen___ extends QPen {
         public QPen(QColor color, double width) {
             this(new QBrush(color), width);
         }
-
-//        public static final QPen NoPen = new QPen(io.qt.core.Qt.PenStyle.NoPen);
-}// class
-
-class QPixmap___ extends QPixmap {
-         
 }// class
 
 class QPixmapFilter___ extends QPixmapFilter {

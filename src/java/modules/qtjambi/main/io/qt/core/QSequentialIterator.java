@@ -29,12 +29,15 @@
 ****************************************************************************/
 package io.qt.core;
 
+import io.qt.NativeAccess;
+import io.qt.QtObject;
 import io.qt.QtUninvokable;
 import io.qt.internal.AbstractSequentialIterator;
 
 public final class QSequentialIterator<T> extends QSequentialConstIterator<T> implements AbstractSequentialIterator<T> {
     
-    private QSequentialIterator(Object owner) { 
+	@NativeAccess
+    private QSequentialIterator(QtObject owner) { 
     	super(owner);
 	}
     
@@ -47,4 +50,9 @@ public final class QSequentialIterator<T> extends QSequentialConstIterator<T> im
     
     @QtUninvokable
     private static native <T> boolean setValue(long __this__nativeId, T newValue);
+
+	@Override
+	protected boolean isConstant() {
+		return false;
+	}
 }

@@ -107,23 +107,24 @@ struct UIInitialCheck{
     static void enabledUIThreadCheck(JNIEnv *, const std::type_info&);
 };
 
-UIInitialCheck::WindowConstructorCheck UIInitialCheck::windowConstructorCheck = &UIInitialCheck::initialWindowConstructorCheck;
-UIInitialCheck::WidgetConstructorCheck UIInitialCheck::widgetConstructorCheck = &UIInitialCheck::initialWidgetConstructorCheck;
-UIInitialCheck::ConstructorCheck UIInitialCheck::pixmapConstructorCheck = &UIInitialCheck::initialPixmapConstructorCheck;
-UIInitialCheck::ConstructorCheck UIInitialCheck::uiConstructorCheck = &UIInitialCheck::initialUIConstructorCheck;
-UIInitialCheck::UseCheck UIInitialCheck::pixmapUseCheck = &UIInitialCheck::initialPixmapUseCheck;
-UIInitialCheck::UseCheck UIInitialCheck::uiThreadCheck = &UIInitialCheck::enabledUIThreadCheck;
-UIInitialCheck::ArgumentCheck UIInitialCheck::pixmapArgumentThreadCheck = &UIInitialCheck::initialPixmapArgumentCheck;
+UIInitialCheck::WindowConstructorCheck UIInitialCheck::windowConstructorCheck = &UIInitialCheck::trivial;
+UIInitialCheck::WidgetConstructorCheck UIInitialCheck::widgetConstructorCheck = &UIInitialCheck::trivial;
+UIInitialCheck::ConstructorCheck UIInitialCheck::pixmapConstructorCheck = &UIInitialCheck::trivial;
+UIInitialCheck::ConstructorCheck UIInitialCheck::uiConstructorCheck = &UIInitialCheck::trivial;
+UIInitialCheck::UseCheck UIInitialCheck::pixmapUseCheck = &UIInitialCheck::trivial;
+UIInitialCheck::UseCheck UIInitialCheck::uiThreadCheck = &UIInitialCheck::trivial;
+UIInitialCheck::ArgumentCheck UIInitialCheck::pixmapArgumentThreadCheck = &UIInitialCheck::trivial;
+UIInitialCheck::QObjectThreadCheck UIInitialCheck::objectThreadCheck = &UIInitialCheck::trivial;
+UIInitialCheck::QObjectArgumentThreadCheck UIInitialCheck::objectArgumentThreadCheck = &UIInitialCheck::trivial;
+UIInitialCheck::ValueArgumentThreadCheck UIInitialCheck::valueArgumentThreadCheck = &UIInitialCheck::trivial;
+UIInitialCheck::UIArgumentThreadCheck UIInitialCheck::uiArgumentThreadCheck = &UIInitialCheck::trivial;
+UIInitialCheck::GeneralArgumentThreadCheck UIInitialCheck::generalArgumentThreadCheck = &UIInitialCheck::trivial;
+UIInitialCheck::QObjectThreadCheck UIInitialCheck::objectConstructorThreadCheck = &UIInitialCheck::trivial;
+UIInitialCheck::ValueThreadCheck UIInitialCheck::valueConstructorThreadCheck = &UIInitialCheck::trivial;
+UIInitialCheck::GeneralThreadCheck UIInitialCheck::generalConstructorThreadCheck = &UIInitialCheck::trivial;
+
 PtrOwnerFunction UIInitialCheck::getPixmapOwner = &UIInitialCheck::initialGetPixmapOwner;
 GuiAPI::ThreadedPixmapsChecker UIInitialCheck::threadedPixmapsChecker = nullptr;
-UIInitialCheck::QObjectThreadCheck UIInitialCheck::objectThreadCheck = &UIInitialCheck::enabledQObjectThreadCheck;
-UIInitialCheck::QObjectArgumentThreadCheck UIInitialCheck::objectArgumentThreadCheck = &UIInitialCheck::enabledQObjectArgumentThreadCheck;
-UIInitialCheck::ValueArgumentThreadCheck UIInitialCheck::valueArgumentThreadCheck = &UIInitialCheck::enabledValueArgumentThreadCheck;
-UIInitialCheck::UIArgumentThreadCheck UIInitialCheck::uiArgumentThreadCheck = &UIInitialCheck::enabledUIArgumentThreadCheck;
-UIInitialCheck::GeneralArgumentThreadCheck UIInitialCheck::generalArgumentThreadCheck = &UIInitialCheck::enabledGeneralArgumentThreadCheck;
-UIInitialCheck::QObjectThreadCheck UIInitialCheck::objectConstructorThreadCheck = &UIInitialCheck::enabledQObjectConstructorThreadCheck;
-UIInitialCheck::ValueThreadCheck UIInitialCheck::valueConstructorThreadCheck = &UIInitialCheck::enabledValueConstructorThreadCheck;
-UIInitialCheck::GeneralThreadCheck UIInitialCheck::generalConstructorThreadCheck = &UIInitialCheck::enabledGeneralConstructorThreadCheck;
 UIInitialCheck::EventNotify UIInitialCheck::eventNotify = &UIInitialCheck::initialEventNotify;
 
 void GuiAPI::installThreadedPixmapsChecker(ThreadedPixmapsChecker threadedPixmapsChecker){
@@ -350,7 +351,7 @@ void UIInitialCheck::enabledUIThreadCheck(JNIEnv *env, const std::type_info& typ
     QThread* objectThread = QCoreApplicationPrivate::theMainThread.loadRelaxed();
     QThread* currentThread = QThread::currentThread();
     if(currentThread!=objectThread){
-        if(unique_id(typeId)==unique_id(typeid(void))){
+        if(typeid_equals(typeId, typeid(void))){
             JavaException::raiseQThreadAffinityException(env, QStringLiteral("%1 used from outside main thread").arg(getQtName(typeId)) QTJAMBI_STACKTRACEINFO ,
                                                          nullptr,
                                                          objectThread, currentThread);
@@ -530,8 +531,7 @@ void QtJambiAPI::checkThreadConstructingApplication(JNIEnv *env, const std::type
                  "java -XstartOnFirstThread any.vendor.MainClass" QTJAMBI_STACKTRACEINFO );
     }
 #endif
-    if(!Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("qt.disable.thread.affinity.check"))
-            && !Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.disable-thread-affinity-check"))){
+    if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-thread-affinity-check"))){
         QThread* mainThread = QCoreApplicationPrivate::theMainThread.loadRelaxed();
         QThread* currentThread = QThread::currentThread();
         if(currentThread!=mainThread){
@@ -541,23 +541,40 @@ void QtJambiAPI::checkThreadConstructingApplication(JNIEnv *env, const std::type
     }
 }
 
-void disableThreadAffinity(){
-    UIInitialCheck::objectThreadCheck = &UIInitialCheck::trivial;
-    UIInitialCheck::pixmapUseCheck = &UIInitialCheck::trivial;
-    UIInitialCheck::uiThreadCheck = &UIInitialCheck::trivial;
-    UIInitialCheck::pixmapArgumentThreadCheck = &UIInitialCheck::trivial;
-    UIInitialCheck::objectArgumentThreadCheck = &UIInitialCheck::trivial;
-    UIInitialCheck::valueArgumentThreadCheck = &UIInitialCheck::trivial;
-    UIInitialCheck::uiArgumentThreadCheck = &UIInitialCheck::trivial;
-    UIInitialCheck::pixmapArgumentThreadCheck = &UIInitialCheck::trivial;
-    UIInitialCheck::generalArgumentThreadCheck = &UIInitialCheck::trivial;
-    UIInitialCheck::objectConstructorThreadCheck = &UIInitialCheck::trivial;
-    UIInitialCheck::valueConstructorThreadCheck = &UIInitialCheck::trivial;
-    UIInitialCheck::generalConstructorThreadCheck = &UIInitialCheck::trivial;
-    UIInitialCheck::uiConstructorCheck = &UIInitialCheck::trivial;
-    UIInitialCheck::pixmapConstructorCheck = &UIInitialCheck::trivial;
-    UIInitialCheck::widgetConstructorCheck = &UIInitialCheck::trivial;
-    UIInitialCheck::windowConstructorCheck = &UIInitialCheck::trivial;
+void enableThreadAffinity(bool enabled){
+    if(enabled){
+        UIInitialCheck::windowConstructorCheck = &UIInitialCheck::initialWindowConstructorCheck;
+        UIInitialCheck::widgetConstructorCheck = &UIInitialCheck::initialWidgetConstructorCheck;
+        UIInitialCheck::pixmapConstructorCheck = &UIInitialCheck::initialPixmapConstructorCheck;
+        UIInitialCheck::uiConstructorCheck = &UIInitialCheck::initialUIConstructorCheck;
+        UIInitialCheck::pixmapUseCheck = &UIInitialCheck::initialPixmapUseCheck;
+        UIInitialCheck::uiThreadCheck = &UIInitialCheck::enabledUIThreadCheck;
+        UIInitialCheck::pixmapArgumentThreadCheck = &UIInitialCheck::initialPixmapArgumentCheck;
+        UIInitialCheck::objectThreadCheck = &UIInitialCheck::enabledQObjectThreadCheck;
+        UIInitialCheck::objectArgumentThreadCheck = &UIInitialCheck::enabledQObjectArgumentThreadCheck;
+        UIInitialCheck::valueArgumentThreadCheck = &UIInitialCheck::enabledValueArgumentThreadCheck;
+        UIInitialCheck::uiArgumentThreadCheck = &UIInitialCheck::enabledUIArgumentThreadCheck;
+        UIInitialCheck::generalArgumentThreadCheck = &UIInitialCheck::enabledGeneralArgumentThreadCheck;
+        UIInitialCheck::objectConstructorThreadCheck = &UIInitialCheck::enabledQObjectConstructorThreadCheck;
+        UIInitialCheck::valueConstructorThreadCheck = &UIInitialCheck::enabledValueConstructorThreadCheck;
+        UIInitialCheck::generalConstructorThreadCheck = &UIInitialCheck::enabledGeneralConstructorThreadCheck;
+    }else{
+        UIInitialCheck::objectThreadCheck = &UIInitialCheck::trivial;
+        UIInitialCheck::pixmapUseCheck = &UIInitialCheck::trivial;
+        UIInitialCheck::uiThreadCheck = &UIInitialCheck::trivial;
+        UIInitialCheck::pixmapArgumentThreadCheck = &UIInitialCheck::trivial;
+        UIInitialCheck::objectArgumentThreadCheck = &UIInitialCheck::trivial;
+        UIInitialCheck::valueArgumentThreadCheck = &UIInitialCheck::trivial;
+        UIInitialCheck::uiArgumentThreadCheck = &UIInitialCheck::trivial;
+        UIInitialCheck::generalArgumentThreadCheck = &UIInitialCheck::trivial;
+        UIInitialCheck::objectConstructorThreadCheck = &UIInitialCheck::trivial;
+        UIInitialCheck::valueConstructorThreadCheck = &UIInitialCheck::trivial;
+        UIInitialCheck::generalConstructorThreadCheck = &UIInitialCheck::trivial;
+        UIInitialCheck::uiConstructorCheck = &UIInitialCheck::trivial;
+        UIInitialCheck::pixmapConstructorCheck = &UIInitialCheck::trivial;
+        UIInitialCheck::widgetConstructorCheck = &UIInitialCheck::trivial;
+        UIInitialCheck::windowConstructorCheck = &UIInitialCheck::trivial;
+    }
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)

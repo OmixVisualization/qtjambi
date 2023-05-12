@@ -62,6 +62,10 @@ public class Main {
 		    forceOption.setDescription("Force all source files to be written.");
 		    parser.addOption(forceOption);
 		    
+		    QCommandLineOption skipShellOption = new QCommandLineOption(QList.of("s", "skip-shell"), "skip");
+		    skipShellOption.setDescription("Do not generate shell class.");
+		    parser.addOption(skipShellOption);
+		    
 		    QCommandLineOption outputOption = new QCommandLineOption(QList.of("o", "output"), "output");
 		    outputOption.setDescription("Place the output into <dir>");
 		    outputOption.setValueName("dir");
@@ -120,6 +124,7 @@ public class Main {
 		    driver.option().translateFunction = parser.value(translateOption);
 		    driver.option().imports = QDir.fromNativeSeparators(parser.value(importOption));
 		    driver.option().forceOutput = parser.isSet(forceOption);
+		    driver.option().noShellClass = parser.isSet(skipShellOption);
 		    if (parser.isSet(connectionsOption)) {
 		        String value = parser.value(connectionsOption);
 		        if (value.equals("pmf"))

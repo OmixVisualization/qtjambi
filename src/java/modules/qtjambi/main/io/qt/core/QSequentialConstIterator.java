@@ -33,8 +33,9 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Supplier;
 
+import io.qt.NativeAccess;
+import io.qt.QtObject;
 import io.qt.QtUninvokable;
 import io.qt.internal.AbstractSequentialConstIterator;
 
@@ -45,7 +46,8 @@ public class QSequentialConstIterator<T> extends io.qt.internal.AbstractSequenti
     	QtJambi_LibraryUtilities.initialize();
     }
     
-    QSequentialConstIterator(Object owner) { 
+	@NativeAccess
+    QSequentialConstIterator(QtObject owner) { 
     	super(owner);
 	}
     
@@ -53,7 +55,7 @@ public class QSequentialConstIterator<T> extends io.qt.internal.AbstractSequenti
     static native boolean canLess(long __this__nativeId);
     
     @QtUninvokable
-    private T val() {
+    protected final T val() {
         return value(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
@@ -81,7 +83,7 @@ public class QSequentialConstIterator<T> extends io.qt.internal.AbstractSequenti
     static native boolean lessThan(long __this__nativeId, long other);
 
     @QtUninvokable
-    private boolean operator_equal(QSequentialConstIterator<T> o)        {
+    protected boolean equals(AbstractSequentialConstIterator<?> o) {
         return operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(o));
     }
     @QtUninvokable
@@ -91,12 +93,9 @@ public class QSequentialConstIterator<T> extends io.qt.internal.AbstractSequenti
     @QtUninvokable
     public boolean equals(Object other) {
         if (other instanceof QSequentialConstIterator) {
-        	@SuppressWarnings("unchecked")
-        	QSequentialConstIterator<T> iter = (QSequentialConstIterator<T>) other;
-        	if(compareOwners(iter))
-        		return operator_equal(iter);
+        	return super.equals(other);
         }
-        return Objects.equals(other, value());
+        return isValid() && Objects.equals(other, val());
     }
 
     @QtUninvokable
@@ -120,8 +119,8 @@ public class QSequentialConstIterator<T> extends io.qt.internal.AbstractSequenti
     }
     
     @QtUninvokable
-	protected final java.util.Iterator<T> descendingIterator(Supplier<? extends AbstractSequentialConstIterator<T>> beginSupplier) {
-    	return toJavaDescendingIterator(beginSupplier);
+	public final java.util.Iterator<T> descendingIterator() {
+    	return toJavaDescendingIterator();
     }
 
     @QtUninvokable

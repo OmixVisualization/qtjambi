@@ -32,11 +32,13 @@ package io.qt.internal;
 import java.util.Iterator;
 import java.util.Map;
 
-import io.qt.QtObject;
 import io.qt.QtUninvokable;
 import io.qt.core.QPair;
 
-public abstract class AbstractAssociativeContainer<K,V> extends QtObject implements Map<K,V>, Iterable<QPair<K,V>> {
+public abstract class AbstractAssociativeContainer<K,V> extends AbstractContainer<V> implements Map<K,V>, Iterable<QPair<K,V>>, Cloneable {
+	
+	@Override
+    public abstract AbstractAssociativeContainer<K,V> clone();
 	
 	@Override
     @QtUninvokable
@@ -75,7 +77,7 @@ public abstract class AbstractAssociativeContainer<K,V> extends QtObject impleme
 		return constBegin().toJavaMapIterator();
 	}
 	
-    protected AbstractAssociativeContainer(QPrivateConstructor p) {
+    AbstractAssociativeContainer(QPrivateConstructor p) {
 		super(p);
 	}
     

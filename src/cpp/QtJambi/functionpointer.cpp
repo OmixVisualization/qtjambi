@@ -145,7 +145,7 @@ struct LibraryFile : public QSharedData{
 private:
     std::vector<LibraryFunction> libFunctions;
     QSet<index_type> freeIndexes;
-    QHash<quintptr,size_type> usedIndexes;
+    QHash<quintptr,index_type> usedIndexes;
     QLibrary* library;
     Q_DISABLE_COPY_MOVE(LibraryFile);
 };
@@ -198,13 +198,6 @@ QRecursiveMutex* functionPointerLock(){
 
 typedef QFunctionPointer* (*Initialize)(QFunctionPointer onNull, std::vector<QFunctionPointer>& functions);
 
-#ifdef Q_OS_ANDROID
-#define unique_id(id) qHash(QLatin1String((id).name()))
-#else
-#define unique_id(id) (id).hash_code()
-#endif
-
-
 QFunctionPointer extractFunction(
         QVector<FunctionParamTypeInfo> functionParamTypeInfos,
         const std::type_info& functionTypeId,
@@ -229,8 +222,8 @@ QFunctionPointer extractFunction(
                 break;
             }
             /*if(info.isArithmetic
-                    && (unique_id(info.plainTypeId)==unique_id(typeid(double))
-                        || unique_id(info.plainTypeId)==unique_id(typeid(float)))){
+                    && (typeid_equals(info.plainTypeId, typeid(double))
+                        || typeid_equals(info.plainTypeId, typeid(float)))){
 
             }*/
         }

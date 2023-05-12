@@ -54,7 +54,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteo
  jclass __jni_class,
  jobject __jni_object)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QRemoteObjectPendingReply<QVariant>::QRemoteObjectPendingReply<QVariant>()")
+    QTJAMBI_NATIVE_METHOD_CALL("QRemoteObjectPendingReply<QVariant>::QRemoteObjectPendingReply<QVariant>()")
     QTJAMBI_TRY{
         QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QRemoteObjectPendingCall_0, sizeof(QRemoteObjectPendingReply<QVariant>), typeid(QRemoteObjectPendingReply<QVariant>), false, nullptr);
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -69,7 +69,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteo
  jobject __jni_object,
  jobject other0)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QRemoteObjectPendingReply<QVariant>::QRemoteObjectPendingReply<QVariant>(const QRemoteObjectPendingCall & other)")
+    QTJAMBI_NATIVE_METHOD_CALL("QRemoteObjectPendingReply<QVariant>::QRemoteObjectPendingReply<QVariant>(const QRemoteObjectPendingCall & other)")
     QTJAMBI_TRY{
         jvalue arguments;
         arguments.l = other0;

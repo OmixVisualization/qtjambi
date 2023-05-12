@@ -50,12 +50,6 @@ class SuperTypeInfos;
 #define QRecursiveMutexLocker QMutexLocker<QRecursiveMutex>
 #endif
 
-#ifdef Q_OS_ANDROID
-#define unique_id(id) qHash(QLatin1String((id).name()))
-#else
-#define unique_id(id) (id).hash_code()
-#endif
-
 struct InterfaceOffsetInfo{
     QMap<size_t,uint> offsets;
     QSet<size_t> interfaces;
@@ -103,6 +97,7 @@ bool isInterface(const char*qt_interface);
 bool hasCustomMetaObject(const std::type_info& typeId, const QMetaObject** superTypeMetaObject = nullptr);
 const QMetaObject* superTypeForCustomMetaObject(const std::type_info& typeId);
 Destructor registeredDestructor(const std::type_info& typeId);
+TypeInfoSupplier registeredTypeInfoSupplier(const std::type_info& typeId);
 FunctionalResolver registeredFunctionalResolver(const std::type_info& typeId);
 jmethodID findInternalPrivateConstructor(JNIEnv *env, jclass clazz);
 QList<const std::type_info*> getPolymorphicBases(const std::type_info& typeId);

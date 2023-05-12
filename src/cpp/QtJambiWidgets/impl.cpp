@@ -107,13 +107,13 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
  jobject _this,
  jobject obj, jobject metaMethod)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QInputDialog::open(QObject * receiver, const char * member)")
     QTJAMBI_TRY{
 #if QT_CONFIG(filedialog)
         QInputDialog *__qt_this = QtJambiAPI::convertJavaObjectToNative<QInputDialog>(__jni_env, _this);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QInputDialog::open(QObject * receiver, const char * member)", __qt_this)
         QObject *object = qtjambi_cast<QObject*>(__jni_env, obj);
-        QtJambiAPI::checkPointer(__jni_env, object);
+        QtJambiAPI::checkNullPointer(__jni_env, object);
         QMetaMethod method = qtjambi_cast<QMetaMethod>(__jni_env, metaMethod);
         QByteArray signature;
         if(method.methodType()==QMetaMethod::Signal){
@@ -140,13 +140,13 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
  jobject _this,
  jobject obj, jobject metaMethod)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QFileDialog::open(QObject * receiver, const char * member)")
     QTJAMBI_TRY{
 #if QT_CONFIG(filedialog)
         QFileDialog *__qt_this = QtJambiAPI::convertJavaObjectToNative<QFileDialog>(__jni_env, _this);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QFileDialog::open(QObject * receiver, const char * member)", __qt_this)
         QObject *object = qtjambi_cast<QObject*>(__jni_env, obj);
-        QtJambiAPI::checkPointer(__jni_env, object);
+        QtJambiAPI::checkNullPointer(__jni_env, object);
         QMetaMethod method = qtjambi_cast<QMetaMethod>(__jni_env, metaMethod);
         QByteArray signature;
         if(method.methodType()==QMetaMethod::Signal){
@@ -172,13 +172,13 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
  jobject _this,
  jobject obj, jobject metaMethod)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QFontDialog::open(QObject * receiver, const char * member)")
     QTJAMBI_TRY{
 #if QT_CONFIG(fontdialog)
         QFontDialog *__qt_this = QtJambiAPI::convertJavaObjectToNative<QFontDialog>(__jni_env, _this);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QFontDialog::open(QObject * receiver, const char * member)", __qt_this)
         QObject *object = qtjambi_cast<QObject*>(__jni_env, obj);
-        QtJambiAPI::checkPointer(__jni_env, object);
+        QtJambiAPI::checkNullPointer(__jni_env, object);
         QMetaMethod method = qtjambi_cast<QMetaMethod>(__jni_env, metaMethod);
         QByteArray signature;
         if(method.methodType()==QMetaMethod::Signal){
@@ -205,13 +205,13 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets
  jobject _this,
  jobject obj, jobject metaMethod)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QColorDialog::open(QObject * receiver, const char * member)")
     QTJAMBI_TRY{
 #if QT_CONFIG(colordialog)
         QColorDialog *__qt_this = QtJambiAPI::convertJavaObjectToNative<QColorDialog>(__jni_env, _this);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QColorDialog::open(QObject * receiver, const char * member)", __qt_this)
         QObject *object = qtjambi_cast<QObject*>(__jni_env, obj);
-        QtJambiAPI::checkPointer(__jni_env, object);
+        QtJambiAPI::checkNullPointer(__jni_env, object);
         QMetaMethod method = qtjambi_cast<QMetaMethod>(__jni_env, metaMethod);
         QByteArray signature;
         if(method.methodType()==QMetaMethod::Signal){

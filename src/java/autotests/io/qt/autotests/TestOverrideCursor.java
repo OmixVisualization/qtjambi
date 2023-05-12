@@ -1,6 +1,5 @@
 /****************************************************************************
 **
-** Copyright (C) 1992-2009 Nokia. All rights reserved.
 ** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
@@ -29,42 +28,33 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Assert;
-import org.junit.Assume;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.QLibraryNotFoundError;
-import io.qt.QtUtilities;
-import io.qt.autotests.generated.General;
+import io.qt.core.Qt;
+import io.qt.gui.QCursor;
+import io.qt.widgets.QApplication;
 
-public class TestUtilities extends UnitTestInitializer {
-
-	@org.junit.BeforeClass
-	public static void setUpClass() {
-		Assume.assumeTrue(io.qt.QtUtilities.initializePackage("io.qt.internal"));
-	}
-
-	private static boolean loadQtJambiLibrary(String lib) {
-        try {
-            QtUtilities.loadQtJambiLibrary(lib);
-            return true;
-        } catch (UnsatisfiedLinkError | QLibraryNotFoundError e) {
-            java.util.logging.Logger.getLogger("io.qt").log(java.util.logging.Level.SEVERE, "", e);
-            return false;
-        }
+public class TestOverrideCursor extends ApplicationInitializer {
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+    	ApplicationInitializer.testInitializeWithWidgets();
     }
-
-	@org.junit.Test
-	public void testLoadLibrary() {
-		assertTrue("validLibrary", loadQtJambiLibrary("Core"));
-		assertFalse("falseLibrary", loadQtJambiLibrary("Kore"));
-	}
-    
+	
     @Test
-    public void testNullClass() {
-    	Assert.assertEquals(null, General.internalAccess.getClass(null));
+    public void test() {
+    	QCursor cursor = QApplication.overrideCursor();
+    	Assert.assertTrue(cursor==null);
+    	QApplication.setOverrideCursor(new QCursor(Qt.CursorShape.WaitCursor));
+    	cursor = QApplication.overrideCursor();
+    	Assert.assertTrue(cursor!=null);
+    	//this will crash if overrideCursor uses a non-const conversion (i.e. a move conversion)
+    	cursor = QApplication.overrideCursor().clone();
+    	Assert.assertTrue(cursor!=null);
+    }
+    
+    public static void main(String args[]) {
+        org.junit.runner.JUnitCore.main(TestOverrideCursor.class.getName());
     }
 }

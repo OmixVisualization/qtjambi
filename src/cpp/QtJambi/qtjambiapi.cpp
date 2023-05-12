@@ -31,6 +31,9 @@
 #include "exception.h"
 #include "java_p.h"
 #include "qtjambilink_p.h"
+#include <QThreadStorage>
+#include <QScopeGuard>
+#include <cstring>
 
 #include "qtjambi_cast.h"
 
@@ -492,7 +495,135 @@ uint QtJambiAPI::getJavaObjectHashCode(JNIEnv *env, jobject object){
     return uint(Java::Runtime::Object::hashCode(env, object));
 }
 
-void QtJambiAPI::checkPointer(JNIEnv *env, const void* ptr, const std::type_info& typeId){
+bool enabledDanglingPointerCheck(JNIEnv * env){
+    static bool b = [](JNIEnv * env)->bool{
+        if(env){
+            return Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-dangling-pointer-check"));
+        }else if(JniEnvironment _env{200})
+            return Java::Runtime::Boolean::getBoolean(_env, _env->NewStringUTF("io.qt.enable-dangling-pointer-check"));
+        else return false;
+    }(env);
+    return b;
+}
+
+#if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS)) && !defined(Q_OS_ANDROID)
+#include <signal.h>
+#endif
+
+const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, const void* ptr){
+    Q_ASSERT(typeInfoSupplier);
+#if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS)) && !defined(Q_OS_ANDROID)
+    static QThreadStorage<bool> isSigSegv;
+    struct sigaction sa;
+    struct sigaction sa_old;
+    memset(&sa, 0, sizeof(sa));
+    memset(&sa_old, 0, sizeof(sa_old));
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_NODEFER;
+    sa.sa_handler = [](int){
+        isSigSegv.setLocalData(true);
+        throw std::bad_typeid();
+    };
+    bool success = sigaction(SIGSEGV, &sa, &sa_old)==0;
+    auto sc = qScopeGuard([&](){
+        if(success){
+            sigaction(SIGSEGV, &sa_old, nullptr);
+        }
+    });
+    try{
+        isSigSegv.setLocalData(false);
+        const std::type_info& typeId = typeInfoSupplier(ptr);
+        const char* typeName = typeId.name();
+//        fprintf(stderr, "got type %s\n", typeName);
+//        fflush(stderr);
+        std::strlen(typeName);
+        switch(typeName[0]){
+        case '1':
+        case '2':
+        case '3':
+        case '4':
+        case '5':
+        case '6':
+        case '7':
+        case '8':
+        case '9':
+            break;
+        case 'N':
+            switch(typeName[1]){
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+                break;
+            default: // not valid name of class
+                return nullptr;
+            }
+            break;
+        default: // not valid name of class
+            return nullptr;
+        }
+        if(isSigSegv.localData())
+            return nullptr;
+//        typeId.hash_code();
+        return &typeId;
+    }catch(const std::bad_typeid&){
+        return nullptr;
+    }
+#else
+    try{
+        const std::type_info& typeId = typeInfoSupplier(ptr);
+        return &typeId;
+    }catch(const std::bad_typeid&){
+        return nullptr;
+    }
+#endif
+}
+
+const std::type_info* tryGetTypeInfo(JNIEnv *env, TypeInfoSupplier typeInfoSupplier, const void* ptr){
+    Q_ASSERT(typeInfoSupplier);
+#if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS)) && !defined(Q_OS_ANDROID)
+    if(enabledDanglingPointerCheck(env)){
+        return checkedGetTypeInfo(typeInfoSupplier, ptr);
+    }
+#else
+    Q_UNUSED(env)
+#endif
+    try{
+        const std::type_info& typeId = typeInfoSupplier(ptr);
+        return &typeId;
+    }catch(const std::bad_typeid&){
+        return nullptr;
+    }
+}
+
+void QtJambiAPI::checkDanglingPointer(JNIEnv *env, const void* ptr, const std::type_info& typeId, TypeInfoSupplier typeInfoSupplier){
+    if(enabledDanglingPointerCheck(env) && ptr && typeInfoSupplier){
+        const std::type_info* _typeId = nullptr;
+        _typeId = checkedGetTypeInfo(typeInfoSupplier, ptr);
+        if(!_typeId){
+            QLatin1String java_type(getJavaName(typeId));
+            QString msg = QLatin1String("Dangling pointer to object of type %1");
+            if(!java_type.isEmpty()){
+                msg = msg.arg(QString(QLatin1String(java_type)).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.')));
+            }else{
+                QLatin1String qt_type(getQtName(typeId));
+                if(!qt_type.isEmpty()){
+                    msg = msg.arg(qt_type);
+                }else{
+                    msg = msg.arg(QLatin1String(QtJambiAPI::typeName(typeId)));
+                }
+            }
+            Java::QtJambi::QDanglingPointerException::throwNew(env, msg QTJAMBI_STACKTRACEINFO );
+        }
+    }
+}
+
+void QtJambiAPI::checkNullPointer(JNIEnv *env, const void* ptr, const std::type_info& typeId){
     if(!ptr){
         QLatin1String java_type(getJavaName(typeId));
         QString msg = QLatin1String("Function call on incomplete object of type: %1");
@@ -508,6 +639,11 @@ void QtJambiAPI::checkPointer(JNIEnv *env, const void* ptr, const std::type_info
         }
         Java::QtJambi::QNoNativeResourcesException::throwNew(env, msg QTJAMBI_STACKTRACEINFO );
     }
+}
+
+void QtJambiAPI::checkNullPointer(JNIEnv *env, const void* ptr, const std::type_info& typeId, TypeInfoSupplier typeInfoSupplier){
+    checkNullPointer(env, ptr, typeId);
+    checkDanglingPointer(env, ptr, typeId, typeInfoSupplier);
 }
 
 // array helpers...
@@ -1043,3 +1179,36 @@ void QtJambiAPI::setQQmlListPropertyElementType(JNIEnv *env, jobject list, jobje
     Java::QtQml::QQmlListProperty::set_elementType(env, list, elementType);
 }
 
+#define STR_HELPER(x) #x
+#define STR(x) STR_HELPER(x)
+#define CONCAT(a, b, c) STR(a) "." STR(b) "." STR(c)
+
+
+#if defined(Q_CC_CLANG)
+#  define COMPILERS_NAME __VERSION__
+#elif defined(Q_CC_GNU)
+#  define COMPILERS_NAME "GCC " __VERSION__
+#elif defined(Q_CC_MSVC)
+#  if _MSC_VER < 1910
+#    define COMPILERS_NAME "MSVC 2015"
+#  elif _MSC_VER < 1917
+#    define COMPILERS_NAME "MSVC 2017"
+#  elif _MSC_VER < 1930
+#    define COMPILERS_NAME "MSVC 2019"
+#  elif _MSC_VER < 2000
+#    define COMPILERS_NAME "MSVC 2022"
+#  else
+#    define COMPILERS_NAME "MSVC _MSC_VER " QT_STRINGIFY(_MSC_VER)
+#  endif
+#else
+#  define COMPILERS_NAME "<unknown compiler>"
+#endif
+#ifdef QT_NO_DEBUG
+#  define DEBUG_STRING "release"
+#else
+#  define DEBUG_STRING "debug"
+#endif
+
+QTJAMBI_EXPORT const char* qtjambi_build(){
+    return "QtJambi " CONCAT(QT_VERSION_MAJOR, QT_VERSION_MINOR, QTJAMBI_PATCH_VERSION) " (" DEBUG_STRING " build; by " COMPILERS_NAME ")";
+}

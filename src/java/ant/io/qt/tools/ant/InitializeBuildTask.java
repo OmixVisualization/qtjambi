@@ -1168,16 +1168,8 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		mySetProperty(-1, "generator.outputdir", null, generatorOutputdir.getAbsolutePath(), true);
 		configureGenerator(generatorOutputdir);
 		
-		s = listToString(generatorPreProcDefinesList);
-		getProject().log(this, Constants.GENERATOR_PREPROC_DEFINES + " is " + ((s != null) ? s : "<unset>"),
-				Project.MSG_VERBOSE);
-		AntUtil.setProperty(propertyHelper, Constants.GENERATOR_PREPROC_DEFINES,
-				listJoinToString(generatorPreProcDefinesList, ","));
-		s = listToString(generatorStaticLibsList);
-		getProject().log(this, Constants.GENERATOR_STATICLIBS + " is " + ((s != null) ? s : "<unset>"),
-				Project.MSG_VERBOSE);
-		AntUtil.setProperty(propertyHelper, Constants.GENERATOR_STATICLIBS,
-				listJoinToString(generatorStaticLibsList, ","));
+		mySetProperty(-1, Constants.GENERATOR_PREPROC_DEFINES, null, listJoinToString(generatorPreProcDefinesList, ","), true);
+		mySetProperty(-1, Constants.GENERATOR_STATICLIBS, null, listJoinToString(generatorStaticLibsList, ","), true);
 		
 		int threads = 1;
 		{
@@ -1584,7 +1576,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 				String qtjambiLibName = "QtJambi"+info.libraryName.substring(2);
 				if (Boolean.parseBoolean(
 						AntUtil.getPropertyAsString(propertyHelper, "qtjambi." + module + ".staticlib"))
-						&& !info.isPureStaticLib) {
+						|| info.isPureStaticLib) {
 					generatorStaticLibsList.add(info.libraryName);
 				}
 				if(info.preprocdef!=null) {

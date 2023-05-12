@@ -1890,11 +1890,6 @@ TypeSystem{
     
     ValueType{
         name: "QTableWidgetSelectionRange"
-        ModifyFunction{
-            signature: "QTableWidgetSelectionRange(const QTableWidgetSelectionRange &)"
-            remove: RemoveFlag.All
-            until: 5
-        }
         CustomConstructor{
             type: CustomConstructor.Copy
             Text{content: "new(placement) QTableWidgetSelectionRange(copy->topRow(), copy->leftColumn(), copy->bottomRow(), copy->rightColumn());"}
@@ -4359,7 +4354,7 @@ TypeSystem{
                           "{\n"+
                           "#ifdef Q_OS_OSX\n"+
                           "    QMenu* __qt_this = qtjambi_cast<QMenu*>(__jni_env, __this);\n"+
-                          "    QtJambiAPI::checkPointer(__jni_env, __qt_this);\n"+
+                          "    QtJambiAPI::checkNullPointer(__jni_env, __qt_this);\n"+
                           "    __qt_this->setAsDockMenu();\n"+
                           "#else\n"+
                           "    Q_UNUSED(__jni_env)\n"+

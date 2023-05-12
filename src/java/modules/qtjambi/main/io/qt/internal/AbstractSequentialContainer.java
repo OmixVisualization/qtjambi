@@ -35,20 +35,16 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import io.qt.QtObject;
 import io.qt.QtUninvokable;
 
-public abstract class AbstractSequentialContainer<E> extends QtObject implements Collection<E> {
+public abstract class AbstractSequentialContainer<E> extends AbstractContainer<E> implements Collection<E>, Cloneable {
 	
     protected AbstractSequentialContainer(QPrivateConstructor p) {
 		super(p);
 	}
     
-    @QtUninvokable
-	protected abstract AbstractSequentialConstIterator<E> constBegin();
-
-    @QtUninvokable
-    protected abstract AbstractSequentialConstIterator<E> constEnd();
+    @Override
+    public abstract AbstractSequentialContainer<E> clone();
     
 	@Override
     @QtUninvokable
@@ -120,7 +116,7 @@ public abstract class AbstractSequentialContainer<E> extends QtObject implements
 	
 	@Override
     @QtUninvokable
-	public Iterator<E> iterator() {
+	public final Iterator<E> iterator() {
 		return constBegin().toJavaIterator();
 	}
 	
@@ -143,6 +139,6 @@ public abstract class AbstractSequentialContainer<E> extends QtObject implements
 
     @QtUninvokable
     protected java.util.Iterator<E> descendingIterator() {
-        return constEnd().toJavaDescendingIterator(this::constBegin);
+        return constEnd().toJavaDescendingIterator();
     }
 }

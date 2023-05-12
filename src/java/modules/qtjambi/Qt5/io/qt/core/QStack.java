@@ -177,7 +177,7 @@ public class QStack<T> extends QVector<T> implements Deque<T>
 	@Override
     @QtUninvokable
 	public java.util.Iterator<T> descendingIterator() {
-		return end().descendingIterator(this::begin);
+		return super.descendingIterator();
 	}
 
 	@Override
