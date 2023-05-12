@@ -31,8 +31,10 @@
 package io.qt.core;
 
 import java.util.Arrays;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.IllegalFormatException;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -197,34 +199,63 @@ public final class QLogging {
     
     @QtUninvokable
     private static QtMessageHandler qInstallLoggingMessageHandler(Set<QtMsgType> supportedMessageTypes) {
-    	return qInstallMessageHandler(supportedMessageTypes, (messageType, context, message) -> {
-			Level level;
-			switch(messageType) {
-			case QtSystemMsg:
-			case QtCriticalMsg:
-				level = Level.SEVERE;
-				break;
-			case QtDebugMsg:
-				level = Level.FINEST;
-				break;
-			case QtFatalMsg:
-				level = Level.SEVERE;
-				break;
-			case QtInfoMsg:
-				level = Level.INFO;
-				break;
-			case QtWarningMsg:
-				level = Level.WARNING;
-				break;
-			default:
-				level = Level.FINE;
-				break;
+    	Map<QtMsgType,Level> messageLevels = new EnumMap<>(QtMsgType.class);
+    	String value = System.getProperty("io.qt.log.debug.level");
+		Level level = Level.FINEST;
+    	if(value!=null) {
+    		try {
+				level = Level.parse(value);
+			} catch (IllegalArgumentException e) {
 			}
-			LogRecord logRecord = new LogRecord(level, message);
+    	}
+		messageLevels.put(QtMsgType.QtDebugMsg, level);
+    	value = System.getProperty("io.qt.log.critical.level");
+		level = Level.SEVERE;
+    	if(value!=null) {
+    		try {
+				level = Level.parse(value);
+			} catch (IllegalArgumentException e) {
+			}
+    	}
+		messageLevels.put(QtMsgType.QtCriticalMsg, level);
+		value = System.getProperty("io.qt.log.fatal.level");
+		level = Level.SEVERE;
+    	if(value!=null) {
+    		try {
+				level = Level.parse(value);
+			} catch (IllegalArgumentException e) {
+			}
+    	}
+		messageLevels.put(QtMsgType.QtFatalMsg, level);
+		value = System.getProperty("io.qt.log.info.level");
+		level = Level.INFO;
+    	if(value!=null) {
+    		try {
+				level = Level.parse(value);
+			} catch (IllegalArgumentException e) {
+			}
+    	}
+		messageLevels.put(QtMsgType.QtInfoMsg, level);
+		value = System.getProperty("io.qt.log.warning.level");
+		level = Level.WARNING;
+    	if(value!=null) {
+    		try {
+				level = Level.parse(value);
+			} catch (IllegalArgumentException e) {
+			}
+    	}
+		messageLevels.put(QtMsgType.QtWarningMsg, level);
+    	return qInstallMessageHandler(supportedMessageTypes, (messageType, context, message) -> {
+			LogRecord logRecord = new LogRecord(messageLevels.getOrDefault(messageType, Level.FINE), message);
 			String file = context.file();
 			logRecord.setSourceClassName(file!=null ? file : "");
     		logRecord.setSourceMethodName(context.function());
-    		logger.log(logRecord);
+    		String category = context.category();
+    		if(category!=null && !category.isEmpty()) {
+    			java.util.logging.Logger.getLogger(category).log(logRecord);
+    		}else {
+    			logger.log(logRecord);
+    		}
 		});
     }
     

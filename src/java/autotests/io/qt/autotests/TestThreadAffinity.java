@@ -37,15 +37,28 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.*;
-import io.qt.core.*;
+import io.qt.QThreadAffinityException;
+import io.qt.QtArgument;
+import io.qt.QtUtilities;
+import io.qt.core.QEventLoop;
+import io.qt.core.QList;
+import io.qt.core.QObject;
+import io.qt.core.QPoint;
+import io.qt.core.QRectF;
+import io.qt.core.QThread;
+import io.qt.core.Qt;
 import io.qt.core.Qt.CursorShape;
 import io.qt.gui.*;
 import io.qt.printsupport.QPrinter;
 import io.qt.printsupport.QPrinterInfo;
 import io.qt.widgets.*;
 
-public class TestThreadAffinity extends ApplicationInitializer {
+public class TestThreadAffinity extends ApplicationInitializer{
+	
+	static {
+		System.setProperty("io.qt.enable-thread-affinity-check", "true");
+		System.setProperty("io.qt.enable-event-thread-affinity-check", "true");
+	}
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {

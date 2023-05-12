@@ -29,38 +29,87 @@
 ****************************************************************************/
 package io.qt.internal;
 
+import java.util.ConcurrentModificationException;
+import java.util.NoSuchElementException;
+import java.util.function.Function;
+
+import io.qt.QtObject;
 import io.qt.QtUninvokable;
 import io.qt.core.QPair;
 
 public abstract class AbstractAssociativeConstIterator<K,V> extends AbstractSequentialConstIterator<V>{
 	
-	protected AbstractAssociativeConstIterator(Object owner) {
+	protected AbstractAssociativeConstIterator(QtObject owner) {
 		super(owner);
 	}
+	
+	private final static Function<AbstractAssociativeConstIterator<?,?>, java.util.Iterator<?>> iteratorFactory;
+	
+	static {
+		if(Boolean.getBoolean("io.qt.enable-concurrent-container-modification-check")) {
+			@SuppressWarnings("unchecked")
+			Function<AbstractAssociativeConstIterator<?,?>, java.util.Iterator<?>> _iteratorFactory = CheckingIncrementalIterator::new;
+			iteratorFactory = _iteratorFactory;
+		}else {
+			@SuppressWarnings("unchecked")
+			Function<AbstractAssociativeConstIterator<?,?>, java.util.Iterator<?>> _iteratorFactory = IncrementalIterator::new;
+			iteratorFactory = _iteratorFactory;
+		}
+	}
+	
+	private static class IncrementalIterator<K,V> implements java.util.Iterator<QPair<K,V>>{
+    	final AbstractAssociativeConstIterator<K,V> nativeIterator;
+    	final AbstractSequentialConstIterator<V> end;
+    	private boolean hasNext;
+    	
+		IncrementalIterator(AbstractAssociativeConstIterator<K, V> nativeIterator) {
+			super();
+			this.nativeIterator = nativeIterator;
+			end = nativeIterator.end();
+			hasNext = end!=null && !nativeIterator.equals(end);
+		}
 
+		@Override
+		public boolean hasNext() {
+			return hasNext;
+		}
+
+		@Override
+		public QPair<K,V> next() {
+			checkNext();
+			QPair<K,V> e = new QPair<>(nativeIterator.key(), nativeIterator.val());
+			nativeIterator.increment();
+            hasNext = end!=null && !nativeIterator.equals(end);
+            return e;
+		}
+    	
+		void checkNext() {
+            if(!hasNext)
+                throw new NoSuchElementException();
+		}
+    }
+	
+	private static class CheckingIncrementalIterator<K,V> extends IncrementalIterator<K,V>{
+		CheckingIncrementalIterator(AbstractAssociativeConstIterator<K, V> nativeIterator) {
+			super(nativeIterator);
+		}
+
+		void checkNext() {
+    		super.checkNext();
+        	if(end!=null && !end.equals(nativeIterator.end()))
+        		throw new ConcurrentModificationException();
+		}
+	}
+
+	@SuppressWarnings("unchecked")
 	@QtUninvokable
     protected final java.util.Iterator<QPair<K,V>> toJavaMapIterator(){
-    	return new java.util.Iterator<QPair<K,V>>() {
-    		private final AbstractSequentialConstIterator<?> end = end();
-    		
-            @Override
-            public boolean hasNext() {
-                return !AbstractAssociativeConstIterator.this.equals(end);
-            }
-
-            @Override
-            public QPair<K,V> next() {
-                if(!hasNext())
-                    throw new java.util.NoSuchElementException();
-            	if(!end.equals(end()))
-            		throw new IllegalMonitorStateException();
-                QPair<K,V> e = new QPair<>(checkedKey(), checkedValue());
-                increment();
-                return e;
-            }
-        };
+		return (java.util.Iterator<QPair<K,V>>)iteratorFactory.apply(this);
     }
-    
+	
     @QtUninvokable
     protected abstract K checkedKey();
+    
+    @QtUninvokable
+    protected abstract K key();
 }

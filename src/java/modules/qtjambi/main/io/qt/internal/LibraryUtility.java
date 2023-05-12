@@ -29,12 +29,14 @@
 
 package io.qt.internal;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
@@ -47,6 +49,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -63,7 +66,6 @@ import java.util.zip.ZipException;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
-import io.qt.internal.LibraryBundle.*;
 
 import io.qt.NativeAccess;
 import io.qt.QLibraryNotFoundError;
@@ -73,6 +75,11 @@ import io.qt.QtUninvokable;
 import io.qt.QtUtilities.LibraryRequirementMode;
 import io.qt.core.QDeclarableSignals;
 import io.qt.core.QPair;
+import io.qt.internal.LibraryBundle.Library;
+import io.qt.internal.LibraryBundle.SpecificationException;
+import io.qt.internal.LibraryBundle.Symlink;
+import io.qt.internal.LibraryBundle.WrongBuildException;
+import io.qt.internal.LibraryBundle.WrongConfigurationException;
 
 final class LibraryUtility {
 	
@@ -2509,5 +2516,204 @@ final class LibraryUtility {
 
 	static String osArchName() {
 		return osArchName;
+	}
+	
+	private static int findSequence(int offset, byte[] array, byte[] sequence) {
+	    for (int i = offset; i < array.length - sequence.length + 1; i++) {
+	        boolean found = true;
+	        for (int j = 0; j < sequence.length; j++) {
+	            if (array[i + j] != sequence[j]) {
+	                found = false;
+	                break;
+	            }
+	        }
+	        if (found) {
+	            return i;
+	        }
+	    }
+	    return -1;
+	}
+
+	static void analyzeUnsatisfiedLinkError(UnsatisfiedLinkError t, java.io.File coreLib) {
+		String qtLibraryBuild = null;
+		String qtjambiLibraryBuild = null;
+		try {
+			byte[] coredata = Files.readAllBytes(coreLib.toPath());
+			int idx = 0;
+			while(true) {
+				idx = findSequence(idx, coredata, String.format("Qt %1$s.%2$s.", QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion).getBytes(StandardCharsets.US_ASCII));
+				if(idx<0)
+					break;
+				ByteArrayOutputStream os = new ByteArrayOutputStream();
+				int parenCount = 0;
+				for(int i=idx; i<coredata.length; ++i){
+					byte c = coredata[i];
+					switch(c) {
+					case (byte)'(':
+						++parenCount;
+						os.write(c);
+						break;
+					case (byte)')':
+						--parenCount;
+						os.write(c);
+						if(parenCount==0)
+							i = coredata.length;
+						break;
+					case (byte)'<':
+					case (byte)'>':
+					case (byte)'-':
+					case (byte)'_':
+					case (byte)' ':
+					case (byte)';':
+					case (byte)'.':
+						os.write(c);
+						break;
+					default:
+						if(Character.isLetterOrDigit(c)) {
+							os.write(c);
+						}else {
+							i = coredata.length;
+						}
+						break;
+					}
+				}
+				qtLibraryBuild = new String(os.toByteArray(), StandardCharsets.US_ASCII);
+				if(qtLibraryBuild.contains("build; by"))
+					break;
+				else
+					idx += 5;
+			}
+		}catch(Throwable t2){}
+		{
+			Availability availability = getQtJambiLibraryAvailability(null, "QtJambi", null, null, configuration, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion, QtJambi_LibraryUtilities.qtJambiPatch);
+			if(availability.file!=null) {
+				try {
+					byte[] jambidata = Files.readAllBytes(availability.file.toPath());
+					int idx = 0;
+					while(true) {
+						idx = findSequence(idx, jambidata, String.format("QtJambi %1$s.%2$s.", QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion).getBytes(StandardCharsets.US_ASCII));
+						if(idx<0)
+							break;
+						ByteArrayOutputStream os = new ByteArrayOutputStream();
+						int parenCount = 0;
+						for(int i=idx; i<jambidata.length; ++i){
+							byte c = jambidata[i];
+							switch(c) {
+							case (byte)'(':
+								++parenCount;
+								os.write(c);
+								break;
+							case (byte)')':
+								--parenCount;
+								os.write(c);
+								if(parenCount==0)
+									i = jambidata.length;
+								break;
+							case (byte)'<':
+							case (byte)'>':
+							case (byte)'-':
+							case (byte)'_':
+							case (byte)' ':
+							case (byte)';':
+							case (byte)'.':
+								os.write(c);
+								break;
+							default:
+								if(Character.isLetterOrDigit(c)) {
+									os.write(c);
+								}else {
+									i = jambidata.length;
+								}
+								break;
+							}
+						}
+						qtjambiLibraryBuild = new String(os.toByteArray(), StandardCharsets.US_ASCII);
+						if(qtjambiLibraryBuild.contains("build; by"))
+							break;
+						else
+							idx += 10;
+					}
+				}catch(Throwable t2){}
+			}
+		}
+		if(qtLibraryBuild!=null && qtjambiLibraryBuild!=null) {
+			switch(LibraryUtility.operatingSystem) {
+			case Windows:
+				if(LibraryUtility.architecture==Architecture.x86_64) {
+					if(qtjambiLibraryBuild.contains("MSVC") && qtLibraryBuild.contains("GCC")) {
+						throw new LinkageError("Cannot run " + qtjambiLibraryBuild + " with " + qtLibraryBuild + ". Please install and use Qt (MSVC 2019 x64) instead.", t);
+					}else if(qtjambiLibraryBuild.contains("GCC") && qtLibraryBuild.contains("MSVC")){
+						throw new LinkageError("Cannot run " + qtjambiLibraryBuild + " with " + qtLibraryBuild + ". Please install and use Qt (MinGW x64) instead.", t);
+					}
+				}
+				break;
+				default:
+					break;
+			}
+			throw new LinkageError("Cannot run " + qtjambiLibraryBuild + " with " + qtLibraryBuild + ".", t);
+		}else {
+			switch(LibraryUtility.operatingSystem) {
+	        case MacOS:
+	            if(coreLib!=null) {
+	                java.io.File prl = new java.io.File(coreLib.getParentFile(), "Resources/QtCore.prl");
+	                if(prl.exists()) {
+	                    Properties prlProp = new Properties();
+	                    try(java.io.FileInputStream inStream = new java.io.FileInputStream(prl)){
+	                        prlProp.load(inStream);
+	                    } catch(Throwable t2) {}
+	                    String version = prlProp.getProperty("QMAKE_PRL_VERSION", "");
+	                    if(!version.isEmpty()) {
+	                        if(!version.startsWith(QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + ".")) {
+	                            throw new LinkageError("Cannot combine QtJambi " + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + " with Qt " + version + ".", t);
+	                        }
+	                    }
+	                }
+	            }
+	            break;
+	        case Windows:
+	            if(coreLib!=null) {
+	                java.io.File prl = new java.io.File(coreLib.getParentFile(), "Qt"+QtJambi_LibraryUtilities.qtMajorVersion+"Core.prl");
+	                if(!prl.exists()) {
+	                    prl = new java.io.File(coreLib.getParentFile().getParentFile(), "lib\\Qt"+QtJambi_LibraryUtilities.qtMajorVersion+"Core.prl");
+	                }
+	                if(prl.exists()) {
+	                    Properties prlProp = new Properties();
+	                    try(java.io.FileInputStream inStream = new java.io.FileInputStream(prl)){
+	                        prlProp.load(inStream);
+	                    } catch(Throwable t2) {}
+	                    String version = prlProp.getProperty("QMAKE_PRL_VERSION", "");
+	                    if(!version.isEmpty()) {
+	                        if(!version.startsWith(QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + ".")) {
+	                            throw new LinkageError("Cannot combine QtJambi " + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + " with Qt " + version + ".", t);
+	                        }
+	                    }
+	                }
+	                if(new java.io.File(coreLib.getParentFile(), "libstdc++-6.dll").exists() || LibraryUtility.isMinGWBuilt()) {
+	                    throw new LinkageError("Cannot combine msvc-based QtJambi with mingw-based Qt library. Please install and use Qt (MSVC 2019 x64) instead.", t);
+	                }else {
+	                    throw new LinkageError("Cannot combine mingw-based QtJambi with msvc-based Qt library. Please install and use Qt (MinGW x64) instead.", t);
+	                }
+	            }
+	            break;
+	        default:
+	            if(coreLib!=null) {
+	                java.io.File prl = new java.io.File(coreLib.getParentFile(), "Qt"+QtJambi_LibraryUtilities.qtMajorVersion+"Core.prl");
+	                if(prl.exists()) {
+	                    Properties prlProp = new Properties();
+	                    try(java.io.FileInputStream inStream = new java.io.FileInputStream(prl)){
+	                        prlProp.load(inStream);
+	                    } catch(Throwable t2) {}
+	                    String version = prlProp.getProperty("QMAKE_PRL_VERSION", "");
+	                    if(!version.isEmpty()) {
+	                        if(!version.startsWith(QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + ".")) {
+	                            throw new LinkageError("Cannot combine QtJambi " + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + " with Qt " + version + ".", t);
+	                        }
+	                    }
+	                }
+	            }
+	            break;
+	        }
+		}
+        throw t;
 	}
 }

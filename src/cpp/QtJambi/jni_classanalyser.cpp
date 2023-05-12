@@ -53,5 +53,5 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_ClassAnalyzerUtility_getClass)
 (JNIEnv * env,
  jclass, jobject e)
 {
-    return env->GetObjectClass(e);
+    return e ? env->GetObjectClass(e) : nullptr;
 }

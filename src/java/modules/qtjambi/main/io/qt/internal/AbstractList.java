@@ -32,7 +32,6 @@ package io.qt.internal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
 import io.qt.QtUninvokable;
@@ -42,6 +41,9 @@ public abstract class AbstractList<E> extends AbstractSequentialContainer<E> imp
     protected AbstractList(QPrivateConstructor p) {
 		super(p);
 	}
+    
+    @Override
+    public abstract AbstractList<E> clone();
     
     @QtUninvokable
 	protected abstract AbstractSequentialConstIterator<E> begin();
@@ -82,42 +84,51 @@ public abstract class AbstractList<E> extends AbstractSequentialContainer<E> imp
 
 	@Override
     @QtUninvokable
-	public final ListIterator<E> listIterator() {
+	public final java.util.ListIterator<E> listIterator() {
 	    return listIterator(0);
 	}
 	
-	private class QtJambiListIterator implements ListIterator<E>{
+	private static class ListIterator<E> implements java.util.ListIterator<E>{
+		private final AbstractList<E> list;
 		private AbstractSequentialConstIterator<E> current;
+    	private AbstractSequentialConstIterator<E> begin;
     	private AbstractSequentialConstIterator<E> end;
     	private int icursor;
+    	private boolean hasNext;
+    	private boolean hasPrevious;
     	
-    	QtJambiListIterator(int index){
+    	ListIterator(AbstractList<E> list, int index){
+    		this.list = list;
     		initialize(index);
     	}
     	
     	private void initialize(int index){
-    		current = begin();
-    		end = end();
+    		begin = list.begin();
+    		current = list.begin();
+    		end = list.end();
     		icursor = 0;
 			for (int i = 0; i < index && end!=null && !current.equals(end); i++) {
 				current.increment();
 				icursor++;
 			}
+			hasNext = end!=null && !current.equals(end);
+			hasPrevious = begin!=null && !current.equals(begin);
 		}
         
         @Override
         public boolean hasNext() {
-        	return end!=null && !current.equals(end);
+        	return hasNext;
         }
 
         @Override
         public E next() {
         	if(!hasNext())
                 throw new NoSuchElementException();
-        	if(!end.equals(end()))
-        		throw new IllegalMonitorStateException();
-        	E e = current.checkedValue();
+        	checkModification();
+        	E e = current.val();
         	current.increment();
+        	hasNext = end!=null && !current.equals(end);
+        	hasPrevious = begin!=null && !current.equals(begin);
         	icursor++;
             return e;
         }
@@ -126,29 +137,28 @@ public abstract class AbstractList<E> extends AbstractSequentialContainer<E> imp
         public E previous() {
         	if(!hasPrevious())
                 throw new NoSuchElementException();
-        	if(!end.equals(end()))
-        		throw new IllegalMonitorStateException();
+        	checkModification();
         	current.decrement();
-        	E e = current.checkedValue();
+        	hasNext = end!=null && !current.equals(end);
+        	hasPrevious = begin!=null && !current.equals(begin);
+        	E e = current.val();
         	icursor--;
             return e;
         }
         
         @Override
         public void remove() {
-        	if(!end.equals(end()))
-        		throw new IllegalMonitorStateException();
+        	checkModification();
         	if(icursor==0)
         		throw new IndexOutOfBoundsException(-1);
-        	AbstractList.this.remove(icursor-1);
+        	list.remove(icursor-1);
         	initialize(icursor-1);
         }
         
         @SuppressWarnings("unchecked")
 		@Override
         public void set(E e) {
-        	if(!end.equals(end()))
-        		throw new IllegalMonitorStateException();
+        	checkModification();
         	if(icursor==0)
         		throw new IndexOutOfBoundsException(-1);
         	current.decrement();
@@ -168,22 +178,26 @@ public abstract class AbstractList<E> extends AbstractSequentialContainer<E> imp
         
         @Override
         public boolean hasPrevious() {
-        	return !current.equals(begin());
+        	return hasPrevious;
         }
         
         @Override
         public void add(E e) {
-        	if(!end.equals(end()))
-        		throw new IllegalMonitorStateException();
-        	AbstractList.this.add(icursor, e);
+        	checkModification();
+        	list.add(icursor, e);
         	initialize(icursor+1);
         }
+        
+		void checkModification() {
+//        	if(!end.equals(citer.end()))
+//    		throw new IllegalMonitorStateException();
+		}
 	}
 	
 	@Override
     @QtUninvokable
-	public final ListIterator<E> listIterator(int index) {
-		return new QtJambiListIterator(index);
+	public final java.util.ListIterator<E> listIterator(int index) {
+		return new ListIterator<>(this, index);
 	}
 	
 	@SuppressWarnings("unchecked")

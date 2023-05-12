@@ -289,6 +289,8 @@ public:
 #ifndef QTJAMBI_NO_WIDGETS
     static QGraphicsItem* convertInterface(QGraphicsObject* object);
 #endif
+
+    static QObject* convertJavaObject(jobject obj);
 private:
     QVariant current;
 };

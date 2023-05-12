@@ -40,9 +40,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
+import org.junit.BeforeClass;
 
 import io.qt.QThreadAffinityException;
-import io.qt.autotests.ApplicationInitializer;
 import io.qt.autotests.generated.General;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
@@ -51,8 +51,18 @@ import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QThread;
 import io.qt.core.QTimeLine;
 
-public class TestQThread extends ApplicationInitializer {
-
+public class TestQThread extends ApplicationInitializer{
+	
+	static {
+		System.setProperty("io.qt.enable-thread-affinity-check", "true");
+		System.setProperty("io.qt.enable-event-thread-affinity-check", "true");
+	}
+	
+	@BeforeClass
+	public static void testInitialize() throws Exception {
+		ApplicationInitializer.testInitialize();
+    }
+	
 	private QThread qthread1;
 	private QThread qthread2;
 	private QThread qthread3;

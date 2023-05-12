@@ -62,15 +62,23 @@ public final class QQmlListProperty<T extends QtObjectInterface> extends QtObjec
      * <p>See <a href="https://doc.qt.io/qt/qqmllistproperty.html#QQmlListProperty-1">QQmlListProperty::QQmlListProperty(QObject*, QList&lt;T *>*)</a></p>
      */
     public QQmlListProperty(QObject o, QList<T> list){
+        this(o, list, false);
+    }
+    
+    /**
+     * This constructor allows you to create a read-only property from a QList.
+     * <p>See <a href="https://doc.qt.io/qt/qqmllistproperty.html#QQmlListProperty-1">QQmlListProperty::QQmlListProperty(QObject*, QList&lt;T *>*)</a></p>
+     */
+    public QQmlListProperty(QObject o, QList<T> list, boolean readonly){
         super((QPrivateConstructor)null);
         long listNativeId = QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(list));
-        initialize_native_list(this, Objects.requireNonNull(o), list);
+        initialize_native_list(this, Objects.requireNonNull(o), list, readonly);
         elementType = getListElementType(listNativeId);
     }
     
     private static native QMetaType getListElementType(long listNativeId);
 
-    private static native void initialize_native_list(QQmlListProperty<?> instance, QObject o, QList<?> list);
+    private static native void initialize_native_list(QQmlListProperty<?> instance, QObject o, QList<?> list, boolean readonly);
     
     /**
      * Replace the element at position index in the list property with value.
@@ -87,6 +95,7 @@ public final class QQmlListProperty<T extends QtObjectInterface> extends QtObjec
     }
     
     /**
+     * This constructor creates a read-only QQmlListProperty with given access methods. The access functions should operate on the same data source (e.g. list).
      * <p>See <a href="https://doc.qt.io/qt/qqmllistproperty.html#QQmlListProperty-4">QQmlListProperty::QQmlListProperty(QObject *, void *, CountFunction, AtFunction)</a></p>
      */
     public <O extends QObject> QQmlListProperty(Class<T> elementType, 
@@ -97,6 +106,7 @@ public final class QQmlListProperty<T extends QtObjectInterface> extends QtObjec
     }
     
     /**
+     * This constructor creates a writable QQmlListProperty with given access methods. The access functions should operate on the same data source (e.g. list).
      * <p>See <a href="https://doc.qt.io/qt/qqmllistproperty.html#QQmlListProperty-2">QQmlListProperty::QQmlListProperty(QObject *, void *, AppendFunction, CountFunction, AtFunction, ClearFunction)</a></p>
      */
     public <O extends QObject> QQmlListProperty(Class<T> elementType, 
@@ -109,6 +119,7 @@ public final class QQmlListProperty<T extends QtObjectInterface> extends QtObjec
     }
     
     /**
+     * This constructor creates a writable QQmlListProperty with given access methods. The access functions should operate on the same data source (e.g. list).
      * <p>See <a href="https://doc.qt.io/qt/qqmllistproperty.html#QQmlListProperty-3">QQmlListProperty::QQmlListProperty(QObject *, void *, AppendFunction, CountFunction, AtFunction, ClearFunction, ReplaceFunction, RemoveLastFunction)</a></p>
      */
     public <O extends QObject> QQmlListProperty(Class<T> elementType, 

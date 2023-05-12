@@ -1,6 +1,5 @@
 /****************************************************************************
 **
-** Copyright (C) 1992-2009 Nokia. All rights reserved.
 ** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
@@ -22,49 +21,22 @@
 ** ensure the GNU General Public License version 3.0 requirements will be
 ** met: http://www.gnu.org/copyleft/gpl.html.
 ** $END_LICENSE$
+
 **
 ** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************/
-package io.qt.autotests;
+package io.qt;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+/**
+ * This exception is thrown whenever a native pointer points to an already deleted object, provided dangling pointer check is enabled by <code>-Dio.qt.enable-dangling-pointer-check=true</code>.
+ */
+public class QDanglingPointerException extends RuntimeException {
+    private static final long serialVersionUID = 1L;
 
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Test;
-
-import io.qt.QLibraryNotFoundError;
-import io.qt.QtUtilities;
-import io.qt.autotests.generated.General;
-
-public class TestUtilities extends UnitTestInitializer {
-
-	@org.junit.BeforeClass
-	public static void setUpClass() {
-		Assume.assumeTrue(io.qt.QtUtilities.initializePackage("io.qt.internal"));
-	}
-
-	private static boolean loadQtJambiLibrary(String lib) {
-        try {
-            QtUtilities.loadQtJambiLibrary(lib);
-            return true;
-        } catch (UnsatisfiedLinkError | QLibraryNotFoundError e) {
-            java.util.logging.Logger.getLogger("io.qt").log(java.util.logging.Level.SEVERE, "", e);
-            return false;
-        }
-    }
-
-	@org.junit.Test
-	public void testLoadLibrary() {
-		assertTrue("validLibrary", loadQtJambiLibrary("Core"));
-		assertFalse("falseLibrary", loadQtJambiLibrary("Kore"));
-	}
-    
-    @Test
-    public void testNullClass() {
-    	Assert.assertEquals(null, General.internalAccess.getClass(null));
+    public QDanglingPointerException(String message)
+    {
+        super(message);
     }
 }

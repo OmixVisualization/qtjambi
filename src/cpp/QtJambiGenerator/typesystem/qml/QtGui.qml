@@ -7906,7 +7906,7 @@ TypeSystem{
                 index: 0
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = %in ? qtjambi_cast<jobject>(%env, *%in) : nullptr;"}
+                    Text{content: "%out = %in ? qtjambi_cast<jobject>(%env, *static_cast<const QCursor*>(%in)) : nullptr;"}
                 }
             }
         }
@@ -10769,13 +10769,6 @@ TypeSystem{
             signature: "fromImageInPlace(QImage &, Qt::ImageConversionFlags)"
             remove: RemoveFlag.All
         }
-        InjectCode{
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiGui.java"
-                quoteAfterLine: "class QPixmap___"
-                quoteBeforeLine: "}// class"
-            }
-        }
         ModifyFunction{
             signature: "QPixmap(const char*const*)"
             ModifyArgument{
@@ -11097,7 +11090,6 @@ TypeSystem{
                           " QtJambiNativeID __this_nativeId,\n"+
                           " jclass name0)\n"+
                           "{\n"+
-                          "    QTJAMBI_DEBUG_METHOD_PRINT(\"native\", \"QScreen::resolveInterface(const char * name, int revision) const\")\n"+
                           "    Q_UNUSED(__this)\n"+
                           "    jobject __java_return_value{0};\n"+
                           "    QTJAMBI_TRY{\n"+
@@ -11114,7 +11106,8 @@ TypeSystem{
                           "        };\n"+
                           "\n"+
                           "        const Screen *__qt_this = QtJambiAPI::objectFromNativeId<Screen>(__this_nativeId);\n"+
-                          "        QtJambiAPI::checkPointer(__jni_env, __qt_this);\n"+
+                          "        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);\n"+
+                          "        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL(\"QScreen::resolveInterface(const char * name, int revision) const\", __qt_this)\n"+
                           "        __java_return_value = __qt_this->nativeInterface(__jni_env, __this_nativeId, name0);\n"+
                           "    }QTJAMBI_CATCH(const JavaException& exn){\n"+
                           "        exn.raiseInJava(__jni_env);\n"+
@@ -18663,6 +18656,50 @@ TypeSystem{
             }
         }
         since: [6, 2]
+    }
+
+    ObjectType{
+        name: "QPlatformIntegration"
+        packageName: "io.qt.gui.qpa"
+        generate: "no-shell"
+        ModifyFunction{
+            signature: "QPlatformIntegration()"
+            remove: RemoveFlag.All
+        }
+        EnumType{
+            name: "Capability"
+        }
+        EnumType{
+            name: "StyleHint"
+        }
+
+        Rejection{functionName: "createPlatformPixmap"}
+        Rejection{functionName: "createPlatformWindow"}
+        Rejection{functionName: "createForeignWindow"}
+        Rejection{functionName: "createPlatformBackingStore"}
+        Rejection{functionName: "createPlatformOpenGLContext"}
+        Rejection{functionName: "createPlatformSharedGraphicsCache"}
+        Rejection{functionName: "createImagePaintEngine"}
+        Rejection{functionName: "createEventDispatcher"}
+        Rejection{functionName: "initialize"}
+        Rejection{functionName: "destroy"}
+        Rejection{functionName: "fontDatabase"}
+        Rejection{functionName: "clipboard"}
+        Rejection{functionName: "drag"}
+        Rejection{functionName: "inputContext"}
+        Rejection{functionName: "accessibility"}
+        Rejection{functionName: "nativeInterface"}
+        Rejection{functionName: "services"}
+        Rejection{functionName: "createPlatformTheme"}
+        Rejection{functionName: "createPlatformOffscreenSurface"}
+        Rejection{functionName: "createPlatformSessionManager"}
+        Rejection{functionName: "sync"}
+        Rejection{functionName: "createPlatformVulkanInstance"}
+        InjectCode{
+            target: CodeClass.Java
+            Text{content: "@QtUninvokable\n"+
+                          "public native static QPlatformIntegration instance();"}
+        }
     }
     
     Rejection{

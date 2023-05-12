@@ -70,11 +70,11 @@ void thread_detacher_cleaner(QPointer<QThread>& thread, JObjectWrapper&& jthread
                m_wlink(std::move(wlink)),
                m_finalActions(std::move(finalActions))
          {
-             QTJAMBI_DEBUG_METHOD_PRINT("native", "ThreadDetacher::ThreadDetacher()")
+             QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("ThreadDetacher::ThreadDetacher()", this)
              m_thread.swap(thread);
          }
          ~ThreadDetacher() override {
-             QTJAMBI_DEBUG_METHOD_PRINT("native", "ThreadDetacher::~ThreadDetacher()")
+             QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("ThreadDetacher::~ThreadDetacher()", this)
              JavaVM *vm = nullptr;
              if(std::atomic<JavaVM *>* atm = gJavaVM)
                  vm = atm->load();

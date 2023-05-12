@@ -678,6 +678,10 @@ TypeSystem{
     }
 
     Rejection{
+        className: "QIntegerForSize"
+    }
+
+    Rejection{
         className: ""
         fieldName: "qConstOverload"
     }
@@ -1181,6 +1185,11 @@ TypeSystem{
     Rejection{
         className: "QVector::AlignmentDummy"
     }
+
+    Rejection{
+        enumName: "QAtomicOpsSupport"
+        until: [5, 15]
+    }
     
     Rejection{
         className: "QVector"
@@ -1288,37 +1297,6 @@ TypeSystem{
         className: "*"
         functionName: "data_ptr"
     }
-    
-    Rejection{
-        className: "QBasicMutex"
-        functionName: "try_lock"
-    }
-    
-    Rejection{
-        className: "QBasicMutex"
-        functionName: "fastTryUnlock"
-    }
-    
-    Rejection{
-        className: "QBasicMutex"
-        functionName: "fastTryLock"
-    }
-    
-    Rejection{
-        className: "QBasicMutex"
-        functionName: "dummyLocked"
-    }
-    
-    Rejection{
-        className: "QMutex"
-        functionName: "try_lock_for"
-    }
-    
-    Rejection{
-        className: "QMutex"
-        functionName: "try_lock_until"
-    }
-    
     
     Rejection{
         className: "*"
@@ -15237,7 +15215,7 @@ if(destinationChild<0)
         }
 
         Rejection{
-            className: "QString::Null"
+            className: "Null"
             until: [5, 15]
         }
 
@@ -17743,8 +17721,18 @@ if(destinationChild<0)
         Rejection{functionName: "view<T>"}
         Rejection{functionName: "canView"}
         Rejection{functionName: "canView<T>"}
+        Rejection{className: "Handler"}
         Rejection{className: "Private"}
         Rejection{className: "PrivateShared"}
+        Rejection{className: "f_canConvert"}
+        Rejection{className: "f_clear"}
+        Rejection{className: "f_compare"}
+        Rejection{className: "f_convert"}
+        Rejection{className: "f_construct"}
+        Rejection{className: "f_debugStream"}
+        Rejection{className: "f_load"}
+        Rejection{className: "f_null"}
+        Rejection{className: "f_save"}
 
         ModifyFunction{
             signature: "QVariant(QMap<QString,QVariant>)"
@@ -18477,6 +18465,24 @@ if(destinationChild<0)
     
     ObjectType{
         name: "QBasicMutex"
+        noMetaType: true
+        Rejection{
+            functionName: "try_lock"
+        }
+        Rejection{
+            functionName: "fastTryUnlock"
+        }
+        Rejection{
+            functionName: "fastTryLock"
+        }
+        Rejection{
+            functionName: "dummyLocked"
+        }
+        ModifyFunction{
+            signature: "QBasicMutex(QBasicMutex)"
+            remove: RemoveFlag.All
+            until: 5
+        }
         ModifyFunction{
             signature: "lock()"
             access: Modification.NonFinal
@@ -18498,10 +18504,18 @@ if(destinationChild<0)
     
     ObjectType{
         name: "QRecursiveMutex"
+        noMetaType: true
     }
     
     ObjectType{
         name: "QMutex"
+        noMetaType: true
+        Rejection{
+            functionName: "try_lock_for"
+        }
+        Rejection{
+            functionName: "try_lock_until"
+        }
         ModifyFunction{
             signature: "isRecursive()const"
             remove: RemoveFlag.All
@@ -19192,6 +19206,14 @@ if(destinationChild<0)
     
     FunctionalType{
         name: "QtMessageHandler"
+        ModifyArgument{
+            index: 2
+            invalidateAfterUse: true
+            /*ConversionRule{
+                codeClass: CodeClass.Shell
+                Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %scope, &%in);"}
+            }*/
+        }
     }
     
     Rejection{
@@ -21330,4 +21352,6 @@ if(destinationChild<0)
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: namespace 'io.qt.core.Q*Permission' for enum '*' is not declared"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QDebug::operator<<<Args...>', unmatched parameter type 'const std::basic_string<*>&'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'QPartialOrdering(QPartialOrdering)' for function modification in 'QPartialOrdering' not found. Possible candidates: "}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method QShortcut::QShortcut<Func1>(QKeySequence,QWidget*,Func1,Qt::ShortcutContext)"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'QBasicMutex(QBasicMutex)' for function modification in 'QBasicMutex' not found. Possible candidates: QBasicMutex() in QBasicMutex"}
 }

@@ -1413,6 +1413,17 @@ public:
     size_t sizeOf() override;
     void* constructContainer(void* result, const void* container = nullptr) override;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    static void defaultCtr(const QtPrivate::QMetaTypeInterface *iface, void *ptr);
+    static void copyCtr(const QtPrivate::QMetaTypeInterface *iface, void *ptr, const void *other);
+    static void moveCtr(const QtPrivate::QMetaTypeInterface *iface, void *ptr, void *other);
+    static void dtor(const QtPrivate::QMetaTypeInterface *iface, void *ptr);
+    static bool equalsFn(const QtPrivate::QMetaTypeInterface *iface, const void *ptr1, const void *ptr2);
+    static void debugStreamFn(const QtPrivate::QMetaTypeInterface *iface, QDebug &s, const void *ptr);
+    static void dataStreamOutFn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &s, const void *ptr);
+    static void dataStreamInFn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &s, void *ptr);
+    void debugStream(QDebug &s, const void *ptr);
+    virtual void dataStreamOut(QDataStream &s, const void *ptr);
+    void dataStreamIn(QDataStream &s, void *ptr);
     void* constructContainer(void* result, void* container) override;
 #endif
 private:
@@ -1437,11 +1448,13 @@ private:
     Node* lowerBound(Node* node, const void* akey);
     Node* upperBound(Node* node, const void* akey);
     void nodeRange(QMapDataBase* base, const void* akey, Node **firstNode, Node **lastNode);
-    jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
-    jobject createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
     jobject nodeKey(JNIEnv * env, Node* node);
     jobject nodeValue(JNIEnv * env, Node* node);
+#else
+    static QtMetaContainerPrivate::QMetaAssociationInterface* createMetaAssociationInterface(int newMetaType);
 #endif
+    jobject createIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
+    jobject createConstIterator(JNIEnv * env, QtJambiNativeID ownerId, void* iteratorPtr);
     friend class AutoMultiMapAccess;
 };
 

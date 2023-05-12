@@ -43,6 +43,9 @@ public abstract class AbstractHash<K, V> extends AbstractAssociativeContainer<K,
 	}
 	
 	@Override
+    public abstract AbstractHash<K,V> clone();
+	
+	@Override
     @QtUninvokable
 	public final Set<K> keySet() {
 		return new HashSet<>(keys());

@@ -44,6 +44,17 @@ bool isLessThan(const QMetaType& keyMetaType, const void * ptr, const void* ptr2
 bool isEquals(const QMetaType& keyMetaType, const void * ptr, const void* ptr2);
 #endif
 
+#ifdef Q_OS_ANDROID
+#define unique_id(id) qHash(QLatin1String((id).name()))
+#define typeid_equals(t1, t2) unique_id(t1)==unique_id(t2)
+#define typeid_not_equals(t1, t2) unique_id(t1)!=unique_id(t2)
+#else
+#define unique_id(id) (id).hash_code()
+#define typeid_equals(t1, t2) t1==t2
+#define typeid_not_equals(t1, t2) t1!=t2
+#endif
+
+
 QString getFunctionLibraryPath(QFunctionPointer function);
 
 bool isValidArray(JNIEnv *env, jobject object, jclass contentType);
@@ -55,7 +66,12 @@ jobject resolveIntEnum(JNIEnv *env, jint hashCode, jclass enumClass, jint value,
 
 bool simpleEventNotify(void **data);
 bool threadAffineEventNotify(void **data);
-void disableThreadAffinity();
+void enableThreadAffinity(bool enabled);
+
+bool enabledDanglingPointerCheck(JNIEnv * env = nullptr);
+
+const std::type_info* tryGetTypeInfo(JNIEnv *env, TypeInfoSupplier typeInfoSupplier, const void* ptr);
+const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, const void* ptr);
 
 typedef QObject*(*SmartPointerQObjectGetter)(const void *);
 typedef std::function<void*(const void *)> SmartPointerGetterFunction;

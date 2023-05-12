@@ -31,9 +31,12 @@ package io.qt.autotests;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.junit.AfterClass;
 import org.junit.Assume;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 
 import io.qt.QThreadAffinityException;
 import io.qt.core.QEventLoop;
@@ -46,7 +49,12 @@ import io.qt.gui.QPaintingOutsidePaintEventException;
 import io.qt.gui.QPixmap;
 import io.qt.widgets.QWidget;
 
-public class TestPaintOnWidget extends ApplicationInitializer {
+public class TestPaintOnWidget extends ApplicationInitializer{
+	
+	static {
+		System.setProperty("io.qt.enable-thread-affinity-check", "true");
+		System.setProperty("io.qt.enable-event-thread-affinity-check", "true");
+	}
 	
     @BeforeClass
     public static void testInitialize() throws Exception {

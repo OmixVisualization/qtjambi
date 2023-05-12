@@ -31,29 +31,48 @@ package io.qt.internal;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import io.qt.QtObject;
 import io.qt.QtUninvokable;
 
 public abstract class AbstractSequentialConstIterator<E> extends QtObject{
 	
-	private final Object owner;
-	private final Function<Object,AbstractSequentialConstIterator<?>> beginSupplier;
-	private final Function<Object,AbstractSequentialConstIterator<?>> endSupplier;
+	private final static Function<AbstractSequentialConstIterator<?>, java.util.Iterator<?>> iteratorFactory;
+	private final static Function<AbstractSequentialConstIterator<?>, java.util.Iterator<?>> diteratorFactory;
+	
+	static {
+		if(Boolean.getBoolean("io.qt.enable-concurrent-container-modification-check")) {
+			@SuppressWarnings("unchecked")
+			Function<AbstractSequentialConstIterator<?>, java.util.Iterator<?>> _iteratorFactory = CheckingIncrementalIterator::new;
+			@SuppressWarnings("unchecked")
+			Function<AbstractSequentialConstIterator<?>, java.util.Iterator<?>> _diteratorFactory = CheckingDecrementalIterator::new;
+			iteratorFactory = _iteratorFactory;
+			diteratorFactory = _diteratorFactory;
+		}else {
+			@SuppressWarnings("unchecked")
+			Function<AbstractSequentialConstIterator<?>, java.util.Iterator<?>> _iteratorFactory = IncrementalIterator::new;
+			@SuppressWarnings("unchecked")
+			Function<AbstractSequentialConstIterator<?>, java.util.Iterator<?>> _diteratorFactory = DecrementalIterator::new;
+			iteratorFactory = _iteratorFactory;
+			diteratorFactory = _diteratorFactory;
+		}
+	}
+	
+	private final QtObject owner;
+	private final Function<QtObject,AbstractSequentialConstIterator<E>> beginSupplier;
+	private final Function<QtObject,AbstractSequentialConstIterator<E>> endSupplier;
 
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	protected AbstractSequentialConstIterator(Object owner) {
+	protected AbstractSequentialConstIterator(QtObject owner) {
 		super((QPrivateConstructor)null);
-		boolean isConst = !(this instanceof AbstractSequentialIterator
-							|| this instanceof AbstractAssociativeIterator);
 		this.owner = owner;
 		if(owner instanceof AbstractSequentialContainer) {
-			if(isConst) {
+			if(isConstant()) {
 				endSupplier = (Function)(Function<AbstractSequentialContainer,AbstractSequentialConstIterator<?>>)AbstractSequentialContainer::constEnd;
 				beginSupplier = (Function)(Function<AbstractSequentialContainer,AbstractSequentialConstIterator<?>>)AbstractSequentialContainer::constBegin;
 			}else if(owner instanceof AbstractList) {
@@ -64,7 +83,7 @@ public abstract class AbstractSequentialConstIterator<E> extends QtObject{
 				beginSupplier = null;
 			}
 		}else if(owner instanceof AbstractAssociativeContainer) {
-			if(isConst) {
+			if(isConstant()) {
 				endSupplier = (Function)(Function<AbstractAssociativeContainer,AbstractSequentialConstIterator<?>>)AbstractAssociativeContainer::constEnd;
 				beginSupplier = (Function)(Function<AbstractAssociativeContainer,AbstractSequentialConstIterator<?>>)AbstractAssociativeContainer::constBegin;
 			}else {
@@ -72,7 +91,7 @@ public abstract class AbstractSequentialConstIterator<E> extends QtObject{
 				beginSupplier = (Function)(Function<AbstractAssociativeContainer,AbstractSequentialConstIterator<?>>)AbstractAssociativeContainer::begin;
 			}
 		}else if(owner instanceof AbstractMultiAssociativeContainer) {
-			if(isConst) {
+			if(isConstant()) {
 				endSupplier = (Function)(Function<AbstractMultiAssociativeContainer,AbstractSequentialConstIterator<?>>)AbstractMultiAssociativeContainer::constEnd;
 				beginSupplier = (Function)(Function<AbstractMultiAssociativeContainer,AbstractSequentialConstIterator<?>>)AbstractMultiAssociativeContainer::constBegin;
 			}else {
@@ -80,18 +99,23 @@ public abstract class AbstractSequentialConstIterator<E> extends QtObject{
 				beginSupplier = (Function)(Function<AbstractMultiAssociativeContainer,AbstractSequentialConstIterator<?>>)AbstractMultiAssociativeContainer::begin;
 			}
 		}else {
-			endSupplier = findEndSupplier(owner, isConst);
-			beginSupplier = findBeginSupplier(owner, isConst);
+			BeginEndFunctions functions = findBeginEndSuppliers(owner);
+			beginSupplier = (Function)(isConstant() ? functions.constBegin : functions.begin);
+			endSupplier = (Function)(isConstant() ? functions.constEnd : functions.end);
 		}
 	}
 	
+	protected boolean isConstant() {
+		return true;
+	}
+	
     @QtUninvokable
-	protected final AbstractSequentialConstIterator<?> end(){
+	protected final AbstractSequentialConstIterator<E> end(){
 		return endSupplier==null ? null : endSupplier.apply(owner);
 	}
     
     @QtUninvokable
-	protected final AbstractSequentialConstIterator<?> begin(){
+	protected final AbstractSequentialConstIterator<E> begin(){
 		return beginSupplier==null ? null : beginSupplier.apply(owner);
 	}
 	
@@ -99,134 +123,119 @@ public abstract class AbstractSequentialConstIterator<E> extends QtObject{
 	protected final boolean compareOwners(AbstractSequentialConstIterator<?> iter) {
 		return owner==iter.owner;
 	}
-
-    @QtUninvokable
-	protected final java.util.Iterator<E> toJavaIterator(){
-    	return new java.util.Iterator<E>() {
-    		private final AbstractSequentialConstIterator<?> end = end();
-    		
-            @Override
-            public boolean hasNext() {
-                return end!=null && !AbstractSequentialConstIterator.this.equals(end);
-            }
-
-            @Override
-            public E next() {
-                if(!hasNext())
-                    throw new java.util.NoSuchElementException();
-            	if(!end.equals(end()))
-            		throw new IllegalMonitorStateException();
-                E e = checkedValue();
-                increment();
-                return e;
-            }
-        };
-    }
-
-    @QtUninvokable
-    protected final java.util.Iterator<E> toJavaDescendingIterator(Supplier<? extends AbstractSequentialConstIterator<E>> beginSupplier){
-    	return new java.util.Iterator<E>() {
-    		private final AbstractSequentialConstIterator<?> begin = beginSupplier.get();
-            @Override
-            public boolean hasNext() {
-                return !AbstractSequentialConstIterator.this.equals(begin);
-            }
-
-            @Override
-            public E next() {
-                if(!hasNext())
-                    throw new java.util.NoSuchElementException();
-            	if(!begin.equals(beginSupplier.get()))
-            		throw new IllegalMonitorStateException();
-                decrement();
-                E e = checkedValue();
-                return e;
-            }
-        };
-    }
     
     @QtUninvokable
-    static <T> java.util.ListIterator<T> listIterator(AbstractSequentialIterator<T> iter, int index){
-		@SuppressWarnings("unchecked")
-    	AbstractSequentialConstIterator<T> citer = (AbstractSequentialConstIterator<T>)iter;
-    	return new java.util.ListIterator<T>() {
-			private AbstractSequentialConstIterator<T> current = citer;
-        	private AbstractSequentialConstIterator<?> end = citer.end();
-        	private int icursor;
-        	
-        	{
-    			for (int i = 0; i < index && end!=null && !current.equals(end); i++) {
-    				current.increment();
-    				icursor++;
-    			}
-    		}
-            
-            @Override
-            public boolean hasNext() {
-            	return end!=null && !current.equals(end);
-            }
+    protected abstract boolean equals(AbstractSequentialConstIterator<?> o);
+    
+    @Override
+    @QtUninvokable
+    public boolean equals(Object other) {
+        if (other instanceof AbstractSequentialConstIterator) {
+        	AbstractSequentialConstIterator<?> iter = (AbstractSequentialConstIterator<?>) other;
+        	if(compareOwners(iter))
+        		return equals(iter);
+        }
+    	return false;
+    }
+    
+    private static class IncrementalIterator<E> implements java.util.Iterator<E>{
+    	final AbstractSequentialConstIterator<E> nativeIterator;
+		final AbstractSequentialConstIterator<E> end;
+    	private boolean hasNext;
 
-            @Override
-            public T next() {
-            	if(!hasNext())
-                    throw new NoSuchElementException();
-            	if(!end.equals(citer.end()))
-            		throw new IllegalMonitorStateException();
-            	T e = current.checkedValue();
-            	current.increment();
-            	icursor++;
-                return e;
-            }
-            
-            @Override
-            public T previous() {
-            	if(!hasPrevious())
-                    throw new NoSuchElementException();
-            	if(!end.equals(citer.end()))
-            		throw new IllegalMonitorStateException();
-            	current.decrement();
-            	T e = current.checkedValue();
-            	icursor--;
-                return e;
-            }
-            
-            @Override
-            public void remove() {
-            	throw new UnsupportedOperationException();
-            }
-            
-    		@SuppressWarnings("unchecked")
-			@Override
-            public void set(T e) {
-            	if(!end.equals(citer.end()))
-            		throw new IllegalMonitorStateException();
-            	if(icursor==0)
-            		throw new IndexOutOfBoundsException(-1);
-            	current.decrement();
-            	((AbstractSequentialIterator<T>)current).setValue(e);
-            	current.increment();
-            }
-            
-            @Override
-            public int previousIndex() {
-            	return icursor-1;
-            }
-            
-            @Override
-            public int nextIndex() {
-            	return icursor;
-            }
-            
-            @Override
-            public boolean hasPrevious() {
-            	return !current.equals(citer.begin());
-            }
-            
-            @Override
-            public void add(T e) {
-            	throw new UnsupportedOperationException();
-            }
-        };
+    	IncrementalIterator(AbstractSequentialConstIterator<E> nativeIterator) {
+			super();
+			this.nativeIterator = nativeIterator;
+			end = nativeIterator.end();
+			hasNext = end!=null && !nativeIterator.equals(end);
+		}
+
+		@Override
+		public boolean hasNext() {
+			return hasNext;
+		}
+
+		@Override
+		public E next() {
+			checkNext();
+            E e = nativeIterator.val();
+            nativeIterator.increment();
+            hasNext = end!=null && !nativeIterator.equals(end);
+            return e;
+		}
+    	
+		void checkNext() {
+            if(!hasNext)
+                throw new NoSuchElementException();
+		}
+    }
+    
+    private static class CheckingIncrementalIterator<E> extends IncrementalIterator<E>{
+    	CheckingIncrementalIterator(AbstractSequentialConstIterator<E> nativeIterator) {
+			super(nativeIterator);
+		}
+
+		void checkNext() {
+    		super.checkNext();
+        	if(end!=null && !end.equals(nativeIterator.end()))
+        		throw new ConcurrentModificationException();
+		}
+    }
+    
+    private static class DecrementalIterator<E> implements java.util.Iterator<E>{
+    	final AbstractSequentialConstIterator<E> nativeIterator;
+    	final AbstractSequentialConstIterator<E> begin;
+    	private boolean hasNext;
+
+		public DecrementalIterator(AbstractSequentialConstIterator<E> nativeIterator) {
+			super();
+			this.nativeIterator = nativeIterator;
+			begin = nativeIterator.begin();
+			hasNext = begin!=null && !nativeIterator.equals(begin);
+		}
+
+		@Override
+		public boolean hasNext() {
+			return hasNext;
+		}
+
+		@Override
+		public E next() {
+			checkNext();
+			nativeIterator.decrement();
+            hasNext = begin!=null && !nativeIterator.equals(begin);
+			E e = nativeIterator.val();
+            return e;
+		}
+    	
+		void checkNext() {
+            if(!hasNext)
+                throw new NoSuchElementException();
+		}
+    }
+    
+    private static class CheckingDecrementalIterator<E> extends DecrementalIterator<E>{
+    	public CheckingDecrementalIterator(AbstractSequentialConstIterator<E> nativeIterator) {
+			super(nativeIterator);
+		}
+
+		void checkNext() {
+    		super.checkNext();
+        	if(begin!=null && !begin.equals(nativeIterator.begin()))
+        		throw new ConcurrentModificationException();
+		}
+    }
+    
+    @SuppressWarnings("unchecked")
+	@QtUninvokable
+	protected final java.util.Iterator<E> toJavaIterator(){
+    	return (java.util.Iterator<E>)iteratorFactory.apply(this);
+    }
+    
+	@SuppressWarnings("unchecked")
+    @QtUninvokable
+    protected final java.util.Iterator<E> toJavaDescendingIterator(){
+    	return (java.util.Iterator<E>)diteratorFactory.apply(this);
     }
     
     @QtUninvokable
@@ -237,13 +246,16 @@ public abstract class AbstractSequentialConstIterator<E> extends QtObject{
     
     @QtUninvokable
     protected abstract E checkedValue();
+    
+    @QtUninvokable
+    protected abstract E val();
 	
 	private static class BeginEndFunctions{
 		BeginEndFunctions(
-				Function<Object, AbstractSequentialConstIterator<?>> constBegin,
-				Function<Object, AbstractSequentialConstIterator<?>> constEnd,
-				Function<Object, AbstractSequentialConstIterator<?>> begin,
-				Function<Object, AbstractSequentialConstIterator<?>> end) {
+				Function<QtObject, AbstractSequentialConstIterator<?>> constBegin,
+				Function<QtObject, AbstractSequentialConstIterator<?>> constEnd,
+				Function<QtObject, AbstractSequentialConstIterator<?>> begin,
+				Function<QtObject, AbstractSequentialConstIterator<?>> end) {
 			super();
 			this.begin = begin;
 			this.end = end;
@@ -251,14 +263,15 @@ public abstract class AbstractSequentialConstIterator<E> extends QtObject{
 			this.constEnd = constEnd;
 		}
 		
-		final Function<Object,AbstractSequentialConstIterator<?>> begin;
-		final Function<Object,AbstractSequentialConstIterator<?>> end;
-		final Function<Object,AbstractSequentialConstIterator<?>> constBegin;
-		final Function<Object,AbstractSequentialConstIterator<?>> constEnd;
+		final Function<QtObject,AbstractSequentialConstIterator<?>> begin;
+		final Function<QtObject,AbstractSequentialConstIterator<?>> end;
+		final Function<QtObject,AbstractSequentialConstIterator<?>> constBegin;
+		final Function<QtObject,AbstractSequentialConstIterator<?>> constEnd;
 	}
+	
 	private static final Map<Class<?>, BeginEndFunctions> endMethodHandles = Collections.synchronizedMap(new HashMap<>());
 	
-	private static BeginEndFunctions findBeginEndSuppliers(Object beginOwner) {
+	private static BeginEndFunctions findBeginEndSuppliers(QtObject beginOwner) {
 		return endMethodHandles.computeIfAbsent(ClassAnalyzerUtility.getClass(beginOwner), cls -> {
 			Method beginMethod = null;
 			Method constBeginMethod = null;
@@ -309,15 +322,5 @@ public abstract class AbstractSequentialConstIterator<E> extends QtObject{
 											 ReflectionUtility.functionFromMethod(endMethod));
 			else return new BeginEndFunctions(null,null,null,null);
 		});
-	}
-	
-	private static Function<Object,AbstractSequentialConstIterator<?>> findBeginSupplier(Object beginOwner, boolean isConst){
-		BeginEndFunctions functions = findBeginEndSuppliers(beginOwner);
-		return isConst ? functions.constBegin : functions.begin;
-	}
-	
-	private static Function<Object,AbstractSequentialConstIterator<?>> findEndSupplier(Object beginOwner, boolean isConst){
-		BeginEndFunctions functions = findBeginEndSuppliers(beginOwner);
-		return isConst ? functions.constEnd : functions.end;
 	}
 }

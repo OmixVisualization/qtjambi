@@ -89,10 +89,10 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QP
 (JNIEnv *__jni_env,
  jclass, jobject jinstance, QtJambiNativeID metaData1)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "qRegisterStaticPluginFunction(QStaticPlugin)")
+    QTJAMBI_NATIVE_METHOD_CALL("qRegisterStaticPluginFunction(QStaticPlugin)")
     try{
         QObject* instance = qtjambi_cast<QObject*>(__jni_env, jinstance);
-        QtJambiAPI::checkPointer(__jni_env, instance, typeid(QObject));
+        QtJambiAPI::checkNullPointer(__jni_env, instance);
         QSharedPointer<QPointer<QObject>> pointer(new QPointer<QObject>(instance));
         QtJambiAPI::setCppOwnership(__jni_env, jinstance);
         jclass cls = __jni_env->GetObjectClass(jinstance);
@@ -118,7 +118,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QP
 (JNIEnv *__jni_env,
  jclass, jclass cls, QtJambiNativeID metaData1)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "qRegisterStaticPluginFunction(QStaticPlugin)")
+    QTJAMBI_NATIVE_METHOD_CALL("qRegisterStaticPluginFunction(QStaticPlugin)")
     try{
         QString className = QtJambiAPI::getClassName(__jni_env, cls);
         QList<const char*> iids = CoreAPI::getInterfaceIIDs(__jni_env, cls);
@@ -157,7 +157,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QP
 (JNIEnv *__jni_env,
  jclass, jobject classSupplier, jstring _className, jstring jiid, QtJambiNativeID metaData1, QtJambiNativeID pluginInfo1)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "qRegisterStaticPluginFunction(QStaticPlugin)")
+    QTJAMBI_NATIVE_METHOD_CALL("qRegisterStaticPluginFunction(QStaticPlugin)")
     try{
         QString className = qtjambi_cast<QString>(__jni_env, _className);
         QByteArray iid = qtjambi_cast<QByteArray>(__jni_env, jiid);
@@ -213,7 +213,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QP
 (JNIEnv *__jni_env,
  jclass, jclass cls)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "qRegisterPluginInterface(Class)")
+    QTJAMBI_NATIVE_METHOD_CALL("qRegisterPluginInterface(Class)")
     try{
         (void)RegistryAPI::registerInterfaceID(__jni_env, cls);
     }catch(const JavaException& exn){
@@ -225,7 +225,7 @@ extern "C" Q_DECL_EXPORT jclass JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_
 (JNIEnv *__jni_env,
  jclass, jstring iid)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "registeredPluginInterface(String)")
+    QTJAMBI_NATIVE_METHOD_CALL("registeredPluginInterface(String)")
     try{
         QtJambiScope scope;
         return CoreAPI::getInterfaceByIID(__jni_env, qtjambi_cast<const char*>(__jni_env, scope, iid));

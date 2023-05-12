@@ -31,7 +31,9 @@ package io.qt.autotests;
 
 import static io.qt.core.QObject.tr;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QThreadAffinityException;
@@ -47,7 +49,17 @@ import io.qt.widgets.QSlider;
 import io.qt.widgets.QSpinBox;
 import io.qt.widgets.QWidget;
 
-public class TestWidgetsWithShutdown {
+public class TestWidgetsWithShutdown extends ApplicationInitializer{
+	static {
+		System.setProperty("io.qt.enable-thread-affinity-check", "true");
+		System.setProperty("io.qt.enable-event-thread-affinity-check", "true");
+	}
+	
+	@BeforeClass
+	public static void testInitialize() throws Exception {}
+	
+	@AfterClass
+    public static void testDispose() throws Exception {}
 	
     @Test
     public void test() {

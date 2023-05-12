@@ -155,8 +155,10 @@ public class Uic {
 	    	className = qualifiedClassName;
 	    }
 	    
+	    boolean isKotlin = "kotlin".equals(language);
+	    
 	    String fileSuffix;
-	    if("kotlin".equals(language))
+	    if(isKotlin)
 	    	fileSuffix = ".kt";
 	    else
 	    	fileSuffix = ".java";
@@ -193,13 +195,13 @@ public class Uic {
 	    info.acceptUI(ui);
 	    cWidgetsInfo.acceptUI(ui);
 	    
-	    if("kotlin".equals(language))
+	    if(isKotlin)
 	    	new io.qt.uic.kotlin.WriteImports(this).acceptUI(ui);
 	    else
 	    	new io.qt.uic.java.WriteImports(this).acceptUI(ui);
 	    
         new Validator(this).acceptUI(ui);
-        if("kotlin".equals(language))
+        if(isKotlin)
         	new io.qt.uic.kotlin.WriteDeclaration(this).acceptUI(ui);
         else
         	new io.qt.uic.java.WriteDeclaration(this).acceptUI(ui);
@@ -209,6 +211,7 @@ public class Uic {
         m_output = oldOutput;
         
         if(outputDir!=null 
+        		&& !drv.option().noShellClass
         		&& ((drv.option().prefix!=null && !drv.option().prefix.isEmpty()) 
         				|| (drv.option().postfix!=null && !drv.option().postfix.isEmpty()))) {
         	iodevice = outputFile = new QFile(outputDir + "/" + drv.option().targetPackage.replace('.', '/') + "/" + className + fileSuffix);
@@ -218,7 +221,7 @@ public class Uic {
 	        	}else {
 	        		return false;
 	        	}
-	        	if("kotlin".equals(language))
+	        	if(isKotlin)
 	        		new io.qt.uic.kotlin.WriteClass(this, className).acceptUI(ui);
 	        	else
 	        		new io.qt.uic.java.WriteClass(this, className).acceptUI(ui);

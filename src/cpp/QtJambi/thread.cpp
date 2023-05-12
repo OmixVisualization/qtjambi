@@ -154,7 +154,7 @@ void thread_cleaner(QPointer<QThread>& thread, JObjectWrapper&& jthreadObjectWra
               finalActions(std::move(_finalActions)),
               m_thread(),
               m_wlink(std::move(wlink)) {
-            QTJAMBI_DEBUG_METHOD_PRINT("native", "ObjectReleaser::ObjectReleaser()")
+            QTJAMBI_INTERNAL_METHOD_CALL("ObjectReleaser::ObjectReleaser()")
             m_thread.swap(_thread);
         }
         void purge(JNIEnv* env){
@@ -178,7 +178,7 @@ void thread_cleaner(QPointer<QThread>& thread, JObjectWrapper&& jthreadObjectWra
             jthreadObjectWrapper.clear(env);
         }
         ~ObjectReleaser() override {
-            QTJAMBI_DEBUG_METHOD_PRINT("native", "ObjectReleaser::~ObjectReleaser()")
+            QTJAMBI_INTERNAL_METHOD_CALL("ObjectReleaser::~ObjectReleaser()")
             if(m_thread.data()==QThread::currentThread()){
                 if(JniEnvironment env{200})
                     purge(env);
@@ -246,11 +246,11 @@ namespace ThreadPrivate{
             }
             if(threadData){
                 if(threadData->getUncaughtExceptionHandler()){
-                    Java::Runtime::Thread::setUncaughtExceptionHandler(env, javaQThread, threadData->getUncaughtExceptionHandler());
+                    Java::Runtime::Thread::setUncaughtExceptionHandler(env, java_thread, threadData->getUncaughtExceptionHandler());
                     threadData->clearUncaughtExceptionHandler(env);
                 }
                 if(threadData->getContextClassLoader()){
-                    Java::Runtime::Thread::setContextClassLoader(env, javaQThread, threadData->getContextClassLoader());
+                    Java::Runtime::Thread::setContextClassLoader(env, java_thread, threadData->getContextClassLoader());
                     threadData->clearContextClassLoader(env);
                 }
                 threadData->clearThreadGroup(env);
@@ -290,7 +290,7 @@ namespace ThreadPrivate{
 
     jobject fromQThread(JNIEnv * env, jobject java_qthread, QThread *thread)
     {
-        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_qthread)){
+        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(thread)){
             link->setNoThreadInitializationOnPurge(true);
         }
         if(thread == QThread::currentThread()){
@@ -320,26 +320,11 @@ namespace ThreadPrivate{
     }
 }
 
-jobject ThreadAPI::findJThreadForQThread(JNIEnv * env, QThread *thread)
+jobject ThreadAPI::findJThreadForQThread(JNIEnv * env, jobject qt_thread)
 {
-    if(!thread)
-        return nullptr;
-    {
-        QReadLocker locker(QtJambiLinkUserData::lock());
-        if(QtJambiLinkUserData* userData = QTJAMBI_GET_OBJECTUSERDATA(QtJambiLinkUserData, thread)){
-            QSharedPointer<QtJambiLink> link = userData->link();
-            if(link){
-                if(jobject o = link->getJavaObjectLocalRef(env)){
-                    locker.unlock();
-                    jobject result = Java::QtCore::QThread::javaThread(env, o);
-                    locker.relock();
-                    if(result)
-                        return result;
-                }
-            }
-        }
-    }
-    return ThreadPrivate::fromQThread(env, nullptr, thread);
+    QThread* thread = QtJambiAPI::convertJavaObjectToQObject<QThread>(env, qt_thread);
+    QtJambiAPI::checkNullPointer(env, thread);
+    return ThreadPrivate::fromQThread(env, qt_thread, thread);
 }
 
 QThreadStorage<QSharedPointer<EventDispatcherCheck>> EventDispatcherCheck::storage;
@@ -349,7 +334,7 @@ EventDispatcherCheck::EventDispatcherCheck(JObjectWrapper&& jthreadObjectWrapper
       m_thread(thread),
       m_wlink(std::move(wlink)),
       cleaner(_cleaner) {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "EventDispatcherCheck::EventDispatcherCheck()")
+    QTJAMBI_INTERNAL_METHOD_CALL("EventDispatcherCheck::EventDispatcherCheck()")
     QThreadUserData* data;
     {
         QReadLocker locker(QtJambiLinkUserData::lock());
@@ -362,7 +347,7 @@ EventDispatcherCheck::EventDispatcherCheck(JObjectWrapper&& jthreadObjectWrapper
 }
 
 EventDispatcherCheck::~EventDispatcherCheck(){
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "EventDispatcherCheck::~EventDispatcherCheck()")
+    QTJAMBI_INTERNAL_METHOD_CALL("EventDispatcherCheck::~EventDispatcherCheck()")
     QThreadUserData* data;
     {
         QReadLocker locker(QtJambiLinkUserData::lock());

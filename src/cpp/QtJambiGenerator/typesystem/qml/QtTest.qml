@@ -63,6 +63,11 @@ TypeSystem{
     Rejection{
         className: "QTestData"
     }
+
+    Rejection{
+        enumName: "QEventSizeOfChecker"
+        until: [5, 15]
+    }
     
     Rejection{
         className: "QSignalSpy"

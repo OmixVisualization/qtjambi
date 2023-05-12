@@ -68,11 +68,11 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
  jclass,
  QtJambiNativeID __this_nativeId)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "Iterator::key() const")
     jobject result{nullptr};
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("Iterator::key() const", container.first)
         AbstractAssociativeConstIteratorAccess* containerAccess = dynamic_cast<AbstractAssociativeConstIteratorAccess*>(container.second);
         Q_ASSERT(containerAccess);
         result = containerAccess->key(__jni_env, container.first);
@@ -87,11 +87,11 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
  jclass,
  QtJambiNativeID __this_nativeId)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "Iterator::operator*() const")
     jobject result{nullptr};
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("Iterator::operator*() const", container.first)
         AbstractSequentialConstIteratorAccess* containerAccess = dynamic_cast<AbstractSequentialConstIteratorAccess*>(container.second);
         Q_ASSERT(containerAccess);
         result = containerAccess->value(__jni_env, container.first);
@@ -108,10 +108,10 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
  jobject newValue)
 {
     jboolean result{false};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "Iterator::operator*() const")
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("Iterator::operator*() const", container.first)
         if(AbstractSequentialIteratorAccess* containerAccess = dynamic_cast<AbstractSequentialIteratorAccess*>(container.second)){
             containerAccess->setValue(__jni_env, container.first, newValue);
             result = true;
@@ -128,10 +128,10 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QS
  jclass,
  QtJambiNativeID __this_nativeId)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "Iterator::operator++()")
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("Iterator::operator++()", container.first)
         AbstractSequentialConstIteratorAccess* containerAccess = dynamic_cast<AbstractSequentialConstIteratorAccess*>(container.second);
         Q_ASSERT(containerAccess);
         containerAccess->increment(__jni_env, container.first);
@@ -146,10 +146,10 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QS
  jclass,
  QtJambiNativeID __this_nativeId)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "Iterator::operator--()")
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("Iterator::operator--()", container.first)
         AbstractSequentialConstIteratorAccess* containerAccess = dynamic_cast<AbstractSequentialConstIteratorAccess*>(container.second);
         Q_ASSERT(containerAccess);
         containerAccess->decrement(__jni_env, container.first);
@@ -165,15 +165,15 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
  QtJambiNativeID __this_nativeId,
  QtJambiNativeID other0)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "Iterator::operator<(const Iterator & other) const")
     jboolean result{false};
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("Iterator::operator<(const Iterator & other) const", container.first)
         AbstractSequentialConstIteratorAccess* containerAccess = dynamic_cast<AbstractSequentialConstIteratorAccess*>(container.second);
         Q_ASSERT(containerAccess);
         void *__qt_other0 = QtJambiAPI::fromNativeId(other0);
-        QtJambiAPI::checkPointer(__jni_env, __qt_other0, typeid(QList<QVariant>::const_iterator));
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_other0, typeid(QList<QVariant>::const_iterator));
         result = containerAccess->lessThan(__jni_env, container.first, __qt_other0);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -188,15 +188,15 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_cor
  QtJambiNativeID __this_nativeId,
  QtJambiNativeID o0)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "Iterator::operator==(const Iterator & o) const")
-    jboolean result{false};
+    bool result{false};
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         Q_ASSERT(container.first);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("Iterator::operator==(const Iterator & o) const", container.first)
         AbstractSequentialConstIteratorAccess* containerAccess = dynamic_cast<AbstractSequentialConstIteratorAccess*>(container.second);
         Q_ASSERT(containerAccess);
         void *__qt_o0 = QtJambiAPI::fromNativeId(o0);
-        QtJambiAPI::checkPointer(__jni_env, __qt_o0, typeid(QList<QVariant>::const_iterator));
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_o0, typeid(QList<QVariant>::const_iterator));
         result = containerAccess->equals(__jni_env, container.first, __qt_o0);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);

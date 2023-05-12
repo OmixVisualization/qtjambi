@@ -609,8 +609,20 @@
 						<property name="qtjambiPluginPath"   location="${deploymentdir}/native/${qtjambi.osname}/${kind}/plugins" />
 						<property name="testPluginPath"   location="${outputDir}/${qtjambi.osname}/tests/${kind}/plugins" />
 						<property name="testQmlPath"   location="${outputDir}/${qtjambi.osname}/tests/${kind}/qml" />
-						<condition property="env.qtjambi.debug.trace" value="QTJAMBI_DEBUG_TRACE" else="QTJAMBI_DEBUG_TRACE_DISABLED">
-							<istrue value="${qtjambi.debug.trace}"/>
+						<condition property="qtjambi.enable-method-logs" value="true" else="false">
+							<or>
+								<istrue value="${qtjambi.debug.trace}"/>
+								<istrue value="${qtjambi.enable-method-logs}"/>
+							</or>
+						</condition>
+						<condition property="qtjambi.enable-dangling-pointer-check" value="true" else="false">
+							<istrue value="${qtjambi.enable-dangling-pointer-check}"/>
+						</condition>
+						<condition property="qtjambi.enable-thread-affinity-check" value="true" else="false">
+							<istrue value="${qtjambi.enable-thread-affinity-check}"/>
+						</condition>
+						<condition property="qtjambi.enable-event-thread-affinity-check" value="true" else="false">
+							<istrue value="${qtjambi.enable-event-thread-affinity-check}"/>
 						</condition>
 						<if>
 							<available type="file" file="extjars/sqlite-jdbc.jar"/>
@@ -699,14 +711,20 @@
 									<jvmarg value="-Dio.qt.verbose-loading=${io.qt.verbose-loading}"/>
 									<jvmarg value="-Dio.qt.debug=${kind}"/><!-- This should not be needed now, it loads default from MANIFEST.MF -->
 									<jvmarg value="-Dio.qt.log-messages=ALL"/>
+									<jvmarg value="-Dqtjambi.log-level=${qtjambi.log-level}"/>
 									<jvmarg value="-Dio.qt.no-deployment-spec=true"/>
+									<jvmarg value="-Dio.qt.enable-dangling-pointer-check=${qtjambi.enable-dangling-pointer-check}"/>
+									<jvmarg value="-Dio.qt.enable-thread-affinity-check=${qtjambi.enable-thread-affinity-check}"/>
+									<jvmarg value="-Dio.qt.enable-event-thread-affinity-check=${qtjambi.enable-event-thread-affinity-check}"/>
+									<jvmarg value="-Dio.qt.enable-method-logs=${qtjambi.enable-method-logs}"/>
 									<jvmarg value="-Dio.qt.qml-imports=${testQmlPath}"/>
 									<jvmarg value="-Dio.qt.pluginpath=${qtjambiPluginPath}${psep}${testPluginPath}"/>
 									<jvmarg value="${XstartOnFirstThread}"/>
 									<jvmarg value="-Dqtjambi.deployer.test.jdbc=${testJdbcPath}"/>
 									<jvmarg value="-Djava.util.logging.config.file=${basedir}/logging.properties"/>
 									<jvmarg value="-Dqtjambi.antcontrib=${ant.library.dir}/ant.jar"/>
-									<jvmarg value="-Xrs"/><!-- This stops JVM intercepting SIGSEGV
+									<!--jvmarg value="-Xrs"/-->
+									<!-- This stops JVM intercepting SIGSEGV
 									from native code (so we can see where/why it crashed) otherwise
 									the JVM may promote SIGSEGV to NullPointerException, which is
 									not that useful for debugging. -->

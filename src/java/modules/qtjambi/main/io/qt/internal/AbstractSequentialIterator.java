@@ -34,20 +34,9 @@ import java.util.Iterator;
 import java.util.Optional;
 
 import io.qt.QtObjectInterface;
-import io.qt.QtUninvokable;
 
 public interface AbstractSequentialIterator<T> extends QtObjectInterface{
 	boolean setValue(T newValue);
 	Iterator<T> iterator();
 	Optional<T> value();
-	
-	@QtUninvokable
-	public default java.util.ListIterator<T> listIterator(){
-    	return listIterator(0);
-    }
-
-    @QtUninvokable
-    public default java.util.ListIterator<T> listIterator(int index){
-    	return AbstractSequentialConstIterator.listIterator(this, index);
-    }
 }

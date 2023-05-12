@@ -21,40 +21,54 @@
 ** ensure the GNU General Public License version 3.0 requirements will be
 ** met: http://www.gnu.org/copyleft/gpl.html.
 ** $END_LICENSE$
-
 **
 ** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************/
-package io.qt.uic;
+package io.qt.autotests;
 
-import io.qt.core.QDir;
+import java.util.ConcurrentModificationException;
 
-public class Option {
-	public boolean copyrightHeader = true;
-	public boolean generateImplemetation;
-	public boolean generateNamespace = true;
-	public boolean autoConnection = true;
-	public boolean dependencies;
-	public boolean limitXPM_LineLength;
-	public boolean idBased;
-	public boolean forceMemberFnPtrConnectionSyntax;
-	public boolean forceStringConnectionSyntax;
-	public boolean forceOutput;
-	public boolean noShellClass;
-	public String inputFile = "";
-	public String outputDir = "";
-	public String targetPackage = "";
-	public String qrcOutputFile = "";
-	public String indent = "    ";
-	public String prefix = "Ui_";
-	public String postfix = "";
-	public String translateFunction = "";
-	public String imports = "";
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
+import io.qt.core.QList;
+import io.qt.core.QStringList;
+
+public class TestContainersModification extends ApplicationInitializer{
+	@BeforeClass
+    public static void testInitialize() throws Exception {
+		System.setProperty("io.qt.enable-concurrent-container-modification-check", "true");
+    	ApplicationInitializer.testInitializeWithWidgets();
+    }
 	
-	public String messagePrefix()
-	{
-	    return inputFile==null || inputFile.isEmpty() ? "stdin" : QDir.toNativeSeparators(inputFile);
+	@Test
+	public void testConcurrentModification() {
+		// due to performance reasons concurrent modification tests are skipped
+		try {
+			QList<String> list = new QList<>(String.class);
+			list.add("A");
+			list.add("A");
+			for (@SuppressWarnings("unused")
+			String string : list) {
+				list.clear();
+			}
+			Assert.fail("ConcurrentModificationException expected to be thrown");
+		} catch (ConcurrentModificationException e) {
+		}
+	}
+
+//  @Test
+	public void testPerformance() {
+		QStringList list = new QStringList();
+//  	list.fill("", 0xffffff);//not in Qt5
+		long t1 = System.currentTimeMillis();
+		for (@SuppressWarnings("unused")
+		String string : list) {
+		}
+		long t2 = System.currentTimeMillis();
+		System.out.println("time: " + (t2 - t1));
 	}
 }

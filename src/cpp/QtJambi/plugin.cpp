@@ -190,6 +190,8 @@ QObject* createJarImport(QueryMetadata ptr){
     return nullptr;
 }
 
+std::atomic<JavaVM *>* getJVM();
+
 void registerPluginImporter(){
     class Importer final : public QObject{
     public:
@@ -213,6 +215,56 @@ void registerPluginImporter(){
             }else if(QLatin1String(type)==QLatin1String("CoreAPI::unexit")){
                 // called from QtJambiGenerator
                 return reinterpret_cast<void*>(&CoreAPI::unexit);
+            }else if(QLatin1String(type)==QLatin1String("QtJambiAPI::convertJavaToNative")){
+                bool (*convertJavaToNative)(JNIEnv *, const std::type_info&, jobject, void *) = [](JNIEnv *env, const std::type_info& typeId, jobject java_object, void * output)->bool{
+                    return QtJambiAPI::convertJavaToNative(env, typeId, java_object, output);
+                };
+                return reinterpret_cast<void*>(convertJavaToNative);
+            }else if(QLatin1String(type)==QLatin1String("QtJambiAPI::convertQObjectToJavaObject")){
+                auto fn = &QtJambiAPI::convertQObjectToJavaObject<QObject>;
+                return reinterpret_cast<void*>(fn);
+            }else if(QLatin1String(type)==QLatin1String("QtJambiAPI::convertJavaObjectToQVariant")){
+                return reinterpret_cast<void*>(&QtJambiAPI::convertJavaObjectToQVariant);
+            }else if(QLatin1String(type)==QLatin1String("QtJambiAPI::setJavaOwnershipForTopLevelObject")){
+                return reinterpret_cast<void*>(&QtJambiAPI::setJavaOwnershipForTopLevelObject);
+            }else if(QLatin1String(type)==QLatin1String("QtJambiAPI::setDefaultOwnershipForTopLevelObject")){
+                return reinterpret_cast<void*>(&QtJambiAPI::setDefaultOwnershipForTopLevelObject);
+            }else if(QLatin1String(type)==QLatin1String("QtJambiAPI::setCppOwnershipForTopLevelObject")){
+                return reinterpret_cast<void*>(&QtJambiAPI::setCppOwnershipForTopLevelObject);
+            }else if(QLatin1String(type)==QLatin1String("QtJambiAPI::setCppOwnership")){
+                return reinterpret_cast<void*>(QOverload<JNIEnv*,jobject>::of(QtJambiAPI::setCppOwnership));
+            }else if(QLatin1String(type)==QLatin1String("QtJambiAPI::setJavaOwnership")){
+                return reinterpret_cast<void*>(QOverload<JNIEnv*,jobject>::of(QtJambiAPI::setJavaOwnership));
+            }else if(QLatin1String(type)==QLatin1String("QtJambiAPI::setDefaultOwnership")){
+                return reinterpret_cast<void*>(QOverload<JNIEnv*,jobject>::of(QtJambiAPI::setDefaultOwnership));
+            }else if(QLatin1String(type)==QLatin1String("QtJambiAPI::convertQVariantToJavaObject")){
+                return reinterpret_cast<void*>(&QtJambiAPI::convertQVariantToJavaObject);
+            }else if(QLatin1String(type)==QLatin1String("QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper")){
+                jobject (*convertNativeToJavaOwnedObjectAsWrapper)(JNIEnv *, const void *, const std::type_info&) = [](JNIEnv *env, const void *qt_object, const std::type_info& typeId)->jobject{
+                    return QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper(env, qt_object, typeId);
+                };
+                return reinterpret_cast<void*>(convertNativeToJavaOwnedObjectAsWrapper);
+            }else if(QLatin1String(type)==QLatin1String("QtJambiAPI::convertNativeToJavaObjectAsWrapper")){
+                jobject (*convertNativeToJavaObjectAsWrapper)(JNIEnv *, const void *, const std::type_info&) = [](JNIEnv *env, const void *qt_object, const std::type_info& typeId)->jobject{
+                    return QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, qt_object, typeId);
+                };
+                return reinterpret_cast<void*>(convertNativeToJavaObjectAsWrapper);
+            }else if(QLatin1String(type)==QLatin1String("QtJambiAPI::convertNativeToJavaObjectAsCopy")){
+                jobject (*convertNativeToJavaObjectAsCopy)(JNIEnv *, const void *, const std::type_info&) = [](JNIEnv *env, const void *qt_object, const std::type_info& typeId)->jobject{
+                    return QtJambiAPI::convertNativeToJavaObjectAsCopy(env, qt_object, typeId);
+                };
+                return reinterpret_cast<void*>(convertNativeToJavaObjectAsCopy);
+            }else if(QLatin1String(type)==QLatin1String("CoreAPI::metaObjectForClass")){
+                const QMetaObject *(*metaObjectForClass)(JNIEnv *, jclass) = [](JNIEnv *env, jclass cls)->const QMetaObject *{
+                    return CoreAPI::metaObjectForClass(env, cls);
+                };
+                return reinterpret_cast<void*>(metaObjectForClass);
+            }else if(QLatin1String(type)==QLatin1String("JNIEnv")){
+                return reinterpret_cast<void*>(JniEnvironment(0).environment());
+            }else if(QLatin1String(type)==QLatin1String("JavaVM")){
+                if(std::atomic<JavaVM *>* atm = getJVM()){
+                    return reinterpret_cast<void*>(atm->load());
+                }
             }
             return nullptr;
         }

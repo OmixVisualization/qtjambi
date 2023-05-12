@@ -29,12 +29,15 @@
 ****************************************************************************/
 package io.qt.core;
 
+import io.qt.NativeAccess;
+import io.qt.QtObject;
 import io.qt.QtUninvokable;
 import io.qt.internal.AbstractAssociativeIterator;
 
 public final class QAssociativeIterator<K,V> extends QAssociativeConstIterator<K,V> implements AbstractAssociativeIterator<K,V>{
     
-    private QAssociativeIterator(Object owner) { 
+	@NativeAccess
+    private QAssociativeIterator(QtObject owner) { 
     	super(owner);
 	}
     
@@ -47,4 +50,9 @@ public final class QAssociativeIterator<K,V> extends QAssociativeConstIterator<K
     
     @QtUninvokable
     static native <T> void setValue(long __this__nativeId, T newValue);
+    
+    @Override
+	protected boolean isConstant() {
+		return false;
+	}
 }

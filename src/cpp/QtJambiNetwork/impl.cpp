@@ -68,7 +68,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_network
  jobject slot)
 {
     jint _result{0};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QHostInfo::lookupHost(const QString & name, Functor functor)")
+    QTJAMBI_NATIVE_METHOD_CALL("QHostInfo::lookupHost(const QString & name, Functor functor)")
     QTJAMBI_TRY{
         if(!slot)
             JavaException::raiseNullPointerException(__jni_env, "slot must not be null." QTJAMBI_STACKTRACEINFO );

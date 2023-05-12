@@ -33,11 +33,18 @@ import static org.junit.Assert.fail;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.*;
-import io.qt.core.*;
-import io.qt.quick.widgets.*;
+import io.qt.QThreadAffinityException;
+import io.qt.core.QEventLoop;
+import io.qt.core.QThread;
+import io.qt.core.QUrl;
+import io.qt.quick.widgets.QQuickWidget;
 
-public class TestQuickWidgetsThreadAffinity extends ApplicationInitializer {
+public class TestQuickWidgetsThreadAffinity extends ApplicationInitializer{
+	
+	static {
+		System.setProperty("io.qt.enable-thread-affinity-check", "true");
+		System.setProperty("io.qt.enable-event-thread-affinity-check", "true");
+	}
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {

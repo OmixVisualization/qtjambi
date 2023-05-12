@@ -127,17 +127,17 @@ extern "C" Q_DECL_EXPORT bool JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpser
  QtJambiNativeID __rule,
  QtJambiNativeID __metaTypes)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QHttpServer::handleRequest()")
     Q_UNUSED(__this)
     bool result = false;
     QTJAMBI_TRY {
         QHttpServer *__qt_this = QtJambiAPI::objectFromNativeId<QHttpServer>(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHttpServer::handleRequest(const QHttpServerRequest &request, QHttpServerResponder &responder)", __qt_this)
         QHttpServerRouterRule *rule = QtJambiAPI::objectFromNativeId<QHttpServerRouterRule>(__rule);
-        QtJambiAPI::checkPointer(__jni_env, rule);
+        QtJambiAPI::checkNullPointer(__jni_env, rule);
         QtJambiAPI::setCppOwnership(__jni_env, __rule);
         QList<QMetaType>* metaTypes = QtJambiAPI::objectFromNativeId<QList<QMetaType>>(__metaTypes);
-        QtJambiAPI::checkPointer(__jni_env, metaTypes);
+        QtJambiAPI::checkNullPointer(__jni_env, metaTypes);
 #ifdef Q_CC_MSVC
         result = reinterpret_cast<HttpServerRouter*>(__qt_this)->addRuleImpl(std::unique_ptr<QHttpServerRouterRule>(rule), std::initializer_list<QMetaType>(metaTypes->data(), metaTypes->data()+metaTypes->size()));
 #else
@@ -163,15 +163,15 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpser
  QtJambiNativeID __request,
  QtJambiNativeID __argX)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QHttpServer::sendResponse()")
     Q_UNUSED(__this)
     QTJAMBI_TRY {
         QHttpServer *__qt_this = QtJambiAPI::objectFromNativeId<QHttpServer>(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHttpServer::sendResponse(QHttpServerResponse &&response, const QHttpServerRequest &request, QHttpServerResponder &&responder)", __qt_this)
         QHttpServerResponse *response = QtJambiAPI::objectFromNativeId<QHttpServerResponse>(__response);
-        QtJambiAPI::checkPointer(__jni_env, response);
+        QtJambiAPI::checkNullPointer(__jni_env, response);
         const QHttpServerRequest *request = QtJambiAPI::objectFromNativeId<QHttpServerRequest>(__request);
-        QtJambiAPI::checkPointer(__jni_env, request);
+        QtJambiAPI::checkNullPointer(__jni_env, request);
 #if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
         QTcpSocket *argX = QtJambiAPI::objectFromNativeId<QTcpSocket>(__argX);
 #else
@@ -192,15 +192,15 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpser
  QtJambiNativeID __request,
  QtJambiNativeID __argX)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QHttpServer::sendResponse()")
     QtJambiScope scope;
     Q_UNUSED(__this)
     QTJAMBI_TRY {
         QHttpServer *__qt_this = QtJambiAPI::objectFromNativeId<QHttpServer>(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHttpServer::sendResponse(QFuture<QHttpServerResponse> &&response, const QHttpServerRequest &request, QHttpServerResponder &&responder)", __qt_this)
         QFuture<QHttpServerResponse>& response = qtjambi_cast<QFuture<QHttpServerResponse>&>(__jni_env, scope, __response);
         const QHttpServerRequest *request = QtJambiAPI::objectFromNativeId<QHttpServerRequest>(__request);
-        QtJambiAPI::checkPointer(__jni_env, request);
+        QtJambiAPI::checkNullPointer(__jni_env, request);
         QHttpServerResponder& argX = QtJambiAPI::objectReferenceFromNativeId<QHttpServerResponder>(__jni_env, __argX);
         reinterpret_cast<HttpServer*>(__qt_this)->sendResponse(std::move(response), *request, std::move(argX));
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -216,14 +216,14 @@ extern "C" Q_DECL_EXPORT bool JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpser
  QtJambiNativeID __request,
  QtJambiNativeID __argX)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QHttpServer::handleRequest()")
     Q_UNUSED(__this)
     bool result = false;
     QTJAMBI_TRY {
         QHttpServer *__qt_this = QtJambiAPI::objectFromNativeId<QHttpServer>(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHttpServer::handleRequest(const QHttpServerRequest& request0, QHttpServerResponder &responder)", __qt_this)
         const QHttpServerRequest *request = QtJambiAPI::objectFromNativeId<QHttpServerRequest>(__request);
-        QtJambiAPI::checkPointer(__jni_env, request);
+        QtJambiAPI::checkNullPointer(__jni_env, request);
 #if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
         QTcpSocket *argX = QtJambiAPI::objectFromNativeId<QTcpSocket>(__argX);
 #else
@@ -243,13 +243,13 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpser
  QtJambiNativeID __request,
  QtJambiNativeID __argX)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QHttpServer::missingHandler()")
     Q_UNUSED(__this)
     QTJAMBI_TRY {
         QHttpServer *__qt_this = QtJambiAPI::objectFromNativeId<QHttpServer>(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHttpServer::missingHandler(const QHttpServerRequest &request, QHttpServerResponder &&responder)", __qt_this)
         const QHttpServerRequest *request = QtJambiAPI::objectFromNativeId<QHttpServerRequest>(__request);
-        QtJambiAPI::checkPointer(__jni_env, request);
+        QtJambiAPI::checkNullPointer(__jni_env, request);
 #if QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
         QTcpSocket *argX = QtJambiAPI::objectFromNativeId<QTcpSocket>(__argX);
 #else
@@ -268,11 +268,11 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_httpser
  jboolean isBi,
  jobject _action)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QHttpServer::afterRequest()")
     Q_UNUSED(__this)
     QTJAMBI_TRY {
         QHttpServer *__qt_this = QtJambiAPI::objectFromNativeId<QHttpServer>(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QHttpServer::afterRequest()", __qt_this)
         if(isBi){
             __qt_this->afterRequest([action = JObjectWrapper(__jni_env, _action)](QHttpServerResponse &&resp, const QHttpServerRequest &request){
                 if(JniEnvironment env{300}){

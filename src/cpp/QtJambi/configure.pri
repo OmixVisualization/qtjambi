@@ -62,6 +62,8 @@ CONFIG(debug, debug|release) {
 INCLUDEPATH += $$PWD/..
 DEPENDPATH += $$PWD/..
 
+DEFINES += QTJAMBI_PATCH_VERSION=$$QTJAMBI_PATCH_VERSION
+
 macx:{
     CONFIG+=no_default_rpath no_qt_rpath
     QMAKE_SONAME_PREFIX = @rpath

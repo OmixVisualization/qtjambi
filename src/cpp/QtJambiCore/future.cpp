@@ -56,8 +56,12 @@
 
 #ifdef Q_OS_ANDROID
 #define unique_id(id) qHash(QLatin1String((id).name()))
+#define typeid_equals(t1, t2) unique_id(t1)==unique_id(t2)
+#define typeid_not_equals(t1, t2) unique_id(t1)!=unique_id(t2)
 #else
 #define unique_id(id) (id).hash_code()
+#define typeid_equals(t1, t2) t1==t2
+#define typeid_not_equals(t1, t2) t1!=t2
 #endif
 
 #if QT_CONFIG(future)
@@ -89,7 +93,7 @@ template<class T>
 QFutureInterface_shell<T>::QFutureInterface_shell(QFutureInterfaceBase::State initialState0)
     : QFutureInterface<T>(initialState0)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT_WHERE("shell", "QFutureInterface_shell::QFutureInterface_shell(QFutureInterfaceBase::State initialState0)", QFutureInterface_shell::__shell())
+    QTJAMBI_JAVA_METHOD_CALL("QFutureInterface_shell::QFutureInterface_shell(QFutureInterfaceBase::State initialState0)", QFutureInterface_shell::__shell())
     QFutureInterface_shell::__shell()->constructed(typeid(QFutureInterface<T>));
 }
 
@@ -97,7 +101,7 @@ template<class T>
 QFutureInterface_shell<T>::QFutureInterface_shell(const QFutureInterface<T>& other0)
     : QFutureInterface<T>(other0)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT_WHERE("shell", "QFutureInterface_shell::QFutureInterface_shell(const QFutureInterface<QVariant>& other0)", QFutureInterface_shell::__shell())
+    QTJAMBI_JAVA_METHOD_CALL("QFutureInterface_shell::QFutureInterface_shell(const QFutureInterface<QVariant>& other0)", QFutureInterface_shell::__shell())
     QFutureInterface_shell::__shell()->constructed(typeid(QFutureInterface<T>));
 }
 
@@ -105,7 +109,7 @@ QFutureInterface_shell<T>::QFutureInterface_shell(const QFutureInterface<T>& oth
 template<class T>
 QFutureInterface_shell<T>::~QFutureInterface_shell()
 {
-    QTJAMBI_DEBUG_METHOD_PRINT_WHERE("shell", "QFutureInterface_shell::~QFutureInterface_shell()", QFutureInterface_shell::__shell())
+    QTJAMBI_JAVA_METHOD_CALL("QFutureInterface_shell::~QFutureInterface_shell()", QFutureInterface_shell::__shell())
     QFutureInterface_shell::__shell()->destructed(typeid(QFutureInterface<T>));
 }
 
@@ -132,7 +136,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
     QTJAMBI_TRY{
 #if QT_CONFIG(future)
         const QFutureInterfaceBase *__qt_this = QtJambiAPI::objectFromNativeId<QFutureInterfaceBase>(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
         if(const QFutureInterface<QVariant>* _this = dynamic_cast<const QFutureInterface<QVariant>*>(__qt_this)){
             result = qtjambi_cast<jobject>(__jni_env, *_this);
         }else if(const QFutureInterface<void>* _this = dynamic_cast<const QFutureInterface<void>*>(__qt_this)){
@@ -154,7 +158,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 // new QFutureInterface(QFutureInterfaceBase::State initialState)
 void __qt_construct_QFutureInterface_QVariant__0(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue*)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "new QFutureInterface(QFutureInterfaceBase::State initialState)")
+    QTJAMBI_NATIVE_METHOD_CALL("construct QFutureInterface(QFutureInterfaceBase::State initialState)")
 #if QT_CONFIG(future)
     QFutureInterfaceBase *__qt_this = new(__qtjambi_ptr) QFutureInterface_shell<QVariant>();
     Q_UNUSED(__jni_env)
@@ -168,7 +172,7 @@ void __qt_construct_QFutureInterface_QVariant__0(void* __qtjambi_ptr, JNIEnv* __
 // new QFutureInterface(QFutureInterfaceBase::State initialState)
 void __qt_construct_QFutureInterface_void__0(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue*)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "new QFutureInterface(QFutureInterfaceBase::State initialState)")
+    QTJAMBI_NATIVE_METHOD_CALL("construct QFutureInterface(QFutureInterfaceBase::State initialState)")
 #if QT_CONFIG(future)
     QFutureInterfaceBase *__qt_this = new(__qtjambi_ptr) QFutureInterface_shell<void>();
     Q_UNUSED(__jni_env)
@@ -182,7 +186,7 @@ void __qt_construct_QFutureInterface_void__0(void* __qtjambi_ptr, JNIEnv* __jni_
 // new QFutureInterface(QFutureInterfaceBase::State initialState)
 void __qt_construct_QFutureInterface_QVariant__1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "new QFutureInterface(QFutureInterfaceBase::State initialState)")
+    QTJAMBI_NATIVE_METHOD_CALL("construct QFutureInterface(QFutureInterfaceBase::State initialState)")
 #if QT_CONFIG(future)
     jobject initialState0 = __java_arguments[0].l;
     QFutureInterfaceBase::State __qt_initialState0 = qtjambi_cast<QFutureInterfaceBase::State>(__jni_env, initialState0);
@@ -200,7 +204,7 @@ void __qt_construct_QFutureInterface_QVariant__1(void* __qtjambi_ptr, JNIEnv* __
 // new QFutureInterface(const QFutureInterface<QVariant> & other)
 void __qt_construct_QFutureInterface_QVariant__2(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "new QFutureInterface(const QFutureInterface<QVariant> & other)")
+    QTJAMBI_NATIVE_METHOD_CALL("construct QFutureInterface(const QFutureInterface<QVariant> & other)")
 #if QT_CONFIG(future)
     jobject other0 = __java_arguments[0].l;
     QFutureInterfaceBase* __qt_other0 = qtjambi_cast<QFutureInterfaceBase*>(__jni_env, other0);
@@ -223,7 +227,7 @@ void __qt_construct_QFutureInterface_QVariant__2(void* __qtjambi_ptr, JNIEnv* __
 // new QFutureInterface(QFutureInterfaceBase::State initialState)
 void __qt_construct_QFutureInterface_void__1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "new QFutureInterface(QFutureInterfaceBase::State initialState)")
+    QTJAMBI_NATIVE_METHOD_CALL("construct QFutureInterface(QFutureInterfaceBase::State initialState)")
 #if QT_CONFIG(future)
     jobject initialState0 = __java_arguments[0].l;
     QFutureInterfaceBase::State __qt_initialState0 = qtjambi_cast<QFutureInterfaceBase::State>(__jni_env, initialState0);
@@ -241,7 +245,7 @@ void __qt_construct_QFutureInterface_void__1(void* __qtjambi_ptr, JNIEnv* __jni_
 // new QFutureInterface(const QFutureInterface<void> & other)
 void __qt_construct_QFutureInterface_void__2(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "new QFutureInterface(const QFutureInterface<QVariant> & other)")
+    QTJAMBI_NATIVE_METHOD_CALL("construct QFutureInterface(const QFutureInterface<QVariant> & other)")
 #if QT_CONFIG(future)
     jobject other0 = __java_arguments[0].l;
     QFutureInterfaceBase* __qt_other0 = qtjambi_cast<QFutureInterfaceBase*>(__jni_env, other0);
@@ -269,7 +273,7 @@ void __qt_construct_QFutureInterface_void__2(void* __qtjambi_ptr, JNIEnv* __jni_
 // destruct QFutureInterface_shell
 void __qt_destruct_QFutureInterface_QVariant_(void* ptr)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "destruct QFutureInterface<QVariant>")
+    QTJAMBI_NATIVE_METHOD_CALL("destruct QFutureInterface<QVariant>")
 
 #if QT_CONFIG(future)
 
@@ -284,7 +288,7 @@ void __qt_destruct_QFutureInterface_QVariant_(void* ptr)
 
 void __qt_destruct_QFutureInterface_void_(void* ptr)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "destruct QFutureInterface<void>")
+    QTJAMBI_NATIVE_METHOD_CALL("destruct QFutureInterface<void>")
 
 #if QT_CONFIG(future)
 
@@ -306,7 +310,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
  jobject initialState0,
  jboolean isVoid)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QFutureInterface<QVariant>::QFutureInterface(QFutureInterfaceBase::State initialState)")
+    QTJAMBI_NATIVE_METHOD_CALL("QFutureInterface<QVariant>::QFutureInterface(QFutureInterfaceBase::State initialState)")
     QTJAMBI_TRY{
 #if QT_CONFIG(future)
         jvalue arguments;
@@ -336,11 +340,11 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
  jobject __jni_object,
  jobject other0)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QFutureInterface<T>::QFutureInterface(const QFutureInterface<T> & other)")
+    QTJAMBI_NATIVE_METHOD_CALL("QFutureInterface<T>::QFutureInterface(const QFutureInterface<T> & other)")
     QTJAMBI_TRY{
 #if QT_CONFIG(future)
         QFutureInterfaceBase* __qt_other0 = qtjambi_cast<QFutureInterfaceBase*>(__jni_env, other0);
-        QtJambiAPI::checkPointer(__jni_env, __qt_other0);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_other0);
         bool isVoid = !dynamic_cast<QFutureInterface<QVariant>*>(__qt_other0)
                    && !dynamic_cast<QFutureInterface_shell<QVariant>*>(__qt_other0);
         jvalue arguments;
@@ -370,11 +374,11 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
  QtJambiNativeID __this_nativeId,
  jobject result0)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QFutureInterface<QVariant>::reportFinished(const T * result)")
     QTJAMBI_TRY{
 #if QT_CONFIG(future)
         QFutureInterfaceBase *__qt_this = QtJambiAPI::objectFromNativeId<QFutureInterfaceBase>(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QFutureInterface<QVariant>::reportFinished(const T * result)", __qt_this)
         if(QFutureInterface<QVariant>* _this = dynamic_cast<QFutureInterface<QVariant>*>(__qt_this)){
             QVariant __tmp_result0 = qtjambi_cast<QVariant>(__jni_env, result0);
             QVariant* __qt_result0 = result0 ? &__tmp_result0 : nullptr;
@@ -402,11 +406,11 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
  jobject result0,
  jint index1)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QFutureInterface<QVariant>::reportResult(const QVariant & result, int index)")
     QTJAMBI_TRY{
 #if QT_CONFIG(future)
         QFutureInterfaceBase *__qt_this = QtJambiAPI::objectFromNativeId<QFutureInterfaceBase>(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QFutureInterface<QVariant>::reportResult(const QVariant & result, int index)", __qt_this)
         if(QFutureInterface<QVariant>* _this = dynamic_cast<QFutureInterface<QVariant>*>(__qt_this)){
             const QVariant& __qt_result0 = qtjambi_cast<QVariant>(__jni_env, result0);
             _this->reportResult(__qt_result0, static_cast<int>(index1));
@@ -435,13 +439,13 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
  jint beginIndex1,
  jint count2)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QFutureInterface<QVariant>::reportResults(const QVector<QVariant> & results, int beginIndex, int count)")
     QtJambiScope __qtjambi_scope(__this_nativeId);
     Q_UNUSED(__qtjambi_scope)
     QTJAMBI_TRY{
 #if QT_CONFIG(future)
         QFutureInterfaceBase *__qt_this = QtJambiAPI::objectFromNativeId<QFutureInterfaceBase>(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QFutureInterface<QVariant>::reportResults(const QVector<QVariant> & results, int beginIndex, int count)", __qt_this)
         if(QFutureInterface<QVariant>* _this = dynamic_cast<QFutureInterface<QVariant>*>(__qt_this)){
             const QVector<QVariant>&  __qt_results0 = qtjambi_cast<const QVector<QVariant>& >(__jni_env, __qtjambi_scope, results0);
             _this->reportResults(__qt_results0, static_cast<int>(beginIndex1), static_cast<int>(count2));
@@ -469,12 +473,12 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
  QtJambiNativeID __this_nativeId,
  jint index0)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QFutureInterface<QVariant>::resultReference(int index) const")
     jobject result = nullptr;
     QTJAMBI_TRY{
 #if QT_CONFIG(future)
         const QFutureInterfaceBase *__qt_this = QtJambiAPI::objectFromNativeId<QFutureInterfaceBase>(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QFutureInterface<QVariant>::resultReference(int index) const", __qt_this)
         if(const QFutureInterface<QVariant>* _this = dynamic_cast<const QFutureInterface<QVariant>*>(__qt_this)){
             if(index0<0 || index0>=_this->resultCount())
                 Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString::number(index0) QTJAMBI_STACKTRACEINFO );
@@ -503,12 +507,12 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
  jclass,
  QtJambiNativeID __this_nativeId)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QFutureInterface<QVariant>::results()")
     jobject result = nullptr;
     QTJAMBI_TRY{
 #if QT_CONFIG(future)
         QFutureInterfaceBase *__qt_this = QtJambiAPI::objectFromNativeId<QFutureInterfaceBase>(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QFutureInterface<QVariant>::results()", __qt_this)
         if(QFutureInterface<QVariant>* _this = dynamic_cast<QFutureInterface<QVariant>*>(__qt_this)){
             QList<QVariant> __qt_return_value = _this->results();
             result = qtjambi_cast<jobject>(__jni_env, __qt_return_value);
@@ -561,14 +565,14 @@ jmethodID QFutureWatcher_shell::__shell_javaMethod(int pos) const { return QFutu
 QFutureWatcher_shell::QFutureWatcher_shell(QObject* parent)
     : QFutureWatcher<QVariant>(parent), m_isVoid(false)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT_WHERE("shell", "QFutureWatcher_shell::QFutureWatcher_shell(QFutureInterfaceBase::State initialState0)", QFutureWatcher_shell::__shell())
+    QTJAMBI_JAVA_METHOD_CALL("QFutureWatcher_shell::QFutureWatcher_shell(QFutureInterfaceBase::State initialState0)", QFutureWatcher_shell::__shell())
     QFutureWatcher_shell::__shell()->constructed(typeid(QFutureWatcher<QVariant>));
 }
 
 // emitting (writeShellDestructor)
 QFutureWatcher_shell::~QFutureWatcher_shell()
 {
-    QTJAMBI_DEBUG_METHOD_PRINT_WHERE("shell", "QFutureWatcher_shell::~QFutureWatcher_shell()", QFutureWatcher_shell::__shell())
+    QTJAMBI_JAVA_METHOD_CALL("QFutureWatcher_shell::~QFutureWatcher_shell()", QFutureWatcher_shell::__shell())
     QFutureWatcher_shell::__shell()->destructed(typeid(QFutureWatcher<QVariant>));
 }
 
@@ -579,7 +583,7 @@ void QFutureWatcher_shell::operator delete(void * ptr) noexcept {
 // new QFutureWatcher(QObject*)
 void __qt_construct_QFutureWatcher_1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue* __java_arguments)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "new QFutureWatcher(QObject*)")
+    QTJAMBI_NATIVE_METHOD_CALL("construct QFutureWatcher(QObject*)")
 #if QT_CONFIG(future)
     jobject parent0 = __java_arguments[0].l;
     QObject* __qt_parent0 = qtjambi_cast<QObject*>(__jni_env, parent0);
@@ -591,8 +595,8 @@ void __qt_construct_QFutureWatcher_1(void* __qtjambi_ptr, JNIEnv* __jni_env, job
                  QFutureInterfaceBase* fibase = qtjambi_cast<QFutureInterfaceBase*>(env, jfi);
                  const std::type_info& fibaseType = typeid(*fibase);
                  if(dynamic_cast<QFutureInterface<void>*>(fibase)
-                         || unique_id(fibaseType)==unique_id(typeid(QFutureInterfaceBase))
-                         || unique_id(fibaseType)==unique_id(typeid_QFutureInterfaceBase_shell())){
+                         || typeid_equals(fibaseType, typeid(QFutureInterfaceBase))
+                         || typeid_equals(fibaseType, typeid_QFutureInterfaceBase_shell())){
                      watcher->m_isVoid = true;
                      reinterpret_cast<QFutureWatcher<void>*>(base)->setFuture(QFuture<void>(fibase));
                  }else{
@@ -634,7 +638,7 @@ void __qt_construct_QFutureWatcher_1(void* __qtjambi_ptr, JNIEnv* __jni_env, job
 // destruct QFutureInterface_shell
 void __qt_destruct_QFutureWatcher(void* ptr)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "destruct QFutureWatcher")
+    QTJAMBI_NATIVE_METHOD_CALL("destruct QFutureWatcher")
 #if QT_CONFIG(future)
     reinterpret_cast<QFutureWatcher_shell*>(ptr)->~QFutureWatcher_shell();
 #else
@@ -649,7 +653,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
  jobject parent0,
  jlongArray functions)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QFutureWatcher::QFutureWatcher(QObject * parent)")
+    QTJAMBI_NATIVE_METHOD_CALL("QFutureWatcher::QFutureWatcher(QObject * parent)")
     QTJAMBI_TRY{
 #if QT_CONFIG(future)
         jvalue arguments[2];
@@ -673,7 +677,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QFu
     jobject result = nullptr;
     QTJAMBI_TRY{
         QFutureWatcherBase *__qt_this = QtJambiAPI::objectFromNativeId<QFutureWatcherBase>(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
         QtJambiAPI::FutureGetter futureGetter = QtJambiAPI::FutureGetter(_futureGetter);
         result = futureGetter(__jni_env, __qt_this);
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -688,7 +692,7 @@ extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QFu
     jobject result = nullptr;
     QTJAMBI_TRY{
         QFutureWatcherBase *__qt_this = QtJambiAPI::objectFromNativeId<QFutureWatcherBase>(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
         QtJambiAPI::FutureResult futureResult = QtJambiAPI::FutureResult(_futureResult);
         result = futureResult(__jni_env, __qt_this, index);
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -702,7 +706,7 @@ extern "C" JNIEXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QFutur
 {
     QTJAMBI_TRY{
         QFutureWatcherBase *__qt_this = QtJambiAPI::objectFromNativeId<QFutureWatcherBase>(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
         QtJambiAPI::FutureSetter futureSetter = QtJambiAPI::FutureSetter(_futureSetter);
         futureSetter(__jni_env, __qt_this, future);
     }QTJAMBI_CATCH(const JavaException& exn){

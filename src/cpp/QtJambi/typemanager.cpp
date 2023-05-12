@@ -45,6 +45,7 @@ QT_WARNING_DISABLE_GCC("-Winit-list-lifetime")
 #include <QtCore/QMap>
 #include <QtCore/QMultiHash>
 #include <QtCore/QMultiMap>
+#include <QtCore/QLoggingCategory>
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 #include <QtCore/QLinkedList>
@@ -67,6 +68,8 @@ QT_WARNING_DISABLE_GCC("-Winit-list-lifetime")
 
 #include <cstring>
 #include "qtjambi_cast.h"
+
+Q_LOGGING_CATEGORY(CATEGORY, "io.qtjambi.typemanager", QtWarningMsg)
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #define QtJambiMetaType QMetaType
@@ -2959,8 +2962,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
         }
     }
 
-    qWarning("Cannot convert to type '%s' from '%s'.",
-             qPrintable(QtJambiAPI::getClassName(_env, externalClass).replace("$", ".")), qPrintable(internalTypeName));
+    qCWarning(CATEGORY) << "Cannot convert to type " << QtJambiAPI::getClassName(_env, externalClass).replace("$", ".") << " from " << internalTypeName << ".";
 
     return ParameterTypeInfo::default_internalToExternalConverter();
 }
@@ -6783,8 +6785,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
         }
     }
 
-    qWarning("Cannot convert from type '%s' to '%s'.",
-             qPrintable(QtJambiAPI::getClassName(_env, externalClass).replace("$", ".")), qPrintable(internalTypeName));
+    qCWarning(CATEGORY) << "Cannot convert from type " << QtJambiAPI::getClassName(_env, externalClass).replace("$", ".") << " to " << internalTypeName << ".";
     return ParameterTypeInfo::default_externalToInternalConverter();
 }
 

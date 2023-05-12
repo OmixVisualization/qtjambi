@@ -58,7 +58,7 @@
 // new QDBusReply(const QDBusError & dbusError)
 void __qt_construct_QDBusReply_0(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue*)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "new QDBusReply(const QDBusError & dbusError)")
+    QTJAMBI_NATIVE_METHOD_CALL("construct QDBusReply(const QDBusError & dbusError)")
     QDBusReply<QVariant> *__qt_this = new(__qtjambi_ptr) QDBusReply<QVariant>();
     Q_UNUSED(__qt_this)
 }
@@ -66,7 +66,7 @@ void __qt_construct_QDBusReply_0(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue*)
 // new QDBusReply(const QDBusError & dbusError)
 void __qt_construct_QDBusReply_1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue* __java_arguments)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "new QDBusReply(const QDBusError & dbusError)")
+    QTJAMBI_NATIVE_METHOD_CALL("construct QDBusReply(const QDBusError & dbusError)")
     jobject dbusError0 = __java_arguments[0].l;
     const QDBusError& __qt_dbusError0 = qtjambi_cast<const QDBusError& >(__jni_env, dbusError0);
     QDBusReply<QVariant> *__qt_this = new(__qtjambi_ptr) QDBusReply<QVariant>(__qt_dbusError0);
@@ -88,7 +88,7 @@ struct DBusReply{
 // new QDBusReply(const QDBusMessage & reply)
 void __qt_construct_QDBusReply_2(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "new QDBusReply(const QDBusMessage & reply)")
+    QTJAMBI_NATIVE_METHOD_CALL("construct QDBusReply(const QDBusMessage & reply)")
     jobject reply0 = __java_arguments[0].l;
     jobject metaType1 = __java_arguments[1].l;
     const QDBusMessage& reply = qtjambi_cast<const QDBusMessage& >(__jni_env, reply0);
@@ -100,7 +100,7 @@ void __qt_construct_QDBusReply_2(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject
 // new QDBusReply(const QDBusPendingCall & pcall)
 void __qt_construct_QDBusReply_3(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "new QDBusReply(const QDBusPendingCall & pcall)")
+    QTJAMBI_NATIVE_METHOD_CALL("construct QDBusReply(const QDBusPendingCall & pcall)")
     jobject pcall0 = __java_arguments[0].l;
     jobject metaType1 = __java_arguments[1].l;
     const QDBusPendingCall& pcall = qtjambi_cast<const QDBusPendingCall& >(__jni_env, pcall0);
@@ -114,7 +114,7 @@ void __qt_construct_QDBusReply_3(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject
 // destruct QDBusReply
 void __qt_destruct_QDBusReply(void* ptr)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "destruct QDBusReply<QVariant>")
+    QTJAMBI_NATIVE_METHOD_CALL("destruct QDBusReply<QVariant>")
     reinterpret_cast<QDBusReply<QVariant>*>(ptr)->~QDBusReply<QVariant>();
 }
 
@@ -126,7 +126,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QD
  jobject __jni_object,
  jobject dbusError0)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QDBusReply::QDBusReply(const QDBusError & dbusError)")
+    QTJAMBI_NATIVE_METHOD_CALL("QDBusReply::QDBusReply(const QDBusError & dbusError)")
     QTJAMBI_TRY{
         jvalue arguments;
         arguments.l = dbusError0;
@@ -145,7 +145,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QD
  jobject reply0,
  jobject metaType)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QDBusReply::QDBusReply(const QDBusMessage & reply)")
+    QTJAMBI_NATIVE_METHOD_CALL("QDBusReply::QDBusReply(const QDBusMessage & reply)")
     QTJAMBI_TRY{
         jvalue arguments[2];
         arguments[0].l = reply0;
@@ -165,7 +165,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QD
  jobject pcall0,
  jobject metaType)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QDBusReply::QDBusReply(const QDBusPendingCall & pcall)")
+    QTJAMBI_NATIVE_METHOD_CALL("QDBusReply::QDBusReply(const QDBusPendingCall & pcall)")
     QTJAMBI_TRY{
         jvalue arguments[2];
         arguments[0].l = pcall0;
@@ -183,10 +183,10 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus
  jobject _this)
 {
     jobject _result{nullptr};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QDBusReply::error() const")
     QTJAMBI_TRY{
         const QDBusReply<QVariant> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QDBusReply<QVariant>>(__jni_env, _this);
         Q_ASSERT(__qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QDBusReply::error() const", __qt_this)
         const QDBusError& __qt_return_value = __qt_this->error();
         _result = qtjambi_cast<jobject>(__jni_env, __qt_return_value);
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -200,11 +200,11 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbu
 (JNIEnv *__jni_env,
  jobject _this)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QDBusReply::isValid() const")
     jboolean _result{false};
     QTJAMBI_TRY{
         const QDBusReply<QVariant> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QDBusReply<QVariant>>(__jni_env, _this);
         Q_ASSERT(__qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QDBusReply::isValid() const", __qt_this)
         _result = __qt_this->isValid();
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -219,11 +219,11 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus
  jobject other0)
 {
     jobject _result{nullptr};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QDBusReply::operator=(const QDBusReply<QVariant > & other)")
     QtJambiScope __qtjambi_scope(__jni_env, _this);
     QTJAMBI_TRY{
         QDBusReply<QVariant> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QDBusReply<QVariant>>(__jni_env, _this);
         Q_ASSERT(__qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QDBusReply::operator=(const QDBusReply<QVariant > & other)", __qt_this)
         const QDBusReply<QVariant>&  __qt_other0 = qtjambi_cast<QDBusReply<QVariant> >(__jni_env, __qtjambi_scope, other0);
         QDBusReply<QVariant>& __qt_return_value = ((*static_cast<QDBusReply<QVariant>*>(__qt_this)) = __qt_other0);
         _result = qtjambi_cast<jobject>(__jni_env, __qt_return_value);
@@ -239,10 +239,10 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus
  jobject _this)
 {
     jobject _result{nullptr};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QDBusReply::value() const")
     QTJAMBI_TRY{
         const QDBusReply<QVariant> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QDBusReply<QVariant>>(__jni_env, _this);
         Q_ASSERT(__qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QDBusReply::value() const", __qt_this)
         QVariant __qt_return_value = __qt_this->value();
         _result = qtjambi_cast<jobject>(__jni_env, __qt_return_value);
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -499,7 +499,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus
     jobject _result{nullptr};
     QTJAMBI_TRY{
         const QDBusArgument* arg = qtjambi_cast<const QDBusArgument*>(__jni_env, _arg);
-        QtJambiAPI::checkPointer(__jni_env, arg);
+        QtJambiAPI::checkNullPointer(__jni_env, arg);
         const QMetaType& metaType = qtjambi_cast<const QMetaType&>(__jni_env, _metaType);
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         QVariant variant(metaType.id(), nullptr);
@@ -535,7 +535,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QD
 {
     QTJAMBI_TRY{
         QDBusArgument* arg = qtjambi_cast<QDBusArgument*>(__jni_env, _arg);
-        QtJambiAPI::checkPointer(__jni_env, arg);
+        QtJambiAPI::checkNullPointer(__jni_env, arg);
         QMetaType* metaType = qtjambi_cast<QMetaType*>(__jni_env, _metaType);
         QVariant variant = QtJambiAPI::convertJavaObjectToQVariant(__jni_env, _value);
         if(metaType){

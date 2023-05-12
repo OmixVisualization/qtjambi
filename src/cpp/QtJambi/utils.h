@@ -249,4 +249,8 @@ private:
     QExplicitlySharedDataPointer<QHashFunctionPrivate> d;
 };
 
+namespace QtJambiPrivate{
+
+}
+
 #endif // QTJAMBI_UTILS_H

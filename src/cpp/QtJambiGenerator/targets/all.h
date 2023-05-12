@@ -130,6 +130,7 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #define quint64 bool
 #include <QtGui/qaccessible.h>
 #undef quint64
+#include <QtGui/qpa/qplatformintegration.h>
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QtPlatformHeaders/QtPlatformHeaders>

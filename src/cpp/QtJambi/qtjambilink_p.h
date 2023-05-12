@@ -186,6 +186,7 @@ public:
     virtual jobject getExtraSignal(JNIEnv * env, const QSharedPointerToQObjectLink* link, const QMetaMethod& method) const;
     void setAsQObjectDeleted();
 private:
+    bool isDebugMessagingDisabled()const;
     void* m_ptr_shared_pointer;
     bool m_isShell;
     SmartPointerDeleter m_shared_pointer_deleter;
@@ -247,7 +248,8 @@ public:
         HasDisposedSignal = 0x020000,
         IsPendingObjectResolved = 0x040000,
         IsPendingValueOwner = 0x080000,
-        NoNativeDeletion = 0x100000
+        NoNativeDeletion = 0x100000,
+        NoDebugMessaging = 0x200000
     };
     typedef QFlags<Flag> Flags;
 
@@ -388,6 +390,8 @@ public:
     bool createdByJava() const;
     bool createdByQml() const;
     bool isShell() const;
+    bool isDebugMessagingDisabled()const;
+    void disableDebugMessaging();
     void setJavaOwnership(JNIEnv *env);
     void setDefaultOwnership(JNIEnv *env);
     virtual void setCppOwnership(JNIEnv *env);
@@ -994,6 +998,7 @@ public:
 #if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
     const char* qtTypeName() const;
 #endif
+    bool isDebugMessagingDisabled() const;
 
 private:
     QPointer<const QObject> m_parent;
@@ -1016,7 +1021,7 @@ public:
 #if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
     const char* qtTypeName() const;
 #endif
-
+    bool isDebugMessagingDisabled() const;
 private:
     QPointer<const QObject> m_parent;
     QWeakPointer<QtJambiLink> m_link;

@@ -46,6 +46,7 @@ public:
     virtual void destructed(const std::type_info& typeId) = 0;
     virtual void constructed(const std::type_info& typeId) = 0;
     virtual void deleteShell() = 0;
+    bool tryDeleteShell(const std::type_info& typeId);
     const QMetaObject* metaObject() const;
     void warnForMethod(const char*) const;
     void warnForMethod(const char*, const QObject* object) const;

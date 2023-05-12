@@ -31,9 +31,10 @@ package io.qt.core;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Optional;
 
+import io.qt.NativeAccess;
+import io.qt.QtObject;
 import io.qt.QtUninvokable;
 import io.qt.internal.AbstractSequentialConstIterator;
 
@@ -44,41 +45,42 @@ public class QAssociativeConstIterator<K,V> extends io.qt.internal.AbstractAssoc
     	QtJambi_LibraryUtilities.initialize();
     }
     
-    QAssociativeConstIterator(Object owner) { 
+    @NativeAccess
+    QAssociativeConstIterator(QtObject owner) { 
     	super(owner); 
 	}
     
     @QtUninvokable
-    protected final K key()        {
+    protected final K key() {
         return key(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
     private static native <K> K key(long __this__nativeId);
 
     @QtUninvokable
-    protected final V val()        {
+    protected final V val() {
         return QSequentialConstIterator.value(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 
     @QtUninvokable
-    protected final void increment()        {
+    protected final void increment() {
     	QSequentialConstIterator.increment(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 
     @QtUninvokable
-    protected final void decrement()        {
+    protected final void decrement() {
     	QSequentialConstIterator.decrement(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
 
     @QtUninvokable
-    private final boolean lessThan(AbstractSequentialConstIterator<?> other)        {
+    private final boolean lessThan(AbstractSequentialConstIterator<?> other) {
         if(compareOwners(other))
         	throw new IllegalArgumentException("Incomparable objects.");
         return QSequentialConstIterator.lessThan(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(other));
     }
 
     @QtUninvokable
-    private final boolean operator_equal(QAssociativeConstIterator<K,V> o)        {
+    protected final boolean equals(AbstractSequentialConstIterator<?> o) {
         return QSequentialConstIterator.operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(o));
     }
 
@@ -86,12 +88,9 @@ public class QAssociativeConstIterator<K,V> extends io.qt.internal.AbstractAssoc
     @QtUninvokable
     public boolean equals(Object other) {
         if (other instanceof QAssociativeConstIterator) {
-        	@SuppressWarnings("unchecked")
-        	QAssociativeConstIterator<K,V> iter = (QAssociativeConstIterator<K,V>) other;
-        	if(compareOwners(iter))
-        		return operator_equal(iter);
+        	return super.equals(other);
         }
-        return Objects.equals(other, key());
+        return false;
     }
 
     @QtUninvokable

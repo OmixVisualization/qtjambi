@@ -49,6 +49,9 @@ public abstract class AbstractMultiMap<K,V> extends AbstractMultiAssociativeCont
 		super(p);
 	}
     
+    @Override
+    public abstract AbstractMultiMap<K,V> clone();
+    
     @QtUninvokable
     protected abstract AbstractAssociativeConstIterator<K,V> find(K key);
     @QtUninvokable

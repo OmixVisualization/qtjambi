@@ -57,8 +57,7 @@ SOURCES += \
     thread.cpp \
     typeentry.cpp \
     typemanager.cpp \
-    utils.cpp \
-    variant.cpp
+    utils.cpp
 
 HEADERS += \
     containeraccess.h \
@@ -131,7 +130,8 @@ SOURCES += \
     containeraccess_linkedlist.cpp \
     containeraccess_map.cpp \
     containeraccess_multimap.cpp \
-    containeraccess_vector.cpp
+    containeraccess_vector.cpp \
+    variant.cpp
 
 HEADERS += \
     containeraccess_linkedlist.h \
@@ -182,6 +182,10 @@ linux-g++*:{
 
 linux-g++* | freebsd-g++* | macx | ios | android | win32-g++* {
     QMAKE_CXXFLAGS += -ftemplate-depth=20000
+}
+
+linux-g++* | freebsd-g++* | macx | ios | win32-g++* {
+QMAKE_CXXFLAGS += -Wall -fexceptions -fnon-call-exceptions
 }
 
 DEFINES += QTJAMBI_EXPORT=

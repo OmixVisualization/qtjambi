@@ -2553,11 +2553,11 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_
  jclass,
  QtJambiNativeID __this_nativeId, jint qmlTypeId)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlEngine::singletonInstance(int)")
     jobject result{nullptr};
     QTJAMBI_TRY {
         QQmlEngine *__qt_this = QtJambiAPI::objectFromNativeId<QQmlEngine>(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QQmlEngine::singletonInstance(int)", __qt_this)
         QJSValue value = __qt_this->singletonInstance<QJSValue>(qmlTypeId);
         result = qtjambi_cast<jobject>(__jni_env, value);
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -2800,10 +2800,10 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_
 (JNIEnv *__jni_env, jobject _this)
 {
     jobject _result{nullptr};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::clone(QQmlListProperty)")
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this, typeid(QQmlListProperty<void>));
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QQmlListProperty::clone(QQmlListProperty)", __qt_this)
         _result = QtJambiAPI::convertNativeToJavaObjectAsCopy(__jni_env, __qt_this, typeid(QQmlListProperty<void>));
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -2814,7 +2814,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_
 // new QQmlListProperty()
 void __qt_create_new_QQmlListProperty_0(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue*)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "new QQmlListProperty<void>()")
+    QTJAMBI_NATIVE_METHOD_CALL("construct QQmlListProperty<void>()")
     QQmlListProperty<void> *__qt_this = new(__qtjambi_ptr) QQmlListProperty<void>();
     Q_UNUSED(__qt_this)
 }
@@ -2828,10 +2828,17 @@ typedef qsizetype list_int;
 // new QQmlListProperty(QObject * o, QList<QObject > & list)
 void __qt_create_new_QQmlListProperty_1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue* __java_arguments)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "new QQmlListProperty<void>(QObject * o, QList<QObject > & list)")
+    QTJAMBI_NATIVE_METHOD_CALL("construct QQmlListProperty<void>(QObject * o, QList<QObject > & list)")
     jobject o0 = __java_arguments[0].l;
     QList<void*>* list = QtJambiAPI::convertJavaObjectToNative<QList<void*>>(__jni_env, __java_arguments[1].l);
-    new(__qtjambi_ptr) QQmlListProperty<void>(QtJambiAPI::convertJavaObjectToQObject(__jni_env, o0), list);
+    jboolean readonly = __java_arguments[2].z;
+    QQmlListProperty<void>* result = new(__qtjambi_ptr) QQmlListProperty<void>(QtJambiAPI::convertJavaObjectToQObject(__jni_env, o0), list);
+    if(readonly){
+        result->append = nullptr;
+        result->clear = nullptr;
+        result->replace = nullptr;
+        result->removeLast = nullptr;
+    }
 }
 
 struct FunctionUserData : QtJambiObjectData{
@@ -3041,7 +3048,7 @@ struct FunctionUserData : QtJambiObjectData{
 
 void __qt_create_new_QQmlListProperty_2(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue* __java_arguments)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "new QQmlListProperty<void>(QObject * o, QList<QObject > & list)()")
+    QTJAMBI_NATIVE_METHOD_CALL("construct QQmlListProperty<void>(QObject * o, QList<QObject > & list)()")
     QObject* object = QtJambiAPI::convertJavaObjectToQObject(__jni_env, __java_arguments[1].l);
     const QMetaType& metaType = qtjambi_cast<const QMetaType&>(__jni_env, __java_arguments[0].l);
     jint hash = __java_arguments[8].i;
@@ -3109,7 +3116,7 @@ void __qt_create_new_QQmlListProperty_2(void* __qtjambi_ptr, JNIEnv* __jni_env, 
 // destruct QQmlListProperty
 void __qt_destruct_QQmlListProperty(void* ptr)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "destruct QQmlListProperty")
+    QTJAMBI_NATIVE_METHOD_CALL("destruct QQmlListProperty")
     reinterpret_cast<QQmlListProperty<void>*>(ptr)->~QQmlListProperty();
 }
 
@@ -3120,7 +3127,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
 (JNIEnv *__jni_env,
  jclass __jni_class, jobject __jni_object)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::QQmlListProperty()")
+    QTJAMBI_NATIVE_METHOD_CALL("QQmlListProperty::QQmlListProperty()")
     QTJAMBI_TRY{
         QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_create_new_QQmlListProperty_0, sizeof(QQmlListProperty<void>), typeid(QQmlListProperty<void>), false, &deleter_QQmlListProperty, nullptr);
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -3134,13 +3141,15 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
  jclass __jni_class,
  jobject __jni_object,
  jobject o0,
- jobject list1)
+ jobject list1,
+ jboolean readonly)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::QQmlListProperty(QObject * o, QList<QObject > & list)")
+    QTJAMBI_NATIVE_METHOD_CALL("QQmlListProperty::QQmlListProperty(QObject * o, QList<QObject > & list)")
     QTJAMBI_TRY{
-        jvalue arguments[2];
+        jvalue arguments[3];
         arguments[0].l = o0;
         arguments[1].l = list1;
+        arguments[2].z = readonly;
         QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_create_new_QQmlListProperty_1, sizeof(QQmlListProperty<void>), typeid(QQmlListProperty<void>), false, &deleter_QQmlListProperty, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -3161,7 +3170,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
  jobject removeLastFunction,
  jint hash)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::QQmlListProperty(QObject * o, QList<QObject > & list)")
+    QTJAMBI_NATIVE_METHOD_CALL("QQmlListProperty::QQmlListProperty(QObject * o, QList<QObject > & list)")
     QTJAMBI_TRY{
         jvalue arguments[9];
         arguments[0].l = metaType;
@@ -3187,7 +3196,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_
     jobject result{nullptr};
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(listNativeId);
-        QtJambiAPI::checkPointer(env, container.first, typeid(QList<QVariant>));
+        QtJambiAPI::checkNullPointer(env, container.first, typeid(QList<QVariant>));
         AbstractListAccess* containerAccess = dynamic_cast<AbstractListAccess*>(container.second);
         Q_ASSERT(containerAccess);
         if(!(containerAccess->elementMetaType().flags() & QMetaType::PointerToQObject)){
@@ -3206,10 +3215,10 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
  jobject object0,
  QtJambiNativeID elementType)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::append(QObject object)")
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this, typeid(QQmlListProperty<void>));
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QQmlListProperty::append(QObject object)", __qt_this)
         if(__qt_this->append==FunctionUserData::append){
             jint hash = jint(qint64(__qt_this->data));
             FunctionUserData *functionData{nullptr};
@@ -3255,10 +3264,10 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
  jobject object0,
  QtJambiNativeID elementType)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::append(QObject object)")
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this, typeid(QQmlListProperty<void>));
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QQmlListProperty::replace(long index, QObject object)", __qt_this)
         if(__qt_this->replace==FunctionUserData::replace){
             jint hash = jint(qint64(__qt_this->data));
             FunctionUserData *functionData{nullptr};
@@ -3304,10 +3313,10 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_
  QtJambiNativeID elementType)
 {
     jobject _result{nullptr};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::at(int index)")
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this, typeid(QQmlListProperty<void>));
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QQmlListProperty::at(long index)", __qt_this)
         if(__qt_this->at==FunctionUserData::at){
             jint hash = jint(qint64(__qt_this->data));
             FunctionUserData *functionData{nullptr};
@@ -3346,10 +3355,10 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml
  jobject _this)
 {
     jboolean _result{false};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::canAppend()")
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this, typeid(QQmlListProperty<void>));
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QQmlListProperty::canAppend()", __qt_this)
         _result = __qt_this->append!=nullptr;
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -3363,10 +3372,10 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml
  jobject _this)
 {
     jboolean _result{false};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::canAt()")
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this, typeid(QQmlListProperty<void>));
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QQmlListProperty::canAt()", __qt_this)
         _result = __qt_this->at!=nullptr;
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -3380,10 +3389,10 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml
  jobject _this)
 {
     jboolean _result{false};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::canClear()")
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this, typeid(QQmlListProperty<void>));
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QQmlListProperty::canClear()", __qt_this)
         _result = __qt_this->clear!=nullptr;
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -3397,10 +3406,10 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml
  jobject _this)
 {
     jboolean _result{false};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::canCount()")
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this, typeid(QQmlListProperty<void>));
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QQmlListProperty::canCount()", __qt_this)
         _result = __qt_this->count!=nullptr;
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -3414,10 +3423,10 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml
  jobject _this)
 {
     jboolean _result{false};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::canCount()")
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this, typeid(QQmlListProperty<void>));
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QQmlListProperty::canRemoveLast()", __qt_this)
         _result = __qt_this->removeLast!=nullptr;
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -3431,10 +3440,10 @@ extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml
  jobject _this)
 {
     jboolean _result{false};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::canCount()")
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this, typeid(QQmlListProperty<void>));
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QQmlListProperty::canReplace()", __qt_this)
         _result = __qt_this->replace!=nullptr;
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -3447,10 +3456,10 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
 (JNIEnv * __jni_env,
  jobject _this)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::clear()")
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this, typeid(QQmlListProperty<void>));
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QQmlListProperty::clear()", __qt_this)
         if(__qt_this->clear)
             __qt_this->clear(__qt_this);
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -3463,10 +3472,10 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
 (JNIEnv * __jni_env,
  jobject _this)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::clear()")
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this, typeid(QQmlListProperty<void>));
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QQmlListProperty::removeLast()", __qt_this)
         if(__qt_this->removeLast)
             __qt_this->removeLast(__qt_this);
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -3480,10 +3489,10 @@ extern "C" Q_DECL_EXPORT jlong JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQ
  jobject _this)
 {
     jlong _result{0};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::count()")
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this, typeid(QQmlListProperty<void>));
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QQmlListProperty::count()", __qt_this)
         if(__qt_this->count)
             _result = __qt_this->count(__qt_this);
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -3498,10 +3507,10 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_
  jobject _this)
 {
     jobject _result{nullptr};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QQmlListProperty::object()")
     QTJAMBI_TRY{
         QQmlListProperty<void> *__qt_this = QtJambiAPI::convertJavaObjectToNative<QQmlListProperty<void> >(__jni_env, _this);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this, typeid(QQmlListProperty<void>));
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QQmlListProperty::object()", __qt_this)
         _result = qtjambi_cast<jobject>(__jni_env, __qt_this->object);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -3536,7 +3545,8 @@ void initialize_meta_info_QQmlListProperty(){
     const std::type_info& typeId = registerUnspecificTypeInfo<QQmlListProperty<void>>("QQmlListProperty", "io/qt/qml/QQmlListProperty");
     registerOperators<QQmlListProperty<void>>();
     registerConstructorInfos(typeId, &__qt_destruct_QQmlListProperty, {ConstructorInfo(&__qt_create_new_QQmlListProperty_0, nullptr),
-                                                                       ConstructorInfo(&__qt_create_new_QQmlListProperty_1, "Lio/qt/core/QObject;Lio/qt/core/QList;")} );
+                                                                       ConstructorInfo(&__qt_create_new_QQmlListProperty_1, "Lio/qt/core/QObject;Lio/qt/core/QList;"),
+                                                                       ConstructorInfo(&__qt_create_new_QQmlListProperty_1, "Lio/qt/core/QObject;Lio/qt/core/QList;Z")} );
     registerDeleter(typeId, &deleter_QQmlListProperty);
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     int metaTypeID = registerMetaType<QQmlListProperty<QObject>>("QQmlListProperty<QObject>",

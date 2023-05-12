@@ -317,7 +317,7 @@ void MetaInfoGenerator::writeCppFile() {
                       << INDENT << "extern \"C\" Q_DECL_EXPORT jint JNICALL JNI_ONLOAD(JavaVM *, void *)" << Qt::endl
                       << INDENT << "{" << Qt::endl;
             INDENTATION(INDENT)
-            stream << INDENT << "QTJAMBI_DEBUG_METHOD_PRINT(\"native\", \"" << package << "::JNI_OnLoad(JavaVM *, void *)\")" << Qt::endl;
+            stream << INDENT << "QTJAMBI_LIBRARY_INITIALIZATION_METHOD_CALL(\"" << package << "\")" << Qt::endl;
             if(typeSystemEntry)
                 generateInitializer(stream, typeSystemEntry, {}, TS::MetaInfo, CodeSnip::Beginning, INDENT);
         }
@@ -546,7 +546,11 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                             if(!typeSystemID.isEmpty() && !typeSystemEntry->qtLibrary().isEmpty() && (!nativeLibs.contains(typeSystemEntry) || !nativeLibs[typeSystemEntry].contains(typeSystemEntry->qtLibrary())))
                                 nativeLibs[typeSystemEntry] << typeSystemEntry->qtLibrary();
                             generateInitializer(s, typeSystemEntry, {}, TS::TargetLangCode, CodeSnip::Beginning, INDENT);
-                            s << INDENT << "initializePackage(\"io.qt.internal\");" << Qt::endl;
+                            if(package=="io.qt.core"){
+                                s << INDENT << "initializePackage(\"io.qt.internal\");" << Qt::endl;
+                            }else{
+                                s << INDENT << "initializePackage(\"io.qt.core\");" << Qt::endl;
+                            }
                             generateInitializer(s, typeSystemEntry, {}, TS::TargetLangCode, CodeSnip::Position1, INDENT);
                             if(typeSystemID!="qtjambi")
                                 requiredTypeSystems[typeSystemEntry] << "qtjambi";

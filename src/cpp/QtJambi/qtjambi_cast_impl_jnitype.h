@@ -260,7 +260,13 @@ struct qtjambi_jnitype_qobject_decider_cast<true, has_scope, NativeType, true, i
     typedef typename std::add_pointer<NativeType_c>::type NativeType_out;
     typedef typename std::add_pointer<NativeType>::type NativeType_ptr;
     static jobject cast(JNIEnv * env, NativeType_in in, const char*, QtJambiScope* scope){
-        jobject o = QtJambiShellInterface::getJavaObjectLocalRef(env, dynamic_cast<const QtJambiShellInterface*>(in));
+        jobject o = nullptr;
+        if(in){
+            try{
+                QtJambiAPI::checkDanglingPointer(env, in);
+                o = QtJambiShellInterface::getJavaObjectLocalRef(env, dynamic_cast<const QtJambiShellInterface*>(in));
+            }catch(...){}
+        }
         if(!o){
             o = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, in, typeid(NativeType));
             if(scope)

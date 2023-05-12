@@ -42,12 +42,12 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_scxm
  jobject slot1,
  jint type2)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QScxmlStateMachine::connectToState(const QString &scxmlStateName, Functor functor, Qt::ConnectionType type = Qt::AutoConnection)")
     Q_UNUSED(__this)
     jobject _result{nullptr};
     QTJAMBI_TRY{
         QScxmlStateMachine *__qt_this = QtJambiAPI::objectFromNativeId<QScxmlStateMachine>(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QScxmlStateMachine::connectToState(const QString &scxmlStateName, Functor functor, Qt::ConnectionType type = Qt::AutoConnection)", __qt_this)
         const QString&  __qt_scxmlStateName0 = qtjambi_cast<QString>(__jni_env, scxmlStateName0);
         JObjectWrapper pointer(__jni_env, slot1);
         QMetaObject::Connection connection;
@@ -80,12 +80,12 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_scxm
  jobject slot1,
  jint type2)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QScxmlStateMachine::connectToEvent(const QString &scxmlStateName, Functor functor, Qt::ConnectionType type = Qt::AutoConnection)")
     Q_UNUSED(__this)
     jobject _result{nullptr};
     QTJAMBI_TRY{
         QScxmlStateMachine *__qt_this = QtJambiAPI::objectFromNativeId<QScxmlStateMachine>(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QScxmlStateMachine::connectToEvent(const QString &scxmlStateName, Functor functor, Qt::ConnectionType type = Qt::AutoConnection)", __qt_this)
         const QString&  __qt_scxmlStateName0 = qtjambi_cast<QString>(__jni_env, scxmlStateName0);
         JObjectWrapper pointer(__jni_env, slot1);
         QMetaObject::Connection connection;
@@ -120,10 +120,10 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_scxml_Q
  QtJambiNativeID __this_nativeId,
  jbooleanArray ok0)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QScxmlDataModel::ForeachLoopBody::run(bool * ok)")
     QTJAMBI_TRY{
         QScxmlDataModel::ForeachLoopBody *__qt_this = QtJambiAPI::objectFromNativeId<QScxmlDataModel::ForeachLoopBody>(__this_nativeId);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QScxmlDataModel::ForeachLoopBody::run(bool * ok)", __qt_this)
         JBooleanArrayPointer boolPointer(__jni_env, ok0);
         __qt_this->run(boolPointer.pointer());
     }QTJAMBI_CATCH(const JavaException& exn){

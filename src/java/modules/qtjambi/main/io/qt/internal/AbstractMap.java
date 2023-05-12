@@ -47,6 +47,9 @@ public abstract class AbstractMap<K,V> extends AbstractAssociativeContainer<K,V>
 		super(p);
 	}
     
+    @Override
+    public abstract AbstractMap<K,V> clone();
+    
     @QtUninvokable
     protected abstract AbstractAssociativeConstIterator<K,V> find(K key);
     

@@ -34,12 +34,27 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.*;
-import io.qt.core.*;
-import io.qt.qml.*;
+import io.qt.QThreadAffinityException;
+import io.qt.QtUtilities;
+import io.qt.core.QByteArray;
+import io.qt.core.QCoreApplication;
+import io.qt.core.QEvent;
+import io.qt.core.QEventLoop;
+import io.qt.core.QObject;
+import io.qt.core.QThread;
+import io.qt.qml.QQmlComponent;
+import io.qt.qml.QQmlContext;
+import io.qt.qml.QQmlEngine;
+import io.qt.qml.QQmlIncubationController;
+import io.qt.qml.QQmlIncubator;
 import io.qt.quick.QQuickItem;
 
-public class TestQmlThreadAffinity extends ApplicationInitializer {
+public class TestQmlThreadAffinity extends ApplicationInitializer{
+	
+	static {
+		System.setProperty("io.qt.enable-thread-affinity-check", "true");
+		System.setProperty("io.qt.enable-event-thread-affinity-check", "true");
+	}
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {

@@ -36,7 +36,7 @@ class QThread;
 
 namespace ThreadAPI{
 
-QTJAMBI_EXPORT jobject findJThreadForQThread(JNIEnv *env, QThread *thread);
+QTJAMBI_EXPORT jobject findJThreadForQThread(JNIEnv *env, jobject qt_thread);
 
 QTJAMBI_EXPORT jobject findQThreadForJThread(JNIEnv *env, jobject thread);
 

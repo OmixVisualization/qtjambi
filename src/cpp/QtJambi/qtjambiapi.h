@@ -75,21 +75,56 @@ enum class QtJambiNativeID : jlong { Invalid = 0 };
 #define InvalidNativeID QtJambiNativeID::Invalid
 
 QTJAMBI_EXPORT bool operator !(QtJambiNativeID nativeId);
+typedef const std::type_info& (*TypeInfoSupplier)(const void *object);
+
+namespace QtJambiAPI{
+void QTJAMBI_EXPORT checkNullPointer(JNIEnv *env, const void* ptr, const std::type_info& typeId);
+void QTJAMBI_EXPORT checkNullPointer(JNIEnv *env, const void* ptr, const std::type_info& typeId, TypeInfoSupplier typeInfoSupplier);
+void QTJAMBI_EXPORT checkDanglingPointer(JNIEnv *env, const void* ptr, const std::type_info& typeId, TypeInfoSupplier typeInfoSupplier);
+}
+
+namespace QtJambiPrivate{
+template<typename T, bool = std::is_polymorphic<T>::value>
+struct CheckPointer{
+    static const std::type_info& supplyType(const void *ptr) {
+        const T* object = reinterpret_cast<const T*>(ptr);
+        return typeid(*object);
+    };
+    static void checkNullPointer(JNIEnv *env, const T* ptr){
+        QtJambiAPI::checkNullPointer(env, ptr, typeid(T), supplyType);
+    }
+    static void checkDanglingPointer(JNIEnv *env, const T* ptr){
+        QtJambiAPI::checkDanglingPointer(env, ptr, typeid(T), supplyType);
+    }
+};
+template<typename T>
+struct CheckPointer<T,false>{
+    static void checkNullPointer(JNIEnv *env, const T* ptr){
+        QtJambiAPI::checkNullPointer(env, ptr, typeid(T));
+    }
+    static void checkDanglingPointer(JNIEnv *, const T*){
+    }
+};
+}
 
 namespace QtJambiAPI{
 
-void QTJAMBI_EXPORT checkPointer(JNIEnv *env, const void* ptr, const std::type_info& typeId);
+template<typename T>
+void checkNullPointer(JNIEnv *env, const T* ptr)
+{
+    QtJambiPrivate::CheckPointer<T>::checkNullPointer(env, ptr);
+}
 
 template<typename T>
-void checkPointer(JNIEnv *env, const T* ptr)
+void checkDanglingPointer(JNIEnv *env, const T* ptr)
 {
-    checkPointer(env, ptr, typeid(T));
+    QtJambiPrivate::CheckPointer<T>::checkDanglingPointer(env, ptr);
 }
 
 template<class T>
 T& checkedAddressOf(JNIEnv *env, T * ptr)
 {
-    checkPointer<T>(env, ptr);
+    QtJambiPrivate::CheckPointer<T>::checkNullPointer(env, ptr);
     return *ptr;
 }
 

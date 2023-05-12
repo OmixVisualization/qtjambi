@@ -102,13 +102,27 @@ void initialize_meta_info_gui(){
     GuiAPI::installThreadedPixmapsChecker([]()->bool{ return QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedPixmaps); });
 }
 
+extern "C" Q_DECL_EXPORT jobject JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_qpa_QPlatformIntegration_instance)
+    (JNIEnv *env, jclass)
+{
+    jobject result{nullptr};
+    QTJAMBI_TRY{
+        result = qtjambi_cast<jobject>(env, QGuiApplicationPrivate::platformIntegration());
+        QtJambiAPI::setCppOwnership(env, result);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+        return result;
+}
+
 extern "C" Q_DECL_EXPORT void JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QPainter_threadCheck)
 (JNIEnv *env, jclass, jobject _object)
 {
     QTJAMBI_TRY{
         QObject* object = QtJambiAPI::convertJavaObjectToQObject<QObject>(env, _object);
-        QtJambiAPI::checkPointer(env, object);
+        QtJambiAPI::checkNullPointer(env, object);
         QtJambiAPI::checkThreadOnArgument(env, "device", object);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
@@ -119,7 +133,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QPainter_threadCheck)
 
 // QOpenGLContext::versionFunctions<T>() const
 QAbstractOpenGLFunctions* qtjambi_QOpenGLContext_versionFunctions(JNIEnv *__jni_env, const QOpenGLContext *__qt_this, jclass type){
-    QtJambiAPI::checkPointer(__jni_env, __qt_this);
+    QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
     QString className = QtJambiAPI::getClassName(__jni_env, type);
     if(className == "io.qt.gui.QOpenGLFunctions_ES2"){
 #if defined(QT_OPENGL_ES_2)
@@ -163,10 +177,10 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QPo
  jlong i0,
  jobject __point)
 {
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QPointerEvent::setPoint(qsizetype, QEventPoint)")
     QTJAMBI_TRY{
         QPointerEvent *__qt_this = QtJambiAPI::convertJavaObjectToNative<QPointerEvent>(__jni_env, _this);
-        QtJambiAPI::checkPointer(__jni_env, __qt_this);
+        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QPointerEvent::setPoint(qsizetype, QEventPoint)", __qt_this)
         if(QEventPoint *__qt_point = qtjambi_cast<QEventPoint*>(__jni_env, __point)){
             QEventPoint& point = __qt_this->point(static_cast<qsizetype>(i0));
             point = *__qt_point;
@@ -184,7 +198,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_
 (JNIEnv *__jni_env, jclass, int preset)
 {
     jobject _result{nullptr};
-    QTJAMBI_DEBUG_METHOD_PRINT("native", "QGradient::QGradient(QGradient::Preset arg__1)")
+    QTJAMBI_NATIVE_METHOD_CALL("QGradient::QGradient(QGradient::Preset arg__1)")
     QTJAMBI_TRY{
         _result = qtjambi_cast<jobject>(__jni_env, QGradient(QGradient::Preset(preset)));
     }QTJAMBI_CATCH(const JavaException& exn){

@@ -46,6 +46,9 @@ public abstract class AbstractMultiHash<K, V> extends AbstractMultiAssociativeCo
 	}
 	
 	@Override
+    public abstract AbstractMultiHash<K,V> clone();
+	
+	@Override
     @QtUninvokable
 	public final Set<K> keySet() {
 		return new HashSet<>(keys());
