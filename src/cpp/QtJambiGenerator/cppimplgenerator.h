@@ -254,8 +254,8 @@ class CppImplGenerator : public CppGenerator {
     private:
         QByteArray callXxxMethod(const QString &name) const;
         QByteArray callXxxMethod(const MetaType *java_type) const;
-        QMap<QString,QMap<QString,const MetaClass*>> javaToQtConverterInfos;
-        QMap<QString,QMap<QString,const MetaClass*>> qtToJavaConverterInfos;
+        QMap<QString,QMap<QString,const MetaClass*>> nativeToJavaConverterInfos;
+        QMap<QString,QMap<QString,const MetaClass*>> javaToNativeConverterInfos;
 };
 
 #endif // CPPIMPLGENERATOR_H

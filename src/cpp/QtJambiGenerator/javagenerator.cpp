@@ -268,6 +268,9 @@ void JavaGenerator::writeFieldAccessors(QTextStream &s, const MetaField *field, 
                                      .replace("*/", "*&sol;")
                                   << "</a></p>" << Qt::endl;
                 }
+//                if(hasCodeInjections(field, {CodeSnip::Comment})){
+//                    writeInjectedCode(commentStream, field, CodeSnip::Comment);
+//                }
                 if(field->getter()->isDeprecated() && !field->getter()->deprecatedComment().isEmpty()){
                     if(!comment.isEmpty())
                         commentStream << Qt::endl;
@@ -2530,7 +2533,12 @@ void JavaGenerator::writeInjectedCode(QTextStream &s, const MetaFunction *java_f
             }
             code = code.replace("%this", "this");
             QStringList lines = code.split("\n");
-            printExtraCode(lines, s);
+            if(position==CodeSnip::Comment){
+                INDENTATIONRESET(INDENT)
+                printExtraCode(lines, s);
+            }else{
+                printExtraCode(lines, s);
+            }
         }
     }
 }
@@ -3052,6 +3060,9 @@ void JavaGenerator::writeSignal(QTextStream &s, const MetaFunction *java_functio
                          .replace("*/", "*&sol;")
                       << "</a></p>" << Qt::endl;
     }
+    if(hasCodeInjections(java_function, {CodeSnip::Comment})){
+        writeInjectedCode(commentStream, java_function, CodeSnip::Comment);
+    }
     if(java_function->isDeprecated() && !java_function->deprecatedComment().isEmpty()){
         if(!comment.isEmpty())
             commentStream << Qt::endl;
@@ -3458,6 +3469,9 @@ void JavaGenerator::writeMultiSignal(QTextStream &s, const MetaFunctionList& sig
             }
             if(!comment.isEmpty())
                 commentStream << Qt::endl;
+            if(hasCodeInjections(java_function, {CodeSnip::Comment})){
+                writeInjectedCode(commentStream, java_function, CodeSnip::Comment);
+            }
             if(java_function->isDeprecated() && !java_function->deprecatedComment().isEmpty()){
                 writeDeprecatedComment(commentStream, java_function);
             }
@@ -4097,6 +4111,9 @@ void JavaGenerator::writeFunction(QTextStream &s, const MetaFunction *java_funct
                               << "(...)</a></p>" << Qt::endl;
             }
         }
+    }
+    if(hasCodeInjections(java_function, {CodeSnip::Comment})){
+        writeInjectedCode(commentStream, java_function, CodeSnip::Comment);
     }
     if(java_function->isDeprecated() && !java_function->deprecatedComment().isEmpty()){
         if(!comment.isEmpty())
