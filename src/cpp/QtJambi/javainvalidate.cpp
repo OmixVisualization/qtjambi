@@ -116,7 +116,7 @@ struct InvalidateNativeIDAfterUsePrivate : InvalidateAfterUsePrivate{
         QtJambiExceptionInhibitor __exnHandler;
         try{
             if(QSharedPointer<QtJambiLink> link = m_link.toStrongRef()){
-                if(link->isShell() && !link->isQObject()){
+                if(!link->isShell() && !link->isQObject()){
                     link->invalidate(m_env);
                 }
             }

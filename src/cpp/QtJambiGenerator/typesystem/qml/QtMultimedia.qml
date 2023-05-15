@@ -56,18 +56,6 @@ TypeSystem{
     }
     
     Rejection{
-        className: "QVideoFrame"
-        functionName: "videoBuffer"
-        since: 6
-    }
-    
-    Rejection{
-        className: "QCamera"
-        functionName: "platformCamera"
-        since: [6, 3]
-    }
-    
-    Rejection{
         className: "QImageCapture"
         functionName: "platformImageCapture"
         since: [6, 3]
@@ -115,78 +103,33 @@ TypeSystem{
             fileName: "qaudio.h"
             location: Include.Global
         }
+        EnumType{
+            name: "Error"
+        }
+
+        EnumType{
+            name: "Mode"
+        }
+
+        EnumType{
+            name: "State"
+        }
+
+        EnumType{
+            name: "Role"
+        }
+
+        EnumType{
+            name: "VolumeScale"
+        }
     }
     
     NamespaceType{
         name: "QMultimedia"
-        until: 5
-    }
-    
-    
-    EnumType{
-        name: "QAudio::Error"
-    }
-    
-    EnumType{
-        name: "QAudio::Mode"
-    }
-    
-    EnumType{
-        name: "QAudio::State"
-    }
-    
-    EnumType{
-        name: "QAudio::Role"
-    }
-    
-    EnumType{
-        name: "QAudio::VolumeScale"
-    }
-    
-    EnumType{
-        name: "QMultimedia::AvailabilityStatus"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QMultimedia::EncodingMode"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QMultimedia::EncodingQuality"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QMultimedia::SupportEstimate"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QVideoFrame::FieldType"
-    }
-    
-    EnumType{
-        name: "QVideoFrame::PixelFormat"
-    }
-    
-    EnumType{
-        name: "QVideoFrame::RotationAngle"
-    }
-    
-    EnumType{
-        name: "QAbstractVideoBuffer::HandleType"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QAbstractVideoBuffer::MapMode"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QAbstractVideoSurface::Error"
+        EnumType{name: "AvailabilityStatus"}
+        EnumType{name: "EncodingMode"}
+        EnumType{name: "EncodingQuality"}
+        EnumType{name: "SupportEstimate"}
         until: 5
     }
     
@@ -206,62 +149,6 @@ TypeSystem{
     
     EnumType{
         name: "QAudioDecoder::State"
-    }
-    
-    EnumType{
-        name: "QCamera::CaptureMode"
-    }
-    
-    EnumType{
-        name: "QCamera::Error"
-    }
-    
-    EnumType{
-        name: "QCamera::LockChangeReason"
-    }
-    
-    EnumType{
-        name: "QCamera::LockStatus"
-    }
-    
-    EnumType{
-        name: "QCamera::LockType"
-    }
-    
-    EnumType{
-        name: "QCamera::State"
-    }
-    
-    EnumType{
-        name: "QCamera::Status"
-    }
-    
-    EnumType{
-        name: "QCamera::Position"
-    }
-    
-    EnumType{
-        name: "QCamera::ExposureMode"
-    }
-    
-    EnumType{
-        name: "QCamera::Feature"
-    }
-    
-    EnumType{
-        name: "QCamera::FlashMode"
-    }
-    
-    EnumType{
-        name: "QCamera::FocusMode"
-    }
-    
-    EnumType{
-        name: "QCamera::WhiteBalanceMode"
-    }
-    
-    EnumType{
-        name: "QCamera::TorchMode"
     }
     
     EnumType{
@@ -438,14 +325,6 @@ TypeSystem{
     }
     
     EnumType{
-        name: "QVideoFrame::HandleType"
-    }
-    
-    EnumType{
-        name: "QVideoFrame::MapMode"
-    }
-    
-    EnumType{
         name: "QSound::Loop"
         until: 5
     }
@@ -463,18 +342,38 @@ TypeSystem{
         until: 5
     }
     
-    EnumType{
-        name: "QVideoFrame::PaintOptions::PaintFlag"
-        since: [6, 2]
-    }
-    
-    ValueType{
-        name: "QVideoFrame::PaintOptions"
-        since: [6, 2]
-    }
-    
     ValueType{
         name: "QVideoFrame"
+        EnumType{
+            name: "HandleType"
+        }
+
+        EnumType{
+            name: "MapMode"
+        }
+
+        Rejection{
+            functionName: "videoBuffer"
+            since: 6
+        }
+
+        EnumType{
+            name: "FieldType"
+        }
+
+        EnumType{
+            name: "PixelFormat"
+        }
+
+        EnumType{
+            name: "RotationAngle"
+        }
+
+        ValueType{
+            name: "PaintOptions"
+            EnumType{name: "PaintFlag"}
+            since: [6, 2]
+        }
         ModifyFunction{
             signature: "operator=(const QVideoFrame &)"
             Delegate{
@@ -623,6 +522,8 @@ TypeSystem{
     
     ObjectType{
         name: "QAbstractVideoBuffer"
+        EnumType{name: "HandleType"}
+        EnumType{name: "MapMode"}
         ExtraIncludes{
             Include{
                 fileName: "utils_p.h"
@@ -1044,12 +945,9 @@ TypeSystem{
         name: "QCameraViewfinderSettings"
     }
     
-    ValueType{
-        name: "QCamera::FrameRateRange"
-    }
-    
     ObjectType{
         name: "QAbstractVideoSurface"
+        EnumType{name: "Error"}
         until: 5
     }
     
@@ -1223,6 +1121,25 @@ TypeSystem{
     
     ObjectType{
         name: "QCamera"
+        Rejection{
+            functionName: "platformCamera"
+            since: [6, 3]
+        }
+        EnumType{name: "CaptureMode"}
+        EnumType{name: "Error"}
+        EnumType{name: "LockChangeReason"}
+        EnumType{name: "LockStatus"}
+        EnumType{name: "LockType"}
+        EnumType{name: "State"}
+        EnumType{name: "Status"}
+        EnumType{name: "Position"}
+        EnumType{name: "ExposureMode"}
+        EnumType{name: "Feature"}
+        EnumType{name: "FlashMode"}
+        EnumType{name: "FocusMode"}
+        EnumType{name: "WhiteBalanceMode"}
+        EnumType{name: "TorchMode"}
+        ValueType{name: "FrameRateRange"}
         ModifyFunction{
             signature: "setViewfinder(QAbstractVideoSurface*)"
             ModifyArgument{
@@ -2436,18 +2353,11 @@ TypeSystem{
         name: "QMediaServiceDefaultDeviceInterface"
     }
     
-    EnumType{
-        name: "QAudioDevice::Mode"
-        since: [6, 2]
-    }
-    
     ValueType{
         name: "QCameraFormat"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QCameraDevice::Position"
+        EnumType{
+            name: "Position"
+        }
         since: [6, 2]
     }
     
@@ -2458,6 +2368,7 @@ TypeSystem{
     
     ValueType{
         name: "QAudioDevice"
+        EnumType{name: "Mode"}
         since: [6, 2]
     }
     
@@ -2478,40 +2389,26 @@ TypeSystem{
             read: false
             write: false
         }
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QMediaFormat::FileFormat"
-        RejectEnumValue{
-            name: "LastFileFormat"
+        EnumType{
+            name: "FileFormat"
+            RejectEnumValue{
+                name: "LastFileFormat"
+            }
         }
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QMediaFormat::AudioCodec"
-        RejectEnumValue{
-            name: "LastAudioCodec"
+        EnumType{
+            name: "AudioCodec"
+            RejectEnumValue{
+                name: "LastAudioCodec"
+            }
         }
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QMediaFormat::VideoCodec"
-        RejectEnumValue{
-            name: "LastVideoCodec"
+        EnumType{
+            name: "VideoCodec"
+            RejectEnumValue{
+                name: "LastVideoCodec"
+            }
         }
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QMediaFormat::ConversionMode"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QMediaFormat::ResolveFlags"
+        EnumType{name: "ConversionMode"}
+        EnumType{name: "ResolveFlags"}
         since: [6, 2]
     }
     
@@ -2525,26 +2422,34 @@ TypeSystem{
         since: [6, 2]
     }
     
-    EnumType{
-        name: "QImageCapture::Error"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QImageCapture::Quality"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QImageCapture::FileFormat"
-        RejectEnumValue{
-            name: "LastFileFormat"
-        }
-        since: [6, 2]
-    }
-    
     ObjectType{
         name: "QImageCapture"
+        EnumType{
+            name: "Error"
+        }
+        EnumType{
+            name: "Quality"
+        }
+        EnumType{
+            name: "FileFormat"
+            RejectEnumValue{
+                name: "LastFileFormat"
+            }
+        }
+        ModifyFunction{
+            signature: "imageAvailable(int,QVideoFrame)"
+            ModifyArgument{
+                index: 2
+                invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Comment
+                Text{
+                    content: "<p><b>Make sure to dispose frame object at the end of the slot!</b></p>"
+                }
+            }
+        }
         since: [6, 2]
     }
 
@@ -2560,11 +2465,7 @@ TypeSystem{
                 }
             }
         }
-        since: [6, 5]
-    }
-
-    EnumType{
-        name: "QScreenCapture::Error"
+        EnumType{name: "Error"}
         since: [6, 5]
     }
     
@@ -2656,6 +2557,20 @@ TypeSystem{
     
     ObjectType{
         name: "QVideoSink"
+        ModifyFunction{
+            signature: "videoFrameChanged(QVideoFrame)const"
+            ModifyArgument{
+                index: 1
+                invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Comment
+                Text{
+                    content: "<p><b>Make sure to dispose frame object at the end of the slot!</b></p>"
+                }
+            }
+        }
         since: [6, 2]
     }
     
@@ -2672,17 +2587,8 @@ TypeSystem{
                 }
             }
         }
-        since: [6, 2]
-    }
-    
-    Rejection{
-        className: "QWaveDecoder::chunk"
-        since: [6, 2]
-    }
-    
-    Rejection{
-        className: "QWaveDecoder"
-        functionName: "peekChunk"
+        Rejection{className: "chunk"}
+        Rejection{functionName: "peekChunk"}
         since: [6, 2]
     }
     
@@ -2701,37 +2607,22 @@ TypeSystem{
     
     ValueType{
         name: "QVideoFrameFormat"
+        EnumType{name: "PixelFormat"}
+        EnumType{name: "Direction"}
+        EnumType{name: "YCbCrColorSpace"}
+        EnumType{
+            name: "ColorTransfer"
+            since: [6, 4]
+        }
+        EnumType{
+            name: "ColorRange"
+            since: [6, 4]
+        }
+        EnumType{
+            name: "ColorSpace"
+            since: [6, 4]
+        }
         since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QVideoFrameFormat::PixelFormat"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QVideoFrameFormat::Direction"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QVideoFrameFormat::YCbCrColorSpace"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QVideoFrameFormat::ColorTransfer"
-        since: [6, 4]
-    }
-    
-    EnumType{
-        name: "QVideoFrameFormat::ColorRange"
-        since: [6, 4]
-    }
-    
-    EnumType{
-        name: "QVideoFrameFormat::ColorSpace"
-        since: [6, 4]
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QAudioBuffer::QAudioBuffer', unmatched parameter type 'QAbstractAudioBuffer*'"}
