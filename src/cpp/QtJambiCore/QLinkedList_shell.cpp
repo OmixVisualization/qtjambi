@@ -99,7 +99,13 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::first() const", container.first)
-        result = dynamic_cast<AbstractLinkedListAccess*>(container.second)->first(__jni_env, container.first);
+        AbstractLinkedListAccess* containerAccess = dynamic_cast<AbstractLinkedListAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        jint size = containerAccess->size(__jni_env, container.first);
+        if (size == 0) {
+            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size 0 at 0") QTJAMBI_STACKTRACEINFO );
+        }
+        result = containerAccess->first(__jni_env, container.first);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -117,7 +123,13 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::last() const", container.first)
-        result = dynamic_cast<AbstractLinkedListAccess*>(container.second)->last(__jni_env, container.first);
+        AbstractLinkedListAccess* containerAccess = dynamic_cast<AbstractLinkedListAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        jint size = containerAccess->size(__jni_env, container.first);
+        if (size == 0) {
+            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size 0 at 0") QTJAMBI_STACKTRACEINFO );
+        }
+        result = containerAccess->last(__jni_env, container.first);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END

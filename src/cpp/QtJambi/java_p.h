@@ -382,6 +382,11 @@ namespace Java{
                                          QTJAMBI_REPOSITORY_DECLARE_INT_FIELD(size)
                                          )
 
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(MetaObjectData$MetaTypeInfo,
+                                         QTJAMBI_REPOSITORY_DECLARE_INT_FIELD(metaTypeId)
+                                         QTJAMBI_REPOSITORY_DECLARE_STRING_FIELD(typeName)
+                                         )
+
         QTJAMBI_REPOSITORY_DECLARE_CLASS(MetaObjectData,
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(intData)
                       QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(stringData)

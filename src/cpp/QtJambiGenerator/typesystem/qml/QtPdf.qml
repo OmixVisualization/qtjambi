@@ -215,6 +215,39 @@ TypeSystem{
         }
         until: [6, 3]
     }
+
+    ObjectType{
+        name: "QPdfLinkModel"
+        EnumType{
+            name: "Role"
+        }
+        ModifyFunction{
+            signature: "setDocument(QPdfDocument *)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcDocument"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        since: [6, 6]
+    }
+
+    ObjectType{
+        name: "QPdfPageSelector"
+        ModifyFunction{
+            signature: "setDocument(QPdfDocument *)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcDocument"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        since: [6, 6]
+    }
     
     SuppressedWarning{text: "WARNING(CppImplGenerator) :: Value type 'QPdfDestination' is missing a default constructor.*"}
     SuppressedWarning{text: "WARNING(CppImplGenerator) :: Value type 'QPdfSelection' is missing a default constructor.*"}

@@ -540,7 +540,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_deletePointer)
         case jint(QNativePointer::Type::Float):         free((reinterpret_cast<float *>(ptr))); break;
         case jint(QNativePointer::Type::Double):        free((reinterpret_cast<double *>(ptr))); break;
         default:
-            qWarning("Unhandled free of type: %d\n", int(type));
+            qCWarning(DebugAPI::internalCategory, "Unhandled free of type: %d\n", int(type));
             break;
         }
 
@@ -556,7 +556,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_deletePointer)
         case jint(QNativePointer::Type::Double):        delete ((reinterpret_cast<double *>(ptr))); break;
         case jint(QNativePointer::Type::String):        delete ((reinterpret_cast<QString *>(ptr))); break;
         default:
-            qWarning("Unhandled delete of type: %d\n", int(type));
+            qCWarning(DebugAPI::internalCategory, "Unhandled delete of type: %d\n", int(type));
             break;
         }
 
@@ -572,7 +572,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_deletePointer)
         case jint(QNativePointer::Type::Double):        delete [] ((reinterpret_cast<double *>(ptr))); break;
         case jint(QNativePointer::Type::String):        delete [] ((reinterpret_cast<QString *>(ptr))); break;
         default:
-            qWarning("Unhandled delete [] of type: %d\n", int(type));
+            qCWarning(DebugAPI::internalCategory, "Unhandled delete [] of type: %d\n", int(type));
             break;
         }
     }

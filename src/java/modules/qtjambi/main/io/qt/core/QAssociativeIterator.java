@@ -34,6 +34,26 @@ import io.qt.QtObject;
 import io.qt.QtUninvokable;
 import io.qt.internal.AbstractAssociativeIterator;
 
+/**
+ * <p>Java-iterable wrapper for Qt's iterator types:
+ * <ul>
+ * <li><a href="https://doc.qt.io/qt/qmap-iterator.html">QMap&lt;K,V>::iterator</a></li>
+ * <li><a href="https://doc.qt.io/qt/qhash-iterator.html">QHash&lt;K,V>::iterator</a></li>
+ * <li><a href="https://doc.qt.io/qt/qmultimap-iterator.html">QMultiMap&lt;K,V>::iterator</a></li>
+ * <li><a href="https://doc.qt.io/qt/qmultihash-iterator.html">QMultiHash&lt;K,V>::iterator</a></li>
+ * </ul>
+ * </p>
+ * @param <K> key type
+ * @param <V> value type
+ * @see QMap#begin()
+ * @see QMap#end()
+ * @see QHash#begin()
+ * @see QHash#end()
+ * @see QMultiMap#begin()
+ * @see QMultiMap#end()
+ * @see QMultiHash#begin()
+ * @see QMultiHash#end()
+ */
 public final class QAssociativeIterator<K,V> extends QAssociativeConstIterator<K,V> implements AbstractAssociativeIterator<K,V>{
     
 	@NativeAccess
@@ -41,6 +61,10 @@ public final class QAssociativeIterator<K,V> extends QAssociativeConstIterator<K
     	super(owner);
 	}
     
+	/**
+	 * Set the value at iterator's position in the container.
+	 * @param newValue the new value
+	 */
     @QtUninvokable
 	public final boolean setValue(V newValue) {
     	if(!isValid())

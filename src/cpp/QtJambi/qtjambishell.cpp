@@ -40,6 +40,7 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "containeraccess_p.h"
 #include "supertypeinfo_p.h"
 #include "qtjambimetaobject_p.h"
+#include "utils_p.h"
 
 class VTable
 {
@@ -235,9 +236,9 @@ int QtJambiShell::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 void QtJambiShell::warnForMethod(const char* method) const
 {
     if(QSharedPointer<QtJambiLink> lnk = static_cast<const QtJambiShellImpl*>(this)->m_link){
-        qWarning("%s: The java object has been deleted prior to the native object [%s].", method, qPrintable(lnk->describe()));
+        qCWarning(DebugAPI::debugAPIJavaOverloadsCategory, "%s: The java object has been deleted prior to the native object [%s].", method, qPrintable(lnk->describe()));
     }else{
-        qWarning("%s: The java object has been deleted prior to the native object [object link deleted].", method);
+        qCWarning(DebugAPI::debugAPIJavaOverloadsCategory, "%s: The java object has been deleted prior to the native object [object link deleted].", method);
     }
 }
 
@@ -245,15 +246,15 @@ void QtJambiShell::warnForMethod(const char* method, const QObject* object) cons
 {
     if(object){
         if(QSharedPointer<QtJambiLink> lnk = static_cast<const QtJambiShellImpl*>(this)->m_link){
-            qWarning("%s: The java object has been deleted prior to the native object [class=\"%s\", objectName=\"%s\", %s].", method, qPrintable(object->metaObject()->className()), qPrintable(object->objectName()), qPrintable(lnk->describe()));
+            qCWarning(DebugAPI::debugAPIJavaOverloadsCategory, "%s: The java object has been deleted prior to the native object [class=\"%s\", objectName=\"%s\", %s].", method, qPrintable(object->metaObject()->className()), qPrintable(object->objectName()), qPrintable(lnk->describe()));
         }else{
-            qWarning("%s: The java object has been deleted prior to the native object [class=\"%s\", objectName=\"%s\", object link deleted].", method, qPrintable(object->metaObject()->className()), qPrintable(object->objectName()));
+            qCWarning(DebugAPI::debugAPIJavaOverloadsCategory, "%s: The java object has been deleted prior to the native object [class=\"%s\", objectName=\"%s\", object link deleted].", method, qPrintable(object->metaObject()->className()), qPrintable(object->objectName()));
         }
     }else{
         if(QSharedPointer<QtJambiLink> lnk = static_cast<const QtJambiShellImpl*>(this)->m_link){
-            qWarning("%s: The java object has been deleted prior to the native object [%s].", method, qPrintable(lnk->describe()));
+            qCWarning(DebugAPI::debugAPIJavaOverloadsCategory, "%s: The java object has been deleted prior to the native object [%s].", method, qPrintable(lnk->describe()));
         }else{
-            qWarning("%s: The java object has been deleted prior to the native object [object link deleted].", method);
+            qCWarning(DebugAPI::debugAPIJavaOverloadsCategory, "%s: The java object has been deleted prior to the native object [object link deleted].", method);
         }
     }
 }
@@ -281,7 +282,7 @@ jmethodID QtJambiShell::javaMethod(const std::type_info& typeId, int pos) const
 bool QtJambiShell::tryDeleteShell(const std::type_info& typeId){
     if(enabledDanglingPointerCheck()){
         if(!checkedGetTypeInfo(QtJambiPrivate::CheckPointer<QtJambiShell>::supplyType, this)){
-            qWarning("Possible memory leak while deleting %s: Cannot delete shell at %p", qPrintable(QtJambiAPI::typeName(typeId)), this);
+            qCWarning(DebugAPI::internalCategory, "Possible memory leak while deleting %s: Cannot delete shell at %p", qPrintable(QtJambiAPI::typeName(typeId)), this);
             return false;
         }
     }

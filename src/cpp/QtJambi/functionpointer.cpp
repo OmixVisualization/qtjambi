@@ -39,6 +39,7 @@
 #include <QtCore/QUuid>
 #include <QtCore/QDebug>
 #include <memory>
+#include "utils_p.h"
 
 typedef decltype(std::declval<QVector<int>>().size()) size_type;
 
@@ -210,7 +211,7 @@ QFunctionPointer extractFunction(
             ? QString(QLatin1String("GenericFunction"))
             : QString(QLatin1String("Generic%1Function")).arg(functionParamTypeInfos.size()-1);
     QString funTypeName = QtJambiAPI::typeName(functionTypeId);
-    //qDebug() << "trying to find function " << funTypeName;
+    //qCDebug(DebugAPI::internalCategory) << "trying to find function " << funTypeName;
     if(!QFileInfo::exists(":/io/qt/qtjambi/functionpointers/"+funTypeName)){
         for(const FunctionParamTypeInfo& info : functionParamTypeInfos){
             if(!info.isPointer
@@ -241,7 +242,7 @@ QFunctionPointer extractFunction(
         }
     }
 
-    //qDebug() << "found: " << typeName;
+    //qCDebug(DebugAPI::internalCategory) << "found: " << typeName;
     QString tmpFile = gLibraries->dir->filePath("~"+QUuid::createUuid().toString(QUuid::Id128)+".tmp");
     if(QFile::copy(":/io/qt/qtjambi/functionpointers/"+typeName, tmpFile)){
         std::unique_ptr<QLibrary> library(new QLibrary(tmpFile));
@@ -263,13 +264,13 @@ QFunctionPointer extractFunction(
                 gLibraries->libraries[typeName] << QExplicitlySharedDataPointer<LibraryFile>(libFile);
             }else{
                 library->unload();
-                qWarning() << "Unable to find initialize function for " << typeName << ".";
+                qCWarning(DebugAPI::internalCategory) << "Unable to find initialize function for " << typeName << ".";
             }
         }else{
-            qWarning() << "Unable to create function pointer. " << library->errorString();
+            qCWarning(DebugAPI::internalCategory) << "Unable to create function pointer. " << library->errorString();
         }
     }else{
-        qWarning() << "Unable to copy library to " << tmpFile;
+        qCWarning(DebugAPI::internalCategory) << "Unable to copy library to " << tmpFile;
     }
     return result;
 }

@@ -35,23 +35,27 @@ TypeSystem{
     qtLibrary: "QtTextToSpeech"
     module: "qtjambi.texttospeech"
     description: "Provides support for accessibility features such as text-to-speech."
-
-    EnumType{
-        name: "QTextToSpeech::State"
-    }
-    
-    EnumType{
-        name: "QTextToSpeech::BoundaryHint"
-        since: [6, 4]
-    }
-    
-    EnumType{
-        name: "QTextToSpeech::ErrorReason"
-        since: [6, 4]
-    }
     
     ObjectType{
         name: "QTextToSpeech"
+
+        EnumType{
+            name: "State"
+        }
+        EnumType{
+            name: "BoundaryHint"
+            since: [6, 4]
+        }
+
+        EnumType{
+            name: "ErrorReason"
+            since: [6, 4]
+        }
+
+        EnumType{
+            name: "Capability"
+            since: [6, 6]
+        }
         ExtraIncludes{
             Include{
                 fileName: "hashes.h"
@@ -151,15 +155,15 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QVoice::Age"
-    }
-    
-    EnumType{
-        name: "QVoice::Gender"
-    }
-    
     ValueType{
         name: "QVoice"
+
+        EnumType{
+            name: "Age"
+        }
+
+        EnumType{
+            name: "Gender"
+        }
     }
 }

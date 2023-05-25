@@ -454,7 +454,7 @@ jboolean CoreAPI::writeMetaPropertyOnGadget(JNIEnv *env, jobject _this, jobject 
                     void *copy = nullptr;
                     QtJambiScope scope(nullptr);
                     if(!(success = converter(env, &scope, val, copy, jValueType::l))){
-                        qWarning("Cannot convert external type '%s' to '%s'",
+                        qCWarning(DebugAPI::internalCategory, "Cannot convert external type '%s' to '%s'",
                                  qPrintable(QString(QtJambiAPI::getObjectClassName(env, value)).replace("$", ".")),
                                  qPrintable(qtName));
                         return false;
@@ -482,7 +482,7 @@ jboolean CoreAPI::writeMetaPropertyOnGadget(JNIEnv *env, jobject _this, jobject 
                     void *copy = nullptr;
                     QtJambiScope scope(nullptr);
                     if(!converter(env, &scope, val, copy, jValueType::l)){
-                        qWarning("Cannot convert external type '%s' to '%s'",
+                        qCWarning(DebugAPI::internalCategory, "Cannot convert external type '%s' to '%s'",
                                  qPrintable(QString(QLatin1String(fullJavaName)).replace("/", ".").replace("$", ".")),
                                  qPrintable(qtName));
                         return false;

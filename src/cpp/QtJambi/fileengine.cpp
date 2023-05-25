@@ -38,6 +38,7 @@
 #include "qtjambiapi.h"
 #include "jobjectwrapper.h"
 #include "java_p.h"
+#include "utils_p.h"
 
 #ifdef Q_OS_ANDROID
 #include <android/asset_manager_jni.h>
@@ -1105,15 +1106,13 @@ QString QClassPathEngine::fileName(FileName file) const {
     if(QAbstractFileEngine* afe = engines.value(0)){
         QString classPathEntry;
         if (engines.size() == 1) {
-            /*if (QFSFileEngine* fsf = dynamic_cast<QFSFileEngine*>(afe)){
-                return fsf->fileName(file);
-            }else*/ if (QClassPathEntry* cpe = dynamic_cast<QClassPathEntry*>(afe))
+            if (QClassPathEntry* cpe = dynamic_cast<QClassPathEntry*>(afe))
                 classPathEntry = cpe->classPathEntryName();
             else{
                 if(JniEnvironment env{200}){
-                    JavaException::raiseRuntimeException(env, "Bogus engine in class path file engine" QTJAMBI_STACKTRACEINFO );
+                    JavaException::raiseRuntimeException(env, "Wrong engine type in class path file engine" QTJAMBI_STACKTRACEINFO );
                 }else{
-                    qWarning("Bogus engine in class path file engine");
+                    qCWarning(DebugAPI::internalCategory) << "Wrong engine type in class path file engine";
                 }
             }
         } else {

@@ -112,6 +112,10 @@ abstract class SignalUtility {
 	static {
 		QtJambi_LibraryUtilities.initialize();
 	}
+	
+	private final static String wrapper = "Wrapper";
+	private final static String qvariant = "QVariant";
+	
 	protected SignalUtility() {throw new RuntimeException();}
 
 	private final static java.util.logging.Logger logger = java.util.logging.Logger.getLogger("io.qt.internal");
@@ -2585,19 +2589,21 @@ abstract class SignalUtility {
 					&& signalMethod.isValid() 
 					&& (checkConnectArgs = QMetaObject.checkConnectArgs(signalMethod, slot))) {
 				boolean hasWrappers = false;
-				for(QByteArray ba : signalMethod.parameterTypes()) {
-					if(ba.startsWith("J") && ba.endsWith("Wrapper")) {
-						hasWrappers = true;
-						break;
+				if(isDynamic(signalMethod.enclosingMetaObject())) {
+					for(QByteArray ba : signalMethod.parameterTypes()) {
+						if(ba.startsWith((byte)'J') && ba.endsWith(wrapper)) {
+							hasWrappers = true;
+							break;
+						}
 					}
-				}
-				if(!hasWrappers) {
-					for(QByteArray ba : slot.parameterTypes()) {
-    					if(ba.startsWith("J") && ba.endsWith("Wrapper")) {
-    						hasWrappers = true;
-    						break;
-    					}
-    				}
+					if(!hasWrappers) {
+						for(QByteArray ba : slot.parameterTypes()) {
+	    					if(ba.startsWith((byte)'J') && ba.endsWith(wrapper)) {
+	    						hasWrappers = true;
+	    						break;
+	    					}
+	    				}
+					}
 				}
 				if(!hasWrappers) {
 					return core.addConnectionToMethod(this, receiver, slot, connectionType);
@@ -3721,14 +3727,14 @@ abstract class SignalUtility {
             					&& QMetaObject.checkConnectArgs(signalMethod, metaMethod)) {
             				boolean hasWrappers = false;
             				for(QByteArray ba : signalMethod.parameterTypes()) {
-            					if((ba.startsWith("J") && ba.endsWith("Wrapper")) || ba.equals("QVariant")) {
+            					if((ba.startsWith((byte)'J') && ba.endsWith(wrapper)) || ba.equals(qvariant)) {
             						hasWrappers = true;
             						break;
             					}
             				}
             				if(!hasWrappers) {
             					for(QByteArray ba : metaMethod.parameterTypes()) {
-                					if((ba.startsWith("J") && ba.endsWith("Wrapper")) || ba.equals("QVariant")) {
+                					if((ba.startsWith((byte)'J') && ba.endsWith(wrapper)) || ba.equals(qvariant)) {
                 						hasWrappers = true;
                 						break;
                 					}
@@ -4743,120 +4749,115 @@ abstract class SignalUtility {
     
 	@NativeAccess
 	private static Method lookupSlot(Object object, String signature, Class<?>[] requiredParameters) {
-		Class<?> cls = ClassAnalyzerUtility.getClass(object);
-
-		if (requiredParameters == null) {
-			int pos = signature.indexOf('(');
-			if (pos < 0) {
-				throw new RuntimeException("Wrong syntax in slot signature: '" + signature + "'");
-			}
-			int spacePos = signature.trim().lastIndexOf(' ', pos);
-			if (pos > spacePos && spacePos > 0) {
-				throw new RuntimeException("Do not specify return type in slot signature: '" + signature + "'");
-			}
-
-			String name = signature.substring(0, pos).trim();
-
-			int pos2 = signature.indexOf(')', pos);
-			if (pos2 < 0) {
-				throw new RuntimeException("Wrong syntax in slot signature: '" + signature + "'");
-			}
-			String strTypes = signature.substring(pos + 1, pos2).trim();
-
-			String argumentTypes[] = {};
-			if (!strTypes.isEmpty())
-				argumentTypes = strTypes.split("\\,");
-
-//            if (strTypes.length() == 0)
-//                argumentTypes = new String[0];
-//            else
-//                argumentTypes = RetroTranslatorHelper.split(strTypes, ",");
-
-			for (int i = 0; i < argumentTypes.length; ++i)
-				argumentTypes[i] = argumentTypes[i].replace(" ", "");
-
-			Method result = findFunctionRecursive(cls, name, argumentTypes);
-			if (result == null && object instanceof Class) {
-				result = findFunctionRecursive((Class<?>) object, name, argumentTypes);
-			}
-			return result;
-		} else {
-			Method result = findFunctionRecursive(cls, signature, requiredParameters);
-			if (result == null && object instanceof Class) {
-				result = findFunctionRecursive((Class<?>) object, signature, requiredParameters);
-			}
-			return result;
+		Class<?> cls = (object instanceof Class) ? (Class<?>) object : ClassAnalyzerUtility.getClass(object);
+		int h = 1;
+		h = 31 * h + cls.hashCode();
+		h = 31 * h + signature.hashCode();
+		if(requiredParameters!=null) {
+			h = 31 * h + requiredParameters.length;
+	        for (Class<?> element : requiredParameters) {
+	            h = 31 * h + (element == null ? 0 : element.hashCode());
+	        }
 		}
-	}
-
-	/**
-	 * Generates a hash from arguments
-	 */
-	private static int argumentsHashCode(Class<?> cls, String functionName, Object argumentTypes[]) {
-		return Arrays.deepHashCode(new Object[]{System.identityHashCode(cls), functionName, ClassAnalyzerUtility.getClass(argumentTypes), argumentTypes});
-	}
-	
-	private static Method findFunctionRecursive(Class<?> cls, String functionName, String argumentTypes[]) {
-		Method result = lookupSlots.computeIfAbsent(argumentsHashCode(cls, functionName, argumentTypes),
+		return lookupSlots.computeIfAbsent(h,
 				argumentsHashCode -> {
-					for (Method m : cls.getDeclaredMethods()) {
-						boolean found;
-						if (!m.getName().equals(functionName))
-							continue;
-
-						Class<?> a[] = m.getParameterTypes();
-						if (a.length != argumentTypes.length)
-							continue;
-
-						found = true;
-						for (int i = 0; i < a.length; ++i) {
-							String arg = a[i].getName();
-
-							Class<?> t = a[i];
-
-							if (t.isArray()) {
-								String brackets = "";
-
-								do {
-									t = t.getComponentType();
-									brackets += "[]";
-								} while (t.isArray());
-
-								arg = t.getName() + brackets;
-							}
-
-							if (argumentTypes[i].indexOf('.') < 0) {
-								arg = arg.substring(arg.lastIndexOf('.') + 1);
-							}
-
-							String argLenient = t.isMemberClass() ? arg.replace('$', '.') : null;
-							if (!arg.equals(argumentTypes[i])
-									&& (argLenient == null || !argLenient.equals(argumentTypes[i]))) {
-								if (m.isVarArgs() && argumentTypes[i].endsWith("...")) {
-									if (arg.endsWith("[]")) {
-										arg = arg.substring(0, arg.length() - 2) + "...";
-										if (argLenient != null && argLenient.endsWith("[]")) {
-											argLenient = argLenient.substring(0, argLenient.length() - 2) + "...";
-										}
-									}
-									if (!arg.equals(argumentTypes[i])
-											&& (argLenient == null || !argLenient.equals(argumentTypes[i]))) {
-										found = false;
-										break;
-									}
-								} else {
-									found = false;
-									break;
-								}
-							}
+					if (requiredParameters == null) {
+						int pos = signature.indexOf('(');
+						if (pos < 0) {
+							throw new RuntimeException("Wrong syntax in slot signature: '" + signature + "'");
+						}
+						int spacePos = signature.trim().lastIndexOf(' ', pos);
+						if (pos > spacePos && spacePos > 0) {
+							throw new RuntimeException("Do not specify return type in slot signature: '" + signature + "'");
 						}
 
-						if (found) {
-							return m;
+						String name = signature.substring(0, pos).trim();
+
+						int pos2 = signature.indexOf(')', pos);
+						if (pos2 < 0) {
+							throw new RuntimeException("Wrong syntax in slot signature: '" + signature + "'");
 						}
+						String strTypes = signature.substring(pos + 1, pos2).trim();
+
+						String argumentTypes[] = {};
+						if (!strTypes.isEmpty())
+							argumentTypes = strTypes.split("\\,");
+
+//			            if (strTypes.length() == 0)
+//			                argumentTypes = new String[0];
+//			            else
+//			                argumentTypes = RetroTranslatorHelper.split(strTypes, ",");
+
+						for (int i = 0; i < argumentTypes.length; ++i)
+							argumentTypes[i] = argumentTypes[i].replace(" ", "");
+
+						return findFunctionRecursive(cls, name, argumentTypes);
+					} else {
+						return findFunctionRecursive(cls, signature, requiredParameters);
 					}
-					return null;
-				});
+				}
+			);
+	}
+
+	private static Method findFunctionRecursive(Class<?> cls, String functionName, String argumentTypes[]) {
+		Method result = null;
+		for (Method m : cls.getDeclaredMethods()) {
+			boolean found;
+			if (!m.getName().equals(functionName))
+				continue;
+
+			Class<?> a[] = m.getParameterTypes();
+			if (a.length != argumentTypes.length)
+				continue;
+
+			found = true;
+			for (int i = 0; i < a.length; ++i) {
+				String arg = a[i].getName();
+
+				Class<?> t = a[i];
+
+				if (t.isArray()) {
+					String brackets = "";
+
+					do {
+						t = t.getComponentType();
+						brackets += "[]";
+					} while (t.isArray());
+
+					arg = t.getName() + brackets;
+				}
+
+				if (argumentTypes[i].indexOf('.') < 0) {
+					arg = arg.substring(arg.lastIndexOf('.') + 1);
+				}
+
+				String argLenient = t.isMemberClass() ? arg.replace('$', '.') : null;
+				if (!arg.equals(argumentTypes[i])
+						&& (argLenient == null || !argLenient.equals(argumentTypes[i]))) {
+					if (m.isVarArgs() && argumentTypes[i].endsWith("...")) {
+						if (arg.endsWith("[]")) {
+							arg = arg.substring(0, arg.length() - 2) + "...";
+							if (argLenient != null && argLenient.endsWith("[]")) {
+								argLenient = argLenient.substring(0, argLenient.length() - 2) + "...";
+							}
+						}
+						if (!arg.equals(argumentTypes[i])
+								&& (argLenient == null || !argLenient.equals(argumentTypes[i]))) {
+							found = false;
+							break;
+						}
+					} else {
+						found = false;
+						break;
+					}
+				}
+			}
+
+			if (found) {
+				result = m;
+				break;
+			}
+		}
 		if (result == null) {
 			if (cls.getSuperclass() == null)
 				return null;
@@ -4867,14 +4868,13 @@ abstract class SignalUtility {
 	}
 
 	private static Method findFunctionRecursive(Class<?> cls, String functionName, Class<?> argumentTypes[]) {
-		Method result = lookupSlots.computeIfAbsent(argumentsHashCode(cls, functionName, argumentTypes),
-				argumentsHashCode -> {
-					for (Method m : cls.getDeclaredMethods()) {
-						if (m.getName().equals(functionName) && Arrays.deepEquals(argumentTypes, m.getParameterTypes()))
-							return m;
-					}
-					return null;
-				});
+		Method result = null;
+		for (Method m : cls.getDeclaredMethods()) {
+			if (m.getName().equals(functionName) && Arrays.deepEquals(argumentTypes, m.getParameterTypes())) {
+				result = m;
+				break;
+			}
+		}
 		if (result == null) {
 			if (cls.getSuperclass() == null)
 				return null;
@@ -5112,6 +5112,8 @@ abstract class SignalUtility {
 	private static native long fromReflectedMethod(Method method);
     
     private static native long metaObjectId(QMetaObject metaObject);
+    
+    private static native boolean isDynamic(QMetaObject metaObject);
 	
 	private static native void initializeMultiSignal(AbstractMultiSignal<?> signal, Class<?> declaringClass, Field field);
 	

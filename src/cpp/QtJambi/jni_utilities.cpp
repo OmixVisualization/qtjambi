@@ -242,10 +242,10 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_saveUnixSignalHandlers)(JNIEnv *e
                 struct sigaction sa;
                 memset(&sa, 0, sizeof(sa));
                 if(sigaction(s, nullptr, &sa)==0){
-                    qDebug("Signalhandler for %d saved.", s);
+                    qCDebug(DebugAPI::internalCategory, "Signalhandler for %d saved.", s);
                     cache->handlers[s] = {sa.sa_flags, sa.sa_handler};
                 }else
-                    qDebug("Unable to save signalhandler for %d.", s);
+                    qCDebug(DebugAPI::internalCategory, "Unable to save signalhandler for %d.", s);
             }
             QWriteLocker locker(QtJambiLinkUserData::lock());
             QTJAMBI_SET_OBJECTUSERDATA(SignalCache, mainThread, cache.release());
@@ -282,11 +282,11 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_restoreUnixSignalHandlers)(JNIEnv
                     sa.sa_handler = cache->handlers[s].second;
                     if(sigaction(s, &sa, &sa2)==0){
                         if(sa.sa_handler!=sa2.sa_handler)
-                            qDebug("Signalhandler for %d restored.", s);
+                            qCDebug(DebugAPI::internalCategory, "Signalhandler for %d restored.", s);
                         else
-                            qDebug("Signalhandler for %d unchanged.", s);
+                            qCDebug(DebugAPI::internalCategory, "Signalhandler for %d unchanged.", s);
                     }else
-                        qDebug("Unable to restore signalhandler for %d.", s);
+                        qCDebug(DebugAPI::internalCategory, "Unable to restore signalhandler for %d.", s);
                 }
                 return true;
             }

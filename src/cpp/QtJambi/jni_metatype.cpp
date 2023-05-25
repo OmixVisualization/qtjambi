@@ -130,7 +130,8 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_registerRefMetaType)
 #endif
             }
         }else if(isReference){
-            if(typeName.endsWith("*")){
+            return 0;
+/*            if(typeName.endsWith("*")){
                 typeName.chop(1);
                 int id = qRegisterMetaType<JObjectWrapper>("JObjectWrapper");
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -145,6 +146,53 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_registerRefMetaType)
 #else
                 QMetaType::registerNormalizedTypedef(typeName, QMetaType(id));
                 return id;
+#endif
+            }
+            */
+            if(!typeName.endsWith("&")
+                && !typeName.contains("(&)")
+                && !typeName.contains("(__cdecl&)")){
+                if(!typeName.endsWith("&")){
+                    typeName = QMetaObject::normalizedType(typeName + "&");
+                }
+                QMetaType::TypeFlags flags;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                QMetaType::Destructor destructor = &destructHelper;
+                QMetaType::Constructor constructor = &pointerConstructHelper;
+                int typeId = QMetaType::registerNormalizedType(
+                    typeName,
+                    destructor,
+                    constructor,
+                    sizeof(void*),
+                    flags,
+                    metaType.metaObject()
+                    );
+                RegistryAPI::registerComparator(new QtPrivate::BuiltInComparatorFunction<void*>(), typeId);
+                return typeId;
+#else
+                QMetaType _metaType = createMetaType(typeName,
+                                                     true,
+                                                     /*.defaultCtr=*/ nullptr,
+                                                     /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::copyCtr,
+                                                     /*.moveCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::moveCtr,
+                                                     /*.dtor=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::dtor,
+                                                     /*.equals=*/ QtPrivate::QEqualityOperatorForType<void*>::equals,
+                                                     /*.lessThan=*/ QtPrivate::QLessThanOperatorForType<void*>::lessThan,
+                                                     /*.debugStream=*/ QtPrivate::QDebugStreamOperatorForType<void*>::debugStream,
+                                                     /*.dataStreamOut=*/ QtPrivate::QDataStreamOperatorForType<void*>::dataStreamOut,
+                                                     /*.dataStreamIn=*/ QtPrivate::QDataStreamOperatorForType<void*>::dataStreamIn,
+                                                     /*.legacyRegisterOp=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<void*>::legacyRegisterOp,
+                                                     /*.size=*/ sizeof(void*),
+                                                     /*.alignment=*/ alignof(void*),
+                                                     /*.typeId=*/ QMetaType::UnknownType,
+                                                     /*.flags=*/ QMetaType::TypeFlags(flags),
+                                                     nullptr,
+                                                     QMetaType(metaType).iface()->metaObjectFn);
+                _metaType.id();
+                if(jclass clazz = CoreAPI::getClassForMetaType(env, metaType)){
+                    registerConverterVariant(env, _metaType, typeName, QtJambiAPI::getClassName(env, clazz).replace('.', '/'), clazz);
+                }
+                return _metaType.id();
 #endif
             }
         }

@@ -216,7 +216,7 @@ instance:
     `QMatrix4x4.add(QMatrix4x4)`
   - `QPainterPath::operator&=(const QPainterPath&)` →
     `QPainterPath.intersect(QPainterPath)`
-  - `QPolygon::operator=(const QPolygon&)` → `QPolygon.set(QPolygon)`
+  - `QPolygon::operator=(const QPolygon&)` → `QPolygon.assign(QPolygon)`
   - `QBitArray::operator~()` → `QBitArray.inverted()`
   - `QVector4D::operator/=(float)` → `QVector4D.divide(float)`
 
@@ -296,10 +296,10 @@ slots and invokable methods.
 
 ### Methods
 
-Basically, all public, non-static methods and non-public but void methods in a `QObject`-based class are considered to be
-invokable by Qt. You can avoid this by annotating the method with
-`@QtUninvokable`. On the other hand, static and non-public methods as well as constructors can
-be made invokable with annotation `@QtInvokable`.
+Basically, all public and non-static methods in a `QObject`-based class are considered to be
+invokable by Qt. This additionally applies to non-public void methods. If you want to make other members invokable
+(i.e. static and non-public methods as well as constructors) use the `@QtInvokable` annotation.
+Likewise, you can avoid a method to be invokable by annotating with `@QtUninvokable`.
 
 ```Java
 public class Implementor extends QObject{
@@ -447,6 +447,10 @@ this.lengthChanged.connect(this::onLengthChanged);
 
 Disconnecting signals and slots works analogous with `disconnect()`.
 
+**It is highly recommended to not subclassing slot interfaces.**
+When using string-based or method-handle signal slot connections as shown above Qt monitors receiver's life cycle.
+If the receiver is deleted all connections are removed. This monitoring is not possible when connecting to custom slot type implementation.
+
 ##### Special Characteristics in Android
 
 Android is not able to resolve the corresponding `QMetaMethod` from a method reference.
@@ -483,8 +487,11 @@ Emitting a signal in Java is done by the signal's `emit()` method.
 Private methods can only be emitted within their declaring classes:
 
 ``` java
+// emitting normal signal
 this.statechanged.emit();
 this.textChanged.emit("new text");
+
+// emitting private signal
 emit(this.lengthChanged, 5);
 ```
 
@@ -611,13 +618,15 @@ Further annotations reflect the corresponding features of Qt properties:
 
 Qt6 provides `QProperty` as bindable property member.
 
-You don't need `QtPropertyReader` and `QtPropertyWriter` annotation of your getters and setters follow the Java or Qt design:
-In QObject-derived classes, `int getFoo()` and `void setFoo(int)` is auto-detected as property `foo`. 
+In QObject-derived classes, the appearance of `void setFoo(int)` and `int getFoo()` (or `int foo()`) is auto-detected as property `foo`. 
+Here, you don't need `QtPropertyReader` and `QtPropertyWriter` annotations. However, QtJambi does not auto-detect read-only or write-only properties.
+
 Likewise, signal `fooChanged` is auto-detected as corresponding notifier even without `QtPropertyNotify` annotation and
 method `bindableFoo()` returning `QBindable` is auto-detected as corresponding bindable even without `QtPropertyBindable` annotation.
 
 In QObject-derived classes, public final fields are considered to be constant (read-only) properties. 
 Additionally, a `final QProperty<...> fooProperty` field is automatically considered to be property `foo`. You don't need getter, setter and bindable.
+**Caution, if the member property's identifier ends with `Property` this suffix is cut from the property name!**
 
 If your class declares a getter or setter but you don't intend to use it as Qt property you can annotate `@QtPropertyReader(enabled=false)`.
 
@@ -998,7 +1007,7 @@ device.close();
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.5.0.jar:qtjambi-uic-6.5.0.jar
+     -p qtjambi-6.5.1.jar:qtjambi-uic-6.5.1.jar
      -m qtjambi.uic --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -1006,7 +1015,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.5.0.jar:qtjambi-uic-6.5.0.jar
+     -cp qtjambi-6.5.1.jar:qtjambi-uic-6.5.1.jar
      io.qt.uic.Main --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -1058,7 +1067,7 @@ Now, you can load qml code, for instance, by using `QQuickView`:
 
 ``` java
 QQuickView view = new QQuickView();
-view.setSource(QUrl.fromClassPath("com/myapplication/qml/Main.qml"));
+view.setSource(new QUrl("qrc:com/myapplication/qml/Main.qml"));
 view.show();
 ```
 
@@ -1218,7 +1227,7 @@ loaded automatically on demand.
 
 ### Registering Custom Plugins
 
-Use the method `QPluginLoader.registerStaticPluginFunction(...)` to
+Use the method `QPluginLoader.qRegisterStaticPluginFunction(...)` to
 register a plugin class or instance. The class inherits `QObject` and
 needs to implement an interface (or class) known as Qt plugin, for
 instance:
@@ -1236,7 +1245,7 @@ Finally, register the plugin implementation anywhere in your
 application:
 
 ``` java
-QPluginLoader.registerStaticPluginFunction(CustomImageIOPlugin.class, Map.of("Keys", List.of("custom")));
+QPluginLoader.qRegisterStaticPluginFunction(CustomImageIOPlugin.class, Map.of("Keys", List.of("custom")));
 ```
 
 ### Custom Plugin Libraries
@@ -1251,7 +1260,7 @@ and *QtJambi* libraries:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.5.0.jar:qtjambi-deployer-6.5.0.jar
+     -p qtjambi-6.5.1.jar:qtjambi-deployer-6.5.1.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1263,7 +1272,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.5.0.jar:qtjambi-deployer-6.5.0.jar
+     -cp qtjambi-6.5.1.jar:qtjambi-deployer-6.5.1.jar
      io.qt.qtjambi.deployer.Main plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1290,7 +1299,7 @@ This is especially necessary on macOS (arm64).
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.5.0.jar:qtjambi-deployer-6.5.0.jar
+     -p qtjambi-6.5.1.jar:qtjambi-deployer-6.5.1.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar

@@ -48,98 +48,121 @@ public class QHash<K,V> extends io.qt.internal.AbstractHash<K,V> implements Clon
     	QtJambi_LibraryUtilities.initialize();
     }
 
+    /**
+     * Constructor for internal use only.
+     * @param p expected to be <code>null</code>.
+     */
     @NativeAccess
     protected QHash(QPrivateConstructor p) {
 		super(p);
 	}
     
+    /**
+     * Creating a container with given key and value type.
+     * <p>See <a href="https://doc.qt.io/qt/qhash.html#QHash">QHash::QHash()</a></p>
+     * @param keyType the type K
+     * @param valueType the type V
+     */
     public QHash(Class<K> keyType, Class<V> valueType) {
 		super(null);
 		QMetaType keyMetaType = QMetaType.fromType(keyType);
 		QMetaType valueMetaType = QMetaType.fromType(valueType);
-		if(keyMetaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QHash.");
-		if(keyMetaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be key type of QHash.");
-		if(valueMetaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QHash.");
-		if(valueMetaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be value type of QHash.");
 		initialize(keyType, QtJambi_LibraryUtilities.internal.nativeId(keyMetaType), valueType, QtJambi_LibraryUtilities.internal.nativeId(valueMetaType), null);
 	}
     
+    /**
+     * Creating a container with given content.
+     * <p>See <a href="https://doc.qt.io/qt/qhash.html#QHash-2">QHash::QHash(const QHash&lt;Key, T> &amp;)</a></p>
+     * @param other map
+     */
     public QHash(Map<K,V> other) {
 		super(null);
 		QPair<QMetaType, QMetaType> metaTypes = QMap.findMapMetaType(Objects.requireNonNull(other));
-		if(metaTypes.first.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QHash.");
-		if(metaTypes.first.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be key type of QHash.");
-		if(metaTypes.second.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QHash.");
-		if(metaTypes.second.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be value type of QHash.");
 		initialize(metaTypes.first.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaTypes.first), metaTypes.second.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaTypes.second), other);
 	}
     
+    /**
+     * Creating a container with given key and value type.
+     * <p>See <a href="https://doc.qt.io/qt/qhash.html#QHash">QHash::QHash()</a></p>
+     * @param keyType the type K
+     * @param valueMetaType the type V
+     */
 	public QHash(Class<K> keyType, QMetaType valueMetaType) {
 		super(null);
 		QMetaType keyMetaType = QMetaType.fromType(keyType);
-		if(keyMetaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QHash.");
-		if(keyMetaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be key type of QHash.");
-		if(valueMetaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QHash.");
-		if(valueMetaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be value type of QHash.");
 		initialize(keyType, QtJambi_LibraryUtilities.internal.nativeId(keyMetaType), valueMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(valueMetaType), null);
 	}
     
+    /**
+     * Creating a container with given key and value type.
+     * <p>See <a href="https://doc.qt.io/qt/qhash.html#QHash">QHash::QHash()</a></p>
+     * @param keyMetaType the type K
+     * @param valueType the type V
+     */
 	public QHash(QMetaType keyMetaType, Class<V> valueType) {
 		super(null);
 		QMetaType valueMetaType = QMetaType.fromType(valueType);
-		if(keyMetaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QHash.");
-		if(keyMetaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be key type of QHash.");
-		if(valueMetaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QHash.");
-		if(valueMetaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be value type of QHash.");
 		initialize(keyMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(keyMetaType), valueType, QtJambi_LibraryUtilities.internal.nativeId(valueMetaType), null);
 	}
 	
+    /**
+     * Creating a container with given key and value type.
+     * <p>See <a href="https://doc.qt.io/qt/qhash.html#QHash">QHash::QHash()</a></p>
+     * @param keyType the type K
+     * @param valueMetaType the type V
+     */
 	public QHash(Class<K> keyType, QMetaType.Type valueMetaType) {
 		this(keyType, new QMetaType(valueMetaType));
 	}
 	
+    /**
+     * Creating a container with given key and value type.
+     * <p>See <a href="https://doc.qt.io/qt/qhash.html#QHash">QHash::QHash()</a></p>
+     * @param keyMetaType the type K
+     * @param valueType the type V
+     */
 	public QHash(QMetaType.Type keyMetaType, Class<V> valueType) {
 		this(new QMetaType(keyMetaType), valueType);
 	}
 	
+    /**
+     * Creating a container with given key and value type.
+     * <p>See <a href="https://doc.qt.io/qt/qhash.html#QHash">QHash::QHash()</a></p>
+     * @param keyMetaType the type K
+     * @param valueMetaType the type V
+     */
 	public QHash(QMetaType.Type keyMetaType, QMetaType valueMetaType) {
 		this(new QMetaType(keyMetaType), valueMetaType);
 	}
 	
+    /**
+     * Creating a container with given key and value type.
+     * <p>See <a href="https://doc.qt.io/qt/qhash.html#QHash">QHash::QHash()</a></p>
+     * @param keyMetaType the type K
+     * @param valueMetaType the type V
+     */
 	public QHash(QMetaType keyMetaType, QMetaType.Type valueMetaType) {
 		this(keyMetaType, new QMetaType(valueMetaType));
 	}
 	
+    /**
+     * Creating a container with given key and value type.
+     * <p>See <a href="https://doc.qt.io/qt/qhash.html#QHash">QHash::QHash()</a></p>
+     * @param keyMetaType the type K
+     * @param valueMetaType the type V
+     */
 	public QHash(QMetaType.Type keyMetaType, QMetaType.Type valueMetaType) {
 		this(new QMetaType(keyMetaType), new QMetaType(valueMetaType));
 	}
     
+    /**
+     * Creating a container with given key and value type.
+     * <p>See <a href="https://doc.qt.io/qt/qhash.html#QHash">QHash::QHash()</a></p>
+     * @param keyMetaType the type K
+     * @param valueMetaType the type V
+     */
 	public QHash(QMetaType keyMetaType, QMetaType valueMetaType) {
 		super(null);
-		if(keyMetaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QHash.");
-		if(keyMetaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be key type of QHash.");
-		if(valueMetaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QHash.");
-		if(valueMetaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be value type of QHash.");
 		initialize(keyMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(keyMetaType), valueMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(valueMetaType), null);
 	}
     
@@ -150,6 +173,10 @@ public class QHash<K,V> extends io.qt.internal.AbstractHash<K,V> implements Clon
     	return new QHash<>(new QMetaType(QMetaType.Type.QString), new QMetaType(QMetaType.Type.QVariant));
     }
     
+    /**
+     * Creates and returns a copy of this object.
+     * <p>See <a href="https://doc.qt.io/qt/qhash.html#QHash-2">QHash::QHash(const QHash&lt;Key, T> &amp;)</a></p>
+     */
     @Override
 	public QHash<K,V> clone(){
 		return new QHash<>(this);

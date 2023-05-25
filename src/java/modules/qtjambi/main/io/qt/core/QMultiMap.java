@@ -48,104 +48,131 @@ public class QMultiMap<K,V> extends io.qt.internal.AbstractMultiMap<K,V> impleme
     	QtJambi_LibraryUtilities.initialize();
     }
 
+    /**
+     * Constructor for internal use only.
+     * @param p expected to be <code>null</code>.
+     */
     @NativeAccess
     protected QMultiMap(QPrivateConstructor p) {
 		super(p);
 	}
 	
+    /**
+     * Creating a container with given key and value type.
+     * <p>See <a href="https://doc.qt.io/qt/qmultimap.html#QMultiMap">QMultiMap::QMultiMap()</a></p>
+     * @param keyType the type K
+     * @param valueMetaType the type V
+     */
 	public QMultiMap(Class<K> keyType, QMetaType.Type valueMetaType) {
 		this(keyType, new QMetaType(valueMetaType));
 	}
 	
+    /**
+     * Creating a container with given key and value type.
+     * <p>See <a href="https://doc.qt.io/qt/qmultimap.html#QMultiMap">QMultiMap::QMultiMap()</a></p>
+     * @param keyMetaType the type K
+     * @param valueType the type V
+     */
 	public QMultiMap(QMetaType.Type keyMetaType, Class<V> valueType) {
 		this(new QMetaType(keyMetaType), valueType);
 	}
 	
+    /**
+     * Creating a container with given key and value type.
+     * <p>See <a href="https://doc.qt.io/qt/qmultimap.html#QMultiMap">QMultiMap::QMultiMap()</a></p>
+     * @param keyMetaType the type K
+     * @param valueMetaType the type V
+     */
 	public QMultiMap(QMetaType.Type keyMetaType, QMetaType valueMetaType) {
 		this(new QMetaType(keyMetaType), valueMetaType);
 	}
 	
+    /**
+     * Creating a container with given key and value type.
+     * <p>See <a href="https://doc.qt.io/qt/qmultimap.html#QMultiMap">QMultiMap::QMultiMap()</a></p>
+     * @param keyMetaType the type K
+     * @param valueMetaType the type V
+     */
 	public QMultiMap(QMetaType keyMetaType, QMetaType.Type valueMetaType) {
 		this(keyMetaType, new QMetaType(valueMetaType));
 	}
 	
+    /**
+     * Creating a container with given key and value type.
+     * <p>See <a href="https://doc.qt.io/qt/qmultimap.html#QMultiMap">QMultiMap::QMultiMap()</a></p>
+     * @param keyMetaType the type K
+     * @param valueMetaType the type V
+     */
 	public QMultiMap(QMetaType.Type keyMetaType, QMetaType.Type valueMetaType) {
 		this(new QMetaType(keyMetaType), new QMetaType(valueMetaType));
 	}
     
+    /**
+     * Creating a container with given key and value type.
+     * <p>See <a href="https://doc.qt.io/qt/qmultimap.html#QMultiMap">QMultiMap::QMultiMap()</a></p>
+     * @param keyType the type K
+     * @param valueType the type V
+     */
     public QMultiMap(Class<K> keyType, Class<V> valueType) {
 		super(null);
 		QMetaType keyMetaType = QMetaType.fromType(keyType);
 		QMetaType valueMetaType = QMetaType.fromType(valueType);
-		if(keyMetaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QMultiMap.");
-		if(keyMetaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be key type of QMultiMap.");
-		if(valueMetaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QMultiMap.");
-		if(valueMetaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be value type of QMultiMap.");
 		initialize(keyType, QtJambi_LibraryUtilities.internal.nativeId(keyMetaType), valueType, QtJambi_LibraryUtilities.internal.nativeId(valueMetaType), null);
 	}
     
+    /**
+     * Creating a container with given content.
+     * <p>See <a href="https://doc.qt.io/qt/qmultimap.html#QMultiMap-2">QMultiMap::QMultiMap(const QMap&lt;Key, T> &amp;)</a></p>
+     * @param other map
+     */
     public QMultiMap(Map<K,List<V>> other) {
 		super(null);
 		QPair<QMetaType, QMetaType> metaTypes = findMapMetaType(Objects.requireNonNull(other));
-		if(metaTypes.first.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QMultiMap.");
-		if(metaTypes.first.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be key type of QMultiMap.");
-		if(metaTypes.second.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QMultiMap.");
-		if(metaTypes.second.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be value type of QMultiMap.");
 		initialize(metaTypes.first.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaTypes.first), metaTypes.second.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaTypes.second), other);
 	}
     
+    /**
+     * Creating a container with given key and value type.
+     * <p>See <a href="https://doc.qt.io/qt/qmultimap.html#QMultiMap">QMultiMap::QMultiMap()</a></p>
+     * @param keyType the type K
+     * @param valueMetaType the type V
+     */
 	public QMultiMap(Class<K> keyType, QMetaType valueMetaType) {
 		super(null);
 		QMetaType keyMetaType = QMetaType.fromType(keyType);
-		if(keyMetaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QMultiMap.");
-		if(keyMetaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be key type of QMultiMap.");
-		if(valueMetaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QMultiMap.");
-		if(valueMetaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be value type of QMultiMap.");
 		initialize(keyType, QtJambi_LibraryUtilities.internal.nativeId(keyMetaType), valueMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(valueMetaType), null);
 	}
     
+    /**
+     * Creating a container with given key and value type.
+     * <p>See <a href="https://doc.qt.io/qt/qmultimap.html#QMultiMap">QMultiMap::QMultiMap()</a></p>
+     * @param keyMetaType the type K
+     * @param valueType the type V
+     */
 	public QMultiMap(QMetaType keyMetaType, Class<V> valueType) {
 		super(null);
 		QMetaType valueMetaType = QMetaType.fromType(valueType);
-		if(keyMetaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QMultiMap.");
-		if(keyMetaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be key type of QMultiMap.");
-		if(valueMetaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QMultiMap.");
-		if(valueMetaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be value type of QMultiMap.");
 		initialize(keyMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(keyMetaType), valueMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(valueMetaType), null);
 	}
     
+    /**
+     * Creating a container with given key and value type.
+     * <p>See <a href="https://doc.qt.io/qt/qmultimap.html#QMultiMap">QMultiMap::QMultiMap()</a></p>
+     * @param keyMetaType the type K
+     * @param valueMetaType the type V
+     */
 	public QMultiMap(QMetaType keyMetaType, QMetaType valueMetaType) {
 		super(null);
-		if(keyMetaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be key type of QMultiMap.");
-		if(keyMetaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be key type of QMultiMap.");
-		if(valueMetaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be value type of QMultiMap.");
-		if(valueMetaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be value type of QMultiMap.");
 		initialize(keyMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(keyMetaType), valueMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(valueMetaType), null);
 	}
     
     @QtUninvokable
     private native void initialize(Class<?> keyType, long keyMetaType, Class<?> valueType, long valueMetaType, Map<K, List<V>> other);
     
+    /**
+     * Creates and returns a copy of this object.
+     * <p>See <a href="https://doc.qt.io/qt/qmultimap.html#QMultiMap-7">QMultiMap::QMultiMap(const QMultiMap&lt;Key, T> &amp;)</a></p>
+     */
     @Override
 	public QMultiMap<K,V> clone(){
 		return new QMultiMap<>(this);

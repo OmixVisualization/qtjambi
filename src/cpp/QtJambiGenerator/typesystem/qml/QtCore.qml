@@ -34,12 +34,13 @@ TypeSystem{
     defaultSuperClass: "QtObject"
     qtLibrary: "QtCore"
     module: "qtjambi"
-    description: "<p>QtJambi base module containing QtCore, QtGui and QtWidgets.</p>\n"+
-                 "<ul>\n"+
-                 "<li>QtCore - Core non-graphical classes used by other modules.</li>\n"+
-                 "<li>QtGui - Base classes for graphical user interface (GUI) components. Includes OpenGL.</li>\n"+
-                 "<li>QtWidgets - Classes to extend Qt GUI with C++ widgets.</li>\n"+
-                 "</ul>"
+    description: String.raw
+`<p>QtJambi base module containing QtCore, QtGui and QtWidgets.</p>
+<ul>
+<li>QtCore - Core non-graphical classes used by other modules.</li>
+<li>QtGui - Base classes for graphical user interface (GUI) components. Includes OpenGL.</li>
+<li>QtWidgets - Classes to extend Qt GUI with C++ widgets.</li>
+</ul>`
     InjectCode{
         target: CodeClass.MetaInfo
         position: Position.Position1
@@ -63,9 +64,11 @@ TypeSystem{
         packageName: "io.qt.internal"
         target: CodeClass.Java
         position: Position.Beginning
-        Text{content: "final static Properties properties = new Properties();\n"+
-                      "\n"+
-                      "@QtUninvokable private static native void shutdown();"}
+        Text{content: String.raw
+`final static Properties properties = new Properties();
+
+@QtUninvokable private static native void shutdown();`
+        }
     }
     
     InjectCode{
@@ -79,10 +82,13 @@ TypeSystem{
         packageName: "io.qt.internal"
         target: CodeClass.Java
         position: Position.Position2
-        ImportFile{
-            name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
-            quoteAfterLine: "class QtJambi_LibraryUtilities_2_"
-            quoteBeforeLine: "}// class"
+        Text{content: String.raw
+`if(!Boolean.getBoolean("io.qt.no-library-shutdown-hook")) {
+    shutdownHook = RetroHelper.newShutdownThread(QtJambi_LibraryUtilities::shutdown, "QtJambi_LibraryShutdown");
+    shutdownHook.setContextClassLoader(null);
+    Runtime.getRuntime().addShutdownHook(shutdownHook);
+}
+LibraryUtility.loadQtJambiLibrary();`
         }
     }
     
@@ -90,80 +96,94 @@ TypeSystem{
         packageName: "io.qt.internal"
         target: CodeClass.Java
         position: Position.Position4
-        Text{content: "if(shutdownHook!=null)\n"+
-                      "    Runtime.getRuntime().removeShutdownHook(shutdownHook);\n"+
-                      "LibraryUtility.clear();"}
+        Text{content: String.raw
+`if(shutdownHook!=null)
+    Runtime.getRuntime().removeShutdownHook(shutdownHook);
+LibraryUtility.clear();`
+        }
     }
     
     InjectCode{
         target: CodeClass.ModuleInfo
         position: Position.End
-        Text{content: "requires transitive java.logging;\n"+
-                      "requires java.xml;\n"+
-                      "requires java.prefs;\n"+
-                      "opens io.qt.internal to qtjambi.autotests;\n"+
-                      "exports io.qt.internal to qtjambi.deployer, qtjambi.generator, qtjambi.autotests;\n"+
-                      "exports io.qt;"}
+        Text{content: String.raw
+`requires transitive java.logging;
+requires java.xml;
+requires java.prefs;
+opens io.qt.internal to qtjambi.autotests;
+exports io.qt.internal to qtjambi.deployer, qtjambi.generator, qtjambi.autotests;
+exports io.qt;`
+            }
     }
     
     Template{
         name: "core.comsumer.function"
-        Text{content: "std::function<void(%TYPE)> %out;\n"+
-                      "if(%in){\n"+
-                      "    JObjectWrapper wrapper(%env, %in);\n"+
-                      "    %out = [wrapper](%TYPE value){\n"+
-                      "                                if(JniEnvironment env{200}){\n"+
-                      "                                    jobject _value = qtjambi_cast<jobject>(env, value);\n"+
-                      "                                    Java::Runtime::Consumer::accept(env, wrapper.object(), _value);\n"+
-                      "                                }\n"+
-                      "                            };\n"+
-                      "}"}
+        Text{content: String.raw
+`std::function<void(%TYPE)> %out;
+if(%in){
+    JObjectWrapper wrapper(%env, %in);
+    %out = [wrapper](%TYPE value){
+            if(JniEnvironment env{200}){
+                jobject _value = qtjambi_cast<jobject>(env, value);
+                Java::Runtime::Consumer::accept(env, wrapper.object(), _value);
+            }
+        };
+}`
+            }
     }
     
     Template{
         name: "core.runnable.function"
-        Text{content: "std::function<void()> %out;\n"+
-                      "if(%in){\n"+
-                      "    JObjectWrapper wrapper(%env, %in);\n"+
-                      "    %out = [wrapper](){\n"+
-                      "        if(JniEnvironment env{200}){\n"+
-                      "            Java::Runtime::Runnable::run(env, wrapper.object());\n"+
-                      "        }\n"+
-                      "    };\n"+
-                      "}"}
+        Text{content: String.raw
+`std::function<void()> %out;
+if(%in){
+    JObjectWrapper wrapper(%env, %in);
+    %out = [wrapper](){
+            if(JniEnvironment env{200}){
+                Java::Runtime::Runnable::run(env, wrapper.object());
+            }
+        };
+}`
+        }
     }
     
     Template{
         name: "core.supplier.function"
-        Text{content: "std::function<%TYPE()> %out;\n"+
-                      "if(%in){\n"+
-                      "    JObjectWrapper wrapper(%env, %in);\n"+
-                      "    %out = [wrapper]() -> %TYPE {\n"+
-                      "            if(JniEnvironment env{200}){\n"+
-                      "                jobject value = Java::Runtime::Supplier::get(env, wrapper.object());\n"+
-                      "                return qtjambi_cast<%TYPE>(env, value);\n"+
-                      "            }\n"+
-                      "            return {};\n"+
-                      "        };\n"+
-                      "}"}
+        Text{content: String.raw
+`std::function<%TYPE()> %out;
+if(%in){
+    JObjectWrapper wrapper(%env, %in);
+    %out = [wrapper]() -> %TYPE {
+            if(JniEnvironment env{200}){
+                jobject value = Java::Runtime::Supplier::get(env, wrapper.object());
+                return qtjambi_cast<%TYPE>(env, value);
+            }
+            return {};
+        };
+}`
+        }
     }
     
     Template{
         name: "core.self_iterator"
-        Text{content: "@Override\n"+
-                      "@QtUninvokable\n"+
-                      "public final java.util.Iterator<%ELEMENT_TYPE> iterator() {\n"+
-                      "    return this;\n"+
-                      "}"}
+        Text{content: String.raw
+`@Override
+@QtUninvokable
+public final java.util.Iterator<%ELEMENT_TYPE> iterator() {
+    return this;
+}`
+        }
     }
     
     Template{
         name: "core.to_iterator"
-        Text{content: "@Override\n"+
-                      "@QtUninvokable\n"+
-                      "public final %ITERATOR_TYPE iterator() {\n"+
-                      "    return new %ITERATOR_TYPE(this);\n"+
-                      "}"}
+        Text{content: String.raw
+`@Override
+@QtUninvokable
+public final %ITERATOR_TYPE iterator() {
+    return new %ITERATOR_TYPE(this);
+}`
+        }
     }
     
     PrimitiveType{
@@ -7878,11 +7898,31 @@ if(destinationChild<0)
         InjectCode{
             target: CodeClass.Java
             position: Position.Equals
+            until: 5
+            Text{content: "if (other instanceof byte[]) {\n"+
+                          "    other = new io.qt.core.QByteArray((byte[]) other);\n"+
+                          "}else if (other instanceof java.nio.ByteBuffer) {\n"+
+                          "    other = new io.qt.core.QByteArray((java.nio.ByteBuffer) other);\n"+
+                          "}"}
+        }
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Equals
             since: 6
             Text{content: "if (other instanceof byte[]) {\n"+
                           "    other = new io.qt.core.QByteArrayView((byte[]) other);\n"+
                           "}else if (other instanceof java.nio.ByteBuffer) {\n"+
                           "    other = new io.qt.core.QByteArrayView((java.nio.ByteBuffer) other);\n"+
+                          "}"}
+        }
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Compare
+            until: 5
+            Text{content: "if (other instanceof byte[]) {\n"+
+                          "    other = new io.qt.core.QByteArray((byte[]) other);\n"+
+                          "}else if (other instanceof java.nio.ByteBuffer) {\n"+
+                          "    other = new io.qt.core.QByteArray((java.nio.ByteBuffer) other);\n"+
                           "}"}
         }
         InjectCode{
@@ -19030,6 +19070,11 @@ if(destinationChild<0)
                 quoteBeforeLine: "}// class"
             }
         }
+        InjectCode{
+            position: Position.Clone
+            Text{content: "clone.__rcDevice = this.__rcDevice;\n"
+                        + "clone.disabled = this.disabled;"}
+        }
         ModifyFunction{
             signature: "QDebug(QIODevice *)"
             ModifyArgument{
@@ -19043,7 +19088,8 @@ if(destinationChild<0)
         ModifyFunction{
             signature: "QDebug(QDebug)"
             InjectCode{
-                Text{content: "__rcDevice = o.__rcDevice;"}
+                Text{content: "this.__rcDevice = o.__rcDevice;\n"
+                            + "this.disabled = o.disabled;"}
             }
         }
         ModifyFunction{
@@ -19051,16 +19097,21 @@ if(destinationChild<0)
             InjectCode{
                 Text{content: "Object __rcDevice = this.__rcDevice;\n"+
                               "this.__rcDevice = other.__rcDevice;\n"+
-                              "other.__rcDevice = __rcDevice;"}
+                              "other.__rcDevice = __rcDevice;\n"+
+                              "boolean disabled = this.disabled;\n"+
+                              "this.disabled = other.disabled;\n"+
+                              "other.disabled = disabled;\n"}
             }
         }
         ModifyFunction{
             signature: "operator<<(QChar)"
             rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
         }
         ModifyFunction{
             signature: "operator<<(const char*)"
             rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
         }
         ModifyFunction{
             signature: "operator<<(QString)"
@@ -19075,43 +19126,61 @@ if(destinationChild<0)
                     Text{content: "QString %out = qtjambi_cast<QString>(%env, %1);"}
                 }
             }
+            InjectCode{ Text{content: "if(disabled) return this;"} }
         }
         ModifyFunction{
             signature: "operator<<(bool)"
             rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
         }
         ModifyFunction{
             signature: "operator<<(char)"
             rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
         }
         ModifyFunction{
             signature: "operator<<(QByteArray)"
             rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
         }
         ModifyFunction{
             signature: "operator<<(QByteArrayView)"
             rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
             since: 6
         }
         ModifyFunction{
             signature: "operator<<(double)"
             rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
         }
         ModifyFunction{
             signature: "operator<<(float)"
             rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
         }
         ModifyFunction{
             signature: "operator<<(qint64)"
             rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
         }
         ModifyFunction{
             signature: "operator<<(signed short)"
             rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
         }
         ModifyFunction{
             signature: "operator<<(signed int)"
             rename: "append"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+        }
+        ModifyFunction{
+            signature: "maybeQuote(char)"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
+        }
+        ModifyFunction{
+            signature: "maybeSpace()"
+            InjectCode{ Text{content: "if(disabled) return this;"} }
         }
     }
 

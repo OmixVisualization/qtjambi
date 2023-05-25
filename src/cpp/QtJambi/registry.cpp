@@ -212,7 +212,7 @@ static void cacheMisses(const char *s)
 {
     static int count = 0;
 
-    qDebug("Total # of cache misses: %d : '%s'", ++count, s);
+    qCDebug(DebugAPI::internalCategory, "Total # of cache misses: %d : '%s'", ++count, s);
 }
 #endif
 
@@ -2230,7 +2230,7 @@ jclass findClass(JNIEnv *env, const char *qualifiedName, jobject classLoader = n
     if (env->ExceptionCheck()) {
         // It is not allowed to call env->FindClass() with an exception pending, this is illegal JNI
         //  usage and must be the result of a software design error.
-        qWarning("findClass(\"%s\") with Exception pending", qualifiedName);
+        qCWarning(DebugAPI::internalCategory, "findClass(\"%s\") with Exception pending", qualifiedName);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
         Q_ASSERT(false);
         return nullptr;

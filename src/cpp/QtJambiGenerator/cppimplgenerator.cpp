@@ -1894,16 +1894,17 @@ void CppImplGenerator::writeToStringFunction(QTextStream &s, const MetaClass *ja
         auto indirections = toStringFun->arguments().at(1)->type()->indirections().size();
         QString deref = QLatin1String(indirections == 0 ? "*" : "");
 
-        QStringList lines;
+        bool hasInjectedJavaCode = false;
         for(const CodeSnip& codeSnip : java_class->typeEntry()->codeSnips()){
-            if(codeSnip.language==TS::NativeCode && codeSnip.position==CodeSnip::ToString){
-                lines << codeSnip.code().split("\n");
+            if(codeSnip.language==TS::TargetLangCode && codeSnip.position==CodeSnip::ToString){
+                hasInjectedJavaCode = true;
+                break;
             }
         }
         s << Qt::endl
           << "#include <QtCore/QDebug>" << Qt::endl
           << INDENT;
-        if(lines.isEmpty() && !java_class->typeEntry()->isNativeIdBased() && !java_class->typeEntry()->designatedInterface()){
+        if(!hasInjectedJavaCode && !java_class->typeEntry()->isNativeIdBased() && !java_class->typeEntry()->designatedInterface()){
             s << jni_function_signature(java_class->package(), java_class->name(), "toString", "jstring");
         }else{
             s << jni_function_signature(java_class->package(), java_class->name(), "toString_native", "jstring");
@@ -1954,6 +1955,7 @@ void CppImplGenerator::writeToStringFunction(QTextStream &s, const MetaClass *ja
                 s << INDENT << "QString res;" << Qt::endl
                   << INDENT << "QDebug(&res) << " << deref << "__qt_this;" << Qt::endl;
                 s << INDENT << "__java_return_value = qtjambi_cast<jstring>(__jni_env, res);" << Qt::endl;
+                writeClassCodeInjections(s, java_class, CodeSnip::ToString);
                 if(!java_class->typeEntry()->ppCondition().isEmpty()){
                     s << Qt::endl << "#else" << Qt::endl
                       << INDENT << "Q_UNUSED(";
@@ -1980,8 +1982,15 @@ void CppImplGenerator::writeCloneFunction(QTextStream &s, const MetaClass *java_
     if(java_class->typeEntry() && java_class->typeEntry()->designatedInterface()){
         name = java_class->typeEntry()->designatedInterface()->targetLangName();
     }
+    bool hasInjectedJavaCode = false;
+    for(const CodeSnip& codeSnip : java_class->typeEntry()->codeSnips()){
+        if(codeSnip.language==TS::TargetLangCode && codeSnip.position==CodeSnip::Clone){
+            hasInjectedJavaCode = true;
+            break;
+        }
+    }
     QString functionName = "clone";
-    if(java_class->typeEntry()->isNativeIdBased() || java_class->typeEntry()->designatedInterface()){
+    if(java_class->typeEntry()->isNativeIdBased() || java_class->typeEntry()->designatedInterface() || hasInjectedJavaCode){
         functionName += "_native";
     }
     s << Qt::endl
@@ -2059,6 +2068,7 @@ void CppImplGenerator::writeCloneFunction(QTextStream &s, const MetaClass *java_
                     s << INDENT << "__java_return_value = QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper(__jni_env, new " << java_class->fullQualifiedCppName() << "(*__qt_this));" << Qt::endl;
                 }
             }
+            writeClassCodeInjections(s, java_class, CodeSnip::Clone);
             if(!java_class->typeEntry()->ppCondition().isEmpty()){
                 s << Qt::endl << "#else" << Qt::endl
                   << INDENT << "Q_UNUSED(";

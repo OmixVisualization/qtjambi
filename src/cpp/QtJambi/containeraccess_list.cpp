@@ -1299,9 +1299,6 @@ void AutoListAccess::remove(JNIEnv *, void* container, jint index, jint n)
     Q_ASSERT(n==1);
     QListData* p = reinterpret_cast<QListData*>(container);
     if (index < 0 || index >= p->size()) {
-#if !defined(QT_NO_DEBUG)
-        qWarning("QList::removeAt(): Index out of range.");
-#endif
         return;
     }
     detach(p);

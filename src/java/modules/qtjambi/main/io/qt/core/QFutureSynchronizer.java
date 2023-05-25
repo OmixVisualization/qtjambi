@@ -14,7 +14,6 @@ public final class QFutureSynchronizer<F>
         QtJambi_LibraryUtilities.initialize();
     }
     
-    
     /**
      * <p>See <a href="http://doc.qt.io/qt/qfuturesynchronizer.html#QFutureSynchronizer-1">QFutureSynchronizer::</a></p>
      */

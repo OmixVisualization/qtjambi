@@ -44,13 +44,6 @@
 template<typename INT>
 jobject convertEnumToJavaObject(JNIEnv *env, INT qt_enum, jclass cl, const QString& className, jobject (*resolveEnum)(JNIEnv *, jint, jclass, INT, jstring))
 {
-#if defined(QTJAMBI_DEBUG_TOOLS)
-    if(!cl) {
-        fprintf(stderr, "convertEnumToJavaObject(): %s NOTFOUND\n", qPrintable(className));
-        fflush(stderr);
-        qWarning("convertEnumToJavaObject(): %s NOTFOUND", qPrintable(className));
-    }
-#endif
     Q_ASSERT(cl);
 
     jobject obj;
@@ -439,7 +432,7 @@ jobject QtJambiAPI::convertQVariantToJavaObject(JNIEnv *env, const QVariant &qt_
         jvalue val;
         val.l = nullptr;
         if(!converter || !converter(env, nullptr, qt_variant.constData(), &val, true)){
-            qWarning("Unable to convert qVariant to jobject");
+            qCWarning(DebugAPI::internalCategory, "Unable to convert qVariant to jobject");
         }
         return val.l;
     }
@@ -1730,7 +1723,7 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                     val.l = java_object;
                     bool result = converter(env, &scope, val, ptr, jValueType::l);
                     if(!result){
-                        qWarning("Cannot convert external type '%s' to '%s'",
+                        qCWarning(DebugAPI::internalCategory, "Cannot convert external type '%s' to '%s'",
                                  qPrintable(fullJavaName.replace("/", ".").replace("$", ".")),
                                  qPrintable(qtName));
                         return QVariant(META_TYPE(QMetaType::UnknownType), nullptr);
@@ -2317,7 +2310,7 @@ jobject internal_convertQObjectSmartPointerToJavaObject_notype(JNIEnv *env, cons
                     }
                     env->DeleteLocalRef(nativeLink);
                     if (!link) {
-                        qWarning("Qt Jambi: Couldn't created wrapper for class %s", className);
+                        qCWarning(DebugAPI::internalCategory, "Qt Jambi: Couldn't created wrapper for class %s", className);
                         return nullptr;
                     }
                 }else{
@@ -2411,7 +2404,7 @@ jobject internal_convertQObjectSmartPointerToJavaObject_notype(JNIEnv *env, cons
 
         link = QtJambiLink::createLinkForSmartPointerToQObject(env, object, false, false, const_cast<void*>(ptr_shared_pointer), shared_pointer_deleter, pointerGetter);
         if (!link) {
-            qWarning("Qt Jambi: Couldn't created wrapper for class %s", className);
+            qCWarning(DebugAPI::internalCategory, "Qt Jambi: Couldn't created wrapper for class %s", className);
             return nullptr;
         }
     }
@@ -2612,18 +2605,18 @@ jobject internal_convertQObjectToJavaObject_notype(JNIEnv *env, const QObject *c
                 obj = env->NewObject(clazz, constructorId, 0);
                 JavaException::check(env QTJAMBI_STACKTRACEINFO );
                 if (!obj){
-                    qWarning("Qt Jambi: Couldn't created object of class %s", qPrintable(java_name));
+                    qCWarning(DebugAPI::internalCategory, "Qt Jambi: Couldn't created object of class %s", qPrintable(java_name));
                     return nullptr;
                 }
             }
         }else{
-            qWarning("Qt Jambi: Couldn't find java class %s", qPrintable(java_name));
+            qCWarning(DebugAPI::internalCategory, "Qt Jambi: Couldn't find java class %s", qPrintable(java_name));
             return nullptr;
         }
 
         link = QtJambiLink::createLinkForQObject(env, obj, qt_object, false, false);
         if (!link) {
-            qWarning("Qt Jambi: Couldn't created wrapper for class %s", qPrintable(java_name));
+            qCWarning(DebugAPI::internalCategory, "Qt Jambi: Couldn't created wrapper for class %s", qPrintable(java_name));
             return nullptr;
         }
     }

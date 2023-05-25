@@ -1148,7 +1148,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			throw new BuildException("ERROR: " + Constants.GENERATOR_INCLUDEPATHS
 					+ " property is not configured, please ensure you read and edit build.properties");
 		
-		mySetProperty(-1, "TODAY", null, new SimpleDateFormat("yyyy-MM-dd").format(new Date()), true);
+		mySetProperty(-1, "TODAY", null, new SimpleDateFormat("yyyy-MM-dd").format(new Date()), false);
 		
 		java.io.File buildDir = new java.io.File(new java.io.File(qtjambiFullVersion), "build");
 		mySetProperty(-1, "outputDir", null, buildDir.getAbsolutePath(), true);

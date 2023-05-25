@@ -41,7 +41,7 @@ class QtJambiShell;
 #ifdef QT_NO_DEBUG
 #if defined(Q_ASSERT) && defined(QT_FORCE_ASSERTS)
 #  undef Q_ASSERT
-#  define Q_ASSERT(cond) ((cond) ? static_cast<void>(0) : qtjambi_assert(#cond, __FILE__, __LINE__, __FUNCTION__))
+#  define Q_ASSERT(cond) ((cond) ? static_cast<void>(0) : qtjambi_assert(#cond, __FILE__, __LINE__, Q_FUNC_INFO))
 #endif
 #endif
 
@@ -72,40 +72,40 @@ private:
 };
 
 }
-#  define QTJAMBI_DEBUG_PRINT(message) DebugAPI::print(message, __FILE__, __LINE__, __FUNCTION__);
+#  define QTJAMBI_DEBUG_PRINT(message) DebugAPI::print(message, __FILE__, __LINE__, Q_FUNC_INFO);
 
 #if defined(Q_ASSERT)
 #  undef Q_ASSERT
 #  if defined(QT_NO_DEBUG) && !defined(QT_FORCE_ASSERTS)
 #    define Q_ASSERT(cond) static_cast<void>(false && (cond))
 #  else
-#    define Q_ASSERT(cond) ((cond) ? static_cast<void>(0) : qtjambi_assert(#cond, __FILE__, __LINE__, __FUNCTION__))
+#    define Q_ASSERT(cond) ((cond) ? static_cast<void>(0) : qtjambi_assert(#cond, __FILE__, __LINE__, Q_FUNC_INFO))
 #  endif
 #endif
 
 #define QTJAMBI_INTERNAL_INSTANCE_METHOD_CALL_1(methodname)\
-DebugAPI::MethodPrint __debug_method_print(DebugAPI::MethodPrint::Internal, this, methodname, __FILE__, __LINE__, __FUNCTION__);
+DebugAPI::MethodPrint __debug_method_print(DebugAPI::MethodPrint::Internal, this, methodname, __FILE__, __LINE__, Q_FUNC_INFO);
 
 #define QTJAMBI_INTERNAL_METHOD_CALL(methodname)\
-DebugAPI::MethodPrint __debug_method_print(DebugAPI::MethodPrint::Internal, nullptr, methodname, __FILE__, __LINE__, __FUNCTION__);
+DebugAPI::MethodPrint __debug_method_print(DebugAPI::MethodPrint::Internal, nullptr, methodname, __FILE__, __LINE__, Q_FUNC_INFO);
 
 #define QTJAMBI_NATIVE_METHOD_CALL(methodname)\
-DebugAPI::MethodPrint __debug_method_print(DebugAPI::MethodPrint::JavaToNativeCall, nullptr, methodname, __FILE__, __LINE__, __FUNCTION__);
+DebugAPI::MethodPrint __debug_method_print(DebugAPI::MethodPrint::JavaToNativeCall, nullptr, methodname, __FILE__, __LINE__, Q_FUNC_INFO);
 
 #define QTJAMBI_NATIVE_INSTANCE_METHOD_CALL(methodname, _this)\
-DebugAPI::MethodPrint __debug_method_print(DebugAPI::MethodPrint::JavaToNativeCall, _this, methodname, __FILE__, __LINE__, __FUNCTION__);
+DebugAPI::MethodPrint __debug_method_print(DebugAPI::MethodPrint::JavaToNativeCall, _this, methodname, __FILE__, __LINE__, Q_FUNC_INFO);
 
 #define QTJAMBI_LIBRARY_INITIALIZATION_METHOD_CALL(methodname)\
-DebugAPI::MethodPrint __debug_method_print(DebugAPI::MethodPrint::LibraryInitialization, nullptr, methodname, __FILE__, __LINE__, __FUNCTION__);
+DebugAPI::MethodPrint __debug_method_print(DebugAPI::MethodPrint::LibraryInitialization, nullptr, methodname, __FILE__, __LINE__, Q_FUNC_INFO);
 
 #define QTJAMBI_JAVA_METHOD_CALL_1(methodname)\
-DebugAPI::MethodPrint __debug_method_print(DebugAPI::MethodPrint::NativeToJavaCall, this, methodname, __FILE__, __LINE__, __FUNCTION__);
+DebugAPI::MethodPrint __debug_method_print(DebugAPI::MethodPrint::NativeToJavaCall, this, methodname, __FILE__, __LINE__, Q_FUNC_INFO);
 
 #define QTJAMBI_IN_DESTRUCTOR_CALL_1(methodname)\
-DebugAPI::MethodPrint __debug_method_print(DebugAPI::MethodPrint::DestructorCall, this, methodname, __FILE__, __LINE__, __FUNCTION__);
+DebugAPI::MethodPrint __debug_method_print(DebugAPI::MethodPrint::DestructorCall, this, methodname, __FILE__, __LINE__, Q_FUNC_INFO);
 
 #define QTJAMBI_IN_CONSTRUCTOR_CALL_1(methodname)\
-DebugAPI::MethodPrint __debug_method_print(DebugAPI::MethodPrint::ConstructorCall, this, methodname, __FILE__, __LINE__, __FUNCTION__);
+DebugAPI::MethodPrint __debug_method_print(DebugAPI::MethodPrint::ConstructorCall, this, methodname, __FILE__, __LINE__, Q_FUNC_INFO);
 
 #if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME)
 namespace DebugAPI{
@@ -120,13 +120,13 @@ private:
 }
 
 #define QTJAMBI_INTERNAL_INSTANCE_METHOD_CALL_2(methodname, shell)\
-DebugAPI::MethodPrintWithType __debug_method_print(DebugAPI::MethodPrint::Internal, methodname, shell, __FILE__, __LINE__, __FUNCTION__);
+DebugAPI::MethodPrintWithType __debug_method_print(DebugAPI::MethodPrint::Internal, methodname, shell, __FILE__, __LINE__, Q_FUNC_INFO);
 #define QTJAMBI_JAVA_METHOD_CALL_2(methodname, shell)\
-DebugAPI::MethodPrintWithType __debug_method_print(DebugAPI::MethodPrint::NativeToJavaCall, methodname, shell, __FILE__, __LINE__, __FUNCTION__);
+DebugAPI::MethodPrintWithType __debug_method_print(DebugAPI::MethodPrint::NativeToJavaCall, methodname, shell, __FILE__, __LINE__, Q_FUNC_INFO);
 #define QTJAMBI_IN_DESTRUCTOR_CALL_2(methodname, shell)\
-DebugAPI::MethodPrintWithType __debug_method_print(DebugAPI::MethodPrint::DestructorCall, methodname, shell, __FILE__, __LINE__, __FUNCTION__);
+DebugAPI::MethodPrintWithType __debug_method_print(DebugAPI::MethodPrint::DestructorCall, methodname, shell, __FILE__, __LINE__, Q_FUNC_INFO);
 #define QTJAMBI_IN_CONSTRUCTOR_CALL_2(methodname, shell)\
-DebugAPI::MethodPrintWithType __debug_method_print(DebugAPI::MethodPrint::ConstructorCall, methodname, shell, __FILE__, __LINE__, __FUNCTION__);
+DebugAPI::MethodPrintWithType __debug_method_print(DebugAPI::MethodPrint::ConstructorCall, methodname, shell, __FILE__, __LINE__, Q_FUNC_INFO);
 
 #define QTJAMBI_INTERNAL_INSTANCE_METHOD_CALL(...) QT_OVERLOADED_MACRO(QTJAMBI_INTERNAL_INSTANCE_METHOD_CALL, __VA_ARGS__)
 #define QTJAMBI_JAVA_METHOD_CALL(...) QT_OVERLOADED_MACRO(QTJAMBI_JAVA_METHOD_CALL, __VA_ARGS__)

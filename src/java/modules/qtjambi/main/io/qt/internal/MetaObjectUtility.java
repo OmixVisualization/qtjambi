@@ -646,7 +646,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         	addedMethodSignatures.add(methodSignature);
 	                        allConstructorParameterInfos.add(constructorParameterInfos);
 	                        metaObjectData.constructors.add(constructor);
-	                        metaObjectData.constructorMetaTypes.add(new int[parameterTypes.length+1]);
+	                        metaObjectData.constructorMetaTypes.add(new MetaObjectData.MetaTypeInfo[parameterTypes.length+1]);
 	                        metaObjectData.hasStaticMembers = true;
                         }
                     }
@@ -882,7 +882,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                             	methodFlags.put(declaredMethod, MethodFlags.MethodSlot);
                             }
                         }
-                        metaObjectData.methodMetaTypes.add(new int[declaredMethod.getParameterCount()+1]);
+                        metaObjectData.methodMetaTypes.add(new MetaObjectData.MetaTypeInfo[declaredMethod.getParameterCount()+1]);
                     }
                 }
                 
@@ -1296,7 +1296,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                 
                 for (int i = 0; i < metaObjectData.methods.size(); i++) {
                     Method method = metaObjectData.methods.get(i);
-                    int[] metaTypes = metaObjectData.methodMetaTypes.get(i);
+                    MetaObjectData.MetaTypeInfo[] metaTypes = metaObjectData.methodMetaTypes.get(i);
                     List<ParameterInfo> methodParameterInfos = allMethodParameterInfos.get(i);
                     // slot/method: parameters
                     int METHOD_PARAMETER_INDEX = paramIndexOfMethods.get(method);
@@ -1308,11 +1308,11 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                     if(info.type==null){
                         metaObjectData.intData.add(0x80000000 | metaObjectData.addStringDataAndReturnIndex(info.typeName));
                         metaObjectData.metaTypes.add(info.metaTypeId);
-                        metaTypes[0] = info.metaTypeId;
+                        metaTypes[0] = new MetaObjectData.MetaTypeInfo(info.metaTypeId, info.typeName);
                     }else{
                         metaObjectData.intData.add(info.type.value());
                         metaObjectData.metaTypes.add(info.type.value());
-                        metaTypes[0] = info.type.value();
+                        metaTypes[0] = new MetaObjectData.MetaTypeInfo(info.type.value(), info.typeName);
                     }
                     intdataComments.add("slot["+i+"].returnType");
                     for (int j = 1; j < methodParameterInfos.size(); j++) {
@@ -1320,11 +1320,11 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         if(info.type==null){
                             metaObjectData.intData.add(0x80000000 | metaObjectData.addStringDataAndReturnIndex(info.typeName));
                             metaObjectData.metaTypes.add(info.metaTypeId);
-                            metaTypes[j] = info.metaTypeId;
+                            metaTypes[j] = new MetaObjectData.MetaTypeInfo(info.metaTypeId, info.typeName);
                         }else{
                             metaObjectData.intData.add(info.type.value());
                             metaObjectData.metaTypes.add(info.type.value());
-                            metaTypes[j] = info.type.value();
+                            metaTypes[j] = new MetaObjectData.MetaTypeInfo(info.type.value(), info.typeName);
                         }
                         intdataComments.add("slot["+i+"]: parameter["+(j-1)+"].arg");
                     }
@@ -1342,8 +1342,8 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                 for (int i = 0; i < metaObjectData.constructors.size(); i++) {
                     Constructor<?> constructor = metaObjectData.constructors.get(i);
                     List<ParameterInfo> constructorParameterInfos = allConstructorParameterInfos.get(i);
-                    int[] metaTypes = metaObjectData.constructorMetaTypes.get(i);
-                    metaTypes[0] = QMetaType.Type.UnknownType.value();
+                    MetaObjectData.MetaTypeInfo[] metaTypes = metaObjectData.constructorMetaTypes.get(i);
+                    metaTypes[0] = new MetaObjectData.MetaTypeInfo(QMetaType.Type.UnknownType.value(), null);
                     // constructors: parameters
                     int METHOD_PARAMETER_INDEX = paramIndexOfMethods.get(constructor);
                     metaObjectData.intData.set(METHOD_PARAMETER_INDEX, metaObjectData.intData.size());
@@ -1357,11 +1357,11 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         if(info.type==null){
                             metaObjectData.intData.add(0x80000000 | metaObjectData.addStringDataAndReturnIndex(info.typeName));
                             metaObjectData.metaTypes.add(info.metaTypeId);
-                            metaTypes[j+1] = info.metaTypeId;
+                            metaTypes[j+1] = new MetaObjectData.MetaTypeInfo(info.metaTypeId, info.typeName);
                         }else{
                             metaObjectData.intData.add(info.type.value());
                             metaObjectData.metaTypes.add(info.type.value());
-                            metaTypes[j+1] = info.type.value();
+                            metaTypes[j+1] = new MetaObjectData.MetaTypeInfo(info.type.value(), info.typeName);
                         }
                         intdataComments.add("constructor["+i+"]: parameter["+(j)+"].arg");
                     }
@@ -1524,6 +1524,9 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         // Type (need to special case flags and enums)
                         int metaTypeId = 0;
                         String typeName;
+                        if(isReference) {
+                        	throw new IllegalStateException("Type of property "+ clazz.getTypeName()+"."+propertyName +" must not be reference type");
+                        }
                         if(metaTypeDecl!=null) {
             				if(metaTypeDecl.id()!=0) {
             					metaTypeId = metaTypeDecl.id();
@@ -1686,11 +1689,11 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         	}
                             metaObjectData.intData.add(0x80000000 | metaObjectData.addStringDataAndReturnIndex(typeName));
                             metaObjectData.metaTypes.set(i, metaTypeId);
-                            metaObjectData.propertyMetaTypes.add(new int[]{metaTypeId,metaTypeId});
+                            metaObjectData.propertyMetaTypes.add(new MetaObjectData.MetaTypeInfo[]{new MetaObjectData.MetaTypeInfo(metaTypeId, typeName),new MetaObjectData.MetaTypeInfo(metaTypeId, typeName)});
                         }else{
                             metaObjectData.intData.add(type.value());
                             metaObjectData.metaTypes.set(i, type.value());
-                            metaObjectData.propertyMetaTypes.add(new int[]{type.value(),type.value()});
+                            metaObjectData.propertyMetaTypes.add(new MetaObjectData.MetaTypeInfo[]{new MetaObjectData.MetaTypeInfo(type.value(), typeName),new MetaObjectData.MetaTypeInfo(type.value(), typeName)});
                         }
                         metaObjectData.propertyClassTypes.add(propertyType);
                         intdataComments.add("property["+i+"].type");
@@ -2456,6 +2459,16 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 class MetaObjectData {
 	
 	@NativeAccess
+	static class MetaTypeInfo{
+		final @NativeAccess int metaTypeId;
+		final @NativeAccess String typeName;
+		MetaTypeInfo(int metaTypeId, String typeName) {
+			this.metaTypeId = metaTypeId;
+			this.typeName = typeName;
+		}
+	}
+	
+	@NativeAccess
 	static class IntArray{
 		@NativeAccess
 		private int[] array = new int[1024];
@@ -2518,9 +2531,9 @@ class MetaObjectData {
 
     final @NativeAccess List<SignalInfo>  signalInfos = new ArrayList<>();
     final @NativeAccess List<Method>  methods = new ArrayList<>();
-    final @NativeAccess List<int[]>   methodMetaTypes = new ArrayList<>();
+    final @NativeAccess List<MetaTypeInfo[]>   methodMetaTypes = new ArrayList<>();
     final @NativeAccess List<Constructor<?>> constructors = new ArrayList<>();
-    final @NativeAccess List<int[]>   constructorMetaTypes = new ArrayList<>();
+    final @NativeAccess List<MetaTypeInfo[]>   constructorMetaTypes = new ArrayList<>();
 
     final @NativeAccess List<Method>  propertyReaders = new ArrayList<>();
     final @NativeAccess List<Method>  propertyWriters = new ArrayList<>();
@@ -2534,7 +2547,7 @@ class MetaObjectData {
     final @NativeAccess List<Method>  propertyEditableResolvers = new ArrayList<>();
     final @NativeAccess List<Method>  propertyStoredResolvers = new ArrayList<>();
     final @NativeAccess List<Method>  propertyUserResolvers = new ArrayList<>();
-    final @NativeAccess List<int[]>   propertyMetaTypes = new ArrayList<>();
+    final @NativeAccess List<MetaTypeInfo[]>   propertyMetaTypes = new ArrayList<>();
     final @NativeAccess List<Class<?>>   propertyClassTypes = new ArrayList<>();
     final @NativeAccess List<Class<?>> relatedMetaObjects = new ArrayList<>();
 

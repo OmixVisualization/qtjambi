@@ -375,7 +375,24 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_signalInfo)
 extern "C" Q_DECL_EXPORT jlong JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_metaObjectId)
 (JNIEnv *env, jclass, jobject mo){
-    return mo ? Java::QtCore::QMetaObject::metaObjectPointer(env, mo) : 0;
+    try{
+        return mo ? Java::QtCore::QMetaObject::metaObjectPointer(env, mo) : 0;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+        return 0;
+    }
+}
+
+extern "C" Q_DECL_EXPORT jboolean JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_SignalUtility_isDynamic)
+    (JNIEnv *env, jclass, jobject mo){
+    try{
+        jlong metaObjectId = mo ? Java::QtCore::QMetaObject::metaObjectPointer(env, mo) : 0;
+        return QtJambiMetaObject::isInstance(reinterpret_cast<const QMetaObject*>(metaObjectId));
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+        return false;
+    }
 }
 
 extern "C" Q_DECL_EXPORT void JNICALL
@@ -713,10 +730,10 @@ void NativeSlotObject::impl(int which, QSlotObjectBase *this_, QObject *, void *
                                 }
                                 Java::QtJambi::SignalUtility$AbstractConnection::invoke(env,_this->m_connection.object(), args);
                             } else {
-                                qWarning("SlotObject::CallSignal: Failed to convert arguments");
+                                qCWarning(DebugAPI::internalCategory, "SlotObject::CallSignal: Failed to convert arguments");
                             }
                         }else{
-                            qWarning()<< "SlotObject::CallSignal: Failed to convert method types for signal " << _this->m_signal.methodSignature();
+                            qCWarning(DebugAPI::internalCategory, )<< "SlotObject::CallSignal: Failed to convert method types for signal " << _this->m_signal.methodSignature();
                         }
                     } catch (const JavaException& exn) {
                         if(_this->m_nothrow){

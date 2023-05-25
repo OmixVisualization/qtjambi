@@ -54,10 +54,21 @@ const char * adaptFile(const char *file){
 
 namespace DebugAPI{
 
+Q_LOGGING_CATEGORY(internalCategory, "io.qtjambi.internal")
 Q_LOGGING_CATEGORY(debugAPICategory, "io.qtjambi.debugapi")
 Q_LOGGING_CATEGORY(debugAPIInternalMethodsCategory, "io.qtjambi.debugapi.internal")
 Q_LOGGING_CATEGORY(debugAPIJavaOverloadsCategory, "io.qtjambi.debugapi.java-overloads")
 Q_LOGGING_CATEGORY(debugAPINativeCallsCategory, "io.qtjambi.debugapi.native-calls")
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#define QTJAMBI_DEBUG_MESSAGE_LOGGER(category) \
+for (bool qt_category_enabled = category().isDebugEnabled(); qt_category_enabled; qt_category_enabled = false) \
+        QMessageLogger(adaptFile(file), line, function, category().categoryName()).debug().nospace().noquote()
+#else
+#define QTJAMBI_DEBUG_MESSAGE_LOGGER(category) \
+for (QLoggingCategoryMacroHolder<QtDebugMsg> qt_category(&category); qt_category; qt_category.control = false) \
+        QMessageLogger(adaptFile(file), line, function, qt_category.name()).debug().nospace().noquote()
+#endif
 
 bool enabledMethodTracePrints(){
     static bool b = []()->bool{
@@ -100,45 +111,45 @@ public:
             switch(callType){
             case MethodPrint::JavaToNativeCall:
                 if(isEnter){
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIJavaOverloadsCategory).nospace().noquote() << "ENTER: Java calling native method " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIJavaOverloadsCategory) << "ENTER: Java calling native method " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }else{
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIJavaOverloadsCategory).nospace().noquote() << "LEAVE: Java calling native method " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIJavaOverloadsCategory) << "LEAVE: Java calling native method " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }
                 break;
             case MethodPrint::NativeToJavaCall:
                 if(isEnter){
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIJavaOverloadsCategory).nospace().noquote() << "ENTER: Shell (object: " << pointer << ") calling java method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIJavaOverloadsCategory) << "ENTER: Shell (object: " << pointer << ") calling java method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }else{
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIJavaOverloadsCategory).nospace().noquote() << "LEAVE: Shell (object: " << pointer << ") calling java method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIJavaOverloadsCategory) << "LEAVE: Shell (object: " << pointer << ") calling java method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }
                 break;
             case MethodPrint::LibraryInitialization:
                 if(isEnter){
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "ENTER: Initializing " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: Initializing " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }else{
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "LEAVE: Initializing " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: Initializing " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }
                 break;
             case MethodPrint::Internal:{
                 if(isEnter){
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "ENTER: " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }else{
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "LEAVE: " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }
                 break;
             }
             case MethodPrint::ConstructorCall:
                 if(isEnter){
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "ENTER: Constructor call " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: Constructor call " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }else{
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "LEAVE: Constructor call " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: Constructor call " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }
                 break;
             case MethodPrint::DestructorCall:
                 if(isEnter){
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "ENTER: Destuctor call " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: Destuctor call " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }else{
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "LEAVE: Destuctor call " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: Destuctor call " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }
                 break;
             default:break;
@@ -147,45 +158,45 @@ public:
             switch(callType){
             case MethodPrint::JavaToNativeCall:
                 if(isEnter){
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIJavaOverloadsCategory).nospace().noquote() << "ENTER: Java calling native method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIJavaOverloadsCategory) << "ENTER: Java calling native method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }else{
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIJavaOverloadsCategory).nospace().noquote() << "LEAVE: Java calling native method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIJavaOverloadsCategory) << "LEAVE: Java calling native method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }
                 break;
             case MethodPrint::NativeToJavaCall:
                 if(isEnter){
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIJavaOverloadsCategory).nospace().noquote() << "ENTER: Shell calling java method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIJavaOverloadsCategory) << "ENTER: Shell calling java method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }else{
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIJavaOverloadsCategory).nospace().noquote() << "LEAVE: Shell calling java method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIJavaOverloadsCategory) << "LEAVE: Shell calling java method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }
                 break;
             case MethodPrint::LibraryInitialization:
                 if(isEnter){
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "ENTER: Initializing " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: Initializing " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }else{
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "LEAVE: Initializing " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: Initializing " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }
                 break;
             case MethodPrint::Internal:{
                 if(isEnter){
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "ENTER: " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }else{
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "LEAVE: " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }
                 break;
             }
             case MethodPrint::ConstructorCall:
                 if(isEnter){
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "ENTER: Constructor call " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: Constructor call " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }else{
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "LEAVE: Constructor call " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: Constructor call " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }
                 break;
             case MethodPrint::DestructorCall:
                 if(isEnter){
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "ENTER: Destuctor call " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: Destuctor call " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }else{
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "LEAVE: Destuctor call " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: Destuctor call " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }
                 break;
             default:break;
@@ -198,7 +209,7 @@ public:
     }
     static void printImpl(const QString& message, const char *file, int line, const char *function)
     {
-        QMessageLogger(adaptFile(file), line, function).debug(debugAPICategory).nospace().noquote() << message << " in thread tid=" << quintptr(QThread::currentThreadId());
+        QMessageLogger(adaptFile(file), line, function).debug(debugAPICategory) << message << " in thread tid=" << quintptr(QThread::currentThreadId());
     }
     static void print(const char *message, const char *file, int line, const char *function)
     {
@@ -239,30 +250,30 @@ void printWithType(bool isEnter, MethodPrint::Type callType, const void* pointer
             switch(callType){
             case MethodPrint::NativeToJavaCall:
                 if(isEnter){
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIJavaOverloadsCategory).nospace().noquote() << "ENTER: Shell (object: " << pointer << " , type: " << typeName << ") calling java method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIJavaOverloadsCategory) << "ENTER: Shell (object: " << pointer << " , type: " << typeName << ") calling java method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }else{
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIJavaOverloadsCategory).nospace().noquote() << "LEAVE: Shell (object: " << pointer << " , type: " << typeName << ") calling java method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIJavaOverloadsCategory) << "LEAVE: Shell (object: " << pointer << " , type: " << typeName << ") calling java method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }
                 break;
             case MethodPrint::Internal:
                 if(isEnter){
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "ENTER: " << method << " on object " << pointer << " of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: " << method << " on object " << pointer << " of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }else{
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "LEAVE: " << method << " on object " << pointer << " of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: " << method << " on object " << pointer << " of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }
                 break;
             case MethodPrint::ConstructorCall:
                 if(isEnter){
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "ENTER: Constructor call " << method << " on object " << pointer << " of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: Constructor call " << method << " on object " << pointer << " of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }else{
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "LEAVE: Constructor call " << method << " on object " << pointer << " of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: Constructor call " << method << " on object " << pointer << " of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }
                 break;
             case MethodPrint::DestructorCall:
                 if(isEnter){
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "ENTER: Destuctor call " << method << " on object " << pointer << " of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: Destuctor call " << method << " on object " << pointer << " of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }else{
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "LEAVE: Destuctor call " << method << " on object " << pointer << " of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: Destuctor call " << method << " on object " << pointer << " of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }
                 break;
             default:
@@ -272,30 +283,30 @@ void printWithType(bool isEnter, MethodPrint::Type callType, const void* pointer
             switch(callType){
             case MethodPrint::NativeToJavaCall:
                 if(isEnter){
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIJavaOverloadsCategory).nospace().noquote() << "ENTER: Shell (type: " << typeName << ") calling java method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIJavaOverloadsCategory) << "ENTER: Shell (type: " << typeName << ") calling java method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }else{
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIJavaOverloadsCategory).nospace().noquote() << "LEAVE: Shell (type: " << typeName << ") calling java method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIJavaOverloadsCategory) << "LEAVE: Shell (type: " << typeName << ") calling java method " << method << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }
                 break;
             case MethodPrint::Internal:
                 if(isEnter){
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "ENTER: " << method << " for object of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: " << method << " for object of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }else{
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "LEAVE: " << method << " for object of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: " << method << " for object of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }
                 break;
             case MethodPrint::ConstructorCall:
                 if(isEnter){
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "ENTER: Constructor call " << method << " on object of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: Constructor call " << method << " on object of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }else{
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "LEAVE: Constructor call " << method << " on object of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: Constructor call " << method << " on object of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }
                 break;
             case MethodPrint::DestructorCall:
                 if(isEnter){
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "ENTER: Destuctor call " << method << " on object of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "ENTER: Destuctor call " << method << " on object of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }else{
-                    QMessageLogger(adaptFile(file), line, function).debug(debugAPIInternalMethodsCategory).nospace().noquote() << "LEAVE: Destuctor call " << method << " on object of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIInternalMethodsCategory) << "LEAVE: Destuctor call " << method << " on object of type " << typeName << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }
                 break;
             default:

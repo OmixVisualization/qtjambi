@@ -33,6 +33,7 @@
 #include "paint.h"
 #include "exception.h"
 #include "java_p.h"
+#include "utils_p.h"
 
 AboutToPaint::AboutToPaint(JNIEnv *env, jobject object)
     : m_env(env),
@@ -49,7 +50,7 @@ AboutToPaint::~AboutToPaint()
     }catch(const JavaException& exn){
         __exnHandler.handle(m_env, exn, nullptr);
     } catch (const std::exception& e) {
-        qWarning("%s", e.what());
+        qCWarning(DebugAPI::internalCategory, "%s", e.what());
     } catch (...) {
     }
 }

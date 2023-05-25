@@ -49,53 +49,62 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     	QtJambi_LibraryUtilities.initialize();
     }
 
+    /**
+     * Constructor for internal use only.
+     * @param p expected to be <code>null</code>.
+     */
     @NativeAccess
     protected QSet(QPrivateConstructor p) {
 		super(p);
 	}
     
+    /**
+     * Creating a container with given element type.
+     * <p>See <a href="https://doc.qt.io/qt/qset.html#QSet">QSet::QSet()</a></p>
+     * @param elementType the type T
+     */
 	public QSet(Class<T> elementType) {
 		super(null);
 		QMetaType metaType = QMetaType.fromType(elementType);
-		if(metaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QSet.");
-		if(metaType.id()==QMetaType.Type.QVariant.value())
-			throw new IllegalArgumentException("QVariant cannot be type of QSet.");
-		if(metaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be type of QSet.");
 		initialize(elementType, QtJambi_LibraryUtilities.internal.nativeId(metaType), null);
 	}
 	
+    /**
+     * Creating a container with given element type.
+     * <p>See <a href="https://doc.qt.io/qt/qset.html#QSet">QSet::QSet()</a></p>
+     * @param metaType the type T
+     */
 	public QSet(QMetaType.Type metaType) {
 		this(new QMetaType(metaType));
 	}
     
+    /**
+     * Creating a container with given element type.
+     * <p>See <a href="https://doc.qt.io/qt/qset.html#QSet">QSet::QSet()</a></p>
+     * @param metaType the type T
+     */
 	public QSet(QMetaType metaType) {
 		super(null);
-		if(metaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QSet.");
-		if(metaType.id()==QMetaType.Type.QVariant.value())
-			throw new IllegalArgumentException("QVariant cannot be type of QSet.");
-		if(metaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be type of QSet.");
 		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), null);
 	}
     
+    /**
+     * Creating a container with given content.
+     * <p>See <a href="https://doc.qt.io/qt/qset.html#QSet">QSet::QSet(const QSet&lt;T> &amp;)</a></p>
+     * @param other container
+     */
     public QSet(Collection<T> other) {
         super(null);
 		QMetaType metaType = QList.findElementMetaType(Objects.requireNonNull(other));
-		if(metaType==null || metaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QSet.");
-		if(metaType.id()==QMetaType.Type.QVariant.value())
-			throw new IllegalArgumentException("QVariant cannot be type of QSet.");
-		if(metaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be type of QSet.");
 		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), other);
     }
     
     @QtUninvokable
     private native void initialize(Class<?> elementType, long elementMetaType, Collection<T> other);
     
+    /**
+     * Creates and returns a copy of this object.
+     */
     @Override
 	public QSet<T> clone(){
 		return new QSet<>(this);
@@ -322,10 +331,6 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     @SafeVarargs
     public static <T> QSet<T> of(T element0, T...elements) {
 		QMetaType metaType = QList.findElementMetaType(element0, elements);
-		if(metaType==null || metaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QList.");
-		if(metaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be type of QList.");
 		QSet<T> result = new QSet<>(metaType);
 		result.add(element0);
 		for (T t : elements) {

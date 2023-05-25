@@ -604,7 +604,7 @@ bool eventNotifier(QObject *receiver, QEvent *event, bool* result)
                            link->setDefaultOwnership(env);
                     }
                 } else if (event->type() == QEvent::ChildAdded) {
-                    qWarning("'%s' [%s] was garbage collected before it was reparented to '%s' [%s]",
+                    qCWarning(DebugAPI::internalCategory, "'%s' [%s] was garbage collected before it was reparented to '%s' [%s]",
                          qPrintable(e->child()->objectName()), e->child()->metaObject()->className(),
                          qPrintable(receiver->objectName()), receiver->metaObject()->className());
                 }
@@ -629,7 +629,7 @@ bool eventNotifier(QObject *receiver, QEvent *event, bool* result)
         QThreadData *threadData = d->threadData;
         QScopedScopeLevelCounter scopeLevelCounter(threadData);
         if (receiver == nullptr) {                        // serious error
-            qWarning("QCoreApplication::notify: Unexpected null receiver");
+            qCWarning(DebugAPI::internalCategory, "QCoreApplication::notify: Unexpected null receiver");
             return true;
         }
 #ifndef QT_NO_DEBUG

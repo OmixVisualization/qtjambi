@@ -48,9 +48,9 @@ DoFinally::~DoFinally(){
     }catch(const JavaException& exn){
         if(DefaultJniEnvironment env{200}){
             __exnHandler.handle(env, exn, nullptr);
-        }else qWarning("%s", exn.what());
+        }else qCWarning(DebugAPI::internalCategory, "%s", exn.what());
     } catch (const std::exception& e) {
-        qWarning("%s", e.what());
+        qCWarning(DebugAPI::internalCategory, "%s", e.what());
     } catch (...) {
     }
 }
@@ -140,9 +140,9 @@ QtJambiScope::~QtJambiScope(){
                 if(DefaultJniEnvironment env{200}){
                     exn.report(env);
                 }
-                else qWarning("%s", exn.what());
+                else qCWarning(DebugAPI::internalCategory, "%s", exn.what());
             } catch (const std::exception& e) {
-                qWarning("%s", e.what());
+                qCWarning(DebugAPI::internalCategory, "%s", e.what());
             } catch (...) {
             }
         }

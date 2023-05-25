@@ -2545,7 +2545,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                                 if(!found){
                                     p->l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, *ptr, *typeId);
                                     if(scope)
-                                        scope->addObjectInvalidation(env, p->l, false, true);
+                                        scope->addObjectInvalidation(env, p->l, true, true);
                                 }
                             }
                             return true;
@@ -2649,7 +2649,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                                         p->l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, in, *typeId);
                                         found = true;
                                         if(scope)
-                                            scope->addObjectInvalidation(env, p->l, false, true);
+                                            scope->addObjectInvalidation(env, p->l, true, true);
                                     }else{
                                         QByteArray className = getJavaName(*typeId);
                                         jclass targetType = nullptr;
@@ -2665,7 +2665,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                                 if(!found){
                                     p->l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, *ptr, *typeId);
                                     if(scope)
-                                        scope->addObjectInvalidation(env, p->l, false, true);
+                                        scope->addObjectInvalidation(env, p->l, true, true);
                                 }
                             }
                             return true;
@@ -2684,7 +2684,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                                             p->l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, in, *typeId);
                                             found = true;
                                             if(scope)
-                                                scope->addObjectInvalidation(env, p->l, false, true);
+                                                scope->addObjectInvalidation(env, p->l, true, true);
                                         }else{
                                             QByteArray className = getJavaName(*typeId);
                                             jclass targetType = nullptr;
@@ -2700,7 +2700,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                                     if(!found){
                                         p->l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, in, *typeId);
                                         if(scope)
-                                            scope->addObjectInvalidation(env, p->l, false, true);
+                                            scope->addObjectInvalidation(env, p->l, true, true);
                                     }
                                 }
                                 return true;
@@ -2718,6 +2718,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
             }
         }else{
             QByteArray className = QtJambiAPI::getClassName(_env, externalClass).replace(".", "/").toLatin1();
+            externalClass = getGlobalClassRef(_env, externalClass, className);
             if (Java::QtCore::QObject::isAssignableFrom(_env,externalClass)) {
                 if(pointerType == PointerType::SharedPointer){
                     return [className](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
@@ -2764,31 +2765,31 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         return true;
                     };
                 }else if(pointerType == PointerType::ScopedPointer){
-                    return [className](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* p, bool)->bool{
+                    return [externalClass](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* p, bool)->bool{
                         const QScopedPointer<QObject>* ptr = reinterpret_cast<const QScopedPointer<QObject>*>(in);
                         if(ptr){
-                            p->l = QtJambiAPI::convertQObjectToJavaObject(env, ptr->data(), className);
+                            p->l = QtJambiAPI::convertQObjectToJavaObject(env, ptr->data(), externalClass);
                             if(scope)
                                 scope->addObjectInvalidation(env, p->l, false, true);
                         }
                         return true;
                     };
                 }else if(pointerType == PointerType::unique_ptr){
-                    return [className](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* p, bool)->bool{
+                    return [externalClass](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* p, bool)->bool{
                         const std::unique_ptr<QObject>* ptr = reinterpret_cast<const std::unique_ptr<QObject>*>(in);
                         if(ptr){
-                            p->l = QtJambiAPI::convertQObjectToJavaObject(env, ptr->get(), className);
+                            p->l = QtJambiAPI::convertQObjectToJavaObject(env, ptr->get(), externalClass);
                             if(scope)
                                 scope->addObjectInvalidation(env, p->l, false, true);
                         }
                         return true;
                     };
                 }else{
-                    return [className](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
+                    return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
                         QObject * const *ptr = reinterpret_cast<QObject * const *>(in);
                         if(ptr){
                             QObject * qobject = *ptr;
-                            p->l = QtJambiAPI::convertQObjectToJavaObject(env, qobject, className);
+                            p->l = QtJambiAPI::convertQObjectToJavaObject(env, qobject, externalClass);
                         }
                         return true;
                     };
@@ -2840,20 +2841,20 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                     return true;
                 };
             }else if(pointerType == PointerType::ScopedPointer){
-                return [className](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* p, bool)->bool{
+                return [externalClass](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* p, bool)->bool{
                     const QScopedPointer<void*>* ptr = reinterpret_cast<const QScopedPointer<void*>*>(in);
                     if(ptr){
-                        p->l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, ptr->data(), className.constData());
+                        p->l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, ptr->data(), externalClass);
                         if(scope)
                             scope->addObjectInvalidation(env, p->l, false, true);
                     }
                     return true;
                 };
             }else if(pointerType == PointerType::unique_ptr){
-                return [className](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* p, bool)->bool{
+                return [externalClass](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* p, bool)->bool{
                     const std::unique_ptr<void*>* ptr = reinterpret_cast<const std::unique_ptr<void*>*>(in);
                     if(ptr){
-                        p->l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, ptr->get(), className.constData());
+                        p->l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, ptr->get(), externalClass);
                         if(scope)
                             scope->addObjectInvalidation(env, p->l, false, true);
                     }
@@ -2874,7 +2875,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                     }
                 }
                 if (internalTypeName.contains(QLatin1Char('*')) || forcePointerConversion){
-                    return [className](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* p, bool)->bool{
+                    return [externalClass](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* p, bool)->bool{
                         void * const *ptr = reinterpret_cast<void * const *>(in);
                         if(ptr){
                             // If we found a link for the object, we use the java object
@@ -2884,23 +2885,48 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                                 jobject obj = link->getJavaObjectLocalRef(env);
                                 if(!obj && link->ownership()==QtJambiLink::Ownership::Split){
                                     link->invalidate(env);
-                                    p->l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, *ptr, className);
+                                    p->l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, *ptr, externalClass);
                                     found = true;
                                     if(scope)
                                         scope->addObjectInvalidation(env, p->l, true, true);
                                 }else{
-                                    jclass targetType = nullptr;
-                                    try{
-                                        targetType = JavaAPI::resolveClass(env, className);
-                                    }catch(...){}
-                                    if(targetType && env->IsInstanceOf(obj, targetType)){
+                                    if(env->IsInstanceOf(obj, externalClass)){
                                         p->l = obj;
                                         found = true;
                                     }
                                 }
                             }
                             if(!found){
-                                p->l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, *ptr, className);
+                                p->l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, *ptr, externalClass);
+                                if(scope)
+                                    scope->addObjectInvalidation(env, p->l, true, true);
+                            }
+                        }
+                        return true;
+                    };
+                }else if(internalTypeName.endsWith(QLatin1Char('&'))){
+                    return [externalClass](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* p, bool)->bool{
+                        if(in){
+                            // If we found a link for the object, we use the java object
+                            // from the link.
+                            bool found = false;
+                            for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(in)) {
+                                jobject obj = link->getJavaObjectLocalRef(env);
+                                if(!obj && link->ownership()==QtJambiLink::Ownership::Split){
+                                    link->invalidate(env);
+                                    p->l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, in, externalClass);
+                                    found = true;
+                                    if(scope)
+                                        scope->addObjectInvalidation(env, p->l, true, true);
+                                }else{
+                                    if(env->IsInstanceOf(obj, externalClass)){
+                                        p->l = obj;
+                                        found = true;
+                                    }
+                                }
+                            }
+                            if(!found){
+                                p->l = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, in, externalClass);
                                 if(scope)
                                     scope->addObjectInvalidation(env, p->l, true, true);
                             }
@@ -2908,9 +2934,9 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                         return true;
                     };
                 }else{
-                    return [className](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
+                    return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue* p, bool)->bool{
                         if(in){
-                            p->l = QtJambiAPI::convertNativeToJavaObjectAsCopy(env, in, qPrintable(className));
+                            p->l = QtJambiAPI::convertNativeToJavaObjectAsCopy(env, in, externalClass);
                         }
                         return true;
                     };
@@ -2951,7 +2977,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
             return [interfaceTypeId](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* p, bool)->bool{
                 p->l = QtJambiAPI::convertNativeToJavaObjectAsCopy(env, in, *interfaceTypeId);
                 if(scope)
-                    scope->addObjectInvalidation(env, p->l, false, true);
+                    scope->addObjectInvalidation(env, p->l, true, true);
                 return true;
             };
         }else if(const std::type_info* interfaceTypeId = getTypeByMetaType(internalMetaType)){

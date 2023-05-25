@@ -213,9 +213,9 @@ JNIEnv *currentJNIEnvironment(JavaVM *vm, bool initializeJavaThread = true){
         if (result != JNI_OK) {
             if(QThread* mainThread = QCoreApplicationPrivate::theMainThread.loadRelaxed()){
                 if(mainThread!=currentThread)
-                    qWarning("Failed attaching current thread (%i).", result);
+                    qCWarning(DebugAPI::internalCategory, "Failed attaching current thread (%i).", result);
             }else{
-                qWarning("Failed attaching current thread (%i).", result);
+                qCWarning(DebugAPI::internalCategory, "Failed attaching current thread (%i).", result);
             }
         }
         if(env && env->functions){

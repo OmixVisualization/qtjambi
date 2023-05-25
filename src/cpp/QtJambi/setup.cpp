@@ -726,7 +726,7 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
 #endif
                                                                                                            , "plugins_platforms_qtforandroid"));
                 if(!library.load()){
-                    qWarning("Unable to load qtforandroid: %s", qPrintable(library.errorString()));
+                    qCWarning(DebugAPI::internalCategory, "Unable to load qtforandroid: %s", qPrintable(library.errorString()));
                 }
                 qputenv("QML_IMPORT_PATH", qPrintable(thisLibraryPath.absolutePath()));
                 qputenv("QML2_IMPORT_PATH", qPrintable(thisLibraryPath.absolutePath()));
@@ -817,12 +817,12 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
                 JniLocalFrame __jniLocalFrame(env, 16);
                 e.raiseInJava(env);
             }else{
-                qWarning("%s", e.what());
+                qCWarning(DebugAPI::internalCategory, "%s", e.what());
             }
         }catch (const std::exception& exn) {
-            qWarning("An error occurred: %s", exn.what());
+            qCWarning(DebugAPI::internalCategory, "An error occurred: %s", exn.what());
         }catch (...) {
-            qWarning("An error occurred.");
+            qCWarning(DebugAPI::internalCategory, "An error occurred.");
         }
     }
     return JNI_VERSION_1_8;
@@ -960,10 +960,10 @@ int main(int argc, char *argv[])
             Java::Runtime::Throwable::printStackTrace(env, exn.object());
             return -1;
         }catch (const std::exception& exn) {
-            qWarning("An error occurred: %s", exn.what());
+            qCWarning(DebugAPI::internalCategory, "An error occurred: %s", exn.what());
             return -1;
         }catch (...) {
-            qWarning("An error occurred.");
+            qCWarning(DebugAPI::internalCategory, "An error occurred.");
             return -1;
         }
         int reduceArgs = 1;
@@ -1012,19 +1012,19 @@ int main(int argc, char *argv[])
                 Java::Runtime::Throwable::printStackTrace(env, exn.object());
                 return -1;
             }catch (const std::exception& exn) {
-                qWarning("An error occurred: %s", exn.what());
+                qCWarning(DebugAPI::internalCategory, "An error occurred: %s", exn.what());
                 return -1;
             }catch (...) {
-                qWarning("An error occurred.");
+                qCWarning(DebugAPI::internalCategory, "An error occurred.");
                 return -1;
             }
             qputenv("QT_ANDROID_NO_EXIT_CALL", "1");
             return 0;
         }else{
-            qWarning("no main class specified");
+            qCWarning(DebugAPI::internalCategory, "no main class specified");
         }
     }else{
-        qWarning("Unable to load JVM.");
+        qCWarning(DebugAPI::internalCategory, "Unable to load JVM.");
     }
     return -1;
 }

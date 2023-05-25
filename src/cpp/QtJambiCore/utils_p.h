@@ -69,7 +69,8 @@ namespace QtCore
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QUnhandledException,
                                      )
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QDebug,
-                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(__rcDevice))
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(__rcDevice)
+                                     QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_FIELD(disabled))
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QCborStreamReader$StringResult,
                                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QCborValue$FromCborResult,

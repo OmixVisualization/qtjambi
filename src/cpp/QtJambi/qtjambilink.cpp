@@ -315,7 +315,7 @@ QtJambiLinkUserData::~QtJambiLinkUserData()
             Q_UNUSED(locker)
         }
     } catch (const std::exception& e) {
-        qWarning("%s", e.what());
+        qCWarning(DebugAPI::internalCategory, "%s", e.what());
     } catch (...) {
     }
 }
@@ -331,7 +331,7 @@ ValueOwnerUserData::~ValueOwnerUserData(){
         try{
             m_deleters.takeFirst()();
         } catch (const std::exception& e) {
-            qWarning("%s", e.what());
+            qCWarning(DebugAPI::internalCategory, "%s", e.what());
         } catch (...) {
         }
     }
@@ -2485,7 +2485,7 @@ void MetaTypedPointerToContainerLink::deleteNativeObject(JNIEnv *env, bool force
             QWriteLocker locker(gRefCountStaticLock());
             int currentCount = gRefCountHash()->value(m_meta_type, 0) - 1;
             gRefCountHash()->insert(m_meta_type, currentCount);
-            qDebug("Deleting QObject [count after: %d]", currentCount);
+            qCDebug(DebugAPI::internalCategory, "Deleting QObject [count after: %d]", currentCount);
         }
     #endif
         invalidateDependentObjects(env);
@@ -2633,7 +2633,7 @@ PointerToObjectLink::~PointerToObjectLink()
             deleteNativeObject(nullptr);
         }
     } catch (const std::exception& e) {
-        qWarning("%s", e.what());
+        qCWarning(DebugAPI::internalCategory, "%s", e.what());
     } catch (...) {
     }
 }
@@ -2942,7 +2942,7 @@ void MetaTypedPointerToObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
             QWriteLocker locker(gRefCountStaticLock());
             int currentCount = gRefCountHash()->value(m_meta_type, 0) - 1;
             gRefCountHash()->insert(m_meta_type, currentCount);
-            qDebug("Deleting QObject [count after: %d]", currentCount);
+            qCDebug(DebugAPI::internalCategory, "Deleting QObject [count after: %d]", currentCount);
         }
     #endif
         invalidateDependentObjects(env);
@@ -2969,7 +2969,7 @@ void OwnedMetaTypedPointerToObjectLink::deleteNativeObject(JNIEnv *env, bool for
             QWriteLocker locker(gRefCountStaticLock());
             int currentCount = gRefCountHash()->value(m_meta_type, 0) - 1;
             gRefCountHash()->insert(m_meta_type, currentCount);
-            qDebug("Deleting QObject [count after: %d]", currentCount);
+            qCDebug(DebugAPI::internalCategory, "Deleting QObject [count after: %d]", currentCount);
         }
     #endif
         invalidateDependentObjects(env);
@@ -3046,7 +3046,7 @@ void DeletableOwnedPointerToObjectLink::deleteNativeObject(JNIEnv *env, bool for
             QWriteLocker locker(gRefCountStaticLock());
             int currentCount = gRefCountHash()->value(m_meta_type, 0) - 1;
             gRefCountHash()->insert(m_meta_type, currentCount);
-            qDebug("Deleting QObject [count after: %d]", currentCount);
+            qCDebug(DebugAPI::internalCategory, "Deleting QObject [count after: %d]", currentCount);
         }
     #endif
         invalidateDependentObjects(env);
@@ -3119,7 +3119,7 @@ void DeletablePointerToContainerLink::deleteNativeObject(JNIEnv *env, bool force
             QWriteLocker locker(gRefCountStaticLock());
             int currentCount = gRefCountHash()->value(m_meta_type, 0) - 1;
             gRefCountHash()->insert(m_meta_type, currentCount);
-            qDebug("Deleting QObject [count after: %d]", currentCount);
+            qCDebug(DebugAPI::internalCategory, "Deleting QObject [count after: %d]", currentCount);
         }
     #endif
         invalidateDependentObjects(env);
@@ -3192,7 +3192,7 @@ void DeletablePointerToObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
             QWriteLocker locker(gRefCountStaticLock());
             int currentCount = gRefCountHash()->value(m_meta_type, 0) - 1;
             gRefCountHash()->insert(m_meta_type, currentCount);
-            qDebug("Deleting QObject [count after: %d]", currentCount);
+            qCDebug(DebugAPI::internalCategory, "Deleting QObject [count after: %d]", currentCount);
         }
     #endif
         invalidateDependentObjects(env);
@@ -3218,7 +3218,7 @@ void DeletableOwnedPointerToContainerLink::deleteNativeObject(JNIEnv *env, bool 
             QWriteLocker locker(gRefCountStaticLock());
             int currentCount = gRefCountHash()->value(m_meta_type, 0) - 1;
             gRefCountHash()->insert(m_meta_type, currentCount);
-            qDebug("Deleting QObject [count after: %d]", currentCount);
+            qCDebug(DebugAPI::internalCategory, "Deleting QObject [count after: %d]", currentCount);
         }
     #endif
         invalidateDependentObjects(env);
@@ -3355,7 +3355,7 @@ PointerToQObjectLink::~PointerToQObjectLink()
             deleteNativeObject(nullptr);
         }
     } catch (const std::exception& e) {
-        qWarning("%s", e.what());
+        qCWarning(DebugAPI::internalCategory, "%s", e.what());
     } catch (...) {
     }
 }
@@ -3402,7 +3402,7 @@ void PointerToQObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
             QWriteLocker locker(gRefCountStaticLock());
             int currentCount = gRefCountHash()->value(m_meta_type, 0) - 1;
             gRefCountHash()->insert(m_meta_type, currentCount);
-            qDebug("Deleting '%s' [count after: %d]", QMetaType::typeName(m_meta_type), currentCount);
+            qCDebug(DebugAPI::internalCategory, "Deleting '%s' [count after: %d]", QMetaType::typeName(m_meta_type), currentCount);
         }
 #endif
         unregisterOffsets();
@@ -3415,7 +3415,7 @@ void PointerToQObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
                 // Explicit dispose from current thread, delete object
                 if(!objectThread){
                     if(m_pointer->parent()){
-                        qWarning("Skip deletion of QObject '%s' [%s] (thread=none, parent='%s' [%s])",
+                        qCWarning(DebugAPI::internalCategory, "Skip deletion of QObject '%s' [%s] (thread=none, parent='%s' [%s])",
                                 qPrintable(m_pointer->objectName()),
                                 m_pointer->metaObject()->className(),
                                 qPrintable(m_pointer->parent()->objectName()),
@@ -3455,21 +3455,21 @@ void PointerToQObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
                         __qt_exceptionBlocker.release(env);
                     }else if(objectThread==m_pointer){
                         if(objectThread->isRunning()){
-                            qWarning("Trying to delete a running QThread '%s'",
+                            qCWarning(DebugAPI::internalCategory, "Trying to delete a running QThread '%s'",
                                     qPrintable(m_pointer->objectName()));
                         }
                         QtJambiExceptionBlocker __qt_exceptionBlocker;
                         delete m_pointer;
                         __qt_exceptionBlocker.release(env);
                     }else if(m_pointer->parent()){
-                        qWarning("Skip deletion of QObject '%s' [%s] (thread='%s', parent='%s' [%s])",
+                        qCWarning(DebugAPI::internalCategory, "Skip deletion of QObject '%s' [%s] (thread='%s', parent='%s' [%s])",
                                 qPrintable(objectThread->objectName()),
                                 qPrintable(m_pointer->objectName()),
                                 m_pointer->metaObject()->className(),
                                 qPrintable(m_pointer->parent()->objectName()),
                                 m_pointer->parent()->metaObject()->className());
                     }else{
-                        qWarning("Skip deletion of QObject '%s' [%s] (thread='%s', no parent)",
+                        qCWarning(DebugAPI::internalCategory, "Skip deletion of QObject '%s' [%s] (thread='%s', no parent)",
                                 qPrintable(objectThread->objectName()),
                                 qPrintable(m_pointer->objectName()),
                                 m_pointer->metaObject()->className());
@@ -3509,7 +3509,7 @@ void PointerToQObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
                             __qt_exceptionBlocker.release(env);
                         }
                     }else{
-                        qWarning("QObjects can only be implicitly garbage collected when owned"
+                        qCWarning(DebugAPI::internalCategory, "QObjects can only be implicitly garbage collected when owned"
                                 " by a thread with event dispatcher. Try to delete later. Otherwise, native resource is leaked: '%s' [%s]",
                                 qPrintable(m_pointer->objectName()),
                                 m_pointer->metaObject()->className());
@@ -3650,7 +3650,7 @@ SmartPointerToObjectLink::~SmartPointerToObjectLink(){
             deleteNativeObject(nullptr);
         }
     } catch (const std::exception& e) {
-        qWarning("%s", e.what());
+        qCWarning(DebugAPI::internalCategory, "%s", e.what());
     } catch (...) {
     }
 }
@@ -3693,7 +3693,7 @@ void SmartPointerToObjectLink::deleteNativeObject(JNIEnv *env, bool){
             QWriteLocker locker(gRefCountStaticLock());
             int currentCount = gRefCountHash()->value(m_meta_type, 0) - 1;
             gRefCountHash()->insert(m_meta_type, currentCount);
-            qDebug("Deleting '%s' [count after: %d]", QMetaType::typeName(m_meta_type), currentCount);
+            qCDebug(DebugAPI::internalCategory, "Deleting '%s' [count after: %d]", QMetaType::typeName(m_meta_type), currentCount);
         }
     #endif
         unregisterOffsets();
@@ -3859,7 +3859,7 @@ QSharedPointerToQObjectLink::~QSharedPointerToQObjectLink(){
             deleteNativeObject(nullptr);
         }
     } catch (const std::exception& e) {
-        qWarning("%s", e.what());
+        qCWarning(DebugAPI::internalCategory, "%s", e.what());
     } catch (...) {
     }
     if(m_pointerContainer){
@@ -3954,7 +3954,7 @@ void QSharedPointerToQObjectLink::deleteNativeObject(JNIEnv *env, bool){
                     delete m_pointerContainer;
                     m_pointerContainer = nullptr;
                 }else{
-                    qWarning("QObjects can only be implicitly garbage collected when owned"
+                    qCWarning(DebugAPI::internalCategory, "QObjects can only be implicitly garbage collected when owned"
                             " by a QThread, native resource ('%s' [%s]) is leaked",
                             qPrintable(m_pointerContainer->qobject()->objectName()),
                             m_pointerContainer->qobject()->metaObject()->className());
@@ -4370,7 +4370,7 @@ PointerContainer::~PointerContainer(){
             _link->removePointerContainer();
         }
     } catch (const std::exception& e) {
-        qWarning("%s", e.what());
+        qCWarning(DebugAPI::internalCategory, "%s", e.what());
     } catch (...) {
     }
 }

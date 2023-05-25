@@ -60,6 +60,10 @@ import io.qt.core.QMetaObject.AbstractSignal9Default6;
 import io.qt.core.QMetaObject.AbstractSignal9Default7;
 import io.qt.core.QMetaObject.AbstractSignal9Default8;
 
+/**
+ * QStaticMemberSignals is a namespace containing signal types to be used as static member signals.
+ * Static signals are never realized as Qt's meta object signals but have a lightweight Java implementation.
+ */
 public final class QStaticMemberSignals {
 	private QStaticMemberSignals(){}
     

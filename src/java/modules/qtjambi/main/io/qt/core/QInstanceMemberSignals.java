@@ -97,6 +97,7 @@ import io.qt.core.QMetaObject.AbstractSignal9Default8;
 /**
  * Interface giving access to non-QObject lightweight signals.
  * Subtypes also need to implement {@link QtSignalEmitterInterface} to use signals.
+ * Non-QObject signals are never realized as Qt's meta object signals but have a lightweight Java implementation.
  */
 public interface QInstanceMemberSignals {
     /**

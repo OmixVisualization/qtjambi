@@ -13,7 +13,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `5.15.14` or by `6.5.0`).
+(exchange `$VERSION` either by `5.15.14` or by `6.5.1`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 Find the [list of all available QtJambi modules](www/Modules.md).
@@ -36,7 +36,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.5.0.jar Test.java
+javac -cp qtjambi-6.5.1.jar Test.java
 ```
 
 ## Executing Example
@@ -57,19 +57,19 @@ macOS) or the Java runtime property **java.library.path**.
 The example program can be executed this way on Windows:
 
 ``` powershell
-java -cp qtjambi-6.5.0.jar;qtjambi-native-windows-x64-6.5.0.jar;. -Djava.library.path=C:\Qt\6.5.0\msvc2019_64\bin Test
+java -cp qtjambi-6.5.1.jar;qtjambi-native-windows-x64-6.5.1.jar;. -Djava.library.path=C:\Qt\6.5.1\msvc2019_64\bin Test
 ```
 
 On Linux it looks this way:
 
 ``` bash
-java -cp qtjambi-6.5.0.jar:qtjambi-native-linux-x64-6.5.0.jar:. -Djava.library.path=<path to>/Qt/6.5.0/gcc_64/lib Test
+java -cp qtjambi-6.5.1.jar:qtjambi-native-linux-x64-6.5.1.jar:. -Djava.library.path=<path to>/Qt/6.5.1/gcc_64/lib Test
 ```
 
 On macOS you additionally need to use the start parameter -XstartOnFirstThread:
 
 ``` bash
-java -cp qtjambi-6.5.0.jar:qtjambi-native-macos-6.5.0.jar:. -Djava.library.path=<path to>/Qt/6.5.0/macos/lib -XstartOnFirstThread Test
+java -cp qtjambi-6.5.1.jar:qtjambi-native-macos-6.5.1.jar:. -Djava.library.path=<path to>/Qt/6.5.1/macos/lib -XstartOnFirstThread Test
 ```
 
 ### Native Components
@@ -96,17 +96,32 @@ here](How-to-deploy-QtJambi-applications.md).
 See [QtJambi 5.15 API Reference
 Documentation](https://doc.qtjambi.io/5.15.14/),
 and [QtJambi 6.5 API Reference
-Documentation](https://doc.qtjambi.io/6.5.0/)
+Documentation](https://doc.qtjambi.io/6.5.1/)
 
 ## Useful Java System Properties for QtJambi
 
 Following system properties are accepted by QtJambi.
 You can specify Java system properties as start argument `-Dproperty=value` or in Java code `System.setProperty("property", "value")`.
 
-### Message Handling
+### Logging
 
-* `io.qt.log-messages` - By specifying any combination of `ALL`, `CRITICAL`, `DEBUG`, `WARNING`, `FATAL`, `INFO` and `SYSTEM` you can install a message handler causing exceptions to be thrown in the event of a message of given type.
-* `io.qt.exceptions-for-messages` - By specifying any combination of `ALL`, `CRITICAL`, `DEBUG`, `WARNING`, `FATAL`, `INFO` and `SYSTEM` you can install a message handler forwarding messages of given types to Java logging.
+* `io.qt.log-messages` - By specifying any combination of `ALL`, `CRITICAL`, `DEBUG`, `WARNING`, `FATAL`, `INFO` and `SYSTEM` you can install a message handler forwarding messages of given types to Java logging. In combination with this use following properties to define logging levels. All specified values have to be parsable by [`Level.parse(String)`](https://docs.oracle.com/en/java/javase/11/docs/api/java.logging/java/util/logging/Level.html#parse(java.lang.String)):
+    * `io.qt.log.debug.level` - Specify level value to define the log level for `QtDebugMsg` (defaults to `FINEST`)
+    * `io.qt.log.critical.level` - Specify level value to define the log level for `QtCriticalMsg` (defaults to `SEVERE`)
+    * `io.qt.log.fatal.level` - Specify level value to define the log level for `QtFatalMsg` (defaults to `SEVERE`)
+    * `io.qt.log.info.level` - Specify level value to define the log level for `QtInfoMsg` (defaults to `INFO`)
+    * `io.qt.log.warning.level` - Specify level value to define the log level for `QtWarningMsg` (defaults to `WARNING`)
+* `io.qt.exceptions-for-messages` - By specifying any combination of `ALL`, `CRITICAL`, `DEBUG`, `WARNING`, `FATAL`, `INFO` and `SYSTEM` you can install a message handler causing exceptions to be thrown in the event of a message of given type.
+
+### Runtime Diagnostics
+
+* `io.qt.enable-method-logs` - Specify `true` to activate method logging.
+* `io.qt.enable-dangling-pointer-check` - Specify `true` to activate dangling pointer checks.
+* `io.qt.enable-concurrent-container-modification-check` - Specify `true` to activate concurrent modification checks during container iteration.
+* `io.qt.enable-thread-affinity-check` - Specify `true` to activate thread affinity checks when calling certain thread-affine methods.
+* `io.qt.enable-event-thread-affinity-check` - ...the same applying to access checks during event handling.
+* ~~`io.qt.disable-thread-affinity-check`~~ - _check is disabled by default since QtJambi 6.5.1._
+* ~~`io.qt.disable-event-thread-affinity-check`~~ - _check is disabled by default since QtJambi 6.5.1._
 
 ### Library Management
 
@@ -125,8 +140,6 @@ If you native library bundles QtJambi extracts these components to temporary dir
 
 * `io.qt.allow-nonfinal-signals` - Specify `true` to avoid exception to be thrown when detecting non-final signal declarations.
 * `io.qt.no-library-shutdown-hook` - Specify `true` to avoid library shutdown at program termination.
-* `io.qt.disable-thread-affinity-check` - Specify `true` to avoid thread affinity checks when accessing `QObject`s. Use this property to improve performance in release versions of your well tested applications.
-* `io.qt.disable-event-thread-affinity-check` - ...the same applying to access checks during event handling.
 * `io.qt.no-app-deletion` - Specify `true` if you combine native code with Java code and your `QCoreApplication` instance has been created elsewhere than inside Java.
 
 ### QML

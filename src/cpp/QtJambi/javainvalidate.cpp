@@ -95,7 +95,7 @@ struct InvalidateObjectAfterUsePrivate : InvalidateAfterUsePrivate{
             m_object = nullptr;
             __exnHandler.handle(m_env, exn, nullptr);
         } catch (const std::exception& e) {
-            qWarning("%s", e.what());
+            qCWarning(DebugAPI::internalCategory, "%s", e.what());
         } catch (...) {
         }
         if(m_object)
@@ -123,7 +123,7 @@ struct InvalidateNativeIDAfterUsePrivate : InvalidateAfterUsePrivate{
         }catch(const JavaException& exn){
             __exnHandler.handle(m_env, exn, nullptr);
         } catch (const std::exception& e) {
-            qWarning("%s", e.what());
+            qCWarning(DebugAPI::internalCategory, "%s", e.what());
         } catch (...) {
         }
     }
@@ -173,7 +173,7 @@ InvalidateContainerAfterUse::~InvalidateContainerAfterUse()
         m_object = nullptr;
         __exnHandler.handle(m_env, exn, nullptr);
     } catch (const std::exception& e) {
-        qWarning("%s", e.what());
+        qCWarning(DebugAPI::internalCategory, "%s", e.what());
     } catch (...) {
     }
     if(m_object)
@@ -194,7 +194,7 @@ InvalidateArrayAfterUse::~InvalidateArrayAfterUse()
     }catch(const JavaException& exn){
         __exnHandler.handle(m_env, exn, nullptr);
     } catch (const std::exception& e) {
-        qWarning("%s", e.what());
+        qCWarning(DebugAPI::internalCategory, "%s", e.what());
     } catch (...) {
     }
 }

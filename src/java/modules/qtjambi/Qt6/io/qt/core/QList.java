@@ -48,41 +48,53 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
         QtJambi_LibraryUtilities.initialize();
     }
     
+    /**
+     * Constructor for internal use only.
+     * @param p expected to be <code>null</code>.
+     */
     @NativeAccess
     protected QList(QPrivateConstructor p) {
         super(p);
     }
     
+    /**
+     * Creating a container with given element type.
+     * <p>See <a href="https://doc.qt.io/qt/qlist.html#QList">QList::QList()</a></p>
+     * @param metaType the type T
+     */
     public QList(QMetaType.Type metaType) {
 		this(new QMetaType(metaType));
 	}
     
+    /**
+     * Creating a container with given element type.
+     * <p>See <a href="https://doc.qt.io/qt/qlist.html#QList">QList::QList()</a></p>
+     * @param elementType the type T
+     */
     public QList(Class<T> elementType) {
 		super(null);
 		QMetaType metaType = QMetaType.fromType(elementType);
-		if(metaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QList.");
-		if(metaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be type of QList.");
 		initialize(elementType, QtJambi_LibraryUtilities.internal.nativeId(metaType), null);
 	}
     
+    /**
+     * Creating a container with given element type.
+     * <p>See <a href="https://doc.qt.io/qt/qlist.html#QList">QList::QList()</a></p>
+     * @param metaType the type T
+     */
 	public QList(QMetaType metaType) {
 		super(null);
-		if(metaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QList.");
-		if(metaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be type of QList.");
 		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), null);
 	}
     
+    /**
+     * Creating a container with given content.
+     * <p>See <a href="https://doc.qt.io/qt/qlist.html#QList">QList::QList(const QList&lt;T> &amp;)</a></p>
+     * @param other container
+     */
     public QList(Collection<T> other) {
 		super(null);
 		QMetaType metaType = findElementMetaType(Objects.requireNonNull(other));
-		if(metaType==null || metaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QList.");
-		if(metaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be type of QList.");
 		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), other);
     }
     
@@ -92,6 +104,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
 		initialize(elementMetaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(elementMetaType), other);
 	}
     
+    /**
+     * Creating a container of type QVariant.
+     */
     public static QList<Object> createVariantList(){
     	return new QList<>(new QMetaType(QMetaType.Type.QVariant));
     }
@@ -99,6 +114,10 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private native void initialize(Class<?> elementType, long elementMetaType, Collection<T> other);
     
+    /**
+     * Creates and returns a copy of this object.
+     * <p>See <a href="https://doc.qt.io/qt/qlist.html#QList-8">QList::QList(const QList&lt;T> &amp;)</a></p>
+     */
     @Override
 	public QList<T> clone(){
 		return new QList<>(this);
@@ -112,35 +131,35 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     private static native <T> void appendList(long __this__nativeId, java.util.Collection<T> t);
 
     @QtUninvokable
-    public final void append(T t)    {
+    public final void append(T t) {
     	try {
-    		final long nativeId = QtJambi_LibraryUtilities.internal.nativeId(this);
-    		insert(nativeId, size(nativeId), 1, t);
+    		append(QtJambi_LibraryUtilities.internal.nativeId(this), t);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(RuntimeException e) {
     		throw QSet.handleException(e, elementMetaType(), t);
     	}
     }
+    
     @QtUninvokable
-    public final T at(int i)    {
-        if (i >= size() || i < 0) {
-            throw new IndexOutOfBoundsException(String.format("Accessing container of size %1$s at %2$s", size(), i));
-        }
+    private static native <T> void append(long __this__nativeId, T t);
+    
+    @QtUninvokable
+    public final T at(int i) {
         return at(QtJambi_LibraryUtilities.internal.nativeId(this), i);
     }
     @QtUninvokable
     private static native <T> T at(long __this__nativeId, int i);
 
     @QtUninvokable
-    public final void clear()    {
+    public final void clear() {
         clear(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
     private static native <T> void clear(long __this__nativeId);
 
     @QtUninvokable
-    public final boolean contains(Object t)    {
+    public final boolean contains(Object t) {
     	try {
     		return contains(QtJambi_LibraryUtilities.internal.nativeId(this), t);
     	}catch(QNoNativeResourcesException e) {
@@ -158,12 +177,12 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     private static native <T> boolean contains(long __this__nativeId, T t);
 
     @QtUninvokable
-    public final int count()    {
+    public final int count() {
         return size();
     }
 
     @QtUninvokable
-    public final int count(T t)    {
+    public final int count(T t) {
         try{
         	return count(QtJambi_LibraryUtilities.internal.nativeId(this), t);
     	}catch(QNoNativeResourcesException e) {
@@ -176,35 +195,35 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     private static native <T> int count(long __this__nativeId, T t);
 
     @QtUninvokable
-    protected final QSequentialIterator<T> begin()    {
+    protected final QSequentialIterator<T> begin() {
         return begin(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
     private static native <T> QSequentialIterator<T> begin(long __this__nativeId);
 
     @QtUninvokable
-    protected final QSequentialIterator<T> end()    {
+    protected final QSequentialIterator<T> end() {
         return end(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
     private static native <T> QSequentialIterator<T> end(long __this__nativeId);
 
     @QtUninvokable
-    protected final QSequentialConstIterator<T> constBegin()    {
+    protected final QSequentialConstIterator<T> constBegin() {
         return constBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
     private static native <T> QSequentialConstIterator<T> constBegin(long __this__nativeId);
 
     @QtUninvokable
-    protected final QSequentialConstIterator<T> constEnd()    {
+    protected final QSequentialConstIterator<T> constEnd() {
         return constEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
     private static native <T> QSequentialConstIterator<T> constEnd(long __this__nativeId);
 
     @QtUninvokable
-    public final boolean endsWith(T t)    {
+    public final boolean endsWith(T t) {
         try{
         	return endsWith(QtJambi_LibraryUtilities.internal.nativeId(this), t);
     	}catch(QNoNativeResourcesException e) {
@@ -217,12 +236,16 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     private static native <T> boolean endsWith(long __this__nativeId, T t);
 
     @QtUninvokable
-    public final T first()    {
-        return at(0);
+    public final T first() {
+    	try {
+    		return at(0);
+		} catch (IndexOutOfBoundsException e) {
+			throw new NoSuchElementException();
+		}
     }
     
     @QtUninvokable
-    public final int indexOf(T t, int from)    {
+    public final int indexOf(T t, int from) {
     	try {
     		return indexOf(QtJambi_LibraryUtilities.internal.nativeId(this), t, from);
     	}catch(QNoNativeResourcesException e) {
@@ -240,19 +263,25 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     private static native <T> int indexOf(long __this__nativeId, T t, int from);
 
     @QtUninvokable
-    public final void insert(int i, T t)    {
+    public final void insert(int i, T t) {
     	insert(i, 1, t);
     }
 
     @QtUninvokable
-    public final boolean isEmpty()    {
+    public final boolean isEmpty() {
         return size()==0;
     }
 
     @QtUninvokable
-    public final T last()    {
-        return at(size()-1);
+    public final T last() {
+        try {
+			return last(QtJambi_LibraryUtilities.internal.nativeId(this));
+		} catch (IndexOutOfBoundsException e) {
+			throw new NoSuchElementException();
+		}
     }
+    @QtUninvokable
+    private static native <T> T last(long __this__nativeId);
 
     @SuppressWarnings("unchecked")
 	@QtUninvokable
@@ -261,7 +290,7 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
 		return lastIndexOf((T)t, (int)-1);
     }
     @QtUninvokable
-    public final int lastIndexOf(T t, int from)    {
+    public final int lastIndexOf(T t, int from) {
     	try {
     		return lastIndexOf(QtJambi_LibraryUtilities.internal.nativeId(this), t, from);
     	}catch(QNoNativeResourcesException e) {
@@ -279,7 +308,7 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     private static native <T> int lastIndexOf(long __this__nativeId, T t, int from);
 
     @QtUninvokable
-    public final int length()    {
+    public final int length() {
         return size();
     }
 
@@ -288,40 +317,28 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
         return mid(pos, (int)-1);
     }
     @QtUninvokable
-    public final QList<T> mid(int pos, int length)    {
-        if (pos >= size() || pos < 0) {
-            throw new IndexOutOfBoundsException(String.format("Accessing container of size %1$s at %2$s", size(), pos));
-        }
-        if (length>=0 && pos+length > size()) {
-            throw new IndexOutOfBoundsException(String.format("Accessing container of size %1$s from %2$s to %3$s", size(), pos, pos+length));
-        }
+    public final QList<T> mid(int pos, int length) {
         return mid(QtJambi_LibraryUtilities.internal.nativeId(this), pos, length);
     }
     @QtUninvokable
     private static native <T> QList<T> mid(long __this__nativeId, int pos, int length);
 
     @QtUninvokable
-    public final void move(int from, int to)    {
-        if (from >= size() || from < 0) {
-            throw new IndexOutOfBoundsException(String.format("Accessing container of size %1$s at %2$s", size(), from));
-        }
-        if (to >= size() || to < 0) {
-            throw new IndexOutOfBoundsException(String.format("Accessing container of size %1$s at %2$s", size(), to));
-        }
+    public final void move(int from, int to) {
         move(QtJambi_LibraryUtilities.internal.nativeId(this), from, to);
     }
     @QtUninvokable
     private static native <T> void move(long __this__nativeId, int from, int to);
 
     @QtUninvokable
-    private final boolean operator_equal(java.util.Collection<T> l)    {
+    private final boolean operator_equal(java.util.Collection<T> l) {
         return operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), l);
     }
     @QtUninvokable
     private static native <T> boolean operator_equal(long __this__nativeId, java.util.Collection<T> l);
 
     @QtUninvokable
-    public final void prepend(T t)    {
+    public final void prepend(T t) {
         try {
         	insert(QtJambi_LibraryUtilities.internal.nativeId(this), 0, 1, t);
     	}catch(QNoNativeResourcesException e) {
@@ -332,7 +349,7 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     }
 
     @QtUninvokable
-    public final int removeAll(T t)    {
+    public final int removeAll(T t) {
         try {
         	return removeAll(QtJambi_LibraryUtilities.internal.nativeId(this), t);
     	}catch(QNoNativeResourcesException e) {
@@ -350,37 +367,24 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     private static native <T> int removeAll(long __this__nativeId, T t);
 
     @QtUninvokable
-    public final void removeAt(int i)    {
+    public final void removeAt(int i) {
     	remove(i, 1);
     }
 
     @QtUninvokable
-    public final T removeFirst()    {
-		if(size()==0)
-			throw new NoSuchElementException();
-		T e = at(0);
-        removeAt(0);
-		return e;
+    public final T removeFirst() {
+		return takeFirst();
     }
 
     @QtUninvokable
-    public final T removeLast()    {
-		if(size()==0)
-			throw new NoSuchElementException();
-		T e = at(size()-1);
-        removeAt(size()-1);
-		return e;
+    public final T removeLast() {
+		return takeLast();
     }
 
     @QtUninvokable
-    public final boolean removeOne(T t)    {
+    public final boolean removeOne(T t) {
     	try {
-        	final long nativeId = QtJambi_LibraryUtilities.internal.nativeId(this);
-        	int idx = indexOf(nativeId, t, 0);
-        	if(idx>=0) {
-        		remove(nativeId, idx, 1);
-        		return true;
-        	}
+    		return removeOne(QtJambi_LibraryUtilities.internal.nativeId(this), t);
     	}catch(QNoNativeResourcesException e) {
     		throw e;
     	}catch(IllegalArgumentException e) {
@@ -391,12 +395,11 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     	}
 		return false;
     }
+    @QtUninvokable
+    private static native <T> boolean removeOne(long __this__nativeId, T t);
 
     @QtUninvokable
-    public final void replace(int i, T t)    {
-        if (i >= size() || i < 0) {
-            throw new IndexOutOfBoundsException(String.format("Accessing container of size %1$s at %2$s", size(), i));
-        }
+    public final void replace(int i, T t) {
         try {
         	replace(QtJambi_LibraryUtilities.internal.nativeId(this), i, t);
     	}catch(QNoNativeResourcesException e) {
@@ -409,21 +412,21 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     private static native <T> void replace(long __this__nativeId, int i, T t);
 
     @QtUninvokable
-    public final void reserve(int size)    {
+    public final void reserve(int size) {
         reserve(QtJambi_LibraryUtilities.internal.nativeId(this), size);
     }
     @QtUninvokable
     private static native <T> void reserve(long __this__nativeId, int size);
 
     @QtUninvokable
-    public final int size()    {
+    public final int size() {
         return size(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
     private static native <T> int size(long __this__nativeId);
 
     @QtUninvokable
-    public final boolean startsWith(T t)    {
+    public final boolean startsWith(T t) {
         try{
         	return startsWith(QtJambi_LibraryUtilities.internal.nativeId(this), t);
     	}catch(QNoNativeResourcesException e) {
@@ -436,31 +439,41 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     private static native <T> boolean startsWith(long __this__nativeId, T t);
 
     @QtUninvokable
-    public final T takeAt(int i)    {
-    	T result = at(i);
-    	removeAt(i);
-        return result;
+    public final T takeAt(int i) {
+        return takeAt(QtJambi_LibraryUtilities.internal.nativeId(this), i);
     }
+    @QtUninvokable
+    private static native <T> T takeAt(long __this__nativeId, int i);
 
     @QtUninvokable
-    public final T takeFirst()    {
-        return takeAt(0);
+    public final T takeFirst() {
+    	try {
+    		return takeAt(0);
+		} catch (IndexOutOfBoundsException e) {
+			throw new NoSuchElementException();
+		}
     }
     
     @QtUninvokable
-    public final T takeLast()    {
-        return takeAt(size()-1);
+    public final T takeLast() {
+        try{
+        	return takeLast(QtJambi_LibraryUtilities.internal.nativeId(this));
+		} catch (IndexOutOfBoundsException e) {
+			throw new NoSuchElementException();
+		}
     }
+    @QtUninvokable
+    private static native <T> T takeLast(long __this__nativeId);
 
     @QtUninvokable
-    public final T value(int i)    {
+    public final T value(int i) {
         return value(QtJambi_LibraryUtilities.internal.nativeId(this), i);
     }
     @QtUninvokable
     private static native <T> T value(long __this__nativeId, int i);
 
     @QtUninvokable
-    public final T value(int i, T defaultValue)    {
+    public final T value(int i, T defaultValue) {
     	try {
     		return valueDefault(QtJambi_LibraryUtilities.internal.nativeId(this), i, defaultValue);
     	}catch(QNoNativeResourcesException e) {
@@ -525,7 +538,7 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     public final T set(int index, T e){
         if(e!=null){
-            T el = get(index);
+            T el = at(index);
             replace(index, e);
             return el;
         } else return null;
@@ -552,14 +565,7 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     }
     
     @QtUninvokable
-    public final void swapItemsAt(int i, int j)    {
-        int size = size();
-        if (i >= size || i < 0) {
-            throw new IndexOutOfBoundsException(String.format("Accessing container of size %1$s at %2$s", size, i));
-        }
-        if (j >= size || j < 0) {
-            throw new IndexOutOfBoundsException(String.format("Accessing container of size %1$s at %2$s", size, j));
-        }
+    public final void swapItemsAt(int i, int j) {
         swapItemsAt(QtJambi_LibraryUtilities.internal.nativeId(this), i, j);
     }
     
@@ -577,7 +583,7 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
         fill(t, (int)-1);
     }
     @QtUninvokable
-    public final void fill(T t, int size)    {
+    public final void fill(T t, int size) {
     	try {
     		fill(QtJambi_LibraryUtilities.internal.nativeId(this), t, size);
     	}catch(QNoNativeResourcesException e) {
@@ -590,12 +596,7 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     private static native <T> void fill(long __this__nativeId, T t, int size);
 
     @QtUninvokable
-    public final void insert(int i, int n, T t)    {
-    	final long nativeId = QtJambi_LibraryUtilities.internal.nativeId(this);
-    	int size = size(nativeId);
-        if (i > size || i < 0) {
-            throw new IndexOutOfBoundsException(String.format("Accessing container of size %1$s at %2$s", size, i));
-        }
+    public final void insert(int i, int n, T t) {
         try {
         	insert(QtJambi_LibraryUtilities.internal.nativeId(this), i, n, t);
     	}catch(QNoNativeResourcesException e) {
@@ -604,37 +605,33 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     		throw QSet.handleException(e, elementMetaType(), t);
     	}
     }
+    
     @QtUninvokable
     private static native <T> void insert(long __this__nativeId, int i, int n, T t);
 
     @QtUninvokable
-    public final void remove(int i, int n)    {
-    	final long nativeId = QtJambi_LibraryUtilities.internal.nativeId(this);
-    	int size = size(nativeId);
-        if (i+n > size || i < 0) {
-            throw new IndexOutOfBoundsException(String.format("Accessing container of size %1$s at %2$s", size, i+n));
-        }
-        remove(nativeId, i, n);
+    public final void remove(int i, int n) {
+        remove(QtJambi_LibraryUtilities.internal.nativeId(this), i, n);
     }
     @QtUninvokable
     private static native void remove(long __this__nativeId, int i, int n);
 
     @QtUninvokable
-    public final int capacity()    {
+    public final int capacity() {
         return capacity(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
     private static native <T> int capacity(long __this__nativeId);
 
     @QtUninvokable
-    public final void resize(int size)    {
+    public final void resize(int size) {
         resize(QtJambi_LibraryUtilities.internal.nativeId(this), size);
     }
     @QtUninvokable
     private static native void resize(long __this__nativeId, int size);
 
     @QtUninvokable
-    public final void squeeze()    {
+    public final void squeeze() {
         squeeze(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
@@ -677,10 +674,6 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
 	@SafeVarargs
     public static <T> QList<T> of(T element0, T...elements) {
 		QMetaType metaType = findElementMetaType(element0, elements);
-		if(metaType==null || metaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QList.");
-		if(metaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be type of QList.");
 		QList<T> result;
 		if(metaType.id()==QMetaType.Type.QString.value())
 			result = (QList<T>)(QList<?>)new QStringList();

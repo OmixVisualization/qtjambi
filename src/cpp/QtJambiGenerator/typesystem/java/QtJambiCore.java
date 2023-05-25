@@ -36,68 +36,6 @@ import io.qt.*;
 import io.qt.internal.QtJambiObject.QPrivateConstructor;
 import io.qt.core.*;
 
-class QtJambi_LibraryUtilities_2_{
-    if(!Boolean.getBoolean("io.qt.no-library-shutdown-hook")) {
-        shutdownHook = RetroHelper.newShutdownThread(QtJambi_LibraryUtilities::shutdown, "QtJambi_LibraryShutdown");
-        shutdownHook.setContextClassLoader(null);
-        Runtime.getRuntime().addShutdownHook(shutdownHook);
-    }
-    java.io.File coreLib = LibraryUtility.loadQtCore();
-    try{
-        java.io.File qtjambiLib = LibraryUtility.loadQtJambiLibrary();
-        if(LibraryUtility.operatingSystem!=LibraryUtility.OperatingSystem.Android) {
-            List<String> paths = new ArrayList<>();
-            String path;
-            switch(LibraryUtility.operatingSystem) {
-            case MacOS:
-                path = QtUtilities.getenv("DYLD_LIBRARY_PATH");
-                String path2 = QtUtilities.getenv("DYLD_FRAMEWORK_PATH");
-                List<String> paths2 = new ArrayList<>();
-                paths2.add(qtjambiLib.getParentFile().getAbsolutePath());
-                if(path2!=null && !path2.isEmpty()) {
-                    for(String p : path2.split("\\"+java.io.File.pathSeparator)) {
-                        if(!paths2.contains(p))
-                            paths2.add(p);
-                    }
-                }
-                path2 = String.join(java.io.File.pathSeparator, paths2);
-                QtUtilities.putenv("DYLD_FRAMEWORK_PATH", path2);
-                break;
-            case Windows:
-                path = QtUtilities.getenv("PATH");
-                break;
-            default:
-                path = QtUtilities.getenv("LD_LIBRARY_PATH");
-                break;
-            }
-            if(LibraryUtility.operatingSystem!=LibraryUtility.OperatingSystem.MacOS)
-                paths.add(coreLib.getParentFile().getAbsolutePath());
-            if(!paths.contains(qtjambiLib.getParentFile().getAbsolutePath()))
-                paths.add(qtjambiLib.getParentFile().getAbsolutePath());
-            if(path!=null && !path.isEmpty()) {
-                for(String p : path.split("\\"+java.io.File.pathSeparator)) {
-                    if(!paths.contains(p))
-                        paths.add(p);
-                }
-            }
-            path = String.join(java.io.File.pathSeparator, paths);
-            switch(LibraryUtility.operatingSystem) {
-            case MacOS:
-                QtUtilities.putenv("DYLD_LIBRARY_PATH", path);
-                break;
-            case Windows:
-                QtUtilities.putenv("PATH", path);
-                break;
-            default:
-                QtUtilities.putenv("LD_LIBRARY_PATH", path);
-                break;
-            }
-        }
-    } catch(UnsatisfiedLinkError t) {
-        LibraryUtility.analyzeUnsatisfiedLinkError(t, coreLib);
-    }
-}// class
-
 class QObject___ extends QObject {
     
     /**
@@ -10247,7 +10185,9 @@ class QDebug___ extends QDebug {
      */
     @Override
     public final @NonNull QDebug append(CharSequence csq, int start, int end) {
-        return append(csq==null ? "null" : csq.subSequence(start, end));
+        if(!disabled)
+            append(csq==null ? "null" : csq.subSequence(start, end));
+        return this;
     }
 
     /**
@@ -10255,7 +10195,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug endl(){
-        endl(QtJambi_LibraryUtilities.internal.nativeId(this));
+        if(!disabled)
+            endl(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -10267,7 +10208,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug flush(){
-        flush(QtJambi_LibraryUtilities.internal.nativeId(this));
+        if(!disabled)
+            flush(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -10279,7 +10221,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug reset(){
-        reset(QtJambi_LibraryUtilities.internal.nativeId(this));
+        if(!disabled)
+            reset(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -10291,7 +10234,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug bin(){
-        bin(QtJambi_LibraryUtilities.internal.nativeId(this));
+        if(!disabled)
+            bin(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -10303,7 +10247,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug oct(){
-        oct(QtJambi_LibraryUtilities.internal.nativeId(this));
+        if(!disabled)
+            oct(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -10315,7 +10260,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug hex(){
-        hex(QtJambi_LibraryUtilities.internal.nativeId(this));
+        if(!disabled)
+            hex(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -10327,7 +10273,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug dec(){
-        dec(QtJambi_LibraryUtilities.internal.nativeId(this));
+        if(!disabled)
+            dec(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -10339,7 +10286,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug showbase(){
-        showbase(QtJambi_LibraryUtilities.internal.nativeId(this));
+        if(!disabled)
+            showbase(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -10351,7 +10299,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug forcesign(){
-        forcesign(QtJambi_LibraryUtilities.internal.nativeId(this));
+        if(!disabled)
+            forcesign(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -10363,7 +10312,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug forcepoint(){
-        forcepoint(QtJambi_LibraryUtilities.internal.nativeId(this));
+        if(!disabled)
+            forcepoint(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -10375,7 +10325,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug noshowbase(){
-        noshowbase(QtJambi_LibraryUtilities.internal.nativeId(this));
+        if(!disabled)
+            noshowbase(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -10387,7 +10338,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug noforcesign(){
-        noforcesign(QtJambi_LibraryUtilities.internal.nativeId(this));
+        if(!disabled)
+            noforcesign(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -10399,7 +10351,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug noforcepoint(){
-        noforcepoint(QtJambi_LibraryUtilities.internal.nativeId(this));
+        if(!disabled)
+            noforcepoint(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -10411,7 +10364,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug uppercasebase(){
-        uppercasebase(QtJambi_LibraryUtilities.internal.nativeId(this));
+        if(!disabled)
+            uppercasebase(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -10423,7 +10377,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug uppercasedigits(){
-        uppercasedigits(QtJambi_LibraryUtilities.internal.nativeId(this));
+        if(!disabled)
+            uppercasedigits(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -10435,7 +10390,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug lowercasebase(){
-        lowercasebase(QtJambi_LibraryUtilities.internal.nativeId(this));
+        if(!disabled)
+            lowercasebase(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -10447,7 +10403,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug lowercasedigits(){
-        lowercasedigits(QtJambi_LibraryUtilities.internal.nativeId(this));
+        if(!disabled)
+            lowercasedigits(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -10459,7 +10416,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug fixed(){
-        fixed(QtJambi_LibraryUtilities.internal.nativeId(this));
+        if(!disabled)
+            fixed(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -10471,7 +10429,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug scientific(){
-        scientific(QtJambi_LibraryUtilities.internal.nativeId(this));
+        if(!disabled)
+            scientific(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -10483,7 +10442,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug left(){
-        left(QtJambi_LibraryUtilities.internal.nativeId(this));
+        if(!disabled)
+            left(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -10495,7 +10455,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug right(){
-        right(QtJambi_LibraryUtilities.internal.nativeId(this));
+        if(!disabled)
+            right(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -10507,7 +10468,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug center(){
-        center(QtJambi_LibraryUtilities.internal.nativeId(this));
+        if(!disabled)
+            center(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -10519,7 +10481,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug bom(){
-        bom(QtJambi_LibraryUtilities.internal.nativeId(this));
+        if(!disabled)
+            bom(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -10531,7 +10494,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug ws(){
-        ws(QtJambi_LibraryUtilities.internal.nativeId(this));
+        if(!disabled)
+            ws(QtJambi_LibraryUtilities.internal.nativeId(this));
         return this;
     }
     
@@ -10543,7 +10507,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug qSetFieldWidth(int width){
-        setFieldWidth(QtJambi_LibraryUtilities.internal.nativeId(this), width);
+        if(!disabled)
+            setFieldWidth(QtJambi_LibraryUtilities.internal.nativeId(this), width);
         return this;
     }
     
@@ -10555,7 +10520,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug qSetRealNumberPrecision(int precision){
-        setRealNumberPrecision(QtJambi_LibraryUtilities.internal.nativeId(this), precision);
+        if(!disabled)
+            setRealNumberPrecision(QtJambi_LibraryUtilities.internal.nativeId(this), precision);
         return this;
     }
     
@@ -10567,7 +10533,8 @@ class QDebug___ extends QDebug {
      */
     @QtUninvokable
     public final @NonNull QDebug qSetPadChar(char ch){
-        setPadChar(QtJambi_LibraryUtilities.internal.nativeId(this), ch);
+        if(!disabled)
+            setPadChar(QtJambi_LibraryUtilities.internal.nativeId(this), ch);
         return this;
     }
     
@@ -10584,13 +10551,19 @@ class QDebug___ extends QDebug {
     
     @QtUninvokable
     public final @NonNull QDebug append(java.lang.Object obj){
-        QMetaType metaType = QList.getMetaType(obj);
-        debugStream(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.checkedNativeId(metaType), obj);
+        if(!disabled){
+            QMetaType metaType = QList.getMetaType(obj);
+            debugStream(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.checkedNativeId(metaType), obj);
+        }
         return this;
     }
     
     @QtUninvokable
     private native static void debugStream(long debug, long metaType, Object value);
+
+    @QtPropertyMember(enabled=false)
+    @NativeAccess
+    private boolean disabled;
 }// class
 
 class QTextStream___ extends QTextStream {
@@ -11422,6 +11395,14 @@ class QByteArray_5__ extends QByteArray {
     }
 
     /**
+     * <p>See <a href="@docRoot/qbytearray.html#startsWith-2">QByteArray::startsWith(const char*)const</a></p>
+     */
+    @QtUninvokable
+    public final boolean startsWith(byte[] str) {
+        return startsWith(java.nio.ByteBuffer.wrap(str));
+    }
+
+    /**
      * <p>See <a href="@docRoot/qbytearray.html#contains-2">QByteArray::contains(const char*)const</a></p>
      */
     @QtUninvokable
@@ -11443,6 +11424,14 @@ class QByteArray_5__ extends QByteArray {
     @QtUninvokable
     public final boolean endsWith(String str) {
         return endsWith(new QByteArray(str));
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#endsWith-2">QByteArray::endsWith(const char*)const</a></p>
+     */
+    @QtUninvokable
+    public final boolean endsWith(byte[] str) {
+        return endsWith(java.nio.ByteBuffer.wrap(str));
     }
 
     /**
@@ -11595,6 +11584,14 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
+     * <p>See <a href="@docRoot/qbytearray.html#endsWith">QByteArray::endsWith(const char*)const</a></p>
+     */
+    @QtUninvokable
+    public final boolean endsWith(QByteArray str) {
+        return endsWith(new QByteArrayView(str));
+    }
+
+    /**
      * <p>See <a href="@docRoot/qbytearray.html#prepend">QByteArray::prepend(const char*)</a></p>
      */
     @QtUninvokable
@@ -11623,6 +11620,14 @@ class QByteArray_6__ extends QByteArray {
      */
     @QtUninvokable
     public final boolean startsWith(java.nio.ByteBuffer str) {
+        return startsWith(new QByteArrayView(str));
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#startsWith">QByteArray::startsWith(const char*)const</a></p>
+     */
+    @QtUninvokable
+    public final boolean startsWith(QByteArray str) {
         return startsWith(new QByteArrayView(str));
     }
     
@@ -11681,6 +11686,22 @@ class QByteArray_6__ extends QByteArray {
     public final int compare(byte[] b, Qt.CaseSensitivity cs) {
         return compare(new QByteArrayView(b), cs);
     }
+
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*, Qt::CaseSensitivity)const</a></p>
+     */
+    @QtUninvokable
+    public final int compare(QByteArray b) {
+        return compare(b, Qt.CaseSensitivity.CaseSensitive);
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*, Qt::CaseSensitivity)const</a></p>
+     */
+    @QtUninvokable
+    public final int compare(QByteArray b, Qt.CaseSensitivity cs) {
+        return compare(new QByteArrayView(b), cs);
+    }
     
     /**
      * <p>See <a href="@docRoot/qbytearray.html#count">QByteArray::count(const char*)const</a></p>
@@ -11691,10 +11712,26 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
+     * <p>See <a href="@docRoot/qbytearray.html#count">QByteArray::count(const char*)const</a></p>
+     */
+    @QtUninvokable
+    public final long count(QByteArray data) {
+        return count(new QByteArrayView(data));
+    }
+
+    /**
      * <p>See <a href="@docRoot/qbytearray.html#contains">QByteArray::contains(const char*)const</a></p>
      */
     @QtUninvokable
     public final boolean contains(java.nio.ByteBuffer data) {
+        return contains(new QByteArrayView(data));
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qbytearray.html#contains">QByteArray::contains(const char*)const</a></p>
+     */
+    @QtUninvokable
+    public final boolean contains(QByteArray data) {
         return contains(new QByteArrayView(data));
     }
     
@@ -12096,7 +12133,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#QtUninvokable">QByteArrayView::QtUninvokable(QByteArray)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#QtUninvokable">QByteArrayView::endsWith(QByteArray)const</a></p>
      */
     @QtUninvokable
     public final boolean endsWith(QByteArray a){

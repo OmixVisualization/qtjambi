@@ -489,6 +489,7 @@ void QmlTypeSystemReaderPrivate::parseInjectCode(InjectCode* element, ComplexTyp
         {Position::Compare, CodeSnip::Compare},
         {Position::HashCode, CodeSnip::HashCode},
         {Position::ToString, CodeSnip::ToString},
+        {Position::Clone, CodeSnip::Clone},
         {Position::Comment, CodeSnip::Comment},
         {Position::End, CodeSnip::End}
     };
@@ -535,6 +536,7 @@ void QmlTypeSystemReaderPrivate::parseInjectCode(InjectCode* element, Functional
         {Position::Compare, CodeSnip::Compare},
         {Position::HashCode, CodeSnip::HashCode},
         {Position::ToString, CodeSnip::ToString},
+        {Position::Clone, CodeSnip::Clone},
         {Position::Comment, CodeSnip::Comment},
         {Position::End, CodeSnip::End}
     };
@@ -554,10 +556,11 @@ void QmlTypeSystemReaderPrivate::parseInjectCode(InjectCode* element,const QHash
         snip.language = languageNames[className];
         snip.position = positionNames[position];
         if((snip.position==CodeSnip::Equals
-            || snip.position==CodeSnip::Compare
-            || snip.position==CodeSnip::HashCode
-            || snip.position==CodeSnip::ToString) && snip.language!=TS::TargetLangCode){
-            TypesystemException::raise(QString("Invalid position '%1' for language '%2'").arg(position).arg(className));
+             || snip.position==CodeSnip::Compare
+             || snip.position==CodeSnip::HashCode) && snip.language!=TS::TargetLangCode){
+            QMetaEnum metaEnum1 = Position::staticMetaObject.enumerator(Position::staticMetaObject.indexOfEnumerator("Entries"));
+            QMetaEnum metaEnum2 = CodeClass::staticMetaObject.enumerator(CodeClass::staticMetaObject.indexOfEnumerator("Entries"));
+            TypesystemException::raise(QString("InjectCode{position: Position.%1; target: CodeClass.%2} invalid property combination for code injection").arg(metaEnum1.valueToKey(int(position)), metaEnum2.valueToKey(int(className))));
         }
 
         const QList<AbstractObject*>& childrenList = element->childrenList();

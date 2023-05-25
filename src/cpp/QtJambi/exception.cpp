@@ -36,6 +36,7 @@
 #include "jobjectwrapper.h"
 #include "exception.h"
 #include "java_p.h"
+#include "utils_p.h"
 #include "qtjambi_cast.h"
 
 class JavaExceptionPrivate : public QSharedData{
@@ -417,9 +418,9 @@ struct ExceptionHandler{
                     printf("An exception occured in ExceptionUtility.reportException(...): %s\n", _exn.what());
                 }
             }else if(methodName){
-                qWarning("An exception occured in %s: %s", methodName, exn.what());
+                qCWarning(DebugAPI::internalCategory, "An exception occured in %s: %s", methodName, exn.what());
             }else{
-                qWarning("An exception occured: %s", exn.what());
+                qCWarning(DebugAPI::internalCategory, "An exception occured: %s", exn.what());
             }
         }
     }
@@ -452,9 +453,9 @@ void QtJambiExceptionHandler::handle(JNIEnv *env, const JavaException& exn, cons
                 env = currentJNIEnvironment();
                 if(!env){
                     if(methodName){
-                        qWarning("An exception occured in %s: %s", methodName, exn.what());
+                        qCWarning(DebugAPI::internalCategory, "An exception occured in %s: %s", methodName, exn.what());
                     }else{
-                        qWarning("An exception occured: %s", exn.what());
+                        qCWarning(DebugAPI::internalCategory, "An exception occured: %s", exn.what());
                     }
                     return;
                 }else{
@@ -493,9 +494,9 @@ void QtJambiExceptionInhibitor::handle(JNIEnv *env, const JavaException& exn, co
                 env = currentJNIEnvironment();
                 if(!env){
                     if(methodName){
-                        qWarning("An exception occured in %s: %s", methodName, exn.what());
+                        qCWarning(DebugAPI::internalCategory, "An exception occured in %s: %s", methodName, exn.what());
                     }else{
-                        qWarning("An exception occured: %s", exn.what());
+                        qCWarning(DebugAPI::internalCategory, "An exception occured: %s", exn.what());
                     }
                     return;
                 }else{
@@ -514,9 +515,9 @@ void QtJambiExceptionInhibitor::handle(JNIEnv *env, const JavaException& exn, co
             env = currentJNIEnvironment();
             if(!env){
                 if(methodName){
-                    qWarning("An exception occured in %s: %s", methodName, exn.what());
+                    qCWarning(DebugAPI::internalCategory, "An exception occured in %s: %s", methodName, exn.what());
                 }else{
-                    qWarning("An exception occured: %s", exn.what());
+                    qCWarning(DebugAPI::internalCategory, "An exception occured: %s", exn.what());
                 }
                 return;
             }
@@ -564,9 +565,9 @@ void QtJambiExceptionBlocker::release(JNIEnv *env){
                 env = currentJNIEnvironment();
                 if(!env){
                     if(methodName){
-                        qWarning("An exception occured in %s: %s", methodName, exn.what());
+                        qCWarning(DebugAPI::internalCategory, "An exception occured in %s: %s", methodName, exn.what());
                     }else{
-                        qWarning("An exception occured: %s", exn.what());
+                        qCWarning(DebugAPI::internalCategory, "An exception occured: %s", exn.what());
                     }
                     return;
                 }

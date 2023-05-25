@@ -1027,9 +1027,6 @@ void AutoVectorAccess::remove(JNIEnv *, void* container, jint index, jint n){
     QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container);
     QTypedArrayData<char>*& d = *vector;
     if (index < 0 || index+n > d->size) {
-#if !defined(QT_NO_DEBUG)
-        qWarning("QVector::removeAt(): Index out of range.");
-#endif
         return;
     }
     erase(vector, d->data() + index * m_offset, d->data() + (index+n) * m_offset);

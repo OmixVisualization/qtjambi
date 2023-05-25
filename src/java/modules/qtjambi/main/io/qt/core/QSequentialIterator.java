@@ -34,6 +34,17 @@ import io.qt.QtObject;
 import io.qt.QtUninvokable;
 import io.qt.internal.AbstractSequentialIterator;
 
+/**
+ * <p>Java-iterable wrapper for Qt's iterator types:
+ * <ul>
+ * <li><a href="https://doc.qt.io/qt/qlist-iterator.html">QList&lt;T>::iterator</a></li>
+ * <li>and all other sequential iterators</li>
+ * </ul>
+ * </p>
+ * @param <T> value type
+ * @see QList#begin()
+ * @see QList#end()
+ */
 public final class QSequentialIterator<T> extends QSequentialConstIterator<T> implements AbstractSequentialIterator<T> {
     
 	@NativeAccess
@@ -41,6 +52,10 @@ public final class QSequentialIterator<T> extends QSequentialConstIterator<T> im
     	super(owner);
 	}
     
+	/**
+	 * Set the value at iterator's position in the container.
+	 * @param newValue the new value
+	 */
     @QtUninvokable
 	public final boolean setValue(T newValue) {
     	if(!isValid())

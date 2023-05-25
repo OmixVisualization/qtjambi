@@ -1277,6 +1277,10 @@ T& checkedUnref(T* t){
 
 void CoreAPI::initializeQList(JNIEnv *env, jobject object, jclass elementType, QtJambiNativeID elementMetaTypeId, jobject other){
     QMetaType& elementMetaType = checkedUnref(QtJambiAPI::objectFromNativeId<QMetaType>(elementMetaTypeId));
+    if(elementMetaType.id()==QMetaType::UnknownType)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("QMetaType::UnknownType cannot be type of %1.").arg("QList") QTJAMBI_STACKTRACEINFO );
+    if(elementMetaType.id()==QMetaType::Void)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("void cannot be type of %1.").arg("QList") QTJAMBI_STACKTRACEINFO );
     SuperTypeInfos superTypeInfos = SuperTypeInfos::fromClass(env, env->GetObjectClass(object));
     if(superTypeInfos.size()>1)
         Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QList") QTJAMBI_STACKTRACEINFO );
@@ -1390,6 +1394,12 @@ void CoreAPI::initializeQList(JNIEnv *env, jobject object, jclass elementType, Q
 
 void CoreAPI::initializeQSet(JNIEnv *env, jobject object, jclass elementType, QtJambiNativeID elementMetaTypeId, jobject other){
     QMetaType& elementMetaType = checkedUnref(QtJambiAPI::objectFromNativeId<QMetaType>(elementMetaTypeId));
+    if(elementMetaType.id()==QMetaType::UnknownType)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("QMetaType::UnknownType cannot be type of %1.").arg("QSet") QTJAMBI_STACKTRACEINFO );
+    if(elementMetaType.id()==QMetaType::QVariant)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("QVariant cannot be type of %1.").arg("QSet") QTJAMBI_STACKTRACEINFO );
+    if(elementMetaType.id()==QMetaType::Void)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("void cannot be type of %1.").arg("QSet") QTJAMBI_STACKTRACEINFO );
     SuperTypeInfos superTypeInfos = SuperTypeInfos::fromClass(env, env->GetObjectClass(object));
     if(superTypeInfos.size()>1)
         Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QSet") QTJAMBI_STACKTRACEINFO );
@@ -1550,6 +1560,10 @@ void CoreAPI::initializeQSet(JNIEnv *env, jobject object, jclass elementType, Qt
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 void CoreAPI::initializeQLinkedList(JNIEnv *env, jobject object, jclass elementType, QtJambiNativeID elementMetaTypeId, jobject other){
     QMetaType& elementMetaType = checkedUnref(QtJambiAPI::objectFromNativeId<QMetaType>(elementMetaTypeId));
+    if(elementMetaType.id()==QMetaType::UnknownType)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("QMetaType::UnknownType cannot be type of %1.").arg("QLinkedList") QTJAMBI_STACKTRACEINFO );
+    if(elementMetaType.id()==QMetaType::Void)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("void cannot be type of %1.").arg("QLinkedList") QTJAMBI_STACKTRACEINFO );
     SuperTypeInfos superTypeInfos = SuperTypeInfos::fromClass(env, env->GetObjectClass(object));
     if(superTypeInfos.size()>1)
         Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QLinkedList") QTJAMBI_STACKTRACEINFO );
@@ -1700,6 +1714,10 @@ void CoreAPI::initializeQLinkedList(JNIEnv *env, jobject object, jclass elementT
 
 void CoreAPI::initializeQVector(JNIEnv *env, jobject object, jclass elementType, QtJambiNativeID elementMetaTypeId, jobject other){
     QMetaType& elementMetaType = checkedUnref(QtJambiAPI::objectFromNativeId<QMetaType>(elementMetaTypeId));
+    if(elementMetaType.id()==QMetaType::UnknownType)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("QMetaType::UnknownType cannot be type of %1.").arg("QVector") QTJAMBI_STACKTRACEINFO );
+    if(elementMetaType.id()==QMetaType::Void)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("void cannot be type of %1.").arg("QVector") QTJAMBI_STACKTRACEINFO );
     SuperTypeInfos superTypeInfos = SuperTypeInfos::fromClass(env, env->GetObjectClass(object));
     if(superTypeInfos.size()>1)
         Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QVector") QTJAMBI_STACKTRACEINFO );
@@ -1850,6 +1868,14 @@ void CoreAPI::initializeQVector(JNIEnv *env, jobject object, jclass elementType,
 void CoreAPI::initializeQHash(JNIEnv *env, jobject object, jclass keyType, QtJambiNativeID keyMetaTypeId, jclass valueType, QtJambiNativeID valueMetaTypeId, jobject other){
     QMetaType& keyMetaType = checkedUnref(QtJambiAPI::objectFromNativeId<QMetaType>(keyMetaTypeId));
     QMetaType& valueMetaType = checkedUnref(QtJambiAPI::objectFromNativeId<QMetaType>(valueMetaTypeId));
+    if(keyMetaType.id()==QMetaType::UnknownType)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("QMetaType::UnknownType cannot be key type of %1.").arg("QHash") QTJAMBI_STACKTRACEINFO );
+    if(keyMetaType.id()==QMetaType::Void)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("void cannot be key type of %1.").arg("QHash") QTJAMBI_STACKTRACEINFO );
+    if(valueMetaType.id()==QMetaType::UnknownType)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("QMetaType::UnknownType cannot be value type of %1.").arg("QHash") QTJAMBI_STACKTRACEINFO );
+    if(valueMetaType.id()==QMetaType::Void)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("void cannot be value type of %1.").arg("QHash") QTJAMBI_STACKTRACEINFO );
     SuperTypeInfos superTypeInfos = SuperTypeInfos::fromClass(env, env->GetObjectClass(object));
     if(superTypeInfos.size()>1)
         Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QHash") QTJAMBI_STACKTRACEINFO );
@@ -2009,6 +2035,14 @@ void CoreAPI::initializeQHash(JNIEnv *env, jobject object, jclass keyType, QtJam
 void CoreAPI::initializeQMultiHash(JNIEnv *env, jobject object, jclass keyType, QtJambiNativeID keyMetaTypeId, jclass valueType, QtJambiNativeID valueMetaTypeId, jobject other){
     QMetaType& keyMetaType = checkedUnref(QtJambiAPI::objectFromNativeId<QMetaType>(keyMetaTypeId));
     QMetaType& valueMetaType = checkedUnref(QtJambiAPI::objectFromNativeId<QMetaType>(valueMetaTypeId));
+    if(keyMetaType.id()==QMetaType::UnknownType)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("QMetaType::UnknownType cannot be key type of %1.").arg("QMultiHash") QTJAMBI_STACKTRACEINFO );
+    if(keyMetaType.id()==QMetaType::Void)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("void cannot be key type of %1.").arg("QMultiHash") QTJAMBI_STACKTRACEINFO );
+    if(valueMetaType.id()==QMetaType::UnknownType)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("QMetaType::UnknownType cannot be value type of %1.").arg("QMultiHash") QTJAMBI_STACKTRACEINFO );
+    if(valueMetaType.id()==QMetaType::Void)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("void cannot be value type of %1.").arg("QMultiHash") QTJAMBI_STACKTRACEINFO );
     SuperTypeInfos superTypeInfos = SuperTypeInfos::fromClass(env, env->GetObjectClass(object));
     if(superTypeInfos.size()>1)
         Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QMultiHash") QTJAMBI_STACKTRACEINFO );
@@ -2171,6 +2205,14 @@ void CoreAPI::initializeQMultiHash(JNIEnv *env, jobject object, jclass keyType, 
 void CoreAPI::initializeQMap(JNIEnv *env, jobject object, jclass keyType, QtJambiNativeID keyMetaTypeId, jclass valueType, QtJambiNativeID valueMetaTypeId, jobject other){
     QMetaType& keyMetaType = checkedUnref(QtJambiAPI::objectFromNativeId<QMetaType>(keyMetaTypeId));
     QMetaType& valueMetaType = checkedUnref(QtJambiAPI::objectFromNativeId<QMetaType>(valueMetaTypeId));
+    if(keyMetaType.id()==QMetaType::UnknownType)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("QMetaType::UnknownType cannot be key type of %1.").arg("QMap") QTJAMBI_STACKTRACEINFO );
+    if(keyMetaType.id()==QMetaType::Void)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("void cannot be key type of %1.").arg("QMap") QTJAMBI_STACKTRACEINFO );
+    if(valueMetaType.id()==QMetaType::UnknownType)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("QMetaType::UnknownType cannot be value type of %1.").arg("QMap") QTJAMBI_STACKTRACEINFO );
+    if(valueMetaType.id()==QMetaType::Void)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("void cannot be value type of %1.").arg("QMap") QTJAMBI_STACKTRACEINFO );
     SuperTypeInfos superTypeInfos = SuperTypeInfos::fromClass(env, env->GetObjectClass(object));
     if(superTypeInfos.size()>1)
         Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QMap") QTJAMBI_STACKTRACEINFO );
@@ -2328,6 +2370,14 @@ void CoreAPI::initializeQMap(JNIEnv *env, jobject object, jclass keyType, QtJamb
 void CoreAPI::initializeQMultiMap(JNIEnv *env, jobject object, jclass keyType, QtJambiNativeID keyMetaTypeId, jclass valueType, QtJambiNativeID valueMetaTypeId, jobject other){
     QMetaType& keyMetaType = checkedUnref(QtJambiAPI::objectFromNativeId<QMetaType>(keyMetaTypeId));
     QMetaType& valueMetaType = checkedUnref(QtJambiAPI::objectFromNativeId<QMetaType>(valueMetaTypeId));
+    if(keyMetaType.id()==QMetaType::UnknownType)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("QMetaType::UnknownType cannot be key type of %1.").arg("QMultiMap") QTJAMBI_STACKTRACEINFO );
+    if(keyMetaType.id()==QMetaType::Void)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("void cannot be key type of %1.").arg("QMultiMap") QTJAMBI_STACKTRACEINFO );
+    if(valueMetaType.id()==QMetaType::UnknownType)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("QMetaType::UnknownType cannot be value type of %1.").arg("QMultiMap") QTJAMBI_STACKTRACEINFO );
+    if(valueMetaType.id()==QMetaType::Void)
+        Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("void cannot be value type of %1.").arg("QMultiMap") QTJAMBI_STACKTRACEINFO );
     SuperTypeInfos superTypeInfos = SuperTypeInfos::fromClass(env, env->GetObjectClass(object));
     if(superTypeInfos.size()>1)
         Java::Runtime::Error::throwNew(env, QStringLiteral("It is not permitted to create a derived type of %1 implementing any Qt interface.").arg("QMultiMap") QTJAMBI_STACKTRACEINFO );

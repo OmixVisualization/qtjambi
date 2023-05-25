@@ -37,6 +37,10 @@ import io.qt.QNoDefaultValueException;
 import io.qt.QtUninvokable;
 import io.qt.core.QMetaObject.*;
 
+/**
+ * QDeclarableSignals is a namespace containing signal types to be used in any other contexts than member signals.
+ * Declarable signals are never realized as Qt's meta object signals but have a lightweight Java implementation.
+ */
 public final class QDeclarableSignals {
 	private QDeclarableSignals() {}
 	

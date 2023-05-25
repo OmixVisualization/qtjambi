@@ -1254,6 +1254,11 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,MetaObjectData$IntArray,
     QTJAMBI_REPOSITORY_DEFINE_FIELD(size,I)
 )
 
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,MetaObjectData$MetaTypeInfo,
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(metaTypeId,I)
+    QTJAMBI_REPOSITORY_DEFINE_FIELD(typeName,Ljava/lang/String;)
+)
+
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,MetaObjectData,
     QTJAMBI_REPOSITORY_DEFINE_FIELD(intData,Lio/qt/internal/MetaObjectData$IntArray;)
     QTJAMBI_REPOSITORY_DEFINE_FIELD(stringData,Ljava/util/List;)

@@ -62,7 +62,7 @@ void defaultConstruct(QVariant::Private *d, const void *copy)
     const QMetaType type(d->type);
     const uint size = uint(type.sizeOf());
     if (!size) {
-        qWarning("Trying to construct an instance of an invalid type, type id: %i", d->type);
+        qCWarning(DebugAPI::internalCategory, "Trying to construct an instance of an invalid type, type id: %i", d->type);
         d->type = QVariant::Invalid;
         return;
     }

@@ -18673,6 +18673,7 @@ TypeSystem{
             name: "StyleHint"
         }
 
+        Rejection{functionName: "call"}
         Rejection{functionName: "createPlatformPixmap"}
         Rejection{functionName: "createPlatformWindow"}
         Rejection{functionName: "createForeignWindow"}
@@ -18699,6 +18700,25 @@ TypeSystem{
             target: CodeClass.Java
             Text{content: "@QtUninvokable\n"+
                           "public native static QPlatformIntegration instance();"}
+        }
+
+        ModifyFunction{
+            signature: "themeNames() const"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.core.@NonNull QStringList"
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "possibleKeys(const QKeyEvent *) const"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.core.@NonNull QList<java.lang.@QtPrimitiveType()@NonNull() Integer>"
+                }
+            }
         }
     }
     

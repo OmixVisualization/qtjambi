@@ -267,7 +267,7 @@ JBufferConstData::~JBufferConstData(){
             }
         }
     } catch (const std::exception& e) {
-        qWarning("%s", e.what());
+        qCWarning(DebugAPI::internalCategory, "%s", e.what());
     } catch (...) {
     }
 }
@@ -409,7 +409,7 @@ JBufferData::~JBufferData(){
             }
         }
     } catch (const std::exception& e) {
-        qWarning("%s", e.what());
+        qCWarning(DebugAPI::internalCategory, "%s", e.what());
     } catch (...) {
     }
 }

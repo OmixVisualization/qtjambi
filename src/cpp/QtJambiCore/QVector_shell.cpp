@@ -84,6 +84,101 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
     }QTJAMBI_TRY_END
 }
 
+// QVector<T>::append(const T & t)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_append__JLjava_lang_Object_2)
+    (JNIEnv *__jni_env,
+     jclass,
+     QtJambiNativeID __this_nativeId,
+     jobject t2)
+{
+    QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QVector<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QVector<T>::append(const T & t)", container.first)
+        AbstractVectorAccess* containerAccess = dynamic_cast<AbstractVectorAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        jint size = containerAccess->size(__jni_env, container.first);
+        containerAccess->insert(__jni_env, container.first, size, 1, t2);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+}
+
+// QVector<T>::takeAt(int i)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_takeAt__JI)
+    (JNIEnv *__jni_env,
+     jclass,
+     QtJambiNativeID __this_nativeId,
+     jint i0)
+{
+    jobject result = nullptr;
+    QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QVector<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QVector<T>::reserve(int size)", container.first)
+        AbstractVectorAccess* containerAccess = dynamic_cast<AbstractVectorAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        jint size = containerAccess->size(__jni_env, container.first);
+        if (i0 >= size || i0 < 0) {
+            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size %1 at %2").arg(size, i0) QTJAMBI_STACKTRACEINFO );
+        }
+        result = containerAccess->at(__jni_env, container.first, i0);
+        containerAccess->remove(__jni_env, container.first, i0, 1);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+        return result;
+}
+
+// QVector<T>::takeLast()
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_takeLast__J)
+    (JNIEnv *__jni_env,
+     jclass,
+     QtJambiNativeID __this_nativeId)
+{
+        jobject result = nullptr;
+        QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QVector<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QVector<T>::reserve(int size)", container.first)
+        AbstractVectorAccess* containerAccess = dynamic_cast<AbstractVectorAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        jint size = containerAccess->size(__jni_env, container.first);
+        if (size == 0) {
+            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size 0 at 0") QTJAMBI_STACKTRACEINFO );
+        }
+        result = containerAccess->at(__jni_env, container.first, size-1);
+        containerAccess->remove(__jni_env, container.first, size-1, 1);
+        }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+        }QTJAMBI_TRY_END
+            return result;
+}
+
+// QVector<T>::last() const
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_last__J)
+    (JNIEnv *__jni_env,
+     jclass,
+     QtJambiNativeID __this_nativeId)
+{
+    jobject result{nullptr};
+    QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QVector<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QVector<T>::last() const", container.first)
+        AbstractVectorAccess* containerAccess = dynamic_cast<AbstractVectorAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        jint size = containerAccess->size(__jni_env, container.first);
+        if (size == 0) {
+            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size 0 at 0") QTJAMBI_STACKTRACEINFO );
+        }
+        result = containerAccess->at(__jni_env, container.first, size-1);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+        return result;
+}
+
 // QVector<T>::at(int i) const
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_at__JI)
 (JNIEnv *__jni_env,
@@ -96,7 +191,13 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QVector<QVariant>));
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QVector<T>::at(int i) const", container.first)
-        result = dynamic_cast<AbstractVectorAccess*>(container.second)->at(__jni_env, container.first, i0);
+        AbstractVectorAccess* containerAccess = dynamic_cast<AbstractVectorAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        jint size = containerAccess->size(__jni_env, container.first);
+        if (i0 >= size || i0 < 0) {
+            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size %1 at %2").arg(size, i0) QTJAMBI_STACKTRACEINFO );
+        }
+        result = containerAccess->at(__jni_env, container.first, i0);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -317,7 +418,13 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QVector<QVariant>));
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QVector<T>::insert(int i, int count, const T & t)", container.first)
-        dynamic_cast<AbstractVectorAccess*>(container.second)->insert(__jni_env, container.first, i0, count1, t2);
+        AbstractVectorAccess* containerAccess = dynamic_cast<AbstractVectorAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        jint size = containerAccess->size(__jni_env, container.first);
+        if (i0 >= size || i0 < 0) {
+            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size %1 at %2").arg(size, i0) QTJAMBI_STACKTRACEINFO );
+        }
+        containerAccess->insert(__jni_env, container.first, i0, count1, t2);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -356,7 +463,16 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QVector<QVariant>));
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QVector<T>::mid(int pos, int length) const", container.first)
-        result = dynamic_cast<AbstractVectorAccess*>(container.second)->mid(__jni_env, container.first, pos0, length1);
+        AbstractVectorAccess* containerAccess = dynamic_cast<AbstractVectorAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        jint size = containerAccess->size(__jni_env, container.first);
+        if (pos0 >= size || pos0 < 0) {
+            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size %1 at %2").arg(size, pos0) QTJAMBI_STACKTRACEINFO );
+        }
+        if (length1>=0 && pos0+length1 > size) {
+            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size %1 at %2 to %3").arg(size, pos0, pos0+length1) QTJAMBI_STACKTRACEINFO );
+        }
+        result = containerAccess->mid(__jni_env, container.first, pos0, length1);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -375,7 +491,16 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QVector<QVariant>));
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QVector<T>::move(int from, int to)", container.first)
-        dynamic_cast<AbstractVectorAccess*>(container.second)->move(__jni_env, container.first, from0, to1);
+        AbstractVectorAccess* containerAccess = dynamic_cast<AbstractVectorAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        jint size = containerAccess->size(__jni_env, container.first);
+        if (from0 >= size || from0 < 0) {
+            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size %1 at %2").arg(size, from0) QTJAMBI_STACKTRACEINFO );
+        }
+        if (to1 >= size && to1 < 0) {
+            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size %1 at %2").arg(size, to1) QTJAMBI_STACKTRACEINFO );
+        }
+        containerAccess->move(__jni_env, container.first, from0, to1);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -419,6 +544,29 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
     return result;
 }
 
+// QVector<T>::removeOne(const T & t)
+extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_removeOne__JLjava_lang_Object_2)
+    (JNIEnv *__jni_env,
+     jclass,
+     QtJambiNativeID __this_nativeId,
+     jobject t1)
+{
+    jboolean result = false;
+    QTJAMBI_TRY{
+        QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QVector<QVariant>));
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QVector<T>::replace(int i, const T & t)", container.first)
+        AbstractVectorAccess* containerAccess = dynamic_cast<AbstractVectorAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        jint i0 = containerAccess->indexOf(__jni_env, container.first, t1, 0);
+        if ((result = i0 >= 0))
+            containerAccess->remove(__jni_env, container.first, i0, 1);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(__jni_env);
+    }QTJAMBI_TRY_END
+        return result;
+}
+
 // QVector<T>::remove(int i, int count)
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QVector_remove__JII)
 (JNIEnv *__jni_env,
@@ -431,7 +579,13 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QVector<QVariant>));
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QVector<T>::remove(int i, int count)", container.first)
-        dynamic_cast<AbstractVectorAccess*>(container.second)->remove(__jni_env, container.first, i0, count1);
+        AbstractVectorAccess* containerAccess = dynamic_cast<AbstractVectorAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        jint size = containerAccess->size(__jni_env, container.first);
+        if (i0+count1 > size || i0 < 0) {
+            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size %1 at %2").arg(size, i0 < 0 ? i0 : i0+count1) QTJAMBI_STACKTRACEINFO );
+        }
+        containerAccess->remove(__jni_env, container.first, i0, count1);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -449,7 +603,13 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QVector<QVariant>));
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QVector<T>::replace(int i, const T & t)", container.first)
-        dynamic_cast<AbstractVectorAccess*>(container.second)->replace(__jni_env, container.first, i0, t1);
+        AbstractVectorAccess* containerAccess = dynamic_cast<AbstractVectorAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        jint size = containerAccess->size(__jni_env, container.first);
+        if (i0 >= size || i0 < 0) {
+            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size %1 at %2").arg(size, i0) QTJAMBI_STACKTRACEINFO );
+        }
+        containerAccess->replace(__jni_env, container.first, i0, t1);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -591,9 +751,18 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QV
 {
     QTJAMBI_TRY{
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
-        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QList<QVariant>));
+        QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QVector<QVariant>));
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QVector<T>::swapItemsAt(int i, int j)", container.first)
-        dynamic_cast<AbstractVectorAccess*>(container.second)->swapItemsAt(__jni_env, container.first, i0, j1);
+        AbstractVectorAccess* containerAccess = dynamic_cast<AbstractVectorAccess*>(container.second);
+        Q_ASSERT(containerAccess);
+        jint size = containerAccess->size(__jni_env, container.first);
+        if (i0 >= size || i0 < 0) {
+            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size %1 at %2").arg(size, i0) QTJAMBI_STACKTRACEINFO );
+        }
+        if (j1 >= size || j1 < 0) {
+            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size %1 at %2").arg(size, j1) QTJAMBI_STACKTRACEINFO );
+        }
+        containerAccess->swapItemsAt(__jni_env, container.first, i0, j1);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END

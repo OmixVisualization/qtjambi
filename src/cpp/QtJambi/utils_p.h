@@ -31,6 +31,7 @@
 #define QTJAMBI_UTILS_P_H
 
 #include <QtCore/QtGlobal>
+#include <QtCore/QLoggingCategory>
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 namespace QtPrivate{
@@ -88,5 +89,10 @@ jobject internal_convertSmartPointerToJavaObject(JNIEnv *env, const char *classN
                             void* ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, SmartPointerGetterFunction sharedPointerGetter);
 jobject internal_convertSmartPointerToJavaInterface(JNIEnv *env, const std::type_info& interfaceType,
                             void* ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, SmartPointerGetterFunction sharedPointerGetter);
+
+namespace DebugAPI{
+Q_DECLARE_LOGGING_CATEGORY(internalCategory)
+Q_DECLARE_LOGGING_CATEGORY(debugAPIJavaOverloadsCategory)
+}
 
 #endif // QTJAMBI_UTILS_P_H

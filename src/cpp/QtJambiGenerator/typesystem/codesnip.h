@@ -111,6 +111,7 @@ class CodeSnip : public CodeSnipAbstract {
             Compare,
             HashCode,
             ToString,
+            Clone,
             Comment,
             End = 1024
         };

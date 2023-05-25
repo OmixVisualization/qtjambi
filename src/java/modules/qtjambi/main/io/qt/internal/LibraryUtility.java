@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -72,6 +73,7 @@ import io.qt.QLibraryNotFoundError;
 import io.qt.QLibraryNotLoadedError;
 import io.qt.QNoSuchSlotException;
 import io.qt.QtUninvokable;
+import io.qt.QtUtilities;
 import io.qt.QtUtilities.LibraryRequirementMode;
 import io.qt.core.QDeclarableSignals;
 import io.qt.core.QPair;
@@ -848,6 +850,7 @@ final class LibraryUtility {
     	String arch = System.getProperty("os.arch").toLowerCase();
     	switch(arch) {
     	case "arm":
+    	case "armv":
     	case "arm32":
     		return Architecture.arm;
     	case "arm64":
@@ -857,6 +860,9 @@ final class LibraryUtility {
     	case "x64":
     	case "amd64":
     		return Architecture.x86_64;
+    	case "i386":
+    	case "x86":
+    		return Architecture.x86;
     	default:
     		if(arch.startsWith("arm-"))
     			return Architecture.arm;
@@ -1082,8 +1088,115 @@ final class LibraryUtility {
     	loadNativeLibrary(Object.class, getLibraryAvailability(library, libraryPlatformName, Collections.emptyList()), null);
     }
     
-    static File loadQtJambiLibrary() {
-		return loadQtJambiLibrary(LibraryUtility.class, null, "QtJambi", QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion, QtJambi_LibraryUtilities.qtJambiPatch);
+    static void loadQtJambiLibrary() {
+    	try{
+	    	loadSystemLibraries();
+        	loadUtilityLibrary("icudata", LibraryUtility.ICU_VERSION, LibraryRequirementMode.Optional);
+    		loadUtilityLibrary("icuuc", LibraryUtility.ICU_VERSION, LibraryRequirementMode.Optional);
+    		loadUtilityLibrary("icui18n", LibraryUtility.ICU_VERSION, LibraryRequirementMode.Optional);
+    	} catch (Throwable e) {
+    		java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.SEVERE, "Error while loading system library", e);
+    	}
+    	Availability availability = getLibraryAvailability("Qt", "Core", LIBINFIX, null, configuration, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
+    	if(!availability.isAvailable()) {
+			if(configuration==LibraryBundle.Configuration.Release) {
+				// try to run qtjambi with debug libraries instead
+				configuration=LibraryBundle.Configuration.Debug;
+				Availability _availability = getLibraryAvailability("Qt", "Core", LIBINFIX, null, configuration, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
+				if(_availability.isAvailable())
+					availability = _availability;
+			}else {
+				if(dontUseQtFrameworks==null) {
+					dontUseQtFrameworks = Boolean.TRUE;
+					Availability _availability = getLibraryAvailability("Qt", "Core", LIBINFIX, null, configuration, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
+					if(!_availability.isAvailable()) {
+						configuration=LibraryBundle.Configuration.Debug;
+						_availability = getLibraryAvailability("Qt", "Core", LIBINFIX, null, configuration, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
+						if(_availability.isAvailable())
+							availability = _availability;
+					}
+				}else {
+					if(!isMinGWBuilt && operatingSystem==OperatingSystem.Windows) {
+						Availability stdCAvailability = getLibraryAvailability(null, "libstdc++-6", null, null, LibraryBundle.Configuration.Release, null);
+				    	if(stdCAvailability.entry!=null){
+				    		isMinGWBuilt = true;
+				    	}else if(stdCAvailability.file!=null){
+				    		isMinGWBuilt = new File(stdCAvailability.file.getParentFile(), "Qt"+QtJambi_LibraryUtilities.qtMajorVersion+"Core.dll").isFile();
+				    	}
+				    	if(isMinGWBuilt) {
+				    		availability = getLibraryAvailability("Qt", "Core", LIBINFIX, null, configuration, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
+				    	}
+			    	}
+				}
+			}
+    	}
+    	java.io.File coreLib;
+    	try{
+    		coreLib = loadNativeLibrary(Object.class, availability, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
+    		if(coreLib!=null)
+    			qtLibraryPath = coreLib.getParentFile().getAbsolutePath();
+        } catch(UnsatisfiedLinkError t) {
+            LibraryUtility.analyzeUnsatisfiedLinkError(t, availability.file, true);
+            throw t;
+		}finally {
+			if(dontUseQtFrameworks==null) {
+				dontUseQtFrameworks = Boolean.FALSE;
+			}
+		}
+        try{
+            java.io.File qtjambiLib = loadQtJambiLibrary(LibraryUtility.class, null, "QtJambi", QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion, QtJambi_LibraryUtilities.qtJambiPatch);
+            if(LibraryUtility.operatingSystem!=LibraryUtility.OperatingSystem.Android) {
+                List<String> paths = new ArrayList<>();
+                String path;
+                switch(LibraryUtility.operatingSystem) {
+                case MacOS:
+                    path = QtUtilities.getenv("DYLD_LIBRARY_PATH");
+                    String path2 = QtUtilities.getenv("DYLD_FRAMEWORK_PATH");
+                    List<String> paths2 = new ArrayList<>();
+                    paths2.add(qtjambiLib.getParentFile().getAbsolutePath());
+                    if(path2!=null && !path2.isEmpty()) {
+                        for(String p : path2.split("\\"+java.io.File.pathSeparator)) {
+                            if(!paths2.contains(p))
+                                paths2.add(p);
+                        }
+                    }
+                    path2 = String.join(java.io.File.pathSeparator, paths2);
+                    QtUtilities.putenv("DYLD_FRAMEWORK_PATH", path2);
+                    break;
+                case Windows:
+                    path = QtUtilities.getenv("PATH");
+                    break;
+                default:
+                    path = QtUtilities.getenv("LD_LIBRARY_PATH");
+                    break;
+                }
+                if(LibraryUtility.operatingSystem!=LibraryUtility.OperatingSystem.MacOS)
+                    paths.add(coreLib.getParentFile().getAbsolutePath());
+                if(!paths.contains(qtjambiLib.getParentFile().getAbsolutePath()))
+                    paths.add(qtjambiLib.getParentFile().getAbsolutePath());
+                if(path!=null && !path.isEmpty()) {
+                    for(String p : path.split("\\"+java.io.File.pathSeparator)) {
+                        if(!paths.contains(p))
+                            paths.add(p);
+                    }
+                }
+                path = String.join(java.io.File.pathSeparator, paths);
+                switch(LibraryUtility.operatingSystem) {
+                case MacOS:
+                    QtUtilities.putenv("DYLD_LIBRARY_PATH", path);
+                    break;
+                case Windows:
+                    QtUtilities.putenv("PATH", path);
+                    break;
+                default:
+                    QtUtilities.putenv("LD_LIBRARY_PATH", path);
+                    break;
+                }
+            }
+        } catch(UnsatisfiedLinkError t) {
+            LibraryUtility.analyzeUnsatisfiedLinkError(t, coreLib, false);
+            throw t;
+        }
     }
 
     static void loadQtJambiLibrary(Class<?> callerClass, String library) {
@@ -1276,60 +1389,6 @@ final class LibraryUtility {
 			break;
     	}
     	loadNativeLibrary(Object.class, availability, null);
-    }
-    
-    static File loadQtCore() {
-    	try{
-	    	loadSystemLibraries();
-        	loadUtilityLibrary("icudata", LibraryUtility.ICU_VERSION, LibraryRequirementMode.Optional);
-    		loadUtilityLibrary("icuuc", LibraryUtility.ICU_VERSION, LibraryRequirementMode.Optional);
-    		loadUtilityLibrary("icui18n", LibraryUtility.ICU_VERSION, LibraryRequirementMode.Optional);
-    	} catch (Throwable e) {
-    		java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.SEVERE, "Error while loading system library", e);
-    	}
-    	Availability availability = getLibraryAvailability("Qt", "Core", LIBINFIX, null, configuration, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
-    	if(!availability.isAvailable()) {
-			if(configuration==LibraryBundle.Configuration.Release) {
-				// try to run qtjambi with debug libraries instead
-				configuration=LibraryBundle.Configuration.Debug;
-				Availability _availability = getLibraryAvailability("Qt", "Core", LIBINFIX, null, configuration, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
-				if(_availability.isAvailable())
-					availability = _availability;
-			}else {
-				if(dontUseQtFrameworks==null) {
-					dontUseQtFrameworks = Boolean.TRUE;
-					Availability _availability = getLibraryAvailability("Qt", "Core", LIBINFIX, null, configuration, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
-					if(!_availability.isAvailable()) {
-						configuration=LibraryBundle.Configuration.Debug;
-						_availability = getLibraryAvailability("Qt", "Core", LIBINFIX, null, configuration, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
-						if(_availability.isAvailable())
-							availability = _availability;
-					}
-				}else {
-					if(!isMinGWBuilt && operatingSystem==OperatingSystem.Windows) {
-						Availability stdCAvailability = getLibraryAvailability(null, "libstdc++-6", null, null, LibraryBundle.Configuration.Release, null);
-				    	if(stdCAvailability.entry!=null){
-				    		isMinGWBuilt = true;
-				    	}else if(stdCAvailability.file!=null){
-				    		isMinGWBuilt = new File(stdCAvailability.file.getParentFile(), "Qt"+QtJambi_LibraryUtilities.qtMajorVersion+"Core.dll").isFile();
-				    	}
-				    	if(isMinGWBuilt) {
-				    		availability = getLibraryAvailability("Qt", "Core", LIBINFIX, null, configuration, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
-				    	}
-			    	}
-				}
-			}
-    	}
-    	try{
-    		File lib = loadNativeLibrary(Object.class, availability, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
-    		if(lib!=null)
-    			qtLibraryPath = lib.getParentFile().getAbsolutePath();
-    		return lib;
-		}finally {
-			if(dontUseQtFrameworks==null) {
-				dontUseQtFrameworks = Boolean.FALSE;
-			}
-		}
     }
     
     private static LibVersion getLibVersion(Class<?> callerClass) {
@@ -2534,9 +2593,17 @@ final class LibraryUtility {
 	    return -1;
 	}
 
-	static void analyzeUnsatisfiedLinkError(UnsatisfiedLinkError t, java.io.File coreLib) {
-		String qtLibraryBuild = null;
-		String qtjambiLibraryBuild = null;
+	private static void analyzeUnsatisfiedLinkError(UnsatisfiedLinkError t, java.io.File coreLib, boolean atCoreLoad) {
+		final String architecture;
+		if(LibraryUtility.architecture==LibraryUtility.Architecture.x86) {
+			architecture = "i386-"+ByteOrder.nativeOrder().toString().toLowerCase();
+		}else {
+			architecture = LibraryUtility.architecture.name()+"-"+ByteOrder.nativeOrder().toString().toLowerCase();
+		}
+		final boolean canUniversalBuild = LibraryUtility.operatingSystem==LibraryUtility.OperatingSystem.MacOS
+												|| LibraryUtility.operatingSystem==LibraryUtility.OperatingSystem.IOS;
+		final List<String> qtLibraryBuilds = new ArrayList<>();
+		final List<String> qtjambiLibraryBuilds = new ArrayList<>();
 		try {
 			byte[] coredata = Files.readAllBytes(coreLib.toPath());
 			int idx = 0;
@@ -2577,14 +2644,16 @@ final class LibraryUtility {
 						break;
 					}
 				}
-				qtLibraryBuild = new String(os.toByteArray(), StandardCharsets.US_ASCII);
-				if(qtLibraryBuild.contains("build; by"))
-					break;
-				else
-					idx += 5;
+				String qtLibraryBuild = new String(os.toByteArray(), StandardCharsets.US_ASCII);
+				if(qtLibraryBuild.contains("build; by")) {
+					qtLibraryBuilds.add(qtLibraryBuild);
+					if(!canUniversalBuild)
+						break;
+				}
+				idx += 5;
 			}
 		}catch(Throwable t2){}
-		{
+		if(!atCoreLoad){
 			Availability availability = getQtJambiLibraryAvailability(null, "QtJambi", null, null, configuration, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion, QtJambi_LibraryUtilities.qtJambiPatch);
 			if(availability.file!=null) {
 				try {
@@ -2627,30 +2696,73 @@ final class LibraryUtility {
 								break;
 							}
 						}
-						qtjambiLibraryBuild = new String(os.toByteArray(), StandardCharsets.US_ASCII);
-						if(qtjambiLibraryBuild.contains("build; by"))
-							break;
-						else
-							idx += 10;
+						String qtjambiLibraryBuild = new String(os.toByteArray(), StandardCharsets.US_ASCII);
+						if(qtjambiLibraryBuild.contains("build; by")) {
+							qtjambiLibraryBuilds.add(qtjambiLibraryBuild);
+							if(!canUniversalBuild)
+								break;
+						}
+						idx += 10;
 					}
 				}catch(Throwable t2){}
 			}
+		}else { // error when loading QtCore:
+			String qtLibraryBuild = null;
+			switch(qtLibraryBuilds.size()) {
+			case 0: throw t;
+			case 1:
+				qtLibraryBuild = qtLibraryBuilds.get(0);
+				if(qtLibraryBuild.contains(architecture)) {
+					throw t;
+				}
+				throw new LinkageError("Cannot load " + qtLibraryBuild + " on " + architecture + " architecture.", t);
+			default:
+				for(String s : qtLibraryBuilds) {
+					if(s.contains(architecture)) {
+						qtLibraryBuild = s;
+						break;
+					}
+				}
+				if(qtLibraryBuild==null) {
+					throw new LinkageError("Cannot load one of " + qtLibraryBuilds + " on " + architecture + " architecture.", t);
+				}else {
+					throw new LinkageError("Cannot load " + qtLibraryBuild + " on " + architecture + " architecture.", t);
+				}
+			}
 		}
-		if(qtLibraryBuild!=null && qtjambiLibraryBuild!=null) {
+		if(!qtLibraryBuilds.isEmpty() && !qtjambiLibraryBuilds.isEmpty()) {
+			String qtLibraryBuild = qtLibraryBuilds.get(0);
+			String qtjambiLibraryBuild = qtjambiLibraryBuilds.get(0);
 			switch(LibraryUtility.operatingSystem) {
 			case Windows:
-				if(LibraryUtility.architecture==Architecture.x86_64) {
+				if(LibraryUtility.architecture==Architecture.x86_64 && qtjambiLibraryBuild.contains(architecture)) {
 					if(qtjambiLibraryBuild.contains("MSVC") && qtLibraryBuild.contains("GCC")) {
-						throw new LinkageError("Cannot run " + qtjambiLibraryBuild + " with " + qtLibraryBuild + ". Please install and use Qt (MSVC 2019 x64) instead.", t);
+						throw new LinkageError("Cannot run " + qtjambiLibraryBuild + " with " + qtLibraryBuild + ". Please install and use Qt (MSVC x64) instead.", t);
 					}else if(qtjambiLibraryBuild.contains("GCC") && qtLibraryBuild.contains("MSVC")){
 						throw new LinkageError("Cannot run " + qtjambiLibraryBuild + " with " + qtLibraryBuild + ". Please install and use Qt (MinGW x64) instead.", t);
 					}
+				}else if(LibraryUtility.architecture==Architecture.x86 && qtjambiLibraryBuild.contains(architecture)) {
+					if(qtjambiLibraryBuild.contains("MSVC") && qtLibraryBuild.contains("GCC")) {
+						throw new LinkageError("Cannot run " + qtjambiLibraryBuild + " with " + qtLibraryBuild + ". Please install and use Qt (MSVC x86) instead.", t);
+					}else if(qtjambiLibraryBuild.contains("GCC") && qtLibraryBuild.contains("MSVC")){
+						throw new LinkageError("Cannot run " + qtjambiLibraryBuild + " with " + qtLibraryBuild + ". Please install and use Qt (MinGW x86) instead.", t);
+					}
 				}
-				break;
-				default:
-					break;
+			default:
+				if(qtLibraryBuilds.size()==1) {
+					if(qtjambiLibraryBuilds.size()==1) {
+						throw new LinkageError("Cannot run " + qtjambiLibraryBuild + " with " + qtLibraryBuild + ".", t);
+					}else {
+						throw new LinkageError("Cannot run one of " + qtjambiLibraryBuilds + " with " + qtLibraryBuild + ".", t);
+					}
+				}else {
+					if(qtjambiLibraryBuilds.size()==1) {
+						throw new LinkageError("Cannot run " + qtjambiLibraryBuild + " with one of " + qtLibraryBuilds + ".", t);
+					}else {
+						throw new LinkageError("Cannot run one of " + qtjambiLibraryBuilds + " with one of " + qtLibraryBuilds + ".", t);
+					}
+				}
 			}
-			throw new LinkageError("Cannot run " + qtjambiLibraryBuild + " with " + qtLibraryBuild + ".", t);
 		}else {
 			switch(LibraryUtility.operatingSystem) {
 	        case MacOS:
@@ -2689,7 +2801,7 @@ final class LibraryUtility {
 	                    }
 	                }
 	                if(new java.io.File(coreLib.getParentFile(), "libstdc++-6.dll").exists() || LibraryUtility.isMinGWBuilt()) {
-	                    throw new LinkageError("Cannot combine msvc-based QtJambi with mingw-based Qt library. Please install and use Qt (MSVC 2019 x64) instead.", t);
+	                    throw new LinkageError("Cannot combine msvc-based QtJambi with mingw-based Qt library. Please install and use Qt (MSVC x64) instead.", t);
 	                }else {
 	                    throw new LinkageError("Cannot combine mingw-based QtJambi with msvc-based Qt library. Please install and use Qt (MinGW x64) instead.", t);
 	                }

@@ -6,6 +6,7 @@
 struct Ownership : public QObject{
     Q_OBJECT
     QML_ELEMENT
+    QML_UNCREATABLE("enum carrier")
 public:
     enum Entries {
         Invalid,
@@ -18,12 +19,13 @@ public:
     };
     Q_ENUM(Entries)
     Ownership() = delete;
-    Q_DISABLE_COPY(Ownership)
+    Q_DISABLE_COPY_MOVE(Ownership)
 };
 
 struct Affinity : public QObject{
     Q_OBJECT
     QML_ELEMENT
+    QML_UNCREATABLE("enum carrier")
 public:
     enum Entries {
         UI = 0x00800000,
@@ -31,12 +33,13 @@ public:
     };
     Q_ENUM(Entries)
     Affinity() = delete;
-    Q_DISABLE_COPY(Affinity)
+    Q_DISABLE_COPY_MOVE(Affinity)
 };
 
 struct CodeClass : public QObject{
     Q_OBJECT
     QML_ELEMENT
+    QML_UNCREATABLE("enum carrier")
 public:
     enum Entries {
         NoLanguage          = 0x0000,
@@ -59,12 +62,13 @@ public:
     };
     Q_ENUM(Entries)
     CodeClass() = delete;
-    Q_DISABLE_COPY(CodeClass)
+    Q_DISABLE_COPY_MOVE(CodeClass)
 };
 
 struct RemoveFlag : public QObject{
     Q_OBJECT
     QML_ELEMENT
+    QML_UNCREATABLE("enum carrier")
 public:
     enum Entries {
         None = CodeClass::NoLanguage,
@@ -74,12 +78,13 @@ public:
     };
     Q_ENUM(Entries)
     RemoveFlag() = delete;
-    Q_DISABLE_COPY(RemoveFlag)
+    Q_DISABLE_COPY_MOVE(RemoveFlag)
 };
 
 struct Position : public QObject{
     Q_OBJECT
     QML_ELEMENT
+    QML_UNCREATABLE("enum carrier")
 public:
     enum Entries {
         Beginning = 0,
@@ -92,17 +97,19 @@ public:
         Compare,
         HashCode,
         ToString,
+        Clone,
         Comment,
         End = 1024
     };
     Q_ENUM(Entries)
     Position() = delete;
-    Q_DISABLE_COPY(Position)
+    Q_DISABLE_COPY_MOVE(Position)
 };
 
 struct Modification : public QObject{
     Q_OBJECT
     QML_ELEMENT
+    QML_UNCREATABLE("enum carrier")
 public:
     enum Entries {
         Private     = 0x01000,
@@ -117,7 +124,7 @@ public:
     };
     Q_ENUM(Entries)
     Modification() = delete;
-    Q_DISABLE_COPY(Modification)
+    Q_DISABLE_COPY_MOVE(Modification)
 };
 Q_DECLARE_FLAGS(AccessModifications,Modification::Entries)
 

@@ -49,6 +49,11 @@ public:
             jclass _javaClass
         );
     ParameterTypeInfo(
+        int metaTypeId,
+        const QString& typeName,
+        jclass _javaClass
+        );
+    ParameterTypeInfo(
             int metaTypeId,
             jclass _javaClass,
             InternalToExternalConverter&& internalToExternalConverter,

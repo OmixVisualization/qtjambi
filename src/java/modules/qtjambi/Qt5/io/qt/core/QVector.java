@@ -47,6 +47,10 @@ public class QVector<T> extends io.qt.internal.AbstractList<T> implements Clonea
         QtJambi_LibraryUtilities.initialize();
     }
     
+    /**
+     * Constructor for internal use only.
+     * @param p expected to be <code>null</code>.
+     */
     @NativeAccess
     protected QVector(QPrivateConstructor p) {
         super(p);
@@ -59,32 +63,23 @@ public class QVector<T> extends io.qt.internal.AbstractList<T> implements Clonea
     public QVector(Class<T> elementType) {
 		super(null);
 		QMetaType metaType = QMetaType.fromType(elementType);
-		if(metaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QVector.");
-		if(metaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be type of QVector.");
 		initialize(elementType, QtJambi_LibraryUtilities.internal.nativeId(metaType), null);
 	}
     
 	public QVector(QMetaType metaType) {
 		super(null);
-		if(metaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QVector.");
-		if(metaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be type of QVector.");
 		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), null);
 	}
     
     public QVector(Collection<T> other) {
 		super(null);
 		QMetaType metaType = QList.findElementMetaType(Objects.requireNonNull(other));
-		if(metaType==null || metaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QVector.");
-		if(metaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be type of QVector.");
 		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), other);
     }
     
+    /**
+     * Creating a container of type QVariant.
+     */
     public static QVector<Object> createVariantVector(){
         return new QVector<>(new QMetaType(QMetaType.Type.QVariant));
     }
@@ -92,6 +87,9 @@ public class QVector<T> extends io.qt.internal.AbstractList<T> implements Clonea
     @QtUninvokable
     private native void initialize(Class<?> elementType, long elementMetaType, Collection<T> other);
     
+    /**
+     * Creates and returns a copy of this object.
+     */
     @Override
     public QVector<T> clone(){
         return new QVector<>(this);
@@ -110,21 +108,19 @@ public class QVector<T> extends io.qt.internal.AbstractList<T> implements Clonea
     @QtUninvokable
     public final void append(T t)    {
         try {
-        	final long nativeId = QtJambi_LibraryUtilities.internal.nativeId(this);
-        	int size = size(nativeId);
-            insert(nativeId, size, 1, t);
+        	append(QtJambi_LibraryUtilities.internal.nativeId(this), t);
         }catch(QNoNativeResourcesException e) {
             throw e;
         }catch(RuntimeException e) {
             throw QSet.handleException(e, elementMetaType(), t);
         }
     }
+	
+	@QtUninvokable
+    private static native <T> void append(long __this__nativeId, T t);
 
     @QtUninvokable
     public final T at(int i)    {
-        if (i >= size() || i < 0) {
-            throw new IndexOutOfBoundsException(String.format("Accessing container of size %1$s at %2$s", size(), i));
-        }
         return at(QtJambi_LibraryUtilities.internal.nativeId(this), i);
     }
     @QtUninvokable
@@ -240,7 +236,11 @@ public class QVector<T> extends io.qt.internal.AbstractList<T> implements Clonea
 
     @QtUninvokable
     public final T first()    {
-        return at(0);
+		try{
+			return at(0);
+		} catch (IndexOutOfBoundsException e) {
+			throw new NoSuchElementException();
+		}
     }
 
     @QtUninvokable
@@ -268,9 +268,6 @@ public class QVector<T> extends io.qt.internal.AbstractList<T> implements Clonea
 
     @QtUninvokable
     public final void insert(int i, int n, T t)    {
-        if (i > size() || i < 0) {
-            throw new IndexOutOfBoundsException(String.format("Accessing container of size %1$s at %2$s", size(), i));
-        }
         try {
         	insert(QtJambi_LibraryUtilities.internal.nativeId(this), i, n, t);
     	}catch(QNoNativeResourcesException e) {
@@ -288,9 +285,15 @@ public class QVector<T> extends io.qt.internal.AbstractList<T> implements Clonea
     }
 
     @QtUninvokable
-    public final T last()    {
-        return at(size()-1);
+    public final T last() {
+        try{
+			return last(QtJambi_LibraryUtilities.internal.nativeId(this));
+		} catch (IndexOutOfBoundsException e) {
+			throw new NoSuchElementException();
+		}
     }
+    @QtUninvokable
+    private static native <T> T last(long __this__nativeId);
 
     @SuppressWarnings("unchecked")
 	@QtUninvokable
@@ -338,12 +341,6 @@ public class QVector<T> extends io.qt.internal.AbstractList<T> implements Clonea
     }
     @QtUninvokable
     public final QVector<T> mid(int pos, int length)    {
-        if (pos >= size() || pos < 0) {
-            throw new IndexOutOfBoundsException(String.format("Accessing container of size %1$s at %2$s", size(), pos));
-        }
-        if (length>=0 && pos+length > size()) {
-            throw new IndexOutOfBoundsException(String.format("Accessing container of size %1$s from %2$s to %3$s", size(), pos, pos+length));
-        }
         return mid(QtJambi_LibraryUtilities.internal.nativeId(this), pos, length);
     }
     @QtUninvokable
@@ -351,26 +348,20 @@ public class QVector<T> extends io.qt.internal.AbstractList<T> implements Clonea
 
     @QtUninvokable
     public final void move(int from, int to)    {
-        if (from >= size() || from < 0) {
-            throw new IndexOutOfBoundsException(String.format("Accessing container of size %1$s at %2$s", size(), from));
-        }
-        if (to >= size() || to < 0) {
-            throw new IndexOutOfBoundsException(String.format("Accessing container of size %1$s at %2$s", size(), to));
-        }
         move(QtJambi_LibraryUtilities.internal.nativeId(this), from, to);
     }
     @QtUninvokable
     private static native <T> void move(long __this__nativeId, int from, int to);
 
     @QtUninvokable
-    private final boolean operator_equal(java.util.Collection<T> l)    {
+    private final boolean operator_equal(java.util.Collection<T> l) {
         return operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), l);
     }
     @QtUninvokable
     private static native <T> boolean operator_equal(long __this__nativeId, java.util.Collection<T> l);
 
     @QtUninvokable
-    public final void prepend(T t)    {
+    public final void prepend(T t) {
     	try {
         	insert(QtJambi_LibraryUtilities.internal.nativeId(this), 0, 1, t);
     	}catch(QNoNativeResourcesException e) {
@@ -381,17 +372,14 @@ public class QVector<T> extends io.qt.internal.AbstractList<T> implements Clonea
     }
 
     @QtUninvokable
-    public final void remove(int i, int n)    {
-        if (i+n > size() || i < 0) {
-            throw new IndexOutOfBoundsException(String.format("Accessing container of size %1$s at %2$s", size(), i+n));
-        }
+    public final void remove(int i, int n) {
         remove(QtJambi_LibraryUtilities.internal.nativeId(this), i, n);
     }
     @QtUninvokable
     private static native void remove(long __this__nativeId, int i, int n);
 
     @QtUninvokable
-    public final int removeAll(T t)    {
+    public final int removeAll(T t) {
         try {
         	return removeAll(QtJambi_LibraryUtilities.internal.nativeId(this), t);
     	}catch(QNoNativeResourcesException e) {
@@ -409,42 +397,24 @@ public class QVector<T> extends io.qt.internal.AbstractList<T> implements Clonea
     private static native <T> int removeAll(long __this__nativeId, T t);
 
     @QtUninvokable
-    public final void removeAt(int i)    {
-    	final long nativeId = QtJambi_LibraryUtilities.internal.nativeId(this);
-    	int size = size(nativeId);
-        if (i >= size || i < 0) {
-            throw new IndexOutOfBoundsException(String.format("Accessing container of size %1$s at %2$s", size, i));
-        }
-        remove(QtJambi_LibraryUtilities.internal.nativeId(this), i, 1);
+    public final void removeAt(int i) {
+        remove(i, 1);
     }
 
     @QtUninvokable
-    public final T removeFirst()    {
-        if(size()==0)
-            throw new NoSuchElementException();
-        T e = at(0);
-        removeAt(0);
-        return e;
+    public final T removeFirst() {
+        return takeFirst();
     }
 
     @QtUninvokable
-    public final T removeLast()    {
-        if(size()==0)
-            throw new NoSuchElementException();
-        T e = at(size()-1);
-        removeAt(size()-1);
-        return e;
+    public final T removeLast() {
+        return takeLast();
     }
 
     @QtUninvokable
-    public final boolean removeOne(T t)    {
+    public final boolean removeOne(T t) {
         try {
-        	final long nativeId = QtJambi_LibraryUtilities.internal.nativeId(this);
-        	int idx = indexOf(nativeId, t, 0);
-        	if(idx>=0) {
-        		remove(nativeId, idx, 1);
-        		return true;
-        	}
+    		return removeOne(QtJambi_LibraryUtilities.internal.nativeId(this), t);
         }catch(QNoNativeResourcesException e) {
             throw e;
         }catch(IllegalArgumentException e) {
@@ -455,12 +425,11 @@ public class QVector<T> extends io.qt.internal.AbstractList<T> implements Clonea
         }
         return false;
     }
+    @QtUninvokable
+    private static native <T> boolean removeOne(long __this__nativeId, T t);
 
     @QtUninvokable
-    public final void replace(int i, T t)    {
-        if (i >= size() || i < 0) {
-            throw new IndexOutOfBoundsException(String.format("Accessing container of size %1$s at %2$s", size(), i));
-        }
+    public final void replace(int i, T t) {
         try {
         	replace(QtJambi_LibraryUtilities.internal.nativeId(this), i, t);
     	}catch(QNoNativeResourcesException e) {
@@ -473,35 +442,35 @@ public class QVector<T> extends io.qt.internal.AbstractList<T> implements Clonea
     private static native <T> void replace(long __this__nativeId, int i, T t);
 
     @QtUninvokable
-    public final void reserve(int size)    {
+    public final void reserve(int size) {
         reserve(QtJambi_LibraryUtilities.internal.nativeId(this), size);
     }
     @QtUninvokable
     private static native <T> void reserve(long __this__nativeId, int size);
 
     @QtUninvokable
-    public final void resize(int size)    {
+    public final void resize(int size) {
         resize(QtJambi_LibraryUtilities.internal.nativeId(this), size);
     }
     @QtUninvokable
     private static native void resize(long __this__nativeId, int size);
 
     @QtUninvokable
-    public final void squeeze()    {
+    public final void squeeze() {
         squeeze(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
     private static native void squeeze(long __this__nativeId);
 
     @QtUninvokable
-    public final int size()    {
+    public final int size() {
         return size(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
     private static native <T> int size(long __this__nativeId);
 
     @QtUninvokable
-    public final boolean startsWith(T t)    {
+    public final boolean startsWith(T t) {
         try{
         	return startsWith(QtJambi_LibraryUtilities.internal.nativeId(this), t);
     	}catch(QNoNativeResourcesException e) {
@@ -514,38 +483,48 @@ public class QVector<T> extends io.qt.internal.AbstractList<T> implements Clonea
     private static native <T> boolean startsWith(long __this__nativeId, T t);
 
     @QtUninvokable
-    public final T takeAt(int i)    {
-    	T result = at(i);
-    	removeAt(i);
-        return result;
+    public final T takeAt(int i) {
+        return takeAt(QtJambi_LibraryUtilities.internal.nativeId(this), i);
     }
+    @QtUninvokable
+    private static native <T> T takeAt(long __this__nativeId, int i);
 
     @QtUninvokable
-    public final T takeFirst()    {
-        return takeAt(0);
+    public final T takeFirst() {
+		try{
+			return takeAt(0);
+		} catch (IndexOutOfBoundsException e) {
+			throw new NoSuchElementException();
+		}
     }
     
     @QtUninvokable
-    public final T takeLast()    {
-        return takeAt(size()-1);
+    public final T takeLast() {
+        try{
+        	return takeLast(QtJambi_LibraryUtilities.internal.nativeId(this));
+		} catch (IndexOutOfBoundsException e) {
+			throw new NoSuchElementException();
+		}
     }
+    @QtUninvokable
+    private static native <T> T takeLast(long __this__nativeId);
 
     @QtUninvokable
-    public final QSet<T> toSet()    {
+    public final QSet<T> toSet() {
 		QSet<T> set = new QSet<>(elementMetaType());
 		set.unite(this);
         return set;
     }
 
     @QtUninvokable
-    public final T value(int i)    {
+    public final T value(int i) {
         return value(QtJambi_LibraryUtilities.internal.nativeId(this), i);
     }
     @QtUninvokable
     private static native <T> T value(long __this__nativeId, int i);
 
     @QtUninvokable
-    public final T value(int i, T defaultValue)    {
+    public final T value(int i, T defaultValue) {
     	try {
     		return valueDefault(QtJambi_LibraryUtilities.internal.nativeId(this), i, defaultValue);
     	}catch(QNoNativeResourcesException e) {
@@ -609,7 +588,7 @@ public class QVector<T> extends io.qt.internal.AbstractList<T> implements Clonea
     @QtUninvokable
     public T set(int index, T e){
         if(e!=null){
-            T el = get(index);
+            T el = at(index);
             replace(index, e);
             return el;
         } else return null;
@@ -634,6 +613,14 @@ public class QVector<T> extends io.qt.internal.AbstractList<T> implements Clonea
     public T get(int index) {
         return at(index);
     }
+    
+    @QtUninvokable
+    public final void swapItemsAt(int i, int j) {
+        swapItemsAt(QtJambi_LibraryUtilities.internal.nativeId(this), i, j);
+    }
+    
+    @QtUninvokable
+    private static native <T> void swapItemsAt(long __this__nativeId, int i, int j);
     
     @Override
     @QtUninvokable
@@ -676,10 +663,6 @@ public class QVector<T> extends io.qt.internal.AbstractList<T> implements Clonea
     @SafeVarargs
     public static <T> QVector<T> of(T element0, T...elements) {
         QMetaType metaType = QList.findElementMetaType(element0, elements);
-        if(metaType==null || metaType.id()==0)
-            throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QVector.");
-        if(metaType.id()==QMetaType.Type.Void.value())
-            throw new IllegalArgumentException("void cannot be type of QVector.");
         QVector<T> result = new QVector<>(metaType);
         result.add(element0);
         for (T t : elements) {

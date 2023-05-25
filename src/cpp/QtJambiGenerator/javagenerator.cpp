@@ -8364,10 +8364,13 @@ void JavaGenerator::writeExtraFunctions(QTextStream &s, const MetaClass *java_cl
 
     QStringList lines;
     for(const CodeSnip &snip : class_type->codeSnips()) {
-        if (snip.position!=CodeSnip::Equals
-            && snip.position!=CodeSnip::Compare
-            && snip.position!=CodeSnip::HashCode
-            && snip.position!=CodeSnip::ToString
+        if((snip.position==CodeSnip::Beginning
+            || snip.position==CodeSnip::Position1
+            || snip.position==CodeSnip::Position2
+            || snip.position==CodeSnip::Position3
+            || snip.position==CodeSnip::Position4
+            || snip.position==CodeSnip::Position5
+            || snip.position==CodeSnip::End)
             && ((!java_class->isInterface() && snip.language == TS::TargetLangCode)
                             || (java_class->isInterface() && snip.language == TS::Interface))) {
             lines << snip.code().split("\n");
@@ -8383,10 +8386,13 @@ void JavaGenerator::writeExtraFunctions(QTextStream &s, const MetaFunctional *ja
 
     QStringList lines;
     for(const CodeSnip &snip : class_type->codeSnips()) {
-        if (snip.position!=CodeSnip::Equals
-            && snip.position!=CodeSnip::Compare
-            && snip.position!=CodeSnip::HashCode
-            && snip.position!=CodeSnip::ToString
+        if((snip.position==CodeSnip::Beginning
+            || snip.position==CodeSnip::Position1
+            || snip.position==CodeSnip::Position2
+            || snip.position==CodeSnip::Position3
+            || snip.position==CodeSnip::Position4
+            || snip.position==CodeSnip::Position5
+            || snip.position==CodeSnip::End)
             && ((!inInterface && snip.language == TS::TargetLangCode)
                             || (inInterface && snip.language == TS::Interface))) {
             lines << snip.code().split("\n");
@@ -8475,10 +8481,57 @@ void JavaGenerator::writeToStringFunction(QTextStream &s, const MetaClass *java_
 
 void JavaGenerator::writeCloneFunction(QTextStream &s, const MetaClass *java_class) {
     s << INDENT << Qt::endl
+      << INDENT << "/**" << Qt::endl
+      << INDENT << " * <p>Creates and returns a copy of this object.</p>" << Qt::endl;
+    if(java_class->hasPublicCopyConstructor()){
+        MetaFunctionList functions = java_class->queryFunctions(Constructors);
+        for(MetaFunction *f : functions) {
+            if ((f->wasPublic() || f->isPublic())
+                && !f->isInvalid()
+                && !f->isEmptyFunction() && !f->isFake()
+                && f->implementingClass()==java_class
+                && f->actualMinimumArgumentCount()==1
+                && f->arguments()[0]->type()->isConstant()
+                && f->arguments()[0]->type()->getReferenceType()==MetaType::Reference
+                && f->arguments()[0]->type()->typeEntry()==java_class->typeEntry()) {
+                QString url = docsUrl+f->href();
+                s << "<p>See <a href=\"" << url << "\">";
+                s << java_class->qualifiedCppName()
+                                 .replace("<JObjectWrapper>", "")
+                                 .replace("QtJambi", "Q")
+                                 .replace("QVoid", "Q")
+                                 .replace("&", "&amp;")
+                                 .replace("<", "&lt;")
+                                 .replace(">", "&gt;")
+                                 .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                                 .replace("@", "&commat;")
+                                 .replace("/*", "&sol;*")
+                                 .replace("*/", "*&sol;")
+                            << "::";
+                s << QString(f->originalSignature())
+                                     .replace("&", "&amp;")
+                                     .replace("<", "&lt;")
+                                     .replace(">", "&gt;")
+                                     .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                                     .replace("@", "&commat;")
+                                     .replace("/*", "&sol;*")
+                                     .replace("*/", "*&sol;")
+                            << "</a></p>" << Qt::endl;
+                break;
+            }
+        }
+    }
+    s << INDENT << " */" << Qt::endl
       << INDENT << "@QtUninvokable" << Qt::endl
       << INDENT << "@Override" << Qt::endl
       << INDENT << "public ";
-    if(!java_class->typeEntry()->isNativeIdBased() && !java_class->typeEntry()->designatedInterface()){
+    QStringList lines;
+    for(const CodeSnip& codeSnip : java_class->typeEntry()->codeSnips()){
+        if(codeSnip.language==TS::TargetLangCode && codeSnip.position==CodeSnip::Clone){
+            lines << codeSnip.code().split("\n");
+        }
+    }
+    if(!java_class->typeEntry()->isNativeIdBased() && !java_class->typeEntry()->designatedInterface() && lines.isEmpty()){
         s << "native ";
     }
     s << java_class->simpleName();
@@ -8498,22 +8551,36 @@ void JavaGenerator::writeCloneFunction(QTextStream &s, const MetaClass *java_cla
         }
         s << ">";
     }
-    if(!java_class->typeEntry()->isNativeIdBased() && !java_class->typeEntry()->designatedInterface()){
+    if(!java_class->typeEntry()->isNativeIdBased() && !java_class->typeEntry()->designatedInterface() && lines.isEmpty()){
         s << " clone();" << Qt::endl;
     }else{
         QString name = java_class->name();
         if(java_class->typeEntry() && java_class->typeEntry()->designatedInterface()){
             name = java_class->typeEntry()->designatedInterface()->targetLangName();
         }
-        s << " clone() {" << Qt::endl
-          << INDENT << "    return clone_native(";
-        if(java_class->typeEntry()->isNativeIdBased()){
-            s << "QtJambi_LibraryUtilities.internal.nativeId(this)";
+        s << " clone() {" << Qt::endl;
+        if(!lines.isEmpty()){
+            INDENTATION(INDENT)
+            s << INDENT << java_class->simpleName() << " clone = clone_native(";
+            if(java_class->typeEntry()->isNativeIdBased()){
+                s << "QtJambi_LibraryUtilities.internal.nativeId(this)";
+            }else{
+                s << "this";
+            }
+            s << ");" << Qt::endl;
+            printExtraCode(lines, s);
+            s << INDENT << "return clone;" << Qt::endl;
         }else{
-            s << "this";
+            INDENTATION(INDENT)
+            s << INDENT << "return clone_native(";
+            if(java_class->typeEntry()->isNativeIdBased()){
+                s << "QtJambi_LibraryUtilities.internal.nativeId(this)";
+            }else{
+                s << "this";
+            }
+            s << ");" << Qt::endl;
         }
-        s << ");" << Qt::endl
-          << INDENT << "}" << Qt::endl
+        s << INDENT << "}" << Qt::endl
           << INDENT << "private static native ";
         if(java_class->typeEntry()->isGenericClass()){
             s << "<";

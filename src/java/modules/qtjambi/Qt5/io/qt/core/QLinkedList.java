@@ -48,6 +48,10 @@ public class QLinkedList<T> extends io.qt.internal.AbstractSequentialContainer<T
     	QtJambi_LibraryUtilities.initialize();
     }
 
+    /**
+     * Constructor for internal use only.
+     * @param p expected to be <code>null</code>.
+     */
     @NativeAccess
     protected QLinkedList(QPrivateConstructor p) {
         super(p);
@@ -60,32 +64,23 @@ public class QLinkedList<T> extends io.qt.internal.AbstractSequentialContainer<T
     public QLinkedList(Class<T> elementType) {
 		super(null);
 		QMetaType metaType = QMetaType.fromType(elementType);
-		if(metaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QLinkedList.");
-		if(metaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be type of QLinkedList.");
 		initialize(elementType, QtJambi_LibraryUtilities.internal.nativeId(metaType), null);
 	}
     
 	public QLinkedList(QMetaType metaType) {
 		super(null);
-		if(metaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QLinkedList.");
-		if(metaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be type of QLinkedList.");
 		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), null);
 	}
     
     public QLinkedList(Collection<T> other) {
 		super(null);
 		QMetaType metaType = QList.findElementMetaType(Objects.requireNonNull(other));
-		if(metaType==null || metaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QLinkedList.");
-		if(metaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be type of QLinkedList.");
 		initialize(metaType.javaType(), QtJambi_LibraryUtilities.internal.nativeId(metaType), other);
     }
     
+    /**
+     * Creating a container of type QVariant.
+     */
     public static QLinkedList<Object> createVariantLinkedList(){
     	return new QLinkedList<>(new QMetaType(QMetaType.Type.QVariant));
     }
@@ -93,13 +88,16 @@ public class QLinkedList<T> extends io.qt.internal.AbstractSequentialContainer<T
     @QtUninvokable
     private native void initialize(Class<?> elementType, long elementMetaType, Collection<T> other);
     
+    /**
+     * Creates and returns a copy of this object.
+     */
     @Override
 	public QLinkedList<T> clone(){
 		return new QLinkedList<>(this);
 	}
     
 	@QtUninvokable
-    public final void append(T t)    {
+    public final void append(T t) {
 		try {
 			append(QtJambi_LibraryUtilities.internal.nativeId(this), t);
     	}catch(QNoNativeResourcesException e) {
@@ -112,14 +110,14 @@ public class QLinkedList<T> extends io.qt.internal.AbstractSequentialContainer<T
     private static native <T> void append(long __this__nativeId, T t);
 
     @QtUninvokable
-    public final void clear()    {
+    public final void clear() {
         clear(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
     private static native <T> void clear(long __this__nativeId);
 
     @QtUninvokable
-    public final boolean contains(Object t)    {
+    public final boolean contains(Object t) {
         try{
         	return contains(QtJambi_LibraryUtilities.internal.nativeId(this), t);
     	}catch(QNoNativeResourcesException e) {
@@ -137,12 +135,12 @@ public class QLinkedList<T> extends io.qt.internal.AbstractSequentialContainer<T
     private static native <T> boolean contains(long __this__nativeId, T t);
 
     @QtUninvokable
-    public final int count()    {
+    public final int count() {
         return size();
     }
 
     @QtUninvokable
-    public final int count(T t)    {
+    public final int count(T t) {
         try{
         	return count(QtJambi_LibraryUtilities.internal.nativeId(this), t);
     	}catch(QNoNativeResourcesException e) {
@@ -155,35 +153,35 @@ public class QLinkedList<T> extends io.qt.internal.AbstractSequentialContainer<T
     private static native <T> int count(long __this__nativeId, T t);
 
     @QtUninvokable
-    protected final QSequentialIterator<T> begin()    {
+    protected final QSequentialIterator<T> begin() {
         return begin(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
     private static native <T> QSequentialIterator<T> begin(long __this__nativeId);
 
     @QtUninvokable
-    protected final QSequentialIterator<T> end()    {
+    protected final QSequentialIterator<T> end() {
         return end(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
     private static native <T> QSequentialIterator<T> end(long __this__nativeId);
 
     @QtUninvokable
-    protected final QSequentialConstIterator<T> constBegin()    {
+    protected final QSequentialConstIterator<T> constBegin() {
         return constBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
     private static native <T> QSequentialConstIterator<T> constBegin(long __this__nativeId);
 
     @QtUninvokable
-    protected final QSequentialConstIterator<T> constEnd()    {
+    protected final QSequentialConstIterator<T> constEnd() {
         return constEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
     private static native <T> QSequentialConstIterator<T> constEnd(long __this__nativeId);
 
     @QtUninvokable
-    public final boolean endsWith(T t)    {
+    public final boolean endsWith(T t) {
         try{
         	return endsWith(QtJambi_LibraryUtilities.internal.nativeId(this), t);
     	}catch(QNoNativeResourcesException e) {
@@ -196,37 +194,41 @@ public class QLinkedList<T> extends io.qt.internal.AbstractSequentialContainer<T
     private static native <T> boolean endsWith(long __this__nativeId, T t);
 
     @QtUninvokable
-    public final T first()    {
-		if(size()==0)
+    public final T first() {
+        try{
+			return first(QtJambi_LibraryUtilities.internal.nativeId(this));
+		} catch (IndexOutOfBoundsException e) {
 			throw new NoSuchElementException();
-        return first(QtJambi_LibraryUtilities.internal.nativeId(this));
+		}
     }
     @QtUninvokable
     private static native <T> T first(long __this__nativeId);
 
     @QtUninvokable
-    public final boolean isEmpty()    {
+    public final boolean isEmpty() {
         return size()==0;
     }
 
     @QtUninvokable
-    public final T last()    {
-		if(size()==0)
+    public final T last() {
+        try{
+			return last(QtJambi_LibraryUtilities.internal.nativeId(this));
+		} catch (IndexOutOfBoundsException e) {
 			throw new NoSuchElementException();
-        return last(QtJambi_LibraryUtilities.internal.nativeId(this));
+		}
     }
     @QtUninvokable
     private static native <T> T last(long __this__nativeId);
 
     @QtUninvokable
-    private final boolean operator_equal(java.util.Collection<T> l)    {
+    private final boolean operator_equal(java.util.Collection<T> l) {
         return operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), l);
     }
     @QtUninvokable
     private static native <T> boolean operator_equal(long __this__nativeId, java.util.Collection<T> l);
 
     @QtUninvokable
-    public final void prepend(T t)    {
+    public final void prepend(T t) {
         try{
         	prepend(QtJambi_LibraryUtilities.internal.nativeId(this), t);
     	}catch(QNoNativeResourcesException e) {
@@ -239,7 +241,7 @@ public class QLinkedList<T> extends io.qt.internal.AbstractSequentialContainer<T
     private static native <T> void prepend(long __this__nativeId, T t);
 
     @QtUninvokable
-    public final int removeAll(T t)    {
+    public final int removeAll(T t) {
     	try {
     		return removeAll(QtJambi_LibraryUtilities.internal.nativeId(this), t);
     	}catch(QNoNativeResourcesException e) {
@@ -257,7 +259,7 @@ public class QLinkedList<T> extends io.qt.internal.AbstractSequentialContainer<T
     private static native <T> int removeAll(long __this__nativeId, T t);
 
     @QtUninvokable
-    public final T removeFirst()    {
+    public final T removeFirst() {
     	T value = first();
         removeFirst(QtJambi_LibraryUtilities.internal.nativeId(this));
         return value;
@@ -266,7 +268,7 @@ public class QLinkedList<T> extends io.qt.internal.AbstractSequentialContainer<T
     private static native void removeFirst(long __this__nativeId);
 
     @QtUninvokable
-    public final T removeLast()    {
+    public final T removeLast() {
     	T value = last();
         removeLast(QtJambi_LibraryUtilities.internal.nativeId(this));
         return value;
@@ -275,7 +277,7 @@ public class QLinkedList<T> extends io.qt.internal.AbstractSequentialContainer<T
     private static native void removeLast(long __this__nativeId);
 
     @QtUninvokable
-    public final boolean removeOne(T t)    {
+    public final boolean removeOne(T t) {
         try{
         	return removeOne(QtJambi_LibraryUtilities.internal.nativeId(this), t);
     	}catch(QNoNativeResourcesException e) {
@@ -293,14 +295,14 @@ public class QLinkedList<T> extends io.qt.internal.AbstractSequentialContainer<T
     private static native <T> boolean removeOne(long __this__nativeId, T t);
 
     @QtUninvokable
-    public final int size()    {
+    public final int size() {
         return size(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
     private static native <T> int size(long __this__nativeId);
 
     @QtUninvokable
-    public final boolean startsWith(T t)    {
+    public final boolean startsWith(T t) {
         try{
         	return startsWith(QtJambi_LibraryUtilities.internal.nativeId(this), t);
     	}catch(QNoNativeResourcesException e) {
@@ -313,14 +315,14 @@ public class QLinkedList<T> extends io.qt.internal.AbstractSequentialContainer<T
     private static native <T> boolean startsWith(long __this__nativeId, T t);
 
     @QtUninvokable
-    public final T takeFirst()    {
+    public final T takeFirst() {
         return takeFirst(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
     private static native <T> T takeFirst(long __this__nativeId);
 
     @QtUninvokable
-    public final T takeLast()    {
+    public final T takeLast() {
         return takeLast(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
@@ -545,10 +547,6 @@ public class QLinkedList<T> extends io.qt.internal.AbstractSequentialContainer<T
     @SafeVarargs
     public static <T> QLinkedList<T> of(T element0, T...elements) {
         QMetaType metaType = QList.findElementMetaType(element0, elements);
-        if(metaType==null || metaType.id()==0)
-            throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QLinkedList.");
-        if(metaType.id()==QMetaType.Type.Void.value())
-            throw new IllegalArgumentException("void cannot be type of QLinkedList.");
         QLinkedList<T> result = new QLinkedList<>(metaType);
         result.add(element0);
         for (T t : elements) {

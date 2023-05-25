@@ -7,7 +7,7 @@ along with platform-dependent **qtjambi-deployer-native-X.jar** for all platform
 
 In the examples below, we assume you created an application in a jar
 file `my-company-app.jar` with main class `my.company.app.Main`
-depending on `qtjambi-6.4.4.jar`.
+depending on `qtjambi-6.5.1.jar`.
 
 Call the app deployer as shown below. Make sure the library path points
 to the *Qt* libraries being `bin` on *Windows* and `lib`
@@ -15,7 +15,7 @@ on *Linux* and *macOS*.
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.4.4.jar:qtjambi-deployer-6.4.4.jar
+     -p qtjambi-6.5.1.jar:qtjambi-deployer-6.5.1.jar
      -m qtjambi.deployer app
 ```
 
@@ -23,7 +23,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.4.4.jar:qtjambi-deployer-6.4.4.jar
+     -cp qtjambi-6.5.1.jar:qtjambi-deployer-6.5.1.jar
      io.qt.qtjambi.deployer.Main app
 ```
 
@@ -70,8 +70,8 @@ installation directory
     | plugins
         | ... (platforms, styles and others)
     | lib
-        | qtjambi-6.4.4.jar
-        | qtjambi-native-windows-x64-6.4.4.jar
+        | qtjambi-6.5.1.jar
+        | qtjambi-native-windows-x64-6.5.1.jar
         | my-company-app.jar
     | jre
         | ... (Java Runtime Environment)
@@ -82,11 +82,11 @@ append the following commands to the above listed *QtJambi deployer* command:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.4.4.jar:qtjambi-deployer-6.4.4.jar
+     -p qtjambi-6.5.1.jar:qtjambi-deployer-6.5.1.jar
      -m qtjambi.deployer app
      --application=MyCompanyApp
      --executable=utilities/QtJambiLauncher.exe
-     --class-path=../lib/my-company-app.jar:../lib/qtjambi-6.4.4.jar:../lib/qtjambi-native-windows-x64-6.4.4.jar
+     --class-path=../lib/my-company-app.jar:../lib/qtjambi-6.5.1.jar:../lib/qtjambi-native-windows-x64-6.5.1.jar
      --library-path=.
      --jvm-path=../jre
      --main-class=my.company.app.Main
@@ -108,11 +108,11 @@ installation directory
     | plugins
         | ... (platforms, styles and others)
     | lib
-        | libQt6Core.so[.6.4.3]
-        | libQt6Gui.so[.6.4.3]
-        | libQt6Widgets.so[.6.4.3]
-        | qtjambi-6.4.4.jar
-        | qtjambi-native-linux-x64-6.4.4.jar
+        | libQt6Core.so[.6.5.1]
+        | libQt6Gui.so[.6.5.1]
+        | libQt6Widgets.so[.6.5.1]
+        | qtjambi-6.5.1.jar
+        | qtjambi-native-linux-x64-6.5.1.jar
         | my-company-app.jar
     | jre
         | ... (Java Runtime Environment)
@@ -123,11 +123,11 @@ the following commands to the above listed *QtJambi deployer* command:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.4.4.jar:qtjambi-deployer-6.4.4.jar
+     -p qtjambi-6.5.1.jar:qtjambi-deployer-6.5.1.jar
      -m qtjambi.deployer app
      --application=MyCompanyApp
      --executable=utilities/QtJambiLauncher
-     --class-path=lib/my-company-app.jar:lib/qtjambi-6.4.4.jar:lib/qtjambi-native-linux-x64-6.4.4.jar
+     --class-path=lib/my-company-app.jar:lib/qtjambi-6.5.1.jar:lib/qtjambi-native-linux-x64-6.5.1.jar
      --library-path=lib
      --jvm-path=jre
      --main-class=my.company.app.Main
@@ -155,8 +155,8 @@ installation directory
                 | QtGui.framework
                 | QtWidgets.framework
              | lib
-                | qtjambi-6.4.4.jar
-                | qtjambi-native-macos-6.4.4.jar
+                | qtjambi-6.5.1.jar
+                | qtjambi-native-macos-6.5.1.jar
                 | my-company-app.jar
             | jre
                 | ... (Java Runtime Environment)
@@ -170,11 +170,11 @@ append the following commands to the above listed *QtJambi deployer* command:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.4.4.jar:qtjambi-deployer-6.4.4.jar
+     -p qtjambi-6.5.1.jar:qtjambi-deployer-6.5.1.jar
      -m qtjambi.deployer app
      --application=MyCompanyApp
      --executable=utilities/QtJambiLauncher.app
-     --class-path=../lib/my-company-app.jar:../lib/qtjambi-6.4.4.jar:../lib/qtjambi-native-macos-6.4.4.jar
+     --class-path=../lib/my-company-app.jar:../lib/qtjambi-6.5.1.jar:../lib/qtjambi-native-macos-6.5.1.jar
      --library-path=../Frameworks
      --jvm-path=../jre
      --main-class=my.company.app.Main

@@ -851,8 +851,7 @@ void XmlTypeSystemReaderPrivate::parseInjectCode(const QDomElement &element,cons
         snip.position = positionNames[position];
         if((snip.position==CodeSnip::Equals
             || snip.position==CodeSnip::Compare
-            || snip.position==CodeSnip::HashCode
-            || snip.position==CodeSnip::ToString) && snip.language!=TS::TargetLangCode){
+            || snip.position==CodeSnip::HashCode) && snip.language!=TS::TargetLangCode){
             TypesystemException::raise(QString("Invalid position '%1' for language '%2' of tag <%3> in line %4").arg(position).arg(className).arg(element.localName()).arg(element.lineNumber()));
         }
 
