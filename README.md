@@ -153,13 +153,16 @@ In case your Linux distribution provides Qt (of correct version) as system libra
 
 The example program can be executed this way on Windows:
 ``` powershell
-java -cp qtjambi-6.5.2.jar;. -Djava.library.path=C:\Qt\6.5.1\msvc2019_64\bin Test ```
+java -cp qtjambi-6.5.2.jar;. -Djava.library.path=C:\Qt\6.5.1\msvc2019_64\bin Test
+```
 On Linux it looks this way:
 ``` bash
-java -cp qtjambi-6.5.2.jar:. -Djava.library.path=<path to>/Qt/6.5.1/gcc_64/lib Test ```
+java -cp qtjambi-6.5.2.jar:. -Djava.library.path=<path to>/Qt/6.5.1/gcc_64/lib Test
+```
 On macOS you additionally need to use the start parameter -XstartOnFirstThread:
 ``` bash
-java -cp qtjambi-6.5.2.jar:. -Djava.library.path=<path to>/Qt/6.5.1/macos/lib -XstartOnFirstThread Test ```
+java -cp qtjambi-6.5.2.jar:. -Djava.library.path=<path to>/Qt/6.5.1/macos/lib -XstartOnFirstThread Test
+```
 In general, you can start learning how to use Qt in Java [as it is introduced for C++](https://doc.qt.io/qt-6/gettingstarted.html#create-your-first-applications). 
 There are a couple of specifics for QtJambi that are [introduced here](/www/Characteristics-of-QtJambi.md). 
 Instead of starting your program with a java command as shown above you can deploy your application as executable as [described here](/www/How-to-deploy-QtJambi-applications.md).
