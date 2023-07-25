@@ -32,19 +32,17 @@ package io.qt.core;
 import io.qt.NativeAccess;
 import io.qt.QtObject;
 import io.qt.QtUninvokable;
-import io.qt.internal.AbstractAssociativeIterator;
 
 /**
- * <p>Java-iterable wrapper for Qt's iterator types:
+ * <p>Java-iterable wrapper for Qt's iterator types:</p>
  * <ul>
  * <li><a href="https://doc.qt.io/qt/qmap-iterator.html">QMap&lt;K,V>::iterator</a></li>
  * <li><a href="https://doc.qt.io/qt/qhash-iterator.html">QHash&lt;K,V>::iterator</a></li>
  * <li><a href="https://doc.qt.io/qt/qmultimap-iterator.html">QMultiMap&lt;K,V>::iterator</a></li>
  * <li><a href="https://doc.qt.io/qt/qmultihash-iterator.html">QMultiHash&lt;K,V>::iterator</a></li>
  * </ul>
- * </p>
- * @param <K> key type
- * @param <V> value type
+ * @param <Key> key type
+ * @param <T> value type
  * @see QMap#begin()
  * @see QMap#end()
  * @see QHash#begin()
@@ -54,7 +52,7 @@ import io.qt.internal.AbstractAssociativeIterator;
  * @see QMultiHash#begin()
  * @see QMultiHash#end()
  */
-public final class QAssociativeIterator<K,V> extends QAssociativeConstIterator<K,V> implements AbstractAssociativeIterator<K,V>{
+public final class QAssociativeIterator<Key,T> extends QAssociativeConstIterator<Key,T>{
     
 	@NativeAccess
     private QAssociativeIterator(QtObject owner) { 
@@ -66,17 +64,20 @@ public final class QAssociativeIterator<K,V> extends QAssociativeConstIterator<K
 	 * @param newValue the new value
 	 */
     @QtUninvokable
-	public final boolean setValue(V newValue) {
+	public final boolean setValue(T newValue) {
     	if(!isValid())
     		return false;
-    	return true;
+    	return setValue(QtJambi_LibraryUtilities.internal.nativeId(this), newValue);
     }
     
     @QtUninvokable
-    static native <T> void setValue(long __this__nativeId, T newValue);
+    static native <T> boolean setValue(long __this__nativeId, T newValue);
     
+	/**
+	 * Specifies if this type is constant iterator.
+	 */
     @Override
-	protected boolean isConstant() {
+	boolean isConstant() {
 		return false;
 	}
 }

@@ -29,6 +29,9 @@
 ****************************************************************************/
 package io.qt;
 
+/**
+ * This exception is thrown when a method has no implementation and only exists for compatibility reason.
+ */
 public class QNoImplementationException extends RuntimeException
 {
     private static final long serialVersionUID = 1L;

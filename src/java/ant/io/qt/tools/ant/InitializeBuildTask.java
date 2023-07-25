@@ -156,6 +156,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			_moduleInfos.put("qt3danimation", new ModuleInfo("QTJAMBI_NO_QT3DANIMATION", "Qt3DAnimation"));
 			_moduleInfos.put("websockets", new ModuleInfo("QTJAMBI_NO_WEBSOCKETS", "QtWebSockets"));
 			_moduleInfos.put("webchannel", new ModuleInfo("QTJAMBI_NO_WEBCHANNEL", "QtWebChannel"));
+			_moduleInfos.put("webchannelquick", new ModuleInfo("QTJAMBI_NO_WEBCHANNELQUICK", "QtWebChannelQuick"));
 			_moduleInfos.put("webenginecore", new ModuleInfo("QTJAMBI_NO_WEBENGINECORE", "QtWebEngineCore"));
 			_moduleInfos.put("webenginewidgets", new ModuleInfo("QTJAMBI_NO_WEBENGINEWIDGETS", "QtWebEngineWidgets"));
 			_moduleInfos.put("webview", new ModuleInfo("QTJAMBI_NO_WEBVIEW", "QtWebView"));
@@ -206,6 +207,9 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 					_moduleInfos.put("protobuf", new ModuleInfo("QTJAMBI_NO_PROTOBUF", "QtProtobuf"));
 					skippedModules.add("grpc");
 					skippedModules.add("protobuf");
+				}
+				if((qtMajorVersion==6 && qtMinorVersion>=6) || qtMajorVersion>7) {
+					_moduleInfos.put("graphs", new ModuleInfo("QTJAMBI_NO_GRAPHS", "QtGraphs"));
 				}
 			}
 			moduleInfos = Collections.unmodifiableMap(_moduleInfos);

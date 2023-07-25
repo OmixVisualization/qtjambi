@@ -310,4 +310,11 @@ namespace Runtime{
 QtPrivate::QPropertyObserverCallback qtjambi_get_signal_callback(JNIEnv *, QUntypedPropertyData *);
 #endif
 
+#if defined(QT_NO_DEBUG)
+#define QTJAMBI_CONTAINER_CAST(Type, target, source) Type* target = static_cast<Type*>(source)
+#else
+#define QTJAMBI_CONTAINER_CAST(Type, target, source) Type* target = dynamic_cast<Type*>(source);\
+Q_ASSERT(target)
+#endif
+
 #endif // QTJAMBICORE_UTILS_H

@@ -45,6 +45,9 @@ import java.util.function.Supplier;
 import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 
+/**
+ * @hidden
+ */
 public interface InternalAccess {
 	
 	<E extends Enum<E> & io.qt.QtEnumerator> E resolveEnum(Class<E> cl, int value, String name);
@@ -127,6 +130,9 @@ public interface InternalAccess {
     
     void invalidateObject(io.qt.QtObjectInterface object);
     
+    /**
+     * @hidden
+     */
     public interface Cleanable {
         void clean();
     }
@@ -165,6 +171,9 @@ public interface InternalAccess {
     
     int registerMetaType(Class<?> clazz, Type genericType, AnnotatedElement annotatedType, boolean isPointer, boolean isReference);
     
+    /**
+     * @hidden
+     */
     public final class CallerContext{
         public CallerContext(Class<?> declaringClass, String methodName, String methodDescriptor, MethodType methodType, int lineNumber) {
             super();

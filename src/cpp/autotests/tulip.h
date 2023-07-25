@@ -79,6 +79,8 @@ inline
 #endif
 #include <QtCore/QtCore>
 
+#include <QtGui/QColor>
+
 class Tulip
 {
 public:
@@ -163,6 +165,11 @@ public:
 
     static QList<QList<QRunnable*>> createListOfListOfRunnables();
     static QList<QList<QObject*>> createListOfListOfObjects();
+    static qint64 fillIntList(qint32 capacity);
+    static void consumeIntList(const QList<int>& list);
+    static void consumeStringList(const QList<QString>& list);
+    static void consumeColorList(const QList<QColor>& list);
+    static void consumeQObjectList(const QList<QObject*>& list);
 public:
     QList<QString> m_list;
 private:

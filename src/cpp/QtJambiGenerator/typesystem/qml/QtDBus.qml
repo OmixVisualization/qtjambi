@@ -1899,6 +1899,11 @@ TypeSystem{
     
     ObjectType{
         name: "QDBusVariant"
+        ModifyFunction{
+            signature: "QDBusVariant(QVariant&&)"
+            remove: RemoveFlag.All
+            since: 6.6
+        }
     }
 
     GlobalFunction{

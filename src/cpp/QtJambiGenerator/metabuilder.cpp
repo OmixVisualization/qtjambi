@@ -217,6 +217,14 @@ void MetaBuilder::checkFunctionModifications() {
                         if (function->originalName() == name)
                             possibleSignatures.append(function->minimalSignature() + " in " + function->implementingClass()->name());
                     }
+                    if(!found && clazz->typeEntry()->codeGeneration()!=TypeEntry::GenerateAll){
+                        for(MetaFunction *function : clazz->invalidFunctions()) {
+                            if (function->originalSignature() == signature) {
+                                found = true;
+                                break;
+                            }
+                        }
+                    }
 
                     if(!found && clazz->typeEntry()->isInterface()){
                         clazz = clazz->extractInterfaceImpl();
@@ -227,6 +235,14 @@ void MetaBuilder::checkFunctionModifications() {
                             }
                             if (function->originalName() == name)
                                 possibleSignatures.append(function->minimalSignature() + " in " + function->implementingClass()->name());
+                        }
+                        if(!found && clazz->typeEntry()->codeGeneration()!=TypeEntry::GenerateAll){
+                            for(MetaFunction *function : clazz->invalidFunctions()) {
+                                if (function->originalSignature() == signature) {
+                                    found = true;
+                                    break;
+                                }
+                            }
                         }
                     }
 
@@ -3248,7 +3264,34 @@ void MetaBuilder::figureOutDefaultEnumArguments() {
                             new_expr = QString("%1.%2")
                                        .arg(e->typeEntry()->qualifiedTargetLangName(), lst.last());
                         } else {
-                            ReportHandler::warning("Cannot find enum constant for value '" + expr + "' in '" + meta_class->name() + "' or any of its super classes");
+                            new_expr.clear();
+                            if(lst.size()>1){
+                                if(MetaClass * clazz = m_meta_classes.findClass(lst.mid(0, lst.size()-1).join("::"))){
+                                    if(lst.last().endsWith("()")){
+                                        if(MetaFunction * f = clazz->findFunction(lst.last().mid(0, lst.last().length()-2))){
+                                            new_expr = QString("%1.%2()")
+                                                           .arg(clazz->typeEntry()->qualifiedTargetLangName(), f->name());
+                                        }
+                                    }else if(MetaField * f = clazz->findField(lst.last())){
+                                        new_expr = QString("%1.%2")
+                                                       .arg(clazz->typeEntry()->qualifiedTargetLangName(), f->name());
+                                    }
+                                }
+                            }else{
+                                if(lst.last().endsWith("()")){
+                                    if(MetaFunction * f = meta_class->findFunction(lst.last().mid(0, lst.last().length()-2))){
+                                        new_expr = QString("%1.%2()")
+                                                       .arg(meta_class->typeEntry()->qualifiedTargetLangName(), f->name());
+                                    }
+                                }else if(MetaField * f = meta_class->findField(lst.last())){
+                                    new_expr = QString("%1.%2")
+                                                   .arg(meta_class->typeEntry()->qualifiedTargetLangName(), f->name());
+                                }
+                            }
+                            if(new_expr.isEmpty()){
+                                new_expr = expr;
+                                ReportHandler::warning("Cannot find enum constant for value '" + expr + "' in '" + meta_class->name() + "' or any of its super classes");
+                            }
                         }
                     } else {
                         MetaEnum *e = nullptr;
@@ -3767,6 +3810,8 @@ MetaClass *MetaBuilder::traverseClass(ClassModelItem class_item, QList<PendingCl
     if (type->isObject()) {
         if(full_class_name==QLatin1String("QObject")){
             type->setQObject(true);
+        }else if(full_class_name==QLatin1String("QEvent")){
+            type->setQEvent(true);
         }else if(full_class_name==QLatin1String("QWidget")){
             type->setQWidget(true);
         }else if(full_class_name==QLatin1String("QWindow")){
@@ -3904,20 +3949,20 @@ MetaClass *MetaBuilder::traverseClass(ClassModelItem class_item, QList<PendingCl
         const QMap<QStringList,const ComplexTypeEntry*>& instantiations = meta_class->typeEntry()->instantiations();
         for(const QStringList& args : instantiations.keys()){
             if(ComplexTypeEntry* instantiation = const_cast<ComplexTypeEntry*>(instantiations[args])){
-                if (meta_class->typeEntry()->isObject()) {
-                    if(meta_class->typeEntry()->isQObject()){
-                        instantiation->setQObject(true);
-                        if(meta_class->typeEntry()->isQWidget()){
-                            instantiation->setQWidget(true);
-                        }else if(meta_class->typeEntry()->isQWindow()){
-                            instantiation->setQWindow(true);
-                        }else if(meta_class->typeEntry()->isQAction()){
-                            instantiation->setQAction(true);
-                        }else if(meta_class->typeEntry()->isQCoreApplication()){
-                            instantiation->setQCoreApplication(true);
-                        }else if(meta_class->typeEntry()->isQMediaControl()){
-                            instantiation->setQMediaControl(true);
-                        }
+                if (meta_class->typeEntry()->isQEvent()) {
+                    instantiation->setQEvent(true);
+                }else if(meta_class->typeEntry()->isQObject()){
+                    instantiation->setQObject(true);
+                    if(meta_class->typeEntry()->isQWidget()){
+                        instantiation->setQWidget(true);
+                    }else if(meta_class->typeEntry()->isQWindow()){
+                        instantiation->setQWindow(true);
+                    }else if(meta_class->typeEntry()->isQAction()){
+                        instantiation->setQAction(true);
+                    }else if(meta_class->typeEntry()->isQCoreApplication()){
+                        instantiation->setQCoreApplication(true);
+                    }else if(meta_class->typeEntry()->isQMediaControl()){
+                        instantiation->setQMediaControl(true);
                     }
                 }
 
@@ -4776,7 +4821,7 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                                 addInclude(cls->typeEntry(), function_item->fileName(), true);
                                 cls->typeEntry()->setHasHash();
                                 cls->setNeedsHashWorkaround(isWorkaround);
-                                cls->setQHashScope(m_current_class ? m_current_class->qualifiedCppName() : QString{});
+                                cls->setQHashScope(m_current_class && !meta_function->isInGlobalScope() ? m_current_class->qualifiedCppName() : QString{});
                                 skip = true;
                             }
                         }
@@ -5135,7 +5180,9 @@ MetaType* MetaBuilder::exchangeTemplateTypes(const MetaType* type, bool isReturn
             MetaType*rtype = type->copy();
             rtype->setConstant(ttype->isConstant() || type->isConstant());
             rtype->setIndirections(QList<bool>() << ttype->indirections() << type->indirections());
-            rtype->setReferenceType(ttype->getReferenceType());
+            //rtype->setReferenceType(ttype->getReferenceType());
+            if(rtype->getReferenceType()==MetaType::NoReference && type->getReferenceType()!=MetaType::NoReference && !rtype->indirections().isEmpty())
+                rtype->setReferenceType(type->getReferenceType());
             rtype->setTypeEntry(ttype->typeEntry());
             decideUsagePattern(rtype);
             if(!rtype->indirections().isEmpty() && isReturn){
@@ -7525,12 +7572,10 @@ void MetaBuilder::fixMissingIterator(){
 
 void MetaBuilder::decideUsagePattern(MetaType *meta_type) {
     const TypeEntry *type = meta_type->typeEntry();
-    if(meta_type->getReferenceType()==MetaType::RReference){
-        meta_type->setTypeUsagePattern(MetaType::RValuePattern);
-
-    } else if (type->isPrimitive()) {
+    if (type->isPrimitive()) {
         if(meta_type->actualIndirections() == 0
-                || (meta_type->isConstant() && meta_type->getReferenceType()==MetaType::Reference && meta_type->indirections().size() == 0)){
+                || (meta_type->isConstant() && meta_type->getReferenceType()==MetaType::Reference && meta_type->indirections().size() == 0)
+                || (meta_type->getReferenceType()==MetaType::RReference && meta_type->indirections().size() == 0)){
             if(type->qualifiedCppName()=="std::nullptr_t")
                 meta_type->setTypeUsagePattern(MetaType::NullptrPattern);
             else
@@ -7561,6 +7606,7 @@ void MetaBuilder::decideUsagePattern(MetaType *meta_type) {
     } else if (type->isQString()
                && (meta_type->indirections().size() == 1
                    || (meta_type->getReferenceType()==MetaType::Reference && !meta_type->isConstant())
+                   || meta_type->getReferenceType()==MetaType::RReference
                 )) {
         if(!meta_type->isConstant())
             meta_type->setTypeEntry(TypeDatabase::instance()->qstringType());
@@ -7628,6 +7674,7 @@ void MetaBuilder::decideUsagePattern(MetaType *meta_type) {
     } else if (type->isQVariant()
                && (meta_type->indirections().size() == 1
                    || (meta_type->getReferenceType()==MetaType::Reference && !meta_type->isConstant())
+                   || meta_type->getReferenceType()==MetaType::RReference
                 )) {
         if(!meta_type->isConstant())
             meta_type->setTypeEntry(TypeDatabase::instance()->qvariantType());
@@ -7639,7 +7686,7 @@ void MetaBuilder::decideUsagePattern(MetaType *meta_type) {
 
     } else if (type->isObject()
                && meta_type->indirections().size() == 0
-               && meta_type->getReferenceType()==MetaType::Reference) {
+               && (meta_type->getReferenceType()==MetaType::Reference || meta_type->getReferenceType()==MetaType::RReference)) {
         meta_type->setTypeUsagePattern(MetaType::ObjectPattern);
 
     } else if (type->isObject()

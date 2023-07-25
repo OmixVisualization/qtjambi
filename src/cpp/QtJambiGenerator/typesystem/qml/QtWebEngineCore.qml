@@ -251,12 +251,11 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QWebEngineHttpRequest::Method"
-    }
-    
     ValueType{
         name: "QWebEngineHttpRequest"
+        EnumType{
+            name: "Method"
+        }
         ModifyFunction{
             signature: "operator=(QWebEngineHttpRequest)"
             Delegate{
@@ -287,6 +286,21 @@ TypeSystem{
     ObjectType{
         name: "QWebEngineNotification"
     }
+
+    ObjectType{
+        name: "QWebEngineUrlResponseInterceptor"
+        since: [6, 6]
+    }
+
+    ObjectType{
+        name: "QWebEngineUrlResponseInfo"
+        since: [6, 6]
+    }
+
+    ObjectType{
+        name: "QWebEngineGlobalSettings"
+        since: [6, 6]
+    }
     
     ObjectType{
         name: "QWebEnginePage"
@@ -308,52 +322,33 @@ TypeSystem{
 
         EnumType{
             name: "Feature"
-            since: [6, 2]
         }
-
         EnumType{
             name: "FileSelectionMode"
-            since: [6, 2]
         }
-
         EnumType{
             name: "FindFlag"
-            since: [6, 2]
         }
-
         EnumType{
             name: "JavaScriptConsoleMessageLevel"
-            since: [6, 2]
         }
-
         EnumType{
             name: "NavigationType"
-            since: [6, 2]
         }
-
         EnumType{
             name: "PermissionPolicy"
-            since: [6, 2]
         }
-
         EnumType{
             name: "RenderProcessTerminationStatus"
-            since: [6, 2]
         }
-
         EnumType{
             name: "WebAction"
-            since: [6, 2]
         }
-
         EnumType{
             name: "WebWindowType"
-            since: [6, 2]
         }
-
         EnumType{
             name: "LifecycleState"
-            since: [6, 2]
         }
         ModifyFunction{
             signature: "scripts()"
@@ -521,6 +516,17 @@ TypeSystem{
             }
         }
         ModifyFunction{
+            signature: "setUrlResponseInterceptor(QWebEngineUrlResponseInterceptor*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcUrlResponseInterceptor"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: [6, 6]
+        }
+        ModifyFunction{
             signature: "setWebChannel(QWebChannel*,quint32)"
             ModifyArgument{
                 index: 1
@@ -621,18 +627,36 @@ TypeSystem{
         since: [6, 2]
     }
     
-    EnumType{
-        name: "QWebEngineProfile::HttpCacheType"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QWebEngineProfile::PersistentCookiesPolicy"
-        since: [6, 2]
-    }
-    
     ObjectType{
         name: "QWebEngineProfile"
+        EnumType{
+            name: "HttpCacheType"
+        }
+        EnumType{
+            name: "PersistentCookiesPolicy"
+        }
+
+        FunctionalType{
+            name: "IconAvailableCallback3"
+            using: "std::function<void(const QIcon&,const QUrl&,const QUrl&)>"
+            ExtraIncludes{
+                Include{
+                    fileName: "QtWebEngineCore/QWebEngineNotification"
+                    location: Include.Global
+                }
+            }
+        }
+
+        FunctionalType{
+            name: "IconAvailableCallback2"
+            using: "std::function<void(const QIcon&,const QUrl&)>"
+            ExtraIncludes{
+                Include{
+                    fileName: "QtWebEngineCore/QWebEngineNotification"
+                    location: Include.Global
+                }
+            }
+        }
         ExtraIncludes{
             Include{
                 fileName: "QtWebEngineCore/QWebEngineNotification"
@@ -678,6 +702,17 @@ TypeSystem{
             }
         }
         ModifyFunction{
+            signature: "setUrlResponseInterceptor(QWebEngineUrlResponseInterceptor*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcUrlResponseInterceptor"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: [6, 6]
+        }
+        ModifyFunction{
             signature: "setNotificationPresenter(std::function<void(std::unique_ptr<QWebEngineNotification>)>)"
             ModifyArgument{
                 index: 1
@@ -703,42 +738,14 @@ TypeSystem{
         since: [6, 2]
     }
     
-    FunctionalType{
-        name: "QWebEngineProfile::IconAvailableCallback3"
-        using: "std::function<void(const QIcon&,const QUrl&,const QUrl&)>"
-        ExtraIncludes{
-            Include{
-                fileName: "QtWebEngineCore/QWebEngineNotification"
-                location: Include.Global
-            }
-        }
-        since: [6, 2]
-    }
-    
-    FunctionalType{
-        name: "QWebEngineProfile::IconAvailableCallback2"
-        using: "std::function<void(const QIcon&,const QUrl&)>"
-        ExtraIncludes{
-            Include{
-                fileName: "QtWebEngineCore/QWebEngineNotification"
-                location: Include.Global
-            }
-        }
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QWebEngineCertificateError::Error"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QWebEngineCertificateError::Type"
-        since: [6, 2]
-    }
-    
     ValueType{
         name: "QWebEngineCertificateError"
+        EnumType{
+            name: "Error"
+        }
+        EnumType{
+            name: "Type"
+        }
         CustomConstructor{
             Text{content: "if(copy){\n"+
                           "    return new(placement) QWebEngineCertificateError(*copy);\n"+
@@ -749,18 +756,14 @@ TypeSystem{
         since: [6, 2]
     }
     
-    EnumType{
-        name: "QWebEngineScript::InjectionPoint"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QWebEngineScript::ScriptWorldId"
-        since: [6, 2]
-    }
-    
     ValueType{
         name: "QWebEngineScript"
+        EnumType{
+            name: "InjectionPoint"
+        }
+        EnumType{
+            name: "ScriptWorldId"
+        }
         ModifyFunction{
             signature: "operator=(QWebEngineScript)"
             Delegate{
@@ -773,26 +776,18 @@ TypeSystem{
     
     ObjectType{
         name: "QWebEngineSettings"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QWebEngineSettings::FontFamily"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QWebEngineSettings::FontSize"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QWebEngineSettings::WebAttribute"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QWebEngineSettings::UnknownUrlSchemePolicy"
+        EnumType{
+            name: "FontFamily"
+        }
+        EnumType{
+            name: "FontSize"
+        }
+        EnumType{
+            name: "WebAttribute"
+        }
+        EnumType{
+            name: "UnknownUrlSchemePolicy"
+        }
         since: [6, 2]
     }
     
@@ -832,11 +827,9 @@ TypeSystem{
     
     ObjectType{
         name: "QWebEngineHistoryModel"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QWebEngineHistoryModel::Roles"
+        EnumType{
+            name: "Roles"
+        }
         since: [6, 2]
     }
     
@@ -859,58 +852,42 @@ TypeSystem{
         since: [6, 2]
     }
     
-    EnumType{
-        name: "QWebEngineContextMenuRequest::MediaType"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QWebEngineContextMenuRequest::MediaFlag"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QWebEngineContextMenuRequest::EditFlag"
-        since: [6, 2]
-    }
-    
     ObjectType{
         name: "QWebEngineContextMenuRequest"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QWebEngineDownloadRequest::DownloadState"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QWebEngineDownloadRequest::DownloadType"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QWebEngineDownloadRequest::DownloadInterruptReason"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QWebEngineDownloadRequest::SavePageFormat"
+        EnumType{
+            name: "MediaType"
+        }
+        EnumType{
+            name: "MediaFlag"
+        }
+        EnumType{
+            name: "EditFlag"
+        }
         since: [6, 2]
     }
     
     ObjectType{
         name: "QWebEngineDownloadRequest"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QWebEngineNavigationRequest::NavigationType"
+        EnumType{
+            name: "DownloadState"
+        }
+        EnumType{
+            name: "DownloadType"
+        }
+        EnumType{
+            name: "DownloadInterruptReason"
+        }
+        EnumType{
+            name: "SavePageFormat"
+        }
         since: [6, 2]
     }
     
     ObjectType{
         name: "QWebEngineNavigationRequest"
+        EnumType{
+            name: "NavigationType"
+        }
         since: [6, 2]
     }
     

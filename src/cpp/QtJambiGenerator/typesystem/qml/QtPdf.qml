@@ -143,12 +143,11 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QPdfPageRenderer::RenderMode"
-    }
-    
     ObjectType{
         name: "QPdfPageRenderer"
+        EnumType{
+            name: "RenderMode"
+        }
         ModifyFunction{
             signature: "setDocument(QPdfDocument *)"
             ModifyArgument{
@@ -221,21 +220,6 @@ TypeSystem{
         EnumType{
             name: "Role"
         }
-        ModifyFunction{
-            signature: "setDocument(QPdfDocument *)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcDocument"
-                    action: ReferenceCount.Set
-                }
-            }
-        }
-        since: [6, 6]
-    }
-
-    ObjectType{
-        name: "QPdfPageSelector"
         ModifyFunction{
             signature: "setDocument(QPdfDocument *)"
             ModifyArgument{

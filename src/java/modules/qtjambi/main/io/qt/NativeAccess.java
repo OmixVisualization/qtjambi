@@ -31,6 +31,9 @@ package io.qt;
 
 import java.lang.annotation.*;
 
+/**
+ * Annotates class members to be accessed from inside QtJambi native libraries.
+ */
 @Target({ElementType.FIELD, ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.TYPE})
 @Retention(RetentionPolicy.SOURCE)
 public @interface NativeAccess {

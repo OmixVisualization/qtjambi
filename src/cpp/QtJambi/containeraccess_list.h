@@ -187,7 +187,7 @@ public:
 
         jvalue _value;
         _value.l = nullptr;
-        if(m_internalToExternalConverter(env, nullptr, &result, &_value, true)){
+        if(m_internalToExternalConverter(env, nullptr, &result, _value, true)){
             return _value.l;
         }
         return nullptr;
@@ -201,7 +201,7 @@ public:
         QTJAMBI_ELEMENT_LOCKER
         {
             T qresult = reinterpret_cast<const QList<T> *>(container)->value(index);
-            success = m_internalToExternalConverter(env, nullptr, &qresult, &_result, true);
+            success = m_internalToExternalConverter(env, nullptr, &qresult, _result, true);
         }
 
         if(success){
@@ -223,7 +223,7 @@ public:
             _defaultValue.l = defaultValue;
             if(m_externalToInternalConverter(env, nullptr, _defaultValue, _qdefaultValuePtr, jValueType::l)){
                 T qresult = reinterpret_cast<const QList<T> *>(container)->value(index, _qdefaultValue);
-                success = m_internalToExternalConverter(env, nullptr, &qresult, &_result, true);
+                success = m_internalToExternalConverter(env, nullptr, &qresult, _result, true);
             }
         }
 

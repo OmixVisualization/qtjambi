@@ -37,6 +37,12 @@
 
 package io.qt;
 
+import io.qt.core.QObject;
+
+/**
+ * This exception is thrown when a method is annotated with {@link QtUninvokable}.
+ * @see QObject#connect(QObject, String, QObject, String, io.qt.core.Qt.ConnectionType...)
+ */
 public class QUninvokableSlotException extends QNoSuchSlotException {
     private static final long serialVersionUID = 1712127589718894829L;
 

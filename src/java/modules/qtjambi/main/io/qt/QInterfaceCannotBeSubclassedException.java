@@ -29,6 +29,9 @@
 ****************************************************************************/
 package io.qt;
 
+/**
+ * Exception thrown when an interface is not intended to be subclassed by non-Qt classes.
+ */
 public class QInterfaceCannotBeSubclassedException extends Exception {
 
     private static final long serialVersionUID = 1L;

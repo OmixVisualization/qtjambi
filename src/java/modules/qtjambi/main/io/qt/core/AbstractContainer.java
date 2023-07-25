@@ -27,58 +27,60 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************/
-package io.qt.internal;
+package io.qt.core;
 
-import java.util.AbstractMap;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
+import io.qt.QtObject;
 import io.qt.QtUninvokable;
-import io.qt.core.QPair;
 
-public abstract class AbstractMultiHash<K, V> extends AbstractMultiAssociativeContainer<K, V> {
+/**
+ * Abstract superclass of containers in Qt.
+ */
+abstract class AbstractContainer<T> extends QtObject implements Cloneable{
+	
+	/**
+     * Returns the number of elements in this container. If this container
+     * contains more than {@code Integer.MAX_VALUE} elements, returns
+     * {@code Integer.MAX_VALUE}.
+     *
+     * @return the number of elements in this container
+     */
+    @QtUninvokable
+	public abstract int size();
 
-	protected AbstractMultiHash(QPrivateConstructor p) {
+    /**
+     * Returns {@code true} if this container contains no elements.
+     *
+     * @return {@code true} if this container contains no elements
+     */
+    @QtUninvokable
+	public boolean isEmpty() {
+    	return size()>0;
+    }
+	
+    /**
+     * Provides a constant C++ iterator to the containers begin.
+     * @return begin
+     */
+    @QtUninvokable
+    protected abstract AbstractIterator<T> constBegin();
+
+    /**
+     * Provides a constant C++ iterator to the containers end.
+     * @return end
+     */
+    @QtUninvokable
+	protected abstract AbstractIterator<T> constEnd();
+
+	/**
+     * {@inheritDoc}
+	 */
+    AbstractContainer(QPrivateConstructor p) {
 		super(p);
 	}
-	
-	@Override
-    public abstract AbstractMultiHash<K,V> clone();
-	
-	@Override
-    @QtUninvokable
-	public final Set<K> keySet() {
-		return new HashSet<>(keys());
-	}
-	
-	@Override
-    @QtUninvokable
-	public final Set<Entry<K, List<V>>> entrySet() {
-		Set<Entry<K, List<V>>> entrySet = new HashSet<>();
-		if(!this.isEmpty()) {
-			K currentKey = null;
-			List<V> currentValues = null;
-			for(QPair<K,V> pair : this) {
-				if(currentValues==null) {
-					currentValues = new ArrayList<>();
-					currentValues.add(pair.second);
-					currentKey = pair.first;
-				}else{
-					if(Objects.equals(currentKey, pair.first)) {
-						currentValues.add(pair.second);
-					}else {
-						entrySet.add(new AbstractMap.SimpleImmutableEntry<>(currentKey, currentValues));
-						currentValues = new ArrayList<>();
-						currentValues.add(pair.second);
-						currentKey = pair.first;
-					}
-				}
-			}
-			entrySet.add(new AbstractMap.SimpleImmutableEntry<>(currentKey, currentValues));
-		}
-		return entrySet;
-	}
+    
+    /**
+     * <p>Creates and returns a copy of this container.</p>
+     */
+    @Override
+    public abstract AbstractContainer<T> clone();
 }

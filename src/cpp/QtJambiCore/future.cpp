@@ -412,7 +412,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
         QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QFutureInterface<QVariant>::reportResult(const QVariant & result, int index)", __qt_this)
         if(QFutureInterface<QVariant>* _this = dynamic_cast<QFutureInterface<QVariant>*>(__qt_this)){
-            const QVariant& __qt_result0 = qtjambi_cast<QVariant>(__jni_env, result0);
+            QVariant __qt_result0 = qtjambi_cast<QVariant>(__jni_env, result0);
             _this->reportResult(__qt_result0, static_cast<int>(index1));
         }else if(dynamic_cast<const QFutureInterface<void>*>(__qt_this)){
             JavaException::raiseQNoImplementationException(__jni_env, "reportResult(T, int) not available for QFutureInterface<void>." QTJAMBI_STACKTRACEINFO );

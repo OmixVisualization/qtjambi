@@ -30,8 +30,10 @@
 package io.qt.core;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.function.Predicate;
 
 import io.qt.NativeAccess;
 import io.qt.QNoImplementationException;
@@ -39,9 +41,9 @@ import io.qt.QNoNativeResourcesException;
 import io.qt.QtUninvokable;
 
 /**
- * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qlist.html">QList</a></p>
+ * <p>Java wrapper for Qt class <code><a href="https://doc.qt.io/qt/qlist.html">QList</a></code></p>
  */
-public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneable
+public class QList<T> extends AbstractList<T> implements Cloneable
 {
 
     static {
@@ -51,6 +53,7 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     /**
      * Constructor for internal use only.
      * @param p expected to be <code>null</code>.
+     * @hidden
      */
     @NativeAccess
     protected QList(QPrivateConstructor p) {
@@ -59,7 +62,7 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     
     /**
      * Creating a container with given element type.
-     * <p>See <a href="https://doc.qt.io/qt/qlist.html#QList">QList::QList()</a></p>
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#QList">QList::<wbr>QList()</a></code></p>
      * @param metaType the type T
      */
     public QList(QMetaType.Type metaType) {
@@ -68,7 +71,7 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     
     /**
      * Creating a container with given element type.
-     * <p>See <a href="https://doc.qt.io/qt/qlist.html#QList">QList::QList()</a></p>
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#QList">QList::<wbr>QList()</a></code></p>
      * @param elementType the type T
      */
     public QList(Class<T> elementType) {
@@ -78,8 +81,8 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
 	}
     
     /**
-     * Creating a container with given element type.
-     * <p>See <a href="https://doc.qt.io/qt/qlist.html#QList">QList::QList()</a></p>
+     * Creating a container with given element type and size.
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#QList">QList::<wbr>QList()</a></code></p>
      * @param metaType the type T
      */
 	public QList(QMetaType metaType) {
@@ -88,8 +91,45 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
 	}
     
     /**
+     * Creating a container with given element type and size.
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#QList-1">QList::<wbr>QList(qsizetype)</a></code></p>
+     * @param metaType the type T
+     */
+    public QList(QMetaType.Type metaType, int size) {
+		this(new QMetaType(metaType), size);
+	}
+    
+    /**
+     * Creating a container with given element type and size.
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#QList-1">QList::<wbr>QList(qsizetype)</a></code></p>
+     * @param elementType the type T
+     */
+    public QList(Class<T> elementType, int size) {
+		this(QMetaType.fromType(elementType), size);
+	}
+    
+    /**
+     * Creating a container with given element type and size.
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#QList-1">QList::<wbr>QList(qsizetype)</a></code></p>
+     * @param metaType the type T
+     */
+	public QList(QMetaType metaType, int size) {
+		this(metaType);
+		resize(size);
+	}
+    
+    /**
+     * Creating a container filled with given value.
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#QList-2">QList::<wbr>QList(qsizetype,T)</a></code></p>
+     */
+	public QList(int size, T value) {
+		this(findElementMetaType(value));
+		fill(value, size);
+	}
+    
+    /**
      * Creating a container with given content.
-     * <p>See <a href="https://doc.qt.io/qt/qlist.html#QList">QList::QList(const QList&lt;T> &amp;)</a></p>
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#QList">QList::<wbr>QList(const QList&lt;T> &amp;)</a></code></p>
      * @param other container
      */
     public QList(Collection<T> other) {
@@ -110,19 +150,29 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     public static QList<Object> createVariantList(){
     	return new QList<>(new QMetaType(QMetaType.Type.QVariant));
     }
+    
+    /**
+     * Creating a container of type QVariant and given size.
+     */
+    public static QList<Object> createVariantList(int size){
+    	return new QList<>(new QMetaType(QMetaType.Type.QVariant), size);
+    }
 
     @QtUninvokable
     private native void initialize(Class<?> elementType, long elementMetaType, Collection<T> other);
     
     /**
      * Creates and returns a copy of this object.
-     * <p>See <a href="https://doc.qt.io/qt/qlist.html#QList-8">QList::QList(const QList&lt;T> &amp;)</a></p>
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#QList-8">QList::<wbr>QList(const QList&lt;T> &amp;)</a></code></p>
      */
     @Override
 	public QList<T> clone(){
 		return new QList<>(this);
 	}
     
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#append-2">QList::<wbr>append(const QList&lt;T> &amp;)</a></code></p>
+     */
     @QtUninvokable
     public final void append(java.util.Collection<T> t) {
         appendList(QtJambi_LibraryUtilities.internal.nativeId(this), t);
@@ -130,6 +180,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> void appendList(long __this__nativeId, java.util.Collection<T> t);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#append">QList::<wbr>append(T)</a></code></p>
+     */
     @QtUninvokable
     public final void append(T t) {
     	try {
@@ -144,6 +197,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> void append(long __this__nativeId, T t);
     
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#at">QList::<wbr>at(qsizetype)const</a></code></p>
+     */
     @QtUninvokable
     public final T at(int i) {
         return at(QtJambi_LibraryUtilities.internal.nativeId(this), i);
@@ -151,6 +207,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> T at(long __this__nativeId, int i);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#clear">QList::<wbr>clear()</a></code></p>
+     */
     @QtUninvokable
     public final void clear() {
         clear(QtJambi_LibraryUtilities.internal.nativeId(this));
@@ -158,6 +217,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> void clear(long __this__nativeId);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#contains">QList::<wbr>contains(T)const</a></code></p>
+     */
     @QtUninvokable
     public final boolean contains(Object t) {
     	try {
@@ -176,11 +238,17 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> boolean contains(long __this__nativeId, T t);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#count-1">QList::<wbr>count()const</a></code></p>
+     */
     @QtUninvokable
     public final int count() {
         return size();
     }
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#count">QList::<wbr>count(T)const</a></code></p>
+     */
     @QtUninvokable
     public final int count(T t) {
         try{
@@ -194,6 +262,11 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> int count(long __this__nativeId, T t);
 
+    /**
+     * Provides a mutable C++ iterator to the containers begin.
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#begin">QList::<wbr>begin()</a></code></p>
+     * @return begin
+     */
     @QtUninvokable
     protected final QSequentialIterator<T> begin() {
         return begin(QtJambi_LibraryUtilities.internal.nativeId(this));
@@ -201,6 +274,11 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> QSequentialIterator<T> begin(long __this__nativeId);
 
+    /**
+     * Provides a mutable C++ iterator to the containers end.
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#end">QList::<wbr>end()</a></code></p>
+     * @return end
+     */
     @QtUninvokable
     protected final QSequentialIterator<T> end() {
         return end(QtJambi_LibraryUtilities.internal.nativeId(this));
@@ -208,6 +286,11 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> QSequentialIterator<T> end(long __this__nativeId);
 
+    /**
+     * Provides a constant C++ iterator to the containers begin.
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#constBegin">QList::<wbr>constBegin()const</a></code></p>
+     * @return begin
+     */
     @QtUninvokable
     protected final QSequentialConstIterator<T> constBegin() {
         return constBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
@@ -215,6 +298,11 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> QSequentialConstIterator<T> constBegin(long __this__nativeId);
 
+    /**
+     * Provides a constant C++ iterator to the containers end.
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#constEnd">QList::<wbr>constEnd()const</a></code></p>
+     * @return end
+     */
     @QtUninvokable
     protected final QSequentialConstIterator<T> constEnd() {
         return constEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
@@ -222,6 +310,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> QSequentialConstIterator<T> constEnd(long __this__nativeId);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#endsWith">QList::<wbr>endsWith(T)const</a></code></p>
+     */
     @QtUninvokable
     public final boolean endsWith(T t) {
         try{
@@ -235,6 +326,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> boolean endsWith(long __this__nativeId, T t);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#first">QList::<wbr>first()const</a></code></p>
+     */
     @QtUninvokable
     public final T first() {
     	try {
@@ -244,6 +338,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
 		}
     }
     
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#indexOf">QList::<wbr>indexOf(T,qsizetype)const</a></code></p>
+     */
     @QtUninvokable
     public final int indexOf(T t, int from) {
     	try {
@@ -262,16 +359,25 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> int indexOf(long __this__nativeId, T t, int from);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#insert">QList::<wbr>insert(qsizetype,T)</a></code></p>
+     */
     @QtUninvokable
     public final void insert(int i, T t) {
     	insert(i, 1, t);
     }
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#isEmpty">QList::<wbr>isEmpty()const</a></code></p>
+     */
     @QtUninvokable
     public final boolean isEmpty() {
         return size()==0;
     }
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#last">QList::<wbr>last()const</a></code></p>
+     */
     @QtUninvokable
     public final T last() {
         try {
@@ -283,12 +389,18 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> T last(long __this__nativeId);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#lastIndexOf">QList::<wbr>lastIndexOf(T,qsizetype)const</a></code></p>
+     */
     @SuppressWarnings("unchecked")
 	@QtUninvokable
     @Override
     public final int lastIndexOf(Object t) {
 		return lastIndexOf((T)t, (int)-1);
     }
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#lastIndexOf">QList::<wbr>lastIndexOf(T,qsizetype)const</a></code></p>
+     */
     @QtUninvokable
     public final int lastIndexOf(T t, int from) {
     	try {
@@ -307,15 +419,25 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> int lastIndexOf(long __this__nativeId, T t, int from);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#length">QList::<wbr>length()const</a></code></p>
+     */
     @QtUninvokable
     public final int length() {
         return size();
     }
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#mid">QList::<wbr>mid(qsizetype,qsizetype)const</a></code></p>
+     */
     @QtUninvokable
     public final QList<T> mid(int pos) {
         return mid(pos, (int)-1);
     }
+
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#mid">QList::<wbr>mid(qsizetype,qsizetype)const</a></code></p>
+     */
     @QtUninvokable
     public final QList<T> mid(int pos, int length) {
         return mid(QtJambi_LibraryUtilities.internal.nativeId(this), pos, length);
@@ -323,6 +445,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> QList<T> mid(long __this__nativeId, int pos, int length);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#move">QList::<wbr>move(qsizetype,qsizetype)</a></code></p>
+     */
     @QtUninvokable
     public final void move(int from, int to) {
         move(QtJambi_LibraryUtilities.internal.nativeId(this), from, to);
@@ -330,13 +455,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> void move(long __this__nativeId, int from, int to);
 
-    @QtUninvokable
-    private final boolean operator_equal(java.util.Collection<T> l) {
-        return operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), l);
-    }
-    @QtUninvokable
-    private static native <T> boolean operator_equal(long __this__nativeId, java.util.Collection<T> l);
-
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#prepend">QList::<wbr>prepend(T)</a></code></p>
+     */
     @QtUninvokable
     public final void prepend(T t) {
         try {
@@ -348,6 +469,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     	}
     }
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#removeAll">QList::<wbr>removeAll(T)</a></code></p>
+     */
     @QtUninvokable
     public final int removeAll(T t) {
         try {
@@ -365,22 +489,50 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     }
     @QtUninvokable
     private static native <T> int removeAll(long __this__nativeId, T t);
+    
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#removeIf">QList::<wbr>removeIf(Predicate)</a></code></p>
+	 */
+    @QtUninvokable
+    public final boolean removeIf(Predicate<? super T> predicate)    {
+        Objects.requireNonNull(predicate);
+        boolean removed = false;
+        for(T value : clone()) {
+            if (predicate.test(value)) {
+                removeAll(value);
+                removed = true;
+            }
+        }
+        return removed;
+    }
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#removeAt">QList::<wbr>removeAt(qsizetype)</a></code></p>
+     */
     @QtUninvokable
     public final void removeAt(int i) {
     	remove(i, 1);
     }
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#removeFirst">QList::<wbr>removeFirst()</a></code></p>
+     */
     @QtUninvokable
     public final T removeFirst() {
 		return takeFirst();
     }
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#removeFirst">QList::<wbr>removeLast()</a></code></p>
+     */
     @QtUninvokable
     public final T removeLast() {
 		return takeLast();
     }
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#removeOne">QList::<wbr>removeOne(T)</a></code></p>
+     */
     @QtUninvokable
     public final boolean removeOne(T t) {
     	try {
@@ -398,6 +550,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> boolean removeOne(long __this__nativeId, T t);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#replace">QList::<wbr>replace(qsizetype,T)</a></code></p>
+     */
     @QtUninvokable
     public final void replace(int i, T t) {
         try {
@@ -411,6 +566,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> void replace(long __this__nativeId, int i, T t);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#reserve">QList::<wbr>reserve(qsizetype)</a></code></p>
+     */
     @QtUninvokable
     public final void reserve(int size) {
         reserve(QtJambi_LibraryUtilities.internal.nativeId(this), size);
@@ -418,6 +576,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> void reserve(long __this__nativeId, int size);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#size">QList::<wbr>size()const</a></code></p>
+     */
     @QtUninvokable
     public final int size() {
         return size(QtJambi_LibraryUtilities.internal.nativeId(this));
@@ -425,6 +586,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> int size(long __this__nativeId);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#startsWith">QList::<wbr>startsWith(T)const</a></code></p>
+     */
     @QtUninvokable
     public final boolean startsWith(T t) {
         try{
@@ -438,6 +602,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> boolean startsWith(long __this__nativeId, T t);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#takeAt">QList::<wbr>takeAt(qsizetype)</a></code></p>
+     */
     @QtUninvokable
     public final T takeAt(int i) {
         return takeAt(QtJambi_LibraryUtilities.internal.nativeId(this), i);
@@ -445,6 +612,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> T takeAt(long __this__nativeId, int i);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#takeFirst">QList::<wbr>takeFirst()</a></code></p>
+     */
     @QtUninvokable
     public final T takeFirst() {
     	try {
@@ -454,6 +624,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
 		}
     }
     
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#takeLast">QList::<wbr>takeLast()</a></code></p>
+     */
     @QtUninvokable
     public final T takeLast() {
         try{
@@ -465,6 +638,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> T takeLast(long __this__nativeId);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#value">QList::<wbr>value(qsizetype)</a></code></p>
+     */
     @QtUninvokable
     public final T value(int i) {
         return value(QtJambi_LibraryUtilities.internal.nativeId(this), i);
@@ -472,6 +648,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> T value(long __this__nativeId, int i);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#value-1">QList::<wbr>value(qsizetype,T)</a></code></p>
+     */
     @QtUninvokable
     public final T value(int i, T defaultValue) {
     	try {
@@ -485,16 +664,24 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> T valueDefault(long __this__nativeId, int i, T defaultValue);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#operator-eq-eq">QList::<wbr>operator==(QList&lt;T>)const</a></code></p>
+     */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     @QtUninvokable
     public boolean equals(Object other) {
         if (other instanceof java.util.Collection && checkContainerType(this.elementMetaType(), (java.util.Collection<?>) other)) {
-            return operator_equal((java.util.Collection) other);
+            return operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), (java.util.Collection) other);
         }
         return false;
     }
+    @QtUninvokable
+    private static native <T> boolean operator_equal(long __this__nativeId, java.util.Collection<T> l);
 
+    /**
+     * Returns the objects's hash code computed by <code>qHash(QList&lt;T>)</code>.
+     */
     @Override
     @QtUninvokable
     public int hashCode() { 
@@ -507,6 +694,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native int hashCode(long __this__nativeId);
     
+    /**
+     * Returns the string representation of the object given by <code>QVariant(this).toString()</code>.
+     */
     @Override
     @QtUninvokable
     public String toString() {
@@ -521,6 +711,10 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native String toString(long __this__nativeId);
     
+    /**
+     * Appends the specified element to the end of this list.
+     * @see List#add(Object)
+     */
     @Override
     @QtUninvokable
     public boolean add(T e){
@@ -528,12 +722,21 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
         return true;
     }
 
+    /**
+     * Inserts the specified element at the specified position in this list.
+     * @see List#add(int, Object)
+     */
     @Override
     @QtUninvokable
     public final void add(int index, T e){
             insert(index, e);
     }
 
+    /**
+     * Replaces the element at the specified position in this list with the
+     * specified element.
+     * @see List#set(int, Object)
+     */
     @Override
     @QtUninvokable
     public final T set(int index, T e){
@@ -544,6 +747,11 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
         } else return null;
     }
     
+    /**
+     * Removes the first occurrence of the specified element from this list,
+     * if it is present.
+     * @see List#remove(Object)
+     */
     @SuppressWarnings("unchecked")
 	@Override
     @QtUninvokable
@@ -551,6 +759,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
         return removeOne((T)e);
     }
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#indexOf">QList::<wbr>indexOf(T,qsizetype)const</a></code></p>
+     */
     @SuppressWarnings("unchecked")
 	@Override
     @QtUninvokable
@@ -558,12 +769,19 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
         return indexOf((T)e, (int)0);
     }
 
+    /**
+     * Returns the element at the specified position in this list.
+     * @see List#get(int)
+     */
     @Override
     @QtUninvokable
     public final T get(int index) {
         return at(index);
     }
     
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#swapItemsAt">QList::<wbr>swapItemsAt(qsizetype,qsizetype)</a></code></p>
+     */
     @QtUninvokable
     public final void swapItemsAt(int i, int j) {
         swapItemsAt(QtJambi_LibraryUtilities.internal.nativeId(this), i, j);
@@ -572,16 +790,17 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> void swapItemsAt(long __this__nativeId, int i, int j);
     
-    @Override
-    @QtUninvokable
-    protected final void removeAtIndex(int cursor) {
-        removeAt(cursor);
-    }
-    
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#fill">QList::<wbr>fill(T,qsizetype)</a></code></p>
+     */
     @QtUninvokable
     public final void fill(T t) {
         fill(t, (int)-1);
     }
+    
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#fill">QList::<wbr>fill(T,qsizetype)</a></code></p>
+     */
     @QtUninvokable
     public final void fill(T t, int size) {
     	try {
@@ -595,6 +814,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> void fill(long __this__nativeId, T t, int size);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#insert-1">QList::<wbr>insert(qsizetype,qsizetype,T)</a></code></p>
+     */
     @QtUninvokable
     public final void insert(int i, int n, T t) {
         try {
@@ -609,6 +831,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> void insert(long __this__nativeId, int i, int n, T t);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#remove">QList::<wbr>remove(qsizetype,qsizetype)</a></code></p>
+     */
     @QtUninvokable
     public final void remove(int i, int n) {
         remove(QtJambi_LibraryUtilities.internal.nativeId(this), i, n);
@@ -616,6 +841,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native void remove(long __this__nativeId, int i, int n);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#capacity">QList::<wbr>capacity()const</a></code></p>
+     */
     @QtUninvokable
     public final int capacity() {
         return capacity(QtJambi_LibraryUtilities.internal.nativeId(this));
@@ -623,6 +851,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> int capacity(long __this__nativeId);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#resize">QList::<wbr>resize(qsizetype)</a></code></p>
+     */
     @QtUninvokable
     public final void resize(int size) {
         resize(QtJambi_LibraryUtilities.internal.nativeId(this), size);
@@ -630,6 +861,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native void resize(long __this__nativeId, int size);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#squeeze">QList::<wbr>squeeze()</a></code></p>
+     */
     @QtUninvokable
     public final void squeeze() {
         squeeze(QtJambi_LibraryUtilities.internal.nativeId(this));
@@ -637,6 +871,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native void squeeze(long __this__nativeId);
     
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#operator-lt-lt">operator&lt;&lt;(QDataStream&amp;,<wbr>QList&lt;T>)</a></code></p>
+     */
     @io.qt.QtUninvokable
     public void writeTo(io.qt.core.QDataStream stream){
         writeTo(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
@@ -645,6 +882,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @io.qt.QtUninvokable
     private native void writeTo(long __this__nativeId, long stream);
     
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#operator-gt-gt">operator&gt;&gt;(QDataStream&amp;,<wbr>QList&lt;T>&amp;)</a></code></p>
+     */
     @io.qt.QtUninvokable
     public void readFrom(io.qt.core.QDataStream stream){
         readFrom(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
@@ -663,7 +903,7 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     /**
      * Returns a QList containing given elements.
      *
-     * @param <E> the {@code QList}'s element type
+     * @param <T> the {@code QList}'s element type
      * @param element0 the first element
      * @param elements subsequent elements
      * @return a {@code QList} containing the specified element
@@ -690,7 +930,7 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     /**
      * Returns a QStringList containing given elements.
      *
-     * @param <E> the {@code QStringList}'s element type
+     * @param <T> the {@code QStringList}'s element type
      * @param element0 the first element
      * @param elements subsequent elements
      * @return a {@code QStringList} containing the specified element

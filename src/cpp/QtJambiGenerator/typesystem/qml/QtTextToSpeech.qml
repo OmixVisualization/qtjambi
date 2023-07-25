@@ -35,7 +35,7 @@ TypeSystem{
     qtLibrary: "QtTextToSpeech"
     module: "qtjambi.texttospeech"
     description: "Provides support for accessibility features such as text-to-speech."
-    
+
     ObjectType{
         name: "QTextToSpeech"
 
@@ -61,9 +61,163 @@ TypeSystem{
                 fileName: "hashes.h"
                 location: Include.Local
             }
+            Include{
+                fileName: "utils_p.h"
+                location: Include.Local
+            }
+        }
+
+        ModifyFunction{
+            signature: "synthesize<Functor>(QString,Functor&&)"
+            Instantiation{
+                Argument{
+                    type: "QAudioBuffer"
+                }
+                proxyCall: "qtjambi_synthesize1"
+                ModifyArgument{
+                    index: 2
+                    NoNullPointer{}
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QMetaObject$Slot1<io.qt.multimedia.@NonNull QAudioBuffer>"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "jobject %out = %in;"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{metaName: "func"; index: 2}
+                    Text{content: String.raw`if(context==null)
+    context = QtJambi_LibraryUtilities.internal.lambdaContext(func);`}
+                }
+                AddArgument{
+                    index: 2
+                    name: "context"
+                    type: "io.qt.core.QObject"
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "QAudioFormat"
+                }
+                proxyCall: "qtjambi_synthesize2"
+                ModifyArgument{
+                    index: 2
+                    NoNullPointer{}
+                    ReplaceType{
+                        modifiedType: "io.qt.core.QMetaObject$Slot2<io.qt.multimedia.@NonNull QAudioFormat, io.qt.core.@NonNull QByteArray>"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "jobject %out = %in;"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{metaName: "func"; index: 2}
+                    Text{content: String.raw`if(context==null)
+    context = QtJambi_LibraryUtilities.internal.lambdaContext(func);`}
+                }
+                AddArgument{
+                    index: 2
+                    name: "context"
+                    type: "io.qt.core.QObject"
+                }
+            }
+            since: 6.6
+        }
+        ModifyFunction{
+            signature: "findVoices<Args...>(Args&&)const"
+            remove: RemoveFlag.All
+            since: 6.6
+        }
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.End
+            since: 6.6
+            Text{content: String.raw`
+/**
+ * <p>Overloaded function for {@link #synthesize(String, io.qt.core.QObject, io.qt.core.QMetaObject.Slot1)}
+ *  with <code>context = null</code>.</p>
+ */
+@SuppressWarnings("exports")
+@QtUninvokable
+public final void synthesize(java.lang.@NonNull String text, io.qt.core.QMetaObject.@StrictNonNull Slot1<io.qt.multimedia.@NonNull QAudioBuffer> func){
+    synthesize(text, null, func);
+}
+
+/**
+ * <p>Overloaded function for {@link #synthesize(String, io.qt.core.QObject, io.qt.core.QMetaObject.Slot2)}
+ *  with <code>context = null</code>.</p>
+ */
+@SuppressWarnings("exports")
+@QtUninvokable
+public final void synthesize(java.lang.@NonNull String text, io.qt.core.QMetaObject.@StrictNonNull Slot2<io.qt.multimedia.@NonNull QAudioFormat, io.qt.core.@NonNull QByteArray> func){
+    synthesize(text, null, func);
+}
+
+/**
+ * <p>See <code><a href="https://doc.qt.io/qt/qtexttospeech.html#findVoices">QTextToSpeech::<wbr>findVoices<Args...>(Args...)</a></code></p>
+ */
+public io.qt.core.QList<QVoice> findVoices(){
+    io.qt.core.QList<QVoice> voices = allVoices(null);
+    return voices;
+}
+
+/**
+ * <p>See <code><a href="https://doc.qt.io/qt/qtexttospeech.html#findVoices">QTextToSpeech::<wbr>findVoices<Args...>(Args...)</a></code></p>
+ */
+public io.qt.core.QList<QVoice> findVoices(java.lang.@NonNull String name){
+    io.qt.core.QList<QVoice> voices = allVoices(new io.qt.core.QLocale(name));
+    return voices;
+}
+
+/**
+ * <p>See <code><a href="https://doc.qt.io/qt/qtexttospeech.html#findVoices">QTextToSpeech::<wbr>findVoices<Args...>(Args...)</a></code></p>
+ */
+public io.qt.core.QList<QVoice> findVoices(io.qt.core.@NonNull QLocale locale){
+    io.qt.core.QList<QVoice> voices = allVoices(locale);
+    return voices;
+}
+
+/**
+ * <p>See <code><a href="https://doc.qt.io/qt/qtexttospeech.html#findVoices">QTextToSpeech::<wbr>findVoices<Args...>(Args...)</a></code></p>
+ */
+public io.qt.core.QList<QVoice> findVoices(io.qt.core.QLocale.@NonNull Language language){
+    io.qt.core.QList<QVoice> voices = allVoices(new io.qt.core.QLocale(language));
+    return voices;
+}
+
+/**
+ * <p>See <code><a href="https://doc.qt.io/qt/qtexttospeech.html#findVoices">QTextToSpeech::<wbr>findVoices<Args...>(Args...)</a></code></p>
+ */
+public io.qt.core.QList<QVoice> findVoices(io.qt.core.QLocale.@NonNull Language language, io.qt.core.QLocale.@NonNull Country territory){
+    io.qt.core.QList<QVoice> voices = allVoices(new io.qt.core.QLocale(language, territory));
+    return voices;
+}
+
+/**
+ * <p>See <code><a href="https://doc.qt.io/qt/qtexttospeech.html#findVoices">QTextToSpeech::<wbr>findVoices<Args...>(Args...)</a></code></p>
+ */
+public io.qt.core.QList<QVoice> findVoices(io.qt.core.QLocale.@NonNull Language language, io.qt.core.QLocale.@NonNull Script script){
+    io.qt.core.QList<QVoice> voices = allVoices(new io.qt.core.QLocale(language, script));
+    return voices;
+}
+
+/**
+ * <p>See <code><a href="https://doc.qt.io/qt/qtexttospeech.html#findVoices">QTextToSpeech::<wbr>findVoices<Args...>(Args...)</a></code></p>
+ */
+public io.qt.core.QList<QVoice> findVoices(io.qt.core.QLocale.@NonNull Language language, io.qt.core.QLocale.@NonNull Script script, io.qt.core.QLocale.@NonNull Country territory){
+    io.qt.core.QList<QVoice> voices = allVoices(new io.qt.core.QLocale(language, script, territory));
+    return voices;
+}`
+            }
         }
     }
-    
+
     ObjectType{
         name: "QTextToSpeechEngine"
         ExtraIncludes{
@@ -73,7 +227,7 @@ TypeSystem{
             }
         }
     }
-    
+
     ObjectType{
         name: "QTextToSpeechPlugin"
         ExtraIncludes{
@@ -154,7 +308,7 @@ TypeSystem{
                           "}"}
         }
     }
-    
+
     ValueType{
         name: "QVoice"
 

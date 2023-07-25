@@ -105,6 +105,8 @@ private:
 
 namespace CoreAPI{
 
+QTJAMBI_EXPORT void ckeckLinkExtension(JNIEnv *env, QtJambiNativeID nativeId);
+
 QTJAMBI_EXPORT QReadWriteLock* objectDataLock();
 
 QTJAMBI_EXPORT jobject findObject(JNIEnv *env, const void * pointer);

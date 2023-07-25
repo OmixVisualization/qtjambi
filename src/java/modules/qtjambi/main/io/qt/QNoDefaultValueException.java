@@ -29,6 +29,10 @@
 ****************************************************************************/
 package io.qt;
 
+/**
+ * This exception is thrown when a default signal is defined without default parameter.
+ * @see io.qt.core.QObject.Signal1Default1
+ */
 public class QNoDefaultValueException extends QConnectionException
 {
     private static final long serialVersionUID = 1L;

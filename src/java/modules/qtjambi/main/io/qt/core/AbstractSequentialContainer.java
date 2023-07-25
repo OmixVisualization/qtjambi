@@ -27,7 +27,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************/
-package io.qt.internal;
+package io.qt.core;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,42 +37,61 @@ import java.util.List;
 
 import io.qt.QtUninvokable;
 
-public abstract class AbstractSequentialContainer<E> extends AbstractContainer<E> implements Collection<E>, Cloneable {
+/**
+ * Abstract superclass of sequential containers in Qt.
+ */
+abstract class AbstractSequentialContainer<T> extends AbstractContainer<T> implements Collection<T>, Cloneable {
 	
-    protected AbstractSequentialContainer(QPrivateConstructor p) {
+	/**
+     * {@inheritDoc}
+	 */
+    AbstractSequentialContainer(QPrivateConstructor p) {
 		super(p);
 	}
     
+    /**
+     * <p>Creates and returns a copy of this sequential container.</p>
+     */
     @Override
-    public abstract AbstractSequentialContainer<E> clone();
+    public abstract AbstractSequentialContainer<T> clone();
     
+    /**
+     * Returns an array containing all of the elements in this container.
+     */
 	@Override
     @QtUninvokable
-    public Object[] toArray() {
+    public final Object[] toArray() {
         Object[] result = new Object[size()];
         int i = 0;
-        for (E e : this) {
+        for (T e : this) {
             result[i++] = e;
         }
         return result;
     }
 
+    /**
+     * Returns an array containing all of the elements in this container.
+     */
     @SuppressWarnings("unchecked")
     @Override
     @QtUninvokable
-    public <T> T[] toArray(T[] a) {
+    public final <A> A[] toArray(A[] a) {
         if (a.length < size())
-            a = (T[])Arrays.copyOf(a, size(), a.getClass());
+            a = (A[])Arrays.copyOf(a, size(), a.getClass());
         int i = 0;
-        for (E e : this) {
-            a[i++] = (T)e;
+        for (T e : this) {
+            a[i++] = (A)e;
         }
         return a;
     }
 
+    /**
+     * Returns {@code true} if this container contains all of the elements
+     * in the specified collection.
+     */
 	@Override
     @QtUninvokable
-	public boolean containsAll(Collection<?> c) {
+	public final boolean containsAll(Collection<?> c) {
 		boolean result = true;
         for (Object object : c) {
             result &= contains(object);
@@ -80,19 +99,26 @@ public abstract class AbstractSequentialContainer<E> extends AbstractContainer<E
         return result;
 	}
 
+	/**
+     * Adds all of the elements in the specified collection to this container.
+     */
 	@Override
     @QtUninvokable
-    public boolean addAll(Collection<? extends E> c) {
+    public boolean addAll(Collection<? extends T> c) {
         boolean result = true;
-        for (E o : c) {
+        for (T o : c) {
             result &= this.add(o);
         }
         return result;
     }
 
+	/**
+     * Removes all of this container elements that are also contained in the
+     * specified collection.
+     */
 	@Override
     @QtUninvokable
-	public boolean removeAll(Collection<?> c) {
+	public final boolean removeAll(Collection<?> c) {
 		boolean result = true;
         for (Object o : c) {
             result &= this.remove(o);
@@ -100,11 +126,15 @@ public abstract class AbstractSequentialContainer<E> extends AbstractContainer<E
         return result;
 	}
 
+	/**
+     * Retains only the elements in this container that are contained in the
+     * specified collection.
+     */
 	@Override
     @QtUninvokable
 	public boolean retainAll(Collection<?> c) {
-		List<E> toBeRemoved = new ArrayList<>();
-		for(E e : this) {
+		List<T> toBeRemoved = new ArrayList<>();
+		for(T e : this) {
 			if(!c.contains(e))
 				toBeRemoved.add(e);
 		}
@@ -114,31 +144,34 @@ public abstract class AbstractSequentialContainer<E> extends AbstractContainer<E
         return !toBeRemoved.isEmpty();
 	}
 	
+    /**
+     * Returns an iterator over elements of type {@code T}.
+     * @return an Iterator
+     */
 	@Override
     @QtUninvokable
-	public final Iterator<E> iterator() {
+	public final Iterator<T> iterator() {
 		return constBegin().toJavaIterator();
 	}
 	
+    /**
+     * Returns a string representation of this sequential container.
+     * @return String
+     */
     @QtUninvokable
 	public String toString() {
-        Iterator<E> it = iterator();
+        Iterator<T> it = iterator();
         if (! it.hasNext())
             return "[]";
 
         StringBuilder sb = new StringBuilder();
         sb.append('[');
         for (;;) {
-            E e = it.next();
+            T e = it.next();
             sb.append(e == this ? "(this Collection)" : e);
             if (! it.hasNext())
                 return sb.append(']').toString();
             sb.append(',').append(' ');
         }
-    }
-
-    @QtUninvokable
-    protected java.util.Iterator<E> descendingIterator() {
-        return constEnd().toJavaDescendingIterator();
     }
 }

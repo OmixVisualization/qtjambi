@@ -308,4 +308,14 @@ inline hash_type qHash(const QAudioFormat& value, hash_type seed){
     return seed;
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+inline hash_type qHash(const QCapturableWindow &value, hash_type seed = 0)
+{
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.isValid());
+    seed = hash(seed, value.description());
+    return seed;
+}
+#endif
+
 #endif // QTJAMBIMULTIMEDIA_HASHES_H

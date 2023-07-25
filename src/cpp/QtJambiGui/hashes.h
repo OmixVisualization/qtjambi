@@ -584,10 +584,12 @@ inline hash_type qHash(const QQuaternion &value, hash_type seed = 0)
     return genericHash(value, seed);
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6,6,0)
 inline hash_type qHash(const QPixmapCache::Key &value, hash_type seed = 0)
 {
     return genericHash(value, seed);
 }
+#endif
 
 inline hash_type qHash(const QTextFragment &value, hash_type seed = 0)
 {

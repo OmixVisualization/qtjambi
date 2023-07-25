@@ -1464,9 +1464,12 @@ final class BundleGenerator {
 							copyQmlPaths(qmllibs, Collections.singletonList("QtWayland/Compositor"), jarFile, jarUtilFile, osArchName, isDebug, isForceDebugInfo, doc);
 						}else if("virtualkeyboard".equals(libPair.getKey())) {
 							copyQmlPaths(qmllibs, Collections.singletonList("QtQuick/VirtualKeyboard"), jarFile, jarUtilFile, osArchName, isDebug, isForceDebugInfo, doc);
+						}else if("quickeffects".equals(libPair.getKey())) {
+							copyQmlPaths(qmllibs, Collections.singletonList("QtQuickEffectMaker"), jarFile, jarUtilFile, osArchName, isDebug, isForceDebugInfo, doc);
 						}else if("qml".equals(libPair.getKey())) {
 							copyQmlPaths(qmllibs, Arrays.asList("QtQuick/LocalStorage",
 									"QtQml",
+									"QmlTime",
 									"QtQuick/Window",
 									"QtQuick/tooling"), jarFile, jarUtilFile, osArchName, isDebug, isForceDebugInfo, doc);
 							if(version.majorVersion()==5) {

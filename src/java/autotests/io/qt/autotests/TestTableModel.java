@@ -36,9 +36,12 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.QNoNativeResourcesException;
 import io.qt.core.QAbstractTableModel;
 import io.qt.core.QModelIndex;
+import io.qt.core.QTimer;
 import io.qt.core.Qt.Orientation;
+import io.qt.gui.QStandardItemModel;
 import io.qt.widgets.QApplication;
 import io.qt.widgets.QTableView;
 
@@ -50,7 +53,7 @@ public class TestTableModel extends ApplicationInitializer {
     }
 	
     @Test
-    public void test() throws InterruptedException, IOException {
+    public void testHeaderDataCalledWithRoles() throws InterruptedException, IOException {
     	Set<Integer> roles = new TreeSet<>();
     	QAbstractTableModel model = new QAbstractTableModel() {
 			
@@ -81,12 +84,32 @@ public class TestTableModel extends ApplicationInitializer {
 		QTableView view = new QTableView();
 		view.setModel(model);
 		view.show();
+		QTimer.singleShot(500, QApplication::quit);
+		QApplication.exec();
 //		QTimer.singleShot(15000, QApplication::quit);
 //		QApplication.exec();
-		QApplication.processEvents();
+//		QApplication.processEvents();
 		view.close();
 		view.dispose();
 		Assert.assertTrue("headerData called with role: "+roles, roles.size()>1);
+    }
+    
+    @Test
+    public void testIndexDangledModel() {
+    	class Model extends QStandardItemModel {
+			public QModelIndex createIndex() {
+				return super.createIndex(0, 0);
+			}
+    	}
+    	Model model = new Model();
+    	QModelIndex idx = model.createIndex();
+		Assert.assertEquals(model, idx.model());
+		model.dispose();
+		try {
+			idx.model();
+		} catch (QNoNativeResourcesException e) {
+			Assert.assertEquals("Dependent object has been deleted.", e.getMessage());
+		}
     }
 
     public static void main(String args[]) {

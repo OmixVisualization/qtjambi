@@ -35,21 +35,16 @@ TypeSystem{
     qtLibrary: "QtPdfWidgets"
     module: "qtjambi.pdfwidgets"
     description: "Classes and functions for rendering PDF documents in a widget."
-    Rejection{
-        className: "QPdfView"
-        functionName: "pageNavigator"
-    }
-    
-    EnumType{
-        name: "QPdfView::PageMode"
-    }
-    
-    EnumType{
-        name: "QPdfView::ZoomMode"
-    }
     
     ObjectType{
         name: "QPdfView"
+        Rejection{functionName: "pageNavigator"}
+        EnumType{
+            name: "PageMode"
+        }
+        EnumType{
+            name: "ZoomMode"
+        }
         ModifyFunction{
             signature: "setDocument(QPdfDocument *)"
             ModifyArgument{
@@ -60,5 +55,46 @@ TypeSystem{
                 }
             }
         }
+        ModifyFunction{
+            signature: "setSearchModel(QPdfSearchModel*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcSearchModel"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: [6, 6]
+        }
+    }
+
+    ObjectType{
+        name: "QPdfPageSelector"
+        ExtraIncludes{
+            /*Include{
+                fileName: "qtwidgets-config.h"
+                location: Include.Global
+                suppressed: true
+            }
+            Include{
+                fileName: "QtWidgets/qtwidgets-config.h"
+                location: Include.Global
+            }*/
+            Include{
+                fileName: "QtJambi/JavaAPI"
+                location: Include.Global
+            }
+        }
+        ModifyFunction{
+            signature: "setDocument(QPdfDocument *)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcDocument"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        since: [6, 6]
     }
 }

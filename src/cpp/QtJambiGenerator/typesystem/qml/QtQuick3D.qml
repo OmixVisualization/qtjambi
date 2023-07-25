@@ -76,6 +76,10 @@ TypeSystem{
     
     ObjectType{
         name: "QQuick3DGeometry"
+        ObjectType{
+            name: "TargetAttribute"
+            since: 6.6
+        }
 
         EnumType{
             name: "PrimitiveType"

@@ -79,6 +79,8 @@ namespace Internal{
 }
 
 namespace QtCore{
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QModelIndex,
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;))
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QString,
                                 QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;))
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QChar,
@@ -1059,7 +1061,14 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/net,URL,
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/net,URLConnection,
                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(getInputStream,()Ljava/io/InputStream;)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(getOutputStream,()Ljava/io/OutputStream;)
                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(getContentLengthLong,()J)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(getDoInput,()Z)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(getDoOutput,()Z)
+)
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/net,JarURLConnection,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(getJarEntry,()Ljava/util/jar/JarEntry;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/io,InputStream,
@@ -1071,6 +1080,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/io,InputStream,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/util/zip,ZipEntry,
                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(getName,()Ljava/lang/String;)
                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(getSize,()J)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(isDirectory,()Z)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,ClassLoader,

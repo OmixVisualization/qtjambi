@@ -4,7 +4,7 @@ import io.qt.QNoImplementationException;
 
 /**
  * <p>Allows monitoring a QFuture using signals and slots</p>
- * <p>Java wrapper for Qt class <a href="http://doc.qt.io/qt-5/qfuturewatcher.html">QFutureWatcher</a></p>
+ * <p>Java wrapper for Qt class <code><a href="http://doc.qt.io/qt/qfuturewatcher.html">QFutureWatcher</a></code></p>
  */
 public final class QFutureWatcher<T> extends io.qt.core.QFutureWatcherBase
 {
@@ -22,7 +22,7 @@ public final class QFutureWatcher<T> extends io.qt.core.QFutureWatcherBase
     }
     
     /**
-     * <p>See <a href="http://doc.qt.io/qt-5/qfuturewatcher.html#QFutureWatcher">QFutureWatcher::QFutureWatcher(QObject*)</a></p>
+     * <p>See <code><a href="http://doc.qt.io/qt/qfuturewatcher.html#QFutureWatcher">QFutureWatcher::<wbr>QFutureWatcher(QObject*)</a></code></p>
      */
     public QFutureWatcher(io.qt.core.QObject parent){
         super((QPrivateConstructor)null);
@@ -36,7 +36,7 @@ public final class QFutureWatcher<T> extends io.qt.core.QFutureWatcherBase
     private native static <T> void initialize_native(QFutureWatcher<T> instance, io.qt.core.QObject parent, long[] functions);
     
     /**
-     * <p>See <a href="http://doc.qt.io/qt-5/qfuturewatcher.html#future">QFutureWatcher::future()const</a></p>
+     * <p>See <code><a href="http://doc.qt.io/qt/qfuturewatcher.html#future">QFutureWatcher::<wbr>future()const</a></code></p>
      */
     @io.qt.QtUninvokable
     public final io.qt.core.QFuture<T> future(){
@@ -47,7 +47,7 @@ public final class QFutureWatcher<T> extends io.qt.core.QFutureWatcherBase
     private static native <T> io.qt.core.QFuture<T> future(long nativeId, long futureGetter);
     
     /**
-     * <p>See <a href="http://doc.qt.io/qt-5/qfuturewatcher.html#result">QFutureWatcher::result()const</a></p>
+     * <p>See <code><a href="http://doc.qt.io/qt/qfuturewatcher.html#result">QFutureWatcher::<wbr>result()const</a></code></p>
      */
     @io.qt.QtUninvokable
     public final T result(){
@@ -55,7 +55,7 @@ public final class QFutureWatcher<T> extends io.qt.core.QFutureWatcherBase
     }
     
     /**
-     * <p>See <a href="http://doc.qt.io/qt-5/qfuturewatcher.html#resultAt">QFutureWatcher::resultAt(int)const</a></p>
+     * <p>See <code><a href="http://doc.qt.io/qt/qfuturewatcher.html#resultAt">QFutureWatcher::<wbr>resultAt(int)const</a></code></p>
      */
     @io.qt.QtUninvokable
     public final T resultAt(int index){
@@ -68,7 +68,7 @@ public final class QFutureWatcher<T> extends io.qt.core.QFutureWatcherBase
     private static native <T> T resultAt(long nativeId, long futureResult, int index);
     
     /**
-     * <p>See <a href="http://doc.qt.io/qt-5/qfuturewatcher.html#setFuture">QFutureWatcher::setFuture(QFuture&lt;T&gt;)</a></p>
+     * <p>See <code><a href="http://doc.qt.io/qt/qfuturewatcher.html#setFuture">QFutureWatcher::<wbr>setFuture(QFuture&lt;T&gt;)</a></code></p>
      */
     @io.qt.QtUninvokable
     public final void setFuture(io.qt.core.QFuture<T> future){

@@ -343,10 +343,10 @@
 					</then>
 					<else>
 						<copy file="${plugindestdir}/qml/${module}.jar" 
-							  tofile="${deploymentdir}/${moduledash}-native-android-common-${qtjambi.jar.version}.jar"/>
+							  tofile="${deploymentdir}/native/${moduledash}-native-android-common-${qtjambi.jar.version}.jar"/>
 						<copy file="${outputDir}/qml/${module}-sources.jar" 
-							  tofile="${deploymentdir}/${moduledash}-native-android-common-${qtjambi.jar.version}-sources.jar"/>
-						<jar destfile="${deploymentdir}/${moduledash}-native-android-common-${qtjambi.jar.version}-javadoc.jar">
+							  tofile="${deploymentdir}/sources/${moduledash}-native-android-common-${qtjambi.jar.version}-sources.jar"/>
+						<jar destfile="${deploymentdir}/javadocs/${moduledash}-native-android-common-${qtjambi.jar.version}-javadoc.jar">
 							<fileset dir="${deploymentdir}/" includes="*.neverexisting" followsymlinks="false"/>
 						</jar>
 					</else>
@@ -398,7 +398,7 @@
 						</if>
 					</else>
 				</if>
-				<condition property="qmltargetdir" value="${outputDir}/${targetdirname}/tests" else="${deploymentdir}">
+				<condition property="qmltargetdir" value="${outputDir}/${targetdirname}/tests" else="${deploymentdir}/native">
 					<istrue value="${qtjambi.testbuild}"/>
 				</condition>
 				<echo>jar-includes=${qmltargetdir}/${subdir}/${jar-includes}</echo>

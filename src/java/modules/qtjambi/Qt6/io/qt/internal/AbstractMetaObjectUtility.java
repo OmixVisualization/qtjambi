@@ -310,4 +310,9 @@ abstract class AbstractMetaObjectUtility {
     			|| cls==QStack.class
     			|| cls==QSet.class;
     }
+    
+    static boolean isSequentialContainer(Class<?> cls) {
+    	return QList.class.isAssignableFrom(cls)
+    			|| QSet.class.isAssignableFrom(cls);
+    }
 }

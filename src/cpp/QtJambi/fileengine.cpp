@@ -778,9 +778,7 @@ public:
         return true;
     }
 
-    FileFlags fileFlags(FileFlags) const override {
-        return ExistsFlag | FileType | ReadGroupPerm | ReadOtherPerm | ReadOwnerPerm | ReadUserPerm;
-    }
+    FileFlags fileFlags(FileFlags) const override;
 
     QString classPathEntryName() const override {
         return m_classPathEntryFileName;
@@ -792,6 +790,7 @@ private:
     JObjectWrapper m_connection;
     JObjectWrapper m_inputStream;
     qint64 m_size;
+    FileFlags m_flags;
 };
 
 class QClassPathEngine final : public QAbstractFileEngine {
@@ -1414,7 +1413,7 @@ bool QClassPathEngine::addFromPath(JNIEnv* env, jobject url, const QString& file
         url = Java::QtJambi::ResourceUtility::resolveUrlFromPath(env, qtjambi_cast<jstring>(env, urlPath));
         if(url){
             QUrlEntryEngine* engine = new QUrlEntryEngine(env, url, fileName, urlPath);
-            if(engine->size()>0) {
+            if(engine->fileFlags(QAbstractFileEngine::FileInfoAll).testFlag(QAbstractFileEngine::ExistsFlag)) {
                 QMutexLocker locker(&m_mutex);
                 m_engines << engine;
                 return true;
@@ -1433,13 +1432,26 @@ QUrlEntryEngine::QUrlEntryEngine(JNIEnv* env, jobject url, const QString& fileNa
       m_fileName(fileName),
       m_connection(),
       m_inputStream(),
-      m_size(0)
+      m_size(-1),
+      m_flags()
 {
     try{
         jobject connection = Java::Runtime::URL::openConnection(env, url);
         if(connection){
             m_connection = {env, connection};
             m_size = Java::Runtime::URLConnection::getContentLengthLong(env, connection);
+            m_flags.setFlag(ExistsFlag);
+            if(Java::Runtime::JarURLConnection::isInstanceOf(env, connection)
+                && Java::Runtime::ZipEntry::isDirectory(env, Java::Runtime::JarURLConnection::getJarEntry(env, connection))){
+                m_flags.setFlag(DirectoryType);
+            }else if(m_size==0){
+                m_flags.setFlag(DirectoryType);
+            }else{
+                m_flags.setFlag(FileType);
+            }
+            if(Java::Runtime::URLConnection::getDoInput(env, connection)){
+                m_flags |= ReadGroupPerm | ReadOtherPerm | ReadOwnerPerm | ReadUserPerm;
+            }
         }
     }catch(const JavaException& exn){
         exn.report(env);
@@ -1471,7 +1483,7 @@ bool QUrlEntryEngine::open(QIODevice::OpenMode openMode
          ,std::optional<QFile::Permissions>
 #endif
         ) {
-    if((openMode & QIODevice::ReadOnly) && !m_inputStream){
+    if((openMode & QIODevice::ReadOnly) && !m_inputStream && !m_flags.testFlag(DirectoryType)){
         if(JniEnvironment env{400}){
             try{
                 m_inputStream = JObjectWrapper(env, Java::Runtime::URLConnection::getInputStream(env, m_connection.object()));
@@ -1498,6 +1510,10 @@ bool QUrlEntryEngine::close() {
         }
     }
     return false;
+}
+
+QAbstractFileEngine::FileFlags QUrlEntryEngine::fileFlags(FileFlags f) const {
+    return m_flags & f;
 }
 
 class AccessResource : public QResource{

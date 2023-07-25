@@ -126,7 +126,7 @@ class __QtQml__ extends QtQml{
     }
     
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qqmlengine.html#qmlRegisterSingletonInstance">qmlRegisterSingletonInstance(const char*,int,int,const char*,QObject*)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qqmlengine.html#qmlRegisterSingletonInstance"><code>qmlRegisterSingletonInstance(const char*,int,int,const char*,QObject*)</code></a></p>
      */
     public static int qmlRegisterSingletonInstance(String uri, int versionMajor, int versionMinor, String qmlName, QObject instance){
         java.util.Objects.requireNonNull(instance);
@@ -205,7 +205,7 @@ class QJSEngine_63_{
 class QQmlEngine__{
     
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qqmlengine.html#singletonInstance">QQmlEngine::singletonInstance(int)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qqmlengine.html#singletonInstance"><code>QQmlEngine::singletonInstance(int)</code></a></p>
      */
     @QtUninvokable
     public final <T extends QtObjectInterface> T singletonInstance(Class<T> type, int qmlTypeId) {
@@ -220,7 +220,7 @@ class QQmlEngine__{
 class QQmlEngine_65_{
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qqmlengine.html#singletonInstance-1">QQmlEngine::singletonInstance(QAnyStringView,QAnyStringView)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qqmlengine.html#singletonInstance-1"><code>QQmlEngine::singletonInstance(QAnyStringView,QAnyStringView)</code></a></p>
      */
     @QtUninvokable
     public final <T extends QtObjectInterface> T singletonInstance(Class<T> type, java.lang.@NonNull String moduleName, java.lang.@NonNull String typeName) {

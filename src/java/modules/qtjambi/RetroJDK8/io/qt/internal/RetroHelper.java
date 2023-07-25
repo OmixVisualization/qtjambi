@@ -34,11 +34,10 @@ import java.lang.reflect.*;
 import java.lang.management.*;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
-import java.util.Optional;
-import java.util.Set;
-import java.util.HashSet;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.net.*;
 import java.io.File;
 
 final class RetroHelper {
@@ -202,6 +201,10 @@ final class RetroHelper {
     static void onExit(Runnable runnable) {
         Runtime.getRuntime().addShutdownHook(new Thread(runnable));
     }
+	
+	static List<URI> moduleLocations() {
+		return Collections.emptyList();
+	}
     
     static Set<ClassLoader> classLoaders(){
         Set<ClassLoader> result = new HashSet<>();

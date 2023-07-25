@@ -2334,10 +2334,10 @@ AbstractContainerAccess* createPreparedContainerAccess(JNIEnv* env, SequentialCo
         #endif
                                                                  isPointer,
                                                                  hashFunction,
-                                                                 [](JNIEnv*, QtJambiScope*, const void*, jvalue*, bool)->bool{
+                                                                 [](JNIEnv*, QtJambiScope*, const void*, jvalue&, bool)->bool{
                                                                       return false;
                                                                  },
-                                                                 [](JNIEnv*, QtJambiScope*, const jvalue&, void* &, jValueType) -> bool{
+                                                                 [](JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType) -> bool{
                                                                       return false;
                                                                  });
     }
@@ -2391,10 +2391,10 @@ AbstractContainerAccess* createPreparedContainerAccess(JNIEnv* env, AssociativeC
                                    align1, size1,
                                    isPointer1,
                                    hashFunction1,
-                                   [](JNIEnv*, QtJambiScope*, const void*, jvalue*, bool)->bool{
+                                   [](JNIEnv*, QtJambiScope*, const void*, jvalue&, bool)->bool{
                                         return false;
                                    },
-                                   [](JNIEnv*, QtJambiScope*, const jvalue&, void* &, jValueType) -> bool{
+                                   [](JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType) -> bool{
                                         return false;
                                    },
                                    isPointer2 && !memberMetaType2.isValid() ? voidPtr : memberMetaType2,
@@ -2402,10 +2402,10 @@ AbstractContainerAccess* createPreparedContainerAccess(JNIEnv* env, AssociativeC
                                    size2,
                                    isPointer2,
                                    hashFunction2,
-                                   [](JNIEnv*, QtJambiScope*, const void*, jvalue*, bool)->bool{
+                                   [](JNIEnv*, QtJambiScope*, const void*, jvalue&, bool)->bool{
                                         return false;
                                    },
-                                   [](JNIEnv*, QtJambiScope*, const jvalue&, void* &, jValueType) -> bool{
+                                   [](JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType) -> bool{
                                         return false;
                                    });
     return containerAccess;

@@ -33,12 +33,22 @@ import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.Vector;
 
+import io.qt.core.QObject;
+
+/**
+ * This exception is thrown when a string-based slot representation cannot be resolved in a class.
+ * @see QObject#connect(QObject, String, QObject, String, io.qt.core.Qt.ConnectionType...)
+ * @see QObject#disconnect(QObject, String, QObject, String)
+ */
 public class QNoSuchSlotException extends QConnectionException {
     private static final long serialVersionUID = 1L;
     private Object receiver;
     private String slotSignature;
     private String message;
 
+    /**
+     * @hidden
+     */
     public QNoSuchSlotException(String message) {
         if (message != null)
             this.message = message;
@@ -46,6 +56,9 @@ public class QNoSuchSlotException extends QConnectionException {
             this.message = "";
     }
 
+    /**
+     * @hidden
+     */
     public QNoSuchSlotException(Object receiver, String slotSignature) {
         this.receiver = receiver;
         this.slotSignature = slotSignature;

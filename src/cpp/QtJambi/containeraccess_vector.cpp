@@ -524,6 +524,7 @@ void AutoVectorAccess::appendVector(JNIEnv * env, void* container, jobject list)
     }else{
         QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container);
         jobject iter = QtJambiAPI::iteratorOfJavaCollection(env, list);
+        reserve(env, container, jint((*vector)->size + QtJambiAPI::sizeOfJavaCollection(env, list)));
         while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
             insert(env, container, (*vector)->size, 1, QtJambiAPI::nextOfJavaIterator(env, iter));
         }
@@ -539,7 +540,7 @@ jobject AutoVectorAccess::at(JNIEnv * env, const void* container, jint index)
     Q_ASSERT_X(index >= 0 && index < d->size, "QVector<T>::at", "index out of range");
     char* data = d->data();
     void* v = data + index*m_offset;
-    if(m_internalToExternalConverter(env, nullptr, v, &_value, true)){
+    if(m_internalToExternalConverter(env, nullptr, v, _value, true)){
         return _value.l;
     }
     return nullptr;
@@ -554,12 +555,12 @@ jobject AutoVectorAccess::value(JNIEnv * env, const void* container, jint index)
     if(index >= 0 && index < d->size){
         char* data = d->data();
         void* v = data + index*m_offset;
-        if(m_internalToExternalConverter(env, nullptr, v, &_value, true)){
+        if(m_internalToExternalConverter(env, nullptr, v, _value, true)){
             return _value.l;
         }
     }else{
         void* ptr = m_elementMetaType.create();
-        bool success = m_internalToExternalConverter(env, nullptr, ptr, &_value, true);
+        bool success = m_internalToExternalConverter(env, nullptr, ptr, _value, true);
         m_elementMetaType.destroy(ptr);
         if(success)
             return _value.l;
@@ -576,7 +577,7 @@ jobject AutoVectorAccess::value(JNIEnv * env, const void* container, jint index,
     if(index >= 0 && index < d->size){
         char* data = d->data();
         void* v = data + index*m_offset;
-        if(m_internalToExternalConverter(env, nullptr, v, &_value, true)){
+        if(m_internalToExternalConverter(env, nullptr, v, _value, true)){
             return _value.l;
         }
     }else{

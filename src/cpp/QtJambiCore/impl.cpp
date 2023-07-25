@@ -5793,9 +5793,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QC
             }
         };
         if(context)
-            __qt_this->requestPermission<decltype(functor)>(*reinterpret_cast<QPermission*>(&pm), context, functor);
+            __qt_this->requestPermission<decltype(functor)>(*reinterpret_cast<QPermission*>(&pm), context, std::move(functor));
         else
-            __qt_this->requestPermission<decltype(functor)>(*reinterpret_cast<QPermission*>(&pm), functor);
+            __qt_this->requestPermission<decltype(functor)>(*reinterpret_cast<QPermission*>(&pm), std::move(functor));
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -5821,9 +5821,9 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QC
             }
         };
         if(context)
-            __qt_this->requestPermission<decltype(functor)>(*reinterpret_cast<QPermission*>(&pm), context, functor);
+            __qt_this->requestPermission<decltype(functor)>(*reinterpret_cast<QPermission*>(&pm), context, std::move(functor));
         else
-            __qt_this->requestPermission<decltype(functor)>(*reinterpret_cast<QPermission*>(&pm), functor);
+            __qt_this->requestPermission<decltype(functor)>(*reinterpret_cast<QPermission*>(&pm), std::move(functor));
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END

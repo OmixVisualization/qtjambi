@@ -128,8 +128,8 @@ struct QTJAMBI_EXPORT ConstructorInfo{
 class QtJambiScope;
 
 struct QTJAMBI_EXPORT ParameterInfo{
-    typedef bool(*QtToJavaConverterFunction)(JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* out, bool forceBoxedType);
-    typedef bool(*JavaToQtConverterFunction)(JNIEnv* env, QtJambiScope* scope, const jvalue&val, void* &out, jValueType valueType);
+    typedef bool(*QtToJavaConverterFunction)(JNIEnv* env, QtJambiScope* scope, const void* in, jvalue& out, bool forceBoxedType);
+    typedef bool(*JavaToQtConverterFunction)(JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType valueType);
     int metaTypeId = 0;
     const char* javaClass = nullptr;
     QtToJavaConverterFunction qtToJavaConverterFunction = nullptr;

@@ -35,10 +35,6 @@ TypeSystem{
     qtLibrary: "QtWebChannel"
     module: "qtjambi.webchannel"
     description: "Provides access to QObject or QML objects from HTML clients for seamless integration of Qt applications with HTML/JavaScript clients."
-    Rejection{
-        className: "QQmlWebChannel"
-        functionName: "qmlAttachedProperties"
-    }
     
     Rejection{
         className: "QQmlWebChannelAttached"
@@ -54,6 +50,9 @@ TypeSystem{
     
     ObjectType{
         name: "QQmlWebChannel"
+        Rejection{
+            functionName: "qmlAttachedProperties"
+        }
         ExtraIncludes{
             Include{
                 fileName: "QtJambiQml/hashes.h"
@@ -69,6 +68,7 @@ TypeSystem{
                 }
             }
         }
+        until: 6.5
     }
     
     ObjectType{

@@ -32,20 +32,18 @@ package io.qt.core;
 import io.qt.NativeAccess;
 import io.qt.QtObject;
 import io.qt.QtUninvokable;
-import io.qt.internal.AbstractSequentialIterator;
 
 /**
- * <p>Java-iterable wrapper for Qt's iterator types:
+ * <p>Java-iterable wrapper for Qt's iterator types:</p>
  * <ul>
  * <li><a href="https://doc.qt.io/qt/qlist-iterator.html">QList&lt;T>::iterator</a></li>
  * <li>and all other sequential iterators</li>
  * </ul>
- * </p>
  * @param <T> value type
  * @see QList#begin()
  * @see QList#end()
  */
-public final class QSequentialIterator<T> extends QSequentialConstIterator<T> implements AbstractSequentialIterator<T> {
+public final class QSequentialIterator<T> extends QSequentialConstIterator<T>{
     
 	@NativeAccess
     private QSequentialIterator(QtObject owner) { 
@@ -66,8 +64,11 @@ public final class QSequentialIterator<T> extends QSequentialConstIterator<T> im
     @QtUninvokable
     private static native <T> boolean setValue(long __this__nativeId, T newValue);
 
+	/**
+	 * Specifies if this type is constant iterator.
+	 */
 	@Override
-	protected boolean isConstant() {
+	boolean isConstant() {
 		return false;
 	}
 }

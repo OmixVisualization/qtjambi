@@ -29,6 +29,10 @@
 
 package io.qt;
 
+/**
+ * Error thrown when QtJambi is not able to unpack bundled library.
+ * @see QtUtilities#loadQtLibrary(String)
+ */
 public class QLibraryNotLoadedError extends LinkageError {
 	private static final long serialVersionUID = 2845865903138526930L;
 

@@ -71,8 +71,8 @@ public:
     ParameterTypeInfo(ParameterTypeInfo&& other);
     ParameterTypeInfo& operator=(ParameterTypeInfo&& other);
 
-    bool convertInternalToExternal(JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* out, bool forceBoxedType) const;
-    bool convertExternalToInternal(JNIEnv* env, QtJambiScope* scope, const jvalue& in,void* & out, jValueType valueType) const;
+    bool convertInternalToExternal(JNIEnv* env, QtJambiScope* scope, const void* in, jvalue& out, bool forceBoxedType) const;
+    bool convertExternalToInternal(JNIEnv* env, QtJambiScope* scope, jvalue in,void* & out, jValueType valueType) const;
     jclass javaClass() const;
     int metaType() const;
     static InternalToExternalConverter default_internalToExternalConverter();

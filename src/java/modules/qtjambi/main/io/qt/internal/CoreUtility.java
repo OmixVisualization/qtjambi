@@ -32,6 +32,7 @@ package io.qt.internal;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.util.function.Function;
 
 import io.qt.QtObject;
 import io.qt.QtSignalEmitterInterface;
@@ -105,5 +106,9 @@ public abstract class CoreUtility {
     
     protected static void addClassPath(URL path) {
     	ResourceUtility.addSearchPath(path);
+    }
+    
+    protected static <A,B> Function<A,B> functionFromMethod(Method method){
+    	return ReflectionUtility.functionFromMethod(method);
     }
 }

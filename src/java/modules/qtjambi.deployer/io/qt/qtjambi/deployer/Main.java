@@ -31,11 +31,12 @@ package io.qt.qtjambi.deployer;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
@@ -171,16 +172,27 @@ public class Main {
 			Logger.getLogger("io.qt").log(Level.WARNING, "", e);
 		}
         if(!specsFound.hasMoreElements()) {
-			String classURL = ""+Main.class.getResource("Main.class");
-	    	int index;
-	    	if(classURL.startsWith("jar:file:") && (index = classURL.indexOf("!/"))>0) {
-	    		String jarFileURL = classURL.substring(4, index);
+        	URL url = Main.class.getResource("Main.class");
+        	if(url!=null) {
+	        	String classURL = url.toString();
+		    	int index;
 	    		File jarFile = null;
-	    		try {
-					jarFile = new File(new URL(jarFileURL).toURI());
-				} catch (URISyntaxException e) {
-				}
-	    		if(jarFile!=null && jarFile.exists()) {
+		    	if(classURL.startsWith("jar:file:") && (index = classURL.indexOf("!/"))>0) {
+		    		String jarFileURL = classURL.substring(4, index);
+		    		try {
+						jarFile = new File(new URL(jarFileURL).toURI());
+					} catch (URISyntaxException e) {
+					}
+		    	}else {
+		    		try {
+						URLConnection connection = url.openConnection();
+						if(connection instanceof JarURLConnection) {
+							jarFile = new File(((JarURLConnection) connection).getJarFile().getName());
+						}
+					} catch (Throwable e1) {
+					}
+		    	}
+		    	if(jarFile!=null && jarFile.exists()) {
 	    			File directory = jarFile.getParentFile();
 	    			String fileName = jarFile.getName();
 	    			String suffix = String.format("-%1$s.jar", QtUtilities.qtjambiVersion().toString());
@@ -194,10 +206,19 @@ public class Main {
 	    					foundURLs.add(nativeFileURL);
 	    				}
 	    			}
+	    			if(foundURLs.isEmpty()) {
+	    				for(String jar : new File(directory, "native").list()) {
+		    				if(jar.startsWith(fileName) && jar.endsWith(suffix)) {
+		    					File nativeFile = new File(new File(directory, "native"), jar);
+		    					URL nativeFileURL = new URL("jar:"+nativeFile.toURI()+"!/qtjambi-utilities.xml");
+		    					foundURLs.add(nativeFileURL);
+		    				}
+		    			}
+	    			}
 	    			if(!foundURLs.isEmpty())
 	    				specsFound = Collections.enumeration(foundURLs);
 	    		}
-	    	}
+        	}
         }
     	return specsFound;
 	}

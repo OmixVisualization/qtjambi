@@ -137,7 +137,7 @@ class InternalToExternalConverterPointerData : public InternalToExternalConverte
 public:
     inline InternalToExternalConverterPointerData(InternalToExternalConverter::FunctionPointer functionPointer) noexcept
      : m_functionPointer(functionPointer){Q_ASSERT(functionPointer);}
-    inline bool invoke(JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* out, bool forceBoxedType) const override
+    inline bool invoke(JNIEnv* env, QtJambiScope* scope, const void* in, jvalue& out, bool forceBoxedType) const override
      { return m_functionPointer(env, scope, in, out, forceBoxedType); }
 private:
     InternalToExternalConverter::FunctionPointer m_functionPointer;
@@ -164,7 +164,7 @@ bool InternalToExternalConverter::operator !() const noexcept{
     return !d;
 }
 
-bool InternalToExternalConverter::operator()(JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* out, bool forceBoxedType) const{
+bool InternalToExternalConverter::operator()(JNIEnv* env, QtJambiScope* scope, const void* in, jvalue& out, bool forceBoxedType) const{
     Q_ASSERT(d);
     return d->invoke(env, scope, in, out, forceBoxedType);
 }
@@ -173,7 +173,7 @@ class ExternalToInternalConverterPointerData : public ExternalToInternalConverte
 public:
     inline ExternalToInternalConverterPointerData(ExternalToInternalConverter::FunctionPointer functionPointer) noexcept
      : m_functionPointer(functionPointer){Q_ASSERT(functionPointer);}
-    inline bool invoke(JNIEnv* env, QtJambiScope* scope, const jvalue&val, void* &out, jValueType valueType) const override
+    inline bool invoke(JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType valueType) const override
      { return m_functionPointer(env, scope, val, out, valueType); }
 private:
     ExternalToInternalConverter::FunctionPointer m_functionPointer;
@@ -200,7 +200,7 @@ bool ExternalToInternalConverter::operator !() const noexcept{
     return !d;
 }
 
-bool ExternalToInternalConverter::operator()(JNIEnv* env, QtJambiScope* scope, const jvalue&val, void* &out, jValueType valueType) const{
+bool ExternalToInternalConverter::operator()(JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType valueType) const{
     Q_ASSERT(d);
     return d->invoke(env, scope, val, out, valueType);
 }

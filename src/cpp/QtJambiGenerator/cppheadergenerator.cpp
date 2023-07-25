@@ -518,8 +518,26 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
         if(!needsAccess){
             for(const MetaField *field : java_class->fields()) {
                 if (field->wasProtected()){
-                    needsAccess = true;
-                    break;
+                    FieldModification mod = java_class->typeEntry()->fieldModification(field->name());
+                    if(mod.isReadable()){
+                        needsAccess = true;
+                        break;
+                    }
+                    bool isWritable = true;
+                    if(field->type()->isConstant()){
+                        if(field->type()->indirections().isEmpty()){
+                            isWritable = false;
+                        }else if(field->type()->indirections()[0]){
+                            isWritable = false;
+                        }
+                    }else if(!field->type()->indirections().isEmpty()
+                               && field->type()->indirections()[0]){
+                        isWritable = false;
+                    }
+                    if (mod.isWritable() && isWritable) {
+                        needsAccess = true;
+                        break;
+                    }
                 }
             }
         }

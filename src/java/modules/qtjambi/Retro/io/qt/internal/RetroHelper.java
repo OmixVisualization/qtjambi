@@ -36,7 +36,10 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
@@ -325,6 +328,15 @@ final class RetroHelper {
     
     static String processName() {
     	return implementor.processName();
+    }
+    
+    static List<URI> moduleLocations() {
+    	List<URI> result = new ArrayList<>();
+    	try {
+    		ModuleLayer.boot().configuration().modules().forEach(rm->{rm.reference().location().ifPresent(result::add);});
+    	} catch (Throwable e2) {
+        }
+    	return result;
     }
     
     static Set<ClassLoader> classLoaders(){

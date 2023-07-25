@@ -260,16 +260,16 @@ void test(JNIEnv *env){
     {
         InternalToExternalConverter c1;
         InternalToExternalConverter c2 = c1;
-        InternalToExternalConverter c3 = [](JNIEnv*, QtJambiScope*, const void*, jvalue*, bool)->bool{return false;};
-        InternalToExternalConverter c4([](JNIEnv*, QtJambiScope*, const void*, jvalue*, bool)->bool{return false;});
-        InternalToExternalConverter c5(InternalToExternalConverter([](JNIEnv*, QtJambiScope*, const void*, jvalue*, bool)->bool{return false;}));
+        InternalToExternalConverter c3 = [](JNIEnv*, QtJambiScope*, const void*, jvalue&, bool)->bool{return false;};
+        InternalToExternalConverter c4([](JNIEnv*, QtJambiScope*, const void*, jvalue&, bool)->bool{return false;});
+        InternalToExternalConverter c5(InternalToExternalConverter([](JNIEnv*, QtJambiScope*, const void*, jvalue&, bool)->bool{return false;}));
     }
     {
         ExternalToInternalConverter c1;
         ExternalToInternalConverter c2 = c1;
-        ExternalToInternalConverter c3 = [](JNIEnv*, QtJambiScope*, const jvalue&, void* &, jValueType)->bool{return false;};
-        ExternalToInternalConverter c4([](JNIEnv*, QtJambiScope*, const jvalue&, void* &, jValueType)->bool{return false;});
-        ExternalToInternalConverter c5(ExternalToInternalConverter([](JNIEnv*, QtJambiScope*, const jvalue&, void* &, jValueType)->bool{return false;}));
+        ExternalToInternalConverter c3 = [](JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType)->bool{return false;};
+        ExternalToInternalConverter c4([](JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType)->bool{return false;});
+        ExternalToInternalConverter c5(ExternalToInternalConverter([](JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType)->bool{return false;}));
     }
     {
         QStringList l;

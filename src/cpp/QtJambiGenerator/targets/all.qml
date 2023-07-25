@@ -74,6 +74,7 @@ TypeSystem{
     LoadTypeSystem{name: "Qt3DQuickScene2D";    generate: true; unless: "QTJAMBI_NO_QT3DQUICKSCENE2D"; since: [5, 11]}
     LoadTypeSystem{name: "QtWebSockets";        generate: true; unless: "QTJAMBI_NO_WEBSOCKETS"}
     LoadTypeSystem{name: "QtWebChannel";        generate: true; unless: "QTJAMBI_NO_WEBCHANNEL"}
+    LoadTypeSystem{name: "QtWebChannelQuick";   generate: true; unless: "QTJAMBI_NO_WEBCHANNELQUICK";  since: 6.6}
     LoadTypeSystem{name: "QtWebEngine";         generate: true; unless: "QTJAMBI_NO_WEBENGINE";        until: 5}
     LoadTypeSystem{name: "QtWebEngineQuick";    generate: true; unless: "QTJAMBI_NO_WEBENGINEQUICK";   since: 6}
     LoadTypeSystem{name: "QtWebEngineWidgets";  generate: true; unless: "QTJAMBI_NO_WEBENGINEWIDGETS"}

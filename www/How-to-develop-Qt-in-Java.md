@@ -13,7 +13,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `5.15.14` or by `6.5.1`).
+(exchange `$VERSION` either by `5.15.16` or by `6.5.2`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 Find the [list of all available QtJambi modules](www/Modules.md).
@@ -36,7 +36,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.5.1.jar Test.java
+javac -cp qtjambi-6.5.2.jar Test.java
 ```
 
 ## Executing Example
@@ -57,26 +57,29 @@ macOS) or the Java runtime property **java.library.path**.
 The example program can be executed this way on Windows:
 
 ``` powershell
-java -cp qtjambi-6.5.1.jar;qtjambi-native-windows-x64-6.5.1.jar;. -Djava.library.path=C:\Qt\6.5.1\msvc2019_64\bin Test
+java -cp qtjambi-6.5.2.jar;qtjambi-native-windows-x64-6.5.2.jar;. -Djava.library.path=C:\Qt\6.5.1\msvc2019_64\bin Test
 ```
 
 On Linux it looks this way:
 
 ``` bash
-java -cp qtjambi-6.5.1.jar:qtjambi-native-linux-x64-6.5.1.jar:. -Djava.library.path=<path to>/Qt/6.5.1/gcc_64/lib Test
+java -cp qtjambi-6.5.2.jar:qtjambi-native-linux-x64-6.5.2.jar:. -Djava.library.path=<path to>/Qt/6.5.1/gcc_64/lib Test
 ```
 
 On macOS you additionally need to use the start parameter -XstartOnFirstThread:
 
 ``` bash
-java -cp qtjambi-6.5.1.jar:qtjambi-native-macos-6.5.1.jar:. -Djava.library.path=<path to>/Qt/6.5.1/macos/lib -XstartOnFirstThread Test
+java -cp qtjambi-6.5.2.jar:qtjambi-native-macos-6.5.2.jar:. -Djava.library.path=<path to>/Qt/6.5.1/macos/lib -XstartOnFirstThread Test
 ```
 
 ### Native Components
 
-QtJambi automatically detects the required native component jars if they are located next to their Java counterparts.
-You can simply skip `qtjambi-native-OS-VERSION.jar` in your classpath (`-cp`). Nevertheless, `qtjambi-native-OS-VERSION.jar` bundles are
-extracted every time at program startup. By default, this is a process specific temporal directory purged after program shutdown.
+QtJambi automatically detects the required native component jars if they are located next to their Java counterparts or in a subfolder `native`.
+You can simply skip `qtjambi-native-OS-VERSION.jar` in your classpath (`-cp`).
+
+If you intend to use automatic module loading (`java -p <dir>`) you strictly need to place native components in `native` subfolder next to `qtjambi-6.5.2.jar`.
+
+Native bundles are extracted every time at program startup. By default, this is a process specific temporal directory purged after program shutdown.
 Alternatively, you can use Java system property `io.qt.deploymentdir` to let libraries to be exctacted and persist in user 
 application data path or common directory ([see below](#library-management)).
 
@@ -94,9 +97,9 @@ here](How-to-deploy-QtJambi-applications.md).
 [Read more about developing applications for Android](Android.md).
 
 See [QtJambi 5.15 API Reference
-Documentation](https://doc.qtjambi.io/5.15.14/),
+Documentation](https://doc.qtjambi.io/5.15.16/),
 and [QtJambi 6.5 API Reference
-Documentation](https://doc.qtjambi.io/6.5.1/)
+Documentation](https://doc.qtjambi.io/6.5.2/)
 
 ## Useful Java System Properties for QtJambi
 

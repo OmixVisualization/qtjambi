@@ -459,7 +459,7 @@ public:
         jvalue _value;
         _value.l = nullptr;
         QTJAMBI_ELEMENT_LOCKER
-        bool success = m_internalToExternalConverter(env, nullptr, &(*(*iter)), &_value, true);
+        bool success = m_internalToExternalConverter(env, nullptr, &(*(*iter)), _value, true);
         if(success){
             return _value.l;
         }
@@ -588,7 +588,7 @@ public:
         jvalue _value;
         _value.l = nullptr;
         QTJAMBI_KEY_VALUE_LOCKER
-        bool success = m_valueInternalToExternalConverter(env, nullptr, &(iter->value()), &_value, true);
+        bool success = m_valueInternalToExternalConverter(env, nullptr, &(iter->value()), _value, true);
         if(success){
             return _value.l;
         }
@@ -600,7 +600,7 @@ public:
         jvalue _value;
         _value.l = nullptr;
         QTJAMBI_KEY_VALUE_LOCKER
-        bool success = m_keyInternalToExternalConverter(env, nullptr, &(iter->key()), &_value, true);
+        bool success = m_keyInternalToExternalConverter(env, nullptr, &(iter->key()), _value, true);
         if(success){
             return _value.l;
         }

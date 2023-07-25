@@ -36,30 +36,18 @@ TypeSystem{
     module: "qtjambi.webengine"
     description: "Classes and functions for embedding web content in applications using the Chromium browser project."
     until: 5
-
-    Rejection{
-        className: "QQuickWebEngineProfile"
-        functionName: "settings"
-    }
-    
-    EnumType{
-        name: "QQuickWebEngineProfile::HttpCacheType"
-    }
-    
-    EnumType{
-        name: "QQuickWebEngineProfile::PersistentCookiesPolicy"
-    }
-    
-    EnumType{
-        name: "QQuickWebEngineScript::InjectionPoint"
-    }
-    
-    EnumType{
-        name: "QQuickWebEngineScript::ScriptWorldId"
-    }
     
     ObjectType{
         name: "QQuickWebEngineProfile"
+        Rejection{
+            functionName: "settings"
+        }
+        EnumType{
+            name: "HttpCacheType"
+        }
+        EnumType{
+            name: "PersistentCookiesPolicy"
+        }
         ModifyFunction{
             signature: "installUrlSchemeHandler(QByteArray,QWebEngineUrlSchemeHandler*)"
             ModifyArgument{
@@ -150,6 +138,12 @@ TypeSystem{
     
     ObjectType{
         name: "QQuickWebEngineScript"
+        EnumType{
+            name: "InjectionPoint"
+        }
+        EnumType{
+            name: "ScriptWorldId"
+        }
     }
     
     ObjectType{

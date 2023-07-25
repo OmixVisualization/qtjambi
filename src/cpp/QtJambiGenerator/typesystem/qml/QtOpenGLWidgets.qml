@@ -35,18 +35,15 @@ TypeSystem{
     qtLibrary: "QtOpenGLWidgets"
     module: "qtjambi.openglwidgets"
     description: "This library provides a widget for rendering OpenGL graphics."
-
-    EnumType{
-        name: "QOpenGLWidget::UpdateBehavior"
-    }
-
-    EnumType{
-        name: "QOpenGLWidget::TargetBuffer"
-        since: [6,5]
-    }
-    
     ObjectType{
         name: "QOpenGLWidget"
+        EnumType{
+            name: "UpdateBehavior"
+        }
+        EnumType{
+            name: "TargetBuffer"
+            since: [6,5]
+        }
         ModifyFunction{
             signature: "paintGL()"
             isPaintMethod: true

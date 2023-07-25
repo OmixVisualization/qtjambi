@@ -909,7 +909,7 @@ public final class MetaTypeUtility {
 		}
 		return qmlListPropertiesClass != null && qmlListPropertiesClass == cls;
 	}
-
+	
 	static native int registerQmlListProperty(String type);
 	
 	@NativeAccess
@@ -936,7 +936,7 @@ public final class MetaTypeUtility {
         				return QMetaType.Type.QByteArrayList;
         			}else if(clazz==QList.class && instantiations[0].id()==QMetaType.Type.QVariant.value()) {
         				return QMetaType.Type.QVariantList;
-        			}else if(clazz.getName().startsWith("io.qt.core.Q") && AbstractSequentialContainer.class.isAssignableFrom(clazz)) {
+        			}else if(clazz.getName().startsWith("io.qt.core.Q") && AbstractMetaObjectUtility.isSequentialContainer(clazz)) {
         				return String.format("%1$s<%2$s>", clazz.getSimpleName(), instantiations[0].name());
         			}else if(clazz==java.util.Set.class) {
         				return String.format("QSet<%1$s>", instantiations[0].name());
@@ -959,7 +959,9 @@ public final class MetaTypeUtility {
 						&& instantiations[0].id()==QMetaType.Type.QString.value()
 						&& instantiations[1].id()==QMetaType.Type.QVariant.value()) {
 	    				return QMetaType.Type.QVariantHash;
-	    			}else if(clazz.getName().startsWith("io.qt.core.Q") && (AbstractAssociativeContainer.class.isAssignableFrom(clazz) || AbstractMultiAssociativeContainer.class.isAssignableFrom(clazz))) {
+	    			}else if(clazz.getName().startsWith("io.qt.core.Q") 
+	    					&& (QMap.class.isAssignableFrom(clazz) || QMultiMap.class.isAssignableFrom(clazz)
+    							 || QHash.class.isAssignableFrom(clazz) || QMultiHash.class.isAssignableFrom(clazz))) {
         				return String.format("%1$s<%2$s,%3$s>", clazz.getSimpleName(), instantiations[0].name(), instantiations[1].name());
         			}else if(clazz==java.util.Map.class) {
         				return String.format("QHash<%1$s,%2$s>", instantiations[0].name(), instantiations[1].name());

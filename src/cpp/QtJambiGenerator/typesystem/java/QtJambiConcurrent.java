@@ -32,7 +32,7 @@
 
 class QtConcurrent___ extends QtConcurrent {
     /**
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent.html">QtConcurrent::ThreadEngineStarter</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent.html"><code>QtConcurrent::ThreadEngineStarter</code></a></p>
      */
     public static final class ThreadEngineStarter<T> extends QtObject{
         private ThreadEngineStarter(QPrivateConstructor p){
@@ -123,7 +123,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#map">QtConcurrent::map(Sequence, MapFunctor)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#map"><code>QtConcurrent::map(Sequence, MapFunctor)</code></a></p>
      */
     @QtUninvokable
     public static <T> @NonNull QFuture<@QtPrimitiveType Void> map(@StrictNonNull Collection<T> sequence, MapFunctor<T> functor){
@@ -131,7 +131,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMap">QtConcurrent::blockingMap(Sequence, MapFunctor)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMap"><code>QtConcurrent::blockingMap(Sequence, MapFunctor)</code></a></p>
      */
     @QtUninvokable
     public static <T> void blockingMap(@StrictNonNull Collection<T> sequence, MapFunctor<T> functor){
@@ -140,7 +140,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mapped">QtConcurrent::mapped(Sequence, MappedFunctor)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#mapped"><code>QtConcurrent::mapped(Sequence, MappedFunctor)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> @NonNull QFuture<U> mapped(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<U, T> functor){
@@ -148,7 +148,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMapped">QtConcurrent::blockingMapped(Sequence, MappedFunctor)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMapped"><code>QtConcurrent::blockingMapped(Sequence, MappedFunctor)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> @NonNull QList<U> blockingMapped(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<U, T> functor){
@@ -157,7 +157,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced">QtConcurrent::mappedReduced(Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced"><code>QtConcurrent::mappedReduced(Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, V, T> @NonNull QFuture<U> mappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor) {
@@ -165,7 +165,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced">QtConcurrent::mappedReduced(Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced"><code>QtConcurrent::mappedReduced(Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, V, T> @NonNull QFuture<U> mappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, @NonNull ReduceOption @NonNull... options) {
@@ -173,7 +173,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced">QtConcurrent::mappedReduced(Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced"><code>QtConcurrent::mappedReduced(Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, V, T> @NonNull QFuture<U> mappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, @NonNull ReduceOptions options) {
@@ -181,7 +181,7 @@ class QtConcurrent___ extends QtConcurrent {
      }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced">QtConcurrent::blockingMappedReduced(Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced"><code>QtConcurrent::blockingMappedReduced(Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, V, T> U blockingMappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor) {
@@ -190,7 +190,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced">QtConcurrent::blockingMappedReduced(Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced"><code>QtConcurrent::blockingMappedReduced(Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, V, T> U blockingMappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, @NonNull ReduceOption @NonNull... options) {
@@ -199,7 +199,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced">QtConcurrent::blockingMappedReduced(Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced"><code>QtConcurrent::blockingMappedReduced(Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, V, T> U blockingMappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, @NonNull ReduceOptions options) {
@@ -208,7 +208,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filter">QtConcurrent::filter(Sequence, @StrictNonNull FilteredFunctor)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#filter"><code>QtConcurrent::filter(Sequence, @StrictNonNull FilteredFunctor)</code></a></p>
      */
     @QtUninvokable
     public static <T> @NonNull QFuture<@QtPrimitiveType Void> filter(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
@@ -216,7 +216,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilter">QtConcurrent::blockingFilter(Sequence, @StrictNonNull FilteredFunctor)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilter"><code>QtConcurrent::blockingFilter(Sequence, @StrictNonNull FilteredFunctor)</code></a></p>
      */
     @QtUninvokable
     public static <T> void blockingFilter(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
@@ -225,7 +225,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filtered">QtConcurrent::filtered(Sequence, @StrictNonNull FilteredFunctor)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#filtered"><code>QtConcurrent::filtered(Sequence, @StrictNonNull FilteredFunctor)</code></a></p>
      */
     @QtUninvokable
     public static <T> @NonNull QFuture<T> filtered(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
@@ -233,7 +233,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFiltered">QtConcurrent::blockingFiltered(Sequence, @StrictNonNull FilteredFunctor)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFiltered"><code>QtConcurrent::blockingFiltered(Sequence, @StrictNonNull FilteredFunctor)</code></a></p>
      */
     @QtUninvokable
     public static <T> @NonNull QList<T> blockingFiltered(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
@@ -242,7 +242,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
         
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced">QtConcurrent::filteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced"><code>QtConcurrent::filteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> @NonNull QFuture<U> filteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor) {
@@ -250,7 +250,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced">QtConcurrent::filteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced"><code>QtConcurrent::filteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> @NonNull QFuture<U> filteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOption @NonNull... options) {
@@ -258,7 +258,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced">QtConcurrent::filteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced"><code>QtConcurrent::filteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> @NonNull QFuture<U> filteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOptions options) {
@@ -266,7 +266,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced">QtConcurrent::blockingFilteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced"><code>QtConcurrent::blockingFilteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> U blockingFilteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor) {
@@ -275,7 +275,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced">QtConcurrent::blockingFilteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced"><code>QtConcurrent::blockingFilteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> U blockingFilteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOption @NonNull... options) {
@@ -284,7 +284,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced">QtConcurrent::blockingFilteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced"><code>QtConcurrent::blockingFilteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> U blockingFilteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOptions options) {
@@ -311,7 +311,7 @@ class QtConcurrent___ extends QtConcurrent {
     private native static <T> @NonNull ThreadEngineStarter<T> startFiltered(long threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor);
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T> @NonNull QFuture<T> run(@StrictNonNull Callable<T> callable){
@@ -319,7 +319,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull Callable<T> callable){
@@ -329,7 +329,7 @@ class QtConcurrent___ extends QtConcurrent {
     private native static <T> @NonNull QFuture<T> run0(@Nullable QThreadPool threadPool, @StrictNonNull Callable<T> callable);
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable runnable) {
@@ -337,7 +337,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable runnable) {
@@ -437,7 +437,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable1<A> runnable, A a) {
@@ -445,7 +445,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable1<A> runnable, A a) {
@@ -454,7 +454,7 @@ class QtConcurrent___ extends QtConcurrent {
     private native static <A> @NonNull QFuture<@QtPrimitiveType Void> runVoid1(@Nullable QThreadPool threadPool, @StrictNonNull Runnable1<A> runnable, A a);
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A,B> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable2<A,B> runnable, A a, B b) {
@@ -462,7 +462,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A,B> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable2<A,B> runnable, A a, B b) {
@@ -471,7 +471,7 @@ class QtConcurrent___ extends QtConcurrent {
     private native static <A,B> @NonNull QFuture<@QtPrimitiveType Void> runVoid2(@Nullable QThreadPool threadPool, @StrictNonNull Runnable2<A,B> runnable, A a, B b);
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A,B,C> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable3<A,B,C> runnable, A a, B b, C c) {
@@ -479,7 +479,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A,B,C> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable3<A,B,C> runnable, A a, B b, C c) {
@@ -488,7 +488,7 @@ class QtConcurrent___ extends QtConcurrent {
     private native static <A,B,C> @NonNull QFuture<@QtPrimitiveType Void> runVoid3(@Nullable QThreadPool threadPool, @StrictNonNull Runnable3<A,B,C> runnable, A a, B b, C c);
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A,B,C,D> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable4<A,B,C,D> runnable, A a, B b, C c, D d) {
@@ -496,7 +496,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A,B,C,D> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable4<A,B,C,D> runnable, A a, B b, C c, D d) {
@@ -505,7 +505,7 @@ class QtConcurrent___ extends QtConcurrent {
     private native static <A,B,C,D> @NonNull QFuture<@QtPrimitiveType Void> runVoid4(@Nullable QThreadPool threadPool, @StrictNonNull Runnable4<A,B,C,D> runnable, A a, B b, C c, D d);
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A,B,C,D,E> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable5<A,B,C,D,E> runnable, A a, B b, C c, D d, E e) {
@@ -513,7 +513,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A,B,C,D,E> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable5<A,B,C,D,E> runnable, A a, B b, C c, D d, E e) {
@@ -624,7 +624,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T,A> @NonNull QFuture<T> run(@StrictNonNull Callable1<T,A> runnable, A a) {
@@ -632,7 +632,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T,A> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull Callable1<T,A> runnable, A a) {
@@ -641,7 +641,7 @@ class QtConcurrent___ extends QtConcurrent {
     private native static <T,A> @NonNull QFuture<T> run1(@Nullable QThreadPool threadPool, Callable1<T,A> runnable, A a);
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T,A,B> @NonNull QFuture<T> run(@StrictNonNull Callable2<T,A,B> runnable, A a, B b) {
@@ -649,7 +649,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T,A,B> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull Callable2<T,A,B> runnable, A a, B b) {
@@ -658,7 +658,7 @@ class QtConcurrent___ extends QtConcurrent {
     private native static <T,A,B> @NonNull QFuture<T> run2(@Nullable QThreadPool threadPool, Callable2<T,A,B> runnable, A a, B b);
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T,A,B,C> @NonNull QFuture<T> run(@StrictNonNull Callable3<T,A,B,C> runnable, A a, B b, C c) {
@@ -666,7 +666,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T,A,B,C> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull Callable3<T,A,B,C> runnable, A a, B b, C c) {
@@ -675,7 +675,7 @@ class QtConcurrent___ extends QtConcurrent {
     private native static <T,A,B,C> @NonNull QFuture<T> run3(@Nullable QThreadPool threadPool, Callable3<T,A,B,C> runnable, A a, B b, C c);
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T,A,B,C,D> @NonNull QFuture<T> run(@StrictNonNull Callable4<T,A,B,C,D> runnable, A a, B b, C c, D d) {
@@ -683,7 +683,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T,A,B,C,D> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull Callable4<T,A,B,C,D> runnable, A a, B b, C c, D d) {
@@ -692,7 +692,7 @@ class QtConcurrent___ extends QtConcurrent {
     private native static <T,A,B,C,D> @NonNull QFuture<T> run4(@Nullable QThreadPool threadPool, Callable4<T,A,B,C,D> runnable, A a, B b, C c, D d);
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T,A,B,C,D,E> @NonNull QFuture<T> run(@StrictNonNull Callable5<T,A,B,C,D,E> runnable, A a, B b, C c, D d, E e) {
@@ -700,7 +700,7 @@ class QtConcurrent___ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
      @QtUninvokable
     public static <T,A,B,C,D,E> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull Callable5<T,A,B,C,D,E> runnable, A a, B b, C c, D d, E e) {
@@ -976,7 +976,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A,B,C,D,E,F> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable6<A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f) {
@@ -984,7 +984,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A,B,C,D,E,F> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable6<A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f) {
@@ -993,7 +993,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     private native static <A,B,C,D,E,F> @NonNull QFuture<@QtPrimitiveType Void> runVoid6(@Nullable QThreadPool threadPool, @StrictNonNull Runnable6<A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f);
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable7<A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g) {
@@ -1001,7 +1001,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable7<A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g) {
@@ -1010,7 +1010,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     private native static <A,B,C,D,E,F,G> @NonNull QFuture<@QtPrimitiveType Void> runVoid7(@Nullable QThreadPool threadPool, @StrictNonNull Runnable7<A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g);
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable8<A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
@@ -1018,7 +1018,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable8<A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
@@ -1027,7 +1027,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     private native static <A,B,C,D,E,F,G,H> @NonNull QFuture<@QtPrimitiveType Void> runVoid8(@Nullable QThreadPool threadPool, @StrictNonNull Runnable8<A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull Runnable9<A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
@@ -1035,7 +1035,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull Runnable9<A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
@@ -1044,7 +1044,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     private native static <A,B,C,D,E,F,G,H,I> @NonNull QFuture<@QtPrimitiveType Void> runVoid9(@Nullable QThreadPool threadPool, @StrictNonNull Runnable9<A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T,A,B,C,D,E,F> @NonNull QFuture<T> run(Callable6<T,A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f) {
@@ -1052,7 +1052,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T,A,B,C,D,E,F> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, Callable6<T,A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f) {
@@ -1061,7 +1061,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     private native static <T,A,B,C,D,E,F> @NonNull QFuture<T> run6(@Nullable QThreadPool threadPool, Callable6<T,A,B,C,D,E,F> runnable, A a, B b, C c, D d, E e, F f);
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T,A,B,C,D,E,F,G> @NonNull QFuture<T> run(Callable7<T,A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g) {
@@ -1069,7 +1069,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T,A,B,C,D,E,F,G> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, Callable7<T,A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g) {
@@ -1078,7 +1078,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     private native static <T,A,B,C,D,E,F,G> @NonNull QFuture<T> run7(@Nullable QThreadPool threadPool, Callable7<T,A,B,C,D,E,F,G> runnable, A a, B b, C c, D d, E e, F f, G g);
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T,A,B,C,D,E,F,G,H> @NonNull QFuture<T> run(Callable8<T,A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
@@ -1086,7 +1086,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T,A,B,C,D,E,F,G,H> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, Callable8<T,A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
@@ -1095,7 +1095,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     private native static <T,A,B,C,D,E,F,G,H> @NonNull QFuture<T> run8(@Nullable QThreadPool threadPool, Callable8<T,A,B,C,D,E,F,G,H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T,A,B,C,D,E,F,G,H,I> @NonNull QFuture<T> run(Callable9<T,A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
@@ -1103,7 +1103,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T,A,B,C,D,E,F,G,H,I> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, Callable9<T,A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
@@ -1112,7 +1112,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     private native static <T,A,B,C,D,E,F,G,H,I> @NonNull QFuture<T> run9(@Nullable QThreadPool threadPool, Callable9<T,A,B,C,D,E,F,G,H,I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i);
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#map">QtConcurrent::map(@Nullable QThreadPool*, Sequence, MapFunctor)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#map"><code>QtConcurrent::map(@Nullable QThreadPool*, Sequence, MapFunctor)</code></a></p>
      */
     @QtUninvokable
     public static <T> @NonNull QFuture<@QtPrimitiveType Void> map(@Nullable QThreadPool threadPool, Collection<T> sequence, MapFunctor<T> functor){
@@ -1120,7 +1120,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMap">QtConcurrent::blockingMap(@Nullable QThreadPool*, Sequence, MapFunctor)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMap"><code>QtConcurrent::blockingMap(@Nullable QThreadPool*, Sequence, MapFunctor)</code></a></p>
      */
     @QtUninvokable
     public static <T> void blockingMap(@Nullable QThreadPool threadPool, Collection<T> sequence, MapFunctor<T> functor){
@@ -1129,7 +1129,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mapped">QtConcurrent::mapped(@Nullable QThreadPool*, Sequence, MappedFunctor)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#mapped"><code>QtConcurrent::mapped(@Nullable QThreadPool*, Sequence, MappedFunctor)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> @NonNull QFuture<U> mapped(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<U, T> functor){
@@ -1137,7 +1137,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMapped">QtConcurrent::blockingMapped(@Nullable QThreadPool*, Sequence, MappedFunctor)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMapped"><code>QtConcurrent::blockingMapped(@Nullable QThreadPool*, Sequence, MappedFunctor)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> QList<U> blockingMapped(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<U, T> functor){
@@ -1146,7 +1146,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced">QtConcurrent::mappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced"><code>QtConcurrent::mappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, V, T> @NonNull QFuture<U> mappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor) {
@@ -1155,7 +1155,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced">QtConcurrent::mappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced"><code>QtConcurrent::mappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, V, T> @NonNull QFuture<U> mappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, @NonNull ReduceOption @NonNull... options) {
@@ -1163,7 +1163,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced">QtConcurrent::mappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced"><code>QtConcurrent::mappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, V, T> @NonNull QFuture<U> mappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, @NonNull ReduceOptions options) {
@@ -1171,7 +1171,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced">QtConcurrent::mappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced"><code>QtConcurrent::mappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, V, T> @NonNull QFuture<U> mappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue) {
@@ -1180,7 +1180,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced">QtConcurrent::mappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced"><code>QtConcurrent::mappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, V, T> @NonNull QFuture<U> mappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue, @NonNull ReduceOption @NonNull... options) {
@@ -1188,7 +1188,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced">QtConcurrent::mappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced"><code>QtConcurrent::mappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, V, T> @NonNull QFuture<U> mappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue, @NonNull ReduceOptions options) {
@@ -1196,7 +1196,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced">QtConcurrent::mappedReduced(Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced"><code>QtConcurrent::mappedReduced(Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, V, T> @NonNull QFuture<U> mappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue) {
@@ -1204,7 +1204,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced">QtConcurrent::mappedReduced(Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced"><code>QtConcurrent::mappedReduced(Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, V, T> @NonNull QFuture<U> mappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue, @NonNull ReduceOption @NonNull... options) {
@@ -1212,7 +1212,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced">QtConcurrent::mappedReduced(Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#mappedReduced"><code>QtConcurrent::mappedReduced(Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, V, T> @NonNull QFuture<U> mappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue, @NonNull ReduceOptions options) {
@@ -1220,7 +1220,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced">QtConcurrent::blockingMappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced"><code>QtConcurrent::blockingMappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, V, T> U blockingMappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor) {
@@ -1229,7 +1229,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced">QtConcurrent::blockingMappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced"><code>QtConcurrent::blockingMappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, V, T> U blockingMappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, @NonNull ReduceOption @NonNull... options) {
@@ -1238,7 +1238,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced">QtConcurrent::blockingMappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced"><code>QtConcurrent::blockingMappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, V, T> U blockingMappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, @NonNull ReduceOptions options) {
@@ -1247,7 +1247,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced">QtConcurrent::blockingMappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced"><code>QtConcurrent::blockingMappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, V, T> U blockingMappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue) {
@@ -1256,7 +1256,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced">QtConcurrent::blockingMappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced"><code>QtConcurrent::blockingMappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, V, T> U blockingMappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue, @NonNull ReduceOption @NonNull... options) {
@@ -1265,7 +1265,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced">QtConcurrent::blockingMappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced"><code>QtConcurrent::blockingMappedReduced(@Nullable QThreadPool*, Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, V, T> U blockingMappedReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue, @NonNull ReduceOptions options) {
@@ -1274,7 +1274,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced">QtConcurrent::blockingMappedReduced(Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced"><code>QtConcurrent::blockingMappedReduced(Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, V, T> U blockingMappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue) {
@@ -1283,7 +1283,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced">QtConcurrent::blockingMappedReduced(Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced"><code>QtConcurrent::blockingMappedReduced(Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, V, T> U blockingMappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue, @NonNull ReduceOption @NonNull... options) {
@@ -1292,7 +1292,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced">QtConcurrent::blockingMappedReduced(Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingMappedReduced"><code>QtConcurrent::blockingMappedReduced(Sequence, MappedFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, V, T> U blockingMappedReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull MappedFunctor<V, T> functor, @StrictNonNull ReduceFunctor<U, V> reduceFunctor, U initialValue, @NonNull ReduceOptions options) {
@@ -1301,7 +1301,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filter">QtConcurrent::filter(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#filter"><code>QtConcurrent::filter(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor)</code></a></p>
      */
     @QtUninvokable
     public static <T> @NonNull QFuture<@QtPrimitiveType Void> filter(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
@@ -1309,7 +1309,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filtered">QtConcurrent::filtered(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#filtered"><code>QtConcurrent::filtered(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor)</code></a></p>
      */
     @QtUninvokable
     public static <T> @NonNull QFuture<T> filtered(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
@@ -1317,7 +1317,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFiltered">QtConcurrent::blockingFiltered(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFiltered"><code>QtConcurrent::blockingFiltered(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor)</code></a></p>
      */
     @QtUninvokable
     public static <T> QList<T> blockingFiltered(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
@@ -1326,7 +1326,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilter">QtConcurrent::blockingFilter(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilter"><code>QtConcurrent::blockingFilter(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor)</code></a></p>
      */
     @QtUninvokable
     public static <T> void blockingFilter(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor){
@@ -1335,7 +1335,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced">QtConcurrent::filteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced"><code>QtConcurrent::filteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> @NonNull QFuture<U> filteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor) {
@@ -1343,7 +1343,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced">QtConcurrent::filteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced"><code>QtConcurrent::filteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> @NonNull QFuture<U> filteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOption @NonNull... options) {
@@ -1351,7 +1351,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced">QtConcurrent::filteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced"><code>QtConcurrent::filteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> @NonNull QFuture<U> filteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOptions options) {
@@ -1359,7 +1359,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced">QtConcurrent::filteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced"><code>QtConcurrent::filteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> @NonNull QFuture<U> filteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue) {
@@ -1367,7 +1367,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced">QtConcurrent::filteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced"><code>QtConcurrent::filteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> @NonNull QFuture<U> filteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue, @NonNull ReduceOption @NonNull... options) {
@@ -1375,7 +1375,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced">QtConcurrent::filteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced"><code>QtConcurrent::filteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> @NonNull QFuture<U> filteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue, @NonNull ReduceOptions options) {
@@ -1383,7 +1383,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced">QtConcurrent::filteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced"><code>QtConcurrent::filteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> @NonNull QFuture<U> filteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue) {
@@ -1391,7 +1391,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced">QtConcurrent::filteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced"><code>QtConcurrent::filteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> @NonNull QFuture<U> filteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue, @NonNull ReduceOption @NonNull... options) {
@@ -1399,7 +1399,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced">QtConcurrent::filteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#filteredReduced"><code>QtConcurrent::filteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> @NonNull QFuture<U> filteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue, @NonNull ReduceOptions options) {
@@ -1407,7 +1407,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced">QtConcurrent::blockingFilteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced"><code>QtConcurrent::blockingFilteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> U blockingFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor) {
@@ -1415,7 +1415,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced">QtConcurrent::blockingFilteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced"><code>QtConcurrent::blockingFilteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> U blockingFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOption @NonNull... options) {
@@ -1423,7 +1423,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced">QtConcurrent::blockingFilteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced"><code>QtConcurrent::blockingFilteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> U blockingFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, @NonNull ReduceOptions options) {
@@ -1431,7 +1431,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced">QtConcurrent::blockingFilteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced"><code>QtConcurrent::blockingFilteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> U blockingFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue) {
@@ -1439,7 +1439,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced">QtConcurrent::blockingFilteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced"><code>QtConcurrent::blockingFilteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> U blockingFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue, @NonNull ReduceOption @NonNull... options) {
@@ -1447,7 +1447,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced">QtConcurrent::blockingFilteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced"><code>QtConcurrent::blockingFilteredReduced(@Nullable QThreadPool*, Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> U blockingFilteredReduced(@Nullable QThreadPool threadPool, Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue, @NonNull ReduceOptions options) {
@@ -1455,7 +1455,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced">QtConcurrent::blockingFilteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced"><code>QtConcurrent::blockingFilteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> U blockingFilteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue) {
@@ -1463,7 +1463,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced">QtConcurrent::blockingFilteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced"><code>QtConcurrent::blockingFilteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> U blockingFilteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue, @NonNull ReduceOption @NonNull... options) {
@@ -1471,7 +1471,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced">QtConcurrent::blockingFilteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#blockingFilteredReduced"><code>QtConcurrent::blockingFilteredReduced(Sequence, @StrictNonNull FilteredFunctor, ReduceFunctor, InitialValueType, QtConcurrent::ReduceOptions)</code></a></p>
      */
     @QtUninvokable
     public static <U, T> U blockingFilteredReduced(@StrictNonNull Collection<T> sequence, @StrictNonNull FilteredFunctor<T> filteredFunctor, @StrictNonNull ReduceFunctor<U, T> reduceFunctor, U initialValue, @NonNull ReduceOptions options) {
@@ -1994,7 +1994,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise<T> runnable) {
@@ -2002,7 +2002,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise<T> runnable) {
@@ -2012,7 +2012,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     private native static <T> @NonNull QFuture<T> runWithPromise0(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise<T> runnable);
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T, A> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise1<T, A> runnable, A a) {
@@ -2020,7 +2020,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T, A> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise1<T, A> runnable, A a) {
@@ -2030,7 +2030,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     private native static <T, A> @NonNull QFuture<T> runWithPromise1(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise1<T, A> runnable, A a);
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T, A, B> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise2<T, A, B> runnable, A a, B b) {
@@ -2038,7 +2038,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T, A, B> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise2<T, A, B> runnable, A a, B b) {
@@ -2048,7 +2048,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     private native static <T, A, B> @NonNull QFuture<T> runWithPromise2(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise2<T, A, B> runnable, A a, B b);
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T, A, B, C> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise3<T, A, B, C> runnable, A a, B b, C c) {
@@ -2056,7 +2056,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T, A, B, C> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise3<T, A, B, C> runnable, A a, B b, C c) {
@@ -2067,7 +2067,7 @@ class QtConcurrent_6__ extends QtConcurrent {
             C c);
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T, A, B, C, D> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise4<T, A, B, C, D> runnable, A a, B b, C c, D d) {
@@ -2075,7 +2075,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T, A, B, C, D> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise4<T, A, B, C, D> runnable, A a, B b,
@@ -2087,7 +2087,7 @@ class QtConcurrent_6__ extends QtConcurrent {
             A a, B b, C c, D d);
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T, A, B, C, D, E> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise5<T, A, B, C, D, E> runnable, A a, B b, C c, D d, E e) {
@@ -2095,7 +2095,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T, A, B, C, D, E> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise5<T, A, B, C, D, E> runnable, A a,
@@ -2107,7 +2107,7 @@ class QtConcurrent_6__ extends QtConcurrent {
             RunnableWithPromise5<T, A, B, C, D, E> runnable, A a, B b, C c, D d, E e);
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T, A, B, C, D, E, F> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e,
@@ -2116,7 +2116,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T, A, B, C, D, E, F> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithPromise6<T, A, B, C, D, E, F> runnable,
@@ -2128,7 +2128,7 @@ class QtConcurrent_6__ extends QtConcurrent {
             RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f);
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T, A, B, C, D, E, F, G> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c,
@@ -2137,7 +2137,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T, A, B, C, D, E, F, G> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool,
@@ -2149,7 +2149,7 @@ class QtConcurrent_6__ extends QtConcurrent {
             RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g);
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T, A, B, C, D, E, F, G, H> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b,
@@ -2158,7 +2158,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T, A, B, C, D, E, F, G, H> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool,
@@ -2170,7 +2170,7 @@ class QtConcurrent_6__ extends QtConcurrent {
             RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T, A, B, C, D, E, F, G, H, I> @NonNull QFuture<T> run(@StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a,
@@ -2179,7 +2179,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <T, A, B, C, D, E, F, G, H, I> @NonNull QFuture<T> run(@Nullable QThreadPool threadPool,
@@ -2192,7 +2192,7 @@ class QtConcurrent_6__ extends QtConcurrent {
 
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise runnable) {
@@ -2200,7 +2200,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise runnable) {
@@ -2210,7 +2210,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     private native static @NonNull QFuture<@QtPrimitiveType Void> runWithPromiseVoid0(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise runnable);
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise1<A> runnable, A a) {
@@ -2218,7 +2218,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise1<A> runnable, A a) {
@@ -2228,7 +2228,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     private native static <A> @NonNull QFuture<@QtPrimitiveType Void> runWithPromiseVoid1(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise1<A> runnable, A a);
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A, B> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise2<A, B> runnable, A a, B b) {
@@ -2236,7 +2236,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A, B> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise2<A, B> runnable, A a, B b) {
@@ -2246,7 +2246,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     private native static <A, B> @NonNull QFuture<@QtPrimitiveType Void> runWithPromiseVoid2(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise2<A, B> runnable, A a, B b);
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A, B, C> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise3<A, B, C> runnable, A a, B b, C c) {
@@ -2254,7 +2254,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A, B, C> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise3<A, B, C> runnable, A a, B b, C c) {
@@ -2265,7 +2265,7 @@ class QtConcurrent_6__ extends QtConcurrent {
             C c);
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A, B, C, D> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise4<A, B, C, D> runnable, A a, B b, C c, D d) {
@@ -2273,7 +2273,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A, B, C, D> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise4<A, B, C, D> runnable, A a, B b, C c,
@@ -2285,7 +2285,7 @@ class QtConcurrent_6__ extends QtConcurrent {
             B b, C c, D d);
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A, B, C, D, E> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b, C c, D d, E e) {
@@ -2293,7 +2293,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A, B, C, D, E> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b,
@@ -2305,7 +2305,7 @@ class QtConcurrent_6__ extends QtConcurrent {
             RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b, C c, D d, E e);
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A, B, C, D, E, F> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e,
@@ -2314,7 +2314,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A, B, C, D, E, F> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a,
@@ -2326,7 +2326,7 @@ class QtConcurrent_6__ extends QtConcurrent {
             RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f);
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A, B, C, D, E, F, G> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d,
@@ -2335,7 +2335,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A, B, C, D, E, F, G> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable,
@@ -2347,7 +2347,7 @@ class QtConcurrent_6__ extends QtConcurrent {
             RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g);
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A, B, C, D, E, F, G, H> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c,
@@ -2356,7 +2356,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A, B, C, D, E, F, G, H> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool,
@@ -2368,7 +2368,7 @@ class QtConcurrent_6__ extends QtConcurrent {
             RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h);
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A, B, C, D, E, F, G, H, I> @NonNull QFuture<@QtPrimitiveType Void> run(@StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b,
@@ -2377,7 +2377,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#run">QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#run"><code>QtConcurrent::run(@Nullable QThreadPool*, Function, ...)</code></a></p>
      */
     @QtUninvokable
     public static <A, B, C, D, E, F, G, H, I> @NonNull QFuture<@QtPrimitiveType Void> run(@Nullable QThreadPool threadPool,
@@ -2390,7 +2390,7 @@ class QtConcurrent_6__ extends QtConcurrent {
 
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static abstract class QTaskBuilder<T>{
         QTaskBuilder(int priority, QThreadPool threadPool) {
@@ -2407,7 +2407,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         final QThreadPool threadPool() { return threadPool; }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#spawn">QtConcurrent::QTaskBuilder::spawn()</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#spawn"><code>QtConcurrent::QTaskBuilder::spawn()</code></a></p>
          */
         @QtUninvokable
         public @NonNull QFuture<T> spawn() {
@@ -2415,7 +2415,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#spawn-1">QtConcurrent::QTaskBuilder::spawn(QtConcurrent::FutureResult)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#spawn-1"><code>QtConcurrent::QTaskBuilder::spawn(QtConcurrent::FutureResult)</code></a></p>
          */
         @QtUninvokable
         public final void spawn(QtConcurrent.FutureResult result) {
@@ -2423,7 +2423,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
 
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withPriority">QtConcurrent::QTaskBuilder::withPriority(int)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withPriority"><code>QtConcurrent::QTaskBuilder::withPriority(int)</code></a></p>
          */
         @QtUninvokable
         public @NonNull QTaskBuilder<T> withPriority(int newPriority) {
@@ -2431,7 +2431,7 @@ class QtConcurrent_6__ extends QtConcurrent {
             return this;
         }
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#onThreadPool">QtConcurrent::QTaskBuilder::onThreadPool(QThreadPool&amp;)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#onThreadPool"><code>QtConcurrent::QTaskBuilder::onThreadPool(QThreadPool&amp;)</code></a></p>
          */
         @QtUninvokable
         public @NonNull QTaskBuilder<T> onThreadPool(@StrictNonNull QThreadPool newThreadPool) {
@@ -2442,7 +2442,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static abstract class QTypedTaskBuilder<T> extends QTaskBuilder<T>{
         QTypedTaskBuilder(int priority, QThreadPool threadPool) {
@@ -2451,7 +2451,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static QTaskBuilderVoid0Arg0 task(@StrictNonNull Runnable runnable) {
         return new QTaskBuilderVoid0Arg0(0, null, runnable);
@@ -2459,7 +2459,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QTaskBuilderVoid0Arg0 extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid0Arg0(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable runnable) {
@@ -2498,7 +2498,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <A> QTaskBuilderVoid1Arg0<A> task(@StrictNonNull Runnable1<A> runnable) {
         return new QTaskBuilderVoid1Arg0<>(0, null, runnable);
@@ -2506,7 +2506,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid1Arg0<A> extends QTaskBuilder<@QtPrimitiveType Void>{
         private final Runnable1<A> runnable;
@@ -2517,7 +2517,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid1Arg1<A> withArguments(A a) {
             return new QTaskBuilderVoid1Arg1<>(priority(), threadPool(), runnable, a);
@@ -2544,7 +2544,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QTaskBuilderVoid1Arg1<A> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid1Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable1<A> runnable, A a) {
@@ -2586,7 +2586,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <A, B> QTaskBuilderVoid2Arg0<A, B> task(@StrictNonNull Runnable2<A, B> runnable) {
         return new QTaskBuilderVoid2Arg0<>(0, null, runnable);
@@ -2594,7 +2594,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid2Arg0<A, B> extends QTaskBuilder<@QtPrimitiveType Void>{
         private final Runnable2<A, B> runnable;
@@ -2605,14 +2605,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid2Arg1<A, B> withArguments(A a) {
             return new QTaskBuilderVoid2Arg1<>(priority(), threadPool(), runnable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid2Arg2<A, B> withArguments(A a, B b) {
             return new QTaskBuilderVoid2Arg2<>(priority(), threadPool(), runnable, a, b);
@@ -2639,7 +2639,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QTaskBuilderVoid2Arg1<A, B> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid2Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable2<A, B> runnable, A a) {
@@ -2651,7 +2651,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid2Arg2<A, B> withArguments(B b) {
             return new QTaskBuilderVoid2Arg2<>(priority(), threadPool(), runnable, a, b);
@@ -2678,7 +2678,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid2Arg2<A, B> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid2Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable2<A, B> runnable, A a, B b) {
@@ -2722,7 +2722,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <A, B, C> QTaskBuilderVoid3Arg0<A, B, C> task(@StrictNonNull Runnable3<A, B, C> runnable) {
         return new QTaskBuilderVoid3Arg0<>(0, null, runnable);
@@ -2730,7 +2730,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid3Arg0<A, B, C> extends QTaskBuilder<@QtPrimitiveType Void>{
         private final Runnable3<A, B, C> runnable;
@@ -2741,21 +2741,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid3Arg1<A, B, C> withArguments(A a) {
             return new QTaskBuilderVoid3Arg1<>(priority(), threadPool(), runnable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid3Arg2<A, B, C> withArguments(A a, B b) {
             return new QTaskBuilderVoid3Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid3Arg3<A, B, C> withArguments(A a, B b, C c) {
             return new QTaskBuilderVoid3Arg3<>(priority(), threadPool(), runnable, a, b, c);
@@ -2782,7 +2782,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QTaskBuilderVoid3Arg1<A, B, C> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid3Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable3<A, B, C> runnable, A a) {
@@ -2794,14 +2794,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid3Arg2<A, B, C> withArguments(B b) {
             return new QTaskBuilderVoid3Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid3Arg3<A, B, C> withArguments(B b, C c) {
             return new QTaskBuilderVoid3Arg3<>(priority(), threadPool(), runnable, a, b, c);
@@ -2828,7 +2828,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid3Arg2<A, B, C> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid3Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable3<A, B, C> runnable, A a, B b) {
@@ -2842,7 +2842,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid3Arg3<A, B, C> withArguments(C c) {
             return new QTaskBuilderVoid3Arg3<>(priority(), threadPool(), runnable, a, b, c);
@@ -2869,7 +2869,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid3Arg3<A, B, C> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid3Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable3<A, B, C> runnable, A a, B b, C c) {
@@ -2915,7 +2915,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <A, B, C, D> QTaskBuilderVoid4Arg0<A, B, C, D> task(@StrictNonNull Runnable4<A, B, C, D> runnable) {
         return new QTaskBuilderVoid4Arg0<>(0, null, runnable);
@@ -2923,7 +2923,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid4Arg0<A, B, C, D> extends QTaskBuilder<@QtPrimitiveType Void>{
         private final Runnable4<A, B, C, D> runnable;
@@ -2934,28 +2934,28 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid4Arg1<A, B, C, D> withArguments(A a) {
             return new QTaskBuilderVoid4Arg1<>(priority(), threadPool(), runnable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid4Arg2<A, B, C, D> withArguments(A a, B b) {
             return new QTaskBuilderVoid4Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid4Arg3<A, B, C, D> withArguments(A a, B b, C c) {
             return new QTaskBuilderVoid4Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid4Arg4<A, B, C, D> withArguments(A a, B b, C c, D d) {
             return new QTaskBuilderVoid4Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
@@ -2982,7 +2982,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QTaskBuilderVoid4Arg1<A, B, C, D> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid4Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable4<A, B, C, D> runnable, A a) {
@@ -2994,21 +2994,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid4Arg2<A, B, C, D> withArguments(B b) {
             return new QTaskBuilderVoid4Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid4Arg3<A, B, C, D> withArguments(B b, C c) {
             return new QTaskBuilderVoid4Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid4Arg4<A, B, C, D> withArguments(B b, C c, D d) {
             return new QTaskBuilderVoid4Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
@@ -3035,7 +3035,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid4Arg2<A, B, C, D> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid4Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable4<A, B, C, D> runnable, A a, B b) {
@@ -3049,14 +3049,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid4Arg3<A, B, C, D> withArguments(C c) {
             return new QTaskBuilderVoid4Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid4Arg4<A, B, C, D> withArguments(C c, D d) {
             return new QTaskBuilderVoid4Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
@@ -3083,7 +3083,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid4Arg3<A, B, C, D> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid4Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable4<A, B, C, D> runnable, A a, B b, C c) {
@@ -3099,7 +3099,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final C c;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid4Arg4<A, B, C, D> withArguments(D d) {
             return new QTaskBuilderVoid4Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
@@ -3126,7 +3126,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid4Arg4<A, B, C, D> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid4Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable4<A, B, C, D> runnable, A a, B b, C c, D d) {
@@ -3174,7 +3174,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <A, B, C, D, E> QTaskBuilderVoid5Arg0<A, B, C, D, E> task(@StrictNonNull Runnable5<A, B, C, D, E> runnable) {
         return new QTaskBuilderVoid5Arg0<>(0, null, runnable);
@@ -3182,7 +3182,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid5Arg0<A, B, C, D, E> extends QTaskBuilder<@QtPrimitiveType Void>{
         private final Runnable5<A, B, C, D, E> runnable;
@@ -3193,35 +3193,35 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid5Arg1<A, B, C, D, E> withArguments(A a) {
             return new QTaskBuilderVoid5Arg1<>(priority(), threadPool(), runnable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid5Arg2<A, B, C, D, E> withArguments(A a, B b) {
             return new QTaskBuilderVoid5Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid5Arg3<A, B, C, D, E> withArguments(A a, B b, C c) {
             return new QTaskBuilderVoid5Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid5Arg4<A, B, C, D, E> withArguments(A a, B b, C c, D d) {
             return new QTaskBuilderVoid5Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid5Arg5<A, B, C, D, E> withArguments(A a, B b, C c, D d, E e) {
             return new QTaskBuilderVoid5Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
@@ -3248,7 +3248,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid5Arg1<A, B, C, D, E> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid5Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable5<A, B, C, D, E> runnable, A a) {
@@ -3260,28 +3260,28 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid5Arg2<A, B, C, D, E> withArguments(B b) {
             return new QTaskBuilderVoid5Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid5Arg3<A, B, C, D, E> withArguments(B b, C c) {
             return new QTaskBuilderVoid5Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid5Arg4<A, B, C, D, E> withArguments(B b, C c, D d) {
             return new QTaskBuilderVoid5Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid5Arg5<A, B, C, D, E> withArguments(B b, C c, D d, E e) {
             return new QTaskBuilderVoid5Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
@@ -3308,7 +3308,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid5Arg2<A, B, C, D, E> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid5Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable5<A, B, C, D, E> runnable, A a, B b) {
@@ -3322,21 +3322,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid5Arg3<A, B, C, D, E> withArguments(C c) {
             return new QTaskBuilderVoid5Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid5Arg4<A, B, C, D, E> withArguments(C c, D d) {
             return new QTaskBuilderVoid5Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid5Arg5<A, B, C, D, E> withArguments(C c, D d, E e) {
             return new QTaskBuilderVoid5Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
@@ -3363,7 +3363,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid5Arg3<A, B, C, D, E> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid5Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable5<A, B, C, D, E> runnable, A a, B b, C c) {
@@ -3379,14 +3379,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final C c;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid5Arg4<A, B, C, D, E> withArguments(D d) {
             return new QTaskBuilderVoid5Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid5Arg5<A, B, C, D, E> withArguments(D d, E e) {
             return new QTaskBuilderVoid5Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
@@ -3413,7 +3413,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid5Arg4<A, B, C, D, E> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid5Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable5<A, B, C, D, E> runnable, A a, B b, C c, D d) {
@@ -3431,7 +3431,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final D d;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid5Arg5<A, B, C, D, E> withArguments(E e) {
             return new QTaskBuilderVoid5Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
@@ -3458,7 +3458,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid5Arg5<A, B, C, D, E> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid5Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable5<A, B, C, D, E> runnable, A a, B b, C c, D d, E e) {
@@ -3508,7 +3508,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <A, B, C, D, E, F> QTaskBuilderVoid6Arg0<A, B, C, D, E, F> task(@StrictNonNull Runnable6<A, B, C, D, E, F> runnable) {
         return new QTaskBuilderVoid6Arg0<>(0, null, runnable);
@@ -3516,7 +3516,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid6Arg0<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
         private final Runnable6<A, B, C, D, E, F> runnable;
@@ -3527,42 +3527,42 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid6Arg1<A, B, C, D, E, F> withArguments(A a) {
             return new QTaskBuilderVoid6Arg1<>(priority(), threadPool(), runnable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid6Arg2<A, B, C, D, E, F> withArguments(A a, B b) {
             return new QTaskBuilderVoid6Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid6Arg3<A, B, C, D, E, F> withArguments(A a, B b, C c) {
             return new QTaskBuilderVoid6Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid6Arg4<A, B, C, D, E, F> withArguments(A a, B b, C c, D d) {
             return new QTaskBuilderVoid6Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid6Arg5<A, B, C, D, E, F> withArguments(A a, B b, C c, D d, E e) {
             return new QTaskBuilderVoid6Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid6Arg6<A, B, C, D, E, F> withArguments(A a, B b, C c, D d, E e, F f) {
             return new QTaskBuilderVoid6Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
@@ -3589,7 +3589,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid6Arg1<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid6Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable6<A, B, C, D, E, F> runnable, A a) {
@@ -3601,35 +3601,35 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid6Arg2<A, B, C, D, E, F> withArguments(B b) {
             return new QTaskBuilderVoid6Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid6Arg3<A, B, C, D, E, F> withArguments(B b, C c) {
             return new QTaskBuilderVoid6Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid6Arg4<A, B, C, D, E, F> withArguments(B b, C c, D d) {
             return new QTaskBuilderVoid6Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid6Arg5<A, B, C, D, E, F> withArguments(B b, C c, D d, E e) {
             return new QTaskBuilderVoid6Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid6Arg6<A, B, C, D, E, F> withArguments(B b, C c, D d, E e, F f) {
             return new QTaskBuilderVoid6Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
@@ -3656,7 +3656,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid6Arg2<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid6Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable6<A, B, C, D, E, F> runnable, A a, B b) {
@@ -3670,28 +3670,28 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid6Arg3<A, B, C, D, E, F> withArguments(C c) {
             return new QTaskBuilderVoid6Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid6Arg4<A, B, C, D, E, F> withArguments(C c, D d) {
             return new QTaskBuilderVoid6Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid6Arg5<A, B, C, D, E, F> withArguments(C c, D d, E e) {
             return new QTaskBuilderVoid6Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid6Arg6<A, B, C, D, E, F> withArguments(C c, D d, E e, F f) {
             return new QTaskBuilderVoid6Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
@@ -3718,7 +3718,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid6Arg3<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid6Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable6<A, B, C, D, E, F> runnable, A a, B b, C c) {
@@ -3734,21 +3734,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final C c;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid6Arg4<A, B, C, D, E, F> withArguments(D d) {
             return new QTaskBuilderVoid6Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid6Arg5<A, B, C, D, E, F> withArguments(D d, E e) {
             return new QTaskBuilderVoid6Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid6Arg6<A, B, C, D, E, F> withArguments(D d, E e, F f) {
             return new QTaskBuilderVoid6Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
@@ -3775,7 +3775,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid6Arg4<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid6Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable6<A, B, C, D, E, F> runnable, A a, B b, C c, D d) {
@@ -3793,14 +3793,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final D d;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid6Arg5<A, B, C, D, E, F> withArguments(E e) {
             return new QTaskBuilderVoid6Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid6Arg6<A, B, C, D, E, F> withArguments(E e, F f) {
             return new QTaskBuilderVoid6Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
@@ -3827,7 +3827,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid6Arg5<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid6Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e) {
@@ -3847,7 +3847,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final E e;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid6Arg6<A, B, C, D, E, F> withArguments(F f) {
             return new QTaskBuilderVoid6Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
@@ -3874,7 +3874,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid6Arg6<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid6Arg6(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f) {
@@ -3926,7 +3926,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <A, B, C, D, E, F, G> QTaskBuilderVoid7Arg0<A, B, C, D, E, F, G> task(@StrictNonNull Runnable7<A, B, C, D, E, F, G> runnable) {
         return new QTaskBuilderVoid7Arg0<>(0, null, runnable);
@@ -3934,7 +3934,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid7Arg0<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
         private final Runnable7<A, B, C, D, E, F, G> runnable;
@@ -3945,49 +3945,49 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg1<A, B, C, D, E, F, G> withArguments(A a) {
             return new QTaskBuilderVoid7Arg1<>(priority(), threadPool(), runnable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg2<A, B, C, D, E, F, G> withArguments(A a, B b) {
             return new QTaskBuilderVoid7Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg3<A, B, C, D, E, F, G> withArguments(A a, B b, C c) {
             return new QTaskBuilderVoid7Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg4<A, B, C, D, E, F, G> withArguments(A a, B b, C c, D d) {
             return new QTaskBuilderVoid7Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg5<A, B, C, D, E, F, G> withArguments(A a, B b, C c, D d, E e) {
             return new QTaskBuilderVoid7Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg6<A, B, C, D, E, F, G> withArguments(A a, B b, C c, D d, E e, F f) {
             return new QTaskBuilderVoid7Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg7<A, B, C, D, E, F, G> withArguments(A a, B b, C c, D d, E e, F f, G g) {
             return new QTaskBuilderVoid7Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
@@ -4014,7 +4014,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid7Arg1<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid7Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable7<A, B, C, D, E, F, G> runnable, A a) {
@@ -4026,42 +4026,42 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg2<A, B, C, D, E, F, G> withArguments(B b) {
             return new QTaskBuilderVoid7Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg3<A, B, C, D, E, F, G> withArguments(B b, C c) {
             return new QTaskBuilderVoid7Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg4<A, B, C, D, E, F, G> withArguments(B b, C c, D d) {
             return new QTaskBuilderVoid7Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg5<A, B, C, D, E, F, G> withArguments(B b, C c, D d, E e) {
             return new QTaskBuilderVoid7Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg6<A, B, C, D, E, F, G> withArguments(B b, C c, D d, E e, F f) {
             return new QTaskBuilderVoid7Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg7<A, B, C, D, E, F, G> withArguments(B b, C c, D d, E e, F f, G g) {
             return new QTaskBuilderVoid7Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
@@ -4088,7 +4088,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid7Arg2<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid7Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable7<A, B, C, D, E, F, G> runnable, A a, B b) {
@@ -4102,35 +4102,35 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg3<A, B, C, D, E, F, G> withArguments(C c) {
             return new QTaskBuilderVoid7Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg4<A, B, C, D, E, F, G> withArguments(C c, D d) {
             return new QTaskBuilderVoid7Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg5<A, B, C, D, E, F, G> withArguments(C c, D d, E e) {
             return new QTaskBuilderVoid7Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg6<A, B, C, D, E, F, G> withArguments(C c, D d, E e, F f) {
             return new QTaskBuilderVoid7Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg7<A, B, C, D, E, F, G> withArguments(C c, D d, E e, F f, G g) {
             return new QTaskBuilderVoid7Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
@@ -4157,7 +4157,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid7Arg3<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid7Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable7<A, B, C, D, E, F, G> runnable, A a, B b, C c) {
@@ -4173,28 +4173,28 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final C c;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg4<A, B, C, D, E, F, G> withArguments(D d) {
             return new QTaskBuilderVoid7Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg5<A, B, C, D, E, F, G> withArguments(D d, E e) {
             return new QTaskBuilderVoid7Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg6<A, B, C, D, E, F, G> withArguments(D d, E e, F f) {
             return new QTaskBuilderVoid7Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg7<A, B, C, D, E, F, G> withArguments(D d, E e, F f, G g) {
             return new QTaskBuilderVoid7Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
@@ -4221,7 +4221,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid7Arg4<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid7Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d) {
@@ -4239,21 +4239,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final D d;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg5<A, B, C, D, E, F, G> withArguments(E e) {
             return new QTaskBuilderVoid7Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg6<A, B, C, D, E, F, G> withArguments(E e, F f) {
             return new QTaskBuilderVoid7Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg7<A, B, C, D, E, F, G> withArguments(E e, F f, G g) {
             return new QTaskBuilderVoid7Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
@@ -4280,7 +4280,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid7Arg5<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid7Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e) {
@@ -4300,14 +4300,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final E e;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg6<A, B, C, D, E, F, G> withArguments(F f) {
             return new QTaskBuilderVoid7Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg7<A, B, C, D, E, F, G> withArguments(F f, G g) {
             return new QTaskBuilderVoid7Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
@@ -4334,7 +4334,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid7Arg6<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid7Arg6(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f) {
@@ -4356,7 +4356,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final F f;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid7Arg7<A, B, C, D, E, F, G> withArguments(G g) {
             return new QTaskBuilderVoid7Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
@@ -4383,7 +4383,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid7Arg7<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid7Arg7(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g) {
@@ -4437,7 +4437,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <A, B, C, D, E, F, G, H> QTaskBuilderVoid8Arg0<A, B, C, D, E, F, G, H> task(@StrictNonNull Runnable8<A, B, C, D, E, F, G, H> runnable) {
         return new QTaskBuilderVoid8Arg0<>(0, null, runnable);
@@ -4445,7 +4445,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid8Arg0<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
         private final Runnable8<A, B, C, D, E, F, G, H> runnable;
@@ -4456,56 +4456,56 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg1<A, B, C, D, E, F, G, H> withArguments(A a) {
             return new QTaskBuilderVoid8Arg1<>(priority(), threadPool(), runnable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg2<A, B, C, D, E, F, G, H> withArguments(A a, B b) {
             return new QTaskBuilderVoid8Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg3<A, B, C, D, E, F, G, H> withArguments(A a, B b, C c) {
             return new QTaskBuilderVoid8Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg4<A, B, C, D, E, F, G, H> withArguments(A a, B b, C c, D d) {
             return new QTaskBuilderVoid8Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg5<A, B, C, D, E, F, G, H> withArguments(A a, B b, C c, D d, E e) {
             return new QTaskBuilderVoid8Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg6<A, B, C, D, E, F, G, H> withArguments(A a, B b, C c, D d, E e, F f) {
             return new QTaskBuilderVoid8Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg7<A, B, C, D, E, F, G, H> withArguments(A a, B b, C c, D d, E e, F f, G g) {
             return new QTaskBuilderVoid8Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg8<A, B, C, D, E, F, G, H> withArguments(A a, B b, C c, D d, E e, F f, G g, H h) {
             return new QTaskBuilderVoid8Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
@@ -4532,7 +4532,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid8Arg1<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid8Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable8<A, B, C, D, E, F, G, H> runnable, A a) {
@@ -4544,49 +4544,49 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg2<A, B, C, D, E, F, G, H> withArguments(B b) {
             return new QTaskBuilderVoid8Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg3<A, B, C, D, E, F, G, H> withArguments(B b, C c) {
             return new QTaskBuilderVoid8Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg4<A, B, C, D, E, F, G, H> withArguments(B b, C c, D d) {
             return new QTaskBuilderVoid8Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg5<A, B, C, D, E, F, G, H> withArguments(B b, C c, D d, E e) {
             return new QTaskBuilderVoid8Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg6<A, B, C, D, E, F, G, H> withArguments(B b, C c, D d, E e, F f) {
             return new QTaskBuilderVoid8Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg7<A, B, C, D, E, F, G, H> withArguments(B b, C c, D d, E e, F f, G g) {
             return new QTaskBuilderVoid8Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg8<A, B, C, D, E, F, G, H> withArguments(B b, C c, D d, E e, F f, G g, H h) {
             return new QTaskBuilderVoid8Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
@@ -4613,7 +4613,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid8Arg2<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid8Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b) {
@@ -4627,42 +4627,42 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg3<A, B, C, D, E, F, G, H> withArguments(C c) {
             return new QTaskBuilderVoid8Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg4<A, B, C, D, E, F, G, H> withArguments(C c, D d) {
             return new QTaskBuilderVoid8Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg5<A, B, C, D, E, F, G, H> withArguments(C c, D d, E e) {
             return new QTaskBuilderVoid8Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg6<A, B, C, D, E, F, G, H> withArguments(C c, D d, E e, F f) {
             return new QTaskBuilderVoid8Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg7<A, B, C, D, E, F, G, H> withArguments(C c, D d, E e, F f, G g) {
             return new QTaskBuilderVoid8Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg8<A, B, C, D, E, F, G, H> withArguments(C c, D d, E e, F f, G g, H h) {
             return new QTaskBuilderVoid8Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
@@ -4689,7 +4689,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid8Arg3<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid8Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c) {
@@ -4705,35 +4705,35 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final C c;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg4<A, B, C, D, E, F, G, H> withArguments(D d) {
             return new QTaskBuilderVoid8Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg5<A, B, C, D, E, F, G, H> withArguments(D d, E e) {
             return new QTaskBuilderVoid8Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg6<A, B, C, D, E, F, G, H> withArguments(D d, E e, F f) {
             return new QTaskBuilderVoid8Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg7<A, B, C, D, E, F, G, H> withArguments(D d, E e, F f, G g) {
             return new QTaskBuilderVoid8Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg8<A, B, C, D, E, F, G, H> withArguments(D d, E e, F f, G g, H h) {
             return new QTaskBuilderVoid8Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
@@ -4760,7 +4760,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid8Arg4<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid8Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d) {
@@ -4778,28 +4778,28 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final D d;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg5<A, B, C, D, E, F, G, H> withArguments(E e) {
             return new QTaskBuilderVoid8Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg6<A, B, C, D, E, F, G, H> withArguments(E e, F f) {
             return new QTaskBuilderVoid8Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg7<A, B, C, D, E, F, G, H> withArguments(E e, F f, G g) {
             return new QTaskBuilderVoid8Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg8<A, B, C, D, E, F, G, H> withArguments(E e, F f, G g, H h) {
             return new QTaskBuilderVoid8Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
@@ -4826,7 +4826,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid8Arg5<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid8Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e) {
@@ -4846,21 +4846,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final E e;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg6<A, B, C, D, E, F, G, H> withArguments(F f) {
             return new QTaskBuilderVoid8Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg7<A, B, C, D, E, F, G, H> withArguments(F f, G g) {
             return new QTaskBuilderVoid8Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg8<A, B, C, D, E, F, G, H> withArguments(F f, G g, H h) {
             return new QTaskBuilderVoid8Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
@@ -4887,7 +4887,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid8Arg6<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid8Arg6(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f) {
@@ -4909,14 +4909,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final F f;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg7<A, B, C, D, E, F, G, H> withArguments(G g) {
             return new QTaskBuilderVoid8Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg8<A, B, C, D, E, F, G, H> withArguments(G g, H h) {
             return new QTaskBuilderVoid8Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
@@ -4943,7 +4943,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid8Arg7<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid8Arg7(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g) {
@@ -4967,7 +4967,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final G g;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid8Arg8<A, B, C, D, E, F, G, H> withArguments(H h) {
             return new QTaskBuilderVoid8Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
@@ -4994,7 +4994,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid8Arg8<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid8Arg8(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
@@ -5050,7 +5050,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <A, B, C, D, E, F, G, H, I> QTaskBuilderVoid9Arg0<A, B, C, D, E, F, G, H, I> task(@StrictNonNull Runnable9<A, B, C, D, E, F, G, H, I> runnable) {
         return new QTaskBuilderVoid9Arg0<>(0, null, runnable);
@@ -5058,7 +5058,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid9Arg0<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
         private final Runnable9<A, B, C, D, E, F, G, H, I> runnable;
@@ -5069,63 +5069,63 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg1<A, B, C, D, E, F, G, H, I> withArguments(A a) {
             return new QTaskBuilderVoid9Arg1<>(priority(), threadPool(), runnable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg2<A, B, C, D, E, F, G, H, I> withArguments(A a, B b) {
             return new QTaskBuilderVoid9Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg3<A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c) {
             return new QTaskBuilderVoid9Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg4<A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c, D d) {
             return new QTaskBuilderVoid9Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg5<A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c, D d, E e) {
             return new QTaskBuilderVoid9Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg6<A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c, D d, E e, F f) {
             return new QTaskBuilderVoid9Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg7<A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c, D d, E e, F f, G g) {
             return new QTaskBuilderVoid9Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg8<A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c, D d, E e, F f, G g, H h) {
             return new QTaskBuilderVoid9Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
         }
     
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg9<A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c, D d, E e, F f, G g, H h, I i) {
             return new QTaskBuilderVoid9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -5152,7 +5152,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid9Arg1<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid9Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a) {
@@ -5164,56 +5164,56 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg2<A, B, C, D, E, F, G, H, I> withArguments(B b) {
             return new QTaskBuilderVoid9Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg3<A, B, C, D, E, F, G, H, I> withArguments(B b, C c) {
             return new QTaskBuilderVoid9Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg4<A, B, C, D, E, F, G, H, I> withArguments(B b, C c, D d) {
             return new QTaskBuilderVoid9Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg5<A, B, C, D, E, F, G, H, I> withArguments(B b, C c, D d, E e) {
             return new QTaskBuilderVoid9Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg6<A, B, C, D, E, F, G, H, I> withArguments(B b, C c, D d, E e, F f) {
             return new QTaskBuilderVoid9Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg7<A, B, C, D, E, F, G, H, I> withArguments(B b, C c, D d, E e, F f, G g) {
             return new QTaskBuilderVoid9Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg8<A, B, C, D, E, F, G, H, I> withArguments(B b, C c, D d, E e, F f, G g, H h) {
             return new QTaskBuilderVoid9Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
         }
     
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg9<A, B, C, D, E, F, G, H, I> withArguments(B b, C c, D d, E e, F f, G g, H h, I i) {
             return new QTaskBuilderVoid9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -5240,7 +5240,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid9Arg2<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid9Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b) {
@@ -5254,49 +5254,49 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg3<A, B, C, D, E, F, G, H, I> withArguments(C c) {
             return new QTaskBuilderVoid9Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg4<A, B, C, D, E, F, G, H, I> withArguments(C c, D d) {
             return new QTaskBuilderVoid9Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg5<A, B, C, D, E, F, G, H, I> withArguments(C c, D d, E e) {
             return new QTaskBuilderVoid9Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg6<A, B, C, D, E, F, G, H, I> withArguments(C c, D d, E e, F f) {
             return new QTaskBuilderVoid9Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg7<A, B, C, D, E, F, G, H, I> withArguments(C c, D d, E e, F f, G g) {
             return new QTaskBuilderVoid9Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg8<A, B, C, D, E, F, G, H, I> withArguments(C c, D d, E e, F f, G g, H h) {
             return new QTaskBuilderVoid9Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
         }
     
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg9<A, B, C, D, E, F, G, H, I> withArguments(C c, D d, E e, F f, G g, H h, I i) {
             return new QTaskBuilderVoid9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -5323,7 +5323,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid9Arg3<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid9Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c) {
@@ -5339,42 +5339,42 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final C c;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg4<A, B, C, D, E, F, G, H, I> withArguments(D d) {
             return new QTaskBuilderVoid9Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg5<A, B, C, D, E, F, G, H, I> withArguments(D d, E e) {
             return new QTaskBuilderVoid9Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg6<A, B, C, D, E, F, G, H, I> withArguments(D d, E e, F f) {
             return new QTaskBuilderVoid9Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg7<A, B, C, D, E, F, G, H, I> withArguments(D d, E e, F f, G g) {
             return new QTaskBuilderVoid9Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg8<A, B, C, D, E, F, G, H, I> withArguments(D d, E e, F f, G g, H h) {
             return new QTaskBuilderVoid9Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
         }
     
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg9<A, B, C, D, E, F, G, H, I> withArguments(D d, E e, F f, G g, H h, I i) {
             return new QTaskBuilderVoid9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -5401,7 +5401,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid9Arg4<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid9Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d) {
@@ -5419,35 +5419,35 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final D d;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg5<A, B, C, D, E, F, G, H, I> withArguments(E e) {
             return new QTaskBuilderVoid9Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg6<A, B, C, D, E, F, G, H, I> withArguments(E e, F f) {
             return new QTaskBuilderVoid9Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg7<A, B, C, D, E, F, G, H, I> withArguments(E e, F f, G g) {
             return new QTaskBuilderVoid9Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg8<A, B, C, D, E, F, G, H, I> withArguments(E e, F f, G g, H h) {
             return new QTaskBuilderVoid9Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
         }
     
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg9<A, B, C, D, E, F, G, H, I> withArguments(E e, F f, G g, H h, I i) {
             return new QTaskBuilderVoid9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -5474,7 +5474,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid9Arg5<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid9Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e) {
@@ -5494,28 +5494,28 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final E e;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg6<A, B, C, D, E, F, G, H, I> withArguments(F f) {
             return new QTaskBuilderVoid9Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg7<A, B, C, D, E, F, G, H, I> withArguments(F f, G g) {
             return new QTaskBuilderVoid9Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg8<A, B, C, D, E, F, G, H, I> withArguments(F f, G g, H h) {
             return new QTaskBuilderVoid9Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
         }
     
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg9<A, B, C, D, E, F, G, H, I> withArguments(F f, G g, H h, I i) {
             return new QTaskBuilderVoid9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -5542,7 +5542,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid9Arg6<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid9Arg6(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f) {
@@ -5564,21 +5564,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final F f;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg7<A, B, C, D, E, F, G, H, I> withArguments(G g) {
             return new QTaskBuilderVoid9Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg8<A, B, C, D, E, F, G, H, I> withArguments(G g, H h) {
             return new QTaskBuilderVoid9Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg9<A, B, C, D, E, F, G, H, I> withArguments(G g, H h, I i) {
             return new QTaskBuilderVoid9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -5605,7 +5605,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid9Arg7<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid9Arg7(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g) {
@@ -5629,14 +5629,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final G g;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg8<A, B, C, D, E, F, G, H, I> withArguments(H h) {
             return new QTaskBuilderVoid9Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg9<A, B, C, D, E, F, G, H, I> withArguments(H h, I i) {
             return new QTaskBuilderVoid9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -5663,7 +5663,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid9Arg8<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid9Arg8(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
@@ -5689,7 +5689,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final H h;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTaskBuilderVoid9Arg9<A, B, C, D, E, F, G, H, I> withArguments(I i) {
             return new QTaskBuilderVoid9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -5716,7 +5716,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTaskBuilderVoid9Arg9<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
         QTaskBuilderVoid9Arg9(int newPriority, QThreadPool threadPool, @StrictNonNull Runnable9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
@@ -5773,7 +5773,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <T> @NonNull QTypedTaskBuilder0Arg0<T> task(java.util.concurrent.@StrictNonNull Callable<T> callable) {
         return new QTypedTaskBuilder0Arg0<>(0, null, callable);
@@ -5781,7 +5781,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QTypedTaskBuilder0Arg0<T> extends QTaskBuilder<T>{
         QTypedTaskBuilder0Arg0(int newPriority, QThreadPool threadPool, java.util.concurrent.Callable<T> callable) {
@@ -5820,7 +5820,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <T, A> @NonNull QTypedTaskBuilder1Arg0<T, A> task(@StrictNonNull Callable1<T, A> callable) {
         return new QTypedTaskBuilder1Arg0<>(0, null, callable);
@@ -5828,7 +5828,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder1Arg0<T, A> extends QTaskBuilder<T>{
         private final Callable1<T, A> callable;
@@ -5839,7 +5839,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder1Arg1<T, A> withArguments(A a) {
             return new QTypedTaskBuilder1Arg1<>(priority(), threadPool(), callable, a);
@@ -5866,7 +5866,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QTypedTaskBuilder1Arg1<T, A> extends QTaskBuilder<T>{
         QTypedTaskBuilder1Arg1(int newPriority, QThreadPool threadPool, Callable1<T, A> callable, A a) {
@@ -5908,7 +5908,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <T, A, B> @NonNull QTypedTaskBuilder2Arg0<T, A, B> task(@StrictNonNull Callable2<T, A, B> callable) {
         return new QTypedTaskBuilder2Arg0<>(0, null, callable);
@@ -5916,7 +5916,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder2Arg0<T, A, B> extends QTaskBuilder<T>{
         private final Callable2<T, A, B> callable;
@@ -5927,14 +5927,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder2Arg1<T, A, B> withArguments(A a) {
             return new QTypedTaskBuilder2Arg1<>(priority(), threadPool(), callable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder2Arg2<T, A, B> withArguments(A a, B b) {
             return new QTypedTaskBuilder2Arg2<>(priority(), threadPool(), callable, a, b);
@@ -5961,7 +5961,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QTypedTaskBuilder2Arg1<T, A, B> extends QTaskBuilder<T>{
         QTypedTaskBuilder2Arg1(int newPriority, QThreadPool threadPool, Callable2<T, A, B> callable, A a) {
@@ -5973,7 +5973,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder2Arg2<T, A, B> withArguments(B b) {
             return new QTypedTaskBuilder2Arg2<>(priority(), threadPool(), callable, a, b);
@@ -6000,7 +6000,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder2Arg2<T, A, B> extends QTaskBuilder<T>{
         QTypedTaskBuilder2Arg2(int newPriority, QThreadPool threadPool, Callable2<T, A, B> callable, A a, B b) {
@@ -6044,7 +6044,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <T, A, B, C> @NonNull QTypedTaskBuilder3Arg0<T, A, B, C> task(@StrictNonNull Callable3<T, A, B, C> callable) {
         return new QTypedTaskBuilder3Arg0<>(0, null, callable);
@@ -6052,7 +6052,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder3Arg0<T, A, B, C> extends QTaskBuilder<T>{
         private final Callable3<T, A, B, C> callable;
@@ -6063,21 +6063,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder3Arg1<T, A, B, C> withArguments(A a) {
             return new QTypedTaskBuilder3Arg1<>(priority(), threadPool(), callable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder3Arg2<T, A, B, C> withArguments(A a, B b) {
             return new QTypedTaskBuilder3Arg2<>(priority(), threadPool(), callable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder3Arg3<T, A, B, C> withArguments(A a, B b, C c) {
             return new QTypedTaskBuilder3Arg3<>(priority(), threadPool(), callable, a, b, c);
@@ -6104,7 +6104,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QTypedTaskBuilder3Arg1<T, A, B, C> extends QTaskBuilder<T>{
         QTypedTaskBuilder3Arg1(int newPriority, QThreadPool threadPool, Callable3<T, A, B, C> callable, A a) {
@@ -6116,14 +6116,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder3Arg2<T, A, B, C> withArguments(B b) {
             return new QTypedTaskBuilder3Arg2<>(priority(), threadPool(), callable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder3Arg3<T, A, B, C> withArguments(B b, C c) {
             return new QTypedTaskBuilder3Arg3<>(priority(), threadPool(), callable, a, b, c);
@@ -6150,7 +6150,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder3Arg2<T, A, B, C> extends QTaskBuilder<T>{
         QTypedTaskBuilder3Arg2(int newPriority, QThreadPool threadPool, Callable3<T, A, B, C> callable, A a, B b) {
@@ -6164,7 +6164,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder3Arg3<T, A, B, C> withArguments(C c) {
             return new QTypedTaskBuilder3Arg3<>(priority(), threadPool(), callable, a, b, c);
@@ -6191,7 +6191,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder3Arg3<T, A, B, C> extends QTaskBuilder<T>{
         QTypedTaskBuilder3Arg3(int newPriority, QThreadPool threadPool, Callable3<T, A, B, C> callable, A a, B b, C c) {
@@ -6237,7 +6237,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <T, A, B, C, D> @NonNull QTypedTaskBuilder4Arg0<T, A, B, C, D> task(@StrictNonNull Callable4<T, A, B, C, D> callable) {
         return new QTypedTaskBuilder4Arg0<>(0, null, callable);
@@ -6245,7 +6245,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder4Arg0<T, A, B, C, D> extends QTaskBuilder<T>{
         private final Callable4<T, A, B, C, D> callable;
@@ -6256,28 +6256,28 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder4Arg1<T, A, B, C, D> withArguments(A a) {
             return new QTypedTaskBuilder4Arg1<>(priority(), threadPool(), callable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder4Arg2<T, A, B, C, D> withArguments(A a, B b) {
             return new QTypedTaskBuilder4Arg2<>(priority(), threadPool(), callable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder4Arg3<T, A, B, C, D> withArguments(A a, B b, C c) {
             return new QTypedTaskBuilder4Arg3<>(priority(), threadPool(), callable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder4Arg4<T, A, B, C, D> withArguments(A a, B b, C c, D d) {
             return new QTypedTaskBuilder4Arg4<>(priority(), threadPool(), callable, a, b, c, d);
@@ -6304,7 +6304,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QTypedTaskBuilder4Arg1<T, A, B, C, D> extends QTaskBuilder<T>{
         QTypedTaskBuilder4Arg1(int newPriority, QThreadPool threadPool, Callable4<T, A, B, C, D> callable, A a) {
@@ -6316,21 +6316,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder4Arg2<T, A, B, C, D> withArguments(B b) {
             return new QTypedTaskBuilder4Arg2<>(priority(), threadPool(), callable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder4Arg3<T, A, B, C, D> withArguments(B b, C c) {
             return new QTypedTaskBuilder4Arg3<>(priority(), threadPool(), callable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder4Arg4<T, A, B, C, D> withArguments(B b, C c, D d) {
             return new QTypedTaskBuilder4Arg4<>(priority(), threadPool(), callable, a, b, c, d);
@@ -6357,7 +6357,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder4Arg2<T, A, B, C, D> extends QTaskBuilder<T>{
         QTypedTaskBuilder4Arg2(int newPriority, QThreadPool threadPool, Callable4<T, A, B, C, D> callable, A a, B b) {
@@ -6371,14 +6371,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder4Arg3<T, A, B, C, D> withArguments(C c) {
             return new QTypedTaskBuilder4Arg3<>(priority(), threadPool(), callable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder4Arg4<T, A, B, C, D> withArguments(C c, D d) {
             return new QTypedTaskBuilder4Arg4<>(priority(), threadPool(), callable, a, b, c, d);
@@ -6405,7 +6405,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder4Arg3<T, A, B, C, D> extends QTaskBuilder<T>{
         QTypedTaskBuilder4Arg3(int newPriority, QThreadPool threadPool, Callable4<T, A, B, C, D> callable, A a, B b, C c) {
@@ -6421,7 +6421,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final C c;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder4Arg4<T, A, B, C, D> withArguments(D d) {
             return new QTypedTaskBuilder4Arg4<>(priority(), threadPool(), callable, a, b, c, d);
@@ -6448,7 +6448,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder4Arg4<T, A, B, C, D> extends QTaskBuilder<T>{
         QTypedTaskBuilder4Arg4(int newPriority, QThreadPool threadPool, Callable4<T, A, B, C, D> callable, A a, B b, C c, D d) {
@@ -6496,7 +6496,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <T, A, B, C, D, E> @NonNull QTypedTaskBuilder5Arg0<T, A, B, C, D, E> task(@StrictNonNull Callable5<T, A, B, C, D, E> callable) {
         return new QTypedTaskBuilder5Arg0<>(0, null, callable);
@@ -6504,7 +6504,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder5Arg0<T, A, B, C, D, E> extends QTaskBuilder<T>{
         private final Callable5<T, A, B, C, D, E> callable;
@@ -6515,35 +6515,35 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder5Arg1<T, A, B, C, D, E> withArguments(A a) {
             return new QTypedTaskBuilder5Arg1<>(priority(), threadPool(), callable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder5Arg2<T, A, B, C, D, E> withArguments(A a, B b) {
             return new QTypedTaskBuilder5Arg2<>(priority(), threadPool(), callable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder5Arg3<T, A, B, C, D, E> withArguments(A a, B b, C c) {
             return new QTypedTaskBuilder5Arg3<>(priority(), threadPool(), callable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder5Arg4<T, A, B, C, D, E> withArguments(A a, B b, C c, D d) {
             return new QTypedTaskBuilder5Arg4<>(priority(), threadPool(), callable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder5Arg5<T, A, B, C, D, E> withArguments(A a, B b, C c, D d, E e) {
             return new QTypedTaskBuilder5Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
@@ -6570,7 +6570,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QTypedTaskBuilder5Arg1<T, A, B, C, D, E> extends QTaskBuilder<T>{
         QTypedTaskBuilder5Arg1(int newPriority, QThreadPool threadPool, Callable5<T, A, B, C, D, E> callable, A a) {
@@ -6582,28 +6582,28 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder5Arg2<T, A, B, C, D, E> withArguments(B b) {
             return new QTypedTaskBuilder5Arg2<>(priority(), threadPool(), callable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder5Arg3<T, A, B, C, D, E> withArguments(B b, C c) {
             return new QTypedTaskBuilder5Arg3<>(priority(), threadPool(), callable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder5Arg4<T, A, B, C, D, E> withArguments(B b, C c, D d) {
             return new QTypedTaskBuilder5Arg4<>(priority(), threadPool(), callable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder5Arg5<T, A, B, C, D, E> withArguments(B b, C c, D d, E e) {
             return new QTypedTaskBuilder5Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
@@ -6630,7 +6630,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder5Arg2<T, A, B, C, D, E> extends QTaskBuilder<T>{
         QTypedTaskBuilder5Arg2(int newPriority, QThreadPool threadPool, Callable5<T, A, B, C, D, E> callable, A a, B b) {
@@ -6644,21 +6644,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder5Arg3<T, A, B, C, D, E> withArguments(C c) {
             return new QTypedTaskBuilder5Arg3<>(priority(), threadPool(), callable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder5Arg4<T, A, B, C, D, E> withArguments(C c, D d) {
             return new QTypedTaskBuilder5Arg4<>(priority(), threadPool(), callable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder5Arg5<T, A, B, C, D, E> withArguments(C c, D d, E e) {
             return new QTypedTaskBuilder5Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
@@ -6685,7 +6685,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder5Arg3<T, A, B, C, D, E> extends QTaskBuilder<T>{
         QTypedTaskBuilder5Arg3(int newPriority, QThreadPool threadPool, Callable5<T, A, B, C, D, E> callable, A a, B b, C c) {
@@ -6701,14 +6701,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final C c;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder5Arg4<T, A, B, C, D, E> withArguments(D d) {
             return new QTypedTaskBuilder5Arg4<>(priority(), threadPool(), callable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder5Arg5<T, A, B, C, D, E> withArguments(D d, E e) {
             return new QTypedTaskBuilder5Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
@@ -6735,7 +6735,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder5Arg4<T, A, B, C, D, E> extends QTaskBuilder<T>{
         QTypedTaskBuilder5Arg4(int newPriority, QThreadPool threadPool, Callable5<T, A, B, C, D, E> callable, A a, B b, C c, D d) {
@@ -6753,7 +6753,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final D d;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder5Arg5<T, A, B, C, D, E> withArguments(E e) {
             return new QTypedTaskBuilder5Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
@@ -6780,7 +6780,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder5Arg5<T, A, B, C, D, E> extends QTaskBuilder<T>{
         QTypedTaskBuilder5Arg5(int newPriority, QThreadPool threadPool, Callable5<T, A, B, C, D, E> callable, A a, B b, C c, D d, E e) {
@@ -6830,7 +6830,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <T, A, B, C, D, E, F> @NonNull QTypedTaskBuilder6Arg0<T, A, B, C, D, E, F> task(@StrictNonNull Callable6<T, A, B, C, D, E, F> callable) {
         return new QTypedTaskBuilder6Arg0<>(0, null, callable);
@@ -6838,7 +6838,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QTypedTaskBuilder6Arg0<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
         private final Callable6<T, A, B, C, D, E, F> callable;
@@ -6849,42 +6849,42 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder6Arg1<T, A, B, C, D, E, F> withArguments(A a) {
             return new QTypedTaskBuilder6Arg1<>(priority(), threadPool(), callable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder6Arg2<T, A, B, C, D, E, F> withArguments(A a, B b) {
             return new QTypedTaskBuilder6Arg2<>(priority(), threadPool(), callable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder6Arg3<T, A, B, C, D, E, F> withArguments(A a, B b, C c) {
             return new QTypedTaskBuilder6Arg3<>(priority(), threadPool(), callable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder6Arg4<T, A, B, C, D, E, F> withArguments(A a, B b, C c, D d) {
             return new QTypedTaskBuilder6Arg4<>(priority(), threadPool(), callable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder6Arg5<T, A, B, C, D, E, F> withArguments(A a, B b, C c, D d, E e) {
             return new QTypedTaskBuilder6Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder6Arg6<T, A, B, C, D, E, F> withArguments(A a, B b, C c, D d, E e, F f) {
             return new QTypedTaskBuilder6Arg6<>(priority(), threadPool(), callable, a, b, c, d, e, f);
@@ -6911,7 +6911,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QTypedTaskBuilder6Arg1<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
         QTypedTaskBuilder6Arg1(int newPriority, QThreadPool threadPool, Callable6<T, A, B, C, D, E, F> callable, A a) {
@@ -6923,35 +6923,35 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder6Arg2<T, A, B, C, D, E, F> withArguments(B b) {
             return new QTypedTaskBuilder6Arg2<>(priority(), threadPool(), callable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder6Arg3<T, A, B, C, D, E, F> withArguments(B b, C c) {
             return new QTypedTaskBuilder6Arg3<>(priority(), threadPool(), callable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder6Arg4<T, A, B, C, D, E, F> withArguments(B b, C c, D d) {
             return new QTypedTaskBuilder6Arg4<>(priority(), threadPool(), callable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder6Arg5<T, A, B, C, D, E, F> withArguments(B b, C c, D d, E e) {
             return new QTypedTaskBuilder6Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder6Arg6<T, A, B, C, D, E, F> withArguments(B b, C c, D d, E e, F f) {
             return new QTypedTaskBuilder6Arg6<>(priority(), threadPool(), callable, a, b, c, d, e, f);
@@ -6978,7 +6978,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder6Arg2<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
         QTypedTaskBuilder6Arg2(int newPriority, QThreadPool threadPool, Callable6<T, A, B, C, D, E, F> callable, A a, B b) {
@@ -6992,28 +6992,28 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder6Arg3<T, A, B, C, D, E, F> withArguments(C c) {
             return new QTypedTaskBuilder6Arg3<>(priority(), threadPool(), callable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder6Arg4<T, A, B, C, D, E, F> withArguments(C c, D d) {
             return new QTypedTaskBuilder6Arg4<>(priority(), threadPool(), callable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder6Arg5<T, A, B, C, D, E, F> withArguments(C c, D d, E e) {
             return new QTypedTaskBuilder6Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder6Arg6<T, A, B, C, D, E, F> withArguments(C c, D d, E e, F f) {
             return new QTypedTaskBuilder6Arg6<>(priority(), threadPool(), callable, a, b, c, d, e, f);
@@ -7040,7 +7040,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder6Arg3<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
         QTypedTaskBuilder6Arg3(int newPriority, QThreadPool threadPool, Callable6<T, A, B, C, D, E, F> callable, A a, B b, C c) {
@@ -7056,21 +7056,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final C c;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder6Arg4<T, A, B, C, D, E, F> withArguments(D d) {
             return new QTypedTaskBuilder6Arg4<>(priority(), threadPool(), callable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder6Arg5<T, A, B, C, D, E, F> withArguments(D d, E e) {
             return new QTypedTaskBuilder6Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder6Arg6<T, A, B, C, D, E, F> withArguments(D d, E e, F f) {
             return new QTypedTaskBuilder6Arg6<>(priority(), threadPool(), callable, a, b, c, d, e, f);
@@ -7097,7 +7097,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder6Arg4<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
         QTypedTaskBuilder6Arg4(int newPriority, QThreadPool threadPool, Callable6<T, A, B, C, D, E, F> callable, A a, B b, C c, D d) {
@@ -7115,14 +7115,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final D d;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder6Arg5<T, A, B, C, D, E, F> withArguments(E e) {
             return new QTypedTaskBuilder6Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder6Arg6<T, A, B, C, D, E, F> withArguments(E e, F f) {
             return new QTypedTaskBuilder6Arg6<>(priority(), threadPool(), callable, a, b, c, d, e, f);
@@ -7149,7 +7149,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder6Arg5<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
         QTypedTaskBuilder6Arg5(int newPriority, QThreadPool threadPool, Callable6<T, A, B, C, D, E, F> callable, A a, B b, C c, D d, E e) {
@@ -7169,7 +7169,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final E e;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder6Arg6<T, A, B, C, D, E, F> withArguments(F f) {
             return new QTypedTaskBuilder6Arg6<>(priority(), threadPool(), callable, a, b, c, d, e, f);
@@ -7196,7 +7196,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder6Arg6<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
         QTypedTaskBuilder6Arg6(int newPriority, QThreadPool threadPool, Callable6<T, A, B, C, D, E, F> callable, A a, B b, C c, D d, E e, F f) {
@@ -7248,7 +7248,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <T, A, B, C, D, E, F, G> @NonNull QTypedTaskBuilder7Arg0<T, A, B, C, D, E, F, G> task(@StrictNonNull Callable7<T, A, B, C, D, E, F, G> callable) {
         return new QTypedTaskBuilder7Arg0<>(0, null, callable);
@@ -7256,7 +7256,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QTypedTaskBuilder7Arg0<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
         private final Callable7<T, A, B, C, D, E, F, G> callable;
@@ -7267,49 +7267,49 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg1<T, A, B, C, D, E, F, G> withArguments(A a) {
             return new QTypedTaskBuilder7Arg1<>(priority(), threadPool(), callable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg2<T, A, B, C, D, E, F, G> withArguments(A a, B b) {
             return new QTypedTaskBuilder7Arg2<>(priority(), threadPool(), callable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg3<T, A, B, C, D, E, F, G> withArguments(A a, B b, C c) {
             return new QTypedTaskBuilder7Arg3<>(priority(), threadPool(), callable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg4<T, A, B, C, D, E, F, G> withArguments(A a, B b, C c, D d) {
             return new QTypedTaskBuilder7Arg4<>(priority(), threadPool(), callable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg5<T, A, B, C, D, E, F, G> withArguments(A a, B b, C c, D d, E e) {
             return new QTypedTaskBuilder7Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg6<T, A, B, C, D, E, F, G> withArguments(A a, B b, C c, D d, E e, F f) {
             return new QTypedTaskBuilder7Arg6<>(priority(), threadPool(), callable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg7<T, A, B, C, D, E, F, G> withArguments(A a, B b, C c, D d, E e, F f, G g) {
             return new QTypedTaskBuilder7Arg7<>(priority(), threadPool(), callable, a, b, c, d, e, f, g);
@@ -7336,7 +7336,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QTypedTaskBuilder7Arg1<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
         QTypedTaskBuilder7Arg1(int newPriority, QThreadPool threadPool, Callable7<T, A, B, C, D, E, F, G> callable, A a) {
@@ -7348,42 +7348,42 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg2<T, A, B, C, D, E, F, G> withArguments(B b) {
             return new QTypedTaskBuilder7Arg2<>(priority(), threadPool(), callable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg3<T, A, B, C, D, E, F, G> withArguments(B b, C c) {
             return new QTypedTaskBuilder7Arg3<>(priority(), threadPool(), callable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg4<T, A, B, C, D, E, F, G> withArguments(B b, C c, D d) {
             return new QTypedTaskBuilder7Arg4<>(priority(), threadPool(), callable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg5<T, A, B, C, D, E, F, G> withArguments(B b, C c, D d, E e) {
             return new QTypedTaskBuilder7Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg6<T, A, B, C, D, E, F, G> withArguments(B b, C c, D d, E e, F f) {
             return new QTypedTaskBuilder7Arg6<>(priority(), threadPool(), callable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg7<T, A, B, C, D, E, F, G> withArguments(B b, C c, D d, E e, F f, G g) {
             return new QTypedTaskBuilder7Arg7<>(priority(), threadPool(), callable, a, b, c, d, e, f, g);
@@ -7410,7 +7410,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder7Arg2<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
         QTypedTaskBuilder7Arg2(int newPriority, QThreadPool threadPool, Callable7<T, A, B, C, D, E, F, G> callable, A a, B b) {
@@ -7424,35 +7424,35 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg3<T, A, B, C, D, E, F, G> withArguments(C c) {
             return new QTypedTaskBuilder7Arg3<>(priority(), threadPool(), callable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg4<T, A, B, C, D, E, F, G> withArguments(C c, D d) {
             return new QTypedTaskBuilder7Arg4<>(priority(), threadPool(), callable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg5<T, A, B, C, D, E, F, G> withArguments(C c, D d, E e) {
             return new QTypedTaskBuilder7Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg6<T, A, B, C, D, E, F, G> withArguments(C c, D d, E e, F f) {
             return new QTypedTaskBuilder7Arg6<>(priority(), threadPool(), callable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg7<T, A, B, C, D, E, F, G> withArguments(C c, D d, E e, F f, G g) {
             return new QTypedTaskBuilder7Arg7<>(priority(), threadPool(), callable, a, b, c, d, e, f, g);
@@ -7479,7 +7479,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder7Arg3<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
         QTypedTaskBuilder7Arg3(int newPriority, QThreadPool threadPool, Callable7<T, A, B, C, D, E, F, G> callable, A a, B b, C c) {
@@ -7495,28 +7495,28 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final C c;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg4<T, A, B, C, D, E, F, G> withArguments(D d) {
             return new QTypedTaskBuilder7Arg4<>(priority(), threadPool(), callable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg5<T, A, B, C, D, E, F, G> withArguments(D d, E e) {
             return new QTypedTaskBuilder7Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg6<T, A, B, C, D, E, F, G> withArguments(D d, E e, F f) {
             return new QTypedTaskBuilder7Arg6<>(priority(), threadPool(), callable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg7<T, A, B, C, D, E, F, G> withArguments(D d, E e, F f, G g) {
             return new QTypedTaskBuilder7Arg7<>(priority(), threadPool(), callable, a, b, c, d, e, f, g);
@@ -7543,7 +7543,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder7Arg4<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
         QTypedTaskBuilder7Arg4(int newPriority, QThreadPool threadPool, Callable7<T, A, B, C, D, E, F, G> callable, A a, B b, C c, D d) {
@@ -7561,21 +7561,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final D d;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg5<T, A, B, C, D, E, F, G> withArguments(E e) {
             return new QTypedTaskBuilder7Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg6<T, A, B, C, D, E, F, G> withArguments(E e, F f) {
             return new QTypedTaskBuilder7Arg6<>(priority(), threadPool(), callable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg7<T, A, B, C, D, E, F, G> withArguments(E e, F f, G g) {
             return new QTypedTaskBuilder7Arg7<>(priority(), threadPool(), callable, a, b, c, d, e, f, g);
@@ -7602,7 +7602,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder7Arg5<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
         QTypedTaskBuilder7Arg5(int newPriority, QThreadPool threadPool, Callable7<T, A, B, C, D, E, F, G> callable, A a, B b, C c, D d, E e) {
@@ -7622,14 +7622,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final E e;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg6<T, A, B, C, D, E, F, G> withArguments(F f) {
             return new QTypedTaskBuilder7Arg6<>(priority(), threadPool(), callable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg7<T, A, B, C, D, E, F, G> withArguments(F f, G g) {
             return new QTypedTaskBuilder7Arg7<>(priority(), threadPool(), callable, a, b, c, d, e, f, g);
@@ -7656,7 +7656,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder7Arg6<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
         QTypedTaskBuilder7Arg6(int newPriority, QThreadPool threadPool, Callable7<T, A, B, C, D, E, F, G> callable, A a, B b, C c, D d, E e, F f) {
@@ -7678,7 +7678,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final F f;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder7Arg7<T, A, B, C, D, E, F, G> withArguments(G g) {
             return new QTypedTaskBuilder7Arg7<>(priority(), threadPool(), callable, a, b, c, d, e, f, g);
@@ -7705,7 +7705,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder7Arg7<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
         QTypedTaskBuilder7Arg7(int newPriority, QThreadPool threadPool, Callable7<T, A, B, C, D, E, F, G> callable, A a, B b, C c, D d, E e, F f, G g) {
@@ -7759,7 +7759,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <T, A, B, C, D, E, F, G, H> @NonNull QTypedTaskBuilder8Arg0<T, A, B, C, D, E, F, G, H> task(@StrictNonNull Callable8<T, A, B, C, D, E, F, G, H> callable) {
         return new QTypedTaskBuilder8Arg0<>(0, null, callable);
@@ -7767,7 +7767,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QTypedTaskBuilder8Arg0<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
         private final Callable8<T, A, B, C, D, E, F, G, H> callable;
@@ -7778,56 +7778,56 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg1<T, A, B, C, D, E, F, G, H> withArguments(A a) {
             return new QTypedTaskBuilder8Arg1<>(priority(), threadPool(), callable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg2<T, A, B, C, D, E, F, G, H> withArguments(A a, B b) {
             return new QTypedTaskBuilder8Arg2<>(priority(), threadPool(), callable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg3<T, A, B, C, D, E, F, G, H> withArguments(A a, B b, C c) {
             return new QTypedTaskBuilder8Arg3<>(priority(), threadPool(), callable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg4<T, A, B, C, D, E, F, G, H> withArguments(A a, B b, C c, D d) {
             return new QTypedTaskBuilder8Arg4<>(priority(), threadPool(), callable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg5<T, A, B, C, D, E, F, G, H> withArguments(A a, B b, C c, D d, E e) {
             return new QTypedTaskBuilder8Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg6<T, A, B, C, D, E, F, G, H> withArguments(A a, B b, C c, D d, E e, F f) {
             return new QTypedTaskBuilder8Arg6<>(priority(), threadPool(), callable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg7<T, A, B, C, D, E, F, G, H> withArguments(A a, B b, C c, D d, E e, F f, G g) {
             return new QTypedTaskBuilder8Arg7<>(priority(), threadPool(), callable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg8<T, A, B, C, D, E, F, G, H> withArguments(A a, B b, C c, D d, E e, F f, G g, H h) {
             return new QTypedTaskBuilder8Arg8<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h);
@@ -7854,7 +7854,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QTypedTaskBuilder8Arg1<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
         QTypedTaskBuilder8Arg1(int newPriority, QThreadPool threadPool, Callable8<T, A, B, C, D, E, F, G, H> callable, A a) {
@@ -7866,49 +7866,49 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg2<T, A, B, C, D, E, F, G, H> withArguments(B b) {
             return new QTypedTaskBuilder8Arg2<>(priority(), threadPool(), callable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg3<T, A, B, C, D, E, F, G, H> withArguments(B b, C c) {
             return new QTypedTaskBuilder8Arg3<>(priority(), threadPool(), callable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg4<T, A, B, C, D, E, F, G, H> withArguments(B b, C c, D d) {
             return new QTypedTaskBuilder8Arg4<>(priority(), threadPool(), callable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg5<T, A, B, C, D, E, F, G, H> withArguments(B b, C c, D d, E e) {
             return new QTypedTaskBuilder8Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg6<T, A, B, C, D, E, F, G, H> withArguments(B b, C c, D d, E e, F f) {
             return new QTypedTaskBuilder8Arg6<>(priority(), threadPool(), callable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg7<T, A, B, C, D, E, F, G, H> withArguments(B b, C c, D d, E e, F f, G g) {
             return new QTypedTaskBuilder8Arg7<>(priority(), threadPool(), callable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg8<T, A, B, C, D, E, F, G, H> withArguments(B b, C c, D d, E e, F f, G g, H h) {
             return new QTypedTaskBuilder8Arg8<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h);
@@ -7935,7 +7935,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder8Arg2<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
         QTypedTaskBuilder8Arg2(int newPriority, QThreadPool threadPool, Callable8<T, A, B, C, D, E, F, G, H> callable, A a, B b) {
@@ -7949,42 +7949,42 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg3<T, A, B, C, D, E, F, G, H> withArguments(C c) {
             return new QTypedTaskBuilder8Arg3<>(priority(), threadPool(), callable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg4<T, A, B, C, D, E, F, G, H> withArguments(C c, D d) {
             return new QTypedTaskBuilder8Arg4<>(priority(), threadPool(), callable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg5<T, A, B, C, D, E, F, G, H> withArguments(C c, D d, E e) {
             return new QTypedTaskBuilder8Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg6<T, A, B, C, D, E, F, G, H> withArguments(C c, D d, E e, F f) {
             return new QTypedTaskBuilder8Arg6<>(priority(), threadPool(), callable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg7<T, A, B, C, D, E, F, G, H> withArguments(C c, D d, E e, F f, G g) {
             return new QTypedTaskBuilder8Arg7<>(priority(), threadPool(), callable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg8<T, A, B, C, D, E, F, G, H> withArguments(C c, D d, E e, F f, G g, H h) {
             return new QTypedTaskBuilder8Arg8<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h);
@@ -8011,7 +8011,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder8Arg3<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
         QTypedTaskBuilder8Arg3(int newPriority, QThreadPool threadPool, Callable8<T, A, B, C, D, E, F, G, H> callable, A a, B b, C c) {
@@ -8027,35 +8027,35 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final C c;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg4<T, A, B, C, D, E, F, G, H> withArguments(D d) {
             return new QTypedTaskBuilder8Arg4<>(priority(), threadPool(), callable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg5<T, A, B, C, D, E, F, G, H> withArguments(D d, E e) {
             return new QTypedTaskBuilder8Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg6<T, A, B, C, D, E, F, G, H> withArguments(D d, E e, F f) {
             return new QTypedTaskBuilder8Arg6<>(priority(), threadPool(), callable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg7<T, A, B, C, D, E, F, G, H> withArguments(D d, E e, F f, G g) {
             return new QTypedTaskBuilder8Arg7<>(priority(), threadPool(), callable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg8<T, A, B, C, D, E, F, G, H> withArguments(D d, E e, F f, G g, H h) {
             return new QTypedTaskBuilder8Arg8<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h);
@@ -8082,7 +8082,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder8Arg4<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
         QTypedTaskBuilder8Arg4(int newPriority, QThreadPool threadPool, Callable8<T, A, B, C, D, E, F, G, H> callable, A a, B b, C c, D d) {
@@ -8100,28 +8100,28 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final D d;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg5<T, A, B, C, D, E, F, G, H> withArguments(E e) {
             return new QTypedTaskBuilder8Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg6<T, A, B, C, D, E, F, G, H> withArguments(E e, F f) {
             return new QTypedTaskBuilder8Arg6<>(priority(), threadPool(), callable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg7<T, A, B, C, D, E, F, G, H> withArguments(E e, F f, G g) {
             return new QTypedTaskBuilder8Arg7<>(priority(), threadPool(), callable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg8<T, A, B, C, D, E, F, G, H> withArguments(E e, F f, G g, H h) {
             return new QTypedTaskBuilder8Arg8<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h);
@@ -8148,7 +8148,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder8Arg5<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
         QTypedTaskBuilder8Arg5(int newPriority, QThreadPool threadPool, Callable8<T, A, B, C, D, E, F, G, H> callable, A a, B b, C c, D d, E e) {
@@ -8168,21 +8168,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final E e;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg6<T, A, B, C, D, E, F, G, H> withArguments(F f) {
             return new QTypedTaskBuilder8Arg6<>(priority(), threadPool(), callable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg7<T, A, B, C, D, E, F, G, H> withArguments(F f, G g) {
             return new QTypedTaskBuilder8Arg7<>(priority(), threadPool(), callable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg8<T, A, B, C, D, E, F, G, H> withArguments(F f, G g, H h) {
             return new QTypedTaskBuilder8Arg8<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h);
@@ -8209,7 +8209,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder8Arg6<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
         QTypedTaskBuilder8Arg6(int newPriority, QThreadPool threadPool, Callable8<T, A, B, C, D, E, F, G, H> callable, A a, B b, C c, D d, E e, F f) {
@@ -8231,14 +8231,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final F f;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg7<T, A, B, C, D, E, F, G, H> withArguments(G g) {
             return new QTypedTaskBuilder8Arg7<>(priority(), threadPool(), callable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg8<T, A, B, C, D, E, F, G, H> withArguments(G g, H h) {
             return new QTypedTaskBuilder8Arg8<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h);
@@ -8265,7 +8265,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder8Arg7<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
         QTypedTaskBuilder8Arg7(int newPriority, QThreadPool threadPool, Callable8<T, A, B, C, D, E, F, G, H> callable, A a, B b, C c, D d, E e, F f, G g) {
@@ -8289,7 +8289,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final G g;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder8Arg8<T, A, B, C, D, E, F, G, H> withArguments(H h) {
             return new QTypedTaskBuilder8Arg8<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h);
@@ -8316,7 +8316,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder8Arg8<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
         QTypedTaskBuilder8Arg8(int newPriority, QThreadPool threadPool, Callable8<T, A, B, C, D, E, F, G, H> callable, A a, B b, C c, D d, E e, F f, G g, H h) {
@@ -8372,7 +8372,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <T, A, B, C, D, E, F, G, H, I> @NonNull QTypedTaskBuilder9Arg0<T, A, B, C, D, E, F, G, H, I> task(@StrictNonNull Callable9<T, A, B, C, D, E, F, G, H, I> callable) {
         return new QTypedTaskBuilder9Arg0<>(0, null, callable);
@@ -8380,7 +8380,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QTypedTaskBuilder9Arg0<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
         private final Callable9<T, A, B, C, D, E, F, G, H, I> callable;
@@ -8391,63 +8391,63 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg1<T, A, B, C, D, E, F, G, H, I> withArguments(A a) {
             return new QTypedTaskBuilder9Arg1<>(priority(), threadPool(), callable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg2<T, A, B, C, D, E, F, G, H, I> withArguments(A a, B b) {
             return new QTypedTaskBuilder9Arg2<>(priority(), threadPool(), callable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg3<T, A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c) {
             return new QTypedTaskBuilder9Arg3<>(priority(), threadPool(), callable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg4<T, A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c, D d) {
             return new QTypedTaskBuilder9Arg4<>(priority(), threadPool(), callable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg5<T, A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c, D d, E e) {
             return new QTypedTaskBuilder9Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg6<T, A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c, D d, E e, F f) {
             return new QTypedTaskBuilder9Arg6<>(priority(), threadPool(), callable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg7<T, A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c, D d, E e, F f, G g) {
             return new QTypedTaskBuilder9Arg7<>(priority(), threadPool(), callable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg8<T, A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c, D d, E e, F f, G g, H h) {
             return new QTypedTaskBuilder9Arg8<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h);
         }
     
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg9<T, A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c, D d, E e, F f, G g, H h, I i) {
             return new QTypedTaskBuilder9Arg9<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h, i);
@@ -8474,7 +8474,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QTypedTaskBuilder9Arg1<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
         QTypedTaskBuilder9Arg1(int newPriority, QThreadPool threadPool, Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a) {
@@ -8486,56 +8486,56 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg2<T, A, B, C, D, E, F, G, H, I> withArguments(B b) {
             return new QTypedTaskBuilder9Arg2<>(priority(), threadPool(), callable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg3<T, A, B, C, D, E, F, G, H, I> withArguments(B b, C c) {
             return new QTypedTaskBuilder9Arg3<>(priority(), threadPool(), callable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg4<T, A, B, C, D, E, F, G, H, I> withArguments(B b, C c, D d) {
             return new QTypedTaskBuilder9Arg4<>(priority(), threadPool(), callable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg5<T, A, B, C, D, E, F, G, H, I> withArguments(B b, C c, D d, E e) {
             return new QTypedTaskBuilder9Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg6<T, A, B, C, D, E, F, G, H, I> withArguments(B b, C c, D d, E e, F f) {
             return new QTypedTaskBuilder9Arg6<>(priority(), threadPool(), callable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg7<T, A, B, C, D, E, F, G, H, I> withArguments(B b, C c, D d, E e, F f, G g) {
             return new QTypedTaskBuilder9Arg7<>(priority(), threadPool(), callable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg8<T, A, B, C, D, E, F, G, H, I> withArguments(B b, C c, D d, E e, F f, G g, H h) {
             return new QTypedTaskBuilder9Arg8<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h);
         }
     
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg9<T, A, B, C, D, E, F, G, H, I> withArguments(B b, C c, D d, E e, F f, G g, H h, I i) {
             return new QTypedTaskBuilder9Arg9<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h, i);
@@ -8562,7 +8562,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder9Arg2<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
         QTypedTaskBuilder9Arg2(int newPriority, QThreadPool threadPool, Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b) {
@@ -8576,49 +8576,49 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg3<T, A, B, C, D, E, F, G, H, I> withArguments(C c) {
             return new QTypedTaskBuilder9Arg3<>(priority(), threadPool(), callable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg4<T, A, B, C, D, E, F, G, H, I> withArguments(C c, D d) {
             return new QTypedTaskBuilder9Arg4<>(priority(), threadPool(), callable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg5<T, A, B, C, D, E, F, G, H, I> withArguments(C c, D d, E e) {
             return new QTypedTaskBuilder9Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg6<T, A, B, C, D, E, F, G, H, I> withArguments(C c, D d, E e, F f) {
             return new QTypedTaskBuilder9Arg6<>(priority(), threadPool(), callable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg7<T, A, B, C, D, E, F, G, H, I> withArguments(C c, D d, E e, F f, G g) {
             return new QTypedTaskBuilder9Arg7<>(priority(), threadPool(), callable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg8<T, A, B, C, D, E, F, G, H, I> withArguments(C c, D d, E e, F f, G g, H h) {
             return new QTypedTaskBuilder9Arg8<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h);
         }
     
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg9<T, A, B, C, D, E, F, G, H, I> withArguments(C c, D d, E e, F f, G g, H h, I i) {
             return new QTypedTaskBuilder9Arg9<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h, i);
@@ -8645,7 +8645,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder9Arg3<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
         QTypedTaskBuilder9Arg3(int newPriority, QThreadPool threadPool, Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c) {
@@ -8661,42 +8661,42 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final C c;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg4<T, A, B, C, D, E, F, G, H, I> withArguments(D d) {
             return new QTypedTaskBuilder9Arg4<>(priority(), threadPool(), callable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg5<T, A, B, C, D, E, F, G, H, I> withArguments(D d, E e) {
             return new QTypedTaskBuilder9Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg6<T, A, B, C, D, E, F, G, H, I> withArguments(D d, E e, F f) {
             return new QTypedTaskBuilder9Arg6<>(priority(), threadPool(), callable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg7<T, A, B, C, D, E, F, G, H, I> withArguments(D d, E e, F f, G g) {
             return new QTypedTaskBuilder9Arg7<>(priority(), threadPool(), callable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg8<T, A, B, C, D, E, F, G, H, I> withArguments(D d, E e, F f, G g, H h) {
             return new QTypedTaskBuilder9Arg8<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h);
         }
     
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg9<T, A, B, C, D, E, F, G, H, I> withArguments(D d, E e, F f, G g, H h, I i) {
             return new QTypedTaskBuilder9Arg9<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h, i);
@@ -8723,7 +8723,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder9Arg4<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
         QTypedTaskBuilder9Arg4(int newPriority, QThreadPool threadPool, Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c, D d) {
@@ -8741,35 +8741,35 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final D d;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg5<T, A, B, C, D, E, F, G, H, I> withArguments(E e) {
             return new QTypedTaskBuilder9Arg5<>(priority(), threadPool(), callable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg6<T, A, B, C, D, E, F, G, H, I> withArguments(E e, F f) {
             return new QTypedTaskBuilder9Arg6<>(priority(), threadPool(), callable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg7<T, A, B, C, D, E, F, G, H, I> withArguments(E e, F f, G g) {
             return new QTypedTaskBuilder9Arg7<>(priority(), threadPool(), callable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg8<T, A, B, C, D, E, F, G, H, I> withArguments(E e, F f, G g, H h) {
             return new QTypedTaskBuilder9Arg8<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h);
         }
     
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg9<T, A, B, C, D, E, F, G, H, I> withArguments(E e, F f, G g, H h, I i) {
             return new QTypedTaskBuilder9Arg9<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h, i);
@@ -8796,7 +8796,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder9Arg5<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
         QTypedTaskBuilder9Arg5(int newPriority, QThreadPool threadPool, Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c, D d, E e) {
@@ -8816,28 +8816,28 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final E e;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg6<T, A, B, C, D, E, F, G, H, I> withArguments(F f) {
             return new QTypedTaskBuilder9Arg6<>(priority(), threadPool(), callable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg7<T, A, B, C, D, E, F, G, H, I> withArguments(F f, G g) {
             return new QTypedTaskBuilder9Arg7<>(priority(), threadPool(), callable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg8<T, A, B, C, D, E, F, G, H, I> withArguments(F f, G g, H h) {
             return new QTypedTaskBuilder9Arg8<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h);
         }
     
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg9<T, A, B, C, D, E, F, G, H, I> withArguments(F f, G g, H h, I i) {
             return new QTypedTaskBuilder9Arg9<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h, i);
@@ -8864,7 +8864,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder9Arg6<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
         QTypedTaskBuilder9Arg6(int newPriority, QThreadPool threadPool, Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c, D d, E e, F f) {
@@ -8886,21 +8886,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final F f;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg7<T, A, B, C, D, E, F, G, H, I> withArguments(G g) {
             return new QTypedTaskBuilder9Arg7<>(priority(), threadPool(), callable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg8<T, A, B, C, D, E, F, G, H, I> withArguments(G g, H h) {
             return new QTypedTaskBuilder9Arg8<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg9<T, A, B, C, D, E, F, G, H, I> withArguments(G g, H h, I i) {
             return new QTypedTaskBuilder9Arg9<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h, i);
@@ -8927,7 +8927,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder9Arg7<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
         QTypedTaskBuilder9Arg7(int newPriority, QThreadPool threadPool, Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c, D d, E e, F f, G g) {
@@ -8951,14 +8951,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final G g;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg8<T, A, B, C, D, E, F, G, H, I> withArguments(H h) {
             return new QTypedTaskBuilder9Arg8<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg9<T, A, B, C, D, E, F, G, H, I> withArguments(H h, I i) {
             return new QTypedTaskBuilder9Arg9<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h, i);
@@ -8985,7 +8985,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder9Arg8<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
         QTypedTaskBuilder9Arg8(int newPriority, QThreadPool threadPool, Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c, D d, E e, F f, G g, H h) {
@@ -9011,7 +9011,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final H h;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public @NonNull QTypedTaskBuilder9Arg9<T, A, B, C, D, E, F, G, H, I> withArguments(I i) {
             return new QTypedTaskBuilder9Arg9<>(priority(), threadPool(), callable, a, b, c, d, e, f, g, h, i);
@@ -9038,7 +9038,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedTaskBuilder9Arg9<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
         QTypedTaskBuilder9Arg9(int newPriority, QThreadPool threadPool, Callable9<T, A, B, C, D, E, F, G, H, I> callable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
@@ -9095,7 +9095,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
         
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static QPromiseTaskBuilderVoid0Arg0 task(@StrictNonNull RunnableWithVoidPromise runnable) {
         return new QPromiseTaskBuilderVoid0Arg0(0, null, runnable);
@@ -9103,7 +9103,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid0Arg0 extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid0Arg0(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise runnable) {
@@ -9142,7 +9142,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <A> QPromiseTaskBuilderVoid1Arg0<A> task(@StrictNonNull RunnableWithVoidPromise1<A> runnable) {
         return new QPromiseTaskBuilderVoid1Arg0<>(0, null, runnable);
@@ -9150,7 +9150,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid1Arg0<A> extends QTaskBuilder<@QtPrimitiveType Void>{
         private final RunnableWithVoidPromise1<A> runnable;
@@ -9161,7 +9161,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid1Arg1<A> withArguments(A a) {
             return new QPromiseTaskBuilderVoid1Arg1<>(priority(), threadPool(), runnable, a);
@@ -9188,7 +9188,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid1Arg1<A> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid1Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise1<A> runnable, A a) {
@@ -9230,7 +9230,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <A, B> QPromiseTaskBuilderVoid2Arg0<A, B> task(@StrictNonNull RunnableWithVoidPromise2<A, B> runnable) {
         return new QPromiseTaskBuilderVoid2Arg0<>(0, null, runnable);
@@ -9238,7 +9238,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid2Arg0<A, B> extends QTaskBuilder<@QtPrimitiveType Void>{
         private final RunnableWithVoidPromise2<A, B> runnable;
@@ -9249,14 +9249,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid2Arg1<A, B> withArguments(A a) {
             return new QPromiseTaskBuilderVoid2Arg1<>(priority(), threadPool(), runnable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid2Arg2<A, B> withArguments(A a, B b) {
             return new QPromiseTaskBuilderVoid2Arg2<>(priority(), threadPool(), runnable, a, b);
@@ -9283,7 +9283,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QPromiseTaskBuilderVoid2Arg1<A, B> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid2Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise2<A, B> runnable, A a) {
@@ -9295,7 +9295,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid2Arg2<A, B> withArguments(B b) {
             return new QPromiseTaskBuilderVoid2Arg2<>(priority(), threadPool(), runnable, a, b);
@@ -9322,7 +9322,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid2Arg2<A, B> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid2Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise2<A, B> runnable, A a, B b) {
@@ -9366,7 +9366,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <A, B, C> QPromiseTaskBuilderVoid3Arg0<A, B, C> task(@StrictNonNull RunnableWithVoidPromise3<A, B, C> runnable) {
         return new QPromiseTaskBuilderVoid3Arg0<>(0, null, runnable);
@@ -9374,7 +9374,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid3Arg0<A, B, C> extends QTaskBuilder<@QtPrimitiveType Void>{
         private final RunnableWithVoidPromise3<A, B, C> runnable;
@@ -9385,21 +9385,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid3Arg1<A, B, C> withArguments(A a) {
             return new QPromiseTaskBuilderVoid3Arg1<>(priority(), threadPool(), runnable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid3Arg2<A, B, C> withArguments(A a, B b) {
             return new QPromiseTaskBuilderVoid3Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid3Arg3<A, B, C> withArguments(A a, B b, C c) {
             return new QPromiseTaskBuilderVoid3Arg3<>(priority(), threadPool(), runnable, a, b, c);
@@ -9426,7 +9426,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QPromiseTaskBuilderVoid3Arg1<A, B, C> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid3Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise3<A, B, C> runnable, A a) {
@@ -9438,14 +9438,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid3Arg2<A, B, C> withArguments(B b) {
             return new QPromiseTaskBuilderVoid3Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid3Arg3<A, B, C> withArguments(B b, C c) {
             return new QPromiseTaskBuilderVoid3Arg3<>(priority(), threadPool(), runnable, a, b, c);
@@ -9472,7 +9472,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid3Arg2<A, B, C> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid3Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise3<A, B, C> runnable, A a, B b) {
@@ -9486,7 +9486,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid3Arg3<A, B, C> withArguments(C c) {
             return new QPromiseTaskBuilderVoid3Arg3<>(priority(), threadPool(), runnable, a, b, c);
@@ -9513,7 +9513,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid3Arg3<A, B, C> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid3Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise3<A, B, C> runnable, A a, B b, C c) {
@@ -9559,7 +9559,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <A, B, C, D> QPromiseTaskBuilderVoid4Arg0<A, B, C, D> task(@StrictNonNull RunnableWithVoidPromise4<A, B, C, D> runnable) {
         return new QPromiseTaskBuilderVoid4Arg0<>(0, null, runnable);
@@ -9567,7 +9567,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid4Arg0<A, B, C, D> extends QTaskBuilder<@QtPrimitiveType Void>{
         private final RunnableWithVoidPromise4<A, B, C, D> runnable;
@@ -9578,28 +9578,28 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid4Arg1<A, B, C, D> withArguments(A a) {
             return new QPromiseTaskBuilderVoid4Arg1<>(priority(), threadPool(), runnable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid4Arg2<A, B, C, D> withArguments(A a, B b) {
             return new QPromiseTaskBuilderVoid4Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid4Arg3<A, B, C, D> withArguments(A a, B b, C c) {
             return new QPromiseTaskBuilderVoid4Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid4Arg4<A, B, C, D> withArguments(A a, B b, C c, D d) {
             return new QPromiseTaskBuilderVoid4Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
@@ -9626,7 +9626,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QPromiseTaskBuilderVoid4Arg1<A, B, C, D> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid4Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise4<A, B, C, D> runnable, A a) {
@@ -9638,21 +9638,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid4Arg2<A, B, C, D> withArguments(B b) {
             return new QPromiseTaskBuilderVoid4Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid4Arg3<A, B, C, D> withArguments(B b, C c) {
             return new QPromiseTaskBuilderVoid4Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid4Arg4<A, B, C, D> withArguments(B b, C c, D d) {
             return new QPromiseTaskBuilderVoid4Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
@@ -9679,7 +9679,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid4Arg2<A, B, C, D> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid4Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise4<A, B, C, D> runnable, A a, B b) {
@@ -9693,14 +9693,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid4Arg3<A, B, C, D> withArguments(C c) {
             return new QPromiseTaskBuilderVoid4Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid4Arg4<A, B, C, D> withArguments(C c, D d) {
             return new QPromiseTaskBuilderVoid4Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
@@ -9727,7 +9727,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid4Arg3<A, B, C, D> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid4Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise4<A, B, C, D> runnable, A a, B b, C c) {
@@ -9743,7 +9743,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final C c;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid4Arg4<A, B, C, D> withArguments(D d) {
             return new QPromiseTaskBuilderVoid4Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
@@ -9770,7 +9770,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid4Arg4<A, B, C, D> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid4Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise4<A, B, C, D> runnable, A a, B b, C c, D d) {
@@ -9818,7 +9818,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <A, B, C, D, E> QPromiseTaskBuilderVoid5Arg0<A, B, C, D, E> task(@StrictNonNull RunnableWithVoidPromise5<A, B, C, D, E> runnable) {
         return new QPromiseTaskBuilderVoid5Arg0<>(0, null, runnable);
@@ -9826,7 +9826,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid5Arg0<A, B, C, D, E> extends QTaskBuilder<@QtPrimitiveType Void>{
         private final RunnableWithVoidPromise5<A, B, C, D, E> runnable;
@@ -9837,35 +9837,35 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid5Arg1<A, B, C, D, E> withArguments(A a) {
             return new QPromiseTaskBuilderVoid5Arg1<>(priority(), threadPool(), runnable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid5Arg2<A, B, C, D, E> withArguments(A a, B b) {
             return new QPromiseTaskBuilderVoid5Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid5Arg3<A, B, C, D, E> withArguments(A a, B b, C c) {
             return new QPromiseTaskBuilderVoid5Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid5Arg4<A, B, C, D, E> withArguments(A a, B b, C c, D d) {
             return new QPromiseTaskBuilderVoid5Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid5Arg5<A, B, C, D, E> withArguments(A a, B b, C c, D d, E e) {
             return new QPromiseTaskBuilderVoid5Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
@@ -9892,7 +9892,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QPromiseTaskBuilderVoid5Arg1<A, B, C, D, E> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid5Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a) {
@@ -9904,28 +9904,28 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid5Arg2<A, B, C, D, E> withArguments(B b) {
             return new QPromiseTaskBuilderVoid5Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid5Arg3<A, B, C, D, E> withArguments(B b, C c) {
             return new QPromiseTaskBuilderVoid5Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid5Arg4<A, B, C, D, E> withArguments(B b, C c, D d) {
             return new QPromiseTaskBuilderVoid5Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid5Arg5<A, B, C, D, E> withArguments(B b, C c, D d, E e) {
             return new QPromiseTaskBuilderVoid5Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
@@ -9952,7 +9952,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid5Arg2<A, B, C, D, E> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid5Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b) {
@@ -9966,21 +9966,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid5Arg3<A, B, C, D, E> withArguments(C c) {
             return new QPromiseTaskBuilderVoid5Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid5Arg4<A, B, C, D, E> withArguments(C c, D d) {
             return new QPromiseTaskBuilderVoid5Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid5Arg5<A, B, C, D, E> withArguments(C c, D d, E e) {
             return new QPromiseTaskBuilderVoid5Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
@@ -10007,7 +10007,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid5Arg3<A, B, C, D, E> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid5Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b, C c) {
@@ -10023,14 +10023,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final C c;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid5Arg4<A, B, C, D, E> withArguments(D d) {
             return new QPromiseTaskBuilderVoid5Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid5Arg5<A, B, C, D, E> withArguments(D d, E e) {
             return new QPromiseTaskBuilderVoid5Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
@@ -10057,7 +10057,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid5Arg4<A, B, C, D, E> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid5Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b, C c, D d) {
@@ -10075,7 +10075,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final D d;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid5Arg5<A, B, C, D, E> withArguments(E e) {
             return new QPromiseTaskBuilderVoid5Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
@@ -10102,7 +10102,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid5Arg5<A, B, C, D, E> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid5Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise5<A, B, C, D, E> runnable, A a, B b, C c, D d, E e) {
@@ -10152,7 +10152,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <A, B, C, D, E, F> QPromiseTaskBuilderVoid6Arg0<A, B, C, D, E, F> task(@StrictNonNull RunnableWithVoidPromise6<A, B, C, D, E, F> runnable) {
         return new QPromiseTaskBuilderVoid6Arg0<>(0, null, runnable);
@@ -10160,7 +10160,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QPromiseTaskBuilderVoid6Arg0<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
         private final RunnableWithVoidPromise6<A, B, C, D, E, F> runnable;
@@ -10171,42 +10171,42 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid6Arg1<A, B, C, D, E, F> withArguments(A a) {
             return new QPromiseTaskBuilderVoid6Arg1<>(priority(), threadPool(), runnable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid6Arg2<A, B, C, D, E, F> withArguments(A a, B b) {
             return new QPromiseTaskBuilderVoid6Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid6Arg3<A, B, C, D, E, F> withArguments(A a, B b, C c) {
             return new QPromiseTaskBuilderVoid6Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid6Arg4<A, B, C, D, E, F> withArguments(A a, B b, C c, D d) {
             return new QPromiseTaskBuilderVoid6Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid6Arg5<A, B, C, D, E, F> withArguments(A a, B b, C c, D d, E e) {
             return new QPromiseTaskBuilderVoid6Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid6Arg6<A, B, C, D, E, F> withArguments(A a, B b, C c, D d, E e, F f) {
             return new QPromiseTaskBuilderVoid6Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
@@ -10233,7 +10233,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QPromiseTaskBuilderVoid6Arg1<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid6Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a) {
@@ -10245,35 +10245,35 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid6Arg2<A, B, C, D, E, F> withArguments(B b) {
             return new QPromiseTaskBuilderVoid6Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid6Arg3<A, B, C, D, E, F> withArguments(B b, C c) {
             return new QPromiseTaskBuilderVoid6Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid6Arg4<A, B, C, D, E, F> withArguments(B b, C c, D d) {
             return new QPromiseTaskBuilderVoid6Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid6Arg5<A, B, C, D, E, F> withArguments(B b, C c, D d, E e) {
             return new QPromiseTaskBuilderVoid6Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid6Arg6<A, B, C, D, E, F> withArguments(B b, C c, D d, E e, F f) {
             return new QPromiseTaskBuilderVoid6Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
@@ -10300,7 +10300,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid6Arg2<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid6Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b) {
@@ -10314,28 +10314,28 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid6Arg3<A, B, C, D, E, F> withArguments(C c) {
             return new QPromiseTaskBuilderVoid6Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid6Arg4<A, B, C, D, E, F> withArguments(C c, D d) {
             return new QPromiseTaskBuilderVoid6Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid6Arg5<A, B, C, D, E, F> withArguments(C c, D d, E e) {
             return new QPromiseTaskBuilderVoid6Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid6Arg6<A, B, C, D, E, F> withArguments(C c, D d, E e, F f) {
             return new QPromiseTaskBuilderVoid6Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
@@ -10362,7 +10362,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid6Arg3<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid6Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b, C c) {
@@ -10378,21 +10378,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final C c;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid6Arg4<A, B, C, D, E, F> withArguments(D d) {
             return new QPromiseTaskBuilderVoid6Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid6Arg5<A, B, C, D, E, F> withArguments(D d, E e) {
             return new QPromiseTaskBuilderVoid6Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid6Arg6<A, B, C, D, E, F> withArguments(D d, E e, F f) {
             return new QPromiseTaskBuilderVoid6Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
@@ -10419,7 +10419,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid6Arg4<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid6Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b, C c, D d) {
@@ -10437,14 +10437,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final D d;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid6Arg5<A, B, C, D, E, F> withArguments(E e) {
             return new QPromiseTaskBuilderVoid6Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid6Arg6<A, B, C, D, E, F> withArguments(E e, F f) {
             return new QPromiseTaskBuilderVoid6Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
@@ -10471,7 +10471,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid6Arg5<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid6Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e) {
@@ -10491,7 +10491,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final E e;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid6Arg6<A, B, C, D, E, F> withArguments(F f) {
             return new QPromiseTaskBuilderVoid6Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
@@ -10518,7 +10518,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid6Arg6<A, B, C, D, E, F> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid6Arg6(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise6<A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f) {
@@ -10570,7 +10570,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <A, B, C, D, E, F, G> QPromiseTaskBuilderVoid7Arg0<A, B, C, D, E, F, G> task(@StrictNonNull RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable) {
         return new QPromiseTaskBuilderVoid7Arg0<>(0, null, runnable);
@@ -10578,7 +10578,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QPromiseTaskBuilderVoid7Arg0<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
         private final RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable;
@@ -10589,49 +10589,49 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg1<A, B, C, D, E, F, G> withArguments(A a) {
             return new QPromiseTaskBuilderVoid7Arg1<>(priority(), threadPool(), runnable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg2<A, B, C, D, E, F, G> withArguments(A a, B b) {
             return new QPromiseTaskBuilderVoid7Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg3<A, B, C, D, E, F, G> withArguments(A a, B b, C c) {
             return new QPromiseTaskBuilderVoid7Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg4<A, B, C, D, E, F, G> withArguments(A a, B b, C c, D d) {
             return new QPromiseTaskBuilderVoid7Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg5<A, B, C, D, E, F, G> withArguments(A a, B b, C c, D d, E e) {
             return new QPromiseTaskBuilderVoid7Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg6<A, B, C, D, E, F, G> withArguments(A a, B b, C c, D d, E e, F f) {
             return new QPromiseTaskBuilderVoid7Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg7<A, B, C, D, E, F, G> withArguments(A a, B b, C c, D d, E e, F f, G g) {
             return new QPromiseTaskBuilderVoid7Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
@@ -10658,7 +10658,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QPromiseTaskBuilderVoid7Arg1<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid7Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a) {
@@ -10670,42 +10670,42 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg2<A, B, C, D, E, F, G> withArguments(B b) {
             return new QPromiseTaskBuilderVoid7Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg3<A, B, C, D, E, F, G> withArguments(B b, C c) {
             return new QPromiseTaskBuilderVoid7Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg4<A, B, C, D, E, F, G> withArguments(B b, C c, D d) {
             return new QPromiseTaskBuilderVoid7Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg5<A, B, C, D, E, F, G> withArguments(B b, C c, D d, E e) {
             return new QPromiseTaskBuilderVoid7Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg6<A, B, C, D, E, F, G> withArguments(B b, C c, D d, E e, F f) {
             return new QPromiseTaskBuilderVoid7Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg7<A, B, C, D, E, F, G> withArguments(B b, C c, D d, E e, F f, G g) {
             return new QPromiseTaskBuilderVoid7Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
@@ -10732,7 +10732,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid7Arg2<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid7Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b) {
@@ -10746,35 +10746,35 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg3<A, B, C, D, E, F, G> withArguments(C c) {
             return new QPromiseTaskBuilderVoid7Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg4<A, B, C, D, E, F, G> withArguments(C c, D d) {
             return new QPromiseTaskBuilderVoid7Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg5<A, B, C, D, E, F, G> withArguments(C c, D d, E e) {
             return new QPromiseTaskBuilderVoid7Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg6<A, B, C, D, E, F, G> withArguments(C c, D d, E e, F f) {
             return new QPromiseTaskBuilderVoid7Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg7<A, B, C, D, E, F, G> withArguments(C c, D d, E e, F f, G g) {
             return new QPromiseTaskBuilderVoid7Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
@@ -10801,7 +10801,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid7Arg3<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid7Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c) {
@@ -10817,28 +10817,28 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final C c;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg4<A, B, C, D, E, F, G> withArguments(D d) {
             return new QPromiseTaskBuilderVoid7Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg5<A, B, C, D, E, F, G> withArguments(D d, E e) {
             return new QPromiseTaskBuilderVoid7Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg6<A, B, C, D, E, F, G> withArguments(D d, E e, F f) {
             return new QPromiseTaskBuilderVoid7Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg7<A, B, C, D, E, F, G> withArguments(D d, E e, F f, G g) {
             return new QPromiseTaskBuilderVoid7Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
@@ -10865,7 +10865,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid7Arg4<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid7Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d) {
@@ -10883,21 +10883,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final D d;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg5<A, B, C, D, E, F, G> withArguments(E e) {
             return new QPromiseTaskBuilderVoid7Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg6<A, B, C, D, E, F, G> withArguments(E e, F f) {
             return new QPromiseTaskBuilderVoid7Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg7<A, B, C, D, E, F, G> withArguments(E e, F f, G g) {
             return new QPromiseTaskBuilderVoid7Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
@@ -10924,7 +10924,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid7Arg5<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid7Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e) {
@@ -10944,14 +10944,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final E e;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg6<A, B, C, D, E, F, G> withArguments(F f) {
             return new QPromiseTaskBuilderVoid7Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg7<A, B, C, D, E, F, G> withArguments(F f, G g) {
             return new QPromiseTaskBuilderVoid7Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
@@ -10978,7 +10978,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid7Arg6<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid7Arg6(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f) {
@@ -11000,7 +11000,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final F f;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid7Arg7<A, B, C, D, E, F, G> withArguments(G g) {
             return new QPromiseTaskBuilderVoid7Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
@@ -11027,7 +11027,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid7Arg7<A, B, C, D, E, F, G> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid7Arg7(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise7<A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g) {
@@ -11081,7 +11081,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <A, B, C, D, E, F, G, H> QPromiseTaskBuilderVoid8Arg0<A, B, C, D, E, F, G, H> task(@StrictNonNull RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable) {
         return new QPromiseTaskBuilderVoid8Arg0<>(0, null, runnable);
@@ -11089,7 +11089,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QPromiseTaskBuilderVoid8Arg0<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
         private final RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable;
@@ -11100,56 +11100,56 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg1<A, B, C, D, E, F, G, H> withArguments(A a) {
             return new QPromiseTaskBuilderVoid8Arg1<>(priority(), threadPool(), runnable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg2<A, B, C, D, E, F, G, H> withArguments(A a, B b) {
             return new QPromiseTaskBuilderVoid8Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg3<A, B, C, D, E, F, G, H> withArguments(A a, B b, C c) {
             return new QPromiseTaskBuilderVoid8Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg4<A, B, C, D, E, F, G, H> withArguments(A a, B b, C c, D d) {
             return new QPromiseTaskBuilderVoid8Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg5<A, B, C, D, E, F, G, H> withArguments(A a, B b, C c, D d, E e) {
             return new QPromiseTaskBuilderVoid8Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg6<A, B, C, D, E, F, G, H> withArguments(A a, B b, C c, D d, E e, F f) {
             return new QPromiseTaskBuilderVoid8Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg7<A, B, C, D, E, F, G, H> withArguments(A a, B b, C c, D d, E e, F f, G g) {
             return new QPromiseTaskBuilderVoid8Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg8<A, B, C, D, E, F, G, H> withArguments(A a, B b, C c, D d, E e, F f, G g, H h) {
             return new QPromiseTaskBuilderVoid8Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
@@ -11176,7 +11176,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QPromiseTaskBuilderVoid8Arg1<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid8Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a) {
@@ -11188,49 +11188,49 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg2<A, B, C, D, E, F, G, H> withArguments(B b) {
             return new QPromiseTaskBuilderVoid8Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg3<A, B, C, D, E, F, G, H> withArguments(B b, C c) {
             return new QPromiseTaskBuilderVoid8Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg4<A, B, C, D, E, F, G, H> withArguments(B b, C c, D d) {
             return new QPromiseTaskBuilderVoid8Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg5<A, B, C, D, E, F, G, H> withArguments(B b, C c, D d, E e) {
             return new QPromiseTaskBuilderVoid8Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg6<A, B, C, D, E, F, G, H> withArguments(B b, C c, D d, E e, F f) {
             return new QPromiseTaskBuilderVoid8Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg7<A, B, C, D, E, F, G, H> withArguments(B b, C c, D d, E e, F f, G g) {
             return new QPromiseTaskBuilderVoid8Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg8<A, B, C, D, E, F, G, H> withArguments(B b, C c, D d, E e, F f, G g, H h) {
             return new QPromiseTaskBuilderVoid8Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
@@ -11257,7 +11257,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid8Arg2<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid8Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b) {
@@ -11271,42 +11271,42 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg3<A, B, C, D, E, F, G, H> withArguments(C c) {
             return new QPromiseTaskBuilderVoid8Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg4<A, B, C, D, E, F, G, H> withArguments(C c, D d) {
             return new QPromiseTaskBuilderVoid8Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg5<A, B, C, D, E, F, G, H> withArguments(C c, D d, E e) {
             return new QPromiseTaskBuilderVoid8Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg6<A, B, C, D, E, F, G, H> withArguments(C c, D d, E e, F f) {
             return new QPromiseTaskBuilderVoid8Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg7<A, B, C, D, E, F, G, H> withArguments(C c, D d, E e, F f, G g) {
             return new QPromiseTaskBuilderVoid8Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg8<A, B, C, D, E, F, G, H> withArguments(C c, D d, E e, F f, G g, H h) {
             return new QPromiseTaskBuilderVoid8Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
@@ -11333,7 +11333,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid8Arg3<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid8Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c) {
@@ -11349,35 +11349,35 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final C c;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg4<A, B, C, D, E, F, G, H> withArguments(D d) {
             return new QPromiseTaskBuilderVoid8Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg5<A, B, C, D, E, F, G, H> withArguments(D d, E e) {
             return new QPromiseTaskBuilderVoid8Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg6<A, B, C, D, E, F, G, H> withArguments(D d, E e, F f) {
             return new QPromiseTaskBuilderVoid8Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg7<A, B, C, D, E, F, G, H> withArguments(D d, E e, F f, G g) {
             return new QPromiseTaskBuilderVoid8Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg8<A, B, C, D, E, F, G, H> withArguments(D d, E e, F f, G g, H h) {
             return new QPromiseTaskBuilderVoid8Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
@@ -11404,7 +11404,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid8Arg4<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid8Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d) {
@@ -11422,28 +11422,28 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final D d;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg5<A, B, C, D, E, F, G, H> withArguments(E e) {
             return new QPromiseTaskBuilderVoid8Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg6<A, B, C, D, E, F, G, H> withArguments(E e, F f) {
             return new QPromiseTaskBuilderVoid8Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg7<A, B, C, D, E, F, G, H> withArguments(E e, F f, G g) {
             return new QPromiseTaskBuilderVoid8Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg8<A, B, C, D, E, F, G, H> withArguments(E e, F f, G g, H h) {
             return new QPromiseTaskBuilderVoid8Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
@@ -11470,7 +11470,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid8Arg5<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid8Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e) {
@@ -11490,21 +11490,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final E e;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg6<A, B, C, D, E, F, G, H> withArguments(F f) {
             return new QPromiseTaskBuilderVoid8Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg7<A, B, C, D, E, F, G, H> withArguments(F f, G g) {
             return new QPromiseTaskBuilderVoid8Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg8<A, B, C, D, E, F, G, H> withArguments(F f, G g, H h) {
             return new QPromiseTaskBuilderVoid8Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
@@ -11531,7 +11531,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid8Arg6<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid8Arg6(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f) {
@@ -11553,14 +11553,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final F f;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg7<A, B, C, D, E, F, G, H> withArguments(G g) {
             return new QPromiseTaskBuilderVoid8Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg8<A, B, C, D, E, F, G, H> withArguments(G g, H h) {
             return new QPromiseTaskBuilderVoid8Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
@@ -11587,7 +11587,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid8Arg7<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid8Arg7(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g) {
@@ -11611,7 +11611,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final G g;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid8Arg8<A, B, C, D, E, F, G, H> withArguments(H h) {
             return new QPromiseTaskBuilderVoid8Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
@@ -11638,7 +11638,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid8Arg8<A, B, C, D, E, F, G, H> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid8Arg8(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise8<A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
@@ -11694,7 +11694,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <A, B, C, D, E, F, G, H, I> QPromiseTaskBuilderVoid9Arg0<A, B, C, D, E, F, G, H, I> task(@StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable) {
         return new QPromiseTaskBuilderVoid9Arg0<>(0, null, runnable);
@@ -11702,7 +11702,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QPromiseTaskBuilderVoid9Arg0<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
         private final RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable;
@@ -11713,63 +11713,63 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg1<A, B, C, D, E, F, G, H, I> withArguments(A a) {
             return new QPromiseTaskBuilderVoid9Arg1<>(priority(), threadPool(), runnable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg2<A, B, C, D, E, F, G, H, I> withArguments(A a, B b) {
             return new QPromiseTaskBuilderVoid9Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg3<A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c) {
             return new QPromiseTaskBuilderVoid9Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg4<A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c, D d) {
             return new QPromiseTaskBuilderVoid9Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg5<A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c, D d, E e) {
             return new QPromiseTaskBuilderVoid9Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg6<A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c, D d, E e, F f) {
             return new QPromiseTaskBuilderVoid9Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg7<A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c, D d, E e, F f, G g) {
             return new QPromiseTaskBuilderVoid9Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg8<A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c, D d, E e, F f, G g, H h) {
             return new QPromiseTaskBuilderVoid9Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
         }
     
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg9<A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c, D d, E e, F f, G g, H h, I i) {
             return new QPromiseTaskBuilderVoid9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -11796,7 +11796,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static class QPromiseTaskBuilderVoid9Arg1<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid9Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a) {
@@ -11808,56 +11808,56 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg2<A, B, C, D, E, F, G, H, I> withArguments(B b) {
             return new QPromiseTaskBuilderVoid9Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg3<A, B, C, D, E, F, G, H, I> withArguments(B b, C c) {
             return new QPromiseTaskBuilderVoid9Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg4<A, B, C, D, E, F, G, H, I> withArguments(B b, C c, D d) {
             return new QPromiseTaskBuilderVoid9Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg5<A, B, C, D, E, F, G, H, I> withArguments(B b, C c, D d, E e) {
             return new QPromiseTaskBuilderVoid9Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg6<A, B, C, D, E, F, G, H, I> withArguments(B b, C c, D d, E e, F f) {
             return new QPromiseTaskBuilderVoid9Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg7<A, B, C, D, E, F, G, H, I> withArguments(B b, C c, D d, E e, F f, G g) {
             return new QPromiseTaskBuilderVoid9Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg8<A, B, C, D, E, F, G, H, I> withArguments(B b, C c, D d, E e, F f, G g, H h) {
             return new QPromiseTaskBuilderVoid9Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
         }
     
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg9<A, B, C, D, E, F, G, H, I> withArguments(B b, C c, D d, E e, F f, G g, H h, I i) {
             return new QPromiseTaskBuilderVoid9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -11884,7 +11884,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid9Arg2<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid9Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b) {
@@ -11898,49 +11898,49 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg3<A, B, C, D, E, F, G, H, I> withArguments(C c) {
             return new QPromiseTaskBuilderVoid9Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg4<A, B, C, D, E, F, G, H, I> withArguments(C c, D d) {
             return new QPromiseTaskBuilderVoid9Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg5<A, B, C, D, E, F, G, H, I> withArguments(C c, D d, E e) {
             return new QPromiseTaskBuilderVoid9Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg6<A, B, C, D, E, F, G, H, I> withArguments(C c, D d, E e, F f) {
             return new QPromiseTaskBuilderVoid9Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg7<A, B, C, D, E, F, G, H, I> withArguments(C c, D d, E e, F f, G g) {
             return new QPromiseTaskBuilderVoid9Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg8<A, B, C, D, E, F, G, H, I> withArguments(C c, D d, E e, F f, G g, H h) {
             return new QPromiseTaskBuilderVoid9Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
         }
     
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg9<A, B, C, D, E, F, G, H, I> withArguments(C c, D d, E e, F f, G g, H h, I i) {
             return new QPromiseTaskBuilderVoid9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -11967,7 +11967,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid9Arg3<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid9Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c) {
@@ -11983,42 +11983,42 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final C c;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg4<A, B, C, D, E, F, G, H, I> withArguments(D d) {
             return new QPromiseTaskBuilderVoid9Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg5<A, B, C, D, E, F, G, H, I> withArguments(D d, E e) {
             return new QPromiseTaskBuilderVoid9Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg6<A, B, C, D, E, F, G, H, I> withArguments(D d, E e, F f) {
             return new QPromiseTaskBuilderVoid9Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg7<A, B, C, D, E, F, G, H, I> withArguments(D d, E e, F f, G g) {
             return new QPromiseTaskBuilderVoid9Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg8<A, B, C, D, E, F, G, H, I> withArguments(D d, E e, F f, G g, H h) {
             return new QPromiseTaskBuilderVoid9Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
         }
     
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg9<A, B, C, D, E, F, G, H, I> withArguments(D d, E e, F f, G g, H h, I i) {
             return new QPromiseTaskBuilderVoid9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -12045,7 +12045,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid9Arg4<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid9Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d) {
@@ -12063,35 +12063,35 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final D d;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg5<A, B, C, D, E, F, G, H, I> withArguments(E e) {
             return new QPromiseTaskBuilderVoid9Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg6<A, B, C, D, E, F, G, H, I> withArguments(E e, F f) {
             return new QPromiseTaskBuilderVoid9Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg7<A, B, C, D, E, F, G, H, I> withArguments(E e, F f, G g) {
             return new QPromiseTaskBuilderVoid9Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg8<A, B, C, D, E, F, G, H, I> withArguments(E e, F f, G g, H h) {
             return new QPromiseTaskBuilderVoid9Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
         }
     
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg9<A, B, C, D, E, F, G, H, I> withArguments(E e, F f, G g, H h, I i) {
             return new QPromiseTaskBuilderVoid9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -12118,7 +12118,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid9Arg5<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid9Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e) {
@@ -12138,28 +12138,28 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final E e;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg6<A, B, C, D, E, F, G, H, I> withArguments(F f) {
             return new QPromiseTaskBuilderVoid9Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg7<A, B, C, D, E, F, G, H, I> withArguments(F f, G g) {
             return new QPromiseTaskBuilderVoid9Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg8<A, B, C, D, E, F, G, H, I> withArguments(F f, G g, H h) {
             return new QPromiseTaskBuilderVoid9Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
         }
     
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg9<A, B, C, D, E, F, G, H, I> withArguments(F f, G g, H h, I i) {
             return new QPromiseTaskBuilderVoid9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -12186,7 +12186,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid9Arg6<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid9Arg6(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f) {
@@ -12208,21 +12208,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final F f;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg7<A, B, C, D, E, F, G, H, I> withArguments(G g) {
             return new QPromiseTaskBuilderVoid9Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg8<A, B, C, D, E, F, G, H, I> withArguments(G g, H h) {
             return new QPromiseTaskBuilderVoid9Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg9<A, B, C, D, E, F, G, H, I> withArguments(G g, H h, I i) {
             return new QPromiseTaskBuilderVoid9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -12249,7 +12249,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid9Arg7<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid9Arg7(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g) {
@@ -12273,14 +12273,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final G g;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg8<A, B, C, D, E, F, G, H, I> withArguments(H h) {
             return new QPromiseTaskBuilderVoid9Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg9<A, B, C, D, E, F, G, H, I> withArguments(H h, I i) {
             return new QPromiseTaskBuilderVoid9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -12307,7 +12307,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid9Arg8<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid9Arg8(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
@@ -12333,7 +12333,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final H h;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QPromiseTaskBuilderVoid9Arg9<A, B, C, D, E, F, G, H, I> withArguments(I i) {
             return new QPromiseTaskBuilderVoid9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -12360,7 +12360,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QPromiseTaskBuilderVoid9Arg9<A, B, C, D, E, F, G, H, I> extends QTaskBuilder<@QtPrimitiveType Void>{
         QPromiseTaskBuilderVoid9Arg9(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithVoidPromise9<A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {
@@ -12417,7 +12417,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <T> QTypedPromiseTaskBuilder0Arg0<T> task(@StrictNonNull RunnableWithPromise<T> callable) {
         return new QTypedPromiseTaskBuilder0Arg0<>(0, null, callable);
@@ -12425,7 +12425,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder0Arg0<T> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder0Arg0(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise<T> runnable) {
@@ -12464,7 +12464,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <T, A> QTypedPromiseTaskBuilder1Arg0<T, A> task(@StrictNonNull RunnableWithPromise1<T, A> runnable) {
         return new QTypedPromiseTaskBuilder1Arg0<>(0, null, runnable);
@@ -12472,7 +12472,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder1Arg0<T, A> extends QTaskBuilder<T>{
         private final RunnableWithPromise1<T, A> runnable;
@@ -12483,7 +12483,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder1Arg1<T, A> withArguments(A a) {
             return new QTypedPromiseTaskBuilder1Arg1<>(priority(), threadPool(), runnable, a);
@@ -12510,7 +12510,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder1Arg1<T, A> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder1Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise1<T, A> runnable, A a) {
@@ -12552,7 +12552,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <T, A, B> QTypedPromiseTaskBuilder2Arg0<T, A, B> task(@StrictNonNull RunnableWithPromise2<T, A, B> runnable) {
         return new QTypedPromiseTaskBuilder2Arg0<>(0, null, runnable);
@@ -12560,7 +12560,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder2Arg0<T, A, B> extends QTaskBuilder<T>{
         private final RunnableWithPromise2<T, A, B> runnable;
@@ -12571,14 +12571,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder2Arg1<T, A, B> withArguments(A a) {
             return new QTypedPromiseTaskBuilder2Arg1<>(priority(), threadPool(), runnable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder2Arg2<T, A, B> withArguments(A a, B b) {
             return new QTypedPromiseTaskBuilder2Arg2<>(priority(), threadPool(), runnable, a, b);
@@ -12605,7 +12605,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder2Arg1<T, A, B> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder2Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise2<T, A, B> runnable, A a) {
@@ -12617,7 +12617,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder2Arg2<T, A, B> withArguments(B b) {
             return new QTypedPromiseTaskBuilder2Arg2<>(priority(), threadPool(), runnable, a, b);
@@ -12644,7 +12644,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder2Arg2<T, A, B> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder2Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise2<T, A, B> runnable, A a, B b) {
@@ -12688,7 +12688,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <T, A, B, C> QTypedPromiseTaskBuilder3Arg0<T, A, B, C> task(@StrictNonNull RunnableWithPromise3<T, A, B, C> runnable) {
         return new QTypedPromiseTaskBuilder3Arg0<>(0, null, runnable);
@@ -12696,7 +12696,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder3Arg0<T, A, B, C> extends QTaskBuilder<T>{
         private final RunnableWithPromise3<T, A, B, C> runnable;
@@ -12707,21 +12707,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder3Arg1<T, A, B, C> withArguments(A a) {
             return new QTypedPromiseTaskBuilder3Arg1<>(priority(), threadPool(), runnable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder3Arg2<T, A, B, C> withArguments(A a, B b) {
             return new QTypedPromiseTaskBuilder3Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder3Arg3<T, A, B, C> withArguments(A a, B b, C c) {
             return new QTypedPromiseTaskBuilder3Arg3<>(priority(), threadPool(), runnable, a, b, c);
@@ -12748,7 +12748,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder3Arg1<T, A, B, C> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder3Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise3<T, A, B, C> runnable, A a) {
@@ -12760,14 +12760,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder3Arg2<T, A, B, C> withArguments(B b) {
             return new QTypedPromiseTaskBuilder3Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder3Arg3<T, A, B, C> withArguments(B b, C c) {
             return new QTypedPromiseTaskBuilder3Arg3<>(priority(), threadPool(), runnable, a, b, c);
@@ -12794,7 +12794,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder3Arg2<T, A, B, C> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder3Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise3<T, A, B, C> runnable, A a, B b) {
@@ -12808,7 +12808,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder3Arg3<T, A, B, C> withArguments(C c) {
             return new QTypedPromiseTaskBuilder3Arg3<>(priority(), threadPool(), runnable, a, b, c);
@@ -12835,7 +12835,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder3Arg3<T, A, B, C> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder3Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise3<T, A, B, C> runnable, A a, B b, C c) {
@@ -12881,7 +12881,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <T, A, B, C, D> QTypedPromiseTaskBuilder4Arg0<T, A, B, C, D> task(@StrictNonNull RunnableWithPromise4<T, A, B, C, D> runnable) {
         return new QTypedPromiseTaskBuilder4Arg0<>(0, null, runnable);
@@ -12889,7 +12889,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder4Arg0<T, A, B, C, D> extends QTaskBuilder<T>{
         private final RunnableWithPromise4<T, A, B, C, D> runnable;
@@ -12900,28 +12900,28 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder4Arg1<T, A, B, C, D> withArguments(A a) {
             return new QTypedPromiseTaskBuilder4Arg1<>(priority(), threadPool(), runnable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder4Arg2<T, A, B, C, D> withArguments(A a, B b) {
             return new QTypedPromiseTaskBuilder4Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder4Arg3<T, A, B, C, D> withArguments(A a, B b, C c) {
             return new QTypedPromiseTaskBuilder4Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder4Arg4<T, A, B, C, D> withArguments(A a, B b, C c, D d) {
             return new QTypedPromiseTaskBuilder4Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
@@ -12948,7 +12948,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder4Arg1<T, A, B, C, D> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder4Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise4<T, A, B, C, D> runnable, A a) {
@@ -12960,21 +12960,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder4Arg2<T, A, B, C, D> withArguments(B b) {
             return new QTypedPromiseTaskBuilder4Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder4Arg3<T, A, B, C, D> withArguments(B b, C c) {
             return new QTypedPromiseTaskBuilder4Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder4Arg4<T, A, B, C, D> withArguments(B b, C c, D d) {
             return new QTypedPromiseTaskBuilder4Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
@@ -13001,7 +13001,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder4Arg2<T, A, B, C, D> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder4Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise4<T, A, B, C, D> runnable, A a, B b) {
@@ -13015,14 +13015,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder4Arg3<T, A, B, C, D> withArguments(C c) {
             return new QTypedPromiseTaskBuilder4Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder4Arg4<T, A, B, C, D> withArguments(C c, D d) {
             return new QTypedPromiseTaskBuilder4Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
@@ -13049,7 +13049,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder4Arg3<T, A, B, C, D> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder4Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise4<T, A, B, C, D> runnable, A a, B b, C c) {
@@ -13065,7 +13065,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final C c;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder4Arg4<T, A, B, C, D> withArguments(D d) {
             return new QTypedPromiseTaskBuilder4Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
@@ -13092,7 +13092,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder4Arg4<T, A, B, C, D> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder4Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise4<T, A, B, C, D> runnable, A a, B b, C c, D d) {
@@ -13140,7 +13140,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <T, A, B, C, D, E> QTypedPromiseTaskBuilder5Arg0<T, A, B, C, D, E> task(@StrictNonNull RunnableWithPromise5<T, A, B, C, D, E> runnable) {
         return new QTypedPromiseTaskBuilder5Arg0<>(0, null, runnable);
@@ -13148,7 +13148,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder5Arg0<T, A, B, C, D, E> extends QTaskBuilder<T>{
         private final RunnableWithPromise5<T, A, B, C, D, E> runnable;
@@ -13159,35 +13159,35 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder5Arg1<T, A, B, C, D, E> withArguments(A a) {
             return new QTypedPromiseTaskBuilder5Arg1<>(priority(), threadPool(), runnable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder5Arg2<T, A, B, C, D, E> withArguments(A a, B b) {
             return new QTypedPromiseTaskBuilder5Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder5Arg3<T, A, B, C, D, E> withArguments(A a, B b, C c) {
             return new QTypedPromiseTaskBuilder5Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder5Arg4<T, A, B, C, D, E> withArguments(A a, B b, C c, D d) {
             return new QTypedPromiseTaskBuilder5Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder5Arg5<T, A, B, C, D, E> withArguments(A a, B b, C c, D d, E e) {
             return new QTypedPromiseTaskBuilder5Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
@@ -13214,7 +13214,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder5Arg1<T, A, B, C, D, E> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder5Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise5<T, A, B, C, D, E> runnable, A a) {
@@ -13226,28 +13226,28 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder5Arg2<T, A, B, C, D, E> withArguments(B b) {
             return new QTypedPromiseTaskBuilder5Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder5Arg3<T, A, B, C, D, E> withArguments(B b, C c) {
             return new QTypedPromiseTaskBuilder5Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder5Arg4<T, A, B, C, D, E> withArguments(B b, C c, D d) {
             return new QTypedPromiseTaskBuilder5Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder5Arg5<T, A, B, C, D, E> withArguments(B b, C c, D d, E e) {
             return new QTypedPromiseTaskBuilder5Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
@@ -13274,7 +13274,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder5Arg2<T, A, B, C, D, E> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder5Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise5<T, A, B, C, D, E> runnable, A a, B b) {
@@ -13288,21 +13288,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder5Arg3<T, A, B, C, D, E> withArguments(C c) {
             return new QTypedPromiseTaskBuilder5Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder5Arg4<T, A, B, C, D, E> withArguments(C c, D d) {
             return new QTypedPromiseTaskBuilder5Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder5Arg5<T, A, B, C, D, E> withArguments(C c, D d, E e) {
             return new QTypedPromiseTaskBuilder5Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
@@ -13329,7 +13329,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder5Arg3<T, A, B, C, D, E> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder5Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise5<T, A, B, C, D, E> runnable, A a, B b, C c) {
@@ -13345,14 +13345,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final C c;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder5Arg4<T, A, B, C, D, E> withArguments(D d) {
             return new QTypedPromiseTaskBuilder5Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder5Arg5<T, A, B, C, D, E> withArguments(D d, E e) {
             return new QTypedPromiseTaskBuilder5Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
@@ -13379,7 +13379,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder5Arg4<T, A, B, C, D, E> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder5Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise5<T, A, B, C, D, E> runnable, A a, B b, C c, D d) {
@@ -13397,7 +13397,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final D d;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder5Arg5<T, A, B, C, D, E> withArguments(E e) {
             return new QTypedPromiseTaskBuilder5Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
@@ -13424,7 +13424,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder5Arg5<T, A, B, C, D, E> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder5Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise5<T, A, B, C, D, E> runnable, A a, B b, C c, D d, E e) {
@@ -13474,7 +13474,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <T, A, B, C, D, E, F> QTypedPromiseTaskBuilder6Arg0<T, A, B, C, D, E, F> task(@StrictNonNull RunnableWithPromise6<T, A, B, C, D, E, F> runnable) {
         return new QTypedPromiseTaskBuilder6Arg0<>(0, null, runnable);
@@ -13482,7 +13482,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder6Arg0<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
         private final RunnableWithPromise6<T, A, B, C, D, E, F> runnable;
@@ -13493,42 +13493,42 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder6Arg1<T, A, B, C, D, E, F> withArguments(A a) {
             return new QTypedPromiseTaskBuilder6Arg1<>(priority(), threadPool(), runnable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder6Arg2<T, A, B, C, D, E, F> withArguments(A a, B b) {
             return new QTypedPromiseTaskBuilder6Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder6Arg3<T, A, B, C, D, E, F> withArguments(A a, B b, C c) {
             return new QTypedPromiseTaskBuilder6Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder6Arg4<T, A, B, C, D, E, F> withArguments(A a, B b, C c, D d) {
             return new QTypedPromiseTaskBuilder6Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder6Arg5<T, A, B, C, D, E, F> withArguments(A a, B b, C c, D d, E e) {
             return new QTypedPromiseTaskBuilder6Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder6Arg6<T, A, B, C, D, E, F> withArguments(A a, B b, C c, D d, E e, F f) {
             return new QTypedPromiseTaskBuilder6Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
@@ -13555,7 +13555,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder6Arg1<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder6Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a) {
@@ -13567,35 +13567,35 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder6Arg2<T, A, B, C, D, E, F> withArguments(B b) {
             return new QTypedPromiseTaskBuilder6Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder6Arg3<T, A, B, C, D, E, F> withArguments(B b, C c) {
             return new QTypedPromiseTaskBuilder6Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder6Arg4<T, A, B, C, D, E, F> withArguments(B b, C c, D d) {
             return new QTypedPromiseTaskBuilder6Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder6Arg5<T, A, B, C, D, E, F> withArguments(B b, C c, D d, E e) {
             return new QTypedPromiseTaskBuilder6Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder6Arg6<T, A, B, C, D, E, F> withArguments(B b, C c, D d, E e, F f) {
             return new QTypedPromiseTaskBuilder6Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
@@ -13622,7 +13622,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder6Arg2<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder6Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b) {
@@ -13636,28 +13636,28 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder6Arg3<T, A, B, C, D, E, F> withArguments(C c) {
             return new QTypedPromiseTaskBuilder6Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder6Arg4<T, A, B, C, D, E, F> withArguments(C c, D d) {
             return new QTypedPromiseTaskBuilder6Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder6Arg5<T, A, B, C, D, E, F> withArguments(C c, D d, E e) {
             return new QTypedPromiseTaskBuilder6Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder6Arg6<T, A, B, C, D, E, F> withArguments(C c, D d, E e, F f) {
             return new QTypedPromiseTaskBuilder6Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
@@ -13684,7 +13684,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder6Arg3<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder6Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b, C c) {
@@ -13700,21 +13700,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final C c;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder6Arg4<T, A, B, C, D, E, F> withArguments(D d) {
             return new QTypedPromiseTaskBuilder6Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder6Arg5<T, A, B, C, D, E, F> withArguments(D d, E e) {
             return new QTypedPromiseTaskBuilder6Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder6Arg6<T, A, B, C, D, E, F> withArguments(D d, E e, F f) {
             return new QTypedPromiseTaskBuilder6Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
@@ -13741,7 +13741,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder6Arg4<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder6Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b, C c, D d) {
@@ -13759,14 +13759,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final D d;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder6Arg5<T, A, B, C, D, E, F> withArguments(E e) {
             return new QTypedPromiseTaskBuilder6Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder6Arg6<T, A, B, C, D, E, F> withArguments(E e, F f) {
             return new QTypedPromiseTaskBuilder6Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
@@ -13793,7 +13793,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder6Arg5<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder6Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e) {
@@ -13813,7 +13813,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final E e;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder6Arg6<T, A, B, C, D, E, F> withArguments(F f) {
             return new QTypedPromiseTaskBuilder6Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
@@ -13840,7 +13840,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder6Arg6<T, A, B, C, D, E, F> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder6Arg6(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise6<T, A, B, C, D, E, F> runnable, A a, B b, C c, D d, E e, F f) {
@@ -13892,7 +13892,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <T, A, B, C, D, E, F, G> QTypedPromiseTaskBuilder7Arg0<T, A, B, C, D, E, F, G> task(@StrictNonNull RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable) {
         return new QTypedPromiseTaskBuilder7Arg0<>(0, null, runnable);
@@ -13900,7 +13900,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder7Arg0<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
         private final RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable;
@@ -13911,49 +13911,49 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg1<T, A, B, C, D, E, F, G> withArguments(A a) {
             return new QTypedPromiseTaskBuilder7Arg1<>(priority(), threadPool(), runnable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg2<T, A, B, C, D, E, F, G> withArguments(A a, B b) {
             return new QTypedPromiseTaskBuilder7Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg3<T, A, B, C, D, E, F, G> withArguments(A a, B b, C c) {
             return new QTypedPromiseTaskBuilder7Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg4<T, A, B, C, D, E, F, G> withArguments(A a, B b, C c, D d) {
             return new QTypedPromiseTaskBuilder7Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg5<T, A, B, C, D, E, F, G> withArguments(A a, B b, C c, D d, E e) {
             return new QTypedPromiseTaskBuilder7Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg6<T, A, B, C, D, E, F, G> withArguments(A a, B b, C c, D d, E e, F f) {
             return new QTypedPromiseTaskBuilder7Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg7<T, A, B, C, D, E, F, G> withArguments(A a, B b, C c, D d, E e, F f, G g) {
             return new QTypedPromiseTaskBuilder7Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
@@ -13980,7 +13980,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder7Arg1<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder7Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a) {
@@ -13992,42 +13992,42 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg2<T, A, B, C, D, E, F, G> withArguments(B b) {
             return new QTypedPromiseTaskBuilder7Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg3<T, A, B, C, D, E, F, G> withArguments(B b, C c) {
             return new QTypedPromiseTaskBuilder7Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg4<T, A, B, C, D, E, F, G> withArguments(B b, C c, D d) {
             return new QTypedPromiseTaskBuilder7Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg5<T, A, B, C, D, E, F, G> withArguments(B b, C c, D d, E e) {
             return new QTypedPromiseTaskBuilder7Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg6<T, A, B, C, D, E, F, G> withArguments(B b, C c, D d, E e, F f) {
             return new QTypedPromiseTaskBuilder7Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg7<T, A, B, C, D, E, F, G> withArguments(B b, C c, D d, E e, F f, G g) {
             return new QTypedPromiseTaskBuilder7Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
@@ -14054,7 +14054,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder7Arg2<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder7Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b) {
@@ -14068,35 +14068,35 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg3<T, A, B, C, D, E, F, G> withArguments(C c) {
             return new QTypedPromiseTaskBuilder7Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg4<T, A, B, C, D, E, F, G> withArguments(C c, D d) {
             return new QTypedPromiseTaskBuilder7Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg5<T, A, B, C, D, E, F, G> withArguments(C c, D d, E e) {
             return new QTypedPromiseTaskBuilder7Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg6<T, A, B, C, D, E, F, G> withArguments(C c, D d, E e, F f) {
             return new QTypedPromiseTaskBuilder7Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg7<T, A, B, C, D, E, F, G> withArguments(C c, D d, E e, F f, G g) {
             return new QTypedPromiseTaskBuilder7Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
@@ -14123,7 +14123,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder7Arg3<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder7Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c) {
@@ -14139,28 +14139,28 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final C c;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg4<T, A, B, C, D, E, F, G> withArguments(D d) {
             return new QTypedPromiseTaskBuilder7Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg5<T, A, B, C, D, E, F, G> withArguments(D d, E e) {
             return new QTypedPromiseTaskBuilder7Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg6<T, A, B, C, D, E, F, G> withArguments(D d, E e, F f) {
             return new QTypedPromiseTaskBuilder7Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg7<T, A, B, C, D, E, F, G> withArguments(D d, E e, F f, G g) {
             return new QTypedPromiseTaskBuilder7Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
@@ -14187,7 +14187,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder7Arg4<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder7Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c, D d) {
@@ -14205,21 +14205,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final D d;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg5<T, A, B, C, D, E, F, G> withArguments(E e) {
             return new QTypedPromiseTaskBuilder7Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg6<T, A, B, C, D, E, F, G> withArguments(E e, F f) {
             return new QTypedPromiseTaskBuilder7Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg7<T, A, B, C, D, E, F, G> withArguments(E e, F f, G g) {
             return new QTypedPromiseTaskBuilder7Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
@@ -14246,7 +14246,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder7Arg5<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder7Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e) {
@@ -14266,14 +14266,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final E e;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg6<T, A, B, C, D, E, F, G> withArguments(F f) {
             return new QTypedPromiseTaskBuilder7Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg7<T, A, B, C, D, E, F, G> withArguments(F f, G g) {
             return new QTypedPromiseTaskBuilder7Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
@@ -14300,7 +14300,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder7Arg6<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder7Arg6(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f) {
@@ -14322,7 +14322,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final F f;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder7Arg7<T, A, B, C, D, E, F, G> withArguments(G g) {
             return new QTypedPromiseTaskBuilder7Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
@@ -14349,7 +14349,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder7Arg7<T, A, B, C, D, E, F, G> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder7Arg7(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise7<T, A, B, C, D, E, F, G> runnable, A a, B b, C c, D d, E e, F f, G g) {
@@ -14403,7 +14403,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <T, A, B, C, D, E, F, G, H> QTypedPromiseTaskBuilder8Arg0<T, A, B, C, D, E, F, G, H> task(@StrictNonNull RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable) {
         return new QTypedPromiseTaskBuilder8Arg0<>(0, null, runnable);
@@ -14411,7 +14411,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder8Arg0<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
         private final RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable;
@@ -14422,56 +14422,56 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg1<T, A, B, C, D, E, F, G, H> withArguments(A a) {
             return new QTypedPromiseTaskBuilder8Arg1<>(priority(), threadPool(), runnable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg2<T, A, B, C, D, E, F, G, H> withArguments(A a, B b) {
             return new QTypedPromiseTaskBuilder8Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg3<T, A, B, C, D, E, F, G, H> withArguments(A a, B b, C c) {
             return new QTypedPromiseTaskBuilder8Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg4<T, A, B, C, D, E, F, G, H> withArguments(A a, B b, C c, D d) {
             return new QTypedPromiseTaskBuilder8Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg5<T, A, B, C, D, E, F, G, H> withArguments(A a, B b, C c, D d, E e) {
             return new QTypedPromiseTaskBuilder8Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg6<T, A, B, C, D, E, F, G, H> withArguments(A a, B b, C c, D d, E e, F f) {
             return new QTypedPromiseTaskBuilder8Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg7<T, A, B, C, D, E, F, G, H> withArguments(A a, B b, C c, D d, E e, F f, G g) {
             return new QTypedPromiseTaskBuilder8Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg8<T, A, B, C, D, E, F, G, H> withArguments(A a, B b, C c, D d, E e, F f, G g, H h) {
             return new QTypedPromiseTaskBuilder8Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
@@ -14498,7 +14498,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder8Arg1<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder8Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a) {
@@ -14510,49 +14510,49 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg2<T, A, B, C, D, E, F, G, H> withArguments(B b) {
             return new QTypedPromiseTaskBuilder8Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg3<T, A, B, C, D, E, F, G, H> withArguments(B b, C c) {
             return new QTypedPromiseTaskBuilder8Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg4<T, A, B, C, D, E, F, G, H> withArguments(B b, C c, D d) {
             return new QTypedPromiseTaskBuilder8Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg5<T, A, B, C, D, E, F, G, H> withArguments(B b, C c, D d, E e) {
             return new QTypedPromiseTaskBuilder8Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg6<T, A, B, C, D, E, F, G, H> withArguments(B b, C c, D d, E e, F f) {
             return new QTypedPromiseTaskBuilder8Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg7<T, A, B, C, D, E, F, G, H> withArguments(B b, C c, D d, E e, F f, G g) {
             return new QTypedPromiseTaskBuilder8Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg8<T, A, B, C, D, E, F, G, H> withArguments(B b, C c, D d, E e, F f, G g, H h) {
             return new QTypedPromiseTaskBuilder8Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
@@ -14579,7 +14579,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder8Arg2<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder8Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b) {
@@ -14593,42 +14593,42 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg3<T, A, B, C, D, E, F, G, H> withArguments(C c) {
             return new QTypedPromiseTaskBuilder8Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg4<T, A, B, C, D, E, F, G, H> withArguments(C c, D d) {
             return new QTypedPromiseTaskBuilder8Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg5<T, A, B, C, D, E, F, G, H> withArguments(C c, D d, E e) {
             return new QTypedPromiseTaskBuilder8Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg6<T, A, B, C, D, E, F, G, H> withArguments(C c, D d, E e, F f) {
             return new QTypedPromiseTaskBuilder8Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg7<T, A, B, C, D, E, F, G, H> withArguments(C c, D d, E e, F f, G g) {
             return new QTypedPromiseTaskBuilder8Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg8<T, A, B, C, D, E, F, G, H> withArguments(C c, D d, E e, F f, G g, H h) {
             return new QTypedPromiseTaskBuilder8Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
@@ -14655,7 +14655,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder8Arg3<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder8Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c) {
@@ -14671,35 +14671,35 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final C c;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg4<T, A, B, C, D, E, F, G, H> withArguments(D d) {
             return new QTypedPromiseTaskBuilder8Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg5<T, A, B, C, D, E, F, G, H> withArguments(D d, E e) {
             return new QTypedPromiseTaskBuilder8Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg6<T, A, B, C, D, E, F, G, H> withArguments(D d, E e, F f) {
             return new QTypedPromiseTaskBuilder8Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg7<T, A, B, C, D, E, F, G, H> withArguments(D d, E e, F f, G g) {
             return new QTypedPromiseTaskBuilder8Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg8<T, A, B, C, D, E, F, G, H> withArguments(D d, E e, F f, G g, H h) {
             return new QTypedPromiseTaskBuilder8Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
@@ -14726,7 +14726,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder8Arg4<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder8Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d) {
@@ -14744,28 +14744,28 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final D d;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg5<T, A, B, C, D, E, F, G, H> withArguments(E e) {
             return new QTypedPromiseTaskBuilder8Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg6<T, A, B, C, D, E, F, G, H> withArguments(E e, F f) {
             return new QTypedPromiseTaskBuilder8Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg7<T, A, B, C, D, E, F, G, H> withArguments(E e, F f, G g) {
             return new QTypedPromiseTaskBuilder8Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg8<T, A, B, C, D, E, F, G, H> withArguments(E e, F f, G g, H h) {
             return new QTypedPromiseTaskBuilder8Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
@@ -14792,7 +14792,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder8Arg5<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder8Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e) {
@@ -14812,21 +14812,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final E e;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg6<T, A, B, C, D, E, F, G, H> withArguments(F f) {
             return new QTypedPromiseTaskBuilder8Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg7<T, A, B, C, D, E, F, G, H> withArguments(F f, G g) {
             return new QTypedPromiseTaskBuilder8Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg8<T, A, B, C, D, E, F, G, H> withArguments(F f, G g, H h) {
             return new QTypedPromiseTaskBuilder8Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
@@ -14853,7 +14853,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder8Arg6<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder8Arg6(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f) {
@@ -14875,14 +14875,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final F f;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg7<T, A, B, C, D, E, F, G, H> withArguments(G g) {
             return new QTypedPromiseTaskBuilder8Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg8<T, A, B, C, D, E, F, G, H> withArguments(G g, H h) {
             return new QTypedPromiseTaskBuilder8Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
@@ -14909,7 +14909,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder8Arg7<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder8Arg7(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g) {
@@ -14933,7 +14933,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final G g;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder8Arg8<T, A, B, C, D, E, F, G, H> withArguments(H h) {
             return new QTypedPromiseTaskBuilder8Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
@@ -14960,7 +14960,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder8Arg8<T, A, B, C, D, E, F, G, H> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder8Arg8(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise8<T, A, B, C, D, E, F, G, H> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
@@ -15016,7 +15016,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtconcurrent.html#task">QtConcurrent::task(Task&amp;&amp;)</a></p>
+     * <p>See <a href="@docRoot/qtconcurrent.html#task"><code>QtConcurrent::task(Task&amp;&amp;)</code></a></p>
      */
     public static <T, A, B, C, D, E, F, G, H, I> QTypedPromiseTaskBuilder9Arg0<T, A, B, C, D, E, F, G, H, I> task(@StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable) {
         return new QTypedPromiseTaskBuilder9Arg0<>(0, null, runnable);
@@ -15024,7 +15024,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder9Arg0<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
         private final RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable;
@@ -15035,63 +15035,63 @@ class QtConcurrent_6__ extends QtConcurrent {
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg1<T, A, B, C, D, E, F, G, H, I> withArguments(A a) {
             return new QTypedPromiseTaskBuilder9Arg1<>(priority(), threadPool(), runnable, a);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg2<T, A, B, C, D, E, F, G, H, I> withArguments(A a, B b) {
             return new QTypedPromiseTaskBuilder9Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg3<T, A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c) {
             return new QTypedPromiseTaskBuilder9Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg4<T, A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c, D d) {
             return new QTypedPromiseTaskBuilder9Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg5<T, A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c, D d, E e) {
             return new QTypedPromiseTaskBuilder9Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg6<T, A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c, D d, E e, F f) {
             return new QTypedPromiseTaskBuilder9Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg7<T, A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c, D d, E e, F f, G g) {
             return new QTypedPromiseTaskBuilder9Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg8<T, A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c, D d, E e, F f, G g, H h) {
             return new QTypedPromiseTaskBuilder9Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
         }
     
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg9<T, A, B, C, D, E, F, G, H, I> withArguments(A a, B b, C c, D d, E e, F f, G g, H h, I i) {
             return new QTypedPromiseTaskBuilder9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -15118,7 +15118,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder9Arg1<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder9Arg1(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a) {
@@ -15130,56 +15130,56 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final A a;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg2<T, A, B, C, D, E, F, G, H, I> withArguments(B b) {
             return new QTypedPromiseTaskBuilder9Arg2<>(priority(), threadPool(), runnable, a, b);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg3<T, A, B, C, D, E, F, G, H, I> withArguments(B b, C c) {
             return new QTypedPromiseTaskBuilder9Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg4<T, A, B, C, D, E, F, G, H, I> withArguments(B b, C c, D d) {
             return new QTypedPromiseTaskBuilder9Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg5<T, A, B, C, D, E, F, G, H, I> withArguments(B b, C c, D d, E e) {
             return new QTypedPromiseTaskBuilder9Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg6<T, A, B, C, D, E, F, G, H, I> withArguments(B b, C c, D d, E e, F f) {
             return new QTypedPromiseTaskBuilder9Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg7<T, A, B, C, D, E, F, G, H, I> withArguments(B b, C c, D d, E e, F f, G g) {
             return new QTypedPromiseTaskBuilder9Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg8<T, A, B, C, D, E, F, G, H, I> withArguments(B b, C c, D d, E e, F f, G g, H h) {
             return new QTypedPromiseTaskBuilder9Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
         }
     
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg9<T, A, B, C, D, E, F, G, H, I> withArguments(B b, C c, D d, E e, F f, G g, H h, I i) {
             return new QTypedPromiseTaskBuilder9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -15206,7 +15206,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder9Arg2<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder9Arg2(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b) {
@@ -15220,49 +15220,49 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final B b;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg3<T, A, B, C, D, E, F, G, H, I> withArguments(C c) {
             return new QTypedPromiseTaskBuilder9Arg3<>(priority(), threadPool(), runnable, a, b, c);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg4<T, A, B, C, D, E, F, G, H, I> withArguments(C c, D d) {
             return new QTypedPromiseTaskBuilder9Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg5<T, A, B, C, D, E, F, G, H, I> withArguments(C c, D d, E e) {
             return new QTypedPromiseTaskBuilder9Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg6<T, A, B, C, D, E, F, G, H, I> withArguments(C c, D d, E e, F f) {
             return new QTypedPromiseTaskBuilder9Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg7<T, A, B, C, D, E, F, G, H, I> withArguments(C c, D d, E e, F f, G g) {
             return new QTypedPromiseTaskBuilder9Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg8<T, A, B, C, D, E, F, G, H, I> withArguments(C c, D d, E e, F f, G g, H h) {
             return new QTypedPromiseTaskBuilder9Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
         }
     
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg9<T, A, B, C, D, E, F, G, H, I> withArguments(C c, D d, E e, F f, G g, H h, I i) {
             return new QTypedPromiseTaskBuilder9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -15289,7 +15289,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder9Arg3<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder9Arg3(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c) {
@@ -15305,42 +15305,42 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final C c;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg4<T, A, B, C, D, E, F, G, H, I> withArguments(D d) {
             return new QTypedPromiseTaskBuilder9Arg4<>(priority(), threadPool(), runnable, a, b, c, d);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg5<T, A, B, C, D, E, F, G, H, I> withArguments(D d, E e) {
             return new QTypedPromiseTaskBuilder9Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg6<T, A, B, C, D, E, F, G, H, I> withArguments(D d, E e, F f) {
             return new QTypedPromiseTaskBuilder9Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg7<T, A, B, C, D, E, F, G, H, I> withArguments(D d, E e, F f, G g) {
             return new QTypedPromiseTaskBuilder9Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg8<T, A, B, C, D, E, F, G, H, I> withArguments(D d, E e, F f, G g, H h) {
             return new QTypedPromiseTaskBuilder9Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
         }
     
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg9<T, A, B, C, D, E, F, G, H, I> withArguments(D d, E e, F f, G g, H h, I i) {
             return new QTypedPromiseTaskBuilder9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -15367,7 +15367,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder9Arg4<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder9Arg4(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d) {
@@ -15385,35 +15385,35 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final D d;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg5<T, A, B, C, D, E, F, G, H, I> withArguments(E e) {
             return new QTypedPromiseTaskBuilder9Arg5<>(priority(), threadPool(), runnable, a, b, c, d, e);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg6<T, A, B, C, D, E, F, G, H, I> withArguments(E e, F f) {
             return new QTypedPromiseTaskBuilder9Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg7<T, A, B, C, D, E, F, G, H, I> withArguments(E e, F f, G g) {
             return new QTypedPromiseTaskBuilder9Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg8<T, A, B, C, D, E, F, G, H, I> withArguments(E e, F f, G g, H h) {
             return new QTypedPromiseTaskBuilder9Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
         }
     
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg9<T, A, B, C, D, E, F, G, H, I> withArguments(E e, F f, G g, H h, I i) {
             return new QTypedPromiseTaskBuilder9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -15440,7 +15440,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder9Arg5<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder9Arg5(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e) {
@@ -15460,28 +15460,28 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final E e;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg6<T, A, B, C, D, E, F, G, H, I> withArguments(F f) {
             return new QTypedPromiseTaskBuilder9Arg6<>(priority(), threadPool(), runnable, a, b, c, d, e, f);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg7<T, A, B, C, D, E, F, G, H, I> withArguments(F f, G g) {
             return new QTypedPromiseTaskBuilder9Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg8<T, A, B, C, D, E, F, G, H, I> withArguments(F f, G g, H h) {
             return new QTypedPromiseTaskBuilder9Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
         }
     
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg9<T, A, B, C, D, E, F, G, H, I> withArguments(F f, G g, H h, I i) {
             return new QTypedPromiseTaskBuilder9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -15508,7 +15508,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder9Arg6<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder9Arg6(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f) {
@@ -15530,21 +15530,21 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final F f;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg7<T, A, B, C, D, E, F, G, H, I> withArguments(G g) {
             return new QTypedPromiseTaskBuilder9Arg7<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg8<T, A, B, C, D, E, F, G, H, I> withArguments(G g, H h) {
             return new QTypedPromiseTaskBuilder9Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg9<T, A, B, C, D, E, F, G, H, I> withArguments(G g, H h, I i) {
             return new QTypedPromiseTaskBuilder9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -15571,7 +15571,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder9Arg7<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder9Arg7(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g) {
@@ -15595,14 +15595,14 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final G g;
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg8<T, A, B, C, D, E, F, G, H, I> withArguments(H h) {
             return new QTypedPromiseTaskBuilder9Arg8<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h);
         }
         
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg9<T, A, B, C, D, E, F, G, H, I> withArguments(H h, I i) {
             return new QTypedPromiseTaskBuilder9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -15629,7 +15629,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder9Arg8<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder9Arg8(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h) {
@@ -15655,7 +15655,7 @@ class QtConcurrent_6__ extends QtConcurrent {
         private final H h;
 
         /**
-         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments">QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</a></p>
+         * <p>See <a href="@docRoot/qtconcurrent-qtaskbuilder.html#withArguments"><code>QtConcurrent::QTaskBuilder::withArguments(ExtraArgs &amp;&amp;...)</code></a></p>
          */
         public QTypedPromiseTaskBuilder9Arg9<T, A, B, C, D, E, F, G, H, I> withArguments(I i) {
             return new QTypedPromiseTaskBuilder9Arg9<>(priority(), threadPool(), runnable, a, b, c, d, e, f, g, h, i);
@@ -15682,7 +15682,7 @@ class QtConcurrent_6__ extends QtConcurrent {
     
     /**
      * The QTaskBuilder class is used for adjusting task parameters.
-     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html">QtConcurrent::QTaskBuilder</a></p>
+     * <p>Java wrapper for Qt's class <a href="@docRoot/qtconcurrent-qtaskbuilder.html"><code>QtConcurrent::QTaskBuilder</code></a></p>
      */
     public static final class QTypedPromiseTaskBuilder9Arg9<T, A, B, C, D, E, F, G, H, I> extends QTaskBuilder<T>{
         QTypedPromiseTaskBuilder9Arg9(int newPriority, QThreadPool threadPool, @StrictNonNull RunnableWithPromise9<T, A, B, C, D, E, F, G, H, I> runnable, A a, B b, C c, D d, E e, F f, G g, H h, I i) {

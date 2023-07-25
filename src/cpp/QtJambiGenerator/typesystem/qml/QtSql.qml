@@ -73,6 +73,22 @@ TypeSystem{
             fileName: "qtsqlglobal.h"
             location: Include.Global
         }
+
+        EnumType{
+            name: "Location"
+        }
+
+        EnumType{
+            name: "ParamTypeFlag"
+        }
+
+        EnumType{
+            name: "TableType"
+        }
+
+        EnumType{
+            name: "NumericalPrecisionPolicy"
+        }
     }
     
     ObjectType{
@@ -190,6 +206,10 @@ TypeSystem{
     
     ValueType{
         name: "QSqlQuery"
+
+        EnumType{
+            name: "BatchExecutionMode"
+        }
         ExtraIncludes{
             Include{
                 fileName: "QSqlError"
@@ -226,6 +246,10 @@ TypeSystem{
     
     ValueType{
         name: "QSqlError"
+
+        EnumType{
+            name: "ErrorType"
+        }
     }
     
     ValueType{
@@ -238,6 +262,10 @@ TypeSystem{
     
     ValueType{
         name: "QSqlField"
+
+        EnumType{
+            name: "RequiredStatus"
+        }
         ModifyFunction{
             signature: "QSqlField(QString,QVariant::Type)"
             ModifyArgument{
@@ -252,6 +280,25 @@ TypeSystem{
     
     ObjectType{
         name: "QSqlDriver"
+        EnumType{
+            name: "DbmsType"
+        }
+
+        EnumType{
+            name: "DriverFeature"
+        }
+
+        EnumType{
+            name: "IdentifierType"
+        }
+
+        EnumType{
+            name: "StatementType"
+        }
+
+        EnumType{
+            name: "NotificationSource"
+        }
         ExtraIncludes{
             Include{
                 fileName: "QSqlQuery"
@@ -347,6 +394,9 @@ TypeSystem{
     
     ObjectType{
         name: "QSqlRelationalTableModel"
+        EnumType{
+            name: "JoinMode"
+        }
         ExtraIncludes{
             Include{
                 fileName: "QStringList"
@@ -361,6 +411,12 @@ TypeSystem{
     
     ObjectType{
         name: "QSqlResult"
+        EnumType{
+            name: "BindingSyntax"
+        }
+        EnumType{
+            name: "VirtualHookOperation"
+        }
         ExtraIncludes{
             Include{
                 fileName: "QSqlError"
@@ -398,11 +454,40 @@ TypeSystem{
                     ownership: Ownership.Dependent
                 }
             }
+            until: 6.5
+        }
+        ModifyFunction{
+            signature: "boundValues(Qt::Disambiguated_t)const"
+            remove: RemoveFlag.All
+            since: 6.6
+        }
+        ModifyFunction{
+            signature: "boundValues(Qt::Disambiguated_t)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Dependent
+                }
+            }
+            ModifyArgument{
+                index: 1
+                RemoveArgument{}
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "constexpr Qt::Disambiguated_t %out = Qt::Disambiguated;"}
+                }
+            }
+            since: 6.6
         }
     }
     
     ObjectType{
         name: "QSqlTableModel"
+
+        EnumType{
+            name: "EditStrategy"
+        }
         ExtraIncludes{
             Include{
                 fileName: "QSqlIndex"
@@ -467,70 +552,6 @@ TypeSystem{
                 }
             }
         }
-    }
-    
-    EnumType{
-        name: "QSql::Location"
-    }
-    
-    EnumType{
-        name: "QSql::ParamTypeFlag"
-    }
-    
-    EnumType{
-        name: "QSql::TableType"
-    }
-    
-    EnumType{
-        name: "QSql::NumericalPrecisionPolicy"
-    }
-    
-    EnumType{
-        name: "QSqlDriver::DbmsType"
-    }
-    
-    EnumType{
-        name: "QSqlDriver::DriverFeature"
-    }
-    
-    EnumType{
-        name: "QSqlDriver::IdentifierType"
-    }
-    
-    EnumType{
-        name: "QSqlDriver::StatementType"
-    }
-    
-    EnumType{
-        name: "QSqlError::ErrorType"
-    }
-    
-    EnumType{
-        name: "QSqlField::RequiredStatus"
-    }
-    
-    EnumType{
-        name: "QSqlQuery::BatchExecutionMode"
-    }
-    
-    EnumType{
-        name: "QSqlResult::BindingSyntax"
-    }
-    
-    EnumType{
-        name: "QSqlResult::VirtualHookOperation"
-    }
-    
-    EnumType{
-        name: "QSqlTableModel::EditStrategy"
-    }
-    
-    EnumType{
-        name: "QSqlDriver::NotificationSource"
-    }
-    
-    EnumType{
-        name: "QSqlRelationalTableModel::JoinMode"
     }
     
     

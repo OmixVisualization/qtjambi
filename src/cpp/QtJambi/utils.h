@@ -43,13 +43,13 @@ protected:
     InternalToExternalConverterPrivate() noexcept;
 public:
     virtual ~InternalToExternalConverterPrivate();
-    virtual bool invoke(JNIEnv*, QtJambiScope*, const void*, jvalue*, bool) const = 0;
+    virtual bool invoke(JNIEnv*, QtJambiScope*, const void*, jvalue&, bool) const = 0;
     friend class InternalToExternalConverter;
 };
 
 class QTJAMBI_EXPORT InternalToExternalConverter{
 public:
-    typedef bool(*FunctionPointer)(JNIEnv*, QtJambiScope*, const void*, jvalue*, bool);
+    typedef bool(*FunctionPointer)(JNIEnv*, QtJambiScope*, const void*, jvalue&, bool);
 
 private:
     explicit InternalToExternalConverter(InternalToExternalConverterPrivate* _d) noexcept;
@@ -59,7 +59,7 @@ private:
         inline static InternalToExternalConverterPrivate* from(Functor&& functor){
             return new Data(std::forward<Functor>(functor));
         }
-        inline bool invoke(JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* out, bool forceBoxedType) const override {
+        inline bool invoke(JNIEnv* env, QtJambiScope* scope, const void* in, jvalue& out, bool forceBoxedType) const override {
             return m_functor(env, scope, in, out, forceBoxedType);
         }
     private:
@@ -93,14 +93,14 @@ public:
 
     template<typename Functor
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-             , typename = std::enable_if_t<std::is_invocable_r_v<bool, Functor, JNIEnv*, QtJambiScope*, const void*, jvalue*, bool>>
+             , typename = std::enable_if_t<std::is_invocable_r_v<bool, Functor, JNIEnv*, QtJambiScope*, const void*, jvalue&, bool>>
 #endif
              >
     InternalToExternalConverter(Functor&& functor) noexcept
         : InternalToExternalConverter(Data<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::from(std::forward<Functor>(functor))){}
 
     bool operator==(const InternalToExternalConverter& other) const noexcept;
-    bool operator()(JNIEnv*, QtJambiScope*, const void*, jvalue*, bool) const;
+    bool operator()(JNIEnv*, QtJambiScope*, const void*, jvalue&, bool) const;
     operator bool() const noexcept;
     bool operator !() const noexcept;
 private:
@@ -113,13 +113,13 @@ protected:
     ExternalToInternalConverterPrivate() noexcept;
 public:
     virtual ~ExternalToInternalConverterPrivate();
-    virtual bool invoke(JNIEnv*, QtJambiScope*, const jvalue&, void* &, jValueType) const = 0;
+    virtual bool invoke(JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType) const = 0;
     friend class ExternalToInternalConverter;
 };
 
 class QTJAMBI_EXPORT ExternalToInternalConverter{
 public:
-    typedef bool(*FunctionPointer)(JNIEnv*, QtJambiScope*, const jvalue&, void* &, jValueType);
+    typedef bool(*FunctionPointer)(JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType);
 
 private:
     explicit ExternalToInternalConverter(ExternalToInternalConverterPrivate* _d) noexcept;
@@ -130,7 +130,7 @@ private:
         inline static ExternalToInternalConverterPrivate* from(Functor&& functor){
             return new Data(std::forward<Functor>(functor));
         }
-        inline bool invoke(JNIEnv* env, QtJambiScope* scope, const jvalue&val, void* &out, jValueType valueType) const override {
+        inline bool invoke(JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType valueType) const override {
             return m_functor(env, scope, val, out, valueType);
         }
     private:
@@ -164,14 +164,14 @@ public:
 
     template<typename Functor
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-                    , typename = std::enable_if_t<std::is_invocable_r_v<bool, Functor, JNIEnv*, QtJambiScope*, const jvalue&, void* &, jValueType>>
+                    , typename = std::enable_if_t<std::is_invocable_r_v<bool, Functor, JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType>>
 #endif
           >
     ExternalToInternalConverter(Functor&& functor) noexcept
         : ExternalToInternalConverter(Data<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::from(std::forward<Functor>(functor))){}
 
     bool operator==(const ExternalToInternalConverter& other) const noexcept;
-    bool operator()(JNIEnv*, QtJambiScope*, const jvalue&, void* &, jValueType) const;
+    bool operator()(JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType) const;
     operator bool() const noexcept;
     bool operator !() const noexcept;
 private:

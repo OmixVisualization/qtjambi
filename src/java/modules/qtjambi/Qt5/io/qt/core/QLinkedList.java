@@ -29,19 +29,14 @@
 ****************************************************************************/
 package io.qt.core;
 
-import java.util.Collection;
-import java.util.Deque;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-
-import io.qt.QNoNativeResourcesException;
-import io.qt.QtUninvokable;
-import io.qt.NativeAccess;
+import java.util.*;
+import java.util.function.*;
+import io.qt.*;
 
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qlinkedlist.html">QLinkedList</a></p>
  */
-public class QLinkedList<T> extends io.qt.internal.AbstractSequentialContainer<T> implements Deque<T>, Cloneable
+public class QLinkedList<T> extends AbstractSequentialContainer<T> implements Deque<T>, Cloneable
 {
 
 	static {
@@ -275,6 +270,22 @@ public class QLinkedList<T> extends io.qt.internal.AbstractSequentialContainer<T
     }
     @QtUninvokable
     private static native void removeLast(long __this__nativeId);
+	
+	/**
+     * <p>See <a href="https://doc.qt.io/qt/qlinkedlist.html#removeIf" class="member-name-class">QLinkedList::<wbr>removeIf(Predicate)</a></p>
+	 */
+    @QtUninvokable
+    public final boolean removeIf(Predicate<? super T> predicate)    {
+        Objects.requireNonNull(predicate);
+        boolean removed = false;
+        for(T value : clone()) {
+            if (predicate.test(value)) {
+                removeOne(value);
+                removed = true;
+            }
+        }
+        return removed;
+    }
 
     @QtUninvokable
     public final boolean removeOne(T t) {
@@ -328,6 +339,9 @@ public class QLinkedList<T> extends io.qt.internal.AbstractSequentialContainer<T
     @QtUninvokable
     private static native <T> T takeLast(long __this__nativeId);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlinkedlist.html#operator-eq-eq" class="member-name-class">QLinkedList::<wbr>operator==(QLinkedList&lt;T>)const</a></code></p>
+     */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     @QtUninvokable
@@ -339,6 +353,9 @@ public class QLinkedList<T> extends io.qt.internal.AbstractSequentialContainer<T
     }
 
 
+    /**
+     * Returns the objects's hash code computed by <code>qHash(QLinkedList&lt;T>)</code>.
+     */
     @Override
     @QtUninvokable
     public int hashCode() { 
@@ -404,6 +421,9 @@ public class QLinkedList<T> extends io.qt.internal.AbstractSequentialContainer<T
 		return removeFirst();
 	}
 
+    /**
+     * <p>See <code>operator&lt;&lt;(QDataStream&amp;,<wbr>QLinkedList&lt;T>)</code></p>
+     */
     @io.qt.QtUninvokable
     public void writeTo(io.qt.core.QDataStream stream){
         writeTo(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
@@ -412,6 +432,9 @@ public class QLinkedList<T> extends io.qt.internal.AbstractSequentialContainer<T
     @io.qt.QtUninvokable
     private native void writeTo(long __this__nativeId, long stream);
     
+    /**
+     * <p>See <code>operator&gt;&gt;(QDataStream&amp;,<wbr>QLinkedList&lt;T>&amp;)</code></p>
+     */
     @io.qt.QtUninvokable
     public void readFrom(io.qt.core.QDataStream stream){
         readFrom(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
@@ -532,7 +555,7 @@ public class QLinkedList<T> extends io.qt.internal.AbstractSequentialContainer<T
 	@Override
     @QtUninvokable
 	public final java.util.Iterator<T> descendingIterator() {
-		return super.descendingIterator();
+		return constEnd().toJavaDescendingIterator();
 	}
     
     /**

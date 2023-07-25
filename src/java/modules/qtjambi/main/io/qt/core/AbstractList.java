@@ -27,7 +27,7 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************/
-package io.qt.internal;
+package io.qt.core;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,68 +36,84 @@ import java.util.NoSuchElementException;
 
 import io.qt.QtUninvokable;
 
-public abstract class AbstractList<E> extends AbstractSequentialContainer<E> implements List<E> {
+abstract class AbstractList<T> extends AbstractSequentialContainer<T> implements java.util.List<T> {
 	
-    protected AbstractList(QPrivateConstructor p) {
+    AbstractList(QPrivateConstructor p) {
 		super(p);
 	}
     
+    /**
+     * <p>Creates and returns a copy of this sequential container.</p>
+     */
     @Override
-    public abstract AbstractList<E> clone();
+    public abstract AbstractList<T> clone();
     
     @QtUninvokable
-	protected abstract AbstractSequentialConstIterator<E> begin();
+	protected abstract QSequentialIterator<T> begin();
 
     @QtUninvokable
-    protected abstract AbstractSequentialConstIterator<E> end();
-
-    @QtUninvokable
-    protected abstract void removeAtIndex(int cursor);
-
-    @QtUninvokable
-    public abstract void append(Collection<E> c);
-
+    protected abstract QSequentialIterator<T> end();
+    
+    public abstract void removeAt(int i);
+    
+    public abstract void append(java.util.Collection<T> t);
+    
+    /**
+     * Appends all of the elements in the specified collection to the end of
+     * this list.
+     */
     @Override
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public final boolean addAll(Collection<? extends E> c) {
-        append((Collection<E>)c);
+    public final boolean addAll(Collection<? extends T> c) {
+        append((Collection<T>)c);
         return true;
     }
 
+    /**
+     * Inserts all of the elements in the specified collection into this
+     * list at the specified position.
+     */
     @Override
     @QtUninvokable
-    public final boolean addAll(int index, Collection<? extends E> c) {
-        for (E o : c) {
+    public final boolean addAll(int index, Collection<? extends T> c) {
+        for (T o : c) {
             add(index++, o);
         }
         return true;
     }
 
+    /**
+     * Removes the element at the specified position in this list.
+     */
     @Override
     @QtUninvokable
-    public final E remove(int index) {
-        E result = get(index);
-        this.removeAtIndex(index);
+    public final T remove(int index) {
+        T result = get(index);
+        this.removeAt(index);
         return result;
     }
 
+    /**
+     * Returns a list iterator over the elements in this list (in proper
+     * sequence).
+     */
 	@Override
     @QtUninvokable
-	public final java.util.ListIterator<E> listIterator() {
+	public final java.util.ListIterator<T> listIterator() {
 	    return listIterator(0);
 	}
 	
-	private static class ListIterator<E> implements java.util.ListIterator<E>{
-		private final AbstractList<E> list;
-		private AbstractSequentialConstIterator<E> current;
-    	private AbstractSequentialConstIterator<E> begin;
-    	private AbstractSequentialConstIterator<E> end;
+	private static class ListIterator<T> implements java.util.ListIterator<T>{
+		private final AbstractList<T> list;
+		private QSequentialConstIterator<T> current;
+    	private QSequentialConstIterator<T> begin;
+    	private QSequentialConstIterator<T> end;
     	private int icursor;
     	private boolean hasNext;
     	private boolean hasPrevious;
     	
-    	ListIterator(AbstractList<E> list, int index){
+    	ListIterator(AbstractList<T> list, int index){
     		this.list = list;
     		initialize(index);
     	}
@@ -121,11 +137,11 @@ public abstract class AbstractList<E> extends AbstractSequentialContainer<E> imp
         }
 
         @Override
-        public E next() {
+        public T next() {
         	if(!hasNext())
                 throw new NoSuchElementException();
         	checkModification();
-        	E e = current.val();
+        	T e = current._value();
         	current.increment();
         	hasNext = end!=null && !current.equals(end);
         	hasPrevious = begin!=null && !current.equals(begin);
@@ -134,14 +150,14 @@ public abstract class AbstractList<E> extends AbstractSequentialContainer<E> imp
         }
         
         @Override
-        public E previous() {
+        public T previous() {
         	if(!hasPrevious())
                 throw new NoSuchElementException();
         	checkModification();
         	current.decrement();
         	hasNext = end!=null && !current.equals(end);
         	hasPrevious = begin!=null && !current.equals(begin);
-        	E e = current.val();
+        	T e = current._value();
         	icursor--;
             return e;
         }
@@ -155,14 +171,13 @@ public abstract class AbstractList<E> extends AbstractSequentialContainer<E> imp
         	initialize(icursor-1);
         }
         
-        @SuppressWarnings("unchecked")
 		@Override
-        public void set(E e) {
+        public void set(T e) {
         	checkModification();
         	if(icursor==0)
         		throw new IndexOutOfBoundsException(-1);
         	current.decrement();
-        	((AbstractSequentialIterator<E>)current).setValue(e);
+        	((QSequentialIterator<T>)current).setValue(e);
         	current.increment();
         }
         
@@ -182,7 +197,7 @@ public abstract class AbstractList<E> extends AbstractSequentialContainer<E> imp
         }
         
         @Override
-        public void add(E e) {
+        public void add(T e) {
         	checkModification();
         	list.add(icursor, e);
         	initialize(icursor+1);
@@ -194,16 +209,29 @@ public abstract class AbstractList<E> extends AbstractSequentialContainer<E> imp
 		}
 	}
 	
+    /**
+     * Returns a list iterator over the elements in this list (in proper
+     * sequence), starting at the specified position in the list.
+     */
 	@Override
     @QtUninvokable
-	public final java.util.ListIterator<E> listIterator(int index) {
+	public final java.util.ListIterator<T> listIterator(int index) {
 		return new ListIterator<>(this, index);
 	}
 	
+    /**
+     * Returns a view of the portion of this list between the specified
+     * {@code fromIndex}, inclusive, and {@code toIndex}, exclusive.  (If
+     * {@code fromIndex} and {@code toIndex} are equal, the returned list is
+     * empty.)  The returned list is backed by this list, so non-structural
+     * changes in the returned list are reflected in this list, and vice-versa.
+     * The returned list supports all of the optional list operations supported
+     * by this list.
+     */
 	@SuppressWarnings("unchecked")
 	@Override
     @QtUninvokable
-	public final List<E> subList(int fromIndex, int toIndex) {
+	public final List<T> subList(int fromIndex, int toIndex) {
 	    if (fromIndex < 0)
 	        throw new IndexOutOfBoundsException("fromIndex = " + fromIndex);
 	    if (toIndex > size())
@@ -211,11 +239,14 @@ public abstract class AbstractList<E> extends AbstractSequentialContainer<E> imp
 	    if (fromIndex > toIndex)
 	        throw new IllegalArgumentException("fromIndex(" + fromIndex +
 	                                       ") > toIndex(" + toIndex + ")");
-	    List<E> sublist;
-	    try {
-	    	sublist = this.getClass().getConstructor().newInstance();
-	    }catch(Throwable e) {
-	    	sublist = new ArrayList<>();
+	    List<T> sublist = clone();
+	    sublist.clear();
+	    if(!sublist.isEmpty()) {
+		    try {
+		    	sublist = this.getClass().getConstructor().newInstance();
+		    }catch(Throwable e) {
+		    	sublist = new ArrayList<>();
+		    }
 	    }
 	    for (int i = 0; i < toIndex - fromIndex; i++) {
 	        sublist.add(get(fromIndex+i));
@@ -223,6 +254,12 @@ public abstract class AbstractList<E> extends AbstractSequentialContainer<E> imp
 	    return sublist;
 	}
 	
+	/**
+     * Retains only the elements in this list that are contained in the
+     * specified collection (optional operation).  In other words, removes
+     * from this list all of its elements that are not contained in the
+     * specified collection.
+     */
 	@Override
     @QtUninvokable
 	public final boolean retainAll(Collection<?> c) {

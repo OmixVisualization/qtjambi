@@ -241,11 +241,11 @@ void JavaGenerator::writeFieldAccessors(QTextStream &s, const MetaField *field, 
                                      .replace("*/", "*&sol;")
                                   << "</p>" << Qt::endl;
                 }
-                if(!field->href().isEmpty()){
-                    QString url = docsUrl+field->href();
-                    commentStream << "<p>See <a href=\"" << url << "\">";
-                    if(declaringClass){
-                        commentStream << declaringClass->qualifiedCppName()
+                commentStream << "<p>See <code>";
+                if(!field->href().isEmpty())
+                    commentStream << "<a href=\"" << docsUrl << field->href() << "\">";
+                if(declaringClass){
+                    commentStream << declaringClass->qualifiedCppName()
                                          .replace("<JObjectWrapper>", "")
                                          .replace("QtJambi", "Q")
                                          .replace("QVoid", "Q")
@@ -256,18 +256,19 @@ void JavaGenerator::writeFieldAccessors(QTextStream &s, const MetaField *field, 
                                          .replace("@", "&commat;")
                                          .replace("/*", "&sol;*")
                                          .replace("*/", "*&sol;")
-                                      << "::";
-                    }
-                    commentStream << QString(field->name())
+                                  << "::<wbr>";
+                }
+                commentStream << QString(field->name())
                                      .replace("&", "&amp;")
                                      .replace("<", "&lt;")
                                      .replace(">", "&gt;")
                                      .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
                                      .replace("@", "&commat;")
                                      .replace("/*", "&sol;*")
-                                     .replace("*/", "*&sol;")
-                                  << "</a></p>" << Qt::endl;
-                }
+                                     .replace("*/", "*&sol;");
+                if(!field->href().isEmpty())
+                    commentStream << "</a>";
+                commentStream << "</code></p>" << Qt::endl;
 //                if(hasCodeInjections(field, {CodeSnip::Comment})){
 //                    writeInjectedCode(commentStream, field, CodeSnip::Comment);
 //                }
@@ -1255,29 +1256,20 @@ void JavaGenerator::writeFunctional(QTextStream &s, const MetaFunctional *java_f
     QString comment;
     {
         QTextStream commentStream(&comment);
-
-        if(!java_functional->href().isEmpty()){
-            QString url = docsUrl+java_functional->href();
-            commentStream << "<p>Java wrapper for Qt function pointer <a href=\"" << url << "\">" << java_functional->typeEntry()->qualifiedCppName()
+        commentStream << "<p>Java wrapper for Qt callable <code>";
+        if(!java_functional->href().isEmpty())
+            commentStream << "<a href=\"" << docsUrl << java_functional->href() << "\">";
+        commentStream << java_functional->typeEntry()->qualifiedCppName()
                              .replace("&", "&amp;")
                              .replace("<", "&lt;")
                              .replace(">", "&gt;")
                              .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
                              .replace("@", "&commat;")
                              .replace("/*", "&sol;*")
-                             .replace("*/", "*&sol;")
-                          << "</a></p>" << Qt::endl;
-        }else{
-            commentStream << "<p>Java wrapper for Qt function pointer " << java_functional->typeEntry()->qualifiedCppName()
-                             .replace("&", "&amp;")
-                             .replace("<", "&lt;")
-                             .replace(">", "&gt;")
-                             .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
-                             .replace("@", "&commat;")
-                             .replace("/*", "&sol;*")
-                             .replace("*/", "*&sol;")
-                          << "</p>" << Qt::endl;
-        }
+                             .replace("*/", "*&sol;");
+        if(!java_functional->href().isEmpty())
+            commentStream << "</a>";
+        commentStream << "</code></p>" << Qt::endl;
     }
 
     int returnArrayLengthIndex = java_functional->argumentTypeArrayLengthIndex(0);
@@ -1527,9 +1519,10 @@ void JavaGenerator::writeFunctional(QTextStream &s, const MetaFunctional *java_f
         }
 
         if(!(java_functional->typeEntry()->codeGeneration() & TypeEntry::GenerateNoShell)){
-            s << INDENT << "/**" <<Qt::endl
+            s << INDENT << "/**" << Qt::endl
+              << INDENT << " * @hidden" << Qt::endl
               << INDENT << " * <p>Implementor class for interface {@link " << java_functional->name().replace("$", ".") << "}</p>" << Qt::endl
-              << INDENT << " */" <<Qt::endl
+              << INDENT << " */" << Qt::endl
               << INDENT << "public static abstract class Impl extends QtObject implements " << java_functional->name() << "{" << Qt::endl;
             {
                 INDENTATION(INDENT)
@@ -1714,30 +1707,20 @@ void JavaGenerator::writeEnum(QTextStream &s, const MetaEnum *java_enum) {
                          .replace("*/", "*&sol;")
                       << "</p>" << Qt::endl;
     }
-    if(java_enum->href().isEmpty()){
-        commentStream << "<p>Java wrapper for Qt enum "
-                      << (java_enum->typeEntry()->qualifiedCppName().startsWith("QtJambi") ? java_enum->name().replace("$", "::") : java_enum->typeEntry()->qualifiedCppName() )
+    commentStream << "<p>Java wrapper for Qt enum <code>";
+    if(!java_enum->href().isEmpty())
+        commentStream << "<a href=\"" << docsUrl << java_enum->href() << "\">";
+    commentStream << (java_enum->typeEntry()->qualifiedCppName().startsWith("QtJambi") ? java_enum->name().replace("$", "::<wbr>") : java_enum->typeEntry()->qualifiedCppName() )
                          .replace("&", "&amp;")
                          .replace("<", "&lt;")
                          .replace(">", "&gt;")
                          .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
                          .replace("@", "&commat;")
                          .replace("/*", "&sol;*")
-                         .replace("*/", "*&sol;")
-                      << "</p>" << Qt::endl;
-    }else{
-        QString url = docsUrl+java_enum->href();
-        commentStream << "<p>Java wrapper for Qt enum <a href=\"" << url << "\">"
-                      << (java_enum->typeEntry()->qualifiedCppName().startsWith("QtJambi") ? java_enum->name().replace("$", "::") : java_enum->typeEntry()->qualifiedCppName() )
-                         .replace("&", "&amp;")
-                         .replace("<", "&lt;")
-                         .replace(">", "&gt;")
-                         .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
-                         .replace("@", "&commat;")
-                         .replace("/*", "&sol;*")
-                         .replace("*/", "*&sol;")
-                      << "</a></p>" << Qt::endl;
-    }
+                         .replace("*/", "*&sol;");
+    if(!java_enum->href().isEmpty())
+        commentStream << "</a>";
+    commentStream << "</code></p>" << Qt::endl;
     if (java_enum->isDeclDeprecated()) {
         if(!java_enum->deprecatedComment().isEmpty()){
             if(!comment.isEmpty())
@@ -1914,14 +1897,14 @@ void JavaGenerator::writeEnum(QTextStream &s, const MetaEnum *java_enum) {
             if(enum_value->deprecated()){
                 if(!enum_value->deprecatedComment().isEmpty()){
                     hasComment = true;
-                    s << INDENT << "/**" << Qt::endl;
-                    if(java_enum->href().isEmpty()){
-                        s << INDENT << " * <p>Representing " << (QStringList(enumScope) << enum_value->name()).join("::") << "</p>" << Qt::endl;
-                    }else{
-                        QString url = docsUrl+java_enum->href();
-                        s << INDENT << " * <p>Representing <a href=\"" << url << "\">" << (QStringList(enumScope) << enum_value->name()).join("::") << "</a></p>" << Qt::endl;
-                    }
-                    s
+                    s << INDENT << "/**" << Qt::endl
+                      << INDENT << " * <p>Representing <code>";
+                    if(!java_enum->href().isEmpty())
+                        s << "<a href=\"" << docsUrl << java_enum->href() << "\">";
+                    s << (QStringList(enumScope) << enum_value->name()).join("::<wbr>");
+                    if(!java_enum->href().isEmpty())
+                        s << "</a>";
+                    s << "</code></p>" << Qt::endl
                       << INDENT << " * @deprecated " << QString(enum_value->deprecatedComment())
                          .replace("&", "&amp;")
                          .replace("<", "&lt;")
@@ -1936,16 +1919,15 @@ void JavaGenerator::writeEnum(QTextStream &s, const MetaEnum *java_enum) {
                 s << INDENT << "@Deprecated" << Qt::endl;
             }
             if(!hasComment){
-                if(java_enum->href().isEmpty()){
-                    s << INDENT << "/**" << Qt::endl
-                      << INDENT << " * <p>Representing " << (QStringList(enumScope) << enum_value->name()).join("::") << "</p>" << Qt::endl
-                      << INDENT << " */" << Qt::endl;
-                }else{
-                    QString url = docsUrl+java_enum->href();
-                    s << INDENT << "/**" << Qt::endl
-                      << INDENT << " * <p>Representing <a href=\"" << url << "\">" << (QStringList(enumScope) << enum_value->name()).join("::") << "</a></p>" << Qt::endl
-                      << INDENT << " */" << Qt::endl;
-                }
+                s << INDENT << "/**" << Qt::endl
+                  << INDENT << " * <p>Representing <code>";
+                if(!java_enum->href().isEmpty())
+                    s << "<a href=\"" << docsUrl << java_enum->href() << "\">";
+                s << (QStringList(enumScope) << enum_value->name()).join("::<wbr>");
+                if(!java_enum->href().isEmpty())
+                    s << "</a>";
+                s << "</code></p>" << Qt::endl
+                  << INDENT << " */" << Qt::endl;
             }
             s << INDENT << renamedEnumValues.value(enum_value->name(), enum_value->name()) << "(";
             if(enum_value->value().userType()==QMetaType::QString){
@@ -2017,7 +1999,16 @@ void JavaGenerator::writeEnum(QTextStream &s, const MetaEnum *java_enum) {
               << INDENT << " */" << Qt::endl
               << INDENT << "public @NonNull " << flags_entry->targetLangName() << " combined(@NonNull "
               << entry->targetLangName().replace("$",".") << " e) {" << Qt::endl
-              << INDENT << "    return new " << flags_entry->targetLangName() << "(this, e);" << Qt::endl
+              << INDENT << "    return asFlags().setFlag(e, true);" << Qt::endl
+              << INDENT << "}" << Qt::endl << Qt::endl
+              << INDENT << "/**" << Qt::endl
+              << INDENT << " * Excludes other enum entry from a flag of this entry." << Qt::endl
+              << INDENT << " * @param e enum entry" << Qt::endl
+              << INDENT << " * @return new flag" << Qt::endl
+              << INDENT << " */" << Qt::endl
+              << INDENT << "public @NonNull " << flags_entry->targetLangName() << " cleared(@NonNull "
+              << entry->targetLangName().replace("$",".") << " e) {" << Qt::endl
+              << INDENT << "    return asFlags().setFlag(e, false);" << Qt::endl
               << INDENT << "}" << Qt::endl << Qt::endl
               << INDENT << "/**" << Qt::endl
               << INDENT << " * Creates a new {@link " << flags_entry->targetLangName() << "} from the entries."  << Qt::endl
@@ -2208,7 +2199,7 @@ void JavaGenerator::writeEnum(QTextStream &s, const MetaEnum *java_enum) {
                 serialVersionUID = serialVersionUID * 31 + l;
             }
             s << INDENT << "/**" << Qt::endl
-              << INDENT << " * QFlags type for enum {@link " << java_enum->name().replace("$",".") << "}" << Qt::endl
+              << INDENT << " * {@link QFlags} type for enum {@link " << java_enum->name().replace("$",".") << "}" << Qt::endl
               << INDENT << " */" << Qt::endl
               << INDENT << "public static final class " << flagsName << " extends QFlags<" << java_enum->name().replace("$",".") << "> implements Comparable<" << flagsName << "> {" << Qt::endl
               << INDENT << "    private static final long serialVersionUID = 0x" << QString::number(serialVersionUID, 16) << "L;" << Qt::endl;
@@ -2245,8 +2236,7 @@ void JavaGenerator::writeEnum(QTextStream &s, const MetaEnum *java_enum) {
               << INDENT << "     * @return this" << Qt::endl
               << INDENT << "     */" << Qt::endl
               << INDENT << "    public final @NonNull " << flagsName << " setFlag(@Nullable " << java_enum->name().replace("$",".") << " e){" << Qt::endl
-              << INDENT << "        super.setFlag(e);" << Qt::endl
-              << INDENT << "        return this;" << Qt::endl
+              << INDENT << "        return setFlag(e, true);" << Qt::endl
               << INDENT << "    }" << Qt::endl << Qt::endl
               << INDENT << "    /**" << Qt::endl
               << INDENT << "     * Sets or clears the flag <code>flag</code>" << Qt::endl
@@ -2255,7 +2245,11 @@ void JavaGenerator::writeEnum(QTextStream &s, const MetaEnum *java_enum) {
               << INDENT << "     * @return this" << Qt::endl
               << INDENT << "     */" << Qt::endl
               << INDENT << "    public final @NonNull " << flagsName << " setFlag(@Nullable " << java_enum->name().replace("$",".") << " e, boolean on){" << Qt::endl
-              << INDENT << "        super.setFlag(e, on);" << Qt::endl
+              << INDENT << "        if (on) {" << Qt::endl
+              << INDENT << "        	setValue(value() | e.value());" << Qt::endl
+              << INDENT << "        }else {" << Qt::endl
+              << INDENT << "        	setValue(value() & ~e.value());" << Qt::endl
+              << INDENT << "        }" << Qt::endl
               << INDENT << "        return this;" << Qt::endl
               << INDENT << "    }" << Qt::endl << Qt::endl
               << INDENT << "    /**" << Qt::endl
@@ -2292,12 +2286,7 @@ void JavaGenerator::writePrivateNativeFunction(QTextStream &s, const MetaFunctio
     uint exclude_attributes = MetaAttributes::Public | MetaAttributes::Protected;
     uint include_attributes = 0;
 
-    if (java_function->isEmptyFunction()){
-        exclude_attributes |= MetaAttributes::Native;
-        include_attributes |= MetaAttributes::Private | MetaAttributes::Static;
-    }else{
-        include_attributes |= MetaAttributes::Private | MetaAttributes::Native;
-    }
+    include_attributes |= MetaAttributes::Private | MetaAttributes::Native;
     if(java_function->declaringClass()->isInterface() || java_function->isConstructor()){
         include_attributes |= MetaAttributes::Static;
     }
@@ -2305,8 +2294,7 @@ void JavaGenerator::writePrivateNativeFunction(QTextStream &s, const MetaFunctio
     writeFunctionAttributes(s, java_function, -1, include_attributes, exclude_attributes,
                             Option(NoNullness | EnumAsInts | InitializerListAsArray
                             | ( (
-                                  java_function->isEmptyFunction()
-                               || java_function->isNormal()
+                                  java_function->isNormal()
                                || java_function->isSignal() ) ? NoOption : SkipReturnType)));
     if (java_function->isConstructor()){
         const QList<Parameter> addedParameterTypes = java_function->addedParameterTypes();
@@ -2424,19 +2412,12 @@ void JavaGenerator::writePrivateNativeFunction(QTextStream &s, const MetaFunctio
     }
     s << ")";
 
-    // Make sure people don't call the private functions
-    if (java_function->isEmptyFunction()) {
-        s << " throws QNoImplementationException {" << Qt::endl
-          << INDENT << "    throw new QNoImplementationException();" << Qt::endl
-          << INDENT << "}" << Qt::endl;
-    } else {
-        QString throws = java_function->throws();
-        if(!throws.isEmpty()){
-            s << " throws " << throws << " ";
-        }
-        s << ";" << Qt::endl
-          << INDENT << Qt::endl;
+    QString throws = java_function->throws();
+    if(!throws.isEmpty()){
+        s << " throws " << throws << " ";
     }
+    s << ";" << Qt::endl
+      << INDENT << Qt::endl;
 }
 
 void JavaGenerator::writeFunctionCallForOwnership(QTextStream &s, const MetaFunction *, TS::Ownership owner, const QString& variable) {
@@ -3034,23 +3015,14 @@ void JavaGenerator::writeSignal(QTextStream &s, const MetaFunction *java_functio
                          .replace("*/", "*&sol;")
                       << "</p>" << Qt::endl;
     }
-    if(!java_function->href().isEmpty()){
-        QString url = docsUrl+java_function->href();
-        commentStream << "<p>See <a href=\"" << url << "\">";
-        if(java_function->declaringClass())
-            commentStream << java_function->declaringClass()->qualifiedCppName()
-                             .replace("<JObjectWrapper>", "")
-                             .replace("QtJambi", "Q")
-                             .replace("QVoid", "Q")
-                             .replace("&", "&amp;")
-                             .replace("<", "&lt;")
-                             .replace(">", "&gt;")
-                             .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
-                             .replace("@", "&commat;")
-                             .replace("/*", "&sol;*")
-                             .replace("*/", "*&sol;")
-                          << "::";
-        commentStream << QString(java_function->originalSignature())
+    commentStream << "<p>See <code>";
+    if(!java_function->href().isEmpty())
+        commentStream << "<a href=\"" << docsUrl << java_function->href() << "\">";
+    if(java_function->declaringClass())
+        commentStream << java_function->declaringClass()->qualifiedCppName()
+                         .replace("<JObjectWrapper>", "")
+                         .replace("QtJambi", "Q")
+                         .replace("QVoid", "Q")
                          .replace("&", "&amp;")
                          .replace("<", "&lt;")
                          .replace(">", "&gt;")
@@ -3058,8 +3030,19 @@ void JavaGenerator::writeSignal(QTextStream &s, const MetaFunction *java_functio
                          .replace("@", "&commat;")
                          .replace("/*", "&sol;*")
                          .replace("*/", "*&sol;")
-                      << "</a></p>" << Qt::endl;
-    }
+                      << "::<wbr>";
+    commentStream << QString(java_function->originalSignature())
+                     .replace("&", "&amp;")
+                     .replace("<", "&lt;")
+                     .replace(">", "&gt;")
+                     .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                     .replace("@", "&commat;")
+                     .replace("/*", "&sol;*")
+                     .replace("*/", "*&sol;")
+                     .replace(",", ",<wbr>");
+    if(!java_function->href().isEmpty())
+        commentStream << "</a>";
+    commentStream << "</code></p>" << Qt::endl;
     if(hasCodeInjections(java_function, {CodeSnip::Comment})){
         writeInjectedCode(commentStream, java_function, CodeSnip::Comment);
     }
@@ -3303,7 +3286,6 @@ void JavaGenerator::writeMultiSignal(QTextStream &s, const MetaFunctionList& sig
                   << INDENT << " * @param connectionType type of connection" << Qt::endl
                   << INDENT << " * @return connection if successful or <code>null</code> otherwise" << Qt::endl
                   << INDENT << " * @throws QMisfittingSignatureException Raised if their signatures are incompatible." << Qt::endl
-                  << INDENT << " * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>." << Qt::endl
                   << INDENT << " */" << Qt::endl
                   << INDENT << "public final " << parameters << (parameters.isEmpty() ? "" : " ") << "io.qt.core.QMetaObject." << nonNull << "Connection connect(io.qt.core.QMetaObject." << snonNull << "Slot" << it.key() << parameters << " slot, io.qt.core.Qt." << nonNull << "ConnectionType" << arrayNonNull << "... connectionType) throws QNoSuchSignalException{" << Qt::endl
                   << INDENT << "    return super.connect(slot, connectionType);" << Qt::endl
@@ -3386,7 +3368,6 @@ void JavaGenerator::writeMultiSignal(QTextStream &s, const MetaFunctionList& sig
                           << INDENT << " * @param connectionType type of connection" << Qt::endl
                           << INDENT << " * @return connection if successful or <code>null</code> otherwise" << Qt::endl
                           << INDENT << " * @throws QMisfittingSignatureException Raised if their signatures are incompatible." << Qt::endl
-                          << INDENT << " * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>." << Qt::endl
                           << INDENT << " */" << Qt::endl
                           << INDENT << "public final " << parameters << (parameters.isEmpty() ? "" : " ") << "io.qt.core.QMetaObject." << nonNull << "Connection connect(io.qt.core.QMetaObject.Slot" << i << parameters << " slot, io.qt.core.Qt." << nonNull << "ConnectionType" << arrayNonNull << "... connectionType) throws QNoSuchSignalException{" << Qt::endl
                           << INDENT << "    return super.connect(slot, connectionType);" << Qt::endl
@@ -3441,11 +3422,11 @@ void JavaGenerator::writeMultiSignal(QTextStream &s, const MetaFunctionList& sig
                                  .replace("*/", "*&sol;")
                               << "</p>" << Qt::endl;
             }
-            if(!java_function->href().isEmpty()){
-                QString url = docsUrl+java_function->href();
-                commentStream << "<p>See <a href=\"" << url << "\">";
-                if(java_function->declaringClass())
-                    commentStream << java_function->declaringClass()->qualifiedCppName()
+            commentStream << "<p>See <code>";
+            if(!java_function->href().isEmpty())
+                commentStream << "<a href=\"" << docsUrl << java_function->href() << "\">";
+            if(java_function->declaringClass())
+                commentStream << java_function->declaringClass()->qualifiedCppName()
                                      .replace("<JObjectWrapper>", "")
                                      .replace("QtJambi", "Q")
                                      .replace("QVoid", "Q")
@@ -3456,8 +3437,8 @@ void JavaGenerator::writeMultiSignal(QTextStream &s, const MetaFunctionList& sig
                                      .replace("@", "&commat;")
                                      .replace("/*", "&sol;*")
                                      .replace("*/", "*&sol;")
-                                  << "::";
-                commentStream << QString(java_function->originalSignature())
+                              << "::<wbr>";
+            commentStream << QString(java_function->originalSignature())
                                  .replace("&", "&amp;")
                                  .replace("<", "&lt;")
                                  .replace(">", "&gt;")
@@ -3465,8 +3446,10 @@ void JavaGenerator::writeMultiSignal(QTextStream &s, const MetaFunctionList& sig
                                  .replace("@", "&commat;")
                                  .replace("/*", "&sol;*")
                                  .replace("*/", "*&sol;")
-                              << "</a></p>" << Qt::endl;
-            }
+                                 .replace(",", ",<wbr>");
+            if(!java_function->href().isEmpty())
+                commentStream << "</a>";
+            commentStream << "</code></p>" << Qt::endl;
             if(!comment.isEmpty())
                 commentStream << Qt::endl;
             if(hasCodeInjections(java_function, {CodeSnip::Comment})){
@@ -3591,14 +3574,15 @@ void JavaGenerator::writeMultiSignal(QTextStream &s, const MetaFunctionList& sig
       << INDENT << " * <p>Overloaded signals:</p>" << Qt::endl
       << INDENT << " * <ul>" << Qt::endl;
     for(MetaFunction* java_function : signalList){
-        s << INDENT << " * <li><code>" << java_function->signature()
+        s << INDENT << " * <li><code>" << QString(java_function->originalSignature())
              .replace("&", "&amp;")
              .replace("<", "&lt;")
              .replace(">", "&gt;")
              .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
              .replace("@", "&commat;")
              .replace("/*", "&sol;*")
-             .replace("*/", "*&sol;") << "</code></li>" << Qt::endl;
+             .replace("*/", "*&sol;")
+             .replace(",", ",<wbr>") << "</code></li>" << Qt::endl;
     }
     s << INDENT << " * </ul>" << Qt::endl
       << INDENT << " */" << Qt::endl
@@ -4018,25 +4002,9 @@ void JavaGenerator::writeFunction(QTextStream &s, const MetaFunction *java_funct
 
     QString comment;
     QTextStream commentStream(&comment);
-    if(!java_function->brief().isEmpty()){
-        commentStream << "<p>" << QString(java_function->brief())
-                         .replace("&", "&amp;")
-                         .replace("<", "&lt;")
-                         .replace(">", "&gt;")
-                         .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
-                         .replace("@", "&commat;")
-                         .replace("/*", "&sol;*")
-                         .replace("*/", "*&sol;")
-                      << "</p>" << Qt::endl;
-    }
-    if(!java_function->href().isEmpty()){
-        QString url = docsUrl+java_function->href();
-        commentStream << "<p>See <a href=\"" << url << "\">";
-        if(java_function->declaringClass() && java_function->functionType()!=MetaFunction::GlobalScopeFunction){
-            commentStream << java_function->declaringClass()->qualifiedCppName()
-                             .replace("<JObjectWrapper>", "")
-                             .replace("QtJambi", "Q")
-                             .replace("QVoid", "Q")
+    if (!java_function->isEmptyFunction()) {
+        if(!java_function->brief().isEmpty()){
+            commentStream << "<p>" << QString(java_function->brief())
                              .replace("&", "&amp;")
                              .replace("<", "&lt;")
                              .replace(">", "&gt;")
@@ -4044,73 +4012,93 @@ void JavaGenerator::writeFunction(QTextStream &s, const MetaFunction *java_funct
                              .replace("@", "&commat;")
                              .replace("/*", "&sol;*")
                              .replace("*/", "*&sol;")
-                          << "::";
+                          << "</p>" << Qt::endl;
+        }
+        commentStream << "<p>See <code>";
+        if(!java_function->href().isEmpty())
+            commentStream << "<a href=\"" << docsUrl << java_function->href() << "\">";
+        if(java_function->declaringClass() && java_function->functionType()!=MetaFunction::GlobalScopeFunction){
+            commentStream << java_function->declaringClass()->qualifiedCppName()
+                                 .replace("<JObjectWrapper>", "")
+                                 .replace("QtJambi", "Q")
+                                 .replace("QVoid", "Q")
+                                 .replace("&", "&amp;")
+                                 .replace("<", "&lt;")
+                                 .replace(">", "&gt;")
+                                 .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                                 .replace("@", "&commat;")
+                                 .replace("/*", "&sol;*")
+                                 .replace("*/", "*&sol;")
+                          << "::<wbr>";
         }
         if(java_function->functionTemplate()){
             if(!java_function->functionTemplate()->originalSignature().isEmpty()){
                 commentStream << QString(java_function->functionTemplate()->originalSignature())
-                                 .replace("&", "&amp;")
-                                 .replace("<", "&lt;")
-                                 .replace(">", "&gt;")
-                                 .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
-                                 .replace("@", "&commat;")
-                                 .replace("/*", "&sol;*")
-                                 .replace("*/", "*&sol;")
-                              << "</a></p>" << Qt::endl;
+                                     .replace("&", "&amp;")
+                                     .replace("<", "&lt;")
+                                     .replace(">", "&gt;")
+                                     .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                                     .replace("@", "&commat;")
+                                     .replace("/*", "&sol;*")
+                                     .replace("*/", "*&sol;")
+                                     .replace(",", ",<wbr>");
             }else if(!java_function->functionTemplate()->minimalSignature().isEmpty()){
                 commentStream << QString(java_function->functionTemplate()->minimalSignature())
-                                 .replace("&", "&amp;")
-                                 .replace("<", "&lt;")
-                                 .replace(">", "&gt;")
-                                 .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
-                                 .replace("@", "&commat;")
-                                 .replace("/*", "&sol;*")
-                                 .replace("*/", "*&sol;")
-                              << "</a></p>" << Qt::endl;
+                                     .replace("&", "&amp;")
+                                     .replace("<", "&lt;")
+                                     .replace(">", "&gt;")
+                                     .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                                     .replace("@", "&commat;")
+                                     .replace("/*", "&sol;*")
+                                     .replace("*/", "*&sol;")
+                                     .replace(",", ",<wbr>");
             }else{
                 commentStream << QString(java_function->functionTemplate()->name())
-                                 .replace("&", "&amp;")
-                                 .replace("<", "&lt;")
-                                 .replace(">", "&gt;")
-                                 .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
-                                 .replace("@", "&commat;")
-                                 .replace("/*", "&sol;*")
-                                 .replace("*/", "*&sol;")
-                              << "(...)</a></p>" << Qt::endl;
+                                     .replace("&", "&amp;")
+                                     .replace("<", "&lt;")
+                                     .replace(">", "&gt;")
+                                     .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                                     .replace("@", "&commat;")
+                                     .replace("/*", "&sol;*")
+                                     .replace("*/", "*&sol;")
+                              << "(...)";
             }
         }else {
             if(!java_function->originalSignature().isEmpty()){
                 commentStream << QString(java_function->originalSignature())
-                                 .replace("&", "&amp;")
-                                 .replace("<", "&lt;")
-                                 .replace(">", "&gt;")
-                                 .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
-                                 .replace("@", "&commat;")
-                                 .replace("/*", "&sol;*")
-                                 .replace("*/", "*&sol;")
-                              << "</a></p>" << Qt::endl;
+                                     .replace("&", "&amp;")
+                                     .replace("<", "&lt;")
+                                     .replace(">", "&gt;")
+                                     .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                                     .replace("@", "&commat;")
+                                     .replace("/*", "&sol;*")
+                                     .replace("*/", "*&sol;")
+                                     .replace(",", ",<wbr>");
             }else if(!java_function->minimalSignature().isEmpty()){
                 commentStream << QString(java_function->minimalSignature())
-                                 .replace("&", "&amp;")
-                                 .replace("<", "&lt;")
-                                 .replace(">", "&gt;")
-                                 .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
-                                 .replace("@", "&commat;")
-                                 .replace("/*", "&sol;*")
-                                 .replace("*/", "*&sol;")
-                              << "</a></p>" << Qt::endl;
+                                     .replace("&", "&amp;")
+                                     .replace("<", "&lt;")
+                                     .replace(">", "&gt;")
+                                     .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                                     .replace("@", "&commat;")
+                                     .replace("/*", "&sol;*")
+                                     .replace("*/", "*&sol;")
+                                     .replace(",", ",<wbr>");
             }else{
                 commentStream << QString(java_function->name())
-                                 .replace("&", "&amp;")
-                                 .replace("<", "&lt;")
-                                 .replace(">", "&gt;")
-                                 .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
-                                 .replace("@", "&commat;")
-                                 .replace("/*", "&sol;*")
-                                 .replace("*/", "*&sol;")
-                              << "(...)</a></p>" << Qt::endl;
+                                     .replace("&", "&amp;")
+                                     .replace("<", "&lt;")
+                                     .replace(">", "&gt;")
+                                     .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                                     .replace("@", "&commat;")
+                                     .replace("/*", "&sol;*")
+                                     .replace("*/", "*&sol;")
+                              << "(...)";
             }
         }
+        if(!java_function->href().isEmpty())
+            commentStream << "</a>";
+        commentStream << "</code></p>" << Qt::endl;
     }
     if(hasCodeInjections(java_function, {CodeSnip::Comment})){
         writeInjectedCode(commentStream, java_function, CodeSnip::Comment);
@@ -4119,6 +4107,13 @@ void JavaGenerator::writeFunction(QTextStream &s, const MetaFunction *java_funct
         if(!comment.isEmpty())
             commentStream << Qt::endl;
         writeDeprecatedComment(commentStream, java_function);
+    }
+    if (java_function->isEmptyFunction() && comment.isEmpty()) {
+        if(java_function->wasPrivate()){
+            commentStream << "Function has no implementation because its native counterpart is private." << Qt::endl;
+        }else{
+            commentStream << "Function has no implementation." << Qt::endl;
+        }
     }
     if(!comment.trimmed().isEmpty() && (option & InFunctionComment)==0){
         s << INDENT << "/**" << Qt::endl;
@@ -4233,7 +4228,12 @@ void JavaGenerator::writeFunction(QTextStream &s, const MetaFunction *java_funct
         s << functionSignature(java_function, included_attributes, excluded_attributes, sigOption);
     }
 
-    if(!interfaceDefaultImpl.isEmpty()){
+    if(java_function->isEmptyFunction() && !java_function->isAbstract()){
+        s << " throws QNoImplementationException {" << Qt::endl
+          << INDENT << "    throw new QNoImplementationException();" << Qt::endl
+          << INDENT << "}" << Qt::endl
+          << INDENT << Qt::endl;
+    }else if(!interfaceDefaultImpl.isEmpty()){
         s << "{" << Qt::endl
           << interfaceDefaultImpl
           << INDENT << "}" << Qt::endl
@@ -4438,9 +4438,6 @@ void JavaGenerator::writeFunction(QTextStream &s, const MetaFunction *java_funct
             s << ";" << Qt::endl
               << INDENT << Qt::endl;
         } else {
-            if (java_function->isEmptyFunction()) {
-                s << " throws QNoImplementationException ";
-            }
             s << "{" << Qt::endl;
             {
                 INDENTATION(INDENT)
@@ -4463,7 +4460,7 @@ void JavaGenerator::writeFunction(QTextStream &s, const MetaFunction *java_funct
     }
 }
 
-void JavaGenerator::write_equals_parts(QTextStream &s, const MetaFunctionList &lst, char prefix, bool& first, bool& suppressUnchecked, bool& suppressRaw) {
+void JavaGenerator::write_equals_parts(QTextStream &s, const MetaFunctionList &lst, char prefix, bool& first, bool& suppressUnchecked, bool& suppressRaw, QHash<const MetaFunction*,QString>& javaTypesByFunction) {
     for(MetaFunction *f : lst) {
         MetaArgument *arg = f->arguments().at(0);
         QString type = f->typeReplaced(arg->argumentIndex()+1);
@@ -4540,17 +4537,20 @@ void JavaGenerator::write_equals_parts(QTextStream &s, const MetaFunctionList &l
             boxedType = "java.lang.Character";
 
         if(type=="java.lang.Void"){
+            javaTypesByFunction[f] = "<code>null</code>";
             s << INDENT << (first ? "if" : "else if") << " (other==null) {" << Qt::endl;
             s << INDENT << "    return ";
             if (prefix != 0) s << prefix;
             s << f->name() << "((java.lang.Void)null);" << Qt::endl;
         }else if(type=="null"){
+            javaTypesByFunction[f] = "<code>null</code>";
             s << INDENT << (first ? "if" : "else if") << " (other==" << type;
             s << ") {" << Qt::endl;
             s << INDENT << "    return ";
             if (prefix != 0) s << prefix;
             s << f->name() << "();" << Qt::endl;
         }else{
+            javaTypesByFunction[f] = "<code>{@link "+boxedType+"}</code>";
             s << INDENT << (first ? "if" : "else if") << " (other instanceof " << boxedType;
             if(arg->type()->typeEntry()->isContainer() && arg->type()->instantiations().size()){
                 s << " && checkContainerType((" << type << ") other";
@@ -4569,7 +4569,7 @@ void JavaGenerator::write_equals_parts(QTextStream &s, const MetaFunctionList &l
     }
 }
 
-static void write_compareto_parts(QTextStream &s, const MetaFunctionList &lst, int value, bool *first, bool& suppressUnchecked, bool& suppressRaw) {
+void JavaGenerator::write_compareto_parts(QTextStream &s, const MetaFunctionList &lst, int value, bool *first, bool& suppressUnchecked, bool& suppressRaw, QList<QPair<const MetaFunction*,QString>>& javaTypesByFunction) {
     bool suppressNull = false;
     for(MetaFunction *f : lst) {
         MetaArgument *arg = f->arguments().at(0);
@@ -4642,6 +4642,7 @@ static void write_compareto_parts(QTextStream &s, const MetaFunctionList &lst, i
         else if(boxedType=="char")
             boxedType = "java.lang.Character";
         if(value==0){
+            javaTypesByFunction.append({f, "<code>{@link "+boxedType+"}</code>"});
             s << INDENT << (*first ? "if" : "else if") << " (other instanceof " << boxedType;
             if(arg->type()->typeEntry()->isContainer() && arg->type()->instantiations().size()){
                 s << " && checkContainerType((" << type << ") other";
@@ -4655,12 +4656,14 @@ static void write_compareto_parts(QTextStream &s, const MetaFunctionList &lst, i
               << INDENT << "}" << Qt::endl;
         }else{
             if(type=="java.lang.Void"){
+                javaTypesByFunction.append({f, "<code>null</code>"});
                 suppressNull = true;
                 s << INDENT << (first ? "if" : "else if") << " (other==null) {" << Qt::endl;
                 s << INDENT << "    if (" << f->name() << "((java.lang.Void)null)) return " << value << ";" << Qt::endl
                   << INDENT << "    else return " << -value << ";" << Qt::endl
                   << INDENT << "}" << Qt::endl;
             }else if(type=="null"){
+                javaTypesByFunction.append({f, "<code>null</code>"});
                 suppressNull = true;
                 s << INDENT << (first ? "if" : "else if") << " (other==" << type;
                 s << ") {" << Qt::endl;
@@ -4668,6 +4671,7 @@ static void write_compareto_parts(QTextStream &s, const MetaFunctionList &lst, i
                   << INDENT << "    else return " << -value << ";" << Qt::endl
                   << INDENT << "}" << Qt::endl;
             }else{
+                javaTypesByFunction.append({f, "<code>{@link "+boxedType+"}</code>"});
                 s << INDENT << (*first ? "if" : "else if") << " (other instanceof " << boxedType;
                 if(arg->type()->typeEntry()->isContainer() && arg->type()->instantiations().size()){
                     s << " && checkContainerType((" << type << ") other";
@@ -4767,15 +4771,87 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
     if (eq_functions.size() || neq_functions.size()) {
         bool suppressRaw = false;
         bool suppressUnchecked = false;
+        QHash<const MetaFunction*,QString> javaTypesByFunction;
         QString eq;
         {
             INDENTATION(INDENT)
             QTextStream _s(&eq);
             bool first = true;
-            write_equals_parts(_s, eq_functions,  char(0), first, suppressUnchecked, suppressRaw);
-            write_equals_parts(_s, neq_functions, '!', first, suppressUnchecked, suppressRaw);
+            write_equals_parts(_s, eq_functions,  char(0), first, suppressUnchecked, suppressRaw, javaTypesByFunction);
+            write_equals_parts(_s, neq_functions, '!', first, suppressUnchecked, suppressRaw, javaTypesByFunction);
         }
         s << Qt::endl;
+        s << INDENT << "/**" << Qt::endl;
+        MetaFunctionList funs;
+        funs << eq_functions << neq_functions;
+        if(funs.size()==1){
+            s << INDENT << " * <p>See <code>";
+            if(!funs[0]->href().isEmpty()){
+                s << "<a href=\"" << docsUrl << funs[0]->href() << "\">";
+            }
+            if(funs[0]->functionType()!=MetaFunction::GlobalScopeFunction){
+                s << cls->qualifiedCppName()
+                         .replace("<JObjectWrapper>", "")
+                         .replace("QtJambi", "Q")
+                         .replace("QVoid", "Q")
+                         .replace("&", "&amp;")
+                         .replace("<", "&lt;")
+                         .replace(">", "&gt;")
+                         .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                         .replace("@", "&commat;")
+                         .replace("/*", "&sol;*")
+                         .replace("*/", "*&sol;")
+                  << "::<wbr>";
+            }
+            s << QString(funs[0]->originalSignature())
+                     .replace("&", "&amp;")
+                     .replace("<", "&lt;")
+                     .replace(">", "&gt;")
+                     .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                     .replace("@", "&commat;")
+                     .replace("/*", "&sol;*")
+                     .replace("*/", "*&sol;")
+                     .replace(",", ",<wbr>");
+            if(!funs[0]->href().isEmpty())
+                s << "</a>";
+            s << "</code></p>" << Qt::endl;
+        }else{
+            s << INDENT << " * <p>Checks for equality depending on the type of given object.</p><ul>" << Qt::endl;
+            for(MetaFunction* f : funs){
+                s << INDENT << " * <li>"+javaTypesByFunction[f]+" ckecked by to <code>";
+                if(!f->href().isEmpty()){
+                    s << "<a href=\"" << docsUrl << f->href() << "\">";
+                }
+                if(f->functionType()!=MetaFunction::GlobalScopeFunction){
+                    s << cls->qualifiedCppName()
+                             .replace("<JObjectWrapper>", "")
+                             .replace("QtJambi", "Q")
+                             .replace("QVoid", "Q")
+                             .replace("&", "&amp;")
+                             .replace("<", "&lt;")
+                             .replace(">", "&gt;")
+                             .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                             .replace("@", "&commat;")
+                             .replace("/*", "&sol;*")
+                             .replace("*/", "*&sol;")
+                      << "::<wbr>";
+                }
+                s << QString(f->originalSignature())
+                         .replace("&", "&amp;")
+                         .replace("<", "&lt;")
+                         .replace(">", "&gt;")
+                         .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                         .replace("@", "&commat;")
+                         .replace("/*", "&sol;*")
+                         .replace("*/", "*&sol;")
+                         .replace(",", ",<wbr>");
+                if(!f->href().isEmpty())
+                    s << "</a>";
+                s << "</code></li>" << Qt::endl;
+            }
+            s << INDENT << " * </ul>" << Qt::endl;
+        }
+        s << INDENT << " */" << Qt::endl;
         s << INDENT << "@Override" << Qt::endl;
         s << INDENT << "@QtUninvokable" << Qt::endl;
         if(suppressRaw && suppressUnchecked)
@@ -4820,6 +4896,9 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
     if(writeHashEquals){
         if (cls->hasHashFunction()) {
             s << Qt::endl;
+            s << INDENT << "/**" << Qt::endl;
+            s << INDENT << " * Checks for equality by checking object's hash code." << Qt::endl;
+            s << INDENT << " */" << Qt::endl;
             s << INDENT << "@Override" << Qt::endl;
             s << INDENT << "@QtUninvokable" << Qt::endl;
             s << INDENT << "public boolean equals(Object other) {" << Qt::endl;
@@ -4878,6 +4957,7 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
                                                         ? gt_functions.size() || geq_functions.size() || lt_functions.size() || leq_functions.size()
                                                         : gt_functions.size() == 1 || lt_functions.size() == 1);
     if (comparable) {
+        QList<QPair<const MetaFunction*,QString>> javaTypesByFunction;
         bool suppressRaw = false;
         bool suppressUnchecked = false;
         QString comparableType = findComparableType(cls);
@@ -4898,34 +4978,37 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
                     printExtraCode(lines, s);
                 if(compare_functions.size()){
                     bool first = false;
-                    write_compareto_parts(s, compare_functions, 0, &first, suppressUnchecked, suppressRaw);
+                    write_compareto_parts(s, compare_functions, 0, &first, suppressUnchecked, suppressRaw, javaTypesByFunction);
                 }else if (hasEquals) {
                     s << INDENT << "if (equals(other)) return 0;" << Qt::endl;
                     if (lt_functions.size() == 1
                             && gt_functions.size() == 0
                             && leq_functions.size() == 0
                             && geq_functions.size() == 0) {
+                        javaTypesByFunction.append({lt_functions[0], ""});
                         s << INDENT << "else if (" << lt_functions[0]->name() << "(other)) return -1;" << Qt::endl
                           << INDENT << "else return 1;" << Qt::endl;
                     }else if (gt_functions.size() == 1
                               && lt_functions.size() == 0
                               && leq_functions.size() == 0
                               && geq_functions.size() == 0) {
+                        javaTypesByFunction.append({gt_functions[0], ""});
                           s << INDENT << "else if (" << gt_functions[0]->name() << "(other)) return -1;" << Qt::endl
                             << INDENT << "else return 1;" << Qt::endl;
                     }else{
                         bool first = false;
                         if (lt_functions.size()) {
-                            write_compareto_parts(s, lt_functions, -1, &first, suppressUnchecked, suppressRaw);
+                            write_compareto_parts(s, lt_functions, -1, &first, suppressUnchecked, suppressRaw, javaTypesByFunction);
                         } else if (gt_functions.size()) {
-                            write_compareto_parts(s, gt_functions, 1, &first, suppressUnchecked, suppressRaw);
+                            write_compareto_parts(s, gt_functions, 1, &first, suppressUnchecked, suppressRaw, javaTypesByFunction);
                         } else if (leq_functions.size()) {
-                            write_compareto_parts(s, leq_functions, -1, &first, suppressUnchecked, suppressRaw);
+                            write_compareto_parts(s, leq_functions, -1, &first, suppressUnchecked, suppressRaw, javaTypesByFunction);
                         } else if (geq_functions.size()) {
-                            write_compareto_parts(s, geq_functions, 1, &first, suppressUnchecked, suppressRaw);
+                            write_compareto_parts(s, geq_functions, 1, &first, suppressUnchecked, suppressRaw, javaTypesByFunction);
                         }
                     }
                 } else if (lt_functions.size() == 1) {
+                    javaTypesByFunction.append({lt_functions[0], ""});
                     QString className = cls->typeEntry()->qualifiedTargetLangName();
                     if(cls->typeEntry()->isGenericClass()){
                         if(cls->templateBaseClass()){
@@ -4948,6 +5031,7 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
                       << INDENT << "else return 0;" << Qt::endl;
 
                 } else if (gt_functions.size() == 1) {
+                    javaTypesByFunction.append({gt_functions[0], ""});
                     QString className = cls->typeEntry()->qualifiedTargetLangName();
                     if(cls->typeEntry()->isGenericClass()){
                         if(cls->templateBaseClass()){
@@ -4970,6 +5054,7 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
                       << INDENT << "else return 0;" << Qt::endl;
 
                 } else if (geq_functions.size() == 1 && leq_functions.size()) {
+                    javaTypesByFunction.append({geq_functions[0], ""});
                     QString className = cls->typeEntry()->qualifiedTargetLangName();
                     if(cls->typeEntry()->isContainer()){
                         if(className=="java.util.List"
@@ -5020,19 +5105,92 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
                 }else{
                     bool first = true;
                     if (lt_functions.size()) {
-                        write_compareto_parts(s, lt_functions, -1, &first, suppressUnchecked, suppressRaw);
+                        write_compareto_parts(s, lt_functions, -1, &first, suppressUnchecked, suppressRaw, javaTypesByFunction);
                     } else if (gt_functions.size()) {
-                        write_compareto_parts(s, gt_functions, 1, &first, suppressUnchecked, suppressRaw);
+                        write_compareto_parts(s, gt_functions, 1, &first, suppressUnchecked, suppressRaw, javaTypesByFunction);
                     } else if (leq_functions.size()) {
-                        write_compareto_parts(s, leq_functions, -1, &first, suppressUnchecked, suppressRaw);
+                        write_compareto_parts(s, leq_functions, -1, &first, suppressUnchecked, suppressRaw, javaTypesByFunction);
                     } else if (geq_functions.size()) {
-                        write_compareto_parts(s, geq_functions, 1, &first, suppressUnchecked, suppressRaw);
+                        write_compareto_parts(s, geq_functions, 1, &first, suppressUnchecked, suppressRaw, javaTypesByFunction);
                     }
                 }
             }
 
             s << INDENT << "}" << Qt::endl;
         }
+        s << INDENT << "/**" << Qt::endl;
+        if(javaTypesByFunction.size()==1){
+            auto f = javaTypesByFunction[0].first;
+            s << INDENT << " * <p>See <code>";
+            if(!f->href().isEmpty()){
+                s << "<a href=\"" << docsUrl << f->href() << "\">";
+            }
+            if(f->functionType()!=MetaFunction::GlobalScopeFunction){
+                s << cls->qualifiedCppName()
+                         .replace("<JObjectWrapper>", "")
+                         .replace("QtJambi", "Q")
+                         .replace("QVoid", "Q")
+                         .replace("&", "&amp;")
+                         .replace("<", "&lt;")
+                         .replace(">", "&gt;")
+                         .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                         .replace("@", "&commat;")
+                         .replace("/*", "&sol;*")
+                         .replace("*/", "*&sol;")
+                  << "::<wbr>";
+            }
+            s << QString(f->originalSignature())
+                     .replace("&", "&amp;")
+                     .replace("<", "&lt;")
+                     .replace(">", "&gt;")
+                     .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                     .replace("@", "&commat;")
+                     .replace("/*", "&sol;*")
+                     .replace("*/", "*&sol;")
+                     .replace(",", ",<wbr>");
+            if(!f->href().isEmpty())
+                s << "</a>";
+            s << "</code></p>" << Qt::endl;
+        }else{
+            s << INDENT << " * <p>Compares to other object depending on its type.</p><ul>" << Qt::endl;
+            for(const QPair<const MetaFunction*,QString>& pair : javaTypesByFunction){
+                auto f = pair.first;
+                if(f){
+                    s << INDENT << " * <li>"+pair.second+" compared by <code>";
+                    if(!f->href().isEmpty()){
+                        s << "<a href=\"" << docsUrl << f->href() << "\">";
+                    }
+                    if(f->functionType()!=MetaFunction::GlobalScopeFunction){
+                        s << cls->qualifiedCppName()
+                                 .replace("<JObjectWrapper>", "")
+                                 .replace("QtJambi", "Q")
+                                 .replace("QVoid", "Q")
+                                 .replace("&", "&amp;")
+                                 .replace("<", "&lt;")
+                                 .replace(">", "&gt;")
+                                 .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                                 .replace("@", "&commat;")
+                                 .replace("/*", "&sol;*")
+                                 .replace("*/", "*&sol;")
+                          << "::<wbr>";
+                    }
+                    s << QString(f->originalSignature())
+                             .replace("&", "&amp;")
+                             .replace("<", "&lt;")
+                             .replace(">", "&gt;")
+                             .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                             .replace("@", "&commat;")
+                             .replace("/*", "&sol;*")
+                             .replace("*/", "*&sol;")
+                             .replace(",", ",<wbr>");
+                    if(!f->href().isEmpty())
+                        s << "</a>";
+                    s << "</code></li>" << Qt::endl;
+                }
+            }
+            s << INDENT << " * </ul>" << Qt::endl;
+        }
+        s << INDENT << " */" << Qt::endl;
         if(suppressRaw && suppressUnchecked)
             s << INDENT << "@SuppressWarnings({\"rawtypes\", \"unchecked\"})" << Qt::endl;
         else if(suppressRaw)
@@ -5061,6 +5219,9 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
             }
             if(lines.isEmpty() && cls->hasHashFunction() && !cls->typeEntry()->isNativeIdBased() && !cls->typeEntry()->designatedInterface()){
                 s << Qt::endl
+                  << INDENT << "/**" << Qt::endl
+                  << INDENT << " * Returns the objects's hash code computed by <code>qHash(" << cls->qualifiedCppName() << ")</code>." << Qt::endl
+                  << INDENT << " */" << Qt::endl
                   << INDENT << "@QtUninvokable" << Qt::endl
                   << INDENT << "@Override" << Qt::endl
                   << INDENT << "public native int hashCode();" << Qt::endl;
@@ -5071,6 +5232,9 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
                          && cls->typeEntry()->isDestructorPublic()
                          && !cls->typeEntry()->skipMetaTypeRegistration())){
                 s << Qt::endl
+                  << INDENT << "/**" << Qt::endl
+                  << INDENT << " * Returns the objects's hash code computed by <code>qHash(" << cls->qualifiedCppName() << ")</code>." << Qt::endl
+                  << INDENT << " */" << Qt::endl
                   << INDENT << "@QtUninvokable" << Qt::endl
                   << INDENT << "@Override" << Qt::endl
                   << INDENT << "public int hashCode() {" << Qt::endl;
@@ -5144,11 +5308,17 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
         if (!found) {
             if(lines.isEmpty() && !cls->typeEntry()->isNativeIdBased() && !cls->typeEntry()->designatedInterface()){
                 s << Qt::endl
+                  << INDENT << "/**" << Qt::endl
+                  << INDENT << " * Returns the string representation of the object given by <code>QVariant(this).toString()</code>." << Qt::endl
+                  << INDENT << " */" << Qt::endl
                   << INDENT << "@QtUninvokable" << Qt::endl
                   << INDENT << "@Override" << Qt::endl
                   << INDENT << "public native "  << nonNull << "String toString();" << Qt::endl;
             }else{
                 s << Qt::endl
+                  << INDENT << "/**" << Qt::endl
+                  << INDENT << " * Returns the string representation of the object given by <code>QVariant(this).toString()</code>." << Qt::endl
+                  << INDENT << " */" << Qt::endl
                   << INDENT << "@QtUninvokable" << Qt::endl
                   << INDENT << "@Override" << Qt::endl
                   << INDENT << "public "  << nonNull << "String toString() {" << Qt::endl;
@@ -5177,6 +5347,9 @@ void JavaGenerator::writeJavaLangObjectOverrideFunctions(QTextStream &s,
             }
         }else if(!lines.isEmpty()){
             s << Qt::endl
+              << INDENT << "/**" << Qt::endl
+              << INDENT << " * {@inheritDoc}" << Qt::endl
+              << INDENT << " */" << Qt::endl
               << INDENT << "@QtUninvokable" << Qt::endl
               << INDENT << "@Override" << Qt::endl
               << INDENT << "public "  << nonNull << "String toString() {" << Qt::endl;
@@ -5938,6 +6111,7 @@ void JavaGenerator::write(QTextStream &s, const MetaClass *java_class, int nesti
         QTextStream s(&lines);
         QTextStream commentStream(&comment);
         if(java_class->typeEntry()->designatedInterface()){
+            commentStream << "@hidden" << Qt::endl;
             commentStream << "<p>Implementor class for interface {@link " << QString(java_class->typeEntry()->designatedInterface()->qualifiedTargetLangName()).replace("$", ".") << "}</p>" << Qt::endl;
         }else{
             if(!java_class->brief().isEmpty()){
@@ -5951,47 +6125,33 @@ void JavaGenerator::write(QTextStream &s, const MetaClass *java_class, int nesti
                                  .replace("*/", "*&sol;")
                               << "</p>" << Qt::endl;
             }
-            if(java_class->href().isEmpty()){
-                commentStream << "<p>Java wrapper for Qt ";
-                if(java_class->typeEntry()->isNamespace()){
-                    if(reinterpret_cast<const NamespaceTypeEntry*>(java_class->typeEntry())->isHeader())
-                        commentStream << "namespace ";
-                    else
-                        commentStream << "header file ";
-                }else{
-                    commentStream << "class ";
-                }
-                commentStream << (
-//                                     java_class->templateBaseClass()
-//                                     ? java_class->templateBaseClass()->qualifiedCppName().replace("<JObjectWrapper>", "<T>")
-//                                     :
-                                       java_class->qualifiedCppName() )
-                                 .replace("&", "&amp;")
-                                 .replace("<", "&lt;")
-                                 .replace(">", "&gt;")
-                                 .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
-                                 .replace("@", "&commat;")
-                                 .replace("/*", "&sol;*")
-                                 .replace("*/", "*&sol;") << "</p>" << Qt::endl;
+            commentStream << "<p>Java wrapper for Qt ";
+            if(java_class->typeEntry()->isNamespace()){
+                if(reinterpret_cast<const NamespaceTypeEntry*>(java_class->typeEntry())->isHeader())
+                    commentStream << "namespace ";
+                else
+                    commentStream << "header file ";
             }else{
-                QString url = docsUrl+java_class->href();
-                commentStream << "<p>Java wrapper for Qt's "
-                              << (java_class->typeEntry()->isNamespace() ? "namespace" : "class")
-                              << " <a href=\"" << url << "\">"
-                              << (
-//                                     java_class->templateBaseClass()
-//                                     ? java_class->templateBaseClass()->qualifiedCppName().replace("<JObjectWrapper>", "<T>")
-//                                     :
-                                       java_class->qualifiedCppName() )
-                                 .replace("&", "&amp;")
-                                 .replace("<", "&lt;")
-                                 .replace(">", "&gt;")
-                                 .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
-                                 .replace("@", "&commat;")
-                                 .replace("/*", "&sol;*")
-                                 .replace("*/", "*&sol;")
-                              << "</a></p>" << Qt::endl;
+                commentStream << "class ";
             }
+            commentStream << "<code>";
+            if(!java_class->href().isEmpty())
+                commentStream << "<a href=\"" << docsUrl << java_class->href() << "\">";
+            commentStream << (
+                                             //                                     java_class->templateBaseClass()
+                                             //                                     ? java_class->templateBaseClass()->qualifiedCppName().replace("<JObjectWrapper>", "<T>")
+                                             //                                     :
+                                             java_class->qualifiedCppName() )
+                                             .replace("&", "&amp;")
+                                             .replace("<", "&lt;")
+                                             .replace(">", "&gt;")
+                                             .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                                             .replace("@", "&commat;")
+                                             .replace("/*", "&sol;*")
+                                             .replace("*/", "*&sol;");
+            if(!java_class->href().isEmpty())
+                commentStream << "</a>";
+            commentStream << "</code></p>" << Qt::endl;
         }
 
         if (java_class->isDeprecated()) {
@@ -6483,7 +6643,11 @@ void JavaGenerator::write(QTextStream &s, const MetaClass *java_class, int nesti
             }
 
             if (iterableType) {
-                s << INDENT << Qt::endl
+                s << INDENT << "/**" << Qt::endl
+                  << INDENT << " * Returns an iterator for this iterable object." << Qt::endl
+                  << INDENT << " * @see " << (isConst ? "#constBegin()" : "#begin()") << Qt::endl
+                  << INDENT << " * @see " << (isConst ? "#constEnd()" : "#end()") << Qt::endl
+                  << INDENT << " */" << Qt::endl
                   << INDENT << "@Override" << Qt::endl
                   << INDENT << "public java.util.";
                 if(m_nullness)
@@ -6513,6 +6677,7 @@ void JavaGenerator::write(QTextStream &s, const MetaClass *java_class, int nesti
                 s << INDENT << "/**" << Qt::endl
                   << INDENT << " * Constructor for internal use only." << Qt::endl
                   << INDENT << " * @param p expected to be <code>null</code>." << Qt::endl
+                  << INDENT << " * @hidden" << Qt::endl
                   << INDENT << " */" << Qt::endl
                   << INDENT << "@NativeAccess" << Qt::endl
                   << INDENT << "protected "<< java_class->simpleName() << "(QPrivateConstructor p) { super(p); } " << Qt::endl
@@ -6520,6 +6685,7 @@ void JavaGenerator::write(QTextStream &s, const MetaClass *java_class, int nesti
                 if(java_class->isQObject() && java_class->hasStandardConstructor() && !java_class->hasUnimplmentablePureVirtualFunction()){
                     s << INDENT << "/**" << Qt::endl
                       << INDENT << " * Constructor for internal use only." << Qt::endl
+                      << INDENT << " * @hidden" << Qt::endl
                       << INDENT << " * It is not allowed to call the declarative constructor from inside Java." << Qt::endl
                       << INDENT << " */" << Qt::endl
                       << INDENT << "@NativeAccess" << Qt::endl
@@ -6611,7 +6777,11 @@ void JavaGenerator::write(QTextStream &s, const MetaClass *java_class, int nesti
                     }
                     if(!restrictedFunctions.isEmpty()){
                         QString targetLangName = java_class->typeEntry()->targetLangName().replace('$', '.');
-                        s << INDENT << "public static class MemberAccess extends io.qt.MemberAccess<" << targetLangName << "> {" << Qt::endl;
+                        s << INDENT << Qt::endl
+                          << INDENT << "/**" << Qt::endl
+                          << INDENT << " * @hidden" << Qt::endl
+                          << INDENT << " */" << Qt::endl
+                          << INDENT << "public static class MemberAccess extends io.qt.MemberAccess<" << targetLangName << "> {" << Qt::endl;
                         {
                             INDENTATION(INDENT)
                             s << INDENT << "private MemberAccess(" << targetLangName << " instance){" << Qt::endl
@@ -8406,21 +8576,9 @@ void JavaGenerator::writeExtraFunctions(QTextStream &s, const MetaFunctional *ja
 
 void JavaGenerator::writeToStringFunction(QTextStream &s, const MetaClass *java_class) {
     bool generate = java_class->toStringCapability() && !java_class->hasDefaultToStringFunction();
-    bool core = java_class->package() == QLatin1String("io.qt.core");
-    bool qevent = false;
+    bool isQEvent = java_class->isQEvent() && java_class->qualifiedCppName()=="QEvent";
 
-    {
-        const MetaClass *cls = java_class;
-        while (cls) {
-            if (cls->name() == "QEvent") {
-                qevent = true;
-                break;
-            }
-            cls = cls->baseClass();
-        }
-    }
-
-    if (generate || qevent) {
+    if (generate || isQEvent) {
         QStringList lines;
         for(const CodeSnip& codeSnip : java_class->typeEntry()->codeSnips()){
             if(codeSnip.language==TS::TargetLangCode && codeSnip.position==CodeSnip::ToString){
@@ -8428,30 +8586,65 @@ void JavaGenerator::writeToStringFunction(QTextStream &s, const MetaClass *java_
             }
         }
         QString nonNull = m_nullness ? QStringLiteral("@NonNull ") : QString{};
-        if (qevent && core) {
+        if (isQEvent) {
             s << Qt::endl
+              << INDENT << "/**" << Qt::endl
+              << INDENT << " * Returns the string representation of the <code>QEvent</code>." << Qt::endl
+              << INDENT << " */" << Qt::endl
               << INDENT << "@Override" << Qt::endl
               << INDENT << "public " << nonNull << "String toString() {" << Qt::endl;
             if(!lines.isEmpty()){
                 printExtraCode(lines, s);
             }
-            s << INDENT << "    return getClass().getSimpleName() + \"(type=\" + type().name() + \")\";" << Qt::endl
+            s << INDENT << "    return \"QEvent(type=\" + type().name() + \")\";" << Qt::endl
               << INDENT << "}" << Qt::endl;
         } else {
-            if(lines.isEmpty() && !java_class->typeEntry()->isNativeIdBased() && !java_class->typeEntry()->designatedInterface()){
-                s << Qt::endl
-                  << INDENT << "@QtUninvokable" << Qt::endl
-                  << INDENT << "@Override" << Qt::endl
-                  << INDENT << "public native " << nonNull << "String toString();" << Qt::endl;
-            }else{
-                QString name = java_class->name();
-                if(java_class->typeEntry() && java_class->typeEntry()->designatedInterface()){
-                    name = java_class->typeEntry()->designatedInterface()->targetLangName();
+            s << Qt::endl
+              << INDENT << "/**" << Qt::endl;
+            if(java_class->toStringCapability()){
+                s << INDENT << " * <p>See <code>";
+                if(!java_class->toStringCapability()->href().isEmpty()){
+                    s << "<a href=\"" << docsUrl << java_class->toStringCapability()->href() << "\">";
                 }
-                s << Qt::endl
-                  << INDENT << "@Override" << Qt::endl
-                  << INDENT << "@QtUninvokable" << Qt::endl
-                  << INDENT << "public " << nonNull << "String toString() {" << Qt::endl;
+                if(java_class->toStringCapability()->functionType()!=MetaFunction::GlobalScopeFunction){
+                    s << java_class->qualifiedCppName()
+                                         .replace("<JObjectWrapper>", "")
+                                         .replace("QtJambi", "Q")
+                                         .replace("QVoid", "Q")
+                                         .replace("&", "&amp;")
+                                         .replace("<", "&lt;")
+                                         .replace(">", "&gt;")
+                                         .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                                         .replace("@", "&commat;")
+                                         .replace("/*", "&sol;*")
+                                         .replace("*/", "*&sol;")
+                      << "::<wbr>";
+                }
+                s << QString(java_class->toStringCapability()->originalSignature())
+                         .replace("&", "&amp;")
+                         .replace("<", "&lt;")
+                         .replace(">", "&gt;")
+                         .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
+                         .replace("@", "&commat;")
+                         .replace("/*", "&sol;*")
+                         .replace("*/", "*&sol;")
+                         .replace(",", ",<wbr>");
+                if(!java_class->toStringCapability()->href().isEmpty())
+                    s << "</a>";
+                s << "</code></p>" << Qt::endl;
+            }else{
+                s << INDENT << " * Returns the string representation of the object given by <code>operator&lt;&lt;(QDebug, " << java_class->qualifiedCppName() << ")</code>." << Qt::endl;
+            }
+            s << INDENT << " */" << Qt::endl
+              << INDENT << "@QtUninvokable" << Qt::endl
+              << INDENT << "@Override" << Qt::endl
+              << INDENT << "public ";
+            bool isNative = lines.isEmpty() && !java_class->typeEntry()->isNativeIdBased() && !java_class->typeEntry()->designatedInterface();
+            if(isNative)
+                s << "native ";
+            s << nonNull << "String toString()";
+            if(!isNative){
+                s << " {" << Qt::endl;
                 if(!lines.isEmpty()){
                     printExtraCode(lines, s);
                 }
@@ -8473,8 +8666,9 @@ void JavaGenerator::writeToStringFunction(QTextStream &s, const MetaClass *java_
                 }else if(java_class->typeEntry()->designatedInterface()){
                     s << java_class->simpleName() << " _this";
                 }
-                s << ");" << Qt::endl;
+                s << ")";
             }
+            s << ";" << Qt::endl;
         }
     }
 }
@@ -8494,8 +8688,10 @@ void JavaGenerator::writeCloneFunction(QTextStream &s, const MetaClass *java_cla
                 && f->arguments()[0]->type()->isConstant()
                 && f->arguments()[0]->type()->getReferenceType()==MetaType::Reference
                 && f->arguments()[0]->type()->typeEntry()==java_class->typeEntry()) {
-                QString url = docsUrl+f->href();
-                s << "<p>See <a href=\"" << url << "\">";
+                s << "<p>See <code>";
+                if(!f->href().isEmpty()){
+                    s << "<a href=\"" << docsUrl << f->href() << "\">";
+                }
                 s << java_class->qualifiedCppName()
                                  .replace("<JObjectWrapper>", "")
                                  .replace("QtJambi", "Q")
@@ -8507,7 +8703,7 @@ void JavaGenerator::writeCloneFunction(QTextStream &s, const MetaClass *java_cla
                                  .replace("@", "&commat;")
                                  .replace("/*", "&sol;*")
                                  .replace("*/", "*&sol;")
-                            << "::";
+                            << "::<wbr>";
                 s << QString(f->originalSignature())
                                      .replace("&", "&amp;")
                                      .replace("<", "&lt;")
@@ -8515,8 +8711,10 @@ void JavaGenerator::writeCloneFunction(QTextStream &s, const MetaClass *java_cla
                                      .replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;")
                                      .replace("@", "&commat;")
                                      .replace("/*", "&sol;*")
-                                     .replace("*/", "*&sol;")
-                            << "</a></p>" << Qt::endl;
+                                     .replace("*/", "*&sol;");
+                if(!f->href().isEmpty())
+                    s << "</a>";
+                s << "</code></p>" << Qt::endl;
                 break;
             }
         }
@@ -8699,49 +8897,89 @@ void JavaGenerator::generateFake(const MetaClass *fake_class) {
                 s << INDENT << "package " << enm->package() << ";" << Qt::endl
                   << Qt::endl
                   << "import io.qt.*;" << Qt::endl
-                  << Qt::endl
-                  << INDENT << "public final class " << flagsName << " extends QFlags<" << enm->name().replace("$",".") << "> {" << Qt::endl
+                  << Qt::endl;
+                s << INDENT << "/**" << Qt::endl
+                  << INDENT << " * {@link QFlags} type for enum {@link " << enm->name().replace("$",".") << "}" << Qt::endl
+                  << INDENT << " */" << Qt::endl
+                  << INDENT << "public final class " << flagsName << " extends QFlags<@NonNull " << enm->name().replace("$",".") << "> implements Comparable<@NonNull " << flagsName << "> {" << Qt::endl
                   << INDENT << "    private static final long serialVersionUID = 0x" << QString::number(serialVersionUID, 16) << "L;" << Qt::endl;
                 printExtraCode(linesPos1, s, true);
                 s << INDENT << "    static {" << Qt::endl
                   << INDENT << "        QtJambi_LibraryUtilities.initialize();" << Qt::endl
                   << INDENT << "    }" << Qt::endl << Qt::endl
                   << INDENT << "    /**" << Qt::endl
-                  << INDENT << "     * {@inheritDoc}" << Qt::endl
+                  << INDENT << "     * Creates a new " << flagsName << " where the flags in <code>args</code> are set." << Qt::endl
+                  << INDENT << "     * @param args enum entries" << Qt::endl
                   << INDENT << "     */" << Qt::endl
-                  << INDENT << "    public " << flagsName << "(" << enm->name().replace("$",".") << " ... args){" << Qt::endl
+                  << INDENT << "    public " << flagsName << "(@Nullable " << enm->name().replace("$",".") << " @NonNull... args){" << Qt::endl
                   << INDENT << "        super(args);" << Qt::endl
                   << INDENT << "    }" << Qt::endl << Qt::endl
                   << INDENT << "    /**" << Qt::endl
-                  << INDENT << "     * {@inheritDoc}" << Qt::endl
+                  << INDENT << "     * Creates a new " << flagsName << " with given <code>value</code>." << Qt::endl
+                  << INDENT << "     * @param value" << Qt::endl
                   << INDENT << "     */" << Qt::endl
                   << INDENT << "    public " << flagsName << "(int value) {" << Qt::endl
                   << INDENT << "        super(value);" << Qt::endl
                   << INDENT << "    }" << Qt::endl << Qt::endl
                   << INDENT << "    /**" << Qt::endl
-                  << INDENT << "     * {@inheritDoc}" << Qt::endl
+                  << INDENT << "     * Combines this flags with enum entry." << Qt::endl
+                  << INDENT << "     * @param e enum entry" << Qt::endl
+                  << INDENT << "     * @return new " << flagsName << Qt::endl
                   << INDENT << "     */" << Qt::endl
                   << INDENT << "    @Override" << Qt::endl
-                  << INDENT << "    public final " << flagsName << " combined(" << enm->name().replace("$",".") << " e){" << Qt::endl
+                  << INDENT << "    public final @NonNull " << flagsName << " combined(@StrictNonNull " << enm->name().replace("$",".") << " e){" << Qt::endl
                   << INDENT << "        return new " << flagsName << "(value() | e.value());" << Qt::endl
                   << INDENT << "    }" << Qt::endl << Qt::endl
                   << INDENT << "    /**" << Qt::endl
-                  << INDENT << "     * {@inheritDoc}" << Qt::endl
+                  << INDENT << "     * Sets the flag <code>e</code>" << Qt::endl
+                  << INDENT << "     * @param e enum entry" << Qt::endl
+                  << INDENT << "     * @return this" << Qt::endl
+                  << INDENT << "     */" << Qt::endl
+                  << INDENT << "    public final @NonNull " << flagsName << " setFlag(@Nullable " << enm->name().replace("$",".") << " e){" << Qt::endl
+                  << INDENT << "        return setFlag(e, true);" << Qt::endl
+                  << INDENT << "    }" << Qt::endl << Qt::endl
+                  << INDENT << "    /**" << Qt::endl
+                  << INDENT << "     * Sets or clears the flag <code>flag</code>" << Qt::endl
+                  << INDENT << "     * @param e enum entry" << Qt::endl
+                  << INDENT << "     * @param on set (true) or clear (false)" << Qt::endl
+                  << INDENT << "     * @return this" << Qt::endl
+                  << INDENT << "     */" << Qt::endl
+                  << INDENT << "    public final @NonNull " << flagsName << " setFlag(@Nullable " << enm->name().replace("$",".") << " e, boolean on){" << Qt::endl
+                  << INDENT << "        if (e!=null) {" << Qt::endl
+                  << INDENT << "            if (on) {" << Qt::endl
+                  << INDENT << "            	setValue(value() | e.value());" << Qt::endl
+                  << INDENT << "            }else {" << Qt::endl
+                  << INDENT << "        	    setValue(value() & ~e.value());" << Qt::endl
+                  << INDENT << "            }" << Qt::endl
+                  << INDENT << "        }" << Qt::endl
+                  << INDENT << "        return this;" << Qt::endl
+                  << INDENT << "    }" << Qt::endl << Qt::endl
+                  << INDENT << "    /**" << Qt::endl
+                  << INDENT << "     * Returns an array of flag objects represented by this " << flagsName << "." << Qt::endl
+                  << INDENT << "     * @return array of enum entries" << Qt::endl
                   << INDENT << "     */" << Qt::endl
                   << INDENT << "    @Override" << Qt::endl
-                  << INDENT << "    public final " << enm->name().replace("$",".") << "[] flags(){" << Qt::endl
+                  << INDENT << "    public final @NonNull " << enm->name().replace("$",".") << " @NonNull[] flags(){" << Qt::endl
                   << INDENT << "        return super.flags(" << enm->name().replace("$",".") << ".values());" << Qt::endl
                   << INDENT << "    }" << Qt::endl << Qt::endl
                   << INDENT << "    /**" << Qt::endl
                   << INDENT << "     * {@inheritDoc}" << Qt::endl
                   << INDENT << "     */" << Qt::endl
                   << INDENT << "    @Override" << Qt::endl
-                  << INDENT << "    public final " << flagsName << " clone(){" << Qt::endl
+                  << INDENT << "    public final @NonNull " << flagsName << " clone(){" << Qt::endl
                   << INDENT << "        return new " << flagsName << "(value());" << Qt::endl
+                  << INDENT << "    }" << Qt::endl << Qt::endl
+                  << INDENT << "    /**" << Qt::endl
+                  << INDENT << "     * {@inheritDoc}" << Qt::endl
+                  << INDENT << "     */" << Qt::endl
+                  << INDENT << "    @Override" << Qt::endl
+                  << INDENT << "    public final int compareTo(@StrictNonNull " << flagsName << " other){" << Qt::endl
+                  << INDENT << "        return Integer.compare(value(), other.value());" << Qt::endl
                   << INDENT << "    }" << Qt::endl;
                 printExtraCode(linesPos4, s, true);
                 printExtraCode(linesPos5, s, true);
-                s << INDENT << "}" << Qt::endl << Qt::endl;
+                s << INDENT << "}" << Qt::endl
+                  << INDENT << Qt::endl;
                 if (s.finish())
                     ++m_num_generated_written;
                 ++m_num_generated;

@@ -44,7 +44,7 @@ jobject AutoSequentialConstIteratorAccess::value(JNIEnv * env, const void* itera
     const void* v = m_value(iterator);
     jvalue jval;
     jval.l = nullptr;
-    if(m_internalToExternalConverter(env, nullptr, v, &jval, true))
+    if(m_internalToExternalConverter(env, nullptr, v, jval, true))
         return jval.l;
     return nullptr;
 }
@@ -117,7 +117,7 @@ jobject AutoAssociativeConstIteratorAccess::key(JNIEnv * env, const void* iterat
     const void* v = m_key(iterator);
     jvalue jval;
     jval.l = nullptr;
-    if(m_keyInternalToExternalConverter(env, nullptr, v, &jval, true))
+    if(m_keyInternalToExternalConverter(env, nullptr, v, jval, true))
         return jval.l;
     return nullptr;
 }

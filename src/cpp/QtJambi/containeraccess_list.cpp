@@ -1061,6 +1061,7 @@ void AutoListAccess::appendList(JNIEnv * env, void* container, jobject list)
     }else{
         jobject iter = QtJambiAPI::iteratorOfJavaCollection(env, list);
         jint idx = size(env, container);
+        reserve(env, container, idx + QtJambiAPI::sizeOfJavaCollection(env, list));
         while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
             insert(env, container, idx++, 1, QtJambiAPI::nextOfJavaIterator(env, iter));
         }
@@ -1076,11 +1077,11 @@ jobject AutoListAccess::at(JNIEnv * env, const void* container, jint index)
     Q_ASSERT_X(index >= 0 && index < p->size(), "QList<T>::at", "index out of range");
     void** v = p->at(index);
     if(m_isLargeOrStaticType){
-        if(m_internalToExternalConverter(env, nullptr, reinterpret_cast<Node*>(v)->v, &_value, true)){
+        if(m_internalToExternalConverter(env, nullptr, reinterpret_cast<Node*>(v)->v, _value, true)){
             return _value.l;
         }
     }else{
-        if(m_internalToExternalConverter(env, nullptr, v, &_value, true)){
+        if(m_internalToExternalConverter(env, nullptr, v, _value, true)){
             return _value.l;
         }
     }
@@ -1088,7 +1089,7 @@ jobject AutoListAccess::at(JNIEnv * env, const void* container, jint index)
     const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
     Q_ASSERT_X(index >= 0 && index < p->size, "QList<T>::at", "index out of range");
     void* ptr = p->ptr+index*m_offset;
-    if(m_internalToExternalConverter(env, nullptr, ptr, &_value, true)){
+    if(m_internalToExternalConverter(env, nullptr, ptr, _value, true)){
         return _value.l;
     }
 #endif
@@ -1104,11 +1105,11 @@ jobject AutoListAccess::value(JNIEnv * env, const void* container, jint index)
     if(index >= 0 && index < p->size()){
         void** v = p->at(index);
         if(m_isLargeOrStaticType){
-            if(m_internalToExternalConverter(env, nullptr, reinterpret_cast<Node*>(v)->v, &_value, true)){
+            if(m_internalToExternalConverter(env, nullptr, reinterpret_cast<Node*>(v)->v, _value, true)){
                 return _value.l;
             }
         }else{
-            if(m_internalToExternalConverter(env, nullptr, v, &_value, true)){
+            if(m_internalToExternalConverter(env, nullptr, v, _value, true)){
                 return _value.l;
             }
         }
@@ -1116,13 +1117,13 @@ jobject AutoListAccess::value(JNIEnv * env, const void* container, jint index)
     const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
     if(index >= 0 && index < p->size){
         void* ptr = p->ptr+index*m_offset;
-        if(m_internalToExternalConverter(env, nullptr, ptr, &_value, true)){
+        if(m_internalToExternalConverter(env, nullptr, ptr, _value, true)){
             return _value.l;
         }
 #endif
     }else{
         void* ptr = m_elementMetaType.create();
-        bool success = m_internalToExternalConverter(env, nullptr, ptr, &_value, true);
+        bool success = m_internalToExternalConverter(env, nullptr, ptr, _value, true);
         m_elementMetaType.destroy(ptr);
         if(success)
             return _value.l;
@@ -1139,11 +1140,11 @@ jobject AutoListAccess::value(JNIEnv * env, const void* container, jint index, j
     if(index >= 0 && index < p->size()){
         void** v = p->at(index);
         if(m_isLargeOrStaticType){
-            if(m_internalToExternalConverter(env, nullptr, reinterpret_cast<Node*>(v)->v, &_value, true)){
+            if(m_internalToExternalConverter(env, nullptr, reinterpret_cast<Node*>(v)->v, _value, true)){
                 return _value.l;
             }
         }else{
-            if(m_internalToExternalConverter(env, nullptr, v, &_value, true)){
+            if(m_internalToExternalConverter(env, nullptr, v, _value, true)){
                 return _value.l;
             }
         }
@@ -1151,7 +1152,7 @@ jobject AutoListAccess::value(JNIEnv * env, const void* container, jint index, j
     const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
     if(index >= 0 && index < p->size){
         void* ptr = p->ptr+index*m_offset;
-        if(m_internalToExternalConverter(env, nullptr, ptr, &_value, true)){
+        if(m_internalToExternalConverter(env, nullptr, ptr, _value, true)){
             return _value.l;
         }
 #endif

@@ -6,6 +6,24 @@
     <target name="tools.generator.run" unless="${skip-generate}">
         <mkdir dir="${generator.outputdir}"/>
 		<!--options="- - debug-level=full"-->
+		<if>
+			<istrue value="${qtjambi.graphs.any.true}"/>
+			<then>
+				<generator dir="${generator.builddir}/../bin"
+						importdirectories="${basedir}/src/cpp/QtJambiGenerator"
+						outputDirectory="${generator.outputdir}"
+						generatorDirectory="${generator.builddir}/../bin"
+						nullness="${qtjambi.generate.nullness}"
+						kotlinpropertydelegates="${qtjambi.generate.kotlin.delegates}"
+						qtdocdirectory="${qtjambi.qt.docdir}"
+						qtlibdirectory="${generator.builddir}/../lib${psep}${tools.qt.libdir}"
+						qtbindirectory="${generator.builddir}/../bin${psep}${tools.qt.bindir}"
+						includeDirectories="${qtjambi.qt.includedir};${basedir}/src/cpp/QtJambiGenerator/targets;${generator.includepaths};${generator.extra.includes}"
+						typesystem=":/io/qtjambi/generator/targets/graphs.qml"
+						header=":/io/qtjambi/generator/targets/graphs.h"
+					/>
+			</then>
+		</if>
         <generator dir="${generator.builddir}/../bin"
                 importdirectories="${basedir}/src/cpp/QtJambiGenerator"
                 outputDirectory="${generator.outputdir}"

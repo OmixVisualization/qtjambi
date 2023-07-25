@@ -26,9 +26,9 @@ enum class UnknownEnum{
     E1 = 101,E2,E3,E4
 };
 
-inline hash_type qHash(const UnknownEnum & e)
+inline hash_type qHash(const UnknownEnum & e, hash_type seed = 0)
 {
-    return uint(e);
+    return qHash(*reinterpret_cast<const qint32*>(&e), seed);
 }
 Q_DECLARE_METATYPE(UnknownEnum);
 
@@ -37,7 +37,7 @@ struct UnknownValue{
     inline bool operator<(const UnknownValue&) const {return false;}
 };
 
-inline hash_type qHash(const UnknownValue &)
+inline hash_type qHash(const UnknownValue &, hash_type = 0)
 {
     return 0;
 }

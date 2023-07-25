@@ -14,6 +14,7 @@ public class CreateFunctionPointerQrcTask extends Task {
 	public void execute() throws BuildException {
 		PropertyHelper propertyHelper = PropertyHelper.getPropertyHelper(getProject());
 		int qtMajorVersion = Integer.parseInt(AntUtil.getPropertyAsString(propertyHelper, Constants.QT_VERSION_MAJOR));
+		int qtMinorVersion = Integer.parseInt(AntUtil.getPropertyAsString(propertyHelper, Constants.QT_VERSION_MINOR));
 		String fileName = "functionpointers-%1$s.qrc";
 		if("qtjambi".equals(module)) {
 			String dlibFormat = "%1$sd.dll";
@@ -39,20 +40,20 @@ public class CreateFunctionPointerQrcTask extends Task {
 				if(qtMajorVersion<6) {
 					libFormat = "lib%1$s_armeabi-v7a.so";
 					dlibFormat = "lib%1$s_debug_armeabi-v7a.so";
-					write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "release-armeabi-v7a")), libFormat, qtMajorVersion);
-					write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "debug-armeabi-v7a")), dlibFormat, qtMajorVersion);
+					write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "release-armeabi-v7a")), libFormat, qtMajorVersion, qtMinorVersion);
+					write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "debug-armeabi-v7a")), dlibFormat, qtMajorVersion, qtMinorVersion);
 					libFormat = "lib%1$s_arm64-v8a.so";
 					dlibFormat = "lib%1$s_debug_arm64-v8a.so";
-					write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "release-arm64-v8a")), libFormat, qtMajorVersion);
-					write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "debug-arm64-v8a")), dlibFormat, qtMajorVersion);
+					write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "release-arm64-v8a")), libFormat, qtMajorVersion, qtMinorVersion);
+					write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "debug-arm64-v8a")), dlibFormat, qtMajorVersion, qtMinorVersion);
 					libFormat = "lib%1$s_x86.so";
 					dlibFormat = "lib%1$s_debug_x86.so";
-					write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "release-x86")), libFormat, qtMajorVersion);
-					write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "debug-x86")), dlibFormat, qtMajorVersion);
+					write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "release-x86")), libFormat, qtMajorVersion, qtMinorVersion);
+					write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "debug-x86")), dlibFormat, qtMajorVersion, qtMinorVersion);
 					libFormat = "lib%1$s_x86_64.so";
 					dlibFormat = "lib%1$s_debug_x86_64.so";
-					write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "release-x86_64")), libFormat, qtMajorVersion);
-					write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "debug-x86_64")), dlibFormat, qtMajorVersion);
+					write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "release-x86_64")), libFormat, qtMajorVersion, qtMinorVersion);
+					write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "debug-x86_64")), dlibFormat, qtMajorVersion, qtMinorVersion);
 					return;
 				}else {
 					switch(OSInfo.crossOSArchName()) {
@@ -74,12 +75,12 @@ public class CreateFunctionPointerQrcTask extends Task {
 			default:
 				return;
 			}
-			write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "debug")), dlibFormat, qtMajorVersion);
-			write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "release")), libFormat, qtMajorVersion);
+			write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "debug")), dlibFormat, qtMajorVersion, qtMinorVersion);
+			write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "release")), libFormat, qtMajorVersion, qtMinorVersion);
 		}
 	}
 	
-	private void write(java.io.File file, String libFormat, int qtMajorVersion) {
+	private void write(java.io.File file, String libFormat, int qtMajorVersion, int qtMinorVersion) {
 		file.getParentFile().mkdirs();
 		try(FileOutputStream fos = new FileOutputStream(file);
 				PrintWriter stream = new PrintWriter(fos)){
@@ -112,12 +113,14 @@ public class CreateFunctionPointerQrcTask extends Task {
 				stream.println("</file>");
 				stream.append("        <file alias=\"QVariant(QJSValue const&amp;)\">../lib/").append(String.format(libFormat, "QmlTypeCreatorFunction"));
 				stream.println("</file>");
-				stream.append("        <file alias=\"QUntypedPropertyBinding(QUntypedPropertyData const*,QPropertyBindingSourceLocation const&amp;)\">../lib/").append(String.format(libFormat, "MakeBindingFunction"));
-				stream.println("</file>");
-				stream.append("        <file alias=\"bool(QMetaType,QUntypedPropertyData*,QtPrivate::QPropertyBindingFunction)\">../lib/").append(String.format(libFormat, "PropertyBindingWrapperFunction"));
-				stream.println("</file>");
-				stream.append("        <file alias=\"QUntypedPropertyBinding(QUntypedPropertyData*,QUntypedPropertyBinding const&amp;)\">../lib/").append(String.format(libFormat, "BindingSetterFunction"));
-				stream.println("</file>");
+				if(qtMajorVersion>=7 || qtMinorVersion>=5) {
+					stream.append("        <file alias=\"QUntypedPropertyBinding(QUntypedPropertyData const*,QPropertyBindingSourceLocation const&amp;)\">../lib/").append(String.format(libFormat, "MakeBindingFunction"));
+					stream.println("</file>");
+					stream.append("        <file alias=\"bool(QMetaType,QUntypedPropertyData*,QtPrivate::QPropertyBindingFunction)\">../lib/").append(String.format(libFormat, "PropertyBindingWrapperFunction"));
+					stream.println("</file>");
+					stream.append("        <file alias=\"QUntypedPropertyBinding(QUntypedPropertyData*,QUntypedPropertyBinding const&amp;)\">../lib/").append(String.format(libFormat, "BindingSetterFunction"));
+					stream.println("</file>");
+				}
 			}else {
 				stream.append("        <file alias=\"QtMetaTypePrivate::VariantData(void* const*,int,unsigned int)\">../lib/").append(String.format(libFormat, "VariantDataFunction"));
 				stream.println("</file>");

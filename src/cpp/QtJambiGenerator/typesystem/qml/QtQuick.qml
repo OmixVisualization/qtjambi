@@ -2721,6 +2721,23 @@ TypeSystem{
         }
         since: [6, 2]
     }
+
+    InterfaceType{
+        name: "QNativeInterface::QSGD3D12Texture"
+        packageName: "io.qt.quick.nativeinterface"
+        javaName: "QSGD3D12Texture"
+        ppCondition: "defined(Q_OS_WIN)"
+        isNativeInterface: true
+        generate: "no-shell"
+        Rejection{
+            className: "TypeInfo"
+        }
+        ModifyFunction{
+            signature: "QSGD3D12Texture()"
+            remove: RemoveFlag.All
+        }
+        since: [6, 6]
+    }
     
     PrimitiveType{
         name: "VkFormat"

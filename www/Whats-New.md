@@ -1,18 +1,9 @@
-# What's new in QtJambi 6.5.1
+# What's new in QtJambi 6.5.2
 
 ## Bugfixes
 
 Solved issues:
-* [Issue 148](../../../issues/148): QGuiApplication.overrideCursor() is crashing
-
-## New Features
-
-Solved issues:
-* [Issue 147](../../../issues/147): [uic] Add an option to *not* generate the "MyForm" container class
-* [Issue 149](../../../issues/149): Improve QTJAMBI_DEBUG_TRACE feature
-* [Issue 150](../../../issues/150): Use RTTI to identify dangling pointers
-* [Issue 151](../../../issues/151): Make diagnostics features disabled by default
-* [Issue 152](../../../issues/152): Configurable log levels
-* [Issue 153](../../../issues/153): Make concurrent modification detection on Qt containers optional
-* [Issue 158](../../../issues/158): Make QPlatformIntegration available
+* [Issue 163](../../../issues/163): QModelIndex implementation of 5.15.15 slower than 5.15.11
+* [Issue 160](../../../issues/160): QMetaType.metaObject() returns null although instance expected
+* [Issue 159](../../../issues/159): Custom subclasses of QPaintEngine crash when using QPaintEngineState
 

@@ -308,7 +308,7 @@ public:
             const T& first = reinterpret_cast<const QMap<K,T> *>(container)->first();
             jvalue _value;
             _value.l = nullptr;
-            if(m_valueInternalToExternalConverter(env, nullptr, &first, &_value, true)){
+            if(m_valueInternalToExternalConverter(env, nullptr, &first, _value, true)){
                 result = _value.l;
             }
         }
@@ -322,7 +322,7 @@ public:
             const K& firstKey = reinterpret_cast<const QMap<K,T> *>(container)->firstKey();
             jvalue _value;
             _value.l = nullptr;
-            if(m_keyInternalToExternalConverter(env, nullptr, &firstKey, &_value, true)){
+            if(m_keyInternalToExternalConverter(env, nullptr, &firstKey, _value, true)){
                 result = _value.l;
             }
         }
@@ -363,7 +363,7 @@ public:
                 if(m_valueExternalToInternalConverter(env, nullptr, jv, _qvaluePtr, jValueType::l)){
                     K _qkey = reinterpret_cast<const QMap<K,T> *>(container)->key(_qvalue, _qdefaultkey);
                     jv.l = nullptr;
-                    if(m_keyInternalToExternalConverter(env, nullptr, &_qkey, &jv, true)){
+                    if(m_keyInternalToExternalConverter(env, nullptr, &_qkey, jv, true)){
                         result = jv.l;
                     }
                 }
@@ -432,7 +432,7 @@ public:
             const T& last = reinterpret_cast<const QMap<K,T> *>(container)->last();
             jvalue _value;
             _value.l = nullptr;
-            if(m_valueInternalToExternalConverter(env, nullptr, &last, &_value, true)){
+            if(m_valueInternalToExternalConverter(env, nullptr, &last, _value, true)){
                 result = _value.l;
             }
         }
@@ -446,7 +446,7 @@ public:
             const K& lastKey = reinterpret_cast<const QMap<K,T> *>(container)->lastKey();
             jvalue _value;
             _value.l = nullptr;
-            if(m_keyInternalToExternalConverter(env, nullptr, &lastKey, &_value, true)){
+            if(m_keyInternalToExternalConverter(env, nullptr, &lastKey, _value, true)){
                 result = _value.l;
             }
         }
@@ -543,7 +543,7 @@ public:
             T _qvalue = reinterpret_cast<QMap<K,T> *>(container)->take(_qkey);
             jvalue _value;
             _value.l = nullptr;
-            if(m_valueInternalToExternalConverter(env, nullptr, &_qvalue, &_value, true)){
+            if(m_valueInternalToExternalConverter(env, nullptr, &_qvalue, _value, true)){
                 result = _value.l;
             }
         }
@@ -591,7 +591,7 @@ public:
                 if(m_valueExternalToInternalConverter(env, nullptr, jv, _qdefaultValuePtr, jValueType::l)){
                     T _qvalue = reinterpret_cast<const QMap<K,T> *>(container)->value(_qkey, _qdefaultValue);
                     jv.l = nullptr;
-                    if(m_valueInternalToExternalConverter(env, nullptr, &_qvalue, &jv, true)){
+                    if(m_valueInternalToExternalConverter(env, nullptr, &_qvalue, jv, true)){
                         result = jv.l;
                     }
                 }

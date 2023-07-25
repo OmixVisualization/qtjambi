@@ -1388,7 +1388,12 @@ void CoreAPI::initializeQList(JNIEnv *env, jobject object, jclass elementType, Q
         containerAccess->deleteContainer(listPtr);
         containerAccess->dispose();
     }else if(!isNativeContainer && other){
-        containerAccess->appendList(env, listPtr, other);
+        jobject iter = QtJambiAPI::iteratorOfJavaCollection(env, other);
+        jint idx = 0;
+        containerAccess->reserve(env, listPtr, QtJambiAPI::sizeOfJavaCollection(env, other));
+        while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
+            containerAccess->insert(env, listPtr, idx++, 1, QtJambiAPI::nextOfJavaIterator(env, iter));
+        }
     }
 }
 
@@ -1860,7 +1865,12 @@ void CoreAPI::initializeQVector(JNIEnv *env, jobject object, jclass elementType,
         containerAccess->deleteContainer(listPtr);
         containerAccess->dispose();
     }else if(!isNativeContainer && other){
-        containerAccess->appendVector(env, listPtr, other);
+        jobject iter = QtJambiAPI::iteratorOfJavaCollection(env, other);
+        jint idx = 0;
+        containerAccess->reserve(env, listPtr, QtJambiAPI::sizeOfJavaCollection(env, other));
+        while(QtJambiAPI::hasJavaIteratorNext(env, iter)){
+            containerAccess->insert(env, listPtr, idx++, 1, QtJambiAPI::nextOfJavaIterator(env, iter));
+        }
     }
 }
 #endif

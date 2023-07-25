@@ -33,6 +33,7 @@ package io.qt.widgets;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.util.Objects;
+import java.util.function.Function;
 
 import io.qt.core.QByteArray;
 
@@ -41,20 +42,16 @@ import io.qt.core.QByteArray;
  */
 public class QItemEditorCreator<T extends QWidget> implements QItemEditorCreatorBase {
 	
-	public interface ConstructorHandle<T>{
-		T create(QWidget parent);
-	}
-
-	private final ConstructorHandle<T> constructorHandle;
+	private final Function<QWidget, T> constructorHandle;
 	private final QByteArray valuePropertyName;
-
-	public QItemEditorCreator(String valuePropertyName, ConstructorHandle<T> constructorHandle) {
+	
+	public QItemEditorCreator(String valuePropertyName, Function<QWidget, T> constructorHandle) {
         this(new QByteArray(Objects.requireNonNull(valuePropertyName)), constructorHandle);
     }
 	
-    public QItemEditorCreator(QByteArray valuePropertyName, ConstructorHandle<T> constructor) {
+    public QItemEditorCreator(QByteArray valuePropertyName, Function<QWidget, T> constructorHandle) {
         super();
-        this.constructorHandle = Objects.requireNonNull(constructor);
+        this.constructorHandle = Objects.requireNonNull(constructorHandle);
         this.valuePropertyName = valuePropertyName.clone();
     }
     
@@ -63,42 +60,29 @@ public class QItemEditorCreator<T extends QWidget> implements QItemEditorCreator
     }
 	
     public QItemEditorCreator(QByteArray valuePropertyName, Class<T> widgetType) {
-        this(valuePropertyName, widgetType, findConstructor("QItemEditorCreator", widgetType));
+        this(valuePropertyName, findConstructor("QItemEditorCreator", widgetType));
     }
     
-    static long findConstructor(String requestingClass, Class<?> widgetType){
+    static <T> Function<QWidget, T> findConstructor(String requestingClass, Class<T> widgetType){
     	if(Modifier.isAbstract(widgetType.getModifiers())) {
         	throw new RuntimeException("Cannot construct "+requestingClass+" for abstract widget type "+widgetType.getName()+".");
         }
-    	Constructor<?> constructor;
+    	Constructor<T> constructor;
         try {
         	constructor = widgetType.getDeclaredConstructor(QWidget.class);
 		} catch (NoSuchMethodException | SecurityException e) {
             throw new RuntimeException("Cannot construct "+requestingClass+" for widget type "+widgetType.getName()+" due to missing constructor T(QWidget).", e);
 		}
-        return constructorHandle(constructor);
-    }
-    
-    private QItemEditorCreator(QByteArray valuePropertyName, Class<T> widgetType, long constructorHandle) {
-    	super();
-        this.constructorHandle = parent -> construct(widgetType, constructorHandle, parent);
-        this.valuePropertyName = valuePropertyName.clone();
-    }
-    
-    static native long constructorHandle(Constructor<?> constructor);
-    static native <T> T construct(Class<T> cls, long constructorHandle, QWidget parent);
-
-    @Override
-    public T createWidget(QWidget parent) {
-    	T widget = this.constructorHandle.create(parent);
-    	if(widget!=null && widget.parent()==null) {
-    		QtJambi_LibraryUtilities.internal.setJavaOwnership(widget);
-    	}
-    	return widget;
+        return QtJambi_LibraryUtilities.internal.getFactory1(constructor);
     }
 
     @Override
-    public QByteArray valuePropertyName() {
+    public final T createWidget(QWidget parent) {
+    	return this.constructorHandle.apply(parent);
+    }
+
+    @Override
+    public final QByteArray valuePropertyName() {
         return valuePropertyName.clone();
     }
 }

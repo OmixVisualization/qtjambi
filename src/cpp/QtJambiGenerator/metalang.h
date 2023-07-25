@@ -227,8 +227,7 @@ class MetaType {
             QVariantPattern,
             JObjectWrapperPattern,
             ArrayPattern,
-            TemplateArgumentPattern,
-            RValuePattern
+            TemplateArgumentPattern
         };
 
         MetaType() :
@@ -317,6 +316,9 @@ class MetaType {
         // returns true if the type is used as a QObject *
         bool isQObject() const;
 
+        // returns true if the type is used as a QEvent *
+        bool isQEvent() const;
+
         // returns true if the type is used as an object, e.g. Xxx *
         bool isObject() const { return m_pattern == ObjectPattern; }
 
@@ -328,9 +330,6 @@ class MetaType {
 
         // returns true if the type is used as a value type (X or const X &)
         bool isValue() const { return m_pattern == ValuePattern; }
-
-        // returns true if the type is used as an R-value type (X&&)
-        bool isRValue() const { return m_pattern == RValuePattern; }
 
         // returns true for more complex types...
         bool isNativePointer() const { return m_pattern == NativePointerPattern; }
@@ -1101,6 +1100,8 @@ class MetaClass : public MetaAttributes {
                 e->setEnclosingClass(this);
         }
 
+        MetaField *findField(const QString &name);
+        MetaFunction *findFunction(const QString &name);
         MetaEnum *findEnum(const QString &enumName);
         MetaFunctional *findFunctional(const QString &functionalName);
         MetaEnum *findEnumForValue(const QString &enumName);
@@ -1139,6 +1140,7 @@ class MetaClass : public MetaAttributes {
         bool isInterface() const { return m_type_entry->isInterface(); }
         bool isNamespace() const { return m_type_entry->isNamespace(); }
         bool isQObject() const { return m_type_entry->isQObject(); }
+        bool isQEvent() const { return m_type_entry->isQEvent(); }
         bool isQWidget() const { return m_type_entry->isQWidget(); }
         bool isQWindow() const { return m_type_entry->isQWindow(); }
         bool isQAction() const { return m_type_entry->isQAction(); }

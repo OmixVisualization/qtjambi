@@ -348,7 +348,7 @@ public class TestMultimediaServicesQt5 extends ApplicationInitializer {
     	Map<String, Object> map = new HashMap<>();
     	map.put("Keys", new QJsonArray(key));
     	map.put("Services", new QJsonArray(value));
-    	QPluginLoader.registerStaticPluginFunction(plugin, map);
+    	QPluginLoader.qRegisterStaticPluginFunction(plugin, map);
     	QMediaPlayer player = new QMediaPlayer(null, QMediaPlayer.Flag.VideoSurface, QMediaPlayer.Flag.StreamPlayback);
     	QMediaContent content = new QMediaContent(QUrl.fromLocalFile("Test.mp4"));
     	player.setMedia(content);

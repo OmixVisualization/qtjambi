@@ -15,6 +15,10 @@
 
 #define __STDC__
 
+//#define __has_cpp_attribute(macro) 1
+
+#define QT_WARN_DEPRECATED_UP_TO 0x8FFFFF
+
 // Qt
 #define Q_NULLPTR nullptr
 #define Q_NAMESPACE
@@ -76,16 +80,18 @@
 #define SLOT(A) #A
 #define Q_NAMESPACE_EXPORT()
 #define Q_COMPILER_INITIALIZER_LISTS
-#define Q_DECL_DEPRECATED QTJAMBI_DEPRECATED
-#define Q_DECL_DEPRECATED_X(text) QTJAMBI_DEPRECATED_X(text)
-#define Q_DECL_ENUMERATOR_DEPRECATED QTJAMBI_DEPRECATED
-#define Q_DECL_ENUMERATOR_DEPRECATED_X(text) QTJAMBI_DEPRECATED_X(text)
-#define QT_DEPRECATED_VERSION_X(a,b,text) QTJAMBI_DEPRECATED_X(text)
-#define QT_DEPRECATED_VERSION_X_5(a,text) QTJAMBI_DEPRECATED_X(text)
-#define QT_DEPRECATED_VERSION_X_6(a,text) QTJAMBI_DEPRECATED_X(text)
-#define QT_DEPRECATED_VERSION(a,b) QTJAMBI_DEPRECATED
-#define QT_DEPRECATED_VERSION_5(a) QTJAMBI_DEPRECATED
-#define QT_DEPRECATED_VERSION_6(a) QTJAMBI_DEPRECATED
+
+#define Q_DECL_DEPRECATED [[deprecated]]
+#define Q_DECL_DEPRECATED_X(text) [[deprecated(text)]]
+#define Q_DECL_ENUMERATOR_DEPRECATED [[deprecated]]
+#define Q_DECL_ENUMERATOR_DEPRECATED_X(text) [[deprecated(text)]]
+#define QT_DEPRECATED_VERSION_X(a,b,text) [[deprecated(text)]]
+#define QT_DEPRECATED_VERSION_X_5(a,text) [[deprecated(text)]]
+#define QT_DEPRECATED_VERSION_X_6(a,text) [[deprecated(text)]]
+#define QT_DEPRECATED_VERSION(a,b) [[deprecated]]
+#define QT_DEPRECATED_VERSION_5(a) [[deprecated]]
+#define QT_DEPRECATED_VERSION_6(a) [[deprecated]]
+
 #define Q_DECLARE_TR_FUNCTIONS
 #define Q_OBJECT_FAKE Q_OBJECT
 #define Q_GADGET_EXPORT(...) Q_GADGET

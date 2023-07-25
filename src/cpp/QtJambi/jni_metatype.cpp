@@ -393,7 +393,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_registerConverter)
                 if(JniEnvironment env{500}){
                     jvalue jv;
                     jv.l = nullptr;
-                    if(parameter1.convertInternalToExternal(env, nullptr, src, &jv, true)){
+                    if(parameter1.convertInternalToExternal(env, nullptr, src, jv, true)){
                         jobject result{nullptr};
                         try{
                             result = Java::Runtime::Function::apply(env, converter.object(), jv.l);

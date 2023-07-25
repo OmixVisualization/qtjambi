@@ -220,7 +220,7 @@ class QShortcut__{
     }
     
     /**
-     * <p>Type-casting overload of <a href="@docRoot/qobject.html#parent">QObject::parent()const</a></p>
+     * <p>Type-casting overload of <a href="@docRoot/qobject.html#parent"><code>QObject::parent()const</code></a></p>
      */
     @QtUninvokable
     public final <T> T parent(Class<T> type) {
@@ -252,15 +252,18 @@ class QBrush___ extends QBrush {
 
 class QClipboard___ extends QClipboard {
 
-        public final static class Text {
-            private Text(String text, String subtype) {
-                super();
-                this.text = text;
-                this.subtype = subtype;
-            }
-            public final String text;
-            public final String subtype;
+    /**
+     * Result type for {@link QClipboard#text(String, Mode)}.
+     */
+    public final static class Text {
+        private Text(String text, String subtype) {
+            super();
+            this.text = text;
+            this.subtype = subtype;
         }
+        public final String text;
+        public final String subtype;
+    }
 }// class
 
 class QColor___ extends QColor {
@@ -556,6 +559,10 @@ class QPixmapFilter___ extends QPixmapFilter {
 }// class
 
 class QTextCursor___ extends QTextCursor {
+
+    /**
+     * Result type for {@link QTextCursor#selectedTableCells()}.
+     */
     public final static class SelectedTableCells {
         private SelectedTableCells(int firstRow, int numRows, int firstColumn, int numColumns) {
             this.firstRow = firstRow;
@@ -610,6 +617,9 @@ class QPolygonF___ extends QPolygonF {
 
 class QValidator___ extends QValidator {
 
+    /**
+     Result type for {@link QValidator#validate(QValidationData)}.
+     */
     public static class QValidationData {
             @NativeAccess
             public QValidationData(String input, int pos) {
@@ -682,6 +692,9 @@ class QPaintDeviceWindow___ extends QPaintDeviceWindow {
 }// class
 
 class QQuaternion___ extends QQuaternion {
+    /**
+     * Result type for {@link QQuaternion#getAxes()}.
+     */
     public static class Axes{
         private Axes(QVector3D xAxis, QVector3D yAxis, QVector3D zAxis) {
             super();
@@ -694,6 +707,9 @@ class QQuaternion___ extends QQuaternion {
         public final QVector3D zAxis;
     }
     
+    /**
+     * Result type for {@link QQuaternion#getAxisAndAngle()}.
+     */
     public static class AxisAndAngle{
         private AxisAndAngle(QVector3D axis, float angle) {
             super();
@@ -704,6 +720,9 @@ class QQuaternion___ extends QQuaternion {
         public final float angle;
     }
     
+    /**
+     * Result type for {@link QQuaternion#getEulerAngles()}.
+     */
     public static class EulerAngles{
         private EulerAngles(float pitch, float yaw, float roll) {
             super();
@@ -782,7 +801,7 @@ class QAction___ extends QAction {
     }
     
     /**
-     * <p>Type-casting overload of <a href="@docRoot/qobject.html#parent">QObject::parent()const</a></p>
+     * <p>Type-casting overload of <a href="@docRoot/qobject.html#parent"><code>QObject::parent()const</code></a></p>
      */
     @QtUninvokable
     public final <T> T parent(Class<T> type) {
@@ -793,7 +812,7 @@ class QAction___ extends QAction {
     }
     
     /**
-     * <p>Type-casting overload of <a href="@docRoot/qaction.html#associatedObjects">QAction::associatedObjects()const</a></p>
+     * <p>Type-casting overload of <a href="@docRoot/qaction.html#associatedObjects"><code>QAction::associatedObjects()const</code></a></p>
      */
     @QtUninvokable
     public final <T> io.qt.core.QList<T> associatedObjects(Class<T> type) {

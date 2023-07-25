@@ -29,23 +29,19 @@
 package io.qt.autotests;
 
 import static org.junit.Assert.*;
+import static org.junit.Assume.*;
 
 import java.lang.reflect.InvocationTargetException;
 
-import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.*;
-import io.qt.autotests.generated.BindableOwner;
 import io.qt.core.*;
-import io.qt.widgets.*;
 
 public class TestQPermissionQt65 extends ApplicationInitializer {
 	@BeforeClass
     public static void testInitialize() throws Exception {
-		Assume.assumeTrue("Can only run on macOS, IOS or Android.", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS, QOperatingSystemVersion.OSType.Android, QOperatingSystemVersion.OSType.IOS));
+		assumeTrue("Can only run on macOS, IOS or Android.", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS, QOperatingSystemVersion.OSType.Android, QOperatingSystemVersion.OSType.IOS));
         ApplicationInitializer.testInitializeWithWidgets();
     }
 	
@@ -57,7 +53,7 @@ public class TestQPermissionQt65 extends ApplicationInitializer {
 			contactsClass = Class.forName("io.qt.core.QContactsPermission");
 		} catch (ClassNotFoundException e) {
 		}
-		Assume.assumeTrue("QContactsPermission class required", contactsClass!=null);
+		assumeTrue("QContactsPermission class required", contactsClass!=null);
 		Object[] results = {null,null};
 		QCoreApplication.instance().requestPermission(contactsClass, (permission,status)->{
 			System.out.println(permission+" = "+status);
@@ -65,7 +61,7 @@ public class TestQPermissionQt65 extends ApplicationInitializer {
 			results[1] = status;
 		});
 		QCoreApplication.processEvents();
-		Assert.assertTrue("permission type does not match. Expected: "+contactsClass.getName()+", got: "+(results[0]==null ? "null" : results[0].getClass().getName()), contactsClass.isInstance(results[0]));
-		Assert.assertTrue("permission result = "+results[1], results[1] instanceof Qt.PermissionStatus);
+		assertTrue("permission type does not match. Expected: "+contactsClass.getName()+", got: "+(results[0]==null ? "null" : results[0].getClass().getName()), contactsClass.isInstance(results[0]));
+		assertTrue("permission result = "+results[1], results[1] instanceof Qt.PermissionStatus);
     }
 }

@@ -73,11 +73,11 @@ public:
     public:
         NativeToJavaResult(bool success);
         NativeToJavaResult(const QSharedPointer<QtJambiLink>& link);
-        operator bool() const;
-        bool operator!() const;
-        const QSharedPointer<QtJambiLink>& link() const;
+        inline operator bool() const {return m_success;}
+        inline bool operator!() const {return !m_success;}
+        //inline const QSharedPointer<QtJambiLink>& link() const {return m_link;}
     private:
-        QSharedPointer<QtJambiLink> m_link;
+        //QSharedPointer<QtJambiLink> m_link;
         bool m_success;
     };
     virtual ~QtJambiTypeEntry();
@@ -100,9 +100,9 @@ public:
 
     QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, void *ptr_shared_pointer, const SmartPointerGetterFunction& sharedPointerGetter, qintptr& offset) const;
     virtual QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const void *qt_object, qintptr& offset) const;
-    virtual NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const = 0;
-    virtual bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue* output, jValueType valueType) const = 0;
-    virtual bool convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output, QtJambiScope* scope) const = 0;
+    virtual NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const = 0;
+    virtual bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const = 0;
+    virtual bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const = 0;
 
     static QtJambiTypeEntryPtr getTypeEntry(JNIEnv* env, const std::type_info& typeId);
     static QtJambiTypeEntryPtr getTypeEntry(JNIEnv* env, const std::type_info& typeId, const char* qtName);
@@ -129,9 +129,9 @@ public:
     bool isEnum() const final;
     const FlagsTypeEntry* flagType() const;
     EnumTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, jmethodID creator_method, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue* output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 private:
     FlagsTypeEntry* m_flagType;
     friend FlagsTypeEntry;
@@ -142,9 +142,9 @@ public:
     bool isFlags() const final;
     const EnumTypeEntry* enumType() const;
     FlagsTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, jmethodID creator_method, size_t value_size, const EnumTypeEntry* enumType);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue* output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 private:
     const EnumTypeEntry* m_enumType;
 };
@@ -152,7 +152,7 @@ private:
 class AbstractSimpleTypeEntry : public QtJambiTypeEntry{
 public:
     AbstractSimpleTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue* output, jValueType valueType) const override;
+    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
 private:
 };
 
@@ -160,8 +160,8 @@ private:
 class QCborValueRefTypeEntry : public AbstractSimpleTypeEntry{
 public:
     QCborValueRefTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 private:
 };
 #endif
@@ -169,104 +169,104 @@ private:
 class StringTypeEntry : public AbstractSimpleTypeEntry{
 public:
     StringTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 private:
 };
 
 class StringUtilTypeEntry : public AbstractSimpleTypeEntry{
 public:
     StringUtilTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 private:
 };
 
 class MetaUtilTypeEntry : public AbstractSimpleTypeEntry{
 public:
     MetaUtilTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 private:
 };
 
 class QVariantTypeEntry : public AbstractSimpleTypeEntry{
 public:
     QVariantTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 private:
 };
 
 class JLongTypeEntry : public AbstractSimpleTypeEntry{
 public:
     JLongTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 private:
 };
 
 class JIntTypeEntry : public AbstractSimpleTypeEntry{
 public:
     JIntTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 private:
 };
 
 class JShortTypeEntry : public AbstractSimpleTypeEntry{
 public:
     JShortTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 private:
 };
 
 class JByteTypeEntry : public AbstractSimpleTypeEntry{
 public:
     JByteTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 private:
 };
 
 class JCharTypeEntry : public AbstractSimpleTypeEntry{
 public:
     JCharTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 private:
 };
 
 class JBooleanTypeEntry : public AbstractSimpleTypeEntry{
 public:
     JBooleanTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 private:
 };
 
 class JDoubleTypeEntry : public AbstractSimpleTypeEntry{
 public:
     JDoubleTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 private:
 };
 
 class JFloatTypeEntry : public AbstractSimpleTypeEntry{
 public:
     JFloatTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 private:
 };
 
 class NullptrTypeEntry : public AbstractSimpleTypeEntry{
 public:
     NullptrTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 private:
 };
 
@@ -304,9 +304,9 @@ public:
                        TypeInfoSupplier typeInfoSupplier
                     );
     QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const void *qt_object, qintptr& offset) const override;
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue* output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
     const QList<const PolymorphicIdHandler*>& polymorphicIdHandlers() const override;
 protected:
     jclass m_java_impl_class;
@@ -344,7 +344,8 @@ public:
                          const QMap<size_t,uint>& interfaceOffsets,
                          const QSet<size_t>& interfaceTypes,
                          const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
     uint offset(const std::type_info& toType) const override;
 protected:
     QMap<size_t,uint> m_interfaceOffsets;
@@ -373,8 +374,8 @@ public:
                             TypeInfoSupplier typeInfoSupplier,
                        const QMetaType& qt_meta_type
                     );
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue* output, jValueType valueType) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
 protected:
     QMetaType m_qt_meta_type;
 };
@@ -401,7 +402,7 @@ public:
                               const QMap<size_t,uint>& interfaceOffsets,
                               const QSet<size_t>& interfaceTypes,
                               const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
 protected:
     QMetaType m_qt_meta_type;
 };
@@ -430,9 +431,9 @@ public:
                         const QMetaType& qt_meta_type,
                         bool is_std_function
                     );
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue* output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 private:
     size_t m_shell_size;
     jclass m_java_impl_class;
@@ -468,9 +469,9 @@ public:
                     TypeInfoSupplier typeInfoSupplier
                 );
     QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const void *qt_object, qintptr& offset) const override;
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue* output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
     const QList<const PolymorphicIdHandler*>& polymorphicIdHandlers() const override;
 protected:
     const std::type_info* m_super_type;
@@ -509,7 +510,8 @@ public:
                     const QSet<size_t>& interfaceTypes,
                     const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
                 );
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
     uint offset(const std::type_info& toType) const override;
 protected:
     QMap<size_t,uint> m_interfaceOffsets;
@@ -588,8 +590,8 @@ public:
                     TypeInfoSupplier typeInfoSupplier,
                     const QMetaType& qt_meta_type
                 );
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue* output, jValueType valueType) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
 private:
     QMetaType m_qt_meta_type;
     friend class ObjectContainerTypeEntry;
@@ -619,12 +621,11 @@ public:
                     const QSet<size_t>& interfaceTypes,
                     const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
                 );
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
 protected:
     QMetaType m_qt_meta_type;
     friend class ObjectContainerTypeEntry;
     friend class ObjectAbstractContainerTypeEntry;
-    friend class QModelIndexTypeEntry;
 };
 
 class QModelIndexTypeEntry : public ObjectValueTypeEntry{
@@ -635,19 +636,14 @@ public:
                          const char *java_name,
                          jclass java_class,
                          jmethodID creator_method,
-                         size_t value_size,
-                         const std::type_info* super_type,
-                         size_t shell_size,
                          PtrDeleterFunction deleter,
-                         PtrOwnerFunction owner_function,
-                         const QVector<const FunctionInfo>* virtualFunctions,
                          Destructor destructor,
-                         const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
-                         TypeInfoSupplier typeInfoSupplier,
-                         const QMetaType& qt_meta_type);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue* output, jValueType valueType) const override;
+                         TypeInfoSupplier typeInfoSupplier);
+    static NativeToJavaResult convertNativeToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jobject& output);
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
 private:
+    static void deleter(void *ptr, bool isShell);
 };
 
 class QMessageLogContextTypeEntry : public ObjectTypeEntry{
@@ -668,7 +664,7 @@ public:
                                 const QList<const PolymorphicIdHandler*>& polymorphicHandlers,
                                 TypeInfoSupplier typeInfoSupplier
                                 );
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
 };
 
 class ObjectAbstractValueTypeEntry : public ObjectValueTypeEntry{
@@ -744,8 +740,8 @@ public:
                     TypeInfoSupplier typeInfoSupplier,
                     const QMetaType& qt_meta_type
                 );
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue* output, jValueType valueType) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
 private:
     NewContainerAccessFunction m_containerAccessFactory;
 };
@@ -773,7 +769,8 @@ public:
                     const QSet<size_t>& interfaceTypes,
                     const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
                 );
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
 private:
     NewContainerAccessFunction m_containerAccessFactory;
 };
@@ -799,8 +796,8 @@ public:
                     const QMetaType& qt_meta_type,
                     jclass java_wrapper_class
                 );
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue* output, jValueType valueType) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
 private:
     NewContainerAccessFunction m_containerAccessFactory;
 };
@@ -829,7 +826,8 @@ public:
                     const QSet<size_t>& interfaceTypes,
                     const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
                 );
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
 private:
     NewContainerAccessFunction m_containerAccessFactory;
 };
@@ -854,9 +852,9 @@ public:
                      const QMetaObject* original_meta_object
                 );
     QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const void *qt_object, qintptr& offset) const override;
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue* output, jValueType valueType) const override;
-    bool convertToNative(JNIEnv *env, const jvalue& java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
+    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
 protected:
     virtual const QSharedPointer<QtJambiLink>& createLinkForNativeQObject(JNIEnv *env, jobject javaObject, QObject *object) const;
     const std::type_info* m_super_type;
@@ -885,6 +883,7 @@ public:
                        const QMap<size_t, QSet<const std::type_info*>>& inheritedInterfaces
                 );
     uint offset(const std::type_info& toType) const override;
+    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
 protected:
     const QSharedPointer<QtJambiLink>& createLinkForNativeQObject(JNIEnv *env, jobject javaObject, QObject *object) const override;
     QMap<size_t,uint> m_interfaceOffsets;
@@ -954,8 +953,8 @@ public:
                      size_t shell_size,
                      const QVector<const FunctionInfo>* virtualFunctions,
                      const QMetaObject* original_meta_object);
-    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, bool makeCopyOfValues, jvalue* output, jValueType valueType) const override;
-    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue* output, jValueType valueType) const override;
+    NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
+    bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
 };
 
 class QObjectAbstractTypeEntry : public QObjectTypeEntry{

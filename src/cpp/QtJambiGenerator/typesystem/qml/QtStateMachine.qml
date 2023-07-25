@@ -35,26 +35,6 @@ TypeSystem{
     qtLibrary: "QtStateMachine"
     module: "qtjambi.statemachine"
     description: "Provides classes and tools for creating state machines from SCXML files and embedding them in applications."
-
-    EnumType{
-        name: "QHistoryState::HistoryType"
-    }
-    
-    EnumType{
-        name: "QState::ChildMode"
-    }
-    
-    EnumType{
-        name: "QState::RestorePolicy"
-    }
-    
-    EnumType{
-        name: "QStateMachine::Error"
-    }
-    
-    EnumType{
-        name: "QStateMachine::EventPriority"
-    }
     
     ObjectType{
         name: "QAbstractState"
@@ -74,12 +54,12 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QAbstractTransition::TransitionType"
-    }
-    
     ObjectType{
         name: "QAbstractTransition"
+
+        EnumType{
+            name: "TransitionType"
+        }
         ModifyFunction{
             signature: "addAnimation(QAbstractAnimation*)"
             ModifyArgument{
@@ -150,6 +130,14 @@ TypeSystem{
     
     ObjectType{
         name: "QState"
+
+        EnumType{
+            name: "ChildMode"
+        }
+
+        EnumType{
+            name: "RestorePolicy"
+        }
         ModifyFunction{
             signature: "addTransition(QAbstractTransition*)"
             ModifyArgument{
@@ -281,6 +269,22 @@ TypeSystem{
     
     ObjectType{
         name: "QStateMachine"
+
+        EnumType{
+            name: "Error"
+        }
+
+        EnumType{
+            name: "EventPriority"
+        }
+
+        ObjectType{
+            name: "SignalEvent"
+        }
+
+        ObjectType{
+            name: "WrappedEvent"
+        }
         ModifyFunction{
             signature: "beginMicrostep(QEvent*)"
             ModifyArgument{
@@ -360,6 +364,9 @@ TypeSystem{
     
     ObjectType{
         name: "QHistoryState"
+        EnumType{
+            name: "HistoryType"
+        }
         ModifyFunction{
             signature: "setDefaultTransition(QAbstractTransition*)"
             ModifyArgument{
@@ -478,13 +485,5 @@ TypeSystem{
     
     ObjectType{
         name: "QFinalState"
-    }
-    
-    ObjectType{
-        name: "QStateMachine::SignalEvent"
-    }
-    
-    ObjectType{
-        name: "QStateMachine::WrappedEvent"
     }
 }

@@ -78,18 +78,25 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	 * See <a href="https://doc.qt.io/qt/qflags.html#operator-7c">QFlags::operator|(Enum) const</a>
 	 */
 	public @StrictNonNull QFlags<T> combined(@Nullable T flag) {
-		QFlags<T> result = clone();
-		result.set(flag);
-		return result;
+		return clone().setFlag(flag, true);
+	}
+
+	/**
+	 * See <a href="https://doc.qt.io/qt/qflags.html#operator-and-eq-3">QFlags::operator&=(Enum)</a>
+	 * and <a href="https://doc.qt.io/qt/qflags.html#operator-7e">QFlags::operator~()</a>
+	 */
+	public @StrictNonNull QFlags<T> cleared(@Nullable T flag) {
+		return clone().setFlag(flag, false);
 	}
 
 	/**
 	 * See <a href="https://doc.qt.io/qt/qflags.html#operator-7c-1">QFlags::operator|=(QFlags&lt;T>)</a>
 	 */
 	public final void set(@StrictNonNull QFlags<T> flag) {
-		value |= flag.value();
+		if(flag.getClass()==getClass())
+			value |= flag.value();
 	}
-
+	
 	/**
 	 * <p>
 	 * Overloaded constructor for
@@ -135,15 +142,18 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	@SafeVarargs
 	public final void set(@Nullable T @NonNull... ts) {
 		for (T flag : ts) {
-			if (flag instanceof QtFlagEnumerator) {
-				value |= ((QtFlagEnumerator) flag).value();
-			} else if (flag instanceof QtByteFlagEnumerator) {
-				value |= ((QtByteFlagEnumerator) flag).value();
-			} else if (flag instanceof QtShortFlagEnumerator) {
-				value |= ((QtShortFlagEnumerator) flag).value();
-			} else if (flag instanceof QtLongFlagEnumerator) {
-				value |= ((QtLongFlagEnumerator) flag).value();
-			}
+			setFlag(flag, true);
+		}
+	}
+	
+	/**
+	 * See <a href="https://doc.qt.io/qt/qflags.html#operator-and-eq-3">QFlags::operator&=(Enum)</a>
+	 * and <a href="https://doc.qt.io/qt/qflags.html#operator-7e">QFlags::operator~()</a>
+	 */
+	@SafeVarargs
+	public final void exclude(@Nullable T @NonNull... ts) {
+		for (T flag : ts) {
+			setFlag(flag, false);
 		}
 	}
 
@@ -200,14 +210,18 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	 * See <a href="https://doc.qt.io/qt/qflags.html#testFlags">QFlags::testFlags(QFlags&lt;T>)const</a>
 	 */
 	public final boolean testFlags(@StrictNonNull QFlags<T> flags) {
-		return (value & flags.value()) == flags.value();
+		if(flags.getClass()==getClass())
+			return (value & flags.value()) == flags.value();
+		return false;
 	}
 
 	/**
 	 * See <a href="https://doc.qt.io/qt/qflags.html#testAnyFlags">QFlags::testAnyFlags(QFlags&lt;T>)const</a>
 	 */
 	public final boolean testAnyFlags(@StrictNonNull QFlags<T> flags) {
-		return (value & flags.value()) != 0;
+		if(flags.getClass()==getClass())
+			return (value & flags.value()) != 0;
+		return false;
 	}
 
 	/**
@@ -223,26 +237,23 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 
 	/**
 	 * Clears the flag <code>other</code>.
+	 * See <a href="https://doc.qt.io/qt/qflags.html#operator-and-eq-2">QFlags::operator&=(QFlags&lt;T>)</a>
+	 * and <a href="https://doc.qt.io/qt/qflags.html#operator-7e">QFlags::operator~()</a>
 	 */
 	public final void clear(@StrictNonNull QFlags<T> other) {
-		value &= ~other.value();
+		if(other.getClass()==getClass())
+			value &= ~other.value();
 	}
 
 	/**
 	 * Clears all flags in <code>ts</code>.
+	 * See <a href="https://doc.qt.io/qt/qflags.html#operator-and-eq-3">QFlags::operator&=(Enum)</a>
+	 * and <a href="https://doc.qt.io/qt/qflags.html#operator-7e">QFlags::operator~()</a>
 	 */
 	@SafeVarargs
 	public final void clear(@Nullable T @NonNull... ts) {
 		for (T flag : ts) {
-			if (flag instanceof QtFlagEnumerator) {
-				value &= ~((QtFlagEnumerator) flag).value();
-			} else if (flag instanceof QtByteFlagEnumerator) {
-				value &= ~((QtByteFlagEnumerator) flag).value();
-			} else if (flag instanceof QtShortFlagEnumerator) {
-				value &= ~((QtShortFlagEnumerator) flag).value();
-			} else if (flag instanceof QtLongFlagEnumerator) {
-				value &= ~((QtLongFlagEnumerator) flag).value();
-			}
+			setFlag(flag, false);
 		}
 	}
 
@@ -322,7 +333,7 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Returns true if the given object is instance of the same class and has the same flag value.
 	 */
 	@Override
 	public final boolean equals(Object object) {
@@ -330,7 +341,7 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	}
 
 	/**
-	 * {@inheritDoc}
+	 * Returns a hash code computed from the flag's class and its value.
 	 */
 	@Override
 	public final int hashCode() {
@@ -341,9 +352,9 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 		return result;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+    /**
+     * Returns the string representation of the object given by <code>QVariant(this).toString()</code>.
+     */
 	@Override
 	public final @NonNull String toString() {
 		QtAbstractFlagEnumerator[] flags = flags();

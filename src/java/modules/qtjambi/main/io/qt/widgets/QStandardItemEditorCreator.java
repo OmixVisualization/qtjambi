@@ -37,6 +37,7 @@ import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Objects;
+import java.util.function.Function;
 
 import io.qt.core.QByteArray;
 import io.qt.core.QMetaObject;
@@ -48,13 +49,16 @@ import io.qt.internal.ClassAnalyzerUtility;
  */
 public class QStandardItemEditorCreator<T extends QWidget> implements QItemEditorCreatorBase {
 	
-	public interface ConstructorHandle<T> extends QItemEditorCreator.ConstructorHandle<T>, Serializable{
+	/**
+	 * Item editor widget factory handle.
+	 */
+	public interface Factory<T> extends Function<QWidget, T>, Serializable{
 	}
 	
 	private final QByteArray valuePropertyName;
-	private final ConstructorHandle<T> constructorHandle;
+	private final Function<QWidget, T> constructorHandle;
 	
-    public QStandardItemEditorCreator(ConstructorHandle<T> constructor) {
+    public QStandardItemEditorCreator(Factory<T> constructor) {
         super();
         SerializedLambda serializedLambda = ClassAnalyzerUtility.serializeLambdaExpression(Objects.requireNonNull(constructor));
         QMetaObject metaObject = null;
@@ -63,7 +67,7 @@ public class QStandardItemEditorCreator<T extends QWidget> implements QItemEdito
 			for(Type iface : QtJambi_LibraryUtilities.internal.getClass(constructor).getGenericInterfaces()) {
 				if(iface instanceof ParameterizedType) {
 					ParameterizedType piface = (ParameterizedType)iface;
-					if(piface.getRawType()==ConstructorHandle.class) {
+					if(piface.getRawType()==Factory.class) {
 						Type[] args = piface.getActualTypeArguments();
 						for (int i = 0; i < args.length; i++) {
 							implClass = QtJambi_LibraryUtilities.internal.toClass(args[i]);
@@ -73,7 +77,7 @@ public class QStandardItemEditorCreator<T extends QWidget> implements QItemEdito
 			}
 			if(implClass==null) {
 				if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
-					QWidget widget = constructor.create(null);
+					QWidget widget = constructor.apply(null);
 					metaObject = widget.metaObject();
 					widget.dispose();
 				}else {
@@ -100,23 +104,19 @@ public class QStandardItemEditorCreator<T extends QWidget> implements QItemEdito
         this(widgetType, QItemEditorCreator.findConstructor("QStandardItemEditorCreator", widgetType));
     }
     
-    private QStandardItemEditorCreator(Class<T> widgetType, long constructorHandle) {
+    private QStandardItemEditorCreator(Class<T> widgetType, Function<QWidget, T> constructorHandle) {
     	super();
-        this.constructorHandle = parent -> QItemEditorCreator.construct(widgetType, constructorHandle, parent);
+        this.constructorHandle = constructorHandle;
         this.valuePropertyName = new QByteArray(QMetaObject.forType(widgetType).userProperty().name());
     }
 
     @Override
-    public T createWidget(QWidget parent) {
-    	T widget = this.constructorHandle.create(parent);
-    	if(widget!=null && widget.parent()==null) {
-    		QtJambi_LibraryUtilities.internal.setJavaOwnership(widget);
-    	}
-    	return widget;
+    public final T createWidget(QWidget parent) {
+    	return this.constructorHandle.apply(parent);
     }
 
     @Override
-    public QByteArray valuePropertyName() {
+    public final QByteArray valuePropertyName() {
         return valuePropertyName.clone();
     }
 }

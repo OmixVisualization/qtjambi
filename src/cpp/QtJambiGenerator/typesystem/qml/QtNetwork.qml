@@ -1030,6 +1030,10 @@ TypeSystem{
                               "}"}
             }
         }
+        ModifyFunction{
+            signature: "lookupHost<Functor>(QString,Functor&&)"
+            remove: RemoveFlag.All
+        }
     }
     
     

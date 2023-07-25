@@ -65,10 +65,11 @@ import io.qt.QtObjectInterface;
 import io.qt.QtSignalEmitterInterface;
 import io.qt.QtThreadAffineInterface;
 import io.qt.QtUninvokable;
+import io.qt.StrictNonNull;
 import io.qt.internal.ClassAnalyzerUtility;
 
 /**
- * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qmetaobject.html">QMetaObject</a></p>
+ * <p>Java wrapper for Qt class <code><a href="https://doc.qt.io/qt/qmetaobject.html">QMetaObject</a></code></p>
  */
 public final class QMetaObject {
     static {
@@ -899,7 +900,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <R> R invokeMethod(Method0<R> method) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <R> R invokeMethod(Method0<R> method) throws QUnsuccessfulInvocationException {
         return invokeMethod(method, Qt.ConnectionType.AutoConnection);
     }
     
@@ -917,13 +918,13 @@ public final class QMetaObject {
      * 
      * @param <R> The return type of the method.
      * @param method invoked method
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <R> R invokeMethod(Method0<R> method, Qt.ConnectionType type) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <R> R invokeMethod(Method0<R> method, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
@@ -1012,7 +1013,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,R> R invokeMethod(Method1<A,R> method, A arg1) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,R> R invokeMethod(Method1<A,R> method, A arg1) throws QUnsuccessfulInvocationException {
         return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1);
     }
     
@@ -1031,14 +1032,14 @@ public final class QMetaObject {
      * @param <A> The type of the first parameter of the method.
      * @param <R> The return type of the method.
      * @param method invoked method
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,R> R invokeMethod(Method1<A,R> method, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,R> R invokeMethod(Method1<A,R> method, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
@@ -1131,7 +1132,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,R> R invokeMethod(Method2<A,B,R> method, A arg1, B arg2) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,R> R invokeMethod(Method2<A,B,R> method, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2);
     }
     
@@ -1151,7 +1152,7 @@ public final class QMetaObject {
      * @param <B> The type of the second parameter of the method.
      * @param <R> The return type of the method.
      * @param method invoked method
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      * @return method result value - if the invocation is asynchronous, the return value cannot be evaluated.
@@ -1159,7 +1160,7 @@ public final class QMetaObject {
      */
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,B,R> R invokeMethod(Method2<A,B,R> method, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,R> R invokeMethod(Method2<A,B,R> method, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
@@ -1252,7 +1253,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,R> R invokeMethod(Method3<A,B,C,R> method, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,R> R invokeMethod(Method3<A,B,C,R> method, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
     }
     
@@ -1273,7 +1274,7 @@ public final class QMetaObject {
      * @param <C> The type of the third parameter of the method.
      * @param <R> The return type of the method.
      * @param method invoked method
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      * @param arg3 Argument for the third parameter.
@@ -1282,7 +1283,7 @@ public final class QMetaObject {
      */
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,B,C,R> R invokeMethod(Method3<A,B,C,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,R> R invokeMethod(Method3<A,B,C,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
@@ -1378,7 +1379,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,R> R invokeMethod(Method4<A,B,C,D,R> method, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,R> R invokeMethod(Method4<A,B,C,D,R> method, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
         return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
     }
     
@@ -1400,7 +1401,7 @@ public final class QMetaObject {
      * @param <D> The type of the fourth parameter of the method.
      * @param <R> The return type of the method.
      * @param method invoked method
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      * @param arg3 Argument for the third parameter.
@@ -1410,7 +1411,7 @@ public final class QMetaObject {
      */
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,B,C,D,R> R invokeMethod(Method4<A,B,C,D,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,R> R invokeMethod(Method4<A,B,C,D,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
@@ -1509,7 +1510,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E,R> R invokeMethod(Method5<A,B,C,D,E,R> method, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,R> R invokeMethod(Method5<A,B,C,D,E,R> method, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
         return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
     }
     
@@ -1532,7 +1533,7 @@ public final class QMetaObject {
      * @param <E> The type of the fifth parameter of the method.
      * @param <R> The return type of the method.
      * @param method invoked method
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      * @param arg3 Argument for the third parameter.
@@ -1543,7 +1544,7 @@ public final class QMetaObject {
      */
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,B,C,D,E,R> R invokeMethod(Method5<A,B,C,D,E,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,R> R invokeMethod(Method5<A,B,C,D,E,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
@@ -1648,7 +1649,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,R> R invokeMethod(Method6<A,B,C,D,E,F,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,F,R> R invokeMethod(Method6<A,B,C,D,E,F,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
         return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6);
     }
     
@@ -1672,7 +1673,7 @@ public final class QMetaObject {
      * @param <F> The type of the sixth parameter of the method.
      * @param <R> The return type of the method.
      * @param method invoked method
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      * @param arg3 Argument for the third parameter.
@@ -1684,7 +1685,7 @@ public final class QMetaObject {
      */
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,B,C,D,E,F,R> R invokeMethod(Method6<A,B,C,D,E,F,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,F,R> R invokeMethod(Method6<A,B,C,D,E,F,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
@@ -1789,7 +1790,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,R> R invokeMethod(Method7<A,B,C,D,E,F,G,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,F,G,R> R invokeMethod(Method7<A,B,C,D,E,F,G,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
         return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
     }
     
@@ -1814,7 +1815,7 @@ public final class QMetaObject {
      * @param <G> The type of the seventh parameter of the method.
      * @param <R> The return type of the method.
      * @param method invoked method
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      * @param arg3 Argument for the third parameter.
@@ -1827,7 +1828,7 @@ public final class QMetaObject {
      */
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,R> R invokeMethod(Method7<A,B,C,D,E,F,G,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,F,G,R> R invokeMethod(Method7<A,B,C,D,E,F,G,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
@@ -1935,7 +1936,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,R> R invokeMethod(Method8<A,B,C,D,E,F,G,H,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,F,G,H,R> R invokeMethod(Method8<A,B,C,D,E,F,G,H,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
         return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
     }
     
@@ -1961,7 +1962,7 @@ public final class QMetaObject {
      * @param <H> The type of the eighth parameter of the method.
      * @param <R> The return type of the method.
      * @param method invoked method
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      * @param arg3 Argument for the third parameter.
@@ -1975,7 +1976,7 @@ public final class QMetaObject {
      */
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,R> R invokeMethod(Method8<A,B,C,D,E,F,G,H,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,F,G,H,R> R invokeMethod(Method8<A,B,C,D,E,F,G,H,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
@@ -2086,7 +2087,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I,R> R invokeMethod(Method9<A,B,C,D,E,F,G,H,I,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,F,G,H,I,R> R invokeMethod(Method9<A,B,C,D,E,F,G,H,I,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
         return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
     }
     
@@ -2113,7 +2114,7 @@ public final class QMetaObject {
      * @param <I> The type of the ninth parameter of the method.
      * @param <R> The return type of the method.
      * @param method invoked method
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      * @param arg3 Argument for the third parameter.
@@ -2128,7 +2129,7 @@ public final class QMetaObject {
      */
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I,R> R invokeMethod(Method9<A,B,C,D,E,F,G,H,I,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,F,G,H,I,R> R invokeMethod(Method9<A,B,C,D,E,F,G,H,I,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
@@ -2219,7 +2220,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static void invokeMethod(Slot0 method) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static void invokeMethod(Slot0 method) throws QUnsuccessfulInvocationException {
         invokeMethod(method, Qt.ConnectionType.AutoConnection);
     }
     
@@ -2235,11 +2236,11 @@ public final class QMetaObject {
      * </ul>
      * 
      * @param method invoked method
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static void invokeMethod(Slot0 method, Qt.ConnectionType type) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static void invokeMethod(Slot0 method, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
@@ -2344,7 +2345,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A> void invokeMethod(Slot1<A> method, A arg1) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A> void invokeMethod(Slot1<A> method, A arg1) throws QUnsuccessfulInvocationException {
         invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1);
     }
     
@@ -2361,12 +2362,12 @@ public final class QMetaObject {
      * 
      * @param <A> The type of the first parameter of the slot.
      * @param method invoked method
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A> void invokeMethod(Slot1<A> method, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A> void invokeMethod(Slot1<A> method, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
@@ -2480,7 +2481,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B> void invokeMethod(Slot2<A,B> method, A arg1, B arg2) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B> void invokeMethod(Slot2<A,B> method, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2);
     }
     
@@ -2498,13 +2499,13 @@ public final class QMetaObject {
      * @param <A> The type of the first parameter of the slot.
      * @param <B> The type of the second parameter of the slot.
      * @param method invoked method
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B> void invokeMethod(Slot2<A,B> method, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B> void invokeMethod(Slot2<A,B> method, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
@@ -2625,7 +2626,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C> void invokeMethod(Slot3<A,B,C> method, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C> void invokeMethod(Slot3<A,B,C> method, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
     }
     
@@ -2644,14 +2645,14 @@ public final class QMetaObject {
      * @param <B> The type of the second parameter of the slot.
      * @param <C> The type of the third parameter of the slot.
      * @param method invoked method
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      * @param arg3 Argument for the third parameter.
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C> void invokeMethod(Slot3<A,B,C> method, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C> void invokeMethod(Slot3<A,B,C> method, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -2769,7 +2770,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D> void invokeMethod(Slot4<A,B,C,D> method, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D> void invokeMethod(Slot4<A,B,C,D> method, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
         invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
     }
     
@@ -2789,7 +2790,7 @@ public final class QMetaObject {
      * @param <C> The type of the third parameter of the slot.
      * @param <D> The type of the fourth parameter of the slot.
      * @param method invoked method
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      * @param arg3 Argument for the third parameter.
@@ -2797,7 +2798,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D> void invokeMethod(Slot4<A,B,C,D> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D> void invokeMethod(Slot4<A,B,C,D> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -2918,7 +2919,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E> void invokeMethod(Slot5<A,B,C,D,E> method, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E> void invokeMethod(Slot5<A,B,C,D,E> method, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
         invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
     }
     
@@ -2939,7 +2940,7 @@ public final class QMetaObject {
      * @param <D> The type of the fourth parameter of the slot.
      * @param <E> The type of the fifth parameter of the slot.
      * @param method invoked method
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      * @param arg3 Argument for the third parameter.
@@ -2948,7 +2949,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E> void invokeMethod(Slot5<A,B,C,D,E> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E> void invokeMethod(Slot5<A,B,C,D,E> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -3071,7 +3072,7 @@ public final class QMetaObject {
      * @param arg6 Argument for the sixth parameter.
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
-    public static <A,B,C,D,E,F> void invokeMethod(Slot6<A,B,C,D,E,F> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,F> void invokeMethod(Slot6<A,B,C,D,E,F> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
         invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6);
     }
     
@@ -3093,7 +3094,7 @@ public final class QMetaObject {
      * @param <E> The type of the fifth parameter of the slot.
      * @param <F> The type of the sixth parameter of the slot.
      * @param method invoked method
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      * @param arg3 Argument for the third parameter.
@@ -3103,7 +3104,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F> void invokeMethod(Slot6<A,B,C,D,E,F> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,F> void invokeMethod(Slot6<A,B,C,D,E,F> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -3230,7 +3231,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G> void invokeMethod(Slot7<A,B,C,D,E,F,G> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,F,G> void invokeMethod(Slot7<A,B,C,D,E,F,G> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
         invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
     }
     
@@ -3253,7 +3254,7 @@ public final class QMetaObject {
      * @param <F> The type of the sixth parameter of the slot.
      * @param <G> The type of the seventh parameter of the slot.
      * @param method invoked method
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      * @param arg3 Argument for the third parameter.
@@ -3264,7 +3265,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G> void invokeMethod(Slot7<A,B,C,D,E,F,G> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,F,G> void invokeMethod(Slot7<A,B,C,D,E,F,G> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -3394,7 +3395,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> void invokeMethod(Slot8<A,B,C,D,E,F,G,H> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(Slot8<A,B,C,D,E,F,G,H> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
         invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
     }
     
@@ -3418,7 +3419,7 @@ public final class QMetaObject {
      * @param <G> The type of the seventh parameter of the slot.
      * @param <H> The type of the eighth parameter of the slot.
      * @param method invoked method
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      * @param arg3 Argument for the third parameter.
@@ -3430,7 +3431,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> void invokeMethod(Slot8<A,B,C,D,E,F,G,H> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(Slot8<A,B,C,D,E,F,G,H> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
@@ -3563,7 +3564,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(Slot9<A,B,C,D,E,F,G,H,I> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(Slot9<A,B,C,D,E,F,G,H,I> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
         invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
     }
     
@@ -3588,7 +3589,7 @@ public final class QMetaObject {
      * @param <H> The type of the eighth parameter of the slot.
      * @param <I> The type of the ninth parameter of the slot.
      * @param method invoked method
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      * @param arg3 Argument for the third parameter.
@@ -3601,7 +3602,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(Slot9<A,B,C,D,E,F,G,H,I> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(Slot9<A,B,C,D,E,F,G,H,I> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
@@ -3716,7 +3717,7 @@ public final class QMetaObject {
      * @param signal invoked signal
      */
     @QtUninvokable
-    public static void invokeMethod(AbstractPrivateSignal0 signal) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static void invokeMethod(AbstractPrivateSignal0 signal) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection);
     }
     
@@ -3732,11 +3733,11 @@ public final class QMetaObject {
      * </ul>
      * 
      * @param signal invoked signal
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static void invokeMethod(AbstractPrivateSignal0 signal, Qt.ConnectionType type) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static void invokeMethod(AbstractPrivateSignal0 signal, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
@@ -3756,7 +3757,7 @@ public final class QMetaObject {
      * @param arg1 Argument for the first parameter.
      */
     @QtUninvokable
-    public static <A> void invokeMethod(AbstractPrivateSignal1<A> signal, A arg1) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A> void invokeMethod(AbstractPrivateSignal1<A> signal, A arg1) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1);
     }
     
@@ -3773,12 +3774,12 @@ public final class QMetaObject {
      * 
      * @param <A> The type of the first parameter of the signal.
      * @param signal invoked signal
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A> void invokeMethod(AbstractPrivateSignal1<A> signal, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A> void invokeMethod(AbstractPrivateSignal1<A> signal, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
@@ -3794,13 +3795,45 @@ public final class QMetaObject {
      * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
      * 
      * @param <A> The type of the first parameter of the signal.
+     * @param signal invoked signal
+     */
+    @QtUninvokable
+    public static <A> void invokeMethod(AbstractSignal1Default1<A> signal) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A> void invokeMethod(AbstractSignal1Default1<A> signal, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, signal.arg1Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
      * @param <B> The type of the second parameter of the signal.
      * @param signal invoked signal
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      */
     @QtUninvokable
-    public static <A,B> void invokeMethod(AbstractPrivateSignal2<A,B> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B> void invokeMethod(AbstractPrivateSignal2<A,B> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2);
     }
     
@@ -3818,13 +3851,13 @@ public final class QMetaObject {
      * @param <A> The type of the first parameter of the signal.
      * @param <B> The type of the second parameter of the signal.
      * @param signal invoked signal
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B> void invokeMethod(AbstractPrivateSignal2<A,B> signal, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B> void invokeMethod(AbstractPrivateSignal2<A,B> signal, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
@@ -3841,6 +3874,76 @@ public final class QMetaObject {
      * 
      * @param <A> The type of the first parameter of the signal.
      * @param <B> The type of the second parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     */
+    @QtUninvokable
+    public static <A,B> void invokeMethod(AbstractSignal2Default1<A,B> signal, A arg1) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B> void invokeMethod(AbstractSignal2Default1<A,B> signal, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, signal.arg2Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal invoked signal
+     */
+    @QtUninvokable
+    public static <A,B> void invokeMethod(AbstractSignal2Default2<A,B> signal) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B> void invokeMethod(AbstractSignal2Default2<A,B> signal, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, signal.arg1Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
      * @param <C> The type of the third parameter of the signal.
      * @param signal invoked signal
      * @param arg1 Argument for the first parameter.
@@ -3848,7 +3951,7 @@ public final class QMetaObject {
      * @param arg3 Argument for the third parameter.
      */
     @QtUninvokable
-    public static <A,B,C> void invokeMethod(AbstractPrivateSignal3<A,B,C> signal, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C> void invokeMethod(AbstractPrivateSignal3<A,B,C> signal, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
     }
     
@@ -3867,14 +3970,14 @@ public final class QMetaObject {
      * @param <B> The type of the second parameter of the signal.
      * @param <C> The type of the third parameter of the signal.
      * @param signal invoked signal
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      * @param arg3 Argument for the third parameter.
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C> void invokeMethod(AbstractPrivateSignal3<A,B,C> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C> void invokeMethod(AbstractPrivateSignal3<A,B,C> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
@@ -3892,6 +3995,120 @@ public final class QMetaObject {
      * @param <A> The type of the first parameter of the signal.
      * @param <B> The type of the second parameter of the signal.
      * @param <C> The type of the third parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C> void invokeMethod(AbstractSignal3Default1<A,B,C> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C> void invokeMethod(AbstractSignal3Default1<A,B,C> signal, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, arg2, signal.arg3Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C> void invokeMethod(AbstractSignal3Default2<A,B,C> signal, A arg1) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C> void invokeMethod(AbstractSignal3Default2<A,B,C> signal, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, signal.arg2Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal invoked signal
+     */
+    @QtUninvokable
+    public static <A,B,C> void invokeMethod(AbstractSignal3Default3<A,B,C> signal) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C> void invokeMethod(AbstractSignal3Default3<A,B,C> signal, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, signal.arg1Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
      * @param <D> The type of the fourth parameter of the signal.
      * @param signal invoked signal
      * @param arg1 Argument for the first parameter.
@@ -3900,7 +4117,7 @@ public final class QMetaObject {
      * @param arg4 Argument for the fourth parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D> void invokeMethod(AbstractPrivateSignal4<A,B,C,D> signal, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D> void invokeMethod(AbstractPrivateSignal4<A,B,C,D> signal, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
     }
     
@@ -3920,7 +4137,7 @@ public final class QMetaObject {
      * @param <C> The type of the third parameter of the signal.
      * @param <D> The type of the fourth parameter of the signal.
      * @param signal invoked signal
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      * @param arg3 Argument for the third parameter.
@@ -3928,7 +4145,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D> void invokeMethod(AbstractPrivateSignal4<A,B,C,D> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D> void invokeMethod(AbstractPrivateSignal4<A,B,C,D> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
@@ -3947,6 +4164,170 @@ public final class QMetaObject {
      * @param <B> The type of the second parameter of the signal.
      * @param <C> The type of the third parameter of the signal.
      * @param <D> The type of the fourth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D> void invokeMethod(AbstractSignal4Default1<A,B,C,D> signal, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D> void invokeMethod(AbstractSignal4Default1<A,B,C,D> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, arg2, arg3, signal.arg4Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D> void invokeMethod(AbstractSignal4Default2<A,B,C,D> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D> void invokeMethod(AbstractSignal4Default2<A,B,C,D> signal, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, arg2, signal.arg3Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D> void invokeMethod(AbstractSignal4Default3<A,B,C,D> signal, A arg1) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D> void invokeMethod(AbstractSignal4Default3<A,B,C,D> signal, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, signal.arg2Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal invoked signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D> void invokeMethod(AbstractSignal4Default4<A,B,C,D> signal) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D> void invokeMethod(AbstractSignal4Default4<A,B,C,D> signal, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, signal.arg1Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
      * @param <E> The type of the fifth parameter of the signal.
      * @param signal invoked signal
      * @param arg1 Argument for the first parameter.
@@ -3956,7 +4337,7 @@ public final class QMetaObject {
      * @param arg5 Argument for the fifth parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E> void invokeMethod(AbstractPrivateSignal5<A,B,C,D,E> signal, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E> void invokeMethod(AbstractPrivateSignal5<A,B,C,D,E> signal, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
     }
     
@@ -3977,7 +4358,7 @@ public final class QMetaObject {
      * @param <D> The type of the fourth parameter of the signal.
      * @param <E> The type of the fifth parameter of the signal.
      * @param signal invoked signal
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      * @param arg3 Argument for the third parameter.
@@ -3986,7 +4367,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E> void invokeMethod(AbstractPrivateSignal5<A,B,C,D,E> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E> void invokeMethod(AbstractPrivateSignal5<A,B,C,D,E> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
@@ -4006,6 +4387,226 @@ public final class QMetaObject {
      * @param <C> The type of the third parameter of the signal.
      * @param <D> The type of the fourth parameter of the signal.
      * @param <E> The type of the fifth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E> void invokeMethod(AbstractSignal5Default1<A,B,C,D,E> signal, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E> void invokeMethod(AbstractSignal5Default1<A,B,C,D,E> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, arg2, arg3, arg4, signal.arg5Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E> void invokeMethod(AbstractSignal5Default2<A,B,C,D,E> signal, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E> void invokeMethod(AbstractSignal5Default2<A,B,C,D,E> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, arg2, arg3, signal.arg4Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E> void invokeMethod(AbstractSignal5Default3<A,B,C,D,E> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E> void invokeMethod(AbstractSignal5Default3<A,B,C,D,E> signal, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, arg2, signal.arg3Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E> void invokeMethod(AbstractSignal5Default4<A,B,C,D,E> signal, A arg1) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E> void invokeMethod(AbstractSignal5Default4<A,B,C,D,E> signal, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, signal.arg2Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal invoked signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E> void invokeMethod(AbstractSignal5Default5<A,B,C,D,E> signal) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E> void invokeMethod(AbstractSignal5Default5<A,B,C,D,E> signal, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, signal.arg1Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
      * @param <F> The type of the sixth parameter of the signal.
      * @param signal invoked signal
      * @param arg1 Argument for the first parameter.
@@ -4013,9 +4614,10 @@ public final class QMetaObject {
      * @param arg3 Argument for the third parameter.
      * @param arg4 Argument for the fourth parameter.
      * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F> void invokeMethod(AbstractPrivateSignal6<A,B,C,D,E,F> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,F> void invokeMethod(AbstractPrivateSignal6<A,B,C,D,E,F> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6);
     }
     
@@ -4037,7 +4639,7 @@ public final class QMetaObject {
      * @param <E> The type of the fifth parameter of the signal.
      * @param <F> The type of the sixth parameter of the signal.
      * @param signal invoked signal
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      * @param arg3 Argument for the third parameter.
@@ -4046,7 +4648,7 @@ public final class QMetaObject {
      * @param arg6 Argument for the sixth parameter.
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
-    public static <A,B,C,D,E,F> void invokeMethod(AbstractPrivateSignal6<A,B,C,D,E,F> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,F> void invokeMethod(AbstractPrivateSignal6<A,B,C,D,E,F> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
@@ -4067,6 +4669,282 @@ public final class QMetaObject {
      * @param <D> The type of the fourth parameter of the signal.
      * @param <E> The type of the fifth parameter of the signal.
      * @param <F> The type of the sixth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F> void invokeMethod(AbstractSignal6Default1<A,B,C,D,E,F> signal, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    public static <A,B,C,D,E,F> void invokeMethod(AbstractSignal6Default1<A,B,C,D,E,F> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, signal.arg6Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F> void invokeMethod(AbstractSignal6Default2<A,B,C,D,E,F> signal, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    public static <A,B,C,D,E,F> void invokeMethod(AbstractSignal6Default2<A,B,C,D,E,F> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, arg2, arg3, arg4, signal.arg5Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F> void invokeMethod(AbstractSignal6Default3<A,B,C,D,E,F> signal, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    public static <A,B,C,D,E,F> void invokeMethod(AbstractSignal6Default3<A,B,C,D,E,F> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, arg2, arg3, signal.arg4Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F> void invokeMethod(AbstractSignal6Default4<A,B,C,D,E,F> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    public static <A,B,C,D,E,F> void invokeMethod(AbstractSignal6Default4<A,B,C,D,E,F> signal, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, arg2, signal.arg3Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F> void invokeMethod(AbstractSignal6Default5<A,B,C,D,E,F> signal, A arg1) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    public static <A,B,C,D,E,F> void invokeMethod(AbstractSignal6Default5<A,B,C,D,E,F> signal, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, signal.arg2Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal invoked signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F> void invokeMethod(AbstractSignal6Default6<A,B,C,D,E,F> signal) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    public static <A,B,C,D,E,F> void invokeMethod(AbstractSignal6Default6<A,B,C,D,E,F> signal, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, signal.arg1Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
      * @param <G> The type of the seventh parameter of the signal.
      * @param signal invoked signal
      * @param arg1 Argument for the first parameter.
@@ -4075,9 +4953,10 @@ public final class QMetaObject {
      * @param arg4 Argument for the fourth parameter.
      * @param arg5 Argument for the fifth parameter.
      * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractPrivateSignal7<A,B,C,D,E,F,G> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractPrivateSignal7<A,B,C,D,E,F,G> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
     }
     
@@ -4100,7 +4979,7 @@ public final class QMetaObject {
      * @param <F> The type of the sixth parameter of the signal.
      * @param <G> The type of the seventh parameter of the signal.
      * @param signal invoked signal
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      * @param arg3 Argument for the third parameter.
@@ -4111,7 +4990,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractPrivateSignal7<A,B,C,D,E,F,G> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractPrivateSignal7<A,B,C,D,E,F,G> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
@@ -4133,6 +5012,356 @@ public final class QMetaObject {
      * @param <E> The type of the fifth parameter of the signal.
      * @param <F> The type of the sixth parameter of the signal.
      * @param <G> The type of the seventh parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default1<A,B,C,D,E,F,G> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default1<A,B,C,D,E,F,G> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, arg6, signal.arg7Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default2<A,B,C,D,E,F,G> signal, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default2<A,B,C,D,E,F,G> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, signal.arg6Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default3<A,B,C,D,E,F,G> signal, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default3<A,B,C,D,E,F,G> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, arg2, arg3, arg4, signal.arg5Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default4<A,B,C,D,E,F,G> signal, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default4<A,B,C,D,E,F,G> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, arg2, arg3, signal.arg4Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default5<A,B,C,D,E,F,G> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default5<A,B,C,D,E,F,G> signal, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, arg2, signal.arg3Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default6<A,B,C,D,E,F,G> signal, A arg1) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default6<A,B,C,D,E,F,G> signal, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, signal.arg2Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal invoked signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default7<A,B,C,D,E,F,G> signal) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default7<A,B,C,D,E,F,G> signal, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, signal.arg1Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
      * @param <H> The type of the eighth parameter of the signal.
      * @param signal invoked signal
      * @param arg1 Argument for the first parameter.
@@ -4142,9 +5371,10 @@ public final class QMetaObject {
      * @param arg5 Argument for the fifth parameter.
      * @param arg6 Argument for the sixth parameter.
      * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
     }
     
@@ -4168,7 +5398,7 @@ public final class QMetaObject {
      * @param <G> The type of the seventh parameter of the signal.
      * @param <H> The type of the eighth parameter of the signal.
      * @param signal invoked signal
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      * @param arg3 Argument for the third parameter.
@@ -4180,7 +5410,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
@@ -4190,6 +5420,430 @@ public final class QMetaObject {
             }
         }
         throw new QUnsuccessfulInvocationException("Unable to invoke method.");
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default1<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default1<A,B,C,D,E,F,G,H> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, signal.arg8Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default2<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default2<A,B,C,D,E,F,G,H> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, arg6, signal.arg7Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default3<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default3<A,B,C,D,E,F,G,H> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, signal.arg6Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default4<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default4<A,B,C,D,E,F,G,H> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, type, arg1, arg2, arg3, arg4, signal.arg5Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default5<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default5<A,B,C,D,E,F,G,H> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, type, arg1, arg2, arg3, signal.arg4Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default6<A,B,C,D,E,F,G,H> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default6<A,B,C,D,E,F,G,H> signal, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, type, arg1, arg2, signal.arg3Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default7<A,B,C,D,E,F,G,H> signal, A arg1) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default7<A,B,C,D,E,F,G,H> signal, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, type, arg1, signal.arg2Default.get());
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal invoked signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default8<A,B,C,D,E,F,G,H> signal) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default8<A,B,C,D,E,F,G,H> signal, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, type, signal.arg1Default.get());
     }
     
     /**
@@ -4216,8 +5870,215 @@ public final class QMetaObject {
      * @param arg9 Argument for the ninth parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default1<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default2<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default3<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default4<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default5<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default6<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default7<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default8<A,B,C,D,E,F,G,H,I> signal, A arg1) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal invoked signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default9<A,B,C,D,E,F,G,H,I> signal) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection);
     }
     
     /**
@@ -4241,7 +6102,7 @@ public final class QMetaObject {
      * @param <H> The type of the eighth parameter of the signal.
      * @param <I> The type of the ninth parameter of the signal.
      * @param signal invoked signal
-     * @param type synchronous or asynchronous invokation
+     * @param type synchronous or asynchronous invocation
      * @param arg1 Argument for the first parameter.
      * @param arg2 Argument for the second parameter.
      * @param arg3 Argument for the third parameter.
@@ -4254,7 +6115,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
@@ -4264,6 +6125,303 @@ public final class QMetaObject {
             }
         }
         throw new QUnsuccessfulInvocationException("Unable to invoke method.");
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default1<A,B,C,D,E,F,G,H,I> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, signal.arg9Default.get());
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default2<A,B,C,D,E,F,G,H,I> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, signal.arg8Default.get());
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default3<A,B,C,D,E,F,G,H,I> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, arg6, signal.arg7Default.get());
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default4<A,B,C,D,E,F,G,H,I> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, signal.arg6Default.get());
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default5<A,B,C,D,E,F,G,H,I> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, arg2, arg3, arg4, signal.arg5Default.get());
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default6<A,B,C,D,E,F,G,H,I> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, arg2, arg3, signal.arg4Default.get());
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default7<A,B,C,D,E,F,G,H,I> signal, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, arg2, signal.arg3Default.get());
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default8<A,B,C,D,E,F,G,H,I> signal, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, arg1, signal.arg2Default.get());
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default9<A,B,C,D,E,F,G,H,I> signal, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
+    	invokeMethod(signal, type, signal.arg1Default.get());
     }
 
     @Override
@@ -4324,7 +6482,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... connectionType) {
             return addConnectionToSlotObject(slot, connectionType);
@@ -4356,7 +6513,7 @@ public final class QMetaObject {
             super(declaringClass, isDisposedSignal);
         }
         
-        AbstractSignal(String signalName, Class<?>[] types) {
+        AbstractSignal(@StrictNonNull String signalName, Class<?>[] types) {
             super(signalName, types);
         }
         
@@ -4577,6 +6734,9 @@ public final class QMetaObject {
         public void invoke(A a, B b, C c, D d, E e, F f, G g, H h, I i) throws Throwable;
     }
     
+    /**
+     * Interface abstraction of signals.
+     */
     public static interface Signal{
     	String name();
     	String fullName();
@@ -4592,7 +6752,7 @@ public final class QMetaObject {
     }
 
     /**
-     * An interface to signal callable without parameters.
+     * An interface for anything connectable to a signal without parameters.
      */
     public static interface Connectable0 extends Signal{
     }
@@ -4697,14 +6857,14 @@ public final class QMetaObject {
     }
     
     /**
-     * An interface to parameterless signal.
+     * An interface for parameterless emitable signal.
      */
     public static interface Emitable0 extends Signal{
         public void emit();
     }
 
     /**
-     * An interface for anything connectable to a signal with one parameter.
+     * An interface for emitable signal with one parameter.
      * @param <A> The type of the first parameter.
      */
     public static interface Emitable1<A> extends Signal{
@@ -4712,7 +6872,7 @@ public final class QMetaObject {
     }
 
     /**
-     * An interface for anything connectable to a signal with two parameters.
+     * An interface for emitable signal with two parameters.
      * @param <A> The type of the first parameter.
      * @param <B> The type of the second parameter.
      */
@@ -4721,7 +6881,7 @@ public final class QMetaObject {
     }
     
     /**
-     * An interface for anything connectable to a signal with three parameters.
+     * An interface for emitable signal with three parameters.
      * @param <A> The type of the first parameter.
      * @param <B> The type of the second parameter.
      * @param <C> The type of the third parameter.
@@ -4731,7 +6891,7 @@ public final class QMetaObject {
     }
     
     /**
-     * An interface for anything connectable to a signal with four parameters.
+     * An interface for emitable signal with four parameters.
      * @param <A> The type of the first parameter.
      * @param <B> The type of the second parameter.
      * @param <C> The type of the third parameter.
@@ -4742,7 +6902,7 @@ public final class QMetaObject {
     }
     
     /**
-     * An interface for anything connectable to a signal with five parameters.
+     * An interface for emitable signal with five parameters.
      * @param <A> The type of the first parameter.
      * @param <B> The type of the second parameter.
      * @param <C> The type of the third parameter.
@@ -4754,7 +6914,7 @@ public final class QMetaObject {
     }
     
     /**
-     * An interface for anything connectable to a signal with six parameters.
+     * An interface for emitable signal with six parameters.
      * @param <A> The type of the first parameter.
      * @param <B> The type of the second parameter.
      * @param <C> The type of the third parameter.
@@ -4767,7 +6927,7 @@ public final class QMetaObject {
     }
     
     /**
-     * An interface for anything connectable to a signal with seven parameters.
+     * An interface for emitable signal with seven parameters.
      * @param <A> The type of the first parameter.
      * @param <B> The type of the second parameter.
      * @param <C> The type of the third parameter.
@@ -4781,7 +6941,7 @@ public final class QMetaObject {
     }
     
     /**
-     * An interface for anything connectable to a signal with eight parameters.
+     * An interface for emitable signal with eight parameters.
      * @param <A> The type of the first parameter.
      * @param <B> The type of the second parameter.
      * @param <C> The type of the third parameter.
@@ -4796,7 +6956,7 @@ public final class QMetaObject {
     }
     
     /**
-     * An interface for anything connectable to a signal with nine parameters.
+     * An interface for emitable signal with nine parameters.
      * @param <A> The type of the first parameter.
      * @param <B> The type of the second parameter.
      * @param <C> The type of the third parameter.
@@ -4812,7 +6972,7 @@ public final class QMetaObject {
     }
     
     /**
-     * A generic slot handle to a method of variadic arguments with return value.
+     * A generic handle to a method of variadic arguments with return value.
      * @param <R> The type of the return value of the method.
      */
     @FunctionalInterface
@@ -4969,7 +7129,7 @@ public final class QMetaObject {
             super(types);
         }
         
-        AbstractPrivateSignal0(String signalName, Class<?>... types) {
+        AbstractPrivateSignal0(@StrictNonNull String signalName, Class<?>... types) {
             super(signalName, types);
         }
     
@@ -4980,7 +7140,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5035,7 +7194,7 @@ public final class QMetaObject {
             super(types);
         }
         
-        AbstractPrivateSignal1(String signalName, Class<?>... types) {
+        AbstractPrivateSignal1(@StrictNonNull String signalName, Class<?>... types) {
             super(signalName, types);
         }
     
@@ -5046,7 +7205,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5059,7 +7217,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5125,7 +7282,7 @@ public final class QMetaObject {
             super(types);
         }
         
-        AbstractPrivateSignal2(String signalName, Class<?>... types) {
+        AbstractPrivateSignal2(@StrictNonNull String signalName, Class<?>... types) {
             super(signalName, types);
         }
     
@@ -5136,7 +7293,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5149,7 +7305,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5162,7 +7317,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot2<? super A,? super B> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5240,7 +7394,7 @@ public final class QMetaObject {
             super(types);
         }
         
-        AbstractPrivateSignal3(String signalName, Class<?>... types) {
+        AbstractPrivateSignal3(@StrictNonNull String signalName, Class<?>... types) {
             super(signalName, types);
         }
     
@@ -5251,7 +7405,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5264,7 +7417,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5277,7 +7429,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot2<? super A,? super B> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5290,7 +7441,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5379,7 +7529,7 @@ public final class QMetaObject {
             super(types);
         }
         
-        AbstractPrivateSignal4(String signalName, Class<?>... types) {
+        AbstractPrivateSignal4(@StrictNonNull String signalName, Class<?>... types) {
             super(signalName, types);
         }
     
@@ -5390,7 +7540,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5403,7 +7552,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5416,7 +7564,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot2<? super A,? super B> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5429,7 +7576,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5442,7 +7588,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5541,7 +7686,7 @@ public final class QMetaObject {
             super(types);
         }
         
-        AbstractPrivateSignal5(String signalName, Class<?>... types) {
+        AbstractPrivateSignal5(@StrictNonNull String signalName, Class<?>... types) {
             super(signalName, types);
         }
     
@@ -5552,7 +7697,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5565,7 +7709,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5578,7 +7721,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot2<? super A,? super B> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5591,7 +7733,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5604,7 +7745,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5617,7 +7757,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5728,7 +7867,7 @@ public final class QMetaObject {
             super(types);
         }
         
-        AbstractPrivateSignal6(String signalName, Class<?>... types) {
+        AbstractPrivateSignal6(@StrictNonNull String signalName, Class<?>... types) {
             super(signalName, types);
         }
     
@@ -5739,7 +7878,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5752,7 +7890,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5765,7 +7902,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot2<? super A,? super B> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5778,7 +7914,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5791,7 +7926,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5804,7 +7938,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5817,7 +7950,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5939,7 +8071,7 @@ public final class QMetaObject {
             super(types);
         }
         
-        AbstractPrivateSignal7(String signalName, Class<?>... types) {
+        AbstractPrivateSignal7(@StrictNonNull String signalName, Class<?>... types) {
             super(signalName, types);
         }
     
@@ -5950,7 +8082,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5963,7 +8094,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5976,7 +8106,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot2<? super A,? super B> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -5989,7 +8118,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -6002,7 +8130,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -6015,7 +8142,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -6028,7 +8154,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -6041,7 +8166,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -6173,7 +8297,7 @@ public final class QMetaObject {
             super(types);
         }
         
-        AbstractPrivateSignal8(String signalName, Class<?>... types) {
+        AbstractPrivateSignal8(@StrictNonNull String signalName, Class<?>... types) {
             super(signalName, types);
         }
     
@@ -6184,7 +8308,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -6197,7 +8320,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -6210,7 +8332,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot2<? super A,? super B> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -6223,7 +8344,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -6236,7 +8356,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -6249,7 +8368,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -6262,7 +8380,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -6275,7 +8392,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -6288,7 +8404,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -6431,7 +8546,7 @@ public final class QMetaObject {
             super(types);
         }
         
-        AbstractPrivateSignal9(String signalName, Class<?>... types) {
+        AbstractPrivateSignal9(@StrictNonNull String signalName, Class<?>... types) {
             super(signalName, types);
         }
     
@@ -6442,7 +8557,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -6455,7 +8569,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -6468,7 +8581,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot2<? super A,? super B> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -6481,7 +8593,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -6494,7 +8605,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -6507,7 +8617,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -6520,7 +8629,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -6533,7 +8641,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -6546,7 +8653,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -6559,7 +8665,6 @@ public final class QMetaObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.Connection connect(Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot, Qt.ConnectionType... type) {
             return addConnectionToSlotObject(slot, type);
@@ -6714,7 +8819,7 @@ public final class QMetaObject {
             super(types);
         }
         
-        AbstractPublicSignal0(String signalName, Class<?>... types) {
+        AbstractPublicSignal0(@StrictNonNull String signalName, Class<?>... types) {
             super(signalName, types);
         }
         
@@ -6753,7 +8858,7 @@ public final class QMetaObject {
             super(types);
         }
         
-        AbstractPublicSignal1(String signalName, Class<?>... types) {
+        AbstractPublicSignal1(@StrictNonNull String signalName, Class<?>... types) {
             super(signalName, types);
         }
         
@@ -6793,7 +8898,7 @@ public final class QMetaObject {
             super(types);
         }
         
-        AbstractPublicSignal2(String signalName, Class<?>... types) {
+        AbstractPublicSignal2(@StrictNonNull String signalName, Class<?>... types) {
             super(signalName, types);
         }
         
@@ -6834,7 +8939,7 @@ public final class QMetaObject {
             super(types);
         }
         
-        AbstractPublicSignal3(String signalName, Class<?>... types) {
+        AbstractPublicSignal3(@StrictNonNull String signalName, Class<?>... types) {
             super(signalName, types);
         }
         
@@ -6876,7 +8981,7 @@ public final class QMetaObject {
             super(types);
         }
         
-        AbstractPublicSignal4(String signalName, Class<?>... types) {
+        AbstractPublicSignal4(@StrictNonNull String signalName, Class<?>... types) {
             super(signalName, types);
         }
         
@@ -6919,7 +9024,7 @@ public final class QMetaObject {
             super(types);
         }
         
-        AbstractPublicSignal5(String signalName, Class<?>... types) {
+        AbstractPublicSignal5(@StrictNonNull String signalName, Class<?>... types) {
             super(signalName, types);
         }
         
@@ -6963,7 +9068,7 @@ public final class QMetaObject {
             super(types);
         }
         
-        AbstractPublicSignal6(String signalName, Class<?>... types) {
+        AbstractPublicSignal6(@StrictNonNull String signalName, Class<?>... types) {
             super(signalName, types);
         }
         
@@ -7008,7 +9113,7 @@ public final class QMetaObject {
             super(types);
         }
         
-        AbstractPublicSignal7(String signalName, Class<?>... types) {
+        AbstractPublicSignal7(@StrictNonNull String signalName, Class<?>... types) {
             super(signalName, types);
         }
         
@@ -7054,7 +9159,7 @@ public final class QMetaObject {
             super(types);
         }
         
-        AbstractPublicSignal8(String signalName, Class<?>... types) {
+        AbstractPublicSignal8(@StrictNonNull String signalName, Class<?>... types) {
             super(signalName, types);
         }
         
@@ -7101,7 +9206,7 @@ public final class QMetaObject {
             super(types);
         }
         
-        AbstractPublicSignal9(String signalName, Class<?>... types) {
+        AbstractPublicSignal9(@StrictNonNull String signalName, Class<?>... types) {
             super(signalName, types);
         }
         
@@ -7120,6 +9225,58 @@ public final class QMetaObject {
         @Override
         public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) {
             emitSignal(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+        }
+    }
+    
+    /**
+     * Supertype for all public default signals with one parameters.
+     * @param <A> The type of the first parameter of the signal.
+     */
+    public static abstract class AbstractSignal1Default1<A> extends AbstractPublicSignal1<A> implements  Emitable0, Connectable0 {
+    	AbstractSignal1Default1() {
+    		this.arg1Default = null;
+    	}
+    	
+		AbstractSignal1Default1(@StrictNonNull Supplier<? extends A> arg1Default){
+            super();
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal1Default1(@StrictNonNull Supplier<? extends A> arg1Default, Class<?> declaringClass){
+            super(declaringClass);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal1Default1(@StrictNonNull Supplier<? extends A> arg1Default, Class<?>... types) {
+            super(types);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal1Default1(@StrictNonNull String signalName, @StrictNonNull Supplier<? extends A> arg1Default, Class<?>... types) {
+            super(signalName, types);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        private final Supplier<? extends A> arg1Default;
+        
+        /**
+         * Emits the signal with default value for arg1.
+         */
+        @Override
+        public final void emit() {
+            super.emitDefaultSignal(arg1Default);
         }
     }
 
@@ -7160,7 +9317,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal2Default1(String signalName, Supplier<? extends B> arg2Default){
+        AbstractSignal2Default1(@StrictNonNull String signalName, Supplier<? extends B> arg2Default){
             super(signalName);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
@@ -7169,7 +9326,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal2Default1(String signalName, Supplier<? extends B> arg2Default, Class<?>... types) {
+        AbstractSignal2Default1(@StrictNonNull String signalName, Supplier<? extends B> arg2Default, Class<?>... types) {
             super(signalName, types);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
@@ -7192,6 +9349,59 @@ public final class QMetaObject {
         @io.qt.QtUninvokable
         final void emitDefaultSignal(Supplier<? extends A> arg1Default) {
         	super.emitDefaultSignal(arg1Default, arg2Default);
+        }
+    }
+    
+    /**
+     * Supertype for all public default signals with two parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     */
+    public static abstract class AbstractSignal2Default2<A, B> extends AbstractSignal2Default1<A, B> implements  Emitable0, Connectable0 {
+    	AbstractSignal2Default2() {
+    		this.arg1Default = null;
+    	}
+    	
+		AbstractSignal2Default2(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default){
+            super(arg2Default);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal2Default2(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Class<?> declaringClass){
+            super(arg2Default, declaringClass);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal2Default2(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Class<?>... types) {
+            super(arg2Default, types);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal2Default2(@StrictNonNull String signalName, @StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Class<?>... types) {
+            super(signalName, arg2Default, types);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        private final Supplier<? extends A> arg1Default;
+        
+        /**
+         * Emits the signal with default value for arg1.
+         */
+        @Override
+        public final void emit() {
+            super.emitDefaultSignal(arg1Default);
         }
     }
 
@@ -7233,7 +9443,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal3Default1(String signalName, Supplier<? extends C> arg3Default, Class<?>... types) {
+        AbstractSignal3Default1(@StrictNonNull String signalName, Supplier<? extends C> arg3Default, Class<?>... types) {
             super(signalName, types);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
@@ -7304,7 +9514,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal3Default2(String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Class<?>... types) {
+        AbstractSignal3Default2(@StrictNonNull String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Class<?>... types) {
             super(signalName, arg3Default, types);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
@@ -7327,6 +9537,60 @@ public final class QMetaObject {
         @io.qt.QtUninvokable
         final void emitDefaultSignal(Supplier<? extends A> arg1Default) {
         	super.emitDefaultSignal(arg1Default, arg2Default);
+        }
+    }
+    
+    /**
+     * Supertype for all public default signals with three parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     */
+    public static abstract class AbstractSignal3Default3<A, B, C> extends AbstractSignal3Default2<A, B, C> implements  Emitable0, Connectable0 {
+    	AbstractSignal3Default3() {
+    		this.arg1Default = null;
+    	}
+    	
+		AbstractSignal3Default3(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default){
+            super(arg2Default, arg3Default);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal3Default3(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Class<?> declaringClass){
+            super(arg2Default, arg3Default, declaringClass);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal3Default3(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Class<?>... types) {
+            super(arg2Default, arg3Default, types);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal3Default3(@StrictNonNull String signalName, @StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Class<?>... types) {
+            super(signalName, arg2Default, arg3Default, types);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        private final Supplier<? extends A> arg1Default;
+        
+        /**
+         * Emits the signal with default value for arg1.
+         */
+        @Override
+        public final void emit() {
+            super.emitDefaultSignal(arg1Default);
         }
     }
 
@@ -7369,7 +9633,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal4Default1(String signalName, Supplier<? extends D> arg4Default, Class<?>... types) {
+        AbstractSignal4Default1(@StrictNonNull String signalName, Supplier<? extends D> arg4Default, Class<?>... types) {
             super(signalName, types);
             if(arg4Default!=null){
                 this.arg4Default = arg4Default;
@@ -7447,7 +9711,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal4Default2(String signalName, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Class<?>... types) {
+        AbstractSignal4Default2(@StrictNonNull String signalName, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Class<?>... types) {
             super(signalName, arg4Default, types);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
@@ -7519,7 +9783,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal4Default3(String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Class<?>... types) {
+        AbstractSignal4Default3(@StrictNonNull String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Class<?>... types) {
             super(signalName, arg3Default, arg4Default, types);
             if(arg3Default!=null){
                 this.arg2Default = arg2Default;
@@ -7542,6 +9806,61 @@ public final class QMetaObject {
         @io.qt.QtUninvokable
         final void emitDefaultSignal(Supplier<? extends A> arg1Default) {
         	super.emitDefaultSignal(arg1Default, arg2Default);
+        }
+    }
+    
+    /**
+     * Supertype for all public default signals with four parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     */
+    public static abstract class AbstractSignal4Default4<A, B, C, D> extends AbstractSignal4Default3<A, B, C, D> implements  Emitable0, Connectable0 {
+    	AbstractSignal4Default4() {
+    		this.arg1Default = null;
+    	}
+    	
+		AbstractSignal4Default4(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default){
+            super(arg2Default, arg3Default, arg4Default);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal4Default4(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Class<?> declaringClass){
+            super(arg2Default, arg3Default, arg4Default, declaringClass);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal4Default4(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Class<?>... types) {
+            super(arg2Default, arg3Default, arg4Default, types);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal4Default4(@StrictNonNull String signalName, @StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Class<?>... types) {
+            super(signalName, arg2Default, arg3Default, arg4Default, types);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        private final Supplier<? extends A> arg1Default;
+        
+        /**
+         * Emits the signal with default value for arg1.
+         */
+        @Override
+        public final void emit() {
+            super.emitDefaultSignal(arg1Default);
         }
     }
 
@@ -7585,7 +9904,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default1(String signalName, Supplier<? extends E> arg5Default, Class<?>... types) {
+        AbstractSignal5Default1(@StrictNonNull String signalName, Supplier<? extends E> arg5Default, Class<?>... types) {
             super(signalName, types);
             if(arg5Default!=null){
                 this.arg5Default = arg5Default;
@@ -7670,7 +9989,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default2(String signalName, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?>... types) {
+        AbstractSignal5Default2(@StrictNonNull String signalName, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?>... types) {
             super(signalName, arg5Default, types);
             if(arg4Default!=null){
                 this.arg4Default = arg4Default;
@@ -7749,7 +10068,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default3(String signalName, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?>... types) {
+        AbstractSignal5Default3(@StrictNonNull String signalName, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?>... types) {
             super(signalName, arg4Default, arg5Default, types);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
@@ -7822,7 +10141,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default4(String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?>... types) {
+        AbstractSignal5Default4(@StrictNonNull String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?>... types) {
             super(signalName, arg3Default, arg4Default, arg5Default, types);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
@@ -7845,6 +10164,62 @@ public final class QMetaObject {
         @io.qt.QtUninvokable
         final void emitDefaultSignal(Supplier<? extends A> arg1Default) {
         	super.emitDefaultSignal(arg1Default, arg2Default);
+        }
+    }
+    
+    /**
+     * Supertype for all public default signals with five parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     */
+    public static abstract class AbstractSignal5Default5<A, B, C, D, E> extends AbstractSignal5Default4<A, B, C, D, E> implements  Emitable0, Connectable0 {
+    	AbstractSignal5Default5() {
+    		this.arg1Default = null;
+    	}
+    	
+		AbstractSignal5Default5(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default){
+            super(arg2Default, arg3Default, arg4Default, arg5Default);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal5Default5(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?> declaringClass){
+            super(arg2Default, arg3Default, arg4Default, arg5Default, declaringClass);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal5Default5(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?>... types) {
+            super(arg2Default, arg3Default, arg4Default, arg5Default, types);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal5Default5(@StrictNonNull String signalName, @StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?>... types) {
+            super(signalName, arg2Default, arg3Default, arg4Default, arg5Default, types);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        private final Supplier<? extends A> arg1Default;
+        
+        /**
+         * Emits the signal with default value for arg1.
+         */
+        @Override
+        public final void emit() {
+            super.emitDefaultSignal(arg1Default);
         }
     }
 
@@ -7889,7 +10264,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default1(String signalName, Supplier<? extends F> arg6Default, Class<?>... types) {
+        AbstractSignal6Default1(@StrictNonNull String signalName, Supplier<? extends F> arg6Default, Class<?>... types) {
             super(signalName, types);
             if(arg6Default!=null){
                 this.arg6Default = arg6Default;
@@ -7981,7 +10356,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default2(String signalName, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
+        AbstractSignal6Default2(@StrictNonNull String signalName, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
             super(signalName, arg6Default, types);
             if(arg5Default!=null){
                 this.arg5Default = arg5Default;
@@ -8067,7 +10442,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default3(String signalName, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
+        AbstractSignal6Default3(@StrictNonNull String signalName, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
             super(signalName, arg5Default, arg6Default, types);
             if(arg4Default!=null){
                 this.arg4Default = arg4Default;
@@ -8147,7 +10522,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default4(String signalName, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
+        AbstractSignal6Default4(@StrictNonNull String signalName, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
             super(signalName, arg4Default, arg5Default, arg6Default, types);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
@@ -8221,7 +10596,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default5(String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
+        AbstractSignal6Default5(@StrictNonNull String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
             super(signalName, arg3Default, arg4Default, arg5Default, arg6Default, types);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
@@ -8244,6 +10619,63 @@ public final class QMetaObject {
         @io.qt.QtUninvokable
         final void emitDefaultSignal(Supplier<? extends A> arg1Default) {
         	super.emitDefaultSignal(arg1Default, arg2Default);
+        }
+    }
+    
+    /**
+     * Supertype for all public default signals with six parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     */
+    public static abstract class AbstractSignal6Default6<A, B, C, D, E, F> extends AbstractSignal6Default5<A, B, C, D, E, F> implements  Emitable0, Connectable0 {
+    	AbstractSignal6Default6() {
+    		this.arg1Default = null;
+    	}
+    	
+		AbstractSignal6Default6(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default){
+            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal6Default6(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?> declaringClass){
+            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, declaringClass);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal6Default6(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
+            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, types);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal6Default6(@StrictNonNull String signalName, @StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
+            super(signalName, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, types);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        private final Supplier<? extends A> arg1Default;
+        
+        /**
+         * Emits the signal with default value for arg1.
+         */
+        @Override
+        public final void emit() {
+            super.emitDefaultSignal(arg1Default);
         }
     }
 
@@ -8289,7 +10721,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default1(String signalName, Supplier<? extends G> arg7Default, Class<?>... types) {
+        AbstractSignal7Default1(@StrictNonNull String signalName, Supplier<? extends G> arg7Default, Class<?>... types) {
             super(signalName, types);
             if(arg7Default!=null){
                 this.arg7Default = arg7Default;
@@ -8391,7 +10823,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default2(String signalName, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
+        AbstractSignal7Default2(@StrictNonNull String signalName, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
             super(signalName, arg7Default, types);
             this.arg6Default = arg6Default;
             if(this.arg6Default==null){
@@ -8480,7 +10912,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default3(String signalName, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
+        AbstractSignal7Default3(@StrictNonNull String signalName, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
             super(signalName, arg6Default, arg7Default, types);
             this.arg5Default = arg5Default;
             if(this.arg5Default==null){
@@ -8563,7 +10995,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default4(String signalName, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
+        AbstractSignal7Default4(@StrictNonNull String signalName, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
             super(signalName, arg5Default, arg6Default, arg7Default, types);
             this.arg4Default = arg4Default;
             if(this.arg4Default==null){
@@ -8640,7 +11072,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default5(String signalName, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
+        AbstractSignal7Default5(@StrictNonNull String signalName, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
             super(signalName, arg4Default, arg5Default, arg6Default, arg7Default, types);
             this.arg3Default = arg3Default;
             if(this.arg3Default==null){
@@ -8711,7 +11143,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default6(String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
+        AbstractSignal7Default6(@StrictNonNull String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
             super(signalName, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, types);
             this.arg2Default = arg2Default;
             if(this.arg2Default==null){
@@ -8733,6 +11165,64 @@ public final class QMetaObject {
         @io.qt.QtUninvokable
         final void emitDefaultSignal(Supplier<? extends A> arg1Default) {
         	super.emitDefaultSignal(arg1Default, arg2Default);
+        }
+    }
+    
+    /**
+     * Supertype for all public default signals with seven parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     */
+    public static abstract class AbstractSignal7Default7<A, B, C, D, E, F, G> extends AbstractSignal7Default6<A, B, C, D, E, F, G> implements  Emitable0, Connectable0 {
+    	AbstractSignal7Default7() {
+    		this.arg1Default = null;
+    	}
+    	
+		AbstractSignal7Default7(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default){
+            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal7Default7(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?> declaringClass){
+            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, declaringClass);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal7Default7(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
+            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, types);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal7Default7(@StrictNonNull String signalName, @StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
+            super(signalName, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, types);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        private final Supplier<? extends A> arg1Default;
+        
+        /**
+         * Emits the signal with default value for arg1.
+         */
+        @Override
+        public final void emit() {
+            super.emitDefaultSignal(arg1Default);
         }
     }
     
@@ -8776,7 +11266,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default1(String signalName, Supplier<? extends H> arg8Default, Class<?>... types) {
+        AbstractSignal8Default1(@StrictNonNull String signalName, Supplier<? extends H> arg8Default, Class<?>... types) {
             super(signalName, types);
             this.arg8Default = arg8Default;
             if(this.arg8Default==null){
@@ -8884,7 +11374,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default2(String signalName, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
+        AbstractSignal8Default2(@StrictNonNull String signalName, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
             super(signalName, arg8Default, types);
             this.arg7Default = arg7Default;
             if(this.arg7Default==null){
@@ -8986,7 +11476,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default3(String signalName, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
+        AbstractSignal8Default3(@StrictNonNull String signalName, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
             super(signalName, arg7Default, arg8Default, types);
             this.arg6Default = arg6Default;
             if(this.arg6Default==null){
@@ -9076,7 +11566,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default4(String signalName, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
+        AbstractSignal8Default4(@StrictNonNull String signalName, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
             super(signalName, arg6Default, arg7Default, arg8Default, types);
             this.arg5Default = arg5Default;
             if(this.arg5Default==null){
@@ -9160,7 +11650,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default5(String signalName, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
+        AbstractSignal8Default5(@StrictNonNull String signalName, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
             super(signalName, arg5Default, arg6Default, arg7Default, arg8Default, types);
             this.arg4Default = arg4Default;
             if(this.arg4Default==null){
@@ -9238,7 +11728,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default6(String signalName, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
+        AbstractSignal8Default6(@StrictNonNull String signalName, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
             super(signalName, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, types);
             this.arg3Default = arg3Default;
             if(this.arg3Default==null){
@@ -9310,7 +11800,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default7(String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
+        AbstractSignal8Default7(@StrictNonNull String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
             super(signalName, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, types);
             this.arg2Default = arg2Default;
             if(this.arg2Default==null){
@@ -9327,6 +11817,65 @@ public final class QMetaObject {
         @Override
         public final void emit(A arg1) {
             super.emitDefaultSignal(arg2Default, arg1);
+        }
+    }
+    
+    /**
+     * Supertype for all public default signals with eight parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     */
+    public static abstract class AbstractSignal8Default8<A, B, C, D, E, F, G, H> extends AbstractSignal8Default7<A, B, C, D, E, F, G, H> implements  Emitable0, Connectable0 {
+    	AbstractSignal8Default8() {
+    		this.arg1Default = null;
+    	}
+    	
+		AbstractSignal8Default8(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default){
+            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal8Default8(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?> declaringClass){
+            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, declaringClass);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal8Default8(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
+            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, types);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal8Default8(@StrictNonNull String signalName, @StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
+            super(signalName, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, types);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        private final Supplier<? extends A> arg1Default;
+        
+        /**
+         * Emits the signal with default value for arg1.
+         */
+        @Override
+        public final void emit() {
+            super.emitDefaultSignal(arg1Default);
         }
     }
     
@@ -9371,7 +11920,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default1(String signalName, Supplier<? extends I> arg9Default, Class<?>... types) {
+        AbstractSignal9Default1(@StrictNonNull String signalName, Supplier<? extends I> arg9Default, Class<?>... types) {
             super(signalName, types);
             this.arg9Default = arg9Default;
             if(this.arg9Default==null){
@@ -9492,7 +12041,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default2(String signalName, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
+        AbstractSignal9Default2(@StrictNonNull String signalName, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
             super(signalName, arg9Default, types);
             this.arg8Default = arg8Default;
             if(this.arg8Default==null){
@@ -9601,7 +12150,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default3(String signalName, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
+        AbstractSignal9Default3(@StrictNonNull String signalName, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
             super(signalName, arg8Default, arg9Default, types);
             this.arg7Default = arg7Default;
             if(this.arg7Default==null){
@@ -9704,7 +12253,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default4(String signalName, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
+        AbstractSignal9Default4(@StrictNonNull String signalName, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
             super(signalName, arg7Default, arg8Default, arg9Default, types);
             this.arg6Default = arg6Default;
             if(this.arg6Default==null){
@@ -9795,7 +12344,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default5(String signalName, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
+        AbstractSignal9Default5(@StrictNonNull String signalName, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
             super(signalName, arg6Default, arg7Default, arg8Default, arg9Default, types);
             this.arg5Default = arg5Default;
             if(this.arg5Default==null){
@@ -9880,7 +12429,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default6(String signalName, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
+        AbstractSignal9Default6(@StrictNonNull String signalName, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
             super(signalName, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, types);
             this.arg4Default = arg4Default;
             if(this.arg4Default==null){
@@ -9959,7 +12508,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default7(String signalName, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
+        AbstractSignal9Default7(@StrictNonNull String signalName, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
             super(signalName, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, types);
             this.arg3Default = arg3Default;
             if(this.arg3Default==null){
@@ -10032,7 +12581,7 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default8(String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
+        AbstractSignal9Default8(@StrictNonNull String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
             super(signalName, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, types);
             this.arg2Default = arg2Default;
             if(this.arg2Default==null){
@@ -10054,6 +12603,66 @@ public final class QMetaObject {
         @io.qt.QtUninvokable
         final void emitDefaultSignal(Supplier<? extends A> arg1Default) {
         	super.emitDefaultSignal(arg1Default, arg2Default);
+        }
+    }
+    
+    /**
+     * Supertype for all public default signals with nine parameters.
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     */
+    public static abstract class AbstractSignal9Default9<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default8<A, B, C, D, E, F, G, H, I> implements  Emitable0, Connectable0 {
+    	AbstractSignal9Default9() {
+    		this.arg1Default = null;
+    	}
+    	
+		AbstractSignal9Default9(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default){
+            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal9Default9(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?> declaringClass){
+            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, declaringClass);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal9Default9(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
+            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, types);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        AbstractSignal9Default9(@StrictNonNull String signalName, @StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
+            super(signalName, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, types);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+        
+        private final Supplier<? extends A> arg1Default;
+        
+        /**
+         * Emits the signal with default value for arg1.
+         */
+        @Override
+        public final void emit() {
+            super.emitDefaultSignal(arg1Default);
         }
     }
     
@@ -10181,7 +12790,7 @@ public final class QMetaObject {
     @QtUninvokable
     private static native int enumeratorIndex(long metaObjectPointer, long metaEnumId);
     
-	private static String cppNormalizedSignature(String signalName, Class<?> classType) {
+	private static String cppNormalizedSignature(@StrictNonNull String signalName, Class<?> classType) {
 		int idx = signalName.indexOf("(");
         if(idx>=0) {
             String parameters = signalName.substring(idx).trim();
@@ -10337,7 +12946,7 @@ public final class QMetaObject {
 	            super(declaringClass, isStatic);
 	        }
 	        
-	        AbstractSignal(String signalName, Class<?>[] types) {
+	        AbstractSignal(@StrictNonNull String signalName, Class<?>[] types) {
 	            super(signalName, types);
 	        }
 	    }

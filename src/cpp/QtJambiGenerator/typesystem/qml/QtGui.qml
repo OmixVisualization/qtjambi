@@ -50,6 +50,11 @@ TypeSystem{
         className: "QWindowsMimeConverter"
         since: [6,5]
     }
+
+    Rejection{
+        className: "QNativeInterface::Private::QInterfaceProxyImp"
+        since: [6,5]
+    }
     
     PrimitiveType{
         name: "GLuint"
@@ -9822,13 +9827,6 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "updateState(QPaintEngineState)"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-        }
-        ModifyFunction{
             signature: "drawTextItem(QPointF,QTextItem)"
             ModifyArgument{
                 index: 2
@@ -9975,11 +9973,27 @@ TypeSystem{
     
     ObjectType{
         name: "QPaintEngineState"
+        targetType: "final class"
+        generate: "no-shell"
+        noMetaType: true
         ExtraIncludes{
             Include{
                 fileName: "QPainterPath"
                 location: Include.Global
             }
+        }
+        ModifyFunction{
+            signature: "QPaintEngineState()"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "QPaintEngineState(const QPaintEngineState &)"
+            remove: RemoveFlag.All
+        }
+        ModifyField{
+            name: "dirtyFlags"
+            write: false
+            read: false
         }
         ModifyFunction{
             signature: "painter()const"
@@ -14716,6 +14730,10 @@ TypeSystem{
                 fileName: "QtCore/QSharedPointer"
                 location: Include.Global
             }
+            Include{
+                fileName: "QtJambi/JavaAPI"
+                location: Include.Global
+            }
         }
         InjectCode{
             target: CodeClass.Native
@@ -18975,4 +18993,5 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: class 'QAccessibleEvent' has polymorphic id but does not inherit a polymorphic class"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QAccessibleTableCellInterface'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: class 'Display' inherits from unknown base class '_XDisplay'"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'QPaintEngineState(*)' for function modification in 'QPaintEngineState' not found. Possible candidates: "}
 }

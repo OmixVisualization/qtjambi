@@ -61,8 +61,8 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         QtJambiAPI::checkNullPointer(env, container.first, typeid(QLinkedList<QVariant>));
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::elementMetaType()", container.first)
-        AbstractLinkedListAccess* containerAccess = dynamic_cast<AbstractLinkedListAccess*>(container.second);
-        Q_ASSERT(containerAccess);
+        QTJAMBI_CONTAINER_CAST(AbstractLinkedListAccess, containerAccess, container.second);
+
         result = qtjambi_cast<jobject>(env, containerAccess->elementMetaType());
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
@@ -99,8 +99,8 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::first() const", container.first)
-        AbstractLinkedListAccess* containerAccess = dynamic_cast<AbstractLinkedListAccess*>(container.second);
-        Q_ASSERT(containerAccess);
+        QTJAMBI_CONTAINER_CAST(AbstractLinkedListAccess, containerAccess, container.second);
+
         jint size = containerAccess->size(__jni_env, container.first);
         if (size == 0) {
             Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size 0 at 0") QTJAMBI_STACKTRACEINFO );
@@ -123,8 +123,8 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QLinkedList<T>::last() const", container.first)
-        AbstractLinkedListAccess* containerAccess = dynamic_cast<AbstractLinkedListAccess*>(container.second);
-        Q_ASSERT(containerAccess);
+        QTJAMBI_CONTAINER_CAST(AbstractLinkedListAccess, containerAccess, container.second);
+
         jint size = containerAccess->size(__jni_env, container.first);
         if (size == 0) {
             Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size 0 at 0") QTJAMBI_STACKTRACEINFO );
@@ -519,8 +519,8 @@ extern "C" Q_DECL_EXPORT jstring JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("operator << (QDebug, QLinkedList<T>)", container.first)
-        AbstractLinkedListAccess* containerAccess = dynamic_cast<AbstractLinkedListAccess*>(container.second);
-        Q_ASSERT(containerAccess);
+        QTJAMBI_CONTAINER_CAST(AbstractLinkedListAccess, containerAccess, container.second);
+
         QString strg;
         {
             QDebug stream(&strg);
@@ -551,8 +551,8 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QL
         QPair<void*,AbstractContainerAccess*> container = ContainerAPI::fromNativeId(__this_nativeId);
         QtJambiAPI::checkNullPointer(__jni_env, container.first, typeid(QLinkedList<QVariant>));
         QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("qHash(QLinkedList<T>)", container.first)
-        AbstractLinkedListAccess* containerAccess = dynamic_cast<AbstractLinkedListAccess*>(container.second);
-        Q_ASSERT(containerAccess);
+        QTJAMBI_CONTAINER_CAST(AbstractLinkedListAccess, containerAccess, container.second);
+
         QByteArray containerName = "QLinkedList<";
         containerName += containerAccess->elementMetaType().name();
         containerName += ">";

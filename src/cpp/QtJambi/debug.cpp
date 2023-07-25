@@ -60,13 +60,17 @@ Q_LOGGING_CATEGORY(debugAPIInternalMethodsCategory, "io.qtjambi.debugapi.interna
 Q_LOGGING_CATEGORY(debugAPIJavaOverloadsCategory, "io.qtjambi.debugapi.java-overloads")
 Q_LOGGING_CATEGORY(debugAPINativeCallsCategory, "io.qtjambi.debugapi.native-calls")
 
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
 #define QTJAMBI_DEBUG_MESSAGE_LOGGER(category) \
 for (bool qt_category_enabled = category().isDebugEnabled(); qt_category_enabled; qt_category_enabled = false) \
         QMessageLogger(adaptFile(file), line, function, category().categoryName()).debug().nospace().noquote()
-#else
+#elif QT_VERSION < QT_VERSION_CHECK(6, 6, 0)
 #define QTJAMBI_DEBUG_MESSAGE_LOGGER(category) \
 for (QLoggingCategoryMacroHolder<QtDebugMsg> qt_category(&category); qt_category; qt_category.control = false) \
+        QMessageLogger(adaptFile(file), line, function, qt_category.name()).debug().nospace().noquote()
+#else
+#define QTJAMBI_DEBUG_MESSAGE_LOGGER(category) \
+for (QLoggingCategoryMacroHolder<QtDebugMsg> qt_category(category()); qt_category; qt_category.control = false) \
         QMessageLogger(adaptFile(file), line, function, qt_category.name()).debug().nospace().noquote()
 #endif
 

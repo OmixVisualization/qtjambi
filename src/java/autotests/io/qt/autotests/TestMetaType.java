@@ -49,6 +49,7 @@ import io.qt.core.QDataStream;
 import io.qt.core.QDebug;
 import io.qt.core.QIODevice;
 import io.qt.core.QLibraryInfo;
+import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.core.QMetaProperty;
 import io.qt.core.QMetaType;
@@ -289,42 +290,57 @@ public class TestMetaType extends ApplicationInitializer {
 		} catch (IllegalArgumentException e) {
 		}
     }
+	
+	@Test
+    public void testMetaTypeMetaObject() {
+		Assume.assumeTrue("Qt version >= 6.0", QLibraryInfo.version().compareTo(new QVersionNumber(6,0))>=0);
+		QMetaObject mo = QMetaObject.forType(MyObject.class);
+		QMetaMethod mtd = mo.method("subObject");
+		QMetaType returnMetaType = new QMetaType(mtd.returnType());
+		assertEquals(SubObject.class, returnMetaType.javaType());
+		QMetaObject rmo = returnMetaType.metaObject();
+		assertEquals(QMetaObject.forType(SubObject.class), rmo);
+	}
     
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestMetaType.class.getName());
     }
-}
-
-class MyObject extends QObject{
-}
-
-class MetaValue{
-	int i;
-	double d;
-	String s;
-}
-
-class MetaValue2{
-	int i;
-	double d;
-	String s;
-	float f;
-}
-
-class SerializableMetaValue implements Serializable{
-	private static final long serialVersionUID = -4765490824878229108L;
-	int i;
-	double d;
-	String s;
 	
-	@Override
-	public String toString() {
-		return "SerializableMetaValue [i=" + i + ", d=" + d + ", s=" + s + "]";
+	static class SubObject extends QObject{
 	}
-}
-
-class T1{
-}
-
-class T2{
+	
+	static class MyObject extends QObject{
+		public SubObject subObject(){return null;}
+	}
+	
+	static class MetaValue{
+		int i;
+		double d;
+		String s;
+	}
+	
+	static class MetaValue2{
+		int i;
+		double d;
+		String s;
+		float f;
+	}
+	
+	static class SerializableMetaValue implements Serializable{
+		private static final long serialVersionUID = -4765490824878229108L;
+		int i;
+		double d;
+		String s;
+		
+		@Override
+		public String toString() {
+			return "SerializableMetaValue [i=" + i + ", d=" + d + ", s=" + s + "]";
+		}
+	}
+	
+	static class T1{
+	}
+	
+	static class T2{
+	}
 }

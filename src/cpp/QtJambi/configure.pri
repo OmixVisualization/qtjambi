@@ -38,6 +38,8 @@ VER_MAJ = $$section(VERSION, ., 0, 0)
 VER_MIN = $$section(VERSION, ., 1, 1)
 VER_PAT = $$section(VERSION, ., 2, 2)
 
+DEFINES += QT_DISABLE_DEPRECATED_UP_TO=0x050000
+
 isEmpty(QTJAMBI_PROJECT):{
     QTJAMBI_PROJECT = $$TARGET
 }

@@ -86,4 +86,11 @@ class AbstractMetaObjectUtility {
                 || cls==QLinkedList.class
                 || cls==QSet.class;
     }
+	
+	static boolean isSequentialContainer(Class<?> cls) {
+    	return QList.class.isAssignableFrom(cls)
+    			|| QSet.class.isAssignableFrom(cls)
+    			|| QVector.class.isAssignableFrom(cls)
+    			|| QLinkedList.class.isAssignableFrom(cls);
+    }
 }

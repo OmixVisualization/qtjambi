@@ -661,7 +661,7 @@ public class CreatePOMTask extends Task {
 						String prefix = _moduleId + "-native-";
 						String suffix = "-" + qtjambiVersion + ".jar";
 						String prohibited = "-debug-" + qtjambiVersion + ".jar";
-						for(String file : directory.list()) {
+						for(String file : new java.io.File(directory, "native").list()) {
 							if(file.startsWith(prefix) && file.endsWith(suffix) && !file.endsWith(prohibited)) {
 								String platform = file.substring(prefix.length(), file.length() - suffix.length());
 								if(platform.equals("macos")) {
@@ -714,7 +714,7 @@ public class CreatePOMTask extends Task {
 									description.setTextContent("Native components for "+platform);
 								}
 								artifactId.setTextContent(_moduleId+"-native-"+platform);
-								try(FileOutputStream fos = new FileOutputStream(new java.io.File(directory, _moduleId+"-native-"+platform+"-"+qtjambiVersion+".pom"))){
+								try(FileOutputStream fos = new FileOutputStream(new java.io.File(new java.io.File(directory, "native"), _moduleId+"-native-"+platform+"-"+qtjambiVersion+".pom"))){
 									StreamResult result = new StreamResult(fos);
 									transformer.transform(new DOMSource(doc), result);
 								}

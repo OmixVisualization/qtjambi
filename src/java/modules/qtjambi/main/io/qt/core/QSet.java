@@ -30,9 +30,11 @@
 package io.qt.core;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import io.qt.NativeAccess;
 import io.qt.QNoImplementationException;
@@ -40,9 +42,9 @@ import io.qt.QNoNativeResourcesException;
 import io.qt.QtUninvokable;
 
 /**
- * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qset.html">QSet</a></p>
+ * <p>Java wrapper for Qt class <code><a href="https://doc.qt.io/qt/qset.html">QSet</a></code></p>
  */
-public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> implements Set<T>, Cloneable
+public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, Cloneable
 {
 
 	static {
@@ -52,6 +54,7 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     /**
      * Constructor for internal use only.
      * @param p expected to be <code>null</code>.
+     * @hidden
      */
     @NativeAccess
     protected QSet(QPrivateConstructor p) {
@@ -60,7 +63,7 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     
     /**
      * Creating a container with given element type.
-     * <p>See <a href="https://doc.qt.io/qt/qset.html#QSet">QSet::QSet()</a></p>
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#QSet">QSet::<wbr>QSet()</a></code></p>
      * @param elementType the type T
      */
 	public QSet(Class<T> elementType) {
@@ -71,7 +74,7 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
 	
     /**
      * Creating a container with given element type.
-     * <p>See <a href="https://doc.qt.io/qt/qset.html#QSet">QSet::QSet()</a></p>
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#QSet">QSet::<wbr>QSet()</a></code></p>
      * @param metaType the type T
      */
 	public QSet(QMetaType.Type metaType) {
@@ -80,7 +83,7 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     
     /**
      * Creating a container with given element type.
-     * <p>See <a href="https://doc.qt.io/qt/qset.html#QSet">QSet::QSet()</a></p>
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#QSet">QSet::<wbr>QSet()</a></code></p>
      * @param metaType the type T
      */
 	public QSet(QMetaType metaType) {
@@ -90,7 +93,7 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     
     /**
      * Creating a container with given content.
-     * <p>See <a href="https://doc.qt.io/qt/qset.html#QSet">QSet::QSet(const QSet&lt;T> &amp;)</a></p>
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#QSet">QSet::<wbr>QSet(const QSet&lt;T> &amp;)</a></code></p>
      * @param other container
      */
     public QSet(Collection<T> other) {
@@ -110,6 +113,11 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
 		return new QSet<>(this);
 	}
     
+    /**
+     * Provides a constant C++ iterator to the containers begin.
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#constBegin">QSet::constBegin()const</a></code></p>
+     * @return begin
+     */
     @QtUninvokable
     protected final QSequentialConstIterator<T> constBegin()    {
         return constBegin(QtJambi_LibraryUtilities.internal.nativeId(this));
@@ -117,6 +125,9 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     @QtUninvokable
     private static native <T> QSequentialConstIterator<T> constBegin(long __this__nativeId);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#capacity">QSet::<wbr>capacity()const</a></code></p>
+     */
     @QtUninvokable
     public final int capacity()    {
         return capacity(QtJambi_LibraryUtilities.internal.nativeId(this));
@@ -124,6 +135,9 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     @QtUninvokable
     private static native <T> int capacity(long __this__nativeId);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#clear">QSet::<wbr>clear()</a></code></p>
+     */
     @QtUninvokable
     public final void clear()    {
         clear(QtJambi_LibraryUtilities.internal.nativeId(this));
@@ -131,6 +145,9 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     @QtUninvokable
     private static native <T> void clear(long __this__nativeId);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#contains">QSet::<wbr>contains(T)const</a></code></p>
+     */
     @QtUninvokable
     public final boolean contains(Object t)    {
         try {
@@ -149,11 +166,19 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     @QtUninvokable
     private static native <T> boolean contains(long __this__nativeId, T t);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#count">QSet::<wbr>count()const</a></code></p>
+     */
     @QtUninvokable
     public final int count()    {
         return size();
     }
 
+    /**
+     * Provides a constant C++ iterator to the containers end.
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#constEnd">QSet::constEnd()const</a></code></p>
+     * @return end
+     */
     @QtUninvokable
     protected final QSequentialConstIterator<T> constEnd()    {
         return constEnd(QtJambi_LibraryUtilities.internal.nativeId(this));
@@ -161,6 +186,9 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     @QtUninvokable
     private static native <T> QSequentialConstIterator<T> constEnd(long __this__nativeId);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#insert">QSet::<wbr>insert(T)</a></code></p>
+     */
     @QtUninvokable
     public final void insert(T t)    {
     	try {
@@ -174,6 +202,9 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     @QtUninvokable
     private static native <T> void insert(long __this__nativeId, T t);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#intersect">QSet::<wbr>intersect(QSet&lt;T>)</a></code></p>
+     */
     @QtUninvokable
     public final void intersect(java.util.Collection<T> other)    {
         intersect(QtJambi_LibraryUtilities.internal.nativeId(this), other);
@@ -181,6 +212,9 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     @QtUninvokable
     private static native <T> void intersect(long __this__nativeId, java.util.Collection<T> other);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#intersects">QSet::<wbr>intersects(QSet&lt;T>)const</a></code></p>
+     */
     @QtUninvokable
     public final boolean intersects(java.util.Collection<T> other)    {
         return intersects(QtJambi_LibraryUtilities.internal.nativeId(this), other);
@@ -188,6 +222,9 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     @QtUninvokable
     private static native <T> boolean intersects(long __this__nativeId, java.util.Collection<T> other);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#isEmpty">QSet::<wbr>isEmpty()const</a></code></p>
+     */
     @QtUninvokable
     public final boolean isEmpty()    {
         return size()==0;
@@ -200,6 +237,9 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     @QtUninvokable
     private static native <T> boolean operator_equal(long __this__nativeId, java.util.Collection<T> l);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#remove">QSet::<wbr>remove(T)</a></code></p>
+     */
     @QtUninvokable
     public final boolean remove(Object t)    {
     	try {
@@ -217,7 +257,29 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     }
     @QtUninvokable
     private static native <T> boolean remove(long __this__nativeId, T t);
+    
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#removeIf">QSet::<wbr>removeIf(Predicate)</a></code></p>
+	 */
+    @QtUninvokable
+    public final boolean removeIf(Predicate<? super T> predicate)    {
+        Objects.requireNonNull(predicate);
+        boolean removed = false;
+        QSet<T> clone = clone();
+        final Iterator<T> each = clone.iterator();
+        while (each.hasNext()) {
+        	T value = each.next();
+            if (predicate.test(value)) {
+                remove(value);
+                removed = true;
+            }
+        }
+        return removed;
+    }
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#reserve">QSet::<wbr>reserve(int)</a></code></p>
+     */
     @QtUninvokable
     public final void reserve(int size)    {
         reserve(QtJambi_LibraryUtilities.internal.nativeId(this), size);
@@ -225,6 +287,9 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     @QtUninvokable
     private static native <T> void reserve(long __this__nativeId, int size);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#size">QSet::<wbr>size()const</a></code></p>
+     */
     @QtUninvokable
     public final int size()    {
         return size(QtJambi_LibraryUtilities.internal.nativeId(this));
@@ -232,6 +297,9 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     @QtUninvokable
     private static native <T> int size(long __this__nativeId);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#subtract">QSet::<wbr>subtract(QSet&lt;T>)</a></code></p>
+     */
     @QtUninvokable
     public final void subtract(java.util.Collection<T> other)    {
         subtract(QtJambi_LibraryUtilities.internal.nativeId(this), other);
@@ -239,6 +307,9 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     @QtUninvokable
     private static native <T> void subtract(long __this__nativeId, java.util.Collection<T> other);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#unite">QSet::<wbr>unite(QSet&lt;T>)</a></code></p>
+     */
     @QtUninvokable
     public final void unite(java.util.Collection<T> other)    {
         unite(QtJambi_LibraryUtilities.internal.nativeId(this), other);
@@ -246,6 +317,9 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     @QtUninvokable
     private static native <T> void unite(long __this__nativeId, java.util.Collection<T> other);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#values">QSet::<wbr>values()const</a></code></p>
+     */
     @QtUninvokable
     public final QList<T> values()    {
         return values(QtJambi_LibraryUtilities.internal.nativeId(this));
@@ -253,6 +327,9 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     @QtUninvokable
     private static native <T> QList<T> values(long __this__nativeId);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#operator-eq-eq">QSet::<wbr>operator==(QSet&lt;T>)const</a></code></p>
+     */
     @SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
     @QtUninvokable
@@ -263,6 +340,9 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
         return false;
     }
 
+    /**
+     * Returns the objects's hash code computed by <code>qHash(QSet&lt;T>)</code>.
+     */
     @Override
     @QtUninvokable
     public int hashCode() { 
@@ -275,6 +355,9 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     @QtUninvokable
     private static native int hashCode(long __this__nativeId);
     
+    /**
+     * Returns the string representation of the object given by <code>QVariant(this).toString()</code>.
+     */
     @Override
     @QtUninvokable
     public String toString() {
@@ -289,6 +372,17 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     @QtUninvokable
     private static native String toString(long __this__nativeId);
     
+    /**
+     * Adds the specified element to this set if it is not already present
+     * (optional operation).  More formally, adds the specified element
+     * {@code e} to this set if the set contains no element {@code e2}
+     * such that
+     * {@code Objects.equals(e, e2)}.
+     * If this set already contains the element, the call leaves the set
+     * unchanged and returns {@code false}.  In combination with the
+     * restriction on constructors, this ensures that sets never contain
+     * duplicate elements.
+     */
     @Override
     @QtUninvokable
     public final boolean add(T e){
@@ -296,6 +390,9 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
         return true;
     }
     
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#operator-lt-lt">operator&lt;&lt;(QDataStream&amp;,<wbr>QSet&lt;T>)</a></code></p>
+     */
     @io.qt.QtUninvokable
     public void writeTo(io.qt.core.QDataStream stream){
         writeTo(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
@@ -304,6 +401,9 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     @io.qt.QtUninvokable
     private native void writeTo(long __this__nativeId, long stream);
     
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qset.html#operator-gt-gt">operator&gt;&gt;(QDataStream&amp;,<wbr>QSet&lt;T>&amp;)</a></code></p>
+     */
     @io.qt.QtUninvokable
     public void readFrom(io.qt.core.QDataStream stream){
         readFrom(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
@@ -322,7 +422,7 @@ public class QSet<T> extends io.qt.internal.AbstractSequentialContainer<T> imple
     /**
      * Returns a QSet containing given elements.
      *
-     * @param <E> the {@code QSet}'s element type
+     * @param <T> the {@code QSet}'s element type
      * @param element0 the first element
      * @param elements subsequent elements
      * @return a {@code QSet} containing the specified element

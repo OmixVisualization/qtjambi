@@ -45,7 +45,7 @@ class QSsl___{
 
 class QHostInfo___ extends QHostInfo {
     /**
-     * <p>See <a href="@docRoot/qhostinfo.html#lookupHost">QHostInfo::lookupHost(QString, Functor)</a></p>
+     * <p>See <a href="@docRoot/qhostinfo.html#lookupHost"><code>QHostInfo::lookupHost(QString, Functor)</code></a></p>
      */
     @QtUninvokable
     public static int lookupHost(String name, io.qt.core.QMetaObject.Slot1<QHostInfo> slot) {
@@ -71,7 +71,7 @@ class QHostInfo___ extends QHostInfo {
     }
     
     /**
-     * <p>See <a href="@docRoot/qhostinfo.html#lookupHost">QHostInfo::lookupHost(QString, QObject, Functor)</a></p>
+     * <p>See <a href="@docRoot/qhostinfo.html#lookupHost"><code>QHostInfo::lookupHost(QString, QObject, Functor)</code></a></p>
      */
     @QtUninvokable
     public static int lookupHost(String name, io.qt.core.QObject context, io.qt.core.QMetaObject.Slot1<QHostInfo> slot){
@@ -97,7 +97,7 @@ class QHostInfo___ extends QHostInfo {
     }
     
     /**
-     * <p>See <a href="@docRoot/qhostinfo.html#lookupHost">QHostInfo::lookupHost(QString, Functor)</a></p>
+     * <p>See <a href="@docRoot/qhostinfo.html#lookupHost"><code>QHostInfo::lookupHost(QString, Functor)</code></a></p>
      */
     @SuppressWarnings("unchecked")
     @QtUninvokable
@@ -146,7 +146,7 @@ class Server___ {
 class QUdpSocket___ extends QUdpSocket {
 
         /**
-         * Result class for <a href="@docRoot/qudpsocket.html#readDatagram">QUdpSocket::readDatagram(char *, qint64, QHostAddress *, quint16 *)</a>.
+         * Result class for <a href="@docRoot/qudpsocket.html#readDatagram"><code>QUdpSocket::readDatagram(char *, qint64, QHostAddress *, quint16 *)</code></a>.
          */
         public static final class HostInfo {
             public HostInfo() {
@@ -159,28 +159,28 @@ class QUdpSocket___ extends QUdpSocket {
         }
 
         /**
-         * <p>See <a href="@docRoot/qudpsocket.html#readDatagram">QUdpSocket::readDatagram(char *, qint64, QHostAddress *, quint16 *)</a></p>
+         * <p>See <a href="@docRoot/qudpsocket.html#readDatagram"><code>QUdpSocket::readDatagram(char *, qint64, QHostAddress *, quint16 *)</code></a></p>
          */
         public final long readDatagram(byte data[], HostInfo info) {
             return readDatagram(java.nio.ByteBuffer.wrap(data), info);
         }
 
         /**
-         * <p>See <a href="@docRoot/qudpsocket.html#readDatagram">QUdpSocket::readDatagram(char *, qint64, QHostAddress *, quint16 *)</a></p>
+         * <p>See <a href="@docRoot/qudpsocket.html#readDatagram"><code>QUdpSocket::readDatagram(char *, qint64, QHostAddress *, quint16 *)</code></a></p>
          */
         public final long readDatagram(byte data[]) {
             return readDatagram(data, null);
         }
         
         /**
-         * <p>See <a href="@docRoot/qudpsocket.html#readDatagram">QUdpSocket::readDatagram(char *, qint64, QHostAddress *, quint16 *)</a></p>
+         * <p>See <a href="@docRoot/qudpsocket.html#readDatagram"><code>QUdpSocket::readDatagram(char *, qint64, QHostAddress *, quint16 *)</code></a></p>
          */
         public final long readDatagram(java.nio.ByteBuffer data) {
             return readDatagram(data, null);
         }
         
         /**
-         * <p>See <a href="@docRoot/qudpsocket.html#readDatagram">QUdpSocket::readDatagram(char *, qint64, QHostAddress *, quint16 *)</a></p>
+         * <p>See <a href="@docRoot/qudpsocket.html#readDatagram"><code>QUdpSocket::readDatagram(char *, qint64, QHostAddress *, quint16 *)</code></a></p>
          */
         public final long writeDatagram(byte data[], QHostAddress address, short port) {
             return writeDatagram(java.nio.ByteBuffer.wrap(data), address, port);
@@ -189,7 +189,7 @@ class QUdpSocket___ extends QUdpSocket {
 
 class QNetworkReply___ extends QNetworkReply {
     /**
-     * <p>See <a href="@docRoot/qnetworkreply.html#rawHeader">QNetworkReply::rawHeader(QByteArray)const</a></p>
+     * <p>See <a href="@docRoot/qnetworkreply.html#rawHeader"><code>QNetworkReply::rawHeader(QByteArray)const</code></a></p>
      */
     @QtUninvokable
     public final io.qt.core.QByteArray rawHeader(String headerName){
@@ -197,7 +197,7 @@ class QNetworkReply___ extends QNetworkReply {
     }
     
     /**
-     * <p>See <a href="@docRoot/qnetworkreply.html#hasRawHeader">QNetworkReply::hasRawHeader(QByteArray)const</a></p>
+     * <p>See <a href="@docRoot/qnetworkreply.html#hasRawHeader"><code>QNetworkReply::hasRawHeader(QByteArray)const</code></a></p>
      */
     @QtUninvokable
     public final boolean hasRawHeader(String headerName){

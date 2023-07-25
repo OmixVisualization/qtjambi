@@ -217,7 +217,7 @@ static bool customConvert(const QVariant::Private *d, int t,
                                                         false);
                 }
                 if(variantToJavaConverter
-                        && variantToJavaConverter(env, nullptr, in, &jval, true)){
+                        && variantToJavaConverter(env, nullptr, in, jval, true)){
                     java_object = jval.l;
                 }else{
                     return false;
@@ -554,7 +554,7 @@ static bool customCanConvert(const QVariant::Private *d, int t)
                                                             false);
                     }
                     if(variantToJavaConverter
-                            && variantToJavaConverter(env, nullptr, in, &jval, true)){
+                            && variantToJavaConverter(env, nullptr, in, jval, true)){
                         java_object = jval.l;
                     }else{
                         return false;

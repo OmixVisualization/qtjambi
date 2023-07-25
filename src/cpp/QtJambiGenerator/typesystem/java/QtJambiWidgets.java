@@ -310,7 +310,7 @@ class QBoxLayout___ extends QBoxLayout {
 
 class QGridLayout___ extends QGridLayout {
     /**
-     * Result class for <a href="https://doc.qt.io/qt/qgridlayout.html#getItemPosition">QGridLayout::getItemPosition(int,int*,int*,int*,int*)const</a>.
+     * Result class for <a href="https://doc.qt.io/qt/qgridlayout.html#getItemPosition"><code>QGridLayout::getItemPosition(int,int*,int*,int*,int*)const</code></a>.
      */
     public static final class ItemInfo{
         private ItemInfo(int row, int column, int rowSpan, int columnSpan){
@@ -328,7 +328,7 @@ class QGridLayout___ extends QGridLayout {
 
 class QColorDialog__java_{
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qcolordialog.html#open">QColorDialog::open(QObject *, const char *)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qcolordialog.html#open"><code>QColorDialog::open(QObject *, const char *)</code></a></p>
      */
     @QtUninvokable
     public final void open(io.qt.core.QMetaObject.@StrictNonNull Slot1<io.qt.gui.@NonNull QColor> selectedSlot) {
@@ -350,7 +350,7 @@ class QColorDialog__java_{
     }
     
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qcolordialog.html#open">QColorDialog::open(QObject *, const char *)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qcolordialog.html#open"><code>QColorDialog::open(QObject *, const char *)</code></a></p>
      */
     @QtUninvokable
     public final void open(io.qt.core.QMetaObject.@StrictNonNull Connectable1<io.qt.gui.@NonNull QColor> selectedSignal) {
@@ -375,7 +375,7 @@ class QColorDialog__java_{
 
 class QFontDialog__java_ extends QFontDialog {
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qfontdialog.html#open">QFontDialog::open(QObject *, const char *)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qfontdialog.html#open"><code>QFontDialog::open(QObject *, const char *)</code></a></p>
      */
     @QtUninvokable
     public final void open(io.qt.core.QMetaObject.@StrictNonNull Slot1<io.qt.gui.@NonNull QFont> selectedSlot) {
@@ -397,7 +397,7 @@ class QFontDialog__java_ extends QFontDialog {
     }
     
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qfontdialog.html#open">QFontDialog::open(QObject *, const char *)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qfontdialog.html#open"><code>QFontDialog::open(QObject *, const char *)</code></a></p>
      */
     @QtUninvokable
     public final void open(io.qt.core.QMetaObject.@StrictNonNull Connectable1<io.qt.gui.@NonNull QFont> selectedSignal) {
@@ -422,12 +422,12 @@ class QFontDialog__java_ extends QFontDialog {
 
 class QFileDialog__java_ extends QFileDialog {
     /**
-     * Result class for <a href="https://doc.qt.io/qt/qfiledialog.html#getOpenFileName">QFileDialog::getOpenFileName(QWidget*,QString,QString,QString,QString*,Options)</a>,
-     * <a href="https://doc.qt.io/qt/qfiledialog.html#getOpenFileNames">QFileDialog::getOpenFileNames(QWidget*,QString,QString,QString,QString*,Options)</a>,
-     * <a href="https://doc.qt.io/qt/qfiledialog.html#getOpenFileUrl">QFileDialog::getOpenFileUrl(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</a>,
-     * <a href="https://doc.qt.io/qt/qfiledialog.html#getOpenFileUrls">QFileDialog::getOpenFileUrls(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</a>,
-     * <a href="https://doc.qt.io/qt/qfiledialog.html#getSaveFileName">QFileDialog::getSaveFileName(QWidget*,QString,QString,QString,QString*,Options)</a> and
-     * <a href="https://doc.qt.io/qt/qfiledialog.html#getSaveFileUrl">QFileDialog::getSaveFileUrl(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</a>.
+     * Result class for <a href="https://doc.qt.io/qt/qfiledialog.html#getOpenFileName"><code>QFileDialog::getOpenFileName(QWidget*,QString,QString,QString,QString*,Options)</code></a>,
+     * <a href="https://doc.qt.io/qt/qfiledialog.html#getOpenFileNames"><code>QFileDialog::getOpenFileNames(QWidget*,QString,QString,QString,QString*,Options)</code></a>,
+     * <a href="https://doc.qt.io/qt/qfiledialog.html#getOpenFileUrl"><code>QFileDialog::getOpenFileUrl(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</code></a>,
+     * <a href="https://doc.qt.io/qt/qfiledialog.html#getOpenFileUrls"><code>QFileDialog::getOpenFileUrls(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</code></a>,
+     * <a href="https://doc.qt.io/qt/qfiledialog.html#getSaveFileName"><code>QFileDialog::getSaveFileName(QWidget*,QString,QString,QString,QString*,Options)</code></a> and
+     * <a href="https://doc.qt.io/qt/qfiledialog.html#getSaveFileUrl"><code>QFileDialog::getSaveFileUrl(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</code></a>.
      */
     public static final class Result<R> {
         @NativeAccess
@@ -441,35 +441,35 @@ class QFileDialog__java_ extends QFileDialog {
     }
     
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qfiledialog.html#getExistingDirectoryUrl">QFileDialog::getExistingDirectoryUrl(QWidget*,QString,QUrl,Options,QStringList)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qfiledialog.html#getExistingDirectoryUrl"><code>QFileDialog::getExistingDirectoryUrl(QWidget*,QString,QUrl,Options,QStringList)</code></a></p>
      */
     public static io.qt.core.@NonNull QUrl getExistingDirectoryUrl(io.qt.widgets.@Nullable QWidget parent, java.lang.@NonNull String caption, io.qt.core.@NonNull QUrl dir, java.util.@NonNull Collection<java.lang.@NonNull String> supportedSchemes, io.qt.widgets.QFileDialog.@NonNull Option @NonNull... options){
         return getExistingDirectoryUrl(parent, caption, dir, new io.qt.widgets.QFileDialog.Options(options), supportedSchemes);
     }
     
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qfiledialog.html#getOpenFileUrl">QFileDialog::getOpenFileUrl(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qfiledialog.html#getOpenFileUrl"><code>QFileDialog::getOpenFileUrl(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</code></a></p>
      */
     public static io.qt.widgets.QFileDialog.@NonNull Result<io.qt.core.@NonNull QUrl> getOpenFileUrl(io.qt.widgets.@Nullable QWidget parent, java.lang.@NonNull String caption, io.qt.core.@NonNull QUrl dir, java.lang.@NonNull String filter, java.util.@NonNull Collection<java.lang.@NonNull String> supportedSchemes, io.qt.widgets.QFileDialog.@NonNull Option @NonNull... options){
         return getOpenFileUrl(parent, caption, dir, filter, io.qt.widgets.QFileDialog.Option.flags(options), supportedSchemes);
     }
     
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qfiledialog.html#getOpenFileUrls">QFileDialog::getOpenFileUrls(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qfiledialog.html#getOpenFileUrls"><code>QFileDialog::getOpenFileUrls(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</code></a></p>
      */
     public static io.qt.widgets.QFileDialog.@NonNull Result<io.qt.core.@NonNull QList<io.qt.core.@NonNull QUrl>> getOpenFileUrls(io.qt.widgets.@Nullable QWidget parent, java.lang.@NonNull String caption, io.qt.core.@NonNull QUrl dir, java.lang.@NonNull String filter, java.util.Collection<java.lang.String> supportedSchemes, io.qt.widgets.QFileDialog.@NonNull Option @NonNull... options){
         return getOpenFileUrls(parent, caption, dir, filter, io.qt.widgets.QFileDialog.Option.flags(options), supportedSchemes);
     }
     
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qfiledialog.html#getSaveFileUrl">QFileDialog::getSaveFileUrl(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qfiledialog.html#getSaveFileUrl"><code>QFileDialog::getSaveFileUrl(QWidget*,QString,QUrl,QString,QString*,Options,QStringList)</code></a></p>
      */
     public static io.qt.widgets.QFileDialog.@NonNull Result<io.qt.core.@NonNull QUrl> getSaveFileUrl(io.qt.widgets.@Nullable QWidget parent, java.lang.String caption, io.qt.core.@NonNull QUrl dir, java.lang.@NonNull String filter, java.util.@NonNull Collection<java.lang.@NonNull String> supportedSchemes, io.qt.widgets.QFileDialog.@NonNull Option @NonNull... options){
         return getSaveFileUrl(parent, caption, dir, filter, io.qt.widgets.QFileDialog.Option.flags(options), supportedSchemes);
     }
     
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qfiledialog.html#open">QFileDialog::open(QObject *, const char *)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qfiledialog.html#open"><code>QFileDialog::open(QObject *, const char *)</code></a></p>
      */
     @QtUninvokable
     public final void open(io.qt.core.QMetaObject.@StrictNonNull Slot1<?> selectedSlot) {
@@ -497,7 +497,7 @@ class QFileDialog__java_ extends QFileDialog {
     }
     
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qfiledialog.html#open">QFileDialog::open(QObject *, const char *)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qfiledialog.html#open"><code>QFileDialog::open(QObject *, const char *)</code></a></p>
      */
     @QtUninvokable
     public final void open(io.qt.core.QMetaObject.@StrictNonNull Connectable1<?> selectedSignal) {
@@ -528,7 +528,7 @@ class QFileDialog__java_ extends QFileDialog {
 
 class QInputDialog__java_ extends QInputDialog {
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qinputdialog.html#open">QInputDialog::open(QObject *, const char *)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qinputdialog.html#open"><code>QInputDialog::open(QObject *, const char *)</code></a></p>
      */
     @QtUninvokable
     public final void open(io.qt.core.QMetaObject.@StrictNonNull Slot0 selectedSlot) {
@@ -547,7 +547,7 @@ class QInputDialog__java_ extends QInputDialog {
     }
     
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qinputdialog.html#open">QInputDialog::open(QObject *, const char *)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qinputdialog.html#open"><code>QInputDialog::open(QObject *, const char *)</code></a></p>
      */
     @QtUninvokable
     public final void open(io.qt.core.QMetaObject.@StrictNonNull Slot1<?> selectedSlot) {
@@ -572,7 +572,7 @@ class QInputDialog__java_ extends QInputDialog {
     }
     
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qinputdialog.html#open">QInputDialog::open(QObject *, const char *)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qinputdialog.html#open"><code>QInputDialog::open(QObject *, const char *)</code></a></p>
      */
     @QtUninvokable
     public final void open(io.qt.core.QMetaObject.@StrictNonNull Connectable1<?> selectedSignal) {
@@ -608,7 +608,7 @@ class QAbstractScrollArea___ extends QAbstractScrollArea {
 
 class QSplitter___ extends QSplitter {
         /**
-         * Result class for <a href="https://doc.qt.io/qt/qsplitter.html#getRange">QSplitter::getRange(int,int*,int*)const</a>.
+         * Result class for <a href="https://doc.qt.io/qt/qsplitter.html#getRange"><code>QSplitter::getRange(int,int*,int*)const</code></a>.
          */
         public static final class Range {
             @NativeAccess
@@ -683,9 +683,9 @@ class QApplication___ extends QApplication {
 
 class QFormLayout___ extends QFormLayout {
     /**
-     * Result class for <a href="https://doc.qt.io/qt/qformlayout.html#getItemPosition">QFormLayout::getItemPosition(int,int*,QFormLayout::ItemRole*)const</a>,
-     * <a href="https://doc.qt.io/qt/qformlayout.html#getLayoutPosition">QFormLayout::getLayoutPosition(QLayout*,int*,QFormLayout::ItemRole*)const</a> and
-     * <a href="https://doc.qt.io/qt/qformlayout.html#getWidgetPosition">QFormLayout::getWidgetPosition(QWidget*,int*,QFormLayout::ItemRole*)const</a>.
+     * Result class for <a href="https://doc.qt.io/qt/qformlayout.html#getItemPosition"><code>QFormLayout::getItemPosition(int,int*,QFormLayout::ItemRole*)const</code></a>,
+     * <a href="https://doc.qt.io/qt/qformlayout.html#getLayoutPosition"><code>QFormLayout::getLayoutPosition(QLayout*,int*,QFormLayout::ItemRole*)const</code></a> and
+     * <a href="https://doc.qt.io/qt/qformlayout.html#getWidgetPosition"><code>QFormLayout::getWidgetPosition(QWidget*,int*,QFormLayout::ItemRole*)const</code></a>.
      */
     public static final class ItemInfo{
         private ItemInfo(int row, ItemRole role){
@@ -712,7 +712,7 @@ class QGraphicsWidget___ extends QGraphicsWidget {
 
 class QGraphicsItem___{
     /**
-     * Result class for <a href="https://doc.qt.io/qt/qgraphicsitem.html#isBlockedByModalPanel">QGraphicsItem::isBlockedByModalPanel(QGraphicsItem**)const</a>.
+     * Result class for <a href="https://doc.qt.io/qt/qgraphicsitem.html#isBlockedByModalPanel"><code>QGraphicsItem::isBlockedByModalPanel(QGraphicsItem**)const</code></a>.
      */
     public static final class BlockedByModalPanelInfo{
         private BlockedByModalPanelInfo(boolean isBlockedByModalPanel,

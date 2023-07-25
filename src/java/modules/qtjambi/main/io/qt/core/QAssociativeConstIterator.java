@@ -29,26 +29,26 @@
 ****************************************************************************/
 package io.qt.core;
 
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.function.Function;
 
 import io.qt.NativeAccess;
 import io.qt.QtObject;
 import io.qt.QtUninvokable;
-import io.qt.internal.AbstractSequentialConstIterator;
 
 /**
- * <p>Java-iterable wrapper for Qt's constant iterator types:
+ * <p>Java-iterable wrapper for Qt's constant iterator types:</p>
  * <ul>
  * <li><a href="https://doc.qt.io/qt/qmap-const-iterator.html">QMap&lt;K,V>::const_iterator</a></li>
  * <li><a href="https://doc.qt.io/qt/qhash-const-iterator.html">QHash&lt;K,V>::const_iterator</a></li>
  * <li><a href="https://doc.qt.io/qt/qmultimap-const-iterator.html">QMultiMap&lt;K,V>::const_iterator</a></li>
  * <li><a href="https://doc.qt.io/qt/qmultihash-const-iterator.html">QMultiHash&lt;K,V>::const_iterator</a></li>
  * </ul>
- * </p>
- * @param <K> key type
- * @param <V> value type
+ * @param <Key> key type
+ * @param <T> value type
  * @see QMap#constBegin()
  * @see QMap#constEnd()
  * @see QMap#find(Object)
@@ -68,8 +68,7 @@ import io.qt.internal.AbstractSequentialConstIterator;
  * @see QMultiHash#find(Object)
  * @see #iterator()
  */
-@SuppressWarnings("deprecation")
-public class QAssociativeConstIterator<K,V> extends io.qt.internal.AbstractAssociativeConstIterator<K,V> implements java.lang.Iterable<QPair<K,V>>, QMapIterator<K,V> {
+public class QAssociativeConstIterator<Key,T> extends AbstractIterator<T> implements java.lang.Iterable<QPair<Key,T>> {
 
     static {
     	QtJambi_LibraryUtilities.initialize();
@@ -84,50 +83,11 @@ public class QAssociativeConstIterator<K,V> extends io.qt.internal.AbstractAssoc
      * Returns the current item's key.
      */
     @QtUninvokable
-    protected final K key() {
+    final Key _key() {
         return key(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     @QtUninvokable
     private static native <K> K key(long __this__nativeId);
-
-    /**
-     * Returns the current item's value.
-     */
-    @QtUninvokable
-    protected final V val() {
-        return QSequentialConstIterator.value(QtJambi_LibraryUtilities.internal.nativeId(this));
-    }
-
-    /**
-     * Advances the iterator to the next item in the container.
-     */
-    @QtUninvokable
-    protected final void increment() {
-    	QSequentialConstIterator.increment(QtJambi_LibraryUtilities.internal.nativeId(this));
-    }
-
-    /**
-     * Advances the iterator to the previous item in the container.
-     */
-    @QtUninvokable
-    protected final void decrement() {
-    	QSequentialConstIterator.decrement(QtJambi_LibraryUtilities.internal.nativeId(this));
-    }
-
-    @QtUninvokable
-    private final boolean lessThan(AbstractSequentialConstIterator<?> other) {
-        if(compareOwners(other))
-        	throw new IllegalArgumentException("Incomparable objects.");
-        return QSequentialConstIterator.lessThan(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(other));
-    }
-
-    /**
-     * Returns true if other points to the same item as this iterator; otherwise returns false.
-     */
-    @QtUninvokable
-    protected final boolean equals(AbstractSequentialConstIterator<?> o) {
-        return QSequentialConstIterator.operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(o));
-    }
 
     /**
      * {@inheritDoc}
@@ -140,49 +100,90 @@ public class QAssociativeConstIterator<K,V> extends io.qt.internal.AbstractAssoc
         }
         return false;
     }
+	
 
-    @QtUninvokable
-    final boolean isValid() {
-    	long nativeId = QtJambi_LibraryUtilities.internal.nativeId(this);
-    	if(nativeId==0)
-    		return false;
-    	AbstractSequentialConstIterator<?> end = end();
-    	if(QSequentialConstIterator.canLess(nativeId)) {
-	    	try {
-	        	return lessThan(end);
-			} catch (Exception e) {
-			}
-    	}
-		return !equals(end);
+	
+	private final static Function<QAssociativeConstIterator<?,?>, java.util.Iterator<?>> iteratorFactory;
+	
+	static {
+		if(Boolean.getBoolean("io.qt.enable-concurrent-container-modification-check")) {
+			@SuppressWarnings("unchecked")
+			Function<QAssociativeConstIterator<?,?>, java.util.Iterator<?>> _iteratorFactory = CheckingIncrementalIterator::new;
+			iteratorFactory = _iteratorFactory;
+		}else {
+			@SuppressWarnings("unchecked")
+			Function<QAssociativeConstIterator<?,?>, java.util.Iterator<?>> _iteratorFactory = IncrementalIterator::new;
+			iteratorFactory = _iteratorFactory;
+		}
+	}
+	
+	private static class IncrementalIterator<Key,T> implements java.util.Iterator<QPair<Key,T>>{
+    	final QAssociativeConstIterator<Key,T> nativeIterator;
+    	final AbstractIterator<T> end;
+    	private boolean hasNext;
+    	
+		IncrementalIterator(QAssociativeConstIterator<Key, T> nativeIterator) {
+			super();
+			this.nativeIterator = nativeIterator;
+			end = nativeIterator.end();
+			hasNext = end!=null && !nativeIterator.equals(end);
+		}
+
+		@Override
+		public boolean hasNext() {
+			return hasNext;
+		}
+
+		@Override
+		public QPair<Key,T> next() {
+			checkNext();
+			QPair<Key,T> e = new QPair<>(nativeIterator._key(), nativeIterator._value());
+			nativeIterator.increment();
+            hasNext = end!=null && !nativeIterator.equals(end);
+            return e;
+		}
+    	
+		void checkNext() {
+            if(!hasNext)
+                throw new NoSuchElementException();
+		}
     }
-    
+	
+	private static class CheckingIncrementalIterator<Key,T> extends IncrementalIterator<Key,T>{
+		CheckingIncrementalIterator(QAssociativeConstIterator<Key, T> nativeIterator) {
+			super(nativeIterator);
+		}
+
+		void checkNext() {
+    		super.checkNext();
+        	if(end!=null && !end.equals(nativeIterator.end()))
+        		throw new ConcurrentModificationException();
+		}
+	}
+
     /**
-     * {@inheritDoc}
+     * Returns a Java iterator between this and the container's end.
      */
+	@SuppressWarnings("unchecked")
     @QtUninvokable
-    public final Iterator<QPair<K,V>> iterator(){
-    	return toJavaMapIterator();
+    public final Iterator<QPair<Key,T>> iterator(){
+    	return (java.util.Iterator<QPair<Key,T>>)iteratorFactory.apply(this);
     }
 
     /**
 	 * Returns the key value pair at iterator's position in the container or emptiness in case of <code>end</code>.
 	 */
     @QtUninvokable
-	public final Optional<QPair<K,V>> keyValuePair() {
-		return !isValid() ? Optional.empty() : Optional.ofNullable(new QPair<>(key(), val()));
+	public final Optional<QPair<Key,T>> keyValuePair() {
+		return !isValid() ? Optional.empty() : Optional.ofNullable(new QPair<>(_key(), _value()));
 	}
     
     /**
-     * Returns the current item's value if item is valid
-     * or throws NoSuchElementException otherwise.
-     */
+	 * Returns the key at iterator's position in the container or emptiness in case of <code>end</code>.
+	 */
     @QtUninvokable
-    protected final V checkedValue() throws NoSuchElementException {
-    	if(isValid()) {
-    		return val();
-    	}else {
-    		throw new NoSuchElementException();
-    	}
+	public final Optional<Key> key() {
+		return !isValid() ? Optional.empty() : Optional.ofNullable(_key());
 	}
     
     /**
@@ -190,9 +191,9 @@ public class QAssociativeConstIterator<K,V> extends io.qt.internal.AbstractAssoc
      * or throws NoSuchElementException otherwise.
      */
     @QtUninvokable
-    protected final K checkedKey() throws NoSuchElementException {
+    final Key checkedKey() throws NoSuchElementException {
     	if(isValid()) {
-    		return key();
+    		return _key();
     	}else {
     		throw new NoSuchElementException();
     	}

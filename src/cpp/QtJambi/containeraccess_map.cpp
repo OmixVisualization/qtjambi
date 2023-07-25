@@ -1330,7 +1330,7 @@ jobject AutoMapAccess::nodeKey(JNIEnv * env, Node* node)
     jvalue jv;
     jv.l = nullptr;
     if(node)
-        m_keyInternalToExternalConverter(env, nullptr, reinterpret_cast<char*>(node)+m_offset1, &jv, true);
+        m_keyInternalToExternalConverter(env, nullptr, reinterpret_cast<char*>(node)+m_offset1, jv, true);
     return jv.l;
 }
 
@@ -1339,7 +1339,7 @@ jobject AutoMapAccess::nodeValue(JNIEnv * env, Node* node)
     jvalue jv;
     jv.l = nullptr;
     if(node)
-        m_valueInternalToExternalConverter(env, nullptr, reinterpret_cast<char*>(node)+m_offset2, &jv, true);
+        m_valueInternalToExternalConverter(env, nullptr, reinterpret_cast<char*>(node)+m_offset2, jv, true);
     return jv.l;
 }
 

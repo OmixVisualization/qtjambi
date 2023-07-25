@@ -29,6 +29,11 @@
 
 #include <QtCore/QMutex>
 #include "utils_p.h"
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+#include <QtJambi/JObjectWrapper>
+#include <QtTextToSpeech/QTextToSpeech>
+#include <QtJambi/Cast>
+#endif
 
 namespace Java{
     namespace QtTextToSpeech{
@@ -37,4 +42,53 @@ namespace Java{
             QTJAMBI_REPOSITORY_DEFINE_METHOD(getMessage,()Ljava/lang/String;)
         )
     }
+    namespace QtMultimedia{
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QAudioFormat,)
+        QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/multimedia,QAudioFormat,)
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QAudioBuffer,)
+        QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/multimedia,QAudioBuffer,)
+    }
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+
+struct Prototype1{
+    Prototype1(JNIEnv *env, jobject func) : wrapper(env, func){}
+    void operator()(const QAudioBuffer& arg1){
+        if(JniEnvironment env{200}){
+            Java::QtCore::QMetaObject$Slot1::invoke(env, wrapper.object(), QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &arg1, Java::QtMultimedia::QAudioBuffer::getClass(env)));
+        }
+    }
+    JObjectWrapper wrapper;
+};
+
+struct Prototype2{
+    Prototype2(JNIEnv *env, jobject func) : wrapper(env, func){}
+    void operator()(const QAudioFormat& arg1, const QByteArray& arg2){
+        if(JniEnvironment env{200}){
+            Java::QtCore::QMetaObject$Slot2::invoke(env, wrapper.object(), QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &arg1, Java::QtMultimedia::QAudioFormat::getClass(env)), qtjambi_cast<jobject>(env, arg2));
+        }
+    }
+    JObjectWrapper wrapper;
+};
+
+void qtjambi_synthesize1(JNIEnv *env, QTextToSpeech *_this, jobject _context, const QString&  text, jobject func){
+    QObject* context = qtjambi_cast<QObject*>(env, _context);
+    auto out = [wrapper = JObjectWrapper(env, func)](const QAudioBuffer& arg1){
+        if(JniEnvironment env{200}){
+            Java::QtCore::QMetaObject$Slot1::invoke(env, wrapper.object(), QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &arg1, Java::QtMultimedia::QAudioBuffer::getClass(env)));
+        }
+    };
+    _this->synthesize(text, context, std::move(out));
+}
+
+void qtjambi_synthesize2(JNIEnv *env, QTextToSpeech *_this, jobject _context, const QString&  text, jobject func){
+    QObject* context = qtjambi_cast<QObject*>(env, _context);
+    auto out = [wrapper = JObjectWrapper(env, func)](const QAudioFormat& arg1, const QByteArray& arg2){
+        if(JniEnvironment env{200}){
+            Java::QtCore::QMetaObject$Slot2::invoke(env, wrapper.object(), QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &arg1, Java::QtMultimedia::QAudioFormat::getClass(env)), qtjambi_cast<jobject>(env, arg2));
+        }
+    };
+    _this->synthesize(text, context, std::move(out));
+}
+#endif

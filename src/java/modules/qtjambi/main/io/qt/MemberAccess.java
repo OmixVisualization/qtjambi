@@ -32,6 +32,7 @@ package io.qt;
 /**
  * This class manages member access for interface default functions.
  * @param <T> interface type
+ * @hidden
  */
 public class MemberAccess<T extends QtObjectInterface> {
 

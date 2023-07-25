@@ -333,7 +333,7 @@ public:
                 if(m_valueExternalToInternalConverter(env, nullptr, jv, _qvaluePtr, jValueType::l)){
                     K _qkey = reinterpret_cast<const QHash<K,T> *>(container)->key(_qvalue, _qdefaultkey);
                     jv.l = nullptr;
-                    if(m_keyInternalToExternalConverter(env, nullptr, &_qkey, &jv, true)){
+                    if(m_keyInternalToExternalConverter(env, nullptr, &_qkey, jv, true)){
                         result = jv.l;
                     }
                 }
@@ -470,7 +470,7 @@ public:
                 T _qvalue = reinterpret_cast<QHash<K,T> *>(container)->take(_qkey);
                 jvalue _value;
                 _value.l = nullptr;
-                if(m_valueInternalToExternalConverter(env, nullptr, &_qvalue, &_value, true)){
+                if(m_valueInternalToExternalConverter(env, nullptr, &_qvalue, _value, true)){
                     result = _value.l;
                 }
             }
@@ -493,7 +493,7 @@ public:
                 if(m_valueExternalToInternalConverter(env, nullptr, jv, _qdefaultValuePtr, jValueType::l)){
                     T _qvalue = reinterpret_cast<const QHash<K,T> *>(container)->value(_qkey, _qdefaultValue);
                     jv.l = nullptr;
-                    if(m_valueInternalToExternalConverter(env, nullptr, &_qvalue, &jv, true)){
+                    if(m_valueInternalToExternalConverter(env, nullptr, &_qvalue, jv, true)){
                         result = jv.l;
                     }
                 }

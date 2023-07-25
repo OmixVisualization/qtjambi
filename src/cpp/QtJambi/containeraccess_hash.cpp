@@ -619,7 +619,7 @@ jobject AutoHashAccess::nodeKey(JNIEnv * env, Node* node)
     jvalue jv;
     jv.l = nullptr;
     if(node)
-        m_keyInternalToExternalConverter(env, nullptr, reinterpret_cast<char*>(node)+m_offset1, &jv, true);
+        m_keyInternalToExternalConverter(env, nullptr, reinterpret_cast<char*>(node)+m_offset1, jv, true);
     return jv.l;
 }
 
@@ -628,7 +628,7 @@ jobject AutoHashAccess::nodeValue(JNIEnv * env, Node* node)
     jvalue jv;
     jv.l = nullptr;
     if(node)
-        m_valueInternalToExternalConverter(env, nullptr, reinterpret_cast<char*>(node)+m_offset2, &jv, true);
+        m_valueInternalToExternalConverter(env, nullptr, reinterpret_cast<char*>(node)+m_offset2, jv, true);
     return jv.l;
 }
 
@@ -1349,7 +1349,7 @@ jobject AutoHashAccess::find(JNIEnv * env, QtJambiNativeID ownerId, void* contai
         QtJambiScope scope;
         void* akey = nullptr;
         if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
-            auto it = d->find(*this, key);
+            auto it = d->find(*this, akey);
             if (it.isUnused())
                 it = d->end(*this);
             return createIterator(env, ownerId, new iterator(it));
@@ -1383,7 +1383,7 @@ jobject AutoHashAccess::constFind(JNIEnv * env, QtJambiNativeID ownerId, const v
         QtJambiScope scope;
         void* akey = nullptr;
         if(m_keyExternalToInternalConverter(env, &scope, jv, akey, jValueType::l)){
-            auto it = d->find(*this, key);
+            auto it = d->find(*this, akey);
             if (it.isUnused())
                 it = d->end(*this);
             return createConstIterator(env, ownerId, new iterator(it));
@@ -1419,7 +1419,7 @@ jobject AutoHashAccess::key(JNIEnv *env, const void* container, jobject value, j
             if (m_valueMetaType.equals(i.value(), value)){
                 jvalue jv;
                 jv.l = nullptr;
-                m_keyInternalToExternalConverter(env, nullptr, i.key(), &jv, true);
+                m_keyInternalToExternalConverter(env, nullptr, i.key(), jv, true);
                 return jv.l;
             }
             ++i;
@@ -1449,7 +1449,7 @@ jobject AutoHashAccess::value(JNIEnv *env, const void* container, jobject key, j
         if (!iter.isUnused()){
             jvalue jv;
             jv.l = nullptr;
-            m_valueInternalToExternalConverter(env, nullptr, iterator(iter).value(), &jv, true);
+            m_valueInternalToExternalConverter(env, nullptr, iterator(iter).value(), jv, true);
             return jv.l;
         }
 #endif
@@ -2207,7 +2207,7 @@ jobject AutoHashAccess::keys(JNIEnv *env, const void* container)
         while (n != e) {
             jvalue jv;
             jv.l = nullptr;
-            m_keyInternalToExternalConverter(env, nullptr, n.key(), &jv, true);
+            m_keyInternalToExternalConverter(env, nullptr, n.key(), jv, true);
             listAccess->insert(env, listContainer, idx++, 1, jv.l);
             ++n;
         }
@@ -2267,7 +2267,7 @@ jobject AutoHashAccess::keys(JNIEnv *env, const void* container, jobject value)
             if(m_valueMetaType.equals(n.value(), _qvaluePtr)){
                 jvalue jv;
                 jv.l = nullptr;
-                m_keyInternalToExternalConverter(env, nullptr, n.key(), &jv, true);
+                m_keyInternalToExternalConverter(env, nullptr, n.key(), jv, true);
                 listAccess->insert(env, listContainer, idx++, 1, jv.l);
             }
             ++n;
@@ -2350,7 +2350,7 @@ jobject AutoHashAccess::take(JNIEnv *env, void* container, jobject key)
         if (!it.isUnused()){
             jvalue jv;
             jv.l = nullptr;
-            m_valueInternalToExternalConverter(env, nullptr, it.value(), &jv, true);
+            m_valueInternalToExternalConverter(env, nullptr, it.value(), jv, true);
             d->erase(*this, it);
             return jv.l;
         }
@@ -2400,7 +2400,7 @@ jobject AutoHashAccess::values(JNIEnv *env, const void* container)
         while (n != e) {
             jvalue jv;
             jv.l = nullptr;
-            m_valueInternalToExternalConverter(env, nullptr, n.value(), &jv, true);
+            m_valueInternalToExternalConverter(env, nullptr, n.value(), jv, true);
             listAccess->insert(env, listContainer, idx++, 1, jv.l);
             ++n;
         }

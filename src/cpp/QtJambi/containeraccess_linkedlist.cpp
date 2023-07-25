@@ -502,7 +502,7 @@ jobject AutoLinkedListAccess::first(JNIEnv * env, const void* container)
     Q_ASSERT(d->size>0);
     jvalue _value;
     _value.l = nullptr;
-    if(m_internalToExternalConverter(env, nullptr, &reinterpret_cast<const Node*>(d)->n->t, &_value, true))
+    if(m_internalToExternalConverter(env, nullptr, &reinterpret_cast<const Node*>(d)->n->t, _value, true))
         return _value.l;
     return nullptr;
 }
@@ -514,7 +514,7 @@ jobject AutoLinkedListAccess::last(JNIEnv * env, const void* container)
     Q_ASSERT(d->size>0);
     jvalue _value;
     _value.l = nullptr;
-    if(m_internalToExternalConverter(env, nullptr, &reinterpret_cast<const Node*>(d)->p->t, &_value, true))
+    if(m_internalToExternalConverter(env, nullptr, &reinterpret_cast<const Node*>(d)->p->t, _value, true))
         return _value.l;
     return nullptr;
 }

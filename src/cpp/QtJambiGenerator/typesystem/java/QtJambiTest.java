@@ -32,7 +32,7 @@
 class QTest__{
 
     /**
-     * <p>See <a href="@docRoot/qtest.html#QBENCHMARK">QBENCHMARK</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QBENCHMARK"><code>QBENCHMARK</code></a></p>
      */
     @QtUninvokable
     public static void QBENCHMARK(Runnable runnable) {
@@ -42,7 +42,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QBENCHMARK_ONCE">QBENCHMARK_ONCE</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QBENCHMARK_ONCE"><code>QBENCHMARK_ONCE</code></a></p>
      */
     @QtUninvokable
     public static void QBENCHMARK_ONCE(Runnable runnable) {
@@ -72,7 +72,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE">QCOMPARE(actual, expected)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE"><code>QCOMPARE(actual, expected)</code></a></p>
      */
     @QtUninvokable
     public static <T extends Comparable<T>> void QCOMPARE(T t1, T t2) throws AssertionError {
@@ -85,7 +85,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE">QCOMPARE(actual, expected)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE"><code>QCOMPARE(actual, expected)</code></a></p>
      */
     @QtUninvokable
     public static <T> void QCOMPARE(T t1, T t2) throws AssertionError {
@@ -98,7 +98,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE">QCOMPARE(actual, expected)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE"><code>QCOMPARE(actual, expected)</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE(int t1, int t2) throws AssertionError {
@@ -111,7 +111,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE">QCOMPARE(actual, expected)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE"><code>QCOMPARE(actual, expected)</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE(double t1, double t2) throws AssertionError {
@@ -124,7 +124,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE">QCOMPARE(actual, expected)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE"><code>QCOMPARE(actual, expected)</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE(float t1, double t2) throws AssertionError {
@@ -137,7 +137,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE">QCOMPARE(actual, expected)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE"><code>QCOMPARE(actual, expected)</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE(double t1, float t2) throws AssertionError {
@@ -150,7 +150,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE">QCOMPARE(actual, expected)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE"><code>QCOMPARE(actual, expected)</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE(float t1, float t2) throws AssertionError {
@@ -163,7 +163,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE">QCOMPARE(actual, expected)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE"><code>QCOMPARE(actual, expected)</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE(String t1, String t2) throws AssertionError {
@@ -176,7 +176,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE">QCOMPARE(actual, expected)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE"><code>QCOMPARE(actual, expected)</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE(io.qt.gui.QIcon t1, io.qt.gui.QIcon t2) throws AssertionError {
@@ -193,7 +193,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE">QCOMPARE(actual, expected)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE"><code>QCOMPARE(actual, expected)</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE(io.qt.gui.QPixmap t1, io.qt.gui.QPixmap t2) throws AssertionError {
@@ -210,7 +210,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE">QCOMPARE(actual, expected)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE"><code>QCOMPARE(actual, expected)</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE(io.qt.gui.QImage t1, io.qt.gui.QImage t2) throws AssertionError {
@@ -227,7 +227,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QEXPECT_FAIL">QEXPECT_FAIL(dataIndex, comment, mode)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QEXPECT_FAIL"><code>QEXPECT_FAIL(dataIndex, comment, mode)</code></a></p>
      */
     @QtUninvokable
     public static void QEXPECT_FAIL(String dataIndex, String comment, QTest.TestFailMode mode) throws AssertionError {
@@ -237,7 +237,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QFAIL">QFAIL(message)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QFAIL"><code>QFAIL(message)</code></a></p>
      */
     @QtUninvokable
     public static void QFAIL(String message) throws AssertionError {
@@ -265,7 +265,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QFETCH">QFETCH(type, name)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QFETCH"><code>QFETCH(type, name)</code></a></p>
      */
     @QtUninvokable
     public static <T> T QFETCH(String name, Class<T> type, io.qt.core.QMetaType...instantiations) {
@@ -273,7 +273,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QFETCH_GLOBAL">QFETCH_GLOBAL(type, name)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QFETCH_GLOBAL"><code>QFETCH_GLOBAL(type, name)</code></a></p>
      */
     @QtUninvokable
     public static <T> T QFETCH_GLOBAL(String name, Class<T> type, io.qt.core.QMetaType...instantiations) {
@@ -281,7 +281,7 @@ class QTest__{
     }
 
     /**
-     * <p>See <a href="@docRoot/qtest.html#QFINDTESTDATA">QFINDTESTDATA(filename)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QFINDTESTDATA"><code>QFINDTESTDATA(filename)</code></a></p>
      */
     @QtUninvokable
     public static String QFINDTESTDATA(String basepath){
@@ -290,7 +290,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QFINDTESTDATA">QFINDTESTDATA(filename,builddir)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QFINDTESTDATA"><code>QFINDTESTDATA(filename,builddir)</code></a></p>
      */
     @QtUninvokable
     public static String QFINDTESTDATA(String basepath, java.lang.String builddir){
@@ -299,7 +299,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QSKIP">QSKIP(description)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QSKIP"><code>QSKIP(description)</code></a></p>
      */
     @QtUninvokable
     public static void QSKIP(String statement){
@@ -315,7 +315,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QTEST">QTEST(actual, testElement)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QTEST"><code>QTEST(actual, testElement)</code></a></p>
      */
     @QtUninvokable
     public static <T> void QTEST(T actual, String testElement) throws AssertionError {
@@ -325,7 +325,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#qExec">QTest::qExec(QObject *, int, char **)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#qExec"><code>QTest::qExec(QObject *, int, char **)</code></a></p>
      */
     @QtUninvokable
     public static int qExec(io.qt.core.QObject testObject, String...args){
@@ -384,7 +384,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QTRY_COMPARE_WITH_TIMEOUT">QTRY_COMPARE_WITH_TIMEOUT(actual, expected, timeout)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QTRY_COMPARE_WITH_TIMEOUT"><code>QTRY_COMPARE_WITH_TIMEOUT(actual, expected, timeout)</code></a></p>
      */
     @QtUninvokable
     public static <T extends Comparable<T>> void QTRY_COMPARE_WITH_TIMEOUT(T t1, T t2, int timeout) throws AssertionError {
@@ -393,7 +393,7 @@ class QTest__{
     }
 
     /**
-     * <p>See <a href="@docRoot/qtest.html#QTRY_COMPARE">QTRY_COMPARE(actual, expected)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QTRY_COMPARE"><code>QTRY_COMPARE(actual, expected)</code></a></p>
      */
     @QtUninvokable
     public static <T extends Comparable<T>> void QTRY_COMPARE(T t1, T t2) throws AssertionError {
@@ -402,7 +402,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QTRY_COMPARE_WITH_TIMEOUT">QTRY_COMPARE_WITH_TIMEOUT(actual, expected, timeout)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QTRY_COMPARE_WITH_TIMEOUT"><code>QTRY_COMPARE_WITH_TIMEOUT(actual, expected, timeout)</code></a></p>
      */
     @QtUninvokable
     public static <T> void QTRY_COMPARE_WITH_TIMEOUT(T t1, T t2, int timeout) throws AssertionError {
@@ -411,7 +411,7 @@ class QTest__{
     }
 
     /**
-     * <p>See <a href="@docRoot/qtest.html#QTRY_COMPARE">QTRY_COMPARE(actual, expected)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QTRY_COMPARE"><code>QTRY_COMPARE(actual, expected)</code></a></p>
      */
     @QtUninvokable
     public static <T> void QTRY_COMPARE(T t1, T t2) throws AssertionError {
@@ -427,7 +427,7 @@ class QTest__{
     }
 
     /**
-     * <p>See <a href="@docRoot/qtest.html#QTRY_VERIFY_WITH_TIMEOUT">QTRY_VERIFY_WITH_TIMEOUT(condition, timeout)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QTRY_VERIFY_WITH_TIMEOUT"><code>QTRY_VERIFY_WITH_TIMEOUT(condition, timeout)</code></a></p>
      */
     @QtUninvokable
     public static void QTRY_VERIFY_WITH_TIMEOUT(java.util.function.BooleanSupplier expr, String messageExpression, int timeout) throws AssertionError {
@@ -437,7 +437,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QVERIFY">QVERIFY(condition)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QVERIFY"><code>QVERIFY(condition)</code></a></p>
      */
     @QtUninvokable
     public static void QVERIFY(java.util.function.BooleanSupplier statement) throws AssertionError {
@@ -446,7 +446,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QVERIFY">QVERIFY(condition)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QVERIFY"><code>QVERIFY(condition)</code></a></p>
      */
     @QtUninvokable
     private static void QVERIFY(io.qt.InternalAccess.CallerContext info, java.util.function.BooleanSupplier statement) throws AssertionError {
@@ -455,7 +455,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QVERIFY2">QVERIFY2(condition,message)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QVERIFY2"><code>QVERIFY2(condition,message)</code></a></p>
      */
     @QtUninvokable
     public static void QVERIFY(java.util.function.BooleanSupplier statement, String description) throws AssertionError {
@@ -464,7 +464,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QVERIFY2">QVERIFY2(condition,message)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QVERIFY2"><code>QVERIFY2(condition,message)</code></a></p>
      */
     @QtUninvokable
     private static void QVERIFY(io.qt.InternalAccess.CallerContext info, java.util.function.BooleanSupplier statement, String description) throws AssertionError {
@@ -478,7 +478,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html">QTest</a></p>
+     * <p>See <a href="@docRoot/qtest.html"><code>QTest</code></a></p>
      */
     @QtUninvokable
     public static void QWARN(String message){
@@ -487,7 +487,7 @@ class QTest__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html">QTest</a></p>
+     * <p>See <a href="@docRoot/qtest.html"><code>QTest</code></a></p>
      */
     @QtUninvokable
     public static io.qt.core.QTemporaryDir QEXTRACTTESTDATA(String resourcePath){
@@ -505,7 +505,7 @@ class QTest__{
 
     /**
      * Place this macro-like method in the main method of the test class.
-     * <p>See <a href="@docRoot/qtest.html#QTEST_MAIN">QTEST_MAIN(TestClass)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QTEST_MAIN"><code>QTEST_MAIN(TestClass)</code></a></p>
      */
     @QtUninvokable
     @SuppressWarnings("unchecked")
@@ -518,7 +518,7 @@ class QTest__{
     
     /**
      * Place this macro-like method in the main method of the test class.
-     * <p>See <a href="@docRoot/qtest.html#QTEST_MAIN">QTEST_MAIN(TestClass)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QTEST_MAIN"><code>QTEST_MAIN(TestClass)</code></a></p>
      */
     @QtUninvokable
     @SuppressWarnings("unchecked")
@@ -531,7 +531,7 @@ class QTest__{
     
     /**
      * Place this macro-like method in the main method of the test class.
-     * <p>See <a href="@docRoot/qtest.html#QTEST_GUILESS_MAIN">QTEST_GUILESS_MAIN(TestClass)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QTEST_GUILESS_MAIN"><code>QTEST_GUILESS_MAIN(TestClass)</code></a></p>
      */
     @QtUninvokable
     @SuppressWarnings("unchecked")
@@ -544,7 +544,7 @@ class QTest__{
     
     /**
      * Place this macro-like method in the main method of the test class.
-     * <p>See <a href="@docRoot/qtest.html#QTEST_APPLESS_MAIN">QTEST_APPLESS_MAIN(TestClass)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QTEST_APPLESS_MAIN"><code>QTEST_APPLESS_MAIN(TestClass)</code></a></p>
      */
     @QtUninvokable
     @SuppressWarnings("unchecked")
@@ -601,7 +601,7 @@ class QTest__{
 class QTest_5__{
 
     /**
-     * <p>See <a href="@docRoot/qtest.html#touchEvent-1">QTest::touchEvent(QWindow *window, QTouchDevice *device, bool autoCommit = true)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#touchEvent-1"><code>QTest::touchEvent(QWindow *window, QTouchDevice *device, bool autoCommit = true)</code></a></p>
      */
     @QtUninvokable
     public static io.qt.test.QTest.QTouchEventSequence touchEvent(io.qt.gui.QWindow window, io.qt.gui.QTouchDevice device) {
@@ -609,13 +609,13 @@ class QTest_5__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#touchEvent-1">QTest::touchEvent(QWindow *window, QTouchDevice *device, bool autoCommit = true)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#touchEvent-1"><code>QTest::touchEvent(QWindow *window, QTouchDevice *device, bool autoCommit = true)</code></a></p>
      */
     @QtUninvokable
     public static native io.qt.test.QTest.QTouchEventSequence touchEvent(io.qt.gui.QWindow window, io.qt.gui.QTouchDevice device, boolean autoCommit);
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#touchEvent">QTest::touchEvent(QWidget *widget, QTouchDevice *device, bool autoCommit = true)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#touchEvent"><code>QTest::touchEvent(QWidget *widget, QTouchDevice *device, bool autoCommit = true)</code></a></p>
      */
     @QtUninvokable
     public static io.qt.test.QTest.QTouchEventSequence touchEvent(io.qt.widgets.QWidget window, io.qt.gui.QTouchDevice device) {
@@ -623,7 +623,7 @@ class QTest_5__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#touchEvent">QTest::touchEvent(QWidget *widget, QTouchDevice *device, bool autoCommit = true)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#touchEvent"><code>QTest::touchEvent(QWidget *widget, QTouchDevice *device, bool autoCommit = true)</code></a></p>
      */
     @QtUninvokable
     public static native io.qt.test.QTest.QTouchEventSequence touchEvent(io.qt.widgets.QWidget window, io.qt.gui.QTouchDevice device, boolean autoCommit);
@@ -633,7 +633,7 @@ class QTest_5__{
 class QTest_6__{
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#touchEvent">QTest::touchEvent(QWidget *widget, QPointingDevice *device, bool autoCommit = true)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#touchEvent"><code>QTest::touchEvent(QWidget *widget, QPointingDevice *device, bool autoCommit = true)</code></a></p>
      */
     @QtUninvokable
     public static io.qt.test.QTest.QTouchEventSequence touchEvent(io.qt.gui.QWindow window, io.qt.gui.QPointingDevice device) {
@@ -641,7 +641,7 @@ class QTest_6__{
     }
      
     /**
-     * <p>See <a href="@docRoot/qtest.html#touchEvent">QTest::touchEvent(QWidget *widget, QPointingDevice *device, bool autoCommit = true)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#touchEvent"><code>QTest::touchEvent(QWidget *widget, QPointingDevice *device, bool autoCommit = true)</code></a></p>
      */
     @QtUninvokable
     public static io.qt.test.QTest.QTouchEventSequence touchEvent(io.qt.gui.QWindow window, io.qt.gui.QPointingDevice device, boolean autoCommit){
@@ -649,7 +649,7 @@ class QTest_6__{
     }
      
     /**
-     * <p>See <a href="@docRoot/qtest.html#touchEvent-1">QTest::touchEvent(QWindow *window, QPointingDevice *device, bool autoCommit = true)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#touchEvent-1"><code>QTest::touchEvent(QWindow *window, QPointingDevice *device, bool autoCommit = true)</code></a></p>
      */
     @QtUninvokable
     public static io.qt.test.QTest.QTouchEventWidgetSequence touchEvent(io.qt.widgets.QWidget window, io.qt.gui.QPointingDevice device) {
@@ -657,13 +657,13 @@ class QTest_6__{
     }
      
     /**
-     * <p>See <a href="@docRoot/qtest.html#touchEvent-1">QTest::touchEvent(QWindow *window, QPointingDevice *device, bool autoCommit = true)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#touchEvent-1"><code>QTest::touchEvent(QWindow *window, QPointingDevice *device, bool autoCommit = true)</code></a></p>
      */
     @QtUninvokable
     public static native io.qt.test.QTest.QTouchEventWidgetSequence touchEvent(io.qt.widgets.QWidget window, io.qt.gui.QPointingDevice device, boolean autoCommit);
         
     /**
-     * <p>See <a href="@docRoot/qtest.html#QFINDTESTDATA">QFINDTESTDATA(filename,builddir)</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QFINDTESTDATA"><code>QFINDTESTDATA(filename,builddir)</code></a></p>
      */
     @QtUninvokable
     public static String QFINDTESTDATA(String basepath, java.lang.String builddir, java.lang.String sourcedir){
@@ -686,7 +686,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_EQ">QCOMPARE_EQ</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_EQ"><code>QCOMPARE_EQ</code></a></p>
      */
     @QtUninvokable
     public static <T> void QCOMPARE_EQ(T lhs, T rhs) throws AssertionError {
@@ -694,7 +694,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_NE">QCOMPARE_NE</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_NE"><code>QCOMPARE_NE</code></a></p>
      */
     @QtUninvokable
     public static <T> void QCOMPARE_NE(T lhs, T rhs) throws AssertionError {
@@ -702,7 +702,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_EQ">QCOMPARE_EQ</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_EQ"><code>QCOMPARE_EQ</code></a></p>
      */
     @QtUninvokable
     public static <T extends Comparable<T>> void QCOMPARE_EQ(T lhs, T rhs) throws AssertionError {
@@ -710,7 +710,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_EQ">QCOMPARE_EQ</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_EQ"><code>QCOMPARE_EQ</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE_EQ(int lhs, int rhs) throws AssertionError {
@@ -718,7 +718,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_EQ">QCOMPARE_EQ</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_EQ"><code>QCOMPARE_EQ</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE_EQ(double lhs, double rhs) throws AssertionError {
@@ -726,7 +726,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_EQ">QCOMPARE_EQ</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_EQ"><code>QCOMPARE_EQ</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE_EQ(long lhs, long rhs) throws AssertionError {
@@ -734,7 +734,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_NE">QCOMPARE_NE</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_NE"><code>QCOMPARE_NE</code></a></p>
      */
     @QtUninvokable
     public static <T extends Comparable<T>> void QCOMPARE_NE(T lhs, T rhs) throws AssertionError {
@@ -742,7 +742,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_NE">QCOMPARE_NE</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_NE"><code>QCOMPARE_NE</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE_NE(int lhs, int rhs) throws AssertionError {
@@ -750,7 +750,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_NE">QCOMPARE_NE</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_NE"><code>QCOMPARE_NE</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE_NE(double lhs, double rhs) throws AssertionError {
@@ -758,7 +758,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_NE">QCOMPARE_NE</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_NE"><code>QCOMPARE_NE</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE_NE(long lhs, long rhs) throws AssertionError {
@@ -766,7 +766,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_LT">QCOMPARE_LT</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_LT"><code>QCOMPARE_LT</code></a></p>
      */
     @QtUninvokable
     public static <T extends Comparable<T>> void QCOMPARE_LT(T lhs, T rhs) throws AssertionError {
@@ -774,7 +774,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_LT">QCOMPARE_LT</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_LT"><code>QCOMPARE_LT</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE_LT(int lhs, int rhs) throws AssertionError {
@@ -782,7 +782,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_LT">QCOMPARE_LT</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_LT"><code>QCOMPARE_LT</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE_LT(double lhs, double rhs) throws AssertionError {
@@ -790,7 +790,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_LT">QCOMPARE_LT</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_LT"><code>QCOMPARE_LT</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE_LT(long lhs, long rhs) throws AssertionError {
@@ -798,7 +798,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_LE">QCOMPARE_LE</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_LE"><code>QCOMPARE_LE</code></a></p>
      */
     @QtUninvokable
     public static <T extends Comparable<T>> void QCOMPARE_LE(T lhs, T rhs) throws AssertionError {
@@ -806,7 +806,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_LE">QCOMPARE_LE</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_LE"><code>QCOMPARE_LE</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE_LE(int lhs, int rhs) throws AssertionError {
@@ -814,7 +814,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_LE">QCOMPARE_LE</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_LE"><code>QCOMPARE_LE</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE_LE(double lhs, double rhs) throws AssertionError {
@@ -822,7 +822,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_LE">QCOMPARE_LE</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_LE"><code>QCOMPARE_LE</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE_LE(long lhs, long rhs) throws AssertionError {
@@ -830,7 +830,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_GT">QCOMPARE_GT</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_GT"><code>QCOMPARE_GT</code></a></p>
      */
     @QtUninvokable
     public static <T extends Comparable<T>> void QCOMPARE_GT(T lhs, T rhs) throws AssertionError {
@@ -838,7 +838,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_GT">QCOMPARE_GT</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_GT"><code>QCOMPARE_GT</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE_GT(int lhs, int rhs) throws AssertionError {
@@ -846,7 +846,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_GT">QCOMPARE_GT</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_GT"><code>QCOMPARE_GT</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE_GT(double lhs, double rhs) throws AssertionError {
@@ -854,7 +854,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_GT">QCOMPARE_GT</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_GT"><code>QCOMPARE_GT</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE_GT(long lhs, long rhs) throws AssertionError {
@@ -862,7 +862,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_GE">QCOMPARE_GE</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_GE"><code>QCOMPARE_GE</code></a></p>
      */
     @QtUninvokable
     public static <T extends Comparable<T>> void QCOMPARE_GE(T lhs, T rhs) throws AssertionError {
@@ -870,7 +870,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_GE">QCOMPARE_GE</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_GE"><code>QCOMPARE_GE</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE_GE(int lhs, int rhs) throws AssertionError {
@@ -878,7 +878,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_GE">QCOMPARE_GE</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_GE"><code>QCOMPARE_GE</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE_GE(double lhs, double rhs) throws AssertionError {
@@ -886,7 +886,7 @@ class QTest_64__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_GE">QCOMPARE_GE</a></p>
+     * <p>See <a href="@docRoot/qtest.html#QCOMPARE_GE"><code>QCOMPARE_GE</code></a></p>
      */
     @QtUninvokable
     public static void QCOMPARE_GE(long lhs, long rhs) throws AssertionError {
@@ -898,7 +898,7 @@ class QTest_64__{
 class QSignalSpy__{
     
     /**
-     * <p>See <a href="@docRoot/qsignalspy.html#QSignalSpy-1">QSignalSpy::QSignalSpy(const QObject *, PointerToMemberFunction)</a></p>
+     * <p>See <a href="@docRoot/qsignalspy.html#QSignalSpy-1"><code>QSignalSpy::QSignalSpy(const QObject *, PointerToMemberFunction)</code></a></p>
      */
     public QSignalSpy(QMetaObject.AbstractSignal signal) {
         super((QPrivateConstructor)null);

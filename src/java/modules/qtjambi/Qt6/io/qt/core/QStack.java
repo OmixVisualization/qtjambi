@@ -39,22 +39,42 @@ import io.qt.QtUninvokable;
 import io.qt.StrictNonNull;
 
 /**
- * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qstack.html">QStack</a></p>
+ * <p>Java wrapper for Qt class <code><a href="https://doc.qt.io/qt/qstack.html">QStack</a></code></p>
  */
 public class QStack<T> extends QList<T> implements Deque<T>
 {
+    /**
+     * Creating a container with given element type and size.
+     * <p>See <code><a href="https://doc.qt.io/qt/qstack.html">QStack::<wbr>QStack()</a></code></p>
+     * @param metaType the type T
+     */
     public QStack(@StrictNonNull QMetaType metaType) {
         super(metaType);
     }
     
+    /**
+     * Creating a container with given element type and size.
+     * <p>See <code><a href="https://doc.qt.io/qt/qstack.html">QStack::<wbr>QStack()</a></code></p>
+     * @param metaType the type T
+     */
     public QStack(QMetaType.@StrictNonNull Type metaType) {
 		this(new QMetaType(metaType));
 	}
 
+    /**
+     * Creating a container with given element type.
+     * <p>See <code><a href="https://doc.qt.io/qt/qstack.html">QStack::<wbr>QStack()</a></code></p>
+     * @param elementType the type T
+     */
     public QStack(@StrictNonNull Class<T> elementType) {
         super(elementType);
     }
 
+    /**
+     * Creating a container with given content.
+     * <p>See <code><a href="https://doc.qt.io/qt/qstack.html">QStack::<wbr>QStack(const QStack&lt;T> &amp;)</a></code></p>
+     * @param other container
+     */
     public QStack(@StrictNonNull Collection<T> other) {
         super(other);
     }
@@ -64,38 +84,62 @@ public class QStack<T> extends QList<T> implements Deque<T>
         super(elementMetaType, other);
     }
     
+    /**
+     * Creating a container of type QVariant.
+     */
     public static @NonNull QStack<Object> createVariantStack(){
         return new QStack<>(new QMetaType(QMetaType.Type.QVariant));
     }
     
+    /**
+     * Creates and returns a copy of this object.
+     * <p>See <code><a href="https://doc.qt.io/qt/qstack.html">QStack::<wbr>QStack(const QStack&lt;T> &amp;)</a></code></p>
+     */
     @Override
     public @NonNull QStack<T> clone(){
         return new QStack<>(this);
     }
 
+    /**
+     * Constructor for internal use only.
+     * @param p expected to be <code>null</code>.
+     * @hidden
+     */
     @NativeAccess
     protected QStack(QPrivateConstructor p){
         super(p);
     }
     
+    /**
+     * @see Deque#remove()
+     */
     @Override
     @QtUninvokable
     public final T remove() {
         return takeFirst();
     }
 
+    /**
+     * @see Deque#addFirst(Object)
+     */
     @Override
     @QtUninvokable
     public final void addFirst(T e) {
         push(e);
     }
 
+    /**
+     * @see Deque#addLast(Object)
+     */
     @Override
     @QtUninvokable
     public final void addLast(T e) {
         add(e);
     }
 
+    /**
+     * @see Deque#offerFirst(Object)
+     */
     @Override
     @QtUninvokable
     public final boolean offerFirst(T e) {
@@ -103,6 +147,9 @@ public class QStack<T> extends QList<T> implements Deque<T>
         return true;
     }
 
+    /**
+     * @see Deque#offerLast(Object)
+     */
     @Override
     @QtUninvokable
     public final boolean offerLast(T e) {
@@ -110,6 +157,9 @@ public class QStack<T> extends QList<T> implements Deque<T>
         return true;
     }
     
+    /**
+     * @see Deque#pollFirst()
+     */
     @Override
     @QtUninvokable
     public final T pollFirst() {
@@ -118,6 +168,9 @@ public class QStack<T> extends QList<T> implements Deque<T>
         return pop();
     }
     
+    /**
+     * @see Deque#pollLast()
+     */
     @Override
     @QtUninvokable
     public final T pollLast() {
@@ -127,6 +180,9 @@ public class QStack<T> extends QList<T> implements Deque<T>
         return e;
     }
 
+    /**
+     * @see Deque#getFirst()
+     */
     @Override
     @QtUninvokable
     public final T getFirst() {
@@ -135,6 +191,9 @@ public class QStack<T> extends QList<T> implements Deque<T>
         return peekFirst();
     }
 
+    /**
+     * @see Deque#getLast()
+     */
     @Override
     @QtUninvokable
     public final T getLast() {
@@ -143,30 +202,45 @@ public class QStack<T> extends QList<T> implements Deque<T>
         return peekLast();
     }
 
+    /**
+     * @see Deque#poll()
+     */
     @Override
     @QtUninvokable
     public final T poll() {
         return pollFirst();
     }
     
+    /**
+     * @see Deque#element()
+     */
     @Override
     @QtUninvokable
     public final T element() {
         return getFirst();
     }
     
+    /**
+     * @see Deque#peek()
+     */
     @Override
     @QtUninvokable
     public final T peek() {
         return peekFirst();
     }
     
+    /**
+     * @see Deque#offer(Object)
+     */
     @Override
     @QtUninvokable
     public final boolean offer(T e) {
         return offerLast(e);
     }
 
+    /**
+     * @see Deque#removeFirstOccurrence(Object)
+     */
     @Override
     @QtUninvokable
     public final boolean removeFirstOccurrence(Object o) {
@@ -174,6 +248,9 @@ public class QStack<T> extends QList<T> implements Deque<T>
         return idx>=0 && idx<size() ? remove(idx)!=null : false;
     }
 
+    /**
+     * @see Deque#removeLastOccurrence(Object)
+     */
     @Override
     @QtUninvokable
     public final boolean removeLastOccurrence(Object o) {
@@ -181,35 +258,56 @@ public class QStack<T> extends QList<T> implements Deque<T>
         return idx>=0 && idx<size() ? remove(idx)!=null : false;
     }
 
+    /**
+     * @see Deque#descendingIterator()
+     */
     @Override
     @QtUninvokable
     public final java.util.Iterator<T> descendingIterator() {
-        return super.descendingIterator();
+    	return constEnd().toJavaDescendingIterator();
     }
 
+    /**
+     * @see Deque#peekFirst()
+     */
     @Override
     @QtUninvokable
     public final T peekFirst() {
         return first();
     }
     
+    /**
+     * Creates and returns a copy of this object.
+     * <p>See <code><a href="https://doc.qt.io/qt/qstack.html#top">QStack::<wbr>top()const</a></code></p>
+     */
     @QtUninvokable
     public final T top() {
         return last();
     }
 
+    /**
+     * @see Deque#peekLast()
+     */
     @Override
     @QtUninvokable
     public final T peekLast() {
         return last();
     }
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qstack.html#push">QStack::<wbr>push(T)</a></code></p>
+     * @see Deque#push(Object)
+     */
     @Override
     @QtUninvokable
     public final void push(T e) {
         add(e);
     }
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qstack.html#pop">QStack::<wbr>pop()</a></code></p>
+     * @see Deque#pop()
+     */
     @Override
     @QtUninvokable
     public final T pop() {
@@ -219,7 +317,7 @@ public class QStack<T> extends QList<T> implements Deque<T>
     /**
      * Returns a QStack containing given elements.
      *
-     * @param <E> the {@code QStack}'s element type
+     * @param <T> the {@code QStack}'s element type
      * @param element0 the first element
      * @param elements subsequent elements
      * @return a {@code QStack} containing the specified element
@@ -228,7 +326,7 @@ public class QStack<T> extends QList<T> implements Deque<T>
      */
     @SafeVarargs
     public static <T> @NonNull QStack<T> of(T element0, T @StrictNonNull...elements) {
-		QMetaType metaType = QList.findElementMetaType(element0, elements);
+		QMetaType metaType = findElementMetaType(element0, elements);
 		if(metaType==null || metaType.id()==0)
 			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QStack.");
 		if(metaType.id()==QMetaType.Type.Void.value())

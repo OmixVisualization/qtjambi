@@ -431,7 +431,7 @@ jobject QtJambiAPI::convertQVariantToJavaObject(JNIEnv *env, const QVariant &qt_
                                                 true);
         jvalue val;
         val.l = nullptr;
-        if(!converter || !converter(env, nullptr, qt_variant.constData(), &val, true)){
+        if(!converter || !converter(env, nullptr, qt_variant.constData(), val, true)){
             qCWarning(DebugAPI::internalCategory, "Unable to convert qVariant to jobject");
         }
         return val.l;
@@ -814,7 +814,7 @@ void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, c
                         }else if(JniEnvironment env{500}){
                             jvalue val;
                             val.l = nullptr;
-                            if(converter(env, nullptr, src, &val, true)){
+                            if(converter(env, nullptr, src, val, true)){
                                 new (target)JObjectWrapper(env, val.l);
                                 return true;
                             }
@@ -834,7 +834,7 @@ void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, c
                             }
                             jvalue val;
                             val.l = nullptr;
-                            if(converter(env, nullptr, src, &val, true)){
+                            if(converter(env, nullptr, src, val, true)){
                                 new (target)JObjectWrapper(env, val.l);
                                 return true;
                             }
@@ -1839,7 +1839,12 @@ const void *QtJambiAPI::convertJavaObjectToNativeAsSmartPointer(JNIEnv *env, job
 
                 link->invalidate(env);
                 link.clear();
-                link = QtJambiLink::createLinkForSmartPointerToQObject(env, java_object, createdByJava, is_shell, pointerCreator(ptr), pointerDeleter, pointerGetter);
+                const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, env->GetObjectClass(java_object));
+                if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
+                    link = QtJambiLink::createLinkForSmartPointerToQObject(env, java_object, createdByJava, is_shell, pointerCreator(ptr), pointerDeleter, pointerGetter, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces);
+                }else{
+                    link = QtJambiLink::createLinkForSmartPointerToQObject(env, java_object, createdByJava, is_shell, pointerCreator(ptr), pointerDeleter, pointerGetter);
+                }
                 Q_ASSERT(link && link->isSmartPointer());
                 if(shell){
                     shell->overrideLink(link);
@@ -1887,15 +1892,31 @@ const void *QtJambiAPI::convertJavaObjectToNativeAsSmartPointer(JNIEnv *env, job
 
                 link->invalidate(env);
                 link.clear();
-                link = QtJambiLink::createLinkForSmartPointerToObject(env,
-                                                                           java_object,
-                                                                           LINK_NAME_ARG(className)
-                                                                           createdByJava,
-                                                                           is_shell,
-                                                                           registeredOwnerFunction,
-                                                                           pointerCreator(ptr),
-                                                                           pointerDeleter,
-                                                                           pointerGetter);
+                const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, env->GetObjectClass(java_object));
+                if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
+                    link = QtJambiLink::createLinkForSmartPointerToObject(env,
+                                                                               java_object,
+                                                                               LINK_NAME_ARG(className)
+                                                                               createdByJava,
+                                                                               is_shell,
+                                                                               registeredOwnerFunction,
+                                                                               pointerCreator(ptr),
+                                                                               pointerDeleter,
+                                                                               pointerGetter,
+                                                                               interfaceOffsets->offsets,
+                                                                               interfaceOffsets->interfaces,
+                                                                               interfaceOffsets->inheritedInterfaces);
+                }else{
+                    link = QtJambiLink::createLinkForSmartPointerToObject(env,
+                                                                          java_object,
+                                                                          LINK_NAME_ARG(className)
+                                                                          createdByJava,
+                                                                          is_shell,
+                                                                          registeredOwnerFunction,
+                                                                          pointerCreator(ptr),
+                                                                          pointerDeleter,
+                                                                          pointerGetter);
+                }
                 if(shell){
                     shell->overrideLink(link);
                 }
@@ -1910,21 +1931,12 @@ const void *QtJambiAPI::convertJavaObjectToNativeAsSmartPointer(JNIEnv *env, job
     return nullptr;
 }
 
-void *internal_convertJavaInterfaceToNative(JNIEnv *env, jobject object, const std::type_info& typeId){
-    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, object))
-        return link->typedPointer(typeId);
-    else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, object))
-        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, object).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
-    return nullptr;
-}
-
-void *QtJambiAPI::convertJavaInterfaceToNative(JNIEnv *env, jobject object,
-                                  const char *, const std::type_info& typeId){
-    return internal_convertJavaInterfaceToNative(env, object, typeId);
+void *QtJambiAPI::convertJavaInterfaceToNative(JNIEnv *env, jobject object, const char *, const std::type_info& typeId){
+    return QtJambiLink::findPointerForJavaInterface(env, object, typeId);
 }
 
 void *QtJambiAPI::convertJavaInterfaceToNative(JNIEnv *env, jobject object, const std::type_info& typeId){
-    return internal_convertJavaInterfaceToNative(env, object, typeId);
+    return QtJambiLink::findPointerForJavaInterface(env, object, typeId);
 }
 
 jobject internal_convertNativeToJavaObject(JNIEnv *env, const void *qt_object, const std::type_info& typeId, const char *qtName, NativeToJavaConversionMode mode, bool *ok)
@@ -1940,10 +1952,7 @@ jobject internal_convertNativeToJavaObject(JNIEnv *env, const void *qt_object, c
         if(offset!=0){
             qt_object = reinterpret_cast<const char*>(qt_object)-offset;
         }
-        QtJambiTypeEntry::NativeToJavaResult result = typeEntry->convertToJava(env, qt_object, mode==NativeToJavaConversionMode::MakeCopyOfValues, &jv, jValueType::l);
-        if(result){
-            if(mode==NativeToJavaConversionMode::TransferOwnership && result.link())
-                result.link()->setJavaOwnership(env);
+        if(typeEntry->convertToJava(env, qt_object, mode, jv, jValueType::l)){
             return jv.l;
         }else{
             return nullptr;
@@ -2153,6 +2162,25 @@ jobject internal_convertNativeToJavaObject(NativeToJavaConversionMode mode, JNIE
     return nullptr;
 }
 
+jobject QtJambiAPI::convertModelIndexToJavaObject(JNIEnv *env, const QModelIndex& index){
+    jobject result{nullptr};
+    if(QModelIndexTypeEntry::convertNativeToJava(env, &index, NativeToJavaConversionMode::MakeCopyOfValues, result)){
+        return result;
+    }else{
+        return nullptr;
+    }
+}
+
+bool QtJambiAPI::convertJavaToModelIndex(JNIEnv *env, jobject java_object, QModelIndex** output){
+    if(Java::QtCore::QModelIndex::isInstanceOf(env, java_object)){
+        *output = reinterpret_cast<QModelIndex*>(QtJambiLink::findPointerForJavaObject(env, java_object));
+        return true;
+    }else if(env->IsSameObject(java_object, nullptr)){
+        return true;
+    }
+    return false;
+}
+
 jobject QtJambiAPI::convertNativeToJavaObjectAsCopy(JNIEnv *env, const void *qt_object, jclass clazz){
     return internal_convertNativeToJavaObject(NativeToJavaConversionMode::MakeCopyOfValues, env, qt_object, clazz);
 }
@@ -2180,7 +2208,7 @@ jobject internal_convertSmartPointerToJavaObject_impl(JNIEnv *env,
                 return reinterpret_cast<char*>(result)-offset;
             };
         }
-        if(typeEntry->convertSharedPointerToJava(env, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter, &result, jValueType::l)){
+        if(typeEntry->convertSharedPointerToJava(env, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter, result, jValueType::l)){
             return result.l;
         }else{
             return nullptr;
@@ -2231,7 +2259,10 @@ jobject internal_convertSmartPointerToJavaObject_notype(JNIEnv *env, const char 
     if (!returned)
         return nullptr;
 
-    const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForSmartPointerToObject(
+    const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, clazz);
+    const QSharedPointer<QtJambiLink>& link =
+        interfaceOffsets && !interfaceOffsets->offsets.isEmpty() ?
+        QtJambiLink::createLinkForSmartPointerToObject(
                 env,
                 returned,
                 LINK_NAME_ARG(nullptr)
@@ -2240,8 +2271,22 @@ jobject internal_convertSmartPointerToJavaObject_notype(JNIEnv *env, const char 
                 nullptr,
                 ptr_shared_pointer,
                 sharedPointerDeleter,
-                sharedPointerGetter
-            );
+                sharedPointerGetter,
+                interfaceOffsets->offsets,
+                interfaceOffsets->interfaces,
+                interfaceOffsets->inheritedInterfaces
+            )
+        : QtJambiLink::createLinkForSmartPointerToObject(
+               env,
+               returned,
+               LINK_NAME_ARG(nullptr)
+               false,
+               false,
+               nullptr,
+               ptr_shared_pointer,
+               sharedPointerDeleter,
+               sharedPointerGetter
+               );
     if (!link) {
         returned = nullptr;
     }
@@ -2304,7 +2349,12 @@ jobject internal_convertQObjectSmartPointerToJavaObject_notype(JNIEnv *env, cons
                     }
                     link->invalidate(env);
                     link.clear();
-                    link = QtJambiLink::createLinkForSmartPointerToQObject(env, object, createdByJava, is_shell, ptr_shared_pointer, shared_pointer_deleter, pointerGetter);
+                    const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, env->GetObjectClass(object));
+                    if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
+                        link = QtJambiLink::createLinkForSmartPointerToQObject(env, object, createdByJava, is_shell, ptr_shared_pointer, shared_pointer_deleter, pointerGetter, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces);
+                    }else{
+                        link = QtJambiLink::createLinkForSmartPointerToQObject(env, object, createdByJava, is_shell, ptr_shared_pointer, shared_pointer_deleter, pointerGetter);
+                    }
                     if(shell){
                         shell->overrideLink(link);
                     }
@@ -2402,7 +2452,12 @@ jobject internal_convertQObjectSmartPointerToJavaObject_notype(JNIEnv *env, cons
         if (!object)
             return nullptr;
 
-        link = QtJambiLink::createLinkForSmartPointerToQObject(env, object, false, false, const_cast<void*>(ptr_shared_pointer), shared_pointer_deleter, pointerGetter);
+        const InterfaceOffsetInfo* interfaceOffsets = getInterfaceOffsets(env, clazz);
+        if(interfaceOffsets && !interfaceOffsets->offsets.isEmpty()){
+            link = QtJambiLink::createLinkForSmartPointerToQObject(env, object, false, false, const_cast<void*>(ptr_shared_pointer), shared_pointer_deleter, pointerGetter, interfaceOffsets->offsets, interfaceOffsets->interfaces, interfaceOffsets->inheritedInterfaces);
+        }else{
+            link = QtJambiLink::createLinkForSmartPointerToQObject(env, object, false, false, const_cast<void*>(ptr_shared_pointer), shared_pointer_deleter, pointerGetter);
+        }
         if (!link) {
             qCWarning(DebugAPI::internalCategory, "Qt Jambi: Couldn't created wrapper for class %s", className);
             return nullptr;
@@ -2465,8 +2520,7 @@ jobject internal_convertQObjectToJavaObject_type(JNIEnv *env, const QObject *qt_
         if(offset!=0){
             ptr = reinterpret_cast<const char*>(ptr)-offset;
         }
-        QtJambiTypeEntry::NativeToJavaResult result = typeEntry->convertToJava(env, ptr, false, &jv, jValueType::l);
-        if(result){
+        if(typeEntry->convertToJava(env, ptr, NativeToJavaConversionMode::None, jv, jValueType::l)){
             return jv.l;
         }else{
             return nullptr;
@@ -2535,10 +2589,8 @@ jobject internal_convertQObjectToJavaObject_notype(JNIEnv *env, const QObject *c
             if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
                 jvalue jv;
                 jv.l = nullptr;
-                QtJambiTypeEntry::NativeToJavaResult result = typeEntry->convertToJava(env, qt_object, false, &jv, jValueType::l);
-                if(result){
+                if(typeEntry->convertToJava(env, qt_object, NativeToJavaConversionMode::None, jv, jValueType::l))
                     return jv.l;
-                }
             }
         }
         const QMetaObject *mo = QtJambiMetaObject::findFirstStaticMetaObject(qt_object->metaObject());
@@ -2638,7 +2690,7 @@ jobject internal_convertQObjectSmartPointerToJavaObject_impl(JNIEnv *env, const 
                 return reinterpret_cast<char*>(result)-offset;
             };
         }
-        if(typeEntry->convertSharedPointerToJava(env, ptr_shared_pointer, shared_pointer_deleter, sharedPointerGetter, &result, jValueType::l)){
+        if(typeEntry->convertSharedPointerToJava(env, ptr_shared_pointer, shared_pointer_deleter, sharedPointerGetter, result, jValueType::l)){
             return result.l;
         }else{
             return nullptr;

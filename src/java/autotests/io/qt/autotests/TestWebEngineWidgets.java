@@ -30,13 +30,12 @@ package io.qt.autotests;
 
 import static org.junit.Assume.assumeTrue;
 
-import java.util.function.Consumer;
-
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QtUtilities;
 import io.qt.core.QCoreApplication;
+import io.qt.core.QEventLoop;
 import io.qt.core.QTimer;
 import io.qt.core.QUrl;
 import io.qt.core.Qt;
@@ -44,7 +43,6 @@ import io.qt.gui.QGuiApplication;
 import io.qt.gui.QOpenGLContext;
 import io.qt.webengine.core.*;
 import io.qt.webengine.widgets.*;
-import io.qt.widgets.QApplication;
 
 public class TestWebEngineWidgets extends ApplicationInitializer {
 	
@@ -69,32 +67,36 @@ public class TestWebEngineWidgets extends ApplicationInitializer {
     }
 
     @Test
-    public void test() {
+    public void testLoad() {
+    	QEventLoop loop = new QEventLoop();
     	QWebEngineView webView = new QWebEngineView();
-    	webView.load(new QUrl("http://www.qt.io"));
-    	webView.loadProgress.connect(progress -> { if(progress>95) webView.close(); });
+    	webView.load(new QUrl("http://www.qtjambi.io"));
+    	webView.loadProgress.connect(progress -> { if(progress>95) loop.quit(); });
     	webView.show();
-    	QTimer.singleShot(25000, QApplication::quit);
-    	QApplication.exec();
+    	QTimer.singleShot(25000, loop::quit);
+    	loop.exec();
     	webView.dispose();
+    	loop.dispose();
     }
     
     @Test
     public void testRunJavaScript() {
+    	QEventLoop loop = new QEventLoop();
         QWebEngineView view = new QWebEngineView();
         QWebEnginePage page = new QWebEnginePage(view);
         view.setPage(page);
         page.load(new QUrl("http://info.cern.ch/"));
-        page.runJavaScript("window", new Consumer<Object>() {
-            @Override
-            public void accept(Object o) {
-               System.out.println("test "  + o); // always creates a crash if you interact with this object in any way
-               view.close();
-            }
-        });
+        page.runJavaScript("window", o -> {
+	            // always creates a crash if you interact with this object in any way
+        		if(o!=null)
+        			o.toString();
+                loop.quit();
+        	});
         view.show();
-    	QTimer.singleShot(25000, QApplication::quit);
-    	QApplication.exec();
+    	QTimer.singleShot(25000, loop::quit);
+    	loop.exec();
+    	view.dispose();
+    	loop.dispose();
     }
     
     public static void main(String args[]) {

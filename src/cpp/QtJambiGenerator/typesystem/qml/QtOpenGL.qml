@@ -3471,145 +3471,24 @@ TypeSystem{
         className: "QOpenGLTextureHelper"
     }
     
-    EnumType{
-        name: "QOpenGLWindow::UpdateBehavior"
-    }
-    
-    EnumType{
-        name: "QOpenGLBuffer::Access"
-    }
-    
-    EnumType{
-        name: "QOpenGLBuffer::Type"
-    }
-    
-    EnumType{
-        name: "QOpenGLBuffer::RangeAccessFlag"
-    }
-    
-    EnumType{
-        name: "QOpenGLBuffer::UsagePattern"
-    }
-    
-    EnumType{
-        name: "QOpenGLDebugLogger::LoggingMode"
-    }
-    
-    EnumType{
-        name: "QOpenGLDebugMessage::Severity"
-        RejectEnumValue{
-            name: "LastSeverity"
-        }
-    }
-    
-    EnumType{
-        name: "QOpenGLDebugMessage::Source"
-        RejectEnumValue{
-            name: "LastSource"
-        }
-    }
-    
-    EnumType{
-        name: "QOpenGLDebugMessage::Type"
-        RejectEnumValue{
-            name: "LastType"
-        }
-    }
-    
-    EnumType{
-        name: "QOpenGLFramebufferObject::Attachment"
-    }
-    
-    EnumType{
-        name: "QOpenGLFramebufferObject::FramebufferRestorePolicy"
-    }
-    
-    EnumType{
-        name: "QOpenGLShader::ShaderTypeBit"
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::BindingTarget"
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::DepthStencilMode"
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::CoordinateDirection"
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::Feature"
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::CubeMapFace"
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::Filter"
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::MipMapGeneration"
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::PixelFormat"
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::PixelType"
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::SwizzleComponent"
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::SwizzleValue"
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::Target"
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::TextureFormat"
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::TextureUnitReset"
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::WrapMode"
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::TextureFormatClass"
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::ComparisonFunction"
-        RejectEnumValue{
-            name: "CommpareNotEqual"
-            since: [6, 1]
-        }
-    }
-    
-    EnumType{
-        name: "QOpenGLTexture::ComparisonMode"
-    }
-    
-    EnumType{
-        name: "QOpenGLVersionStatus::OpenGLStatus"
-    }
-    
     ValueType{
         name: "QOpenGLBuffer"
+
+        EnumType{
+            name: "Access"
+        }
+
+        EnumType{
+            name: "Type"
+        }
+
+        EnumType{
+            name: "RangeAccessFlag"
+        }
+
+        EnumType{
+            name: "UsagePattern"
+        }
         ExtraIncludes{
             Include{
                 fileName: "QtJambi/JavaAPI"
@@ -3673,10 +3552,35 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLDebugLogger"
+
+        EnumType{
+            name: "LoggingMode"
+        }
     }
     
     ValueType{
         name: "QOpenGLDebugMessage"
+
+        EnumType{
+            name: "Severity"
+            RejectEnumValue{
+                name: "LastSeverity"
+            }
+        }
+
+        EnumType{
+            name: "Source"
+            RejectEnumValue{
+                name: "LastSource"
+            }
+        }
+
+        EnumType{
+            name: "Type"
+            RejectEnumValue{
+                name: "LastType"
+            }
+        }
     }
     
     ValueType{
@@ -3685,6 +3589,14 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLFramebufferObject"
+
+        EnumType{
+            name: "Attachment"
+        }
+
+        EnumType{
+            name: "FramebufferRestorePolicy"
+        }
     }
     
     ObjectType{
@@ -4514,6 +4426,10 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLShader"
+
+        EnumType{
+            name: "ShaderTypeBit"
+        }
         ModifyFunction{
             signature: "compileSourceCode ( const char *)"
             remove: RemoveFlag.All
@@ -4993,27 +4909,25 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLVertexArrayObject"
-    }
-    
-    ObjectType{
-        name: "QOpenGLVertexArrayObject::Binder"
-        implementing: "AutoCloseable"
-        InjectCode{
-            target: CodeClass.Java
-            Text{content: "@Override\n"+
-                          "@QtUninvokable\n"+
-                          "public final void close(){\n"+
-                          "    dispose();\n"+
-                          "}"}
+        ObjectType{
+            name: "Binder"
+            implementing: "AutoCloseable"
+            InjectCode{
+                target: CodeClass.Java
+                Text{content: "@Override\n"+
+                              "@QtUninvokable\n"+
+                              "public final void close(){\n"+
+                              "    dispose();\n"+
+                              "}"}
+            }
         }
-    }
-    
-    EnumType{
-        name: "QOpenGLTextureBlitter::Origin"
     }
     
     ObjectType{
         name: "QOpenGLTextureBlitter"
+        EnumType{
+            name: "Origin"
+        }
         ExtraIncludes{
             Include{
                 fileName: "hashes.h"
@@ -5029,6 +4943,10 @@ TypeSystem{
     
     ValueType{
         name: "QOpenGLVersionStatus"
+
+        EnumType{
+            name: "OpenGLStatus"
+        }
         CustomConstructor{
             Text{content: "return new(placement) QOpenGLVersionStatus(copy->version.first, copy->version.second, copy->status);"}
         }
@@ -5036,6 +4954,81 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLTexture"
+        EnumType{
+            name: "BindingTarget"
+        }
+
+        EnumType{
+            name: "DepthStencilMode"
+        }
+
+        EnumType{
+            name: "CoordinateDirection"
+        }
+
+        EnumType{
+            name: "Feature"
+        }
+
+        EnumType{
+            name: "CubeMapFace"
+        }
+
+        EnumType{
+            name: "Filter"
+        }
+
+        EnumType{
+            name: "MipMapGeneration"
+        }
+
+        EnumType{
+            name: "PixelFormat"
+        }
+
+        EnumType{
+            name: "PixelType"
+        }
+
+        EnumType{
+            name: "SwizzleComponent"
+        }
+
+        EnumType{
+            name: "SwizzleValue"
+        }
+
+        EnumType{
+            name: "Target"
+        }
+
+        EnumType{
+            name: "TextureFormat"
+        }
+
+        EnumType{
+            name: "TextureUnitReset"
+        }
+
+        EnumType{
+            name: "WrapMode"
+        }
+
+        EnumType{
+            name: "TextureFormatClass"
+        }
+
+        EnumType{
+            name: "ComparisonFunction"
+            RejectEnumValue{
+                name: "CommpareNotEqual"
+                since: [6, 1]
+            }
+        }
+
+        EnumType{
+            name: "ComparisonMode"
+        }
         ModifyFunction{
             signature: "createTextureView(QOpenGLTexture::Target, QOpenGLTexture::TextureFormat, int, int, int, int) const"
             ModifyArgument{
@@ -5215,6 +5208,10 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLWindow"
+
+        EnumType{
+            name: "UpdateBehavior"
+        }
         ModifyFunction{
             signature: "paintGL()"
             isPaintMethod: true

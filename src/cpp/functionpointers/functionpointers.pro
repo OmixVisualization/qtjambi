@@ -10,10 +10,9 @@ SUBDIRS += DoubleToDoubleFunction
 SUBDIRS += FloatToFloatFunction
 greaterThan(QT_MAJOR_VERSION, 5): {
     SUBDIRS += PluginMetaDataFunction MetaTypeFunction QmlTypeCreatorFunction
-	greaterThan(QT_MAJOR_VERSION, 6) | greaterThan(QT_MINOR_VERSION, 4): {
-		SUBDIRS += PropertyBindingWrapperFunction BindingSetterFunction MakeBindingFunction
-	}
-}
-else{
+    greaterThan(QT_MAJOR_VERSION, 6) | greaterThan(QT_MINOR_VERSION, 4): {
+        SUBDIRS += PropertyBindingWrapperFunction BindingSetterFunction MakeBindingFunction
+    }
+}else{
     SUBDIRS += VariantDataFunction
 }

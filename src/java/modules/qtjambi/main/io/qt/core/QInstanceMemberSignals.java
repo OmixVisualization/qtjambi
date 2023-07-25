@@ -33,66 +33,8 @@ import java.lang.ref.WeakReference;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import io.qt.QNoDefaultValueException;
-import io.qt.QNoSuchSlotException;
-import io.qt.QtSignalEmitterInterface;
-import io.qt.QtUninvokable;
-import io.qt.core.QMetaObject.AbstractPrivateSignal0;
-import io.qt.core.QMetaObject.AbstractPrivateSignal1;
-import io.qt.core.QMetaObject.AbstractPrivateSignal2;
-import io.qt.core.QMetaObject.AbstractPrivateSignal3;
-import io.qt.core.QMetaObject.AbstractPrivateSignal4;
-import io.qt.core.QMetaObject.AbstractPrivateSignal5;
-import io.qt.core.QMetaObject.AbstractPrivateSignal6;
-import io.qt.core.QMetaObject.AbstractPrivateSignal7;
-import io.qt.core.QMetaObject.AbstractPrivateSignal8;
-import io.qt.core.QMetaObject.AbstractPrivateSignal9;
-import io.qt.core.QMetaObject.AbstractPublicSignal0;
-import io.qt.core.QMetaObject.AbstractPublicSignal1;
-import io.qt.core.QMetaObject.AbstractPublicSignal2;
-import io.qt.core.QMetaObject.AbstractPublicSignal3;
-import io.qt.core.QMetaObject.AbstractPublicSignal4;
-import io.qt.core.QMetaObject.AbstractPublicSignal5;
-import io.qt.core.QMetaObject.AbstractPublicSignal6;
-import io.qt.core.QMetaObject.AbstractPublicSignal7;
-import io.qt.core.QMetaObject.AbstractPublicSignal8;
-import io.qt.core.QMetaObject.AbstractPublicSignal9;
-import io.qt.core.QMetaObject.AbstractSignal2Default1;
-import io.qt.core.QMetaObject.AbstractSignal3Default1;
-import io.qt.core.QMetaObject.AbstractSignal3Default2;
-import io.qt.core.QMetaObject.AbstractSignal4Default1;
-import io.qt.core.QMetaObject.AbstractSignal4Default2;
-import io.qt.core.QMetaObject.AbstractSignal4Default3;
-import io.qt.core.QMetaObject.AbstractSignal5Default1;
-import io.qt.core.QMetaObject.AbstractSignal5Default2;
-import io.qt.core.QMetaObject.AbstractSignal5Default3;
-import io.qt.core.QMetaObject.AbstractSignal5Default4;
-import io.qt.core.QMetaObject.AbstractSignal6Default1;
-import io.qt.core.QMetaObject.AbstractSignal6Default2;
-import io.qt.core.QMetaObject.AbstractSignal6Default3;
-import io.qt.core.QMetaObject.AbstractSignal6Default4;
-import io.qt.core.QMetaObject.AbstractSignal6Default5;
-import io.qt.core.QMetaObject.AbstractSignal7Default1;
-import io.qt.core.QMetaObject.AbstractSignal7Default2;
-import io.qt.core.QMetaObject.AbstractSignal7Default3;
-import io.qt.core.QMetaObject.AbstractSignal7Default4;
-import io.qt.core.QMetaObject.AbstractSignal7Default5;
-import io.qt.core.QMetaObject.AbstractSignal7Default6;
-import io.qt.core.QMetaObject.AbstractSignal8Default1;
-import io.qt.core.QMetaObject.AbstractSignal8Default2;
-import io.qt.core.QMetaObject.AbstractSignal8Default3;
-import io.qt.core.QMetaObject.AbstractSignal8Default4;
-import io.qt.core.QMetaObject.AbstractSignal8Default5;
-import io.qt.core.QMetaObject.AbstractSignal8Default6;
-import io.qt.core.QMetaObject.AbstractSignal8Default7;
-import io.qt.core.QMetaObject.AbstractSignal9Default1;
-import io.qt.core.QMetaObject.AbstractSignal9Default2;
-import io.qt.core.QMetaObject.AbstractSignal9Default3;
-import io.qt.core.QMetaObject.AbstractSignal9Default4;
-import io.qt.core.QMetaObject.AbstractSignal9Default5;
-import io.qt.core.QMetaObject.AbstractSignal9Default6;
-import io.qt.core.QMetaObject.AbstractSignal9Default7;
-import io.qt.core.QMetaObject.AbstractSignal9Default8;
+import io.qt.*;
+import io.qt.core.QMetaObject.*;
 
 /**
  * Interface giving access to non-QObject lightweight signals.
@@ -110,7 +52,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal0(Q containingObject) {
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal0(@StrictNonNull Q containingObject) {
 			super();
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
 		}
@@ -120,7 +62,7 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
@@ -139,7 +81,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal1(Q containingObject) {
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal1(@StrictNonNull Q containingObject) {
 			super();
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
 		}
@@ -149,7 +91,7 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
@@ -169,7 +111,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal2(Q containingObject) {
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal2(@StrictNonNull Q containingObject) {
 			super();
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
 		}
@@ -179,7 +121,7 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
@@ -200,7 +142,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal3(Q containingObject) {
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal3(@StrictNonNull Q containingObject) {
 			super();
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
 		}
@@ -210,7 +152,7 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
@@ -232,7 +174,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal4(Q containingObject) {
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal4(@StrictNonNull Q containingObject) {
 			super();
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
 		}
@@ -242,7 +184,7 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
@@ -265,7 +207,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal5(Q containingObject) {
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal5(@StrictNonNull Q containingObject) {
 			super();
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
 		}
@@ -275,7 +217,7 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
@@ -294,7 +236,7 @@ public interface QInstanceMemberSignals {
      */
     public static final class Signal6<A,B,C,D,E,F> extends AbstractPublicSignal6<A,B,C,D,E,F> {
         
-		public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6(Q containingObject) {
+		public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6(@StrictNonNull Q containingObject) {
 			super();
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
 		}
@@ -304,7 +246,7 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
@@ -329,7 +271,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7(Q containingObject) {
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7(@StrictNonNull Q containingObject) {
 			super();
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
 		}
@@ -339,7 +281,7 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
@@ -360,7 +302,7 @@ public interface QInstanceMemberSignals {
      */
     public static final class Signal8<A,B,C,D,E,F,G,H> extends AbstractPublicSignal8<A,B,C,D,E,F,G,H> {
         
-		public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8(Q containingObject) {
+		public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8(@StrictNonNull Q containingObject) {
 			super();
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
 		}
@@ -370,7 +312,7 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
@@ -397,7 +339,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9(Q containingObject) {
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9(@StrictNonNull Q containingObject) {
 			super();
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
 		}
@@ -407,7 +349,7 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
@@ -428,7 +370,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> PrivateSignal0(Q containingObject) {
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> PrivateSignal0(@StrictNonNull Q containingObject) {
 			super();
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
 		}
@@ -443,7 +385,7 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
@@ -466,7 +408,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> PrivateSignal1(Q containingObject) {
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> PrivateSignal1(@StrictNonNull Q containingObject) {
 			super();
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
 		}
@@ -481,7 +423,7 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
@@ -505,7 +447,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> PrivateSignal2(Q containingObject) {
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> PrivateSignal2(@StrictNonNull Q containingObject) {
 			super();
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
 		}
@@ -520,7 +462,7 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
@@ -545,7 +487,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> PrivateSignal3(Q containingObject) {
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> PrivateSignal3(@StrictNonNull Q containingObject) {
 			super();
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
 		}
@@ -560,7 +502,7 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
@@ -586,7 +528,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> PrivateSignal4(Q containingObject) {
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> PrivateSignal4(@StrictNonNull Q containingObject) {
 			super();
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
 		}
@@ -601,7 +543,7 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
@@ -628,7 +570,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> PrivateSignal5(Q containingObject) {
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> PrivateSignal5(@StrictNonNull Q containingObject) {
 			super();
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
 		}
@@ -643,7 +585,7 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
@@ -671,7 +613,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> PrivateSignal6(Q containingObject) {
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> PrivateSignal6(@StrictNonNull Q containingObject) {
 			super();
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
 		}
@@ -686,7 +628,7 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
@@ -715,7 +657,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> PrivateSignal7(Q containingObject) {
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> PrivateSignal7(@StrictNonNull Q containingObject) {
 			super();
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
 		}
@@ -730,7 +672,7 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
@@ -760,7 +702,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> PrivateSignal8(Q containingObject) {
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> PrivateSignal8(@StrictNonNull Q containingObject) {
 			super();
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
 		}
@@ -775,7 +717,7 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
@@ -806,7 +748,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> PrivateSignal9(Q containingObject) {
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> PrivateSignal9(@StrictNonNull Q containingObject) {
 			super();
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
 		}
@@ -821,18 +763,17 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
-    public static final class Signal1Default1<A> extends AbstractPublicSignal1<A> implements QMetaObject.Emitable0, QMetaObject.Connectable0 {
+    public static final class Signal1Default1<A> extends AbstractSignal1Default1<A>{
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal1Default1(Q containingObject) {
-			this.arg1Default = null;
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal1Default1(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
     	
@@ -841,38 +782,33 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal1Default1(Q containingObject, Supplier<A> arg1Default){
-    		super();
-    		if(arg1Default!=null){
-    			this.arg1Default = arg1Default;
-    		}else{
-        		throw new QNoDefaultValueException(1);
-        	}
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal1Default1(@StrictNonNull Q containingObject, @StrictNonNull Supplier<A> arg1Default){
+    		super(arg1Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
-    	
-    	private final Supplier<A> arg1Default;
-        
-        @Override public final void emit() {
-       		emitDefaultSignal(arg1Default);
-        }
     	
         /**
          * Returns the object containing this signal.
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal2} with default value for parameter no. 2.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     */
     public static final class Signal2Default1<A, B> extends AbstractSignal2Default1<A, B>{
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal2Default1(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal2Default1(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -881,7 +817,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-		public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal2Default1(Q containingObject, Supplier<B> arg2Default) {
+		public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal2Default1(@StrictNonNull Q containingObject, @StrictNonNull Supplier<B> arg2Default) {
 			super(arg2Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
 		}
@@ -891,18 +827,23 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
 	}
     
-    public static final class Signal2Default2<A, B> extends AbstractSignal2Default1<A, B> implements QMetaObject.Emitable0, QMetaObject.Connectable0 {
+    /**
+     * Equivalent to {@link Signal2} with default values for parameters 1 and 2.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     */
+    public static final class Signal2Default2<A, B> extends AbstractSignal2Default2<A, B>{
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal2Default2(Q containingObject) {
-			this.arg1Default = null;
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal2Default2(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
     	
@@ -911,38 +852,34 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal2Default2(Q containingObject, Supplier<A> arg1Default, Supplier<B> arg2Default){
-    		super(arg2Default);
-    		if(arg1Default!=null){
-    			this.arg1Default = arg1Default;
-    		}else{
-        		throw new QNoDefaultValueException(1);
-        	}
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal2Default2(@StrictNonNull Q containingObject, @StrictNonNull Supplier<A> arg1Default, @StrictNonNull Supplier<B> arg2Default){
+    		super(arg1Default, arg2Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
-    	
-    	private final Supplier<A> arg1Default;
-        
-        @Override public final void emit() {
-       		emitDefaultSignal(arg1Default);
-        }
     	
         /**
          * Returns the object containing this signal.
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal3} with default value for parameter no. 3.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     */
     public static final class Signal3Default1<A, B, C> extends AbstractSignal3Default1<A, B, C> {
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal3Default1(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal3Default1(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -951,7 +888,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-		public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal3Default1(Q containingObject, Supplier<C> arg3Default) {
+		public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal3Default1(@StrictNonNull Q containingObject, @StrictNonNull Supplier<C> arg3Default) {
 			super(arg3Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
 		}
@@ -961,21 +898,28 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal3} with default values for parameters 2 and 3.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     */
     public static final class Signal3Default2<A, B, C> extends AbstractSignal3Default2<A, B, C> {
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal3Default2(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal3Default2(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
-		public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal3Default2(Q containingObject, Supplier<B> arg2Default, Supplier<C> arg3Default){
+		public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal3Default2(@StrictNonNull Q containingObject, @StrictNonNull Supplier<B> arg2Default, @StrictNonNull Supplier<C> arg3Default){
     		super(arg2Default, arg3Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -985,18 +929,24 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
-    public static final class Signal3Default3<A, B, C> extends AbstractSignal3Default2<A, B, C> implements QMetaObject.Emitable0, QMetaObject.Connectable0 {
+    /**
+     * Equivalent to {@link Signal3} with default values for parameters 1 to 3.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     */
+    public static final class Signal3Default3<A, B, C> extends AbstractSignal3Default3<A, B, C>{
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal3Default3(Q containingObject) {
-			this.arg1Default = null;
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal3Default3(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
     	
@@ -1005,42 +955,38 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal3Default3(Q containingObject, Supplier<A> arg1Default, Supplier<B> arg2Default, Supplier<C> arg3Default){
-    		super(arg2Default, arg3Default);
-    		if(arg2Default!=null){
-    			this.arg1Default = arg1Default;
-    		}else{
-        		throw new QNoDefaultValueException(1);
-        	}
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal3Default3(@StrictNonNull Q containingObject, @StrictNonNull Supplier<A> arg1Default, @StrictNonNull Supplier<B> arg2Default, @StrictNonNull Supplier<C> arg3Default){
+    		super(arg1Default, arg2Default, arg3Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
-    	
-    	private final Supplier<A> arg1Default;
-        
-        @Override public final void emit() {
-       		emitDefaultSignal(arg1Default);
-        }
-    	
         /**
          * Returns the object containing this signal.
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal4} with default value for parameter no. 4.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     */
     public static final class Signal4Default1<A, B, C, D> extends AbstractSignal4Default1<A, B, C, D>{
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal4Default1(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal4Default1(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
-		public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal4Default1(Q containingObject, Supplier<D> arg4Default){
+		public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal4Default1(@StrictNonNull Q containingObject, @StrictNonNull Supplier<D> arg4Default){
     		super(arg4Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1050,17 +996,25 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal4} with default values for parameters 3 and 4.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     */
     public static final class Signal4Default2<A, B, C, D> extends AbstractSignal4Default2<A, B, C, D>{
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal4Default2(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal4Default2(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1069,7 +1023,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal4Default2(Q containingObject, Supplier<C> arg3Default, Supplier<D> arg4Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal4Default2(@StrictNonNull Q containingObject, @StrictNonNull Supplier<C> arg3Default, @StrictNonNull Supplier<D> arg4Default){
     		super(arg3Default, arg4Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1079,17 +1033,25 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal4} with default values for parameters 2 to 4.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     */
     public static final class Signal4Default3<A, B, C, D> extends AbstractSignal4Default3<A, B, C, D>{
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal4Default3(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal4Default3(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1098,7 +1060,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal4Default3(Q containingObject, Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal4Default3(@StrictNonNull Q containingObject, @StrictNonNull Supplier<B> arg2Default, @StrictNonNull Supplier<C> arg3Default, @StrictNonNull Supplier<D> arg4Default){
     		super(arg2Default, arg3Default, arg4Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1108,18 +1070,25 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
-    public static final class Signal4Default4<A, B, C, D> extends AbstractSignal4Default3<A, B, C, D> implements QMetaObject.Emitable0, QMetaObject.Connectable0 {
+    /**
+     * Equivalent to {@link Signal4} with default values for parameters 1 to 4.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     */
+    public static final class Signal4Default4<A, B, C, D> extends AbstractSignal4Default4<A, B, C, D>{
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal4Default4(Q containingObject) {
-			this.arg1Default = null;
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal4Default4(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
     	
@@ -1129,40 +1098,38 @@ public interface QInstanceMemberSignals {
     	 * @param containingObject the containing object
     	 */
     	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal4Default4(
-    			Q containingObject, 
-    			Supplier<A> arg1Default, Supplier<B> arg2Default, 
-    			Supplier<C> arg3Default, Supplier<D> arg4Default){
-    		super(arg2Default, arg3Default, arg4Default);
-    		if(arg1Default!=null){
-    			this.arg1Default = arg1Default;
-    		}else{
-        		throw new QNoDefaultValueException(1);
-        	}
+    			@StrictNonNull Q containingObject, 
+    			@StrictNonNull Supplier<A> arg1Default, @StrictNonNull Supplier<B> arg2Default, 
+    			@StrictNonNull Supplier<C> arg3Default, @StrictNonNull Supplier<D> arg4Default){
+    		super(arg1Default, arg2Default, arg3Default, arg4Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
-    	
-    	private final Supplier<A> arg1Default;
-        
-        @Override public final void emit() {
-       		emitDefaultSignal(arg1Default);
-        }
     	
         /**
          * Returns the object containing this signal.
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal5} with default value for parameter no. 5.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     */
     public static final class Signal5Default1<A, B, C, D, E> extends AbstractSignal5Default1<A, B, C, D, E>{
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal5Default1(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal5Default1(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1171,7 +1138,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal5Default1(Q containingObject, Supplier<E> arg5Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal5Default1(@StrictNonNull Q containingObject, @StrictNonNull Supplier<E> arg5Default){
     		super(arg5Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1181,17 +1148,26 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal5} with default values for parameters 4 and 5.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     */
     public static final class Signal5Default2<A, B, C, D, E> extends AbstractSignal5Default2<A, B, C, D, E>{
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal5Default2(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal5Default2(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1200,7 +1176,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal5Default2(Q containingObject, Supplier<D> arg4Default, Supplier<E> arg5Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal5Default2(@StrictNonNull Q containingObject, @StrictNonNull Supplier<D> arg4Default, @StrictNonNull Supplier<E> arg5Default){
     		super(arg4Default, arg5Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1210,17 +1186,26 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal5} with default values for parameters 3 to 5.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     */
     public static final class Signal5Default3<A, B, C, D, E> extends AbstractSignal5Default3<A, B, C, D, E>{
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal5Default3(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal5Default3(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1229,7 +1214,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal5Default3(Q containingObject, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal5Default3(@StrictNonNull Q containingObject, @StrictNonNull Supplier<C> arg3Default, @StrictNonNull Supplier<D> arg4Default, @StrictNonNull Supplier<E> arg5Default){
     		super(arg3Default, arg4Default, arg5Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1239,17 +1224,26 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal5} with default values for parameters 2 to 5.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     */
     public static final class Signal5Default4<A, B, C, D, E> extends AbstractSignal5Default4<A, B, C, D, E>{
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal5Default4(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal5Default4(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1258,7 +1252,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal5Default4(Q containingObject, Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal5Default4(@StrictNonNull Q containingObject, @StrictNonNull Supplier<B> arg2Default, @StrictNonNull Supplier<C> arg3Default, @StrictNonNull Supplier<D> arg4Default, @StrictNonNull Supplier<E> arg5Default){
     		super(arg2Default, arg3Default, arg4Default, arg5Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1268,18 +1262,26 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
-    public static final class Signal5Default5<A, B, C, D, E> extends AbstractSignal5Default4<A, B, C, D, E> implements QMetaObject.Emitable0{
+    /**
+     * Equivalent to {@link Signal5} with default values for parameters 1 to 5.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     */
+    public static final class Signal5Default5<A, B, C, D, E> extends AbstractSignal5Default5<A, B, C, D, E>{
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal5Default5(Q containingObject) {
-			this.arg1Default = null;
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal5Default5(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
     	
@@ -1288,38 +1290,37 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal5Default5(Q containingObject, Supplier<A> arg1Default, Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default){
-    		super(arg2Default, arg3Default, arg4Default, arg5Default);
-    		if(arg1Default!=null){
-    			this.arg1Default = arg1Default;
-    		}else{
-        		throw new QNoDefaultValueException(1);
-        	}
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal5Default5(@StrictNonNull Q containingObject, @StrictNonNull Supplier<A> arg1Default, @StrictNonNull Supplier<B> arg2Default, @StrictNonNull Supplier<C> arg3Default, @StrictNonNull Supplier<D> arg4Default, @StrictNonNull Supplier<E> arg5Default){
+    		super(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
-    	
-    	private final Supplier<A> arg1Default;
-        
-        @Override public final void emit() {
-       		emitDefaultSignal(arg1Default);
-        }
     	
         /**
          * Returns the object containing this signal.
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal6} with default value for parameter no. 6.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     */
     public static final class Signal6Default1<A, B, C, D, E, F> extends AbstractSignal6Default1<A, B, C, D, E, F>{
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6Default1(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6Default1(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1328,7 +1329,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6Default1(Q containingObject, Supplier<F> arg6Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6Default1(@StrictNonNull Q containingObject, @StrictNonNull Supplier<F> arg6Default){
     		super(arg6Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1338,17 +1339,27 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal6} with default values for parameters 5 and 6.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     */
     public static final class Signal6Default2<A, B, C, D, E, F> extends AbstractSignal6Default2<A, B, C, D, E, F>{
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6Default2(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6Default2(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1357,7 +1368,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6Default2(Q containingObject, Supplier<E> arg5Default, Supplier<F> arg6Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6Default2(@StrictNonNull Q containingObject, @StrictNonNull Supplier<E> arg5Default, @StrictNonNull Supplier<F> arg6Default){
     		super(arg5Default, arg6Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1367,17 +1378,27 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal6} with default values for parameters 4 to 6.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     */
     public static final class Signal6Default3<A, B, C, D, E, F> extends AbstractSignal6Default3<A, B, C, D, E, F>{
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6Default3(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6Default3(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1386,7 +1407,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6Default3(Q containingObject, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6Default3(@StrictNonNull Q containingObject, @StrictNonNull Supplier<D> arg4Default, @StrictNonNull Supplier<E> arg5Default, @StrictNonNull Supplier<F> arg6Default){
     		super(arg4Default, arg5Default, arg6Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1396,17 +1417,27 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal6} with default values for parameters 3 to 6.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     */
     public static final class Signal6Default4<A, B, C, D, E, F> extends AbstractSignal6Default4<A, B, C, D, E, F>{
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6Default4(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6Default4(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1415,7 +1446,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6Default4(Q containingObject, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6Default4(@StrictNonNull Q containingObject, @StrictNonNull Supplier<C> arg3Default, @StrictNonNull Supplier<D> arg4Default, @StrictNonNull Supplier<E> arg5Default, @StrictNonNull Supplier<F> arg6Default){
     		super(arg3Default, arg4Default, arg5Default, arg6Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1425,17 +1456,27 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal6} with default values for parameters 2 to 6.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     */
     public static final class Signal6Default5<A, B, C, D, E, F> extends AbstractSignal6Default5<A, B, C, D, E, F>{
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6Default5(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6Default5(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1444,7 +1485,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6Default5(Q containingObject, Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6Default5(@StrictNonNull Q containingObject, @StrictNonNull Supplier<B> arg2Default, @StrictNonNull Supplier<C> arg3Default, @StrictNonNull Supplier<D> arg4Default, @StrictNonNull Supplier<E> arg5Default, @StrictNonNull Supplier<F> arg6Default){
     		super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1454,18 +1495,27 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
-    public static final class Signal6Default6<A, B, C, D, E, F> extends AbstractSignal6Default5<A, B, C, D, E, F> implements QMetaObject.Emitable0{
+    /**
+     * Equivalent to {@link Signal6} with default values for parameters 1 to 6.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     */
+    public static final class Signal6Default6<A, B, C, D, E, F> extends AbstractSignal6Default6<A, B, C, D, E, F>{
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6Default6(Q containingObject) {
-			this.arg1Default = null;
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6Default6(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
     	
@@ -1474,37 +1524,38 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6Default6(Q containingObject, Supplier<A> arg1Default, Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default){
-    		super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default);
-			this.arg1Default = arg1Default;
-    		if(this.arg1Default==null){
-        		throw new QNoDefaultValueException(1);
-        	}
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal6Default6(@StrictNonNull Q containingObject, @StrictNonNull Supplier<A> arg1Default, @StrictNonNull Supplier<B> arg2Default, @StrictNonNull Supplier<C> arg3Default, @StrictNonNull Supplier<D> arg4Default, @StrictNonNull Supplier<E> arg5Default, @StrictNonNull Supplier<F> arg6Default){
+    		super(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
-    	
-    	private final Supplier<A> arg1Default;
-        
-    	@Override public final void emit() {
-       		emitDefaultSignal(arg1Default);
-        }
     	
         /**
          * Returns the object containing this signal.
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal7} with default value for parameter no. 7.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     */
     public static final class Signal7Default1<A, B, C, D, E, F, G> extends AbstractSignal7Default1<A, B, C, D, E, F, G>{
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default1(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default1(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1513,7 +1564,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default1(Q containingObject, Supplier<G> arg7Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default1(@StrictNonNull Q containingObject, @StrictNonNull Supplier<G> arg7Default){
     		super(arg7Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1523,17 +1574,28 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal7} with default values for parameters 6 and 7.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     */
     public static final class Signal7Default2<A, B, C, D, E, F, G> extends AbstractSignal7Default2<A, B, C, D, E, F, G> {
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default2(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default2(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1542,7 +1604,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default2(Q containingObject, Supplier<F> arg6Default, Supplier<G> arg7Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default2(@StrictNonNull Q containingObject, @StrictNonNull Supplier<F> arg6Default, @StrictNonNull Supplier<G> arg7Default){
     		super(arg6Default, arg7Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1552,17 +1614,28 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal7} with default values for parameters 5 to 7.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     */
     public static final class Signal7Default3<A, B, C, D, E, F, G> extends AbstractSignal7Default3<A, B, C, D, E, F, G> {
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default3(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default3(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1571,7 +1644,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default3(Q containingObject, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default3(@StrictNonNull Q containingObject, @StrictNonNull Supplier<E> arg5Default, @StrictNonNull Supplier<F> arg6Default, @StrictNonNull Supplier<G> arg7Default){
     		super(arg5Default, arg6Default, arg7Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1581,17 +1654,28 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal7} with default values for parameters 4 to 7.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     */
     public static final class Signal7Default4<A, B, C, D, E, F, G> extends AbstractSignal7Default4<A, B, C, D, E, F, G> {
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default4(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default4(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1600,7 +1684,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default4(Q containingObject, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default4(@StrictNonNull Q containingObject, @StrictNonNull Supplier<D> arg4Default, @StrictNonNull Supplier<E> arg5Default, @StrictNonNull Supplier<F> arg6Default, @StrictNonNull Supplier<G> arg7Default){
     		super(arg4Default, arg5Default, arg6Default, arg7Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1610,17 +1694,28 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal7} with default values for parameters 3 to 7.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     */
     public static final class Signal7Default5<A, B, C, D, E, F, G> extends AbstractSignal7Default5<A, B, C, D, E, F, G> {
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default5(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default5(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1629,7 +1724,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default5(Q containingObject, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default5(@StrictNonNull Q containingObject, @StrictNonNull Supplier<C> arg3Default, @StrictNonNull Supplier<D> arg4Default, @StrictNonNull Supplier<E> arg5Default, @StrictNonNull Supplier<F> arg6Default, @StrictNonNull Supplier<G> arg7Default){
     		super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1639,17 +1734,28 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal7} with default values for parameters 2 to 7.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     */
     public static final class Signal7Default6<A, B, C, D, E, F, G> extends AbstractSignal7Default6<A, B, C, D, E, F, G> {
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default6(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default6(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1658,7 +1764,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default6(Q containingObject, Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default6(@StrictNonNull Q containingObject, @StrictNonNull Supplier<B> arg2Default, @StrictNonNull Supplier<C> arg3Default, @StrictNonNull Supplier<D> arg4Default, @StrictNonNull Supplier<E> arg5Default, @StrictNonNull Supplier<F> arg6Default, @StrictNonNull Supplier<G> arg7Default){
     		super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1668,18 +1774,28 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
-    public static final class Signal7Default7<A, B, C, D, E, F, G> extends AbstractSignal7Default6<A, B, C, D, E, F, G> implements QMetaObject.Emitable0, QMetaObject.Connectable0 {
+    /**
+     * Equivalent to {@link Signal7} with default values for parameters 1 to 7.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     */
+    public static final class Signal7Default7<A, B, C, D, E, F, G> extends AbstractSignal7Default7<A, B, C, D, E, F, G>{
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default7(Q containingObject) {
-			this.arg1Default = null;
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default7(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
     	
@@ -1688,37 +1804,39 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default7(Q containingObject, Supplier<A> arg1Default, Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default){
-    		super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default);
-			this.arg1Default = arg1Default;
-    		if(this.arg1Default==null){
-        		throw new QNoDefaultValueException(2);
-        	}
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal7Default7(@StrictNonNull Q containingObject, @StrictNonNull Supplier<A> arg1Default, @StrictNonNull Supplier<B> arg2Default, @StrictNonNull Supplier<C> arg3Default, @StrictNonNull Supplier<D> arg4Default, @StrictNonNull Supplier<E> arg5Default, @StrictNonNull Supplier<F> arg6Default, @StrictNonNull Supplier<G> arg7Default){
+    		super(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
-    	
-    	private final Supplier<A> arg1Default;
-        
-        @Override public final void emit() {
-       		emitDefaultSignal(arg1Default);
-        }
     	
         /**
          * Returns the object containing this signal.
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal8} with default value for parameter no. 8.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     */
     public static final class Signal8Default1<A, B, C, D, E, F, G, H> extends AbstractSignal8Default1<A, B, C, D, E, F, G, H>{
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default1(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default1(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1727,7 +1845,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default1(Q containingObject, Supplier<H> arg8Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default1(@StrictNonNull Q containingObject, @StrictNonNull Supplier<H> arg8Default){
     		super(arg8Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1737,17 +1855,29 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal8} with default values for parameters 7 and 8.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     */
     public static final class Signal8Default2<A, B, C, D, E, F, G, H> extends AbstractSignal8Default2<A, B, C, D, E, F, G, H> {
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default2(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default2(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1756,7 +1886,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default2(Q containingObject, Supplier<G> arg7Default, Supplier<H> arg8Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default2(@StrictNonNull Q containingObject, @StrictNonNull Supplier<G> arg7Default, @StrictNonNull Supplier<H> arg8Default){
     		super(arg7Default, arg8Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1766,17 +1896,29 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal8} with default values for parameters 6 to 8.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     */
     public static final class Signal8Default3<A, B, C, D, E, F, G, H> extends AbstractSignal8Default3<A, B, C, D, E, F, G, H> {
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default3(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default3(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1785,7 +1927,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default3(Q containingObject, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default3(@StrictNonNull Q containingObject, @StrictNonNull Supplier<F> arg6Default, @StrictNonNull Supplier<G> arg7Default, @StrictNonNull Supplier<H> arg8Default){
     		super(arg6Default, arg7Default, arg8Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1795,17 +1937,29 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal8} with default values for parameters 5 to 8.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     */
     public static final class Signal8Default4<A, B, C, D, E, F, G, H> extends AbstractSignal8Default4<A, B, C, D, E, F, G, H> {
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default4(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default4(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1814,7 +1968,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default4(Q containingObject, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default4(@StrictNonNull Q containingObject, @StrictNonNull Supplier<E> arg5Default, @StrictNonNull Supplier<F> arg6Default, @StrictNonNull Supplier<G> arg7Default, @StrictNonNull Supplier<H> arg8Default){
     		super(arg5Default, arg6Default, arg7Default, arg8Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1824,17 +1978,29 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal8} with default values for parameters 4 to 8.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     */
     public static final class Signal8Default5<A, B, C, D, E, F, G, H> extends AbstractSignal8Default5<A, B, C, D, E, F, G, H> {
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default5(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default5(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1843,7 +2009,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default5(Q containingObject, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default5(@StrictNonNull Q containingObject, @StrictNonNull Supplier<D> arg4Default, @StrictNonNull Supplier<E> arg5Default, @StrictNonNull Supplier<F> arg6Default, @StrictNonNull Supplier<G> arg7Default, @StrictNonNull Supplier<H> arg8Default){
     		super(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1853,17 +2019,29 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal8} with default values for parameters 3 to 8.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     */
     public static final class Signal8Default6<A, B, C, D, E, F, G, H> extends AbstractSignal8Default6<A, B, C, D, E, F, G, H> {
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default6(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default6(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1872,7 +2050,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default6(Q containingObject, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default6(@StrictNonNull Q containingObject, @StrictNonNull Supplier<C> arg3Default, @StrictNonNull Supplier<D> arg4Default, @StrictNonNull Supplier<E> arg5Default, @StrictNonNull Supplier<F> arg6Default, @StrictNonNull Supplier<G> arg7Default, @StrictNonNull Supplier<H> arg8Default){
     		super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1882,17 +2060,29 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal8} with default values for parameters 2 to 8.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     */
     public static final class Signal8Default7<A, B, C, D, E, F, G, H> extends AbstractSignal8Default7<A, B, C, D, E, F, G, H> {
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default7(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default7(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1901,7 +2091,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default7(Q containingObject, Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default7(@StrictNonNull Q containingObject, @StrictNonNull Supplier<B> arg2Default, @StrictNonNull Supplier<C> arg3Default, @StrictNonNull Supplier<D> arg4Default, @StrictNonNull Supplier<E> arg5Default, @StrictNonNull Supplier<F> arg6Default, @StrictNonNull Supplier<G> arg7Default, @StrictNonNull Supplier<H> arg8Default){
     		super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1911,18 +2101,29 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
-    public static final class Signal8Default8<A, B, C, D, E, F, G, H> extends AbstractSignal8Default7<A, B, C, D, E, F, G, H> implements QMetaObject.Emitable0, QMetaObject.Connectable0 {
+    /**
+     * Equivalent to {@link Signal8} with default values for parameters 1 to 8.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     */
+    public static final class Signal8Default8<A, B, C, D, E, F, G, H> extends AbstractSignal8Default8<A, B, C, D, E, F, G, H>{
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default8(Q containingObject) {
-			this.arg1Default = null;
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default8(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
     	
@@ -1931,37 +2132,40 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default8(Q containingObject, Supplier<A> arg1Default, Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default){
-    		super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
-			this.arg1Default = arg1Default;
-			if(this.arg1Default==null){
-        		throw new QNoDefaultValueException(1);
-        	}
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal8Default8(@StrictNonNull Q containingObject, @StrictNonNull Supplier<A> arg1Default, @StrictNonNull Supplier<B> arg2Default, @StrictNonNull Supplier<C> arg3Default, @StrictNonNull Supplier<D> arg4Default, @StrictNonNull Supplier<E> arg5Default, @StrictNonNull Supplier<F> arg6Default, @StrictNonNull Supplier<G> arg7Default, @StrictNonNull Supplier<H> arg8Default){
+    		super(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
-    	
-    	private final Supplier<A> arg1Default;
-        
-        @Override public final void emit() {
-       		emitDefaultSignal(arg1Default);
-        }
     	
         /**
          * Returns the object containing this signal.
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal9} with default value for parameter no. 9.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     */
     public static final class Signal9Default1<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default1<A, B, C, D, E, F, G, H, I>{
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default1(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default1(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1970,7 +2174,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default1(Q containingObject, Supplier<I> arg9Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default1(@StrictNonNull Q containingObject, @StrictNonNull Supplier<I> arg9Default){
     		super(arg9Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -1980,17 +2184,30 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal9} with default values for parameters 8 and 9.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     */
     public static final class Signal9Default2<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default2<A, B, C, D, E, F, G, H, I> {
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default2(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default2(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -1999,7 +2216,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default2(Q containingObject, Supplier<H> arg8Default, Supplier<I> arg9Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default2(@StrictNonNull Q containingObject, @StrictNonNull Supplier<H> arg8Default, @StrictNonNull Supplier<I> arg9Default){
     		super(arg8Default, arg9Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -2009,17 +2226,30 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal9} with default values for parameters 7 to 9.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     */
     public static final class Signal9Default3<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default3<A, B, C, D, E, F, G, H, I> {
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default3(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default3(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -2028,7 +2258,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default3(Q containingObject, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default3(@StrictNonNull Q containingObject, @StrictNonNull Supplier<G> arg7Default, @StrictNonNull Supplier<H> arg8Default, @StrictNonNull Supplier<I> arg9Default){
     		super(arg7Default, arg8Default, arg9Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -2038,17 +2268,30 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal9} with default values for parameters 6 to 9.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     */
     public static final class Signal9Default4<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default4<A, B, C, D, E, F, G, H, I> {
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default4(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default4(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -2057,7 +2300,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default4(Q containingObject, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default4(@StrictNonNull Q containingObject, @StrictNonNull Supplier<F> arg6Default, @StrictNonNull Supplier<G> arg7Default, @StrictNonNull Supplier<H> arg8Default, @StrictNonNull Supplier<I> arg9Default){
     		super(arg6Default, arg7Default, arg8Default, arg9Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -2067,17 +2310,30 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal9} with default values for parameters 5 to 9.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     */
     public static final class Signal9Default5<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default5<A, B, C, D, E, F, G, H, I> {
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default5(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default5(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -2086,7 +2342,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default5(Q containingObject, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default5(@StrictNonNull Q containingObject, @StrictNonNull Supplier<E> arg5Default, @StrictNonNull Supplier<F> arg6Default, @StrictNonNull Supplier<G> arg7Default, @StrictNonNull Supplier<H> arg8Default, @StrictNonNull Supplier<I> arg9Default){
     		super(arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -2096,17 +2352,30 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal9} with default values for parameters 4 to 9.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     */
     public static final class Signal9Default6<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default6<A, B, C, D, E, F, G, H, I> {
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default6(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default6(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -2115,7 +2384,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default6(Q containingObject, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default6(@StrictNonNull Q containingObject, @StrictNonNull Supplier<D> arg4Default, @StrictNonNull Supplier<E> arg5Default, @StrictNonNull Supplier<F> arg6Default, @StrictNonNull Supplier<G> arg7Default, @StrictNonNull Supplier<H> arg8Default, @StrictNonNull Supplier<I> arg9Default){
     		super(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
 		}
@@ -2125,17 +2394,30 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal9} with default values for parameters 3 to 9.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     */
     public static final class Signal9Default7<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default7<A, B, C, D, E, F, G, H, I> {
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default7(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default7(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -2144,7 +2426,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default7(Q containingObject, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default7(@StrictNonNull Q containingObject, @StrictNonNull Supplier<C> arg3Default, @StrictNonNull Supplier<D> arg4Default, @StrictNonNull Supplier<E> arg5Default, @StrictNonNull Supplier<F> arg6Default, @StrictNonNull Supplier<G> arg7Default, @StrictNonNull Supplier<H> arg8Default, @StrictNonNull Supplier<I> arg9Default){
     		super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -2154,17 +2436,30 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
+    /**
+     * Equivalent to {@link Signal9} with default values for parameters 2 to 9.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     */
     public static final class Signal9Default8<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default8<A, B, C, D, E, F, G, H, I> {
         
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default8(Q containingObject) {
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default8(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
     	
@@ -2173,7 +2468,7 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default8(Q containingObject, Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default){
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default8(@StrictNonNull Q containingObject, @StrictNonNull Supplier<B> arg2Default, @StrictNonNull Supplier<C> arg3Default, @StrictNonNull Supplier<D> arg4Default, @StrictNonNull Supplier<E> arg5Default, @StrictNonNull Supplier<F> arg6Default, @StrictNonNull Supplier<G> arg7Default, @StrictNonNull Supplier<H> arg8Default, @StrictNonNull Supplier<I> arg9Default){
     		super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
@@ -2183,18 +2478,30 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
     	private final WeakReference<QtSignalEmitterInterface> containingObject;    	
     }
     
-    public static final class Signal9Default9<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default8<A, B, C, D, E, F, G, H, I> implements QMetaObject.Emitable0, QMetaObject.Connectable0 {
+    /**
+     * Equivalent to {@link Signal9} with default values for parameters 1 to 9.
+     *
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     */
+    public static final class Signal9Default9<A, B, C, D, E, F, G, H, I> extends AbstractSignal9Default9<A, B, C, D, E, F, G, H, I>{
     	
     	@SuppressWarnings("unused")
-		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default9(Q containingObject) {
-			this.arg1Default = null;
+		private <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default9(@StrictNonNull Q containingObject) {
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
         
@@ -2203,27 +2510,17 @@ public interface QInstanceMemberSignals {
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object
     	 */
-    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default9(Q containingObject, Supplier<A> arg1Default, Supplier<B> arg2Default, Supplier<C> arg3Default, Supplier<D> arg4Default, Supplier<E> arg5Default, Supplier<F> arg6Default, Supplier<G> arg7Default, Supplier<H> arg8Default, Supplier<I> arg9Default){
-    		super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
-			this.arg1Default = arg1Default;
-    		if(this.arg1Default==null){
-        		throw new QNoDefaultValueException(1);
-        	}
+    	public <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> Signal9Default9(@StrictNonNull Q containingObject, @StrictNonNull Supplier<A> arg1Default, @StrictNonNull Supplier<B> arg2Default, @StrictNonNull Supplier<C> arg3Default, @StrictNonNull Supplier<D> arg4Default, @StrictNonNull Supplier<E> arg5Default, @StrictNonNull Supplier<F> arg6Default, @StrictNonNull Supplier<G> arg7Default, @StrictNonNull Supplier<H> arg8Default, @StrictNonNull Supplier<I> arg9Default){
+    		super(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
 			this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
     	}
-    	
-    	private final Supplier<A> arg1Default;
-        
-        @Override public final void emit() {
-       		emitDefaultSignal(arg1Default);
-        }
     	
         /**
          * Returns the object containing this signal.
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     	
@@ -2236,7 +2533,7 @@ public interface QInstanceMemberSignals {
     public abstract class MultiSignal extends QMetaObject.AbstractMultiSignal {
     	private final WeakReference<QtSignalEmitterInterface> containingObject;
     	
-    	protected <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> MultiSignal(Q containingObject){
+    	protected <Q extends Object & QtSignalEmitterInterface & QInstanceMemberSignals> MultiSignal(@StrictNonNull Q containingObject){
             super();
             this.containingObject = new WeakReference<>(Objects.requireNonNull(containingObject));
         }
@@ -2246,7 +2543,7 @@ public interface QInstanceMemberSignals {
          * @return the signal containing object
          */
     	@Override
-		public QtSignalEmitterInterface containingObject() {
+		public @NonNull QtSignalEmitterInterface containingObject() {
 			return containingObject.get();
 		}
     
@@ -2256,7 +2553,7 @@ public interface QInstanceMemberSignals {
          * @param connection the connection to be removed
          * @return <code>true</code> if the disconnection was successful.
          */
-        public final boolean disconnect(QMetaObject.Connection connection) {
+        public final boolean disconnect(QMetaObject.@NonNull Connection connection) {
             return super.disconnect(connection);
         }
         
@@ -2280,7 +2577,7 @@ public interface QInstanceMemberSignals {
          * @throws java.lang.RuntimeException Raised if the signal object could not be successfully introspected or if the
          *                                    signatures of the signal and slot are incompatible.
          */
-        public final QMetaObject.Connection connect(Object receiver, String method, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(Object receiver, String method, Qt.ConnectionType... type) {
             if (receiver == null)
                 throw new NullPointerException("Receiver must be non-null");
             if (method == null)
@@ -2297,7 +2594,7 @@ public interface QInstanceMemberSignals {
          * connection has not been previously established by a call to connect.
          * @throws QNoSuchSlotException Raised if the method passed in the slot object was not found
          */
-        public final boolean disconnect(Object receiver, String method) {
+        public final boolean disconnect(@Nullable Object receiver, @Nullable String method) {
             if (method != null && receiver == null)
                 throw new IllegalArgumentException("Receiver cannot be null if you specify a method");
             return super.disconnect(receiver, method);
@@ -2310,9 +2607,8 @@ public interface QInstanceMemberSignals {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
-        public final io.qt.core.QMetaObject.Connection connect(io.qt.core.QMetaObject.Slot0 slot, io.qt.core.Qt.ConnectionType... connectionType) throws io.qt.QNoSuchSignalException{
+        public final io.qt.core.QMetaObject.@NonNull Connection connect(io.qt.core.QMetaObject.@StrictNonNull Slot0 slot, io.qt.core.Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) throws io.qt.QNoSuchSignalException{
             return super.connect(slot, connectionType);
         }
     
@@ -2322,32 +2618,32 @@ public interface QInstanceMemberSignals {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(io.qt.core.QMetaObject.Slot0 slot) {
+        public final boolean disconnect(io.qt.core.QMetaObject.@StrictNonNull Slot0 slot) {
             return super.disconnect(slot);
         }
         
         @io.qt.QtUninvokable
-        private QMetaObject.Connection connectSlot(QMetaObject.AbstractSlot slotObject, Qt.ConnectionType[] connectionType) {
+        private QMetaObject.@NonNull Connection connectSlot(QMetaObject.@StrictNonNull AbstractSlot slotObject, Qt.ConnectionType[] connectionType) {
             return super.connect(slotObject, connectionType);
         }
         
         @io.qt.QtUninvokable
-        private boolean disconnectSlot(QMetaObject.AbstractSlot slotObject) {
+        private boolean disconnectSlot(QMetaObject.@StrictNonNull AbstractSlot slotObject) {
             return super.disconnect(slotObject);
         }
         
         @io.qt.QtUninvokable
-        private QMetaObject.Connection connectSignal(QMetaObject.AbstractSignal slotObject, Qt.ConnectionType[] connectionType) {
+        private QMetaObject.@NonNull Connection connectSignal(QMetaObject.@StrictNonNull AbstractSignal slotObject, Qt.ConnectionType[] connectionType) {
             return super.connect(slotObject, connectionType);
         }
         
         @io.qt.QtUninvokable
-        private boolean disconnectSignal(QMetaObject.AbstractSignal slotObject) {
+        private boolean disconnectSignal(QMetaObject.@StrictNonNull AbstractSignal slotObject) {
             return super.disconnect(slotObject);
         }
     }
     
-    public static void emit(PrivateSignal0 signal) throws io.qt.QSignalAccessException {
+    public static void emit(@StrictNonNull PrivateSignal0 signal) throws io.qt.QSignalAccessException {
     	Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
     	Class<?> signalDeclaringClass = signal.signalDeclaringClass();
     	if(callerClass==signalDeclaringClass || (MultiSignal.class.isAssignableFrom(callerClass) && callerClass.getEnclosingClass()==signalDeclaringClass)) {
@@ -2357,7 +2653,7 @@ public interface QInstanceMemberSignals {
     	}
     }
     
-    public static <A> void emit(PrivateSignal1<A> signal, A arg1) throws io.qt.QSignalAccessException {
+    public static <A> void emit(@StrictNonNull PrivateSignal1<A> signal, A arg1) throws io.qt.QSignalAccessException {
     	Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
     	Class<?> signalDeclaringClass = signal.signalDeclaringClass();
     	if(callerClass==signalDeclaringClass || (MultiSignal.class.isAssignableFrom(callerClass) && callerClass.getEnclosingClass()==signalDeclaringClass)) {
@@ -2367,7 +2663,7 @@ public interface QInstanceMemberSignals {
     	}
     }
     
-    public static <A,B> void emit(PrivateSignal2<A,B> signal, A arg1, B arg2) throws io.qt.QSignalAccessException {
+    public static <A,B> void emit(@StrictNonNull PrivateSignal2<A,B> signal, A arg1, B arg2) throws io.qt.QSignalAccessException {
     	Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
     	Class<?> signalDeclaringClass = signal.signalDeclaringClass();
     	if(callerClass==signalDeclaringClass || (MultiSignal.class.isAssignableFrom(callerClass) && callerClass.getEnclosingClass()==signalDeclaringClass)) {
@@ -2377,7 +2673,7 @@ public interface QInstanceMemberSignals {
     	}
     }
     
-    public static <A,B,C> void emit(PrivateSignal3<A,B,C> signal, A arg1, B arg2, C arg3) throws io.qt.QSignalAccessException {
+    public static <A,B,C> void emit(@StrictNonNull PrivateSignal3<A,B,C> signal, A arg1, B arg2, C arg3) throws io.qt.QSignalAccessException {
     	Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
     	Class<?> signalDeclaringClass = signal.signalDeclaringClass();
     	if(callerClass==signalDeclaringClass || (MultiSignal.class.isAssignableFrom(callerClass) && callerClass.getEnclosingClass()==signalDeclaringClass)) {
@@ -2387,7 +2683,7 @@ public interface QInstanceMemberSignals {
     	}
     }
     
-    public static <A,B,C,D> void emit(PrivateSignal4<A,B,C,D> signal, A arg1, B arg2, C arg3, D arg4) throws io.qt.QSignalAccessException {
+    public static <A,B,C,D> void emit(@StrictNonNull PrivateSignal4<A,B,C,D> signal, A arg1, B arg2, C arg3, D arg4) throws io.qt.QSignalAccessException {
     	Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
     	Class<?> signalDeclaringClass = signal.signalDeclaringClass();
     	if(callerClass==signalDeclaringClass || (MultiSignal.class.isAssignableFrom(callerClass) && callerClass.getEnclosingClass()==signalDeclaringClass)) {
@@ -2397,7 +2693,7 @@ public interface QInstanceMemberSignals {
     	}
     }
     
-    public static <A,B,C,D,E> void emit(PrivateSignal5<A,B,C,D,E> signal, A arg1, B arg2, C arg3, D arg4, E arg5) throws io.qt.QSignalAccessException {
+    public static <A,B,C,D,E> void emit(@StrictNonNull PrivateSignal5<A,B,C,D,E> signal, A arg1, B arg2, C arg3, D arg4, E arg5) throws io.qt.QSignalAccessException {
     	Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
     	Class<?> signalDeclaringClass = signal.signalDeclaringClass();
     	if(callerClass==signalDeclaringClass || (MultiSignal.class.isAssignableFrom(callerClass) && callerClass.getEnclosingClass()==signalDeclaringClass)) {
@@ -2407,7 +2703,7 @@ public interface QInstanceMemberSignals {
     	}
     }
     
-    public static <A,B,C,D,E,F> void emit(PrivateSignal6<A,B,C,D,E,F> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws io.qt.QSignalAccessException {
+    public static <A,B,C,D,E,F> void emit(@StrictNonNull PrivateSignal6<A,B,C,D,E,F> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws io.qt.QSignalAccessException {
     	Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
     	Class<?> signalDeclaringClass = signal.signalDeclaringClass();
     	if(callerClass==signalDeclaringClass || (MultiSignal.class.isAssignableFrom(callerClass) && callerClass.getEnclosingClass()==signalDeclaringClass)) {
@@ -2417,7 +2713,7 @@ public interface QInstanceMemberSignals {
     	}
     }
     
-    public static <A,B,C,D,E,F,G> void emit(PrivateSignal7<A,B,C,D,E,F,G> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws io.qt.QSignalAccessException {
+    public static <A,B,C,D,E,F,G> void emit(@StrictNonNull PrivateSignal7<A,B,C,D,E,F,G> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws io.qt.QSignalAccessException {
     	Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
     	Class<?> signalDeclaringClass = signal.signalDeclaringClass();
     	if(callerClass==signalDeclaringClass || (MultiSignal.class.isAssignableFrom(callerClass) && callerClass.getEnclosingClass()==signalDeclaringClass)) {
@@ -2427,7 +2723,7 @@ public interface QInstanceMemberSignals {
     	}
     }
     
-    public static <A,B,C,D,E,F,G,H> void emit(PrivateSignal8<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws io.qt.QSignalAccessException {
+    public static <A,B,C,D,E,F,G,H> void emit(@StrictNonNull PrivateSignal8<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws io.qt.QSignalAccessException {
     	Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
     	Class<?> signalDeclaringClass = signal.signalDeclaringClass();
     	if(callerClass==signalDeclaringClass || (MultiSignal.class.isAssignableFrom(callerClass) && callerClass.getEnclosingClass()==signalDeclaringClass)) {
@@ -2437,7 +2733,7 @@ public interface QInstanceMemberSignals {
     	}
     }
     
-    public static <A,B,C,D,E,F,G,H,I> void emit(PrivateSignal9<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws io.qt.QSignalAccessException {
+    public static <A,B,C,D,E,F,G,H,I> void emit(@StrictNonNull PrivateSignal9<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws io.qt.QSignalAccessException {
     	Class<?> callerClass = QtJambi_LibraryUtilities.internal.callerClassProvider().get();
     	Class<?> signalDeclaringClass = signal.signalDeclaringClass();
     	if(callerClass==signalDeclaringClass || (MultiSignal.class.isAssignableFrom(callerClass) && callerClass.getEnclosingClass()==signalDeclaringClass)) {

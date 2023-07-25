@@ -79,6 +79,11 @@ void Tulip::testStdFunctions(const QList<Tulip::TestStdFunction>& functions){
     }
 }
 
+void Tulip::consumeIntList(const QList<int>& list){for (int i = 0; i < list.size(); i++) {list.at(i);}}
+void Tulip::consumeStringList(const QList<QString>& list){for (int i = 0; i < list.size(); i++) {list.at(i);}}
+void Tulip::consumeColorList(const QList<QColor>& list){for (int i = 0; i < list.size(); i++) {list.at(i);}}
+void Tulip::consumeQObjectList(const QList<QObject*>& list){for (int i = 0; i < list.size(); i++) {list.at(i);}}
+
 QSet<QRunnable*> Tulip::createSetOfRunnables() {return {};}
 QHash<QString,QRunnable*> Tulip::createStringHashOfRunnables() {return {};}
 QMultiHash<QString,QRunnable*> Tulip::createStringMultiHashOfRunnables() {return {};}
@@ -92,3 +97,13 @@ QMap<QString,QObject*> Tulip::createStringMapOfObjects() {return {};}
 QMultiMap<QString,QObject*> Tulip::createStringMultiMapOfObjects() {return {};}
 QList<QList<QRunnable*>> Tulip::createListOfListOfRunnables() {return {};}
 QList<QList<QObject*>> Tulip::createListOfListOfObjects() {return {};}
+
+qint64 Tulip::fillIntList(qint32 capacity){
+    QList<int> list;
+    QTime t1 = QTime::currentTime();
+    for (int i = 0; i < capacity; i++) {
+        list.append(i);
+    }
+    QTime t2 = QTime::currentTime();
+    return t1.msecsTo(t2);
+}

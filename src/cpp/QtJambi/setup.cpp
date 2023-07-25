@@ -370,7 +370,8 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
             QMetaType::registerConverter<JCharArrayWrapper,QString>([](const JCharArrayWrapper& w) -> QString {return w.toString();});
             QMetaType::registerConverter<JDoubleArrayWrapper,QString>([](const JDoubleArrayWrapper& w) -> QString {return w.toString();});
             QMetaType::registerConverter<JFloatArrayWrapper,QString>([](const JFloatArrayWrapper& w) -> QString {return w.toString();});
-            QMetaType::registerConverter<JObjectWrapper,jobject>([](const JObjectWrapper& w) -> jobject {return w;});
+            if(!QMetaType::hasRegisteredConverterFunction<JObjectWrapper,jobject>())
+                QMetaType::registerConverter<JObjectWrapper,jobject>([](const JObjectWrapper& w) -> jobject {return w;});
             QMetaType::registerConverter<JCollectionWrapper,jobject>([](const JObjectWrapper& w) -> jobject {return w;});
             QMetaType::registerConverter<JMapWrapper,jobject>([](const JMapWrapper& w) -> jobject {return w;});
             QMetaType::registerConverter<JIteratorWrapper,jobject>([](const JIteratorWrapper& w) -> jobject {return w;});

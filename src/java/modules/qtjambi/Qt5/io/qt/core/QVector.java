@@ -29,18 +29,14 @@
 ****************************************************************************/
 package io.qt.core;
 
-import java.util.Collection;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-
-import io.qt.QNoNativeResourcesException;
-import io.qt.QtUninvokable;
-import io.qt.NativeAccess;
+import java.util.*;
+import java.util.function.*;
+import io.qt.*;
 
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qvector.html">QVector</a></p>
  */
-public class QVector<T> extends io.qt.internal.AbstractList<T> implements Cloneable
+public class QVector<T> extends AbstractList<T> implements java.util.List<T>, Cloneable
 {
 
     static {
@@ -428,6 +424,22 @@ public class QVector<T> extends io.qt.internal.AbstractList<T> implements Clonea
     @QtUninvokable
     private static native <T> boolean removeOne(long __this__nativeId, T t);
 
+	/**
+     * <p>See <a href="https://doc.qt.io/qt/qvector.html#removeIf" class="member-name-class">QVector::<wbr>removeIf(Predicate)</a></p>
+	 */
+    @QtUninvokable
+    public final boolean removeIf(Predicate<? super T> predicate)    {
+        Objects.requireNonNull(predicate);
+        boolean removed = false;
+        for(T value : clone()) {
+            if (predicate.test(value)) {
+                removeAll(value);
+                removed = true;
+            }
+        }
+        return removed;
+    }
+	
     @QtUninvokable
     public final void replace(int i, T t) {
         try {
@@ -536,6 +548,9 @@ public class QVector<T> extends io.qt.internal.AbstractList<T> implements Clonea
     @QtUninvokable
     private static native <T> T valueDefault(long __this__nativeId, int i, T defaultValue);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qvector.html#operator-eq-eq" class="member-name-class">QVector::<wbr>operator==(QVector&lt;T>)const</a></code></p>
+     */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     @QtUninvokable
@@ -547,6 +562,9 @@ public class QVector<T> extends io.qt.internal.AbstractList<T> implements Clonea
     }
 
 
+    /**
+     * Returns the objects's hash code computed by <code>qHash(QVector&lt;T>)</code>.
+     */
     @Override
     @QtUninvokable
     public int hashCode() { 
@@ -622,12 +640,9 @@ public class QVector<T> extends io.qt.internal.AbstractList<T> implements Clonea
     @QtUninvokable
     private static native <T> void swapItemsAt(long __this__nativeId, int i, int j);
     
-    @Override
-    @QtUninvokable
-    protected final void removeAtIndex(int cursor) {
-        removeAt(cursor);
-    }
-    
+    /**
+     * <p>See <code>operator&lt;&lt;(QDataStream&amp;,<wbr>QVector&lt;T>)</code></p>
+     */
     @io.qt.QtUninvokable
     public void writeTo(io.qt.core.QDataStream stream){
         writeTo(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
@@ -636,6 +651,9 @@ public class QVector<T> extends io.qt.internal.AbstractList<T> implements Clonea
     @io.qt.QtUninvokable
     private native void writeTo(long __this__nativeId, long stream);
     
+    /**
+     * <p>See <code>operator&gt;&gt;(QDataStream&amp;,<wbr>QVector&lt;T>&amp;)</code></p>
+     */
     @io.qt.QtUninvokable
     public void readFrom(io.qt.core.QDataStream stream){
         readFrom(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));

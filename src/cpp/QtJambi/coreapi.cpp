@@ -141,7 +141,7 @@ jobject CoreAPI::invokeMetaMethod(JNIEnv * env, jobject _metaMethod,
                                         val[8],
                                         val[9]);
                     if(ok && resultPtr){
-                        ok = parameterTypeInfos[0].convertInternalToExternal(env, nullptr, resultPtr, &result, true);
+                        ok = parameterTypeInfos[0].convertInternalToExternal(env, nullptr, resultPtr, result, true);
                     }
                 }
             }
@@ -276,7 +276,7 @@ jobject CoreAPI::invokeMetaMethodOnGadget(JNIEnv * env, jobject _metaMethod,
                                         val[8],
                                         val[9]);
                     if(ok && resultPtr){
-                        ok = parameterTypeInfos[0].convertInternalToExternal(env, nullptr, resultPtr, &result, true);
+                        ok = parameterTypeInfos[0].convertInternalToExternal(env, nullptr, resultPtr, result, true);
                     }
                 }
             }
@@ -371,7 +371,7 @@ jobject CoreAPI::readMetaPropertyOnGadget(JNIEnv *env, jobject _this, jobject ga
                     jvalue val;
                     val.l = nullptr;
                     QtJambiScope scope(nullptr);
-                    if(converter(env, &scope, variant.data(), &val, true))
+                    if(converter(env, &scope, variant.data(), val, true))
                         return val.l;
                 }
             }
@@ -396,7 +396,7 @@ jobject CoreAPI::readMetaPropertyOnGadget(JNIEnv *env, jobject _this, jobject ga
                 QMetaType _type(type);
                 InternalToExternalConverter converter = QtJambiTypeManager::getInternalToExternalConverter(env, qtName, _type, object_class);
                 QtJambiScope scope(nullptr);
-                bool result = converter && converter(env, &scope, variant.data(), &val, true);
+                bool result = converter && converter(env, &scope, variant.data(), val, true);
                 if(result)
                     return val.l;
             }else{
@@ -552,6 +552,14 @@ void CoreAPI::unregisterDependentObject(JNIEnv *env, jobject dependentObject, jo
     QSharedPointer<QtJambiLink> _ownerLink = QtJambiLink::findLinkForJavaInterface(env, owner);
     if(_dependentLink && _ownerLink){
         _ownerLink->unregisterDependentObject(_dependentLink);
+    }
+}
+
+void CoreAPI::ckeckLinkExtension(JNIEnv *env, QtJambiNativeID nativeId){
+    QtJambiLink * link = reinterpret_cast<QtJambiLink *>(nativeId);
+    if(ExtendedLink* elink = dynamic_cast<ExtendedLink*>(link)){
+        if(!elink->hasExtension())
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, "Dependent object has been deleted." QTJAMBI_STACKTRACEINFO );
     }
 }
 
@@ -831,7 +839,7 @@ struct ResolvingInternalToExternalConverter{
         return *this;
     }
 
-    bool operator()(JNIEnv* env, QtJambiScope* scope, const void* in, jvalue* out, bool forceBoxedType)const{
+    bool operator()(JNIEnv* env, QtJambiScope* scope, const void* in, jvalue& out, bool forceBoxedType)const{
         if(m_elementClass){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             QMetaType metaType(m_metaType);
@@ -890,7 +898,7 @@ struct ResolvingExternalToInternalConverter{
         return *this;
     }
 
-    bool operator()(JNIEnv* env, QtJambiScope* scope, const jvalue&val, void* &out, jValueType valueType)const{
+    bool operator()(JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType valueType)const{
         if(m_elementClass){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             QMetaType metaType(m_metaType);

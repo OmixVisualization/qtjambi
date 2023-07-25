@@ -35,27 +35,17 @@ TypeSystem{
     qtLibrary: "QtWebEngineQuick"
     module: "qtjambi.webenginequick"
     description: "Classes and functions for embedding web content in applications using the Chromium browser project."
-
-    Rejection{
-        className: "QQuickWebEngineProfile"
-        functionName: "settings"
-    }
-    
-    Rejection{
-        className: "QQuickWebEngineProfile"
-        functionName: "userScripts"
-    }
-    
-    EnumType{
-        name: "QQuickWebEngineProfile::HttpCacheType"
-    }
-    
-    EnumType{
-        name: "QQuickWebEngineProfile::PersistentCookiesPolicy"
-    }
     
     ObjectType{
         name: "QQuickWebEngineProfile"
+        Rejection{functionName: "settings"}
+        Rejection{functionName: "userScripts"}
+        EnumType{
+            name: "HttpCacheType"
+        }
+        EnumType{
+            name: "PersistentCookiesPolicy"
+        }
         ModifyFunction{
             signature: "installUrlSchemeHandler(QByteArray,QWebEngineUrlSchemeHandler*)"
             ModifyArgument{
@@ -85,6 +75,17 @@ TypeSystem{
                     action: ReferenceCount.Set
                 }
             }
+        }
+        ModifyFunction{
+            signature: "setUrlResponseInterceptor(QWebEngineUrlResponseInterceptor*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcUrlResponseInterceptor"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: [6, 6]
         }
         ExtraIncludes{
             Include{

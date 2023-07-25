@@ -203,8 +203,14 @@ inline hash_type qHash(const QDeadlineTimer &value, hash_type seed = 0)
 {
     QtPrivate::QHashCombine hash;
     seed = hash(seed, value.timerType());
+#if QT_VERSION < QT_VERSION_CHECK(6, 6, 0)
     seed = hash(seed, value._q_data().first);
     seed = hash(seed, value._q_data().second);
+#else
+    const QPair<qint64,unsigned> &t = reinterpret_cast<const QPair<qint64,unsigned> &>(value);
+    seed = hash(seed, t.first);
+    seed = hash(seed, t.second);
+#endif
     return seed;
 }
 
@@ -714,6 +720,18 @@ inline bool operator==(const QPermission &v1, const QPermission &v2){
     return false;
 }
 #endif
+#endif
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+inline hash_type qHash(const QNativeIpcKey &value, hash_type seed = 0)
+{
+    if(!value.isValid())
+        return seed;
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.nativeKey());
+    seed = hash(seed, value.type());
+    return seed;
+}
 #endif
 
 #endif // QTJAMBICORE_HASHES_H

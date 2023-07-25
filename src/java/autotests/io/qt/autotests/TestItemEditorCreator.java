@@ -163,11 +163,11 @@ public class TestItemEditorCreator extends ApplicationInitializer {
     
     @Test
     public void testStandardItemEditorCreator_with_NonLambda_handle() {
-		class Fun implements QStandardItemEditorCreator.ConstructorHandle<QPushButton>{
+		class Fun implements QStandardItemEditorCreator.Factory<QPushButton>{
 			private static final long serialVersionUID = 5891633777036928275L;
 
 			@Override
-			public QPushButton create(QWidget t) {
+			public QPushButton apply(QWidget t) {
 				return new QPushButton(t);
 			}
 			

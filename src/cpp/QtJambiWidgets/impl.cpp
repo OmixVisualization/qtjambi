@@ -32,6 +32,11 @@
 #include <QtCore/QMutex>
 #include <QtCore/private/qobject_p.h>
 #include <QtWidgets/QtWidgets>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+#define QBACKINGSTORERHISUPPORT_P_H
+#endif
+
 #include <QtWidgets/private/qwidget_p.h>
 #include <QtJambi/QtJambiAPI>
 #include <QtJambi/qtjambi_cast.h>
@@ -62,24 +67,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/widgets,QStyle,
                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findSubControl,(II)Lio/qt/widgets/QStyle$SubControl;)
 )
 }
-}
-
-extern "C" JNIEXPORT jlong JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QItemEditorCreator_constructorHandle)
-(JNIEnv *__jni_env,
- jclass,
- jobject constructor)
-{
-    return jlong(__jni_env->FromReflectedMethod(constructor));
-}
-
-extern "C" JNIEXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QItemEditorCreator_construct)
-(JNIEnv *__jni_env,
- jclass,
- jclass cls,
- jlong constructorHandle,
- jobject parent)
-{
-    return __jni_env->NewObject(cls, jmethodID(constructorHandle), parent);
 }
 
 extern "C" Q_DECL_EXPORT jboolean JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_widgets_QWidgetItem_hasWidgetItemV2)

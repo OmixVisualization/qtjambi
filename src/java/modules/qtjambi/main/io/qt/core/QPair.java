@@ -31,6 +31,9 @@
 
 package io.qt.core;
 
+import java.util.Map;
+import java.util.AbstractMap.SimpleEntry;
+
 import io.qt.NativeAccess;
 import io.qt.QtUninvokable;
 
@@ -99,5 +102,38 @@ public class QPair <T, S> implements Cloneable {
     @QtUninvokable
     public QPair<T, S> clone() {
         return new QPair<T, S>(first, second);
+    }
+    
+    /**
+     * Convenient factory method for new pair.
+     * @param t
+     * @param s
+     * @return new pair
+     */
+    @QtUninvokable
+    public static <T,S> QPair<T, S> pair(T t, S s){
+    	return new QPair<>(t, s);
+    }
+    
+    /**
+     * Convenient entry-pair converter method for new pair.
+     * @param t
+     * @param s
+     * @return new pair
+     */
+    @QtUninvokable
+    public static <T,S> QPair<T, S> fromEntry(Map.Entry<T,S> entry){
+    	return new QPair<>(entry.getKey(), entry.getValue());
+    }
+    
+    /**
+     * Convenient pair-entry converter method.
+     * @param t
+     * @param s
+     * @return new entry
+     */
+    @QtUninvokable
+    public static <T,S> Map.Entry<T, S> toEntry(QPair<T,S> pair){
+    	return new SimpleEntry<>(pair.first, pair.second);
     }
 }

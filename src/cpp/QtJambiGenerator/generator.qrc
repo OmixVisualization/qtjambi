@@ -64,6 +64,7 @@
         <file alias="QtUiTools.qml">typesystem/qml/QtUiTools.qml</file>
         <file alias="QtVirtualKeyboard.qml">typesystem/qml/QtVirtualKeyboard.qml</file>
         <file alias="QtWebChannel.qml">typesystem/qml/QtWebChannel.qml</file>
+        <file alias="QtWebChannelQuick.qml">typesystem/qml/QtWebChannelQuick.qml</file>
         <file alias="QtWebEngine.qml">typesystem/qml/QtWebEngine.qml</file>
         <file alias="QtWebEngineCore.qml">typesystem/qml/QtWebEngineCore.qml</file>
         <file alias="QtWebEngineQuick.qml">typesystem/qml/QtWebEngineQuick.qml</file>
@@ -97,9 +98,12 @@
         <file alias="QtJambiXml.java">typesystem/java/QtJambiXml.java</file>
         <file alias="QtProtobuf.qml">typesystem/qml/QtProtobuf.qml</file>
         <file alias="QtGrpc.qml">typesystem/qml/QtGrpc.qml</file>
+        <file alias="QtGraphs.qml">typesystem/qml/QtGraphs.qml</file>
     </qresource>
     <qresource prefix="/io/qtjambi/generator/targets">
         <file alias="all.qml">targets/all.qml</file>
         <file alias="all.h">targets/all.h</file>
+        <file alias="graphs.qml">targets/graphs.qml</file>
+        <file alias="graphs.h">targets/graphs.h</file>
     </qresource>
 </RCC>

@@ -616,7 +616,7 @@ jobject AutoPairAccess::first(JNIEnv * env, const void* container) {
     {
         jvalue _first;
         _first.l = nullptr;
-        if(m_keyInternalToExternalConverter(env, nullptr, container, &_first, true)){
+        if(m_keyInternalToExternalConverter(env, nullptr, container, _first, true)){
             result = _first.l;
         }
     }
@@ -635,7 +635,7 @@ jobject AutoPairAccess::second(JNIEnv * env, const void* container) {
     {
         jvalue _value;
         _value.l = nullptr;
-        if(m_valueInternalToExternalConverter(env, nullptr, snd, &_value, true)){
+        if(m_valueInternalToExternalConverter(env, nullptr, snd, _value, true)){
             result = _value.l;
         }
     }

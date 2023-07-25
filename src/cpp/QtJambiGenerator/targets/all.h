@@ -371,6 +371,10 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #include <QtWebChannel/QtWebChannel>
 #endif
 
+#ifndef QTJAMBI_NO_WEBCHANNELQUICK
+#include <QtWebChannelQuick/QtWebChannelQuick>
+#endif
+
 #ifndef QTJAMBI_NO_WEBVIEW
 #include <QtWebView/QtWebView>
 #endif

@@ -35,7 +35,7 @@ import io.qt.qt3d.*;
 class QAbstractAspect___java extends QAbstractAspect {
     
     /**
-     * <p>See <a href="@docRoot/qt3dcore-qabstractaspect.html#registerBackendType">Qt3DCore::QAbstractAspect::registerBackendType(Qt3DCore::QBackendNodeMapperPtr)</a></p>
+     * <p>See <a href="@docRoot/qt3dcore-qabstractaspect.html#registerBackendType"><code>Qt3DCore::QAbstractAspect::registerBackendType(Qt3DCore::QBackendNodeMapperPtr)</code></a></p>
      */
     @QtUninvokable
     protected final void registerBackendType(@StrictNonNull Class<? extends io.qt.core.QObject> type, io.qt.qt3d.core.@Nullable QBackendNodeMapper functor)    {
@@ -52,7 +52,7 @@ class QAbstractAspect___java extends QAbstractAspect {
 class QEntity_6_ {
 
     /**
-     * <p>See <a href="@docRoot/qt3dcore-qentity.html#componentsOfType">Qt3DCore::QEntity::componentsOfType&lt;T>()const</a></p>
+     * <p>See <a href="@docRoot/qt3dcore-qentity.html#componentsOfType"><code>Qt3DCore::QEntity::componentsOfType&lt;T>()const</code></a></p>
      */
     @QtUninvokable
     public final <T extends io.qt.qt3d.core.@Nullable QComponent> io.qt.core.@NonNull QList<T> componentsOfType(@StrictNonNull Class<T> type)
@@ -70,7 +70,7 @@ class QEntity_6_ {
 class QEntity_5_ {
 
     /**
-     * <p>See <a href="@docRoot/qt3dcore-qentity.html#componentsOfType">Qt3DCore::QEntity::componentsOfType&lt;T>()const</a></p>
+     * <p>See <a href="@docRoot/qt3dcore-qentity.html#componentsOfType"><code>Qt3DCore::QEntity::componentsOfType&lt;T>()const</code></a></p>
      */
     @QtUninvokable
     public final <T extends io.qt.qt3d.core.@Nullable QComponent> io.qt.core.@NonNull QVector<T> componentsOfType(@StrictNonNull Class<T> type)

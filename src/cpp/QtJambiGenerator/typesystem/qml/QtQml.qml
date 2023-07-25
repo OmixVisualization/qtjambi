@@ -81,9 +81,21 @@ TypeSystem{
         className: ""
         functionName: "qjsvalue_cast"
     }
+    Rejection{
+        className: "QQmlTypeNotAvailable"
+        since: 6.6
+    }
     
     Rejection{
         className: "QJSValueList"
+    }
+
+    Rejection{
+        className: "QJSList"
+    }
+
+    Rejection{
+        className: "QJSListIndexClamp"
     }
     
     Rejection{
@@ -376,6 +388,20 @@ TypeSystem{
         ModifyFunction{
             signature: "operateOnIntegers<Operators,Lhs,Rhs>(QJSPrimitiveValue,QJSPrimitiveValue)"
             remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "data()"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "data()const"
+            remove: RemoveFlag.All
+            since: [6, 6]
+        }
+        ModifyFunction{
+            signature: "constData()const"
+            remove: RemoveFlag.All
+            since: [6, 6]
         }
         since: [6, 1]
     }

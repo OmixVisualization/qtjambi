@@ -173,17 +173,25 @@ public class GeneratorTask extends Task {
 			commandList.add("--output-preprocess-file="+o);
 
         if(typesystem!=null && !typesystem.isEmpty()) {
-	        File typesystemFile = Util.makeCanonical(typesystem);
-	        if(typesystemFile == null || !typesystemFile.exists())
-	            throw new BuildException("Typesystem file '" + typesystem + "' does not exist.");
-	        commandList.add("--typesystem="+typesystemFile.getAbsolutePath());
+        	if(typesystem.startsWith(":")) {
+        		commandList.add("--typesystem="+typesystem);
+        	}else {
+		        File typesystemFile = Util.makeCanonical(typesystem);
+		        if(typesystemFile == null || !typesystemFile.exists())
+		            throw new BuildException("Typesystem file '" + typesystem + "' does not exist.");
+		        commandList.add("--typesystem="+typesystemFile.getAbsolutePath());
+        	}
         }
 
         if(header!=null && !header.isEmpty()) {
-	        File headerFile = Util.makeCanonical(header);
-	        if(headerFile == null || !headerFile.exists())
-	            throw new BuildException("Header file '" + headerFile.getAbsolutePath() + "' does not exist.");
-	        commandList.add(headerFile.getAbsolutePath());
+        	if(header.startsWith(":")) {
+        		commandList.add(header);
+        	}else {
+	        	File headerFile = Util.makeCanonical(header);
+		        if(headerFile == null || !headerFile.exists())
+		            throw new BuildException("Header file '" + headerFile.getAbsolutePath() + "' does not exist.");
+		        commandList.add(headerFile.getAbsolutePath());
+        	}
         }
 
         return true;

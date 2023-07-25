@@ -32,8 +32,10 @@ package io.qt.qtjambi.deployer;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.AbstractMap.SimpleEntry;
@@ -393,11 +395,25 @@ final class PluginGenerator {
 				if(url!=null) {
 					String path = url.toString();
 					int idx = -1;
+					File jarFile = null;
 					if(path.startsWith("jar:file:") && (idx = path.indexOf("!/")) >= 0) {
 						path = path.substring(4, idx);
 						try {
-							File jarFile = new File(new URL(path).toURI());
-							if(jarFile.getParentFile().isDirectory())
+							jarFile = new File(new URL(path).toURI());
+						} catch (Exception e1) {
+							throw new Error("Unable to find class: "+className, e1);
+						}
+			    	}else {
+			    		try {
+							URLConnection connection = url.openConnection();
+							if(connection instanceof JarURLConnection) {
+								jarFile = new File(((JarURLConnection) connection).getJarFile().getName());
+							}
+						} catch (Throwable e1) {
+						}
+					}
+					if(jarFile!=null) {
+						if(jarFile.getParentFile().isDirectory()) {
 							for(File other : jarFile.getParentFile().listFiles()) {
 								if(other.isFile() && other.getName().startsWith("qtjambi")
 										 && !other.getName().endsWith("javadoc.jar")
@@ -406,9 +422,11 @@ final class PluginGenerator {
 									urls.add(other.toURI().toURL());
 								}
 							}
-							pluginClassLoader.close();
-							pluginClassLoader = new PluginClassLoader();
-							pluginClassLoader.addURLs(urls);
+						}
+						pluginClassLoader.close();
+						pluginClassLoader = new PluginClassLoader();
+						pluginClassLoader.addURLs(urls);
+						try {
 							cls = pluginClassLoader.loadClass(className);
 						} catch (Exception e1) {
 							throw new Error("Unable to find class: "+className, e1);

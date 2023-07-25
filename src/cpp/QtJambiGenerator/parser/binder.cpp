@@ -361,6 +361,8 @@ void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_
         }
         applyStorageSpecifiers(node->storage_specifiers, model_static_cast<MemberModelItem>(fun));
         applyFunctionSpecifiers(node->function_specifiers, fun);
+        if(!fun->isDeprecated() && node->annotationExpression)
+            fun->setDeprecated(isDeprecated(node->annotationExpression, node->deprecationComment));
         if(fun->isDeprecated() && node->deprecationComment){
             if(node->deprecationComment->literals){
                 QString comment;
@@ -653,6 +655,8 @@ void Binder::visitFunctionDefinition(FunctionDefinitionAST *node) {
     }
     applyFunctionSpecifiers(node->function_specifiers,
                             model_static_cast<FunctionModelItem>(_M_current_function));
+    if(!_M_current_function->isDeprecated() && node->annotationExpression)
+        _M_current_function->setDeprecated(isDeprecated(node->annotationExpression, node->deprecationComment));
     if(_M_current_function->isDeprecated() && node->deprecationComment){
         if(node->deprecationComment->literals){
             QString comment;
@@ -920,6 +924,50 @@ void Binder::visitForwardDeclarationSpecifier(ForwardDeclarationSpecifierAST *no
     _M_qualified_types[(scope->qualifiedName() + name_cc.qualifiedName()).join(".")] = QString();
 }
 
+bool Binder::isDeprecated(ExpressionAST *annotationExpression, StringLiteralAST *&deprecationComment){
+    if(annotationExpression){
+        class DeprecationBinder: protected DefaultVisitor {
+            DeprecationBinder(Binder* binder, StringLiteralAST *&deprecationComment)
+                : DefaultVisitor(),
+                m_isCurrentDeprecated(false),
+                m_isDeprecated(false),
+                m_binder(binder),
+                m_deprecationComment(deprecationComment){}
+
+            void visitPostfixExpression(PostfixExpressionAST *node) {
+                if(!m_isCurrentDeprecated)
+                    DefaultVisitor::visitPostfixExpression(node);
+                m_isCurrentDeprecated = false;
+            }
+            void visitSimpleTypeSpecifier(SimpleTypeSpecifierAST *node) {
+                m_binder->name_cc.run(node->name);
+                if(m_binder->name_cc.name()=="deprecated"){
+                    m_isDeprecated = true;
+                    m_isCurrentDeprecated = true;
+                }
+            }
+            void visitStringLiteral(StringLiteralAST *ast){
+                if(m_isCurrentDeprecated)
+                    m_deprecationComment = ast;
+            }
+            void visitName(NameAST *node) {
+                m_binder->name_cc.run(node);
+                if(m_binder->name_cc.name()=="deprecated"){
+                    m_isDeprecated = true;
+                }
+            }
+            bool m_isCurrentDeprecated;
+            bool m_isDeprecated;
+            Binder* m_binder;
+            StringLiteralAST *&m_deprecationComment;
+            friend Binder;
+        } b(this, deprecationComment);
+        b.visit(annotationExpression);
+        return b.m_isDeprecated;
+    }
+    return false;
+}
+
 void Binder::visitClassSpecifier(ClassSpecifierAST *node) {
     class_cc.run(node);
     if (class_cc.name().isEmpty()) {
@@ -939,6 +987,8 @@ void Binder::visitClassSpecifier(ClassSpecifierAST *node) {
     updateItemPosition(thisClass->toItem(), node);
     thisClass->setName(class_cc.name());
     thisClass->setDeclFinal(node->is_final);
+    if(!node->is_deprecated && node->annotationExpression)
+        node->is_deprecated = isDeprecated(node->annotationExpression, node->deprecationComment);
     thisClass->setDeclDeprecated(node->is_deprecated);
     thisClass->setAccessPolicy(_M_current_access);
     if(node->deprecationComment)
@@ -1100,6 +1150,8 @@ void Binder::visitEnumSpecifier(EnumSpecifierAST *node) {
     _M_current_enum->setAccessPolicy(_M_current_access);
     _M_current_enum->setAnonymous(isAnonymous);
     _M_current_enum->setScopedEnum(node->isScoped);
+    if(!node->isDeprecated && node->annotationExpression)
+        node->isDeprecated = isDeprecated(node->annotationExpression, node->deprecationComment);
     _M_current_enum->setDeclDeprecated(node->isDeprecated);
     if(node->deprecationComment){
         _M_current_enum->setDeclDeprecatedComment(node->deprecationComment->toString(this->tokenStream()));
@@ -1148,6 +1200,8 @@ void Binder::visitEnumerator(EnumeratorAST *node) {
     EnumeratorModelItem e = model()->create<EnumeratorModelItem>();
     updateItemPosition(e->toItem(), node);
     e->setName(decode_symbol(node->id)->as_string());
+    if(!node->isDeprecated && node->annotationExpression)
+        node->isDeprecated = isDeprecated(node->annotationExpression, node->deprecationComment);
     e->setDeprecated(node->isDeprecated);
     if(node->deprecationComment){
         if(node->deprecationComment->literals){

@@ -316,10 +316,10 @@
   <target name="create-qtlib-native-bundle">
 		<if>
 			<not>
-				<available file="${deploymentdir}/qt-lib-core-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.version.bundle}.jar"/>
+				<available file="${deploymentdir}/native/qt-lib-core-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.version.bundle}.jar"/>
 			</not>
 			<then>
-				<echo>${deploymentdir}/qt-lib-core-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.version.bundle}.jar not available.</echo>
+				<echo>${deploymentdir}/native/qt-lib-core-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.version.bundle}.jar not available.</echo>
 				<trycatch>
 					<try>
 						<if>
@@ -350,7 +350,7 @@
 							<jvmarg value="-Xcheck:jni"/-->
 							<arg value="qt" />
 							<arg value="--configuration=${debug.conf}" />
-							<arg value="--dir=${deploymentdir}" />
+							<arg value="--dir=${deploymentdir}/native" />
 							<arg value="--platform=${qtjambi.osname}" />
 							<arg value="--bins=${qtjambi.qt.bindir}" />
 							<arg value="--libs=${qtjambi.qt.libdir}" />
@@ -362,7 +362,8 @@
 							<arg value="${force}" />
 							<env key="DYLD_LIBRARY_PATH" value="${librarypath}" />
 							<classpath>
-								<fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-deployer-${qtjambi.jar.version}.jar,qtjambi-deployer-native-*-${qtjambi.jar.version}.jar"/>
+								<fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-deployer-${qtjambi.jar.version}.jar"/>
+								<fileset dir="${deploymentdir}/native" includes="qtjambi-deployer-native-*-${qtjambi.jar.version}.jar"/>
 							</classpath>
 						</java>
 					</try>

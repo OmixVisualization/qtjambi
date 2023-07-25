@@ -74,7 +74,7 @@ class QObject___ extends QObject {
      *
      * @param source the source text to translate.
      * @return translated version of the source text.
-     * @see <a href="@docRoot/qobject.html#tr">QObject::tr(const char *, const char *, int)</a>
+     * @see <a href="@docRoot/qobject.html#tr"><code>QObject::tr(const char *, const char *, int)</code></a>
      */
     public static @NonNull String tr(@Nullable String source) {
         String scope = classToScope(QtJambi_LibraryUtilities.internal.callerClassProvider().get());
@@ -90,7 +90,7 @@ class QObject___ extends QObject {
      * @param source the source text to translate.
      * @param comment helps the translator translate the source text.
      * @return translated version of the source text.
-     * @see <a href="@docRoot/qobject.html#tr">QObject::tr(const char *, const char *, int)</a>
+     * @see <a href="@docRoot/qobject.html#tr"><code>QObject::tr(const char *, const char *, int)</code></a>
      */
     public static @NonNull String tr(@Nullable String source, @Nullable String comment) {
         String scope = classToScope(QtJambi_LibraryUtilities.internal.callerClassProvider().get());
@@ -108,7 +108,7 @@ class QObject___ extends QObject {
      * @param comment helps the translator translate the source text.
      * @param count in source %n will be substituted by count.
      * @return translated version of the source text.
-     * @see <a href="@docRoot/qobject.html#tr">QObject::tr(const char *, const char *, int)</a>
+     * @see <a href="@docRoot/qobject.html#tr"><code>QObject::tr(const char *, const char *, int)</code></a>
      */
     public static @NonNull String tr(@Nullable String source, @Nullable String comment, int count) {
         String scope = classToScope(QtJambi_LibraryUtilities.internal.callerClassProvider().get());
@@ -347,29 +347,16 @@ class QObject___ extends QObject {
      *
      * @param <A> The type of the first parameter of the signal.
      */
-    public final class Signal1Default1<A> extends QMetaObject.AbstractPublicSignal1<A> implements QMetaObject.Emitable0, QMetaObject.Connectable0 {
+    public final class Signal1Default1<A> extends QMetaObject.AbstractSignal1Default1<A>{
         
         @SuppressWarnings("unused")
         private Signal1Default1() {
-            this.arg1Default = null;
         }
         
         public Signal1Default1(@StrictNonNull Supplier<? extends A> arg1Default){
-            super();
-            if(arg1Default!=null){
-                this.arg1Default = arg1Default;
-            }else{
-                throw new QNoDefaultValueException(1);
-            }
+            super(arg1Default);
         }
-        
-        private final Supplier<? extends A> arg1Default;
-        
-        @Override
-        public final void emit() {
-            emitDefaultSignal(arg1Default);
-        }
-        
+                
         /**
          * Returns the object containing this signal.
          * @return the signal containing object
@@ -417,38 +404,25 @@ class QObject___ extends QObject {
      * @param <A> The type of the first parameter of the signal.
      * @param <B> The type of the second parameter of the signal.
      */
-    public final class Signal2Default2<A, B> extends QMetaObject.AbstractSignal2Default1<A, B> implements QMetaObject.Emitable0, QMetaObject.Connectable0 {
-        
-        @SuppressWarnings("unused")
-        private Signal2Default2() {
-            this.arg1Default = null;
-        }
-        
-        public Signal2Default2(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default){
-            super(arg2Default);
-            if(arg1Default!=null){
-                this.arg1Default = arg1Default;
-            }else{
-                throw new QNoDefaultValueException(1);
-            }
-        }
-        
-        private final Supplier<? extends A> arg1Default;
-        
-        @Override
-        public final void emit() {
-            emitDefaultSignal(arg1Default);
-        }
-        
-        /**
-         * Returns the object containing this signal.
-         * @return the signal containing object
-         */
-        @Override
-        public final @NonNull QObject containingObject() {
-            return QObject.this;
-        }
-    }
+     public final class Signal2Default2<A, B> extends QMetaObject.AbstractSignal2Default2<A, B>{
+
+         @SuppressWarnings("unused")
+         private Signal2Default2() {
+         }
+
+         public Signal2Default2(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default){
+             super(arg1Default, arg2Default);
+         }
+
+         /**
+          * Returns the object containing this signal.
+          * @return the signal containing object
+          */
+         @Override
+         public final @NonNull QObject containingObject() {
+             return QObject.this;
+         }
+     }
     
     /**
      * Declare and instantiate a field of this class in your
@@ -517,38 +491,25 @@ class QObject___ extends QObject {
      * @param <B> The type of the second parameter of the signal.
      * @param <C> The type of the third parameter of the signal.
      */
-    public final class Signal3Default3<A, B, C> extends QMetaObject.AbstractSignal3Default2<A, B, C> implements QMetaObject.Emitable0, QMetaObject.Connectable0 {
-        
-        @SuppressWarnings("unused")
-        private Signal3Default3() {
-            this.arg1Default = null;
-        }
-        
-        public Signal3Default3(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default){
-            super(arg2Default, arg3Default);
-            if(arg2Default!=null){
-                this.arg1Default = arg1Default;
-            }else{
-                throw new QNoDefaultValueException(1);
-            }
-        }
-        
-        private final Supplier<? extends A> arg1Default;
-        
-        @Override
-        public final void emit() {
-            emitDefaultSignal(arg1Default);
-        }
-        
-        /**
-         * Returns the object containing this signal.
-         * @return the signal containing object
-         */
-        @Override
-        public final @NonNull QObject containingObject() {
-            return QObject.this;
-        }
-    }
+     public final class Signal3Default3<A, B, C> extends QMetaObject.AbstractSignal3Default3<A, B, C>{
+
+         @SuppressWarnings("unused")
+         private Signal3Default3() {
+         }
+
+         public Signal3Default3(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default){
+             super(arg1Default, arg2Default, arg3Default);
+         }
+
+         /**
+          * Returns the object containing this signal.
+          * @return the signal containing object
+          */
+         @Override
+         public final @NonNull QObject containingObject() {
+             return QObject.this;
+         }
+     }
     
     /**
      * Declare and instantiate a field of this class in your
@@ -646,39 +607,26 @@ class QObject___ extends QObject {
      * @param <C> The type of the third parameter of the signal.
      * @param <D> The type of the fourth parameter of the signal.
      */
-    public final class Signal4Default4<A, B, C, D> extends QMetaObject.AbstractSignal4Default3<A, B, C, D> implements QMetaObject.Emitable0, QMetaObject.Connectable0 {
-        
-        @SuppressWarnings("unused")
-        private Signal4Default4() {
-            this.arg1Default = null;
-        }
-        
-        public Signal4Default4(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default,
-                Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default){
-            super(arg2Default, arg3Default, arg4Default);
-            if(arg1Default!=null){
-                this.arg1Default = arg1Default;
-            }else{
-                throw new QNoDefaultValueException(1);
-            }
-        }
-        
-        private final Supplier<? extends A> arg1Default;
-        
-        @Override
-        public final void emit() {
-            emitDefaultSignal(arg1Default);
-        }
-        
-        /**
-         * Returns the object containing this signal.
-         * @return the signal containing object
-         */
-        @Override
-        public final @NonNull QObject containingObject() {
-            return QObject.this;
-        }
-    }
+     public final class Signal4Default4<A, B, C, D> extends QMetaObject.AbstractSignal4Default4<A, B, C, D>{
+
+         @SuppressWarnings("unused")
+         private Signal4Default4() {
+         }
+
+         public Signal4Default4(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default,
+                 Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default){
+             super(arg1Default, arg2Default, arg3Default, arg4Default);
+         }
+
+         /**
+          * Returns the object containing this signal.
+          * @return the signal containing object
+          */
+         @Override
+         public final @NonNull QObject containingObject() {
+             return QObject.this;
+         }
+     }
     
     /**
      * Declare and instantiate a field of this class in your
@@ -815,38 +763,25 @@ class QObject___ extends QObject {
      * @param <D> The type of the fourth parameter of the signal.
      * @param <E> The type of the fifth parameter of the signal.
      */
-    public final class Signal5Default5<A, B, C, D, E> extends QMetaObject.AbstractSignal5Default4<A, B, C, D, E> implements QMetaObject.Emitable0, QMetaObject.Connectable0{
-        
-        @SuppressWarnings("unused")
-        private Signal5Default5() {
-            this.arg1Default = null;
-        }
-        
-        public Signal5Default5(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default){
-            super(arg2Default, arg3Default, arg4Default, arg5Default);
-            if(arg1Default!=null){
-                this.arg1Default = arg1Default;
-            }else{
-                throw new QNoDefaultValueException(1);
-            }
-        }
-        
-        private final Supplier<? extends A> arg1Default;
-        
-        @Override
-        public final void emit() {
-            emitDefaultSignal(arg1Default);
-        }
-        
-        /**
-         * Returns the object containing this signal.
-         * @return the signal containing object
-         */
-        @Override
-        public final @NonNull QObject containingObject() {
-            return QObject.this;
-        }
-    }
+     public final class Signal5Default5<A, B, C, D, E> extends QMetaObject.AbstractSignal5Default5<A, B, C, D, E>{
+
+         @SuppressWarnings("unused")
+         private Signal5Default5() {
+         }
+
+         public Signal5Default5(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default){
+             super(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default);
+         }
+
+         /**
+          * Returns the object containing this signal.
+          * @return the signal containing object
+          */
+         @Override
+         public final @NonNull QObject containingObject() {
+             return QObject.this;
+         }
+     }
     
     /**
      * Declare and instantiate a field of this class in your
@@ -1020,37 +955,25 @@ class QObject___ extends QObject {
      * @param <E> The type of the fifth parameter of the signal.
      * @param <F> The type of the sixth parameter of the signal.
      */
-    public final class Signal6Default6<A, B, C, D, E, F> extends QMetaObject.AbstractSignal6Default5<A, B, C, D, E, F> implements QMetaObject.Emitable0, QMetaObject.Connectable0{
-        
-        @SuppressWarnings("unused")
-        private Signal6Default6() {
-            this.arg1Default = null;
-        }
-        
-        public Signal6Default6(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default){
-            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default);
-            this.arg1Default = arg1Default;
-            if(this.arg1Default==null){
-                throw new QNoDefaultValueException(1);
-            }
-        }
-        
-        private final Supplier<? extends A> arg1Default;
-        
-        @Override
-        public final void emit() {
-            emitDefaultSignal(arg1Default);
-        }
-        
-        /**
-         * Returns the object containing this signal.
-         * @return the signal containing object
-         */
-        @Override
-        public final @NonNull QObject containingObject() {
-            return QObject.this;
-        }
-    }
+     public final class Signal6Default6<A, B, C, D, E, F> extends QMetaObject.AbstractSignal6Default6<A, B, C, D, E, F>{
+
+         @SuppressWarnings("unused")
+         private Signal6Default6() {
+         }
+
+         public Signal6Default6(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default){
+             super(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default);
+         }
+
+         /**
+          * Returns the object containing this signal.
+          * @return the signal containing object
+          */
+         @Override
+         public final @NonNull QObject containingObject() {
+             return QObject.this;
+         }
+     }
     
     /**
      * Declare and instantiate a field of this class in your
@@ -1263,37 +1186,25 @@ class QObject___ extends QObject {
      * @param <F> The type of the sixth parameter of the signal.
      * @param <G> The type of the seventh parameter of the signal.
      */
-    public final class Signal7Default7<A, B, C, D, E, F, G> extends QMetaObject.AbstractSignal7Default6<A, B, C, D, E, F, G> implements QMetaObject.Emitable0, QMetaObject.Connectable0 {
-        
-        @SuppressWarnings("unused")
-        private Signal7Default7() {
-            this.arg1Default = null;
-        }
-        
-        public Signal7Default7(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default){
-            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default);
-            this.arg1Default = arg1Default;
-            if(this.arg1Default==null){
-                throw new QNoDefaultValueException(2);
-            }
-        }
-        
-        private final Supplier<? extends A> arg1Default;
-        
-        @Override
-        public final void emit() {
-            emitDefaultSignal(arg1Default);
-        }
-        
-        /**
-         * Returns the object containing this signal.
-         * @return the signal containing object
-         */
-        @Override
-        public final @NonNull QObject containingObject() {
-            return QObject.this;
-        }
-    }
+     public final class Signal7Default7<A, B, C, D, E, F, G> extends QMetaObject.AbstractSignal7Default7<A, B, C, D, E, F, G>{
+
+         @SuppressWarnings("unused")
+         private Signal7Default7() {
+         }
+
+         public Signal7Default7(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default){
+             super(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default);
+         }
+
+         /**
+          * Returns the object containing this signal.
+          * @return the signal containing object
+          */
+         @Override
+         public final @NonNull QObject containingObject() {
+             return QObject.this;
+         }
+     }
     
     /**
      * Declare and instantiate a field of this class in your
@@ -1547,37 +1458,25 @@ class QObject___ extends QObject {
      * @param <G> The type of the seventh parameter of the signal.
      * @param <H> The type of the eighth parameter of the signal.
      */
-    public final class Signal8Default8<A, B, C, D, E, F, G, H> extends QMetaObject.AbstractSignal8Default7<A, B, C, D, E, F, G, H> implements QMetaObject.Emitable0, QMetaObject.Connectable0 {
-        
-        @SuppressWarnings("unused")
-        private Signal8Default8() {
-            this.arg1Default = null;
-        }
-        
-        public Signal8Default8(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default){
-            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
-            this.arg1Default = arg1Default;
-            if(this.arg1Default==null){
-                throw new QNoDefaultValueException(1);
-            }
-        }
-        
-        private final Supplier<? extends A> arg1Default;
-        
-        @Override
-        public final void emit() {
-            emitDefaultSignal(arg1Default);
-        }
-        
-        /**
-         * Returns the object containing this signal.
-         * @return the signal containing object
-         */
-        @Override
-        public final @NonNull QObject containingObject() {
-            return QObject.this;
-        }
-    }
+     public final class Signal8Default8<A, B, C, D, E, F, G, H> extends QMetaObject.AbstractSignal8Default8<A, B, C, D, E, F, G, H>{
+
+         @SuppressWarnings("unused")
+         private Signal8Default8() {
+         }
+
+         public Signal8Default8(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default){
+             super(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
+         }
+
+         /**
+          * Returns the object containing this signal.
+          * @return the signal containing object
+          */
+         @Override
+         public final @NonNull QObject containingObject() {
+             return QObject.this;
+         }
+     }
     
     /**
      * Declare and instantiate a field of this class in your
@@ -1874,37 +1773,24 @@ class QObject___ extends QObject {
      * @param <H> The type of the eighth parameter of the signal.
      * @param <I> The type of the ninth parameter of the signal.
      */
-    public final class Signal9Default9<A, B, C, D, E, F, G, H, I> extends QMetaObject.AbstractSignal9Default8<A, B, C, D, E, F, G, H, I> implements QMetaObject.Emitable0, QMetaObject.Connectable0 {
-        
-        @SuppressWarnings("unused")
-        private Signal9Default9() {
-            this.arg1Default = null;
-        }
-        
-        public Signal9Default9(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default){
-            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
-            this.arg1Default = arg1Default;
-            if(this.arg1Default==null){
-                throw new QNoDefaultValueException(1);
-            }
-        }
-        
-        private final Supplier<? extends A> arg1Default;
-        
-        @Override
-        public final void emit() {
-            emitDefaultSignal(arg1Default);
-        }
-        
-        /**
-         * Returns the object containing this signal.
-         * @return the signal containing object
-         */
-        @Override
-        public final @NonNull QObject containingObject() {
-            return QObject.this;
-        }
-    }
+     public final class Signal9Default9<A, B, C, D, E, F, G, H, I> extends QMetaObject.AbstractSignal9Default9<A, B, C, D, E, F, G, H, I>{
+         @SuppressWarnings("unused")
+         private Signal9Default9() {
+         }
+
+         public Signal9Default9(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default){
+             super(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
+         }
+
+         /**
+          * Returns the object containing this signal.
+          * @return the signal containing object
+          */
+         @Override
+         public final @NonNull QObject containingObject() {
+             return QObject.this;
+         }
+     }
     
     /**
      * Declare and instantiate a field of this class in your
@@ -2598,7 +2484,7 @@ class QObject___ extends QObject {
          * connection has not been previously established by a call to connect.
          * @throws QNoSuchSlotException Raised if the method passed in the slot object was not found
          */
-        public final boolean disconnect(Object receiver, String method) {
+        public final boolean disconnect(@Nullable Object receiver, @Nullable String method) {
             if (method != null && receiver == null)
                 throw new IllegalArgumentException("Receiver cannot be null if you specify a method");
             return super.disconnect(receiver, method);
@@ -2611,7 +2497,6 @@ class QObject___ extends QObject {
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-         * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
          */
         public final QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... connectionType) throws QNoSuchSignalException{
             return super.connect(slot, connectionType);
@@ -2700,9 +2585,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal0 signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal0 signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2714,38 +2598,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal1<?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
-        return signal.connect(slot, connectionType);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param <A> The type of the first parameter of the signal.
-     * @param signal the signal to be connected
-     * @param slot the slot to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-     */
-    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal1<A> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
-        return signal.connect(slot, connectionType);
-    }
-    
-    /**
-     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
-     * 
-     * @param signal the signal to be connected
-     * @param slot the slot to be connected
-     * @param connectionType type of connection
-     * @return connection if successful or <code>null</code> otherwise
-     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
-     */
-    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal1<?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2758,9 +2612,35 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<A,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
+    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal1<A> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(slot, connectionType);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param signal the signal to be connected
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
+        return signal.connect(slot, connectionType);
+    }
+    
+    /**
+     * Initializes a connection between the given <i>signal</i> and <i>slot</i>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal the signal to be connected
+     * @param slot the slot to be connected
+     * @param connectionType type of connection
+     * @return connection if successful or <code>null</code> otherwise
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
+     */
+    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<A,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2774,9 +2654,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<A,B> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<A,B> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2788,9 +2667,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2803,9 +2681,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
+    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2819,9 +2696,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,B,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,B,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2836,9 +2712,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,B,C> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,B,C> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2850,9 +2725,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2865,9 +2739,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,?,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
+    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,?,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2881,9 +2754,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,?,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,?,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2898,9 +2770,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,C,?> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,C,?> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2916,9 +2787,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,C,D> signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,C,D> signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2930,9 +2800,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2945,9 +2814,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
+    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2961,9 +2829,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,?,?,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,?,?,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2978,9 +2845,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,?,?> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,?,?> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -2996,9 +2862,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,D,?> signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,D,?> signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3015,9 +2880,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,D,E> signal, QMetaObject.@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,D,E> signal, QMetaObject.@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3029,9 +2893,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3044,9 +2907,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
+    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3060,9 +2922,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3077,9 +2938,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,?,?,?> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,?,?,?> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3095,9 +2955,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,?,?> signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,?,?> signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3114,9 +2973,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,E,?> signal, QMetaObject.@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,E,?> signal, QMetaObject.@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3134,9 +2992,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,E,F> signal, QMetaObject.@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,E,F> signal, QMetaObject.@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3148,9 +3005,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3163,9 +3019,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
+    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3179,9 +3034,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3196,9 +3050,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3214,9 +3067,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,?,?,?> signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,?,?,?> signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3233,9 +3085,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,?,?> signal, QMetaObject.@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,?,?> signal, QMetaObject.@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3253,9 +3104,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,F,?> signal, QMetaObject.@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,F,?> signal, QMetaObject.@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3274,9 +3124,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E,F,G> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,F,G> signal, QMetaObject.@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F,G> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,F,G> signal, QMetaObject.@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3288,9 +3137,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<?,?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<?,?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3303,9 +3151,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
+    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3319,9 +3166,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3336,9 +3182,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3354,9 +3199,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3373,9 +3217,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,?,?,?> signal, QMetaObject.@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,?,?,?> signal, QMetaObject.@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3393,9 +3236,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,?,?> signal, QMetaObject.@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,?,?> signal, QMetaObject.@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3414,9 +3256,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E,F,G> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,G,?> signal, QMetaObject.@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F,G> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,G,?> signal, QMetaObject.@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3436,9 +3277,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E,F,G,H> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal, QMetaObject.@StrictNonNull Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F,G,H> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal, QMetaObject.@StrictNonNull Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3450,9 +3290,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<?,?,?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<?,?,?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3465,9 +3304,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,?,?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
+    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,?,?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3481,9 +3319,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,?,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3498,9 +3335,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,?,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3516,9 +3352,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,?,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3535,9 +3370,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,?,?,?,?> signal, QMetaObject.@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3555,9 +3389,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,?,?,?> signal, QMetaObject.@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,?,?,?> signal, QMetaObject.@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3576,9 +3409,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E,F,G> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,?,?> signal, QMetaObject.@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F,G> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,?,?> signal, QMetaObject.@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3598,9 +3430,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E,F,G,H> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,?> signal, QMetaObject.@StrictNonNull Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F,G,H> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,?> signal, QMetaObject.@StrictNonNull Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -3621,9 +3452,8 @@ class QObject___ extends QObject {
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static <A,B,C,D,E,F,G,H,I> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, QMetaObject.@StrictNonNull Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F,G,H,I> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, QMetaObject.@StrictNonNull Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(slot, connectionType);
     }
     
@@ -4406,7 +4236,7 @@ class QObject___ extends QObject {
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      */
-    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal0 signal, QMetaObject.Connectable0 connectSignal, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal0 signal, QMetaObject.Connectable0 connectSignal, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(connectSignal, connectionType);
     }
     
@@ -4431,7 +4261,7 @@ class QObject___ extends QObject {
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      */
-    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal1<A> signal, QMetaObject.Connectable1<? super A> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal1<A> signal, QMetaObject.Connectable1<? super A> connectSignal, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(connectSignal, connectionType);
     }
     
@@ -4458,7 +4288,7 @@ class QObject___ extends QObject {
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      */
-    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<A,B> signal, QMetaObject.Connectable2<? super A,? super B> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A,B> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<A,B> signal, QMetaObject.Connectable2<? super A,? super B> connectSignal, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(connectSignal, connectionType);
     }
     
@@ -4487,7 +4317,7 @@ class QObject___ extends QObject {
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      */
-    public static <A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,B,C> signal, QMetaObject.Connectable3<? super A,? super B,? super C> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A,B,C> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,B,C> signal, QMetaObject.Connectable3<? super A,? super B,? super C> connectSignal, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(connectSignal, connectionType);
     }
     
@@ -4518,7 +4348,7 @@ class QObject___ extends QObject {
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      */
-    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,C,D> signal, QMetaObject.Connectable4<? super A,? super B,? super C,? super D> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,C,D> signal, QMetaObject.Connectable4<? super A,? super B,? super C,? super D> connectSignal, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(connectSignal, connectionType);
     }
     
@@ -4551,7 +4381,7 @@ class QObject___ extends QObject {
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      */
-    public static <A,B,C,D,E> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,D,E> signal, QMetaObject.Connectable5<? super A,? super B,? super C,? super D,? super E> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,D,E> signal, QMetaObject.Connectable5<? super A,? super B,? super C,? super D,? super E> connectSignal, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(connectSignal, connectionType);
     }
     
@@ -4586,7 +4416,7 @@ class QObject___ extends QObject {
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      */
-    public static <A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,E,F> signal, QMetaObject.Connectable6<? super A,? super B,? super C,? super D,? super E,? super F> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,E,F> signal, QMetaObject.Connectable6<? super A,? super B,? super C,? super D,? super E,? super F> connectSignal, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(connectSignal, connectionType);
     }
     
@@ -4623,7 +4453,7 @@ class QObject___ extends QObject {
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      */
-    public static <A,B,C,D,E,F,G> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,F,G> signal, QMetaObject.Connectable7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F,G> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,F,G> signal, QMetaObject.Connectable7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> connectSignal, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(connectSignal, connectionType);
     }
     
@@ -4662,7 +4492,7 @@ class QObject___ extends QObject {
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      */
-    public static <A,B,C,D,E,F,G,H> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal, QMetaObject.Connectable8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F,G,H> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal, QMetaObject.Connectable8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> connectSignal, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(connectSignal, connectionType);
     }
     
@@ -4703,7 +4533,7 @@ class QObject___ extends QObject {
      * @return connection if successful or <code>null</code> otherwise
      * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      */
-    public static <A,B,C,D,E,F,G,H,I> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, QMetaObject.Connectable9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F,G,H,I> QMetaObject.@NonNull Connection connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, QMetaObject.Connectable9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> connectSignal, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connect(connectSignal, connectionType);
     }
     
@@ -4734,11 +4564,9 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
      */
-    public static QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot0 slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connectSlot(slot, connectionType);
     }
     
@@ -4750,11 +4578,9 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
      */
-    public static <A> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.ConnectionType... connectionType) {
+    public static <A> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot1<? super A> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connectSlot(slot, connectionType);
     }
     
@@ -4767,11 +4593,9 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
      */
-    public static <A,B> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot2<? super A,? super B> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connectSlot(slot, connectionType);
     }
     
@@ -4785,11 +4609,9 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
      */
-    public static <A,B,C> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connectSlot(slot, connectionType);
     }
     
@@ -4804,11 +4626,9 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
      */
-    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connectSlot(slot, connectionType);
     }
     
@@ -4824,11 +4644,9 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
      */
-    public static <A,B,C,D,E> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connectSlot(slot, connectionType);
     }
     
@@ -4845,11 +4663,9 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
      */
-    public static <A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connectSlot(slot, connectionType);
     }
     
@@ -4867,11 +4683,9 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
      */
-    public static <A,B,C,D,E,F,G> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F,G> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connectSlot(slot, connectionType);
     }
     
@@ -4890,11 +4704,9 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
      */
-    public static <A,B,C,D,E,F,G,H> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F,G,H> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connectSlot(slot, connectionType);
     }
     
@@ -4914,11 +4726,9 @@ class QObject___ extends QObject {
      * @param slot the slot to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      * @throws QMisfittingSignatureException Raised if slot does not match to any of the signatures.
      */
-    public static <A,B,C,D,E,F,G,H,I> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F,G,H,I> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connectSlot(slot, connectionType);
     }
     
@@ -4929,10 +4739,9 @@ class QObject___ extends QObject {
      * @param connectSignal the signal to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
-     * @throws QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
+     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.     * @throws QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
      */
-    public static QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable0 connectSignal, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable0 connectSignal, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connectSignal((QMetaObject.AbstractSignal)connectSignal, connectionType);
     }
     
@@ -4944,10 +4753,9 @@ class QObject___ extends QObject {
      * @param connectSignal the signal to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      * @throws QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
      */
-    public static <A> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable1<? super A> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable1<? super A> connectSignal, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connectSignal((QMetaObject.AbstractSignal)connectSignal, connectionType);
     }
     
@@ -4960,10 +4768,9 @@ class QObject___ extends QObject {
      * @param connectSignal the signal to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      * @throws QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
      */
-    public static <A,B> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable2<? super A,? super B> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A,B> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable2<? super A,? super B> connectSignal, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connectSignal((QMetaObject.AbstractSignal)connectSignal, connectionType);
     }
     
@@ -4977,10 +4784,9 @@ class QObject___ extends QObject {
      * @param connectSignal the signal to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      * @throws QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
      */
-    public static <A,B,C> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable3<? super A,? super B,? super C> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A,B,C> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable3<? super A,? super B,? super C> connectSignal, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connectSignal((QMetaObject.AbstractSignal)connectSignal, connectionType);
     }
     
@@ -4995,10 +4801,9 @@ class QObject___ extends QObject {
      * @param connectSignal the signal to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      * @throws QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
      */
-    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable4<? super A,? super B,? super C,? super D> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable4<? super A,? super B,? super C,? super D> connectSignal, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connectSignal((QMetaObject.AbstractSignal)connectSignal, connectionType);
     }
     
@@ -5014,10 +4819,9 @@ class QObject___ extends QObject {
      * @param connectSignal the signal to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      * @throws QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
      */
-    public static <A,B,C,D,E> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable5<? super A,? super B,? super C,? super D,? super E> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable5<? super A,? super B,? super C,? super D,? super E> connectSignal, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connectSignal((QMetaObject.AbstractSignal)connectSignal, connectionType);
     }
     
@@ -5034,10 +4838,9 @@ class QObject___ extends QObject {
      * @param connectSignal the signal to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      * @throws QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
      */
-    public static <A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable6<? super A,? super B,? super C,? super D,? super E,? super F> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable6<? super A,? super B,? super C,? super D,? super E,? super F> connectSignal, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connectSignal((QMetaObject.AbstractSignal)connectSignal, connectionType);
     }
     
@@ -5055,10 +4858,9 @@ class QObject___ extends QObject {
      * @param connectSignal the signal to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      * @throws QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
      */
-    public static <A,B,C,D,E,F,G> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F,G> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> connectSignal, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connectSignal((QMetaObject.AbstractSignal)connectSignal, connectionType);
     }
     
@@ -5077,10 +4879,9 @@ class QObject___ extends QObject {
      * @param connectSignal the signal to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      * @throws QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
      */
-    public static <A,B,C,D,E,F,G,H> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F,G,H> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> connectSignal, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connectSignal((QMetaObject.AbstractSignal)connectSignal, connectionType);
     }
     
@@ -5100,10 +4901,9 @@ class QObject___ extends QObject {
      * @param connectSignal the signal to be connected
      * @param connectionType type of connection
      * @return connection if successful or <code>null</code> otherwise
-     * @throws QMisfittingSignatureException Raised if their signatures are incompatible.
      * @throws QMisfittingSignatureException Raised if connectSignal does not match to any of the signatures.
      */
-    public static <A,B,C,D,E,F,G,H,I> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> connectSignal, Qt.ConnectionType... connectionType) {
+    public static <A,B,C,D,E,F,G,H,I> QMetaObject.@NonNull Connection connect(@StrictNonNull MultiSignal signal, QMetaObject.@StrictNonNull Connectable9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> connectSignal, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         return signal.connectSignal((QMetaObject.AbstractSignal)connectSignal, connectionType);
     }
     
@@ -5509,8 +5309,9 @@ class QObject___ extends QObject {
      * @see #disconnect()
      * @see #sender()
      * @see QMetaType#qRegisterMetaType(Class, QMetaType...)
+     * @throws io.qt.QUninvokableSlotException Raised if slot is annotated <code>&commat;QtUninvokable</code>.
      */
-    public static QMetaObject.@NonNull Connection connect(@StrictNonNull QObject sender, @StrictNonNull String signal, @StrictNonNull QObject receiver, @StrictNonNull String slot, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(@StrictNonNull QObject sender, @StrictNonNull String signal, @StrictNonNull QObject receiver, @StrictNonNull String slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         if(signal.isEmpty())
             throw new IllegalArgumentException("Empty string not allowed as signal.");
         if(slot.isEmpty())
@@ -5540,12 +5341,12 @@ class QObject___ extends QObject {
      * You can check {@link QMetaObject.Connection#isConnected()} on the returned connection object.</p>
      *
      * <p>This function works in the same way as
-     * {@link #connect(QObject, String, QObject, String, Qt.ConnectionType...)}
+     * {@link #connect(QObject, String, QObject, String, Qt.@StrictNonNull ConnectionType @StrictNonNull...)}
      * but it uses QMetaMethod to specify signal and method.</p>
      *
-     * @see #connect(QObject, String, QObject, String, Qt.ConnectionType...)
+     * @see #connect(QObject, String, QObject, String, Qt.@StrictNonNull ConnectionType @StrictNonNull...)
      */
-    public static QMetaObject.@NonNull Connection connect(@StrictNonNull QObject sender, @StrictNonNull QMetaMethod signal, QObject receiver, @StrictNonNull QMetaMethod slot, Qt.ConnectionType... connectionType) {
+    public static QMetaObject.@NonNull Connection connect(@StrictNonNull QObject sender, @StrictNonNull QMetaMethod signal, QObject receiver, @StrictNonNull QMetaMethod slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         java.util.Objects.requireNonNull(signal);
         java.util.Objects.requireNonNull(slot);
         byte flags = 0;
@@ -5744,6 +5545,7 @@ class QObject___ extends QObject {
     }
     
     /**
+     * Returns the number of receivers connected to the signal.
      * @see #receivers(String)
      */
     @QtUninvokable
@@ -5756,7 +5558,7 @@ class QObject___ extends QObject {
     }
 
     /**
-     * <p>See <a href="@docRoot/qobject.html#qobject_cast">qobject_cast&lt;T>(QObject *)</a></p>
+     * <p>See <a href="@docRoot/qobject.html#qobject_cast"><code>qobject_cast&lt;T>(QObject *)</code></a></p>
      */
     @QtUninvokable
     public static <T extends @Nullable QtObjectInterface> T qobject_cast(@StrictNonNull Class<T> targetType, @Nullable QObject object) {
@@ -6068,7 +5870,7 @@ class QObject_6__ extends QObject {
     
     /**
      * <p>The <code>QProperty</code> class enables automatic property bindings.
-     * The Java type <code>QProperty</code> corresponds to the C++ type <code><a href="@docRoot/qobjectbindableproperty.html">QObjectBindableProperty</a></code>.</p>
+     * The Java type <code>QProperty</code> corresponds to the C++ type <a href="@docRoot/qobjectbindableproperty.html"><code>QObjectBindableProperty</code></a>.</p>
      * <p>It is only allowed to use <code>QProperty</code> as <code>final</code>-declared member variable of a <code>QObject</code> subtype.</p>
      * <p>Example:</p>
      * <code>
@@ -6144,7 +5946,7 @@ class QObject_6__ extends QObject {
      * <li>{@link QDoubleProperty}</li>
      * <li>{@link QCharProperty}</li>
      * </ul>
-     * <p>See <a href="@docRoot/qobjectbindableproperty.html">QObjectBindableProperty</a></p>
+     * <p>See <a href="@docRoot/qobjectbindableproperty.html"><code>QObjectBindableProperty</code></a></p>
      */
     public final class QProperty<T> extends QPropertyData<T> {
         
@@ -6195,7 +5997,7 @@ class QObject_6__ extends QObject {
         
         /**
          * Returns the value of the property. This may evaluate a binding expression that is tied to this property, before returning the value.
-         * <p>See <a href="@docRoot/qobjectbindableproperty.html#value">QObjectBindableProperty::value()const</a></p>
+         * <p>See <a href="@docRoot/qobjectbindableproperty.html#value"><code>QObjectBindableProperty::value()const</code></a></p>
          * @return value
          */
         @QtUninvokable
@@ -6206,7 +6008,7 @@ class QObject_6__ extends QObject {
         
         /**
          * <p>Assigns newValue to this property and removes the property's associated binding, if present.</p>
-         * <p>See <a href="@docRoot/qobjectbindableproperty.html#setValue">QObjectBindableProperty::setValue(T)</a></p>
+         * <p>See <a href="@docRoot/qobjectbindableproperty.html#setValue"><code>QObjectBindableProperty::setValue(T)</code></a></p>
          * @param newValue
          */
         @SuppressWarnings("unchecked")
@@ -6388,7 +6190,7 @@ class QObject_6__ extends QObject {
         
         /**
          * Programmatically signals a change of the property. Any binding which depend on it will be notified, and if the property has a signal, it will be emitted.
-         * <p>See <a href="@docRoot/qobjectbindableproperty.html#notify">QObjectBindableProperty::notify()</a></p>
+         * <p>See <a href="@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a></p>
          */
         @QtUninvokable
         public final void notifyProperty() {
@@ -6689,7 +6491,7 @@ class QObject_6__ extends QObject {
         
         /**
          * Programmatically signals a change of the property. Any binding which depend on it will be notified, and if the property has a signal, it will be emitted.
-         * <p>See <a href="@docRoot/qobjectbindableproperty.html#notify">QObjectBindableProperty::notify()</a></p>
+         * <p>See <a href="@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a></p>
          */
         @QtUninvokable
         public final void notifyProperty() {
@@ -6985,7 +6787,7 @@ class QObject_6__ extends QObject {
         
         /**
          * Programmatically signals a change of the property. Any binding which depend on it will be notified, and if the property has a signal, it will be emitted.
-         * <p>See <a href="@docRoot/qobjectbindableproperty.html#notify">QObjectBindableProperty::notify()</a></p>
+         * <p>See <a href="@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a></p>
          */
         @QtUninvokable
         public final void notifyProperty() {
@@ -7283,7 +7085,7 @@ class QObject_6__ extends QObject {
         
         /**
          * Programmatically signals a change of the property. Any binding which depend on it will be notified, and if the property has a signal, it will be emitted.
-         * <p>See <a href="@docRoot/qobjectbindableproperty.html#notify">QObjectBindableProperty::notify()</a></p>
+         * <p>See <a href="@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a></p>
          */
         @QtUninvokable
         public final void notifyProperty() {
@@ -7579,7 +7381,7 @@ class QObject_6__ extends QObject {
         
         /**
          * Programmatically signals a change of the property. Any binding which depend on it will be notified, and if the property has a signal, it will be emitted.
-         * <p>See <a href="@docRoot/qobjectbindableproperty.html#notify">QObjectBindableProperty::notify()</a></p>
+         * <p>See <a href="@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a></p>
          */
         @QtUninvokable
         public final void notifyProperty() {
@@ -7875,7 +7677,7 @@ class QObject_6__ extends QObject {
 
         /**
          * Programmatically signals a change of the property. Any binding which depend on it will be notified, and if the property has a signal, it will be emitted.
-         * <p>See <a href="@docRoot/qobjectbindableproperty.html#notify">QObjectBindableProperty::notify()</a></p>
+         * <p>See <a href="@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a></p>
          */
         @QtUninvokable
         public final void notifyProperty() {
@@ -8171,7 +7973,7 @@ class QObject_6__ extends QObject {
         
         /**
          * Programmatically signals a change of the property. Any binding which depend on it will be notified, and if the property has a signal, it will be emitted.
-         * <p>See <a href="@docRoot/qobjectbindableproperty.html#notify">QObjectBindableProperty::notify()</a></p>
+         * <p>See <a href="@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a></p>
          */
         @QtUninvokable
         public final void notifyProperty() {
@@ -8467,7 +8269,7 @@ class QObject_6__ extends QObject {
         
         /**
          * Programmatically signals a change of the property. Any binding which depend on it will be notified, and if the property has a signal, it will be emitted.
-         * <p>See <a href="@docRoot/qobjectbindableproperty.html#notify">QObjectBindableProperty::notify()</a></p>
+         * <p>See <a href="@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a></p>
          */
         @QtUninvokable
         public final void notifyProperty() {
@@ -8763,7 +8565,7 @@ class QObject_6__ extends QObject {
         
         /**
          * Programmatically signals a change of the property. Any binding which depend on it will be notified, and if the property has a signal, it will be emitted.
-         * <p>See <a href="@docRoot/qobjectbindableproperty.html#notify">QObjectBindableProperty::notify()</a></p>
+         * <p>See <a href="@docRoot/qobjectbindableproperty.html#notify"><code>QObjectBindableProperty::notify()</code></a></p>
          */
         @QtUninvokable
         public final void notifyProperty() {
@@ -9438,14 +9240,46 @@ abstract class QUrl___ extends QUrl{
         public final static @NonNull FormattingOption FullyEncoded           = ComponentFormattingOption.FullyEncoded;
         public final static @NonNull FormattingOption FullyDecoded           = ComponentFormattingOption.FullyDecoded;
             
+        /**
+         * Creates a new {@link FormattingOptions} from the entries.
+         * @param values entries
+         * @return new flag
+         */
         public static @NonNull FormattingOptions flags(@NonNull FormattingOption @NonNull... values) {
             return new FormattingOptions(values);
         }
         
+        /**
+         * Create a QFlags of the enum entry.
+         * @return QFlags
+         */
         public default @NonNull QFlags<?> asFlags() {
             return new FormattingOptions(value());
         }
+
+        /**
+         * Combines this entry with other enum entry.
+         * @param e enum entry
+         * @return new flag
+         */
+        public default @NonNull FormattingOptions combined(@NonNull FormattingOption e) {
+            return new FormattingOptions(value()).setFlag(e, true);
+        }
+
+        /**
+         * Excludes other enum entry from a flag of this entry.
+         * @param e enum entry
+         * @return new flag
+         */
+        public default @NonNull FormattingOptions cleared(@NonNull FormattingOption e) {
+            return new FormattingOptions(value()).setFlag(e, false);
+        }
         
+        /**
+         * Returns the corresponding enum entry for the given value.
+         * @param value
+         * @return enum entry
+         */
         public static @NonNull FormattingOption resolve(int value) {
             try {
                 return UrlFormattingOption.resolve(value);
@@ -9467,10 +9301,10 @@ abstract class QUrl___ extends QUrl{
     /**
      * QFlags type for joining {@link UrlFormattingOption} and {@link ComponentFormattingOption}.
      */
-    public static final class FormattingOptions extends QFlags<FormattingOption> implements Comparable<FormattingOptions> {
+    public static final class FormattingOptions extends QFlags<@NonNull FormattingOption> implements Comparable<@NonNull FormattingOptions> {
         private static final long serialVersionUID = -4458464052834800982L;
 
-        public FormattingOptions(@NonNull FormattingOption @NonNull... args) {
+        public FormattingOptions(@Nullable FormattingOption @NonNull... args) {
             super(args); 
             for (FormattingOption arg : args) {
                 if( !(arg instanceof UrlFormattingOption) 
@@ -9490,12 +9324,47 @@ abstract class QUrl___ extends QUrl{
         }
         
         @Override
-        public @NonNull FormattingOptions combined(FormattingOption flag) {
+        public @NonNull FormattingOptions combined(@StrictNonNull FormattingOption flag) {
             if( !(flag instanceof UrlFormattingOption) 
                     && !(flag instanceof ComponentFormattingOption) ) {
                 throw new IllegalArgumentException("Custom implementations of FormattingOption (" + QtJambi_LibraryUtilities.internal.getClass(flag).getName() + ") are not allowed.");
             }
-            return new FormattingOptions(value() | flag.value());
+            return clone().setFlag(flag, true);
+        }
+
+        @Override
+        public @NonNull FormattingOptions cleared(@StrictNonNull FormattingOption flag) {
+            if( !(flag instanceof UrlFormattingOption)
+                    && !(flag instanceof ComponentFormattingOption) ) {
+                throw new IllegalArgumentException("Custom implementations of FormattingOption (" + QtJambi_LibraryUtilities.internal.getClass(flag).getName() + ") are not allowed.");
+            }
+            return clone().setFlag(flag, false);
+        }
+
+        /**
+         * Sets the flag <code>e</code>
+         * @param e enum entry
+         * @return this
+         */
+        public final @NonNull FormattingOptions setFlag(@Nullable FormattingOption e){
+            return setFlag(e, true);
+        }
+
+        /**
+         * Sets or clears the flag <code>flag</code>
+         * @param e enum entry
+         * @param on set (true) or clear (false)
+         * @return this
+         */
+        public final @NonNull FormattingOptions setFlag(@Nullable FormattingOption e, boolean on){
+            if(e!=null){
+                if (on) {
+                    setValue(value() | e.value());
+                }else {
+                    setValue(value() & ~e.value());
+                }
+            }
+            return this;
         }
         
         @Override
@@ -9504,13 +9373,13 @@ abstract class QUrl___ extends QUrl{
         }
 
         @Override
-        public int compareTo(FormattingOptions o) {
+        public int compareTo(@StrictNonNull FormattingOptions o) {
                 return Integer.compare(value(), o.value());
         }
     }
 
     /**
-     * <p>See <a href="@docRoot/qurl.html#toDisplayString">QUrl::toDisplayString(QUrl::FormattingOptions)const</a></p>
+     * <p>See <a href="@docRoot/qurl.html#toDisplayString"><code>QUrl::toDisplayString(QUrl::FormattingOptions)const</code></a></p>
      */
     @QtUninvokable
     public final java.lang.@NonNull String toDisplayString(@NonNull FormattingOption @NonNull... options)    {
@@ -9518,7 +9387,7 @@ abstract class QUrl___ extends QUrl{
     }
 
     /**
-     * <p>See <a href="@docRoot/qurl.html#toString">QUrl::toString(QUrl::FormattingOptions)const</a></p>
+     * <p>See <a href="@docRoot/qurl.html#toString"><code>QUrl::toString(QUrl::FormattingOptions)const</code></a></p>
      */
     @QtUninvokable
     public final java.lang.@NonNull String toString(@NonNull FormattingOption @NonNull... options)    {
@@ -9526,7 +9395,7 @@ abstract class QUrl___ extends QUrl{
     }
     
     /**
-     * <p>See <a href="@docRoot/qurl.html#url">QUrl::url(QUrl::FormattingOptions)const</a></p>
+     * <p>See <a href="@docRoot/qurl.html#url"><code>QUrl::url(QUrl::FormattingOptions)const</code></a></p>
      */
     @QtUninvokable
     public final java.lang.@NonNull String url(@NonNull FormattingOption @NonNull... options)    {
@@ -9534,7 +9403,7 @@ abstract class QUrl___ extends QUrl{
     }
 
     /**
-     * <p>See <a href="@docRoot/qurl.html#toEncoded">QUrl::toEncoded(QUrl::FormattingOptions)const</a></p>
+     * <p>See <a href="@docRoot/qurl.html#toEncoded"><code>QUrl::toEncoded(QUrl::FormattingOptions)const</code></a></p>
      */
     @QtUninvokable
     public final io.qt.core.@NonNull QByteArray toEncoded(@NonNull FormattingOption @NonNull... options)    {
@@ -9542,14 +9411,14 @@ abstract class QUrl___ extends QUrl{
     }
     
     /**
-     * <p>See <a href="@docRoot/qurl.html#toStringList">QUrl::toStringList(QList&lt;QUrl&gt;,QUrl::FormattingOptions)</a></p>
+     * <p>See <a href="@docRoot/qurl.html#toStringList"><code>QUrl::toStringList(QList&lt;QUrl&gt;,QUrl::FormattingOptions)</code></a></p>
      */
     public static @NonNull QStringList toStringList(java.util.Collection<? extends io.qt.core.@NonNull QUrl> uris, @NonNull FormattingOption @NonNull... options){
         return toStringList(uris, new FormattingOptions(options));
     }
     
     /**
-     * <p>See <a href="@docRoot/qurl.html#adjusted">QUrl::adjusted(QUrl::FormattingOptions)const</a></p>
+     * <p>See <a href="@docRoot/qurl.html#adjusted"><code>QUrl::adjusted(QUrl::FormattingOptions)const</code></a></p>
      */
     @QtUninvokable
     public final io.qt.core.@NonNull QUrl adjusted(io.qt.core.QUrl.@NonNull FormattingOption @NonNull... options){
@@ -9568,7 +9437,7 @@ abstract class QUrl___ extends QUrl{
 abstract class QAbstractItemModel___ extends QAbstractItemModel {
 
     /**
-     * <p>See <a href="@docRoot/qabstractitemmodel.html#setData">QAbstractItemModel::setData(QModelIndex,QVariant,int)</a></p>
+     * <p>See <a href="@docRoot/qabstractitemmodel.html#setData"><code>QAbstractItemModel::setData(QModelIndex,QVariant,int)</code></a></p>
      */
     @QtUninvokable
     public final boolean setData(int row, int col, @Nullable Object value) {
@@ -9576,7 +9445,7 @@ abstract class QAbstractItemModel___ extends QAbstractItemModel {
     }
     
     /**
-     * <p>See <a href="@docRoot/qabstractitemmodel.html#setData">QAbstractItemModel::setData(QModelIndex,QVariant,int)</a></p>
+     * <p>See <a href="@docRoot/qabstractitemmodel.html#setData"><code>QAbstractItemModel::setData(QModelIndex,QVariant,int)</code></a></p>
      */
     @QtUninvokable
     public final boolean setData(int row, int col, @Nullable Object value, int role) {
@@ -9584,7 +9453,7 @@ abstract class QAbstractItemModel___ extends QAbstractItemModel {
     }
 
     /**
-     * <p>See <a href="@docRoot/qabstractitemmodel.html#data">QAbstractItemModel::data(QModelIndex,int)const</a></p>
+     * <p>See <a href="@docRoot/qabstractitemmodel.html#data"><code>QAbstractItemModel::data(QModelIndex,int)const</code></a></p>
      */
     @QtUninvokable
     public final @Nullable Object data(int row, int col) {
@@ -9592,7 +9461,7 @@ abstract class QAbstractItemModel___ extends QAbstractItemModel {
     }
     
     /**
-     * <p>See <a href="@docRoot/qabstractitemmodel.html#data">QAbstractItemModel::data(QModelIndex,int)</a></p>
+     * <p>See <a href="@docRoot/qabstractitemmodel.html#data"><code>QAbstractItemModel::data(QModelIndex,int)</code></a></p>
      */
     @QtUninvokable
     public final @Nullable Object data(int row, int col, int role) {
@@ -9600,7 +9469,7 @@ abstract class QAbstractItemModel___ extends QAbstractItemModel {
     }
 
     /**
-     * <p>See <a href="@docRoot/qabstractitemmodel.html#createIndex-1">QAbstractItemModel::createIndex(int,int,quintptr)</a></p>
+     * <p>See <a href="@docRoot/qabstractitemmodel.html#createIndex-1"><code>QAbstractItemModel::createIndex(int,int,quintptr)</code></a></p>
      */
     @QtUninvokable
     protected final io.qt.core.QModelIndex createIndex(int row, int column){
@@ -9679,7 +9548,7 @@ class QTimer___ extends QTimer {
      * time interval is msec milliseconds.
      * 
      * @see #start()
-     * @see <a href="@docRoot/qtimer.html#singleShot">QTimer::singleShot(int,const QObject*,const char *)</a>
+     * @see <a href="@docRoot/qtimer.html#singleShot"><code>QTimer::singleShot(int,const QObject*,const char *)</code></a>
      */
      public static void singleShot(int msec, @Nullable QObject obj, @NonNull String method) {
         singleShot(msec, defaultTypeFor(msec), obj, method);
@@ -9699,7 +9568,7 @@ class QTimer___ extends QTimer {
      * 
      * @see #start()
      * @since 5.4
-     * @see <a href="@docRoot/qtimer.html#singleShot-6">QTimer::singleShot(int,const QObject*,Functor)</a>
+     * @see <a href="@docRoot/qtimer.html#singleShot-6"><code>QTimer::singleShot(int,const QObject*,Functor)</code></a>
      */    
     public static void singleShot(int msec, @Nullable QObject context, QMetaObject.@NonNull Slot0 slot) {
         singleShot(msec, defaultTypeFor(msec), context, slot);
@@ -9716,7 +9585,7 @@ class QTimer___ extends QTimer {
      * accuracy of the timer.
      * 
      * @see #start()
-     * @see <a href="@docRoot/qtimer.html#singleShot-1">QTimer::singleShot(int,Qt::TimerType,const QObject*,const char *)</a>
+     * @see <a href="@docRoot/qtimer.html#singleShot-1"><code>QTimer::singleShot(int,Qt::TimerType,const QObject*,const char *)</code></a>
      */
     public static void singleShot(int msec, Qt.@NonNull TimerType timeType, @Nullable QObject obj, @NonNull String method) {
         new QSingleShotTimer(msec, timeType, obj, method);
@@ -9733,7 +9602,7 @@ class QTimer___ extends QTimer {
      * 
      * @see #start()
      * @since 5.4
-     * @see <a href="@docRoot/qtimer.html#singleShot-2">QTimer::singleShot(int,Qt::TimerType,PointerToMemberFunction)</a>
+     * @see <a href="@docRoot/qtimer.html#singleShot-2"><code>QTimer::singleShot(int,Qt::TimerType,PointerToMemberFunction)</code></a>
      */
     public static void singleShot(int msec, QMetaObject.@NonNull Slot0 slot) {
         singleShot(msec, defaultTypeFor(msec), null, slot);
@@ -9751,7 +9620,7 @@ class QTimer___ extends QTimer {
      * 
      * @see #start()
      * @since 5.4
-     * @see <a href="@docRoot/qtimer.html#singleShot-3">QTimer::singleShot(int,Qt::TimerType,PointerToMemberFunction)</a>
+     * @see <a href="@docRoot/qtimer.html#singleShot-3"><code>QTimer::singleShot(int,Qt::TimerType,PointerToMemberFunction)</code></a>
      */
     public static void singleShot(int msec, Qt.@NonNull TimerType timeType, QMetaObject.@NonNull Slot0 slot) {
         singleShot(msec, timeType, null, slot);
@@ -9773,7 +9642,7 @@ class QTimer___ extends QTimer {
      * 
      * @see #start()
      * @since 5.4
-     * @see <a href="@docRoot/qtimer.html#singleShot-7">QTimer::singleShot(int,Qt::TimerType,const QObject*,Functor)</a>
+     * @see <a href="@docRoot/qtimer.html#singleShot-7"><code>QTimer::singleShot(int,Qt::TimerType,const QObject*,Functor)</code></a>
      */
     public static void singleShot(int msec, Qt.@NonNull TimerType timeType, @Nullable QObject context, QMetaObject.@NonNull Slot0 slot) {
         new QSingleShotTimer(msec, timeType, context, slot);
@@ -9784,21 +9653,21 @@ class QTimer___ extends QTimer {
     }
 
     /**
-     * <p>See <a href="@docRoot/qtimer.html#callOnTimeout">QObject::callOnTimeout(Args&amp;&amp;...)</a></p>
+     * <p>See <a href="@docRoot/qtimer.html#callOnTimeout"><code>QObject::callOnTimeout(Args&amp;&amp;...)</code></a></p>
      */
     public final QMetaObject.@NonNull Connection callOnTimeout(QMetaObject.@NonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type){
         return timeout.connect(slot, type);
     }
 
     /**
-     * <p>See <a href="@docRoot/qtimer.html#callOnTimeout">QObject::callOnTimeout(Args&amp;&amp;...)</a></p>
+     * <p>See <a href="@docRoot/qtimer.html#callOnTimeout"><code>QObject::callOnTimeout(Args&amp;&amp;...)</code></a></p>
      */
     public final QMetaObject.@NonNull Connection callOnTimeout(QMetaObject.@NonNull Connectable0 connectable, Qt.@NonNull ConnectionType @NonNull... type){
         return timeout.connect(connectable, type);
     }
 
     /**
-     * <p>See <a href="@docRoot/qtimer.html#callOnTimeout">QObject::callOnTimeout(Args&amp;&amp;...)</a></p>
+     * <p>See <a href="@docRoot/qtimer.html#callOnTimeout"><code>QObject::callOnTimeout(Args&amp;&amp;...)</code></a></p>
      */
     public final QMetaObject.@NonNull Connection callOnTimeout(@Nullable QObject receiver, @NonNull String method, Qt.@NonNull ConnectionType @NonNull... type){
         return timeout.connect(receiver, method, type);
@@ -9897,7 +9766,7 @@ class QCoreApplication___ extends QCoreApplication {
 
     /**
      * Destroys the QCoreApplication instance and purges Qt.
-     * @see <a href="@docRoot/qcoreapplication.html#dtor.QCoreApplication">~QCoreApplication()</a>
+     * @see <a href="@docRoot/qcoreapplication.html#dtor.QCoreApplication"><code>~QCoreApplication()</code></a>
      */
     @QtUninvokable
     public static void shutdown() {
@@ -9984,7 +9853,7 @@ class QCoreApplication___ extends QCoreApplication {
 
     /**
      * Adds a post-routine to be executed when deleting QCoreApplication.
-     * @see <a href="@docRoot/qcoreapplication.html#qAddPostRoutine">qAddPostRoutine(QtCleanUpFunction)</a>
+     * @see <a href="@docRoot/qcoreapplication.html#qAddPostRoutine"><code>qAddPostRoutine(QtCleanUpFunction)</code></a>
      * @see shutdown()
      */
     @QtUninvokable
@@ -9994,7 +9863,7 @@ class QCoreApplication___ extends QCoreApplication {
 
     /**
      * Removes a previously added post-routine.
-     * @see <a href="@docRoot/qcoreapplication.html#qRemovePostRoutine">qRemovePostRoutine(QtCleanUpFunction)</a>
+     * @see <a href="@docRoot/qcoreapplication.html#qRemovePostRoutine"><code>qRemovePostRoutine(QtCleanUpFunction)</code></a>
      * @see addPostRoutine(Runnable)
      * @see shutdown()
      */
@@ -10051,7 +9920,7 @@ class QCoreApplication__65_ {
     }
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#checkPermission">QCoreApplication::checkPermission(QPermission)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#checkPermission"><code>QCoreApplication::checkPermission(QPermission)</code></a></p>
      */
     @QtUninvokable
     public final io.qt.core.Qt.@NonNull PermissionStatus checkPermission(@StrictNonNull Class<? extends QPermission> permissionType){
@@ -10059,7 +9928,7 @@ class QCoreApplication__65_ {
     }
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#requestPermission">QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#requestPermission"><code>QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</code></a></p>
      */
     @QtUninvokable
     public final <T extends QPermission> void requestPermission(@StrictNonNull Class<T> permissionType, QMetaObject.@StrictNonNull Slot2<@NonNull T, Qt.@NonNull PermissionStatus> functor){
@@ -10073,7 +9942,7 @@ class QCoreApplication__65_ {
     }
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#requestPermission">QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#requestPermission"><code>QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</code></a></p>
      */
     @QtUninvokable
     public final void requestPermission(@StrictNonNull Class<? extends QPermission> permissionType, QMetaObject.@StrictNonNull Slot1<Qt.@NonNull PermissionStatus> functor){
@@ -10087,7 +9956,7 @@ class QCoreApplication__65_ {
     }
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#requestPermission">QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#requestPermission"><code>QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</code></a></p>
      */
     @QtUninvokable
     public final <T extends QPermission> void requestPermission(@StrictNonNull T permission, QMetaObject.@StrictNonNull Slot2<@NonNull T, Qt.@NonNull PermissionStatus> functor){
@@ -10100,7 +9969,7 @@ class QCoreApplication__65_ {
     }
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#requestPermission">QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qcoreapplication.html#requestPermission"><code>QCoreApplication::requestPermission&lt;Functor>(const QPermission, Functor functor)</code></a></p>
      */
     @QtUninvokable
     public final void requestPermission(@StrictNonNull QPermission permission, QMetaObject.@StrictNonNull Slot1<Qt.@NonNull PermissionStatus> functor){
@@ -10126,7 +9995,7 @@ class QPermission___{
     }
 
     /**
-     * <p>See <a href="@docRoot/qpermission.html#QPermission">QPermission::QPermission&lt;T>(T)</a></p>
+     * <p>See <a href="@docRoot/qpermission.html#QPermission"><code>QPermission::QPermission&lt;T>(T)</code></a></p>
      */
     public QPermission(Request request){
         super((QPrivateConstructor)null);
@@ -10137,7 +10006,7 @@ class QPermission___{
     private static native void setData(long nativeId, Request request);
 
     /**
-     * <p>See <a href="@docRoot/qpermission.html#QPermission">QPermission::data&lt;T>()</a></p>
+     * <p>See <a href="@docRoot/qpermission.html#QPermission"><code>QPermission::data&lt;T>()</code></a></p>
      */
     public final Request data() {
         return data(QtJambi_LibraryUtilities.internal.nativeId(this));
@@ -10170,7 +10039,7 @@ class QXmlStreamAttributes___ extends QXmlStreamAttributes {
 
 class autoclosedelete {
     /**
-     * {@inheritDoc}
+     * Deletes the underlying native object.
      */
     @Override
     public void close(){
@@ -10181,7 +10050,7 @@ class autoclosedelete {
 class QDebug___ extends QDebug {
     
     /**
-     * {@inheritDoc}
+     * Appends a subsequence of the specified character sequence to this <code>QDebug</code>.
      */
     @Override
     public final @NonNull QDebug append(CharSequence csq, int start, int end) {
@@ -10191,7 +10060,7 @@ class QDebug___ extends QDebug {
     }
 
     /**
-     * <p>See <a href="@docRoot/qt.html#endl">Qt::endl</a></p>
+     * <p>See <a href="@docRoot/qt.html#endl"><code>Qt::endl</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug endl(){
@@ -10204,7 +10073,7 @@ class QDebug___ extends QDebug {
     private native void endl(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#flush">Qt::flush</a></p>
+     * <p>See <a href="@docRoot/qt.html#flush"><code>Qt::flush</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug flush(){
@@ -10217,7 +10086,7 @@ class QDebug___ extends QDebug {
     private native void flush(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#reset">Qt::reset</a></p>
+     * <p>See <a href="@docRoot/qt.html#reset"><code>Qt::reset</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug reset(){
@@ -10230,7 +10099,7 @@ class QDebug___ extends QDebug {
     private native void reset(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#bin">Qt::bin</a></p>
+     * <p>See <a href="@docRoot/qt.html#bin"><code>Qt::bin</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug bin(){
@@ -10243,7 +10112,7 @@ class QDebug___ extends QDebug {
     private native void bin(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#oct">Qt::oct</a></p>
+     * <p>See <a href="@docRoot/qt.html#oct"><code>Qt::oct</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug oct(){
@@ -10256,7 +10125,7 @@ class QDebug___ extends QDebug {
     private native void oct(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#hex">Qt::hex</a></p>
+     * <p>See <a href="@docRoot/qt.html#hex"><code>Qt::hex</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug hex(){
@@ -10269,7 +10138,7 @@ class QDebug___ extends QDebug {
     private native void hex(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#dec">Qt::dec</a></p>
+     * <p>See <a href="@docRoot/qt.html#dec"><code>Qt::dec</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug dec(){
@@ -10282,7 +10151,7 @@ class QDebug___ extends QDebug {
     private native void dec(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#showbase">Qt::showbase</a></p>
+     * <p>See <a href="@docRoot/qt.html#showbase"><code>Qt::showbase</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug showbase(){
@@ -10295,7 +10164,7 @@ class QDebug___ extends QDebug {
     private native void showbase(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#forcesign">Qt::forcesign</a></p>
+     * <p>See <a href="@docRoot/qt.html#forcesign"><code>Qt::forcesign</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug forcesign(){
@@ -10308,7 +10177,7 @@ class QDebug___ extends QDebug {
     private native void forcesign(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#forcepoint">Qt::forcepoint</a></p>
+     * <p>See <a href="@docRoot/qt.html#forcepoint"><code>Qt::forcepoint</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug forcepoint(){
@@ -10321,7 +10190,7 @@ class QDebug___ extends QDebug {
     private native void forcepoint(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#noshowbase">Qt::noshowbase</a></p>
+     * <p>See <a href="@docRoot/qt.html#noshowbase"><code>Qt::noshowbase</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug noshowbase(){
@@ -10334,7 +10203,7 @@ class QDebug___ extends QDebug {
     private native void noshowbase(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#noforcesign">Qt::noforcesign</a></p>
+     * <p>See <a href="@docRoot/qt.html#noforcesign"><code>Qt::noforcesign</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug noforcesign(){
@@ -10347,7 +10216,7 @@ class QDebug___ extends QDebug {
     private native void noforcesign(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#noforcepoint">Qt::noforcepoint</a></p>
+     * <p>See <a href="@docRoot/qt.html#noforcepoint"><code>Qt::noforcepoint</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug noforcepoint(){
@@ -10360,7 +10229,7 @@ class QDebug___ extends QDebug {
     private native void noforcepoint(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#uppercasebase">Qt::uppercasebase</a></p>
+     * <p>See <a href="@docRoot/qt.html#uppercasebase"><code>Qt::uppercasebase</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug uppercasebase(){
@@ -10373,7 +10242,7 @@ class QDebug___ extends QDebug {
     private native void uppercasebase(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#uppercasedigits">Qt::uppercasedigits</a></p>
+     * <p>See <a href="@docRoot/qt.html#uppercasedigits"><code>Qt::uppercasedigits</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug uppercasedigits(){
@@ -10386,7 +10255,7 @@ class QDebug___ extends QDebug {
     private native void uppercasedigits(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#lowercasebase">Qt::lowercasebase</a></p>
+     * <p>See <a href="@docRoot/qt.html#lowercasebase"><code>Qt::lowercasebase</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug lowercasebase(){
@@ -10399,7 +10268,7 @@ class QDebug___ extends QDebug {
     private native void lowercasebase(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#lowercasedigits">Qt::lowercasedigits</a></p>
+     * <p>See <a href="@docRoot/qt.html#lowercasedigits"><code>Qt::lowercasedigits</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug lowercasedigits(){
@@ -10412,7 +10281,7 @@ class QDebug___ extends QDebug {
     private native void lowercasedigits(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#fixed">Qt::fixed</a></p>
+     * <p>See <a href="@docRoot/qt.html#fixed"><code>Qt::fixed</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug fixed(){
@@ -10425,7 +10294,7 @@ class QDebug___ extends QDebug {
     private native void fixed(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#scientific">Qt::scientific</a></p>
+     * <p>See <a href="@docRoot/qt.html#scientific"><code>Qt::scientific</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug scientific(){
@@ -10438,7 +10307,7 @@ class QDebug___ extends QDebug {
     private native void scientific(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#left">Qt::left</a></p>
+     * <p>See <a href="@docRoot/qt.html#left"><code>Qt::left</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug left(){
@@ -10451,7 +10320,7 @@ class QDebug___ extends QDebug {
     private native void left(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#right">Qt::right</a></p>
+     * <p>See <a href="@docRoot/qt.html#right"><code>Qt::right</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug right(){
@@ -10464,7 +10333,7 @@ class QDebug___ extends QDebug {
     private native void right(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#center">Qt::center</a></p>
+     * <p>See <a href="@docRoot/qt.html#center"><code>Qt::center</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug center(){
@@ -10477,7 +10346,7 @@ class QDebug___ extends QDebug {
     private native void center(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#bom">Qt::bom</a></p>
+     * <p>See <a href="@docRoot/qt.html#bom"><code>Qt::bom</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug bom(){
@@ -10490,7 +10359,7 @@ class QDebug___ extends QDebug {
     private native void bom(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#ws">Qt::ws</a></p>
+     * <p>See <a href="@docRoot/qt.html#ws"><code>Qt::ws</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug ws(){
@@ -10503,7 +10372,7 @@ class QDebug___ extends QDebug {
     private native void ws(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#qSetFieldWidth">qSetFieldWidth(int width)</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#qSetFieldWidth"><code>qSetFieldWidth(int width)</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug qSetFieldWidth(int width){
@@ -10516,7 +10385,7 @@ class QDebug___ extends QDebug {
     private native void setFieldWidth(long __this__nativeId, int width);
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#qSetRealNumberPrecision">qSetRealNumberPrecision(int precision)</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#qSetRealNumberPrecision"><code>qSetRealNumberPrecision(int precision)</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug qSetRealNumberPrecision(int precision){
@@ -10529,7 +10398,7 @@ class QDebug___ extends QDebug {
     private native void setRealNumberPrecision(long __this__nativeId, int precision);
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#qSetPadChar">qSetPadChar(QChar ch)</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#qSetPadChar"><code>qSetPadChar(QChar ch)</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDebug qSetPadChar(char ch){
@@ -10542,13 +10411,16 @@ class QDebug___ extends QDebug {
     private native void setPadChar(long __this__nativeId, char ch);
     
     /**
-     * <p>See <a href="@docRoot/qdebug.html#QDebug-1">QDebug::QDebug(QString*)</a></p>
+     * <p>See <a href="@docRoot/qdebug.html#QDebug-1"><code>QDebug::QDebug(QString*)</code></a></p>
      */
     @SuppressWarnings("hiding")
     public <String extends Object & Appendable & CharSequence> QDebug(String string){
         this(new QTextStream.StringDevice<String>(java.util.Objects.requireNonNull(string, "Argument 'string': null not expected."), QIODevice.OpenModeFlag.WriteOnly.asFlags()));
     }
     
+    /**
+     * <p>See <a href="@docRoot/qdebug.html#operator-lt-lt"><code>QDebug::operator&lt;&lt;</code></a></p>
+     */
     @QtUninvokable
     public final @NonNull QDebug append(java.lang.Object obj){
         if(!disabled){
@@ -10568,7 +10440,7 @@ class QDebug___ extends QDebug {
 
 class QTextStream___ extends QTextStream {
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#string">QTextStream::string() const</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#string"><code>QTextStream::string() const</code></a></p>
      */
     public final @Nullable CharSequence string() {
         QIODevice device = device_private();
@@ -10584,7 +10456,7 @@ class QTextStream___ extends QTextStream {
     }
     
     /**
-     * {@inheritDoc}
+     * Appends a subsequence of the specified character sequence to this <code>QTextStream</code>.
      */
     @Override
     public final @NonNull QTextStream append(CharSequence csq, int start, int end) {
@@ -10592,7 +10464,7 @@ class QTextStream___ extends QTextStream {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#device">QTextStream::device()const</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#device"><code>QTextStream::device()const</code></a></p>
      */
     @QtUninvokable
     public final @Nullable QIODevice device(){
@@ -10603,7 +10475,7 @@ class QTextStream___ extends QTextStream {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#setString">QTextStream::setString(QString *, QIODeviceBase::OpenMode)</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#setString"><code>QTextStream::setString(QString *, QIODeviceBase::OpenMode)</code></a></p>
      */
     @SuppressWarnings("hiding")
     public <String extends @NonNull Object & Appendable & CharSequence> void setString(String string, QIODevice.@NonNull OpenModeFlag @NonNull... openMode) {
@@ -10611,7 +10483,7 @@ class QTextStream___ extends QTextStream {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#setString">QTextStream::setString(QString *, QIODeviceBase::OpenMode)</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#setString"><code>QTextStream::setString(QString *, QIODeviceBase::OpenMode)</code></a></p>
      */
     @SuppressWarnings("hiding")
     public <String extends @NonNull Object & Appendable & CharSequence> void setString(String string) {
@@ -10619,7 +10491,7 @@ class QTextStream___ extends QTextStream {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#setString">QTextStream::setString(QString *, QIODeviceBase::OpenMode)</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#setString"><code>QTextStream::setString(QString *, QIODeviceBase::OpenMode)</code></a></p>
      */
     @SuppressWarnings("hiding")
     public <String extends @NonNull Object & Appendable & CharSequence> void setString(String string, QIODevice.@NonNull OpenMode openMode) {
@@ -10628,42 +10500,42 @@ class QTextStream___ extends QTextStream {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#setString">QTextStream::setString(QString *, QIODeviceBase::OpenMode)</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#setString"><code>QTextStream::setString(QString *, QIODeviceBase::OpenMode)</code></a></p>
      */
     public void setString(@NonNull String string, QIODevice.OpenModeFlag ... openMode) {
         setString(string, new QIODevice.OpenMode(openMode));
     }
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#setString">QTextStream::setString(QString *, QIODeviceBase::OpenMode)</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#setString"><code>QTextStream::setString(QString *, QIODeviceBase::OpenMode)</code></a></p>
      */
     public void setString(@NonNull String string) {
         setString(string, new QIODevice.OpenMode(4));
     }
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#setString">QTextStream::setString(QString *, QIODeviceBase::OpenMode)</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#setString"><code>QTextStream::setString(QString *, QIODeviceBase::OpenMode)</code></a></p>
      */
     public void setString(@NonNull String string, QIODevice.OpenMode openMode) {
         setString(string==null ? new StringBuilder() : new StringBuilder(string), openMode);
     }
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3">QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3"><code>QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</code></a></p>
      */
     @SuppressWarnings("hiding")
     public <String extends @NonNull Object & Appendable & CharSequence> QTextStream(String string, QIODevice.@NonNull OpenModeFlag @NonNull... openMode) {
         this(string, new QIODevice.OpenMode(openMode));
     }
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3">QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3"><code>QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</code></a></p>
      */
     @SuppressWarnings("hiding")
     public <String extends @NonNull Object & Appendable & CharSequence> QTextStream(String string) {
         this(string, new QIODevice.OpenMode(3));
     }
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3">QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3"><code>QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</code></a></p>
      */
     @SuppressWarnings("hiding")
     public <String extends @NonNull Object & Appendable & CharSequence> QTextStream(String string, QIODevice.@NonNull OpenMode openMode){
@@ -10671,19 +10543,19 @@ class QTextStream___ extends QTextStream {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3">QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3"><code>QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</code></a></p>
      */
     public QTextStream(@NonNull String string, QIODevice.@NonNull OpenModeFlag @NonNull... openMode) {
         this(string, new QIODevice.OpenMode(openMode));
     }
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3">QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3"><code>QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</code></a></p>
      */
     public QTextStream(@NonNull String string) {
         this(string, new QIODevice.OpenMode(3));
     }
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3">QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#QTextStream-3"><code>QTextStream::QTextStream(QString *, QIODeviceBase::OpenMode)</code></a></p>
      */
     public QTextStream(@NonNull String string, QIODevice.@NonNull OpenMode openMode){
         this(string==null ? new StringBuilder() : new StringBuilder(string), openMode);
@@ -10755,7 +10627,7 @@ class QTextStream___ extends QTextStream {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1"><code>QTextStream::operator&lt;&lt;</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream writeString(java.lang.String s){
@@ -10763,7 +10635,7 @@ class QTextStream___ extends QTextStream {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1"><code>QTextStream::operator&lt;&lt;</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream writeString(java.lang.CharSequence s){
@@ -10771,7 +10643,7 @@ class QTextStream___ extends QTextStream {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1"><code>QTextStream::operator&lt;&lt;</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream writeDouble(double v){
@@ -10779,7 +10651,7 @@ class QTextStream___ extends QTextStream {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1"><code>QTextStream::operator&lt;&lt;</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream writeByte(byte v){
@@ -10787,7 +10659,7 @@ class QTextStream___ extends QTextStream {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1"><code>QTextStream::operator&lt;&lt;</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream writeBytes(QByteArray v){
@@ -10795,7 +10667,7 @@ class QTextStream___ extends QTextStream {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1"><code>QTextStream::operator&lt;&lt;</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream writeChar(char v){
@@ -10803,7 +10675,7 @@ class QTextStream___ extends QTextStream {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1"><code>QTextStream::operator&lt;&lt;</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream writeFloat(float v){
@@ -10811,7 +10683,7 @@ class QTextStream___ extends QTextStream {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1"><code>QTextStream::operator&lt;&lt;</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream writeInt(int v){
@@ -10819,7 +10691,7 @@ class QTextStream___ extends QTextStream {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1"><code>QTextStream::operator&lt;&lt;</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream writeLong(long v){
@@ -10827,7 +10699,7 @@ class QTextStream___ extends QTextStream {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1">QTextStream::operator&lt;&lt;</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#operator-lt-lt-1"><code>QTextStream::operator&lt;&lt;</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream writeShort(short v){
@@ -10835,7 +10707,7 @@ class QTextStream___ extends QTextStream {
     }
     
     /**
-     * <p>See <a href="@docRoot/qt.html#endl">Qt::endl</a></p>
+     * <p>See <a href="@docRoot/qt.html#endl"><code>Qt::endl</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream endl(){
@@ -10847,7 +10719,7 @@ class QTextStream___ extends QTextStream {
     private native void endl(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#flush">Qt::flush</a></p>
+     * <p>See <a href="@docRoot/qt.html#flush"><code>Qt::flush</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream flush(){
@@ -10859,7 +10731,7 @@ class QTextStream___ extends QTextStream {
     private native void flush(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#reset">Qt::reset</a></p>
+     * <p>See <a href="@docRoot/qt.html#reset"><code>Qt::reset</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream reset(){
@@ -10871,7 +10743,7 @@ class QTextStream___ extends QTextStream {
     private native void reset(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#bin">Qt::bin</a></p>
+     * <p>See <a href="@docRoot/qt.html#bin"><code>Qt::bin</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream bin(){
@@ -10883,7 +10755,7 @@ class QTextStream___ extends QTextStream {
     private native void bin(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#oct">Qt::oct</a></p>
+     * <p>See <a href="@docRoot/qt.html#oct"><code>Qt::oct</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream oct(){
@@ -10895,7 +10767,7 @@ class QTextStream___ extends QTextStream {
     private native void oct(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#hex">Qt::hex</a></p>
+     * <p>See <a href="@docRoot/qt.html#hex"><code>Qt::hex</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream hex(){
@@ -10907,7 +10779,7 @@ class QTextStream___ extends QTextStream {
     private native void hex(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#dec">Qt::dec</a></p>
+     * <p>See <a href="@docRoot/qt.html#dec"><code>Qt::dec</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream dec(){
@@ -10919,7 +10791,7 @@ class QTextStream___ extends QTextStream {
     private native void dec(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#showbase">Qt::showbase</a></p>
+     * <p>See <a href="@docRoot/qt.html#showbase"><code>Qt::showbase</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream showbase(){
@@ -10931,7 +10803,7 @@ class QTextStream___ extends QTextStream {
     private native void showbase(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#forcesign">Qt::forcesign</a></p>
+     * <p>See <a href="@docRoot/qt.html#forcesign"><code>Qt::forcesign</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream forcesign(){
@@ -10943,7 +10815,7 @@ class QTextStream___ extends QTextStream {
     private native void forcesign(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#forcepoint">Qt::forcepoint</a></p>
+     * <p>See <a href="@docRoot/qt.html#forcepoint"><code>Qt::forcepoint</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream forcepoint(){
@@ -10955,7 +10827,7 @@ class QTextStream___ extends QTextStream {
     private native void forcepoint(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#noshowbase">Qt::noshowbase</a></p>
+     * <p>See <a href="@docRoot/qt.html#noshowbase"><code>Qt::noshowbase</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream noshowbase(){
@@ -10967,7 +10839,7 @@ class QTextStream___ extends QTextStream {
     private native void noshowbase(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#noforcesign">Qt::noforcesign</a></p>
+     * <p>See <a href="@docRoot/qt.html#noforcesign"><code>Qt::noforcesign</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream noforcesign(){
@@ -10979,7 +10851,7 @@ class QTextStream___ extends QTextStream {
     private native void noforcesign(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#noforcepoint">Qt::noforcepoint</a></p>
+     * <p>See <a href="@docRoot/qt.html#noforcepoint"><code>Qt::noforcepoint</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream noforcepoint(){
@@ -10991,7 +10863,7 @@ class QTextStream___ extends QTextStream {
     private native void noforcepoint(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#uppercasebase">Qt::uppercasebase</a></p>
+     * <p>See <a href="@docRoot/qt.html#uppercasebase"><code>Qt::uppercasebase</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream uppercasebase(){
@@ -11003,7 +10875,7 @@ class QTextStream___ extends QTextStream {
     private native void uppercasebase(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#uppercasedigits">Qt::uppercasedigits</a></p>
+     * <p>See <a href="@docRoot/qt.html#uppercasedigits"><code>Qt::uppercasedigits</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream uppercasedigits(){
@@ -11015,7 +10887,7 @@ class QTextStream___ extends QTextStream {
     private native void uppercasedigits(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#lowercasebase">Qt::lowercasebase</a></p>
+     * <p>See <a href="@docRoot/qt.html#lowercasebase"><code>Qt::lowercasebase</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream lowercasebase(){
@@ -11027,7 +10899,7 @@ class QTextStream___ extends QTextStream {
     private native void lowercasebase(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#lowercasedigits">Qt::lowercasedigits</a></p>
+     * <p>See <a href="@docRoot/qt.html#lowercasedigits"><code>Qt::lowercasedigits</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream lowercasedigits(){
@@ -11039,7 +10911,7 @@ class QTextStream___ extends QTextStream {
     private native void lowercasedigits(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#fixed">Qt::fixed</a></p>
+     * <p>See <a href="@docRoot/qt.html#fixed"><code>Qt::fixed</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream fixed(){
@@ -11051,7 +10923,7 @@ class QTextStream___ extends QTextStream {
     private native void fixed(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#scientific">Qt::scientific</a></p>
+     * <p>See <a href="@docRoot/qt.html#scientific"><code>Qt::scientific</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream scientific(){
@@ -11063,7 +10935,7 @@ class QTextStream___ extends QTextStream {
     private native void scientific(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#left">Qt::left</a></p>
+     * <p>See <a href="@docRoot/qt.html#left"><code>Qt::left</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream left(){
@@ -11075,7 +10947,7 @@ class QTextStream___ extends QTextStream {
     private native void left(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#right">Qt::right</a></p>
+     * <p>See <a href="@docRoot/qt.html#right"><code>Qt::right</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream right(){
@@ -11087,7 +10959,7 @@ class QTextStream___ extends QTextStream {
     private native void right(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#center">Qt::center</a></p>
+     * <p>See <a href="@docRoot/qt.html#center"><code>Qt::center</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream center(){
@@ -11099,7 +10971,7 @@ class QTextStream___ extends QTextStream {
     private native void center(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#bom">Qt::bom</a></p>
+     * <p>See <a href="@docRoot/qt.html#bom"><code>Qt::bom</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream bom(){
@@ -11111,7 +10983,7 @@ class QTextStream___ extends QTextStream {
     private native void bom(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qt.html#ws">Qt::ws</a></p>
+     * <p>See <a href="@docRoot/qt.html#ws"><code>Qt::ws</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream ws(){
@@ -11123,7 +10995,7 @@ class QTextStream___ extends QTextStream {
     private native void ws(long __this__nativeId);
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#qSetFieldWidth">qSetFieldWidth(int width)</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#qSetFieldWidth"><code>qSetFieldWidth(int width)</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream qSetFieldWidth(int width){
@@ -11135,7 +11007,7 @@ class QTextStream___ extends QTextStream {
     private native void setFieldWidth(long __this__nativeId, int width);
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#qSetRealNumberPrecision">qSetRealNumberPrecision(int precision)</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#qSetRealNumberPrecision"><code>qSetRealNumberPrecision(int precision)</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream qSetRealNumberPrecision(int precision){
@@ -11147,7 +11019,7 @@ class QTextStream___ extends QTextStream {
     private native void setRealNumberPrecision(long __this__nativeId, int precision);
     
     /**
-     * <p>See <a href="@docRoot/qtextstream.html#qSetPadChar">qSetPadChar(QChar ch)</a></p>
+     * <p>See <a href="@docRoot/qtextstream.html#qSetPadChar"><code>qSetPadChar(QChar ch)</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QTextStream qSetPadChar(char ch){
@@ -11218,7 +11090,7 @@ class QByteArray_5_12__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*,Qt::CaseSensitivity)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#compare"><code>QByteArray::compare(const char*,Qt::CaseSensitivity)const</code></a></p>
      */
     @QtUninvokable
     public final int compare(byte[] b, Qt.CaseSensitivity cs) {
@@ -11235,7 +11107,7 @@ class QByteArray_5_12__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*,Qt::CaseSensitivity)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#compare"><code>QByteArray::compare(const char*,Qt::CaseSensitivity)const</code></a></p>
      */
     @QtUninvokable
     public final int compare(String str, Qt.CaseSensitivity cs) {
@@ -11261,14 +11133,14 @@ class QByteArray_5_15__ extends QByteArray {
 class QByteArray___ extends QByteArray {
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#QByteArray">QByteArray(const char *)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#QByteArray"><code>QByteArray(const char *)</code></a></p>
      */
     public QByteArray(byte data[]) {
         this(java.nio.ByteBuffer.wrap(data), data.length);
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#prepend">QByteArray::prepend(const char *)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#prepend"><code>QByteArray::prepend(const char *)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray prepend(byte[] data) {
@@ -11276,7 +11148,7 @@ class QByteArray___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#append">QByteArray::append(const char *)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#append"><code>QByteArray::append(const char *)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray append(byte[] a){
@@ -11284,7 +11156,7 @@ class QByteArray___ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#operator-eq-1">QByteArray::operator=(const char*)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#operator-eq-1"><code>QByteArray::operator=(const char*)</code></a></p>
      */
     @QtUninvokable
     public final void assign(byte[] data){
@@ -11292,7 +11164,7 @@ class QByteArray___ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#operator-eq-1">QByteArray::operator=(const char*)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#operator-eq-1"><code>QByteArray::operator=(const char*)</code></a></p>
      */
     @QtUninvokable
     public final void assign(String data){
@@ -11318,19 +11190,19 @@ class QByteArray___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearraylist.html#join">QByteArrayList::join()</a></p>
+     * <p>See <a href="@docRoot/qbytearraylist.html#join"><code>QByteArrayList::join()</code></a></p>
      */
     @QtUninvokable
     public native static QByteArray join(java.util.Collection<QByteArray> stringList);
     
     /**
-     * <p>See <a href="@docRoot/qbytearraylist.html#join">QByteArrayList::join(char)</a></p>
+     * <p>See <a href="@docRoot/qbytearraylist.html#join"><code>QByteArrayList::join(char)</code></a></p>
      */
     @QtUninvokable
     public native static QByteArray join(java.util.Collection<QByteArray> stringList, byte sep);
     
     /**
-     * <p>See <a href="@docRoot/qbytearraylist.html#join">QByteArrayList::join(QByteArray)</a></p>
+     * <p>See <a href="@docRoot/qbytearraylist.html#join"><code>QByteArrayList::join(QByteArray)</code></a></p>
      */
     @QtUninvokable
     public native static QByteArray join(java.util.Collection<QByteArray> stringList, QByteArray sep);
@@ -11340,7 +11212,7 @@ class QByteArray___ extends QByteArray {
 class QByteArray_5__ extends QByteArray {
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#QByteArray-1">QByteArray::QByteArray(const char*)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#QByteArray-1"><code>QByteArray::QByteArray(const char*)</code></a></p>
      */
     public QByteArray(String s) {
         this();
@@ -11348,14 +11220,14 @@ class QByteArray_5__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#QByteArray-1">QByteArray::QByteArray(const char*,int)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#QByteArray-1"><code>QByteArray::QByteArray(const char*,int)</code></a></p>
      */
     public QByteArray(byte data[], int size) {
         this(java.nio.ByteBuffer.wrap(data), size==-1 ? data.length : Math.min(size, data.length));
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#prepend">QByteArray::prepend(const char *,int)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#prepend"><code>QByteArray::prepend(const char *,int)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray prepend(byte[] data, int size) {
@@ -11363,7 +11235,7 @@ class QByteArray_5__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#append">QByteArray::append(const char *,int)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#append"><code>QByteArray::append(const char *,int)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray append(byte[] a, int size){
@@ -11371,7 +11243,7 @@ class QByteArray_5__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#count-2">QByteArray::count(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#count-2"><code>QByteArray::count(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final int count(byte data[]) {
@@ -11379,7 +11251,7 @@ class QByteArray_5__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#contains-2">QByteArray::contains(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#contains-2"><code>QByteArray::contains(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean contains(byte data[]) {
@@ -11387,7 +11259,7 @@ class QByteArray_5__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#startsWith-2">QByteArray::startsWith(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#startsWith-2"><code>QByteArray::startsWith(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean startsWith(String str) {
@@ -11395,7 +11267,7 @@ class QByteArray_5__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#startsWith-2">QByteArray::startsWith(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#startsWith-2"><code>QByteArray::startsWith(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean startsWith(byte[] str) {
@@ -11403,7 +11275,7 @@ class QByteArray_5__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#contains-2">QByteArray::contains(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#contains-2"><code>QByteArray::contains(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean contains(String str) {
@@ -11411,7 +11283,7 @@ class QByteArray_5__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#contains-2">QByteArray::contains(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#contains-2"><code>QByteArray::contains(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final int count(String str) {
@@ -11419,7 +11291,7 @@ class QByteArray_5__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#endsWith-2">QByteArray::endsWith(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#endsWith-2"><code>QByteArray::endsWith(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean endsWith(String str) {
@@ -11427,7 +11299,7 @@ class QByteArray_5__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#endsWith-2">QByteArray::endsWith(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#endsWith-2"><code>QByteArray::endsWith(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean endsWith(byte[] str) {
@@ -11435,7 +11307,7 @@ class QByteArray_5__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#prepend-3">QByteArray::prepend(const char*)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#prepend-3"><code>QByteArray::prepend(const char*)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray prepend(String str) {
@@ -11443,7 +11315,7 @@ class QByteArray_5__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-1">QByteArray::replace(int,int,const char*)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#replace-1"><code>QByteArray::replace(int,int,const char*)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray replace(int index, int len, byte[] data) {
@@ -11452,7 +11324,7 @@ class QByteArray_5__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#insert-3">QByteArray::insert(int,const char*)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#insert-3"><code>QByteArray::insert(int,const char*)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray insert(int i, byte[] data) {
@@ -11461,7 +11333,7 @@ class QByteArray_5__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-8">QByteArray::replace(QByteArray,const char*)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#replace-8"><code>QByteArray::replace(QByteArray,const char*)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray replace(QByteArray before, String after) {
@@ -11469,7 +11341,7 @@ class QByteArray_5__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-8">QByteArray::replace(const char*,QByteArray)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#replace-8"><code>QByteArray::replace(const char*,QByteArray)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray replace(byte[] before, QByteArray after) {
@@ -11477,7 +11349,7 @@ class QByteArray_5__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-8">QByteArray::replace(QByteArray,const char*)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#replace-8"><code>QByteArray::replace(QByteArray,const char*)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray replace(QByteArray before, byte[] after) {
@@ -11485,7 +11357,7 @@ class QByteArray_5__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-5">QByteArray::replace(const char*,const char*)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#replace-5"><code>QByteArray::replace(const char*,const char*)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray replace(String before, String after) {
@@ -11493,7 +11365,7 @@ class QByteArray_5__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-5">QByteArray::replace(const char*,const char*)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#replace-5"><code>QByteArray::replace(const char*,const char*)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray replace(byte[] before, byte[] after) {
@@ -11514,21 +11386,21 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#QByteArray">QByteArray::QByteArray(const char*)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#QByteArray"><code>QByteArray::QByteArray(const char*)</code></a></p>
      */
     public QByteArray(String s) {
         this(getBytes(s));
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#QByteArray">QByteArray::QByteArray(const char*,qsizetype)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#QByteArray"><code>QByteArray::QByteArray(const char*,qsizetype)</code></a></p>
      */
     public QByteArray(byte data[], long size) {
         this(java.nio.ByteBuffer.wrap(data), size==-1 ? data.length : Math.min(size, data.length));
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#prepend">QByteArray::prepend(const char *,qsizetype)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#prepend"><code>QByteArray::prepend(const char *,qsizetype)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray prepend(byte[] data, long size) {
@@ -11536,7 +11408,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#append">QByteArray::append(const char *,qsizetype)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#append"><code>QByteArray::append(const char *,qsizetype)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray append(byte[] a, long size){
@@ -11544,7 +11416,7 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#contains">QByteArray::contains(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#contains"><code>QByteArray::contains(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean contains(String str) {
@@ -11552,7 +11424,7 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#count">QByteArray::count(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#count"><code>QByteArray::count(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final long count(String str) {
@@ -11560,7 +11432,7 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#endsWith">QByteArray::endsWith(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#endsWith"><code>QByteArray::endsWith(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean endsWith(String str) {
@@ -11568,7 +11440,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#endsWith">QByteArray::endsWith(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#endsWith"><code>QByteArray::endsWith(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean endsWith(byte[] str) {
@@ -11576,7 +11448,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#endsWith">QByteArray::endsWith(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#endsWith"><code>QByteArray::endsWith(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean endsWith(java.nio.ByteBuffer str) {
@@ -11584,7 +11456,7 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#endsWith">QByteArray::endsWith(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#endsWith"><code>QByteArray::endsWith(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean endsWith(QByteArray str) {
@@ -11592,7 +11464,7 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#prepend">QByteArray::prepend(const char*)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#prepend"><code>QByteArray::prepend(const char*)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray prepend(String str) {
@@ -11600,7 +11472,7 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#startsWith">QByteArray::startsWith(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#startsWith"><code>QByteArray::startsWith(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean startsWith(String str) {
@@ -11608,7 +11480,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#startsWith">QByteArray::startsWith(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#startsWith"><code>QByteArray::startsWith(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean startsWith(byte[] str) {
@@ -11616,7 +11488,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#startsWith">QByteArray::startsWith(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#startsWith"><code>QByteArray::startsWith(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean startsWith(java.nio.ByteBuffer str) {
@@ -11624,7 +11496,7 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#startsWith">QByteArray::startsWith(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#startsWith"><code>QByteArray::startsWith(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean startsWith(QByteArray str) {
@@ -11632,7 +11504,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#append">QByteArray::append(const char*)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#append"><code>QByteArray::append(const char*)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray append(String a){
@@ -11640,7 +11512,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*, Qt::CaseSensitivity)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#compare"><code>QByteArray::compare(const char*, Qt::CaseSensitivity)const</code></a></p>
      */
     @QtUninvokable
     public final int compare(String str) {
@@ -11648,7 +11520,7 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*, Qt::CaseSensitivity)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#compare"><code>QByteArray::compare(const char*, Qt::CaseSensitivity)const</code></a></p>
      */
     @QtUninvokable
     public final int compare(String str, Qt.CaseSensitivity cs) {
@@ -11656,7 +11528,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#count">QByteArray::count(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#count"><code>QByteArray::count(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final long count(byte data[]) {
@@ -11664,7 +11536,7 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#contains">QByteArray::contains(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#contains"><code>QByteArray::contains(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean contains(byte data[]) {
@@ -11672,7 +11544,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*, Qt::CaseSensitivity)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#compare"><code>QByteArray::compare(const char*, Qt::CaseSensitivity)const</code></a></p>
      */
     @QtUninvokable
     public final int compare(byte[] b) {
@@ -11680,7 +11552,7 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*, Qt::CaseSensitivity)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#compare"><code>QByteArray::compare(const char*, Qt::CaseSensitivity)const</code></a></p>
      */
     @QtUninvokable
     public final int compare(byte[] b, Qt.CaseSensitivity cs) {
@@ -11688,7 +11560,7 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*, Qt::CaseSensitivity)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#compare"><code>QByteArray::compare(const char*, Qt::CaseSensitivity)const</code></a></p>
      */
     @QtUninvokable
     public final int compare(QByteArray b) {
@@ -11696,7 +11568,7 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*, Qt::CaseSensitivity)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#compare"><code>QByteArray::compare(const char*, Qt::CaseSensitivity)const</code></a></p>
      */
     @QtUninvokable
     public final int compare(QByteArray b, Qt.CaseSensitivity cs) {
@@ -11704,7 +11576,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#count">QByteArray::count(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#count"><code>QByteArray::count(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final long count(java.nio.ByteBuffer data) {
@@ -11712,7 +11584,7 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#count">QByteArray::count(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#count"><code>QByteArray::count(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final long count(QByteArray data) {
@@ -11720,7 +11592,7 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#contains">QByteArray::contains(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#contains"><code>QByteArray::contains(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean contains(java.nio.ByteBuffer data) {
@@ -11728,7 +11600,7 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#contains">QByteArray::contains(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#contains"><code>QByteArray::contains(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean contains(QByteArray data) {
@@ -11736,7 +11608,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*, Qt::CaseSensitivity)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#compare"><code>QByteArray::compare(const char*, Qt::CaseSensitivity)const</code></a></p>
      */
     @QtUninvokable
     public final int compare(java.nio.ByteBuffer b) {
@@ -11744,7 +11616,7 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#compare">QByteArray::compare(const char*, Qt::CaseSensitivity)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#compare"><code>QByteArray::compare(const char*, Qt::CaseSensitivity)const</code></a></p>
      */
     @QtUninvokable
     public final int compare(java.nio.ByteBuffer b, Qt.CaseSensitivity cs) {
@@ -11752,7 +11624,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#indexOf">QByteArray::indexOf(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#indexOf"><code>QByteArray::indexOf(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final long indexOf(String strg) {
@@ -11760,7 +11632,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#indexOf">QByteArray::indexOf(const char*,qsizetype)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#indexOf"><code>QByteArray::indexOf(const char*,qsizetype)const</code></a></p>
      */
     @QtUninvokable
     public final long indexOf(String strg, long from){
@@ -11768,7 +11640,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#indexOf">QByteArray::indexOf(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#indexOf"><code>QByteArray::indexOf(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final long indexOf(byte[] other) {
@@ -11776,7 +11648,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#indexOf">QByteArray::indexOf(const char*,qsizetype)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#indexOf"><code>QByteArray::indexOf(const char*,qsizetype)const</code></a></p>
      */
     @QtUninvokable
     public final long indexOf(byte[] other, long from){
@@ -11784,7 +11656,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#indexOf">QByteArray::indexOf(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#indexOf"><code>QByteArray::indexOf(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final long indexOf(java.nio.ByteBuffer other) {
@@ -11792,7 +11664,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#indexOf">QByteArray::indexOf(const char*,qsizetype)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#indexOf"><code>QByteArray::indexOf(const char*,qsizetype)const</code></a></p>
      */
     @QtUninvokable
     public final long indexOf(java.nio.ByteBuffer other, long from){
@@ -11800,7 +11672,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#indexOf">QByteArray::indexOf(QByteArray)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#indexOf"><code>QByteArray::indexOf(QByteArray)const</code></a></p>
      */
     @QtUninvokable
     public final long indexOf(QByteArray other) {
@@ -11808,7 +11680,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#indexOf">QByteArray::indexOf(QByteArray,qsizetype)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#indexOf"><code>QByteArray::indexOf(QByteArray,qsizetype)const</code></a></p>
      */
     @QtUninvokable
     public final long indexOf(QByteArray other, long from){
@@ -11816,7 +11688,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf">QByteArray::lastIndexOf(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf"><code>QByteArray::lastIndexOf(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final long lastIndexOf(String strg) {
@@ -11824,7 +11696,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf">QByteArray::lastIndexOf(const char*,qsizetype)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf"><code>QByteArray::lastIndexOf(const char*,qsizetype)const</code></a></p>
      */
     @QtUninvokable
     public final long lastIndexOf(String strg, long from){
@@ -11832,7 +11704,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf">QByteArray::lastIndexOf(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf"><code>QByteArray::lastIndexOf(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final long lastIndexOf(byte[] other) {
@@ -11840,7 +11712,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf">QByteArray::lastIndexOf(const char*,qsizetype)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf"><code>QByteArray::lastIndexOf(const char*,qsizetype)const</code></a></p>
      */
     @QtUninvokable
     public final long lastIndexOf(byte[] other, long from){
@@ -11848,7 +11720,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf">QByteArray::lastIndexOf(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf"><code>QByteArray::lastIndexOf(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final long lastIndexOf(java.nio.ByteBuffer other) {
@@ -11856,7 +11728,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf">QByteArray::lastIndexOf(const char*,qsizetype)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf"><code>QByteArray::lastIndexOf(const char*,qsizetype)const</code></a></p>
      */
     @QtUninvokable
     public final long lastIndexOf(java.nio.ByteBuffer other, long from){
@@ -11864,7 +11736,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf">QByteArray::lastIndexOf(QByteArray)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf"><code>QByteArray::lastIndexOf(QByteArray)const</code></a></p>
      */
     @QtUninvokable
     public final long lastIndexOf(QByteArray other) {
@@ -11872,7 +11744,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf">QByteArray::lastIndexOf(QByteArray,qsizetype)const</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf"><code>QByteArray::lastIndexOf(QByteArray,qsizetype)const</code></a></p>
      */
     @QtUninvokable
     public final long lastIndexOf(QByteArray other, long from){
@@ -11880,7 +11752,7 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace">QByteArray::replace(qsizetype,qsizetype,QByteArrayView)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#replace"><code>QByteArray::replace(qsizetype,qsizetype,QByteArrayView)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray replace(long index, long len, byte[] data) {
@@ -11889,7 +11761,7 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#insert">QByteArray::insert(qsizetype,QByteArrayView)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#insert"><code>QByteArray::insert(qsizetype,QByteArrayView)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray insert(long i, byte[] data) {
@@ -11898,7 +11770,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-4">QByteArray::replace(QByteArrayView,QByteArrayView)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#replace-4"><code>QByteArray::replace(QByteArrayView,QByteArrayView)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray replace(QByteArray before, byte[] after) {
@@ -11906,7 +11778,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-4">QByteArray::replace(QByteArrayView,QByteArrayView)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#replace-4"><code>QByteArray::replace(QByteArrayView,QByteArrayView)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray replace(QByteArray before, String after) {
@@ -11914,7 +11786,7 @@ class QByteArray_6__ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-4">QByteArray::replace(QByteArrayView,QByteArrayView)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#replace-4"><code>QByteArray::replace(QByteArrayView,QByteArrayView)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray replace(byte[] before, String after) {
@@ -11922,7 +11794,7 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-4">QByteArray::replace(QByteArrayView,QByteArrayView)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#replace-4"><code>QByteArray::replace(QByteArrayView,QByteArrayView)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray replace(byte[] before, QByteArray after) {
@@ -11930,7 +11802,7 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-4">QByteArray::replace(QByteArrayView,QByteArrayView)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#replace-4"><code>QByteArray::replace(QByteArrayView,QByteArrayView)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray replace(String before, QByteArray after) {
@@ -11938,7 +11810,7 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-4">QByteArray::replace(QByteArrayView,QByteArrayView)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#replace-4"><code>QByteArray::replace(QByteArrayView,QByteArrayView)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray replace(String before, byte[] after) {
@@ -11946,7 +11818,7 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-4">QByteArray::replace(QByteArrayView,QByteArrayView)</a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#replace-4"><code>QByteArray::replace(QByteArrayView,QByteArrayView)</code></a></p>
      */
     @QtUninvokable
     public final QByteArray replace(String before, String after) {
@@ -11956,7 +11828,7 @@ class QByteArray_6__ extends QByteArray {
 
 class QByteArray_63__ extends QByteArray {
     /**
-     * <p>See <a href="@docRoot/qbytearraylist.html#join">QByteArrayList::join(QByteArrayView)</a></p>
+     * <p>See <a href="@docRoot/qbytearraylist.html#join"><code>QByteArrayList::join(QByteArrayView)</code></a></p>
      */
     @QtUninvokable
     public native static QByteArray join(java.util.Collection<QByteArray> stringList, QByteArrayView sep);
@@ -11965,7 +11837,7 @@ class QByteArray_63__ extends QByteArray {
 class QByteArrayView___ extends QByteArray {
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#QByteArrayView">QByteArrayView::QByteArrayView(const char*)</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#QByteArrayView"><code>QByteArrayView::QByteArrayView(const char*)</code></a></p>
      */
     public QByteArrayView(byte[] data){
         super((QPrivateConstructor)null);
@@ -11981,7 +11853,7 @@ class QByteArrayView___ extends QByteArray {
     private native static void purgeBytes(long pointer);
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#QByteArrayView">QByteArrayView::QByteArrayView(const char*)</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#QByteArrayView"><code>QByteArrayView::QByteArrayView(const char*)</code></a></p>
      */
     public QByteArrayView(String data){
         super((QPrivateConstructor)null);
@@ -11997,7 +11869,7 @@ class QByteArrayView___ extends QByteArray {
     private native static void purgeString(long pointer);
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#QByteArrayView">QByteArrayView::QByteArrayView(const char*)</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#QByteArrayView"><code>QByteArrayView::QByteArrayView(const char*)</code></a></p>
      */
     public QByteArrayView(java.nio.ByteBuffer data){
         super((QPrivateConstructor)null);
@@ -12020,7 +11892,7 @@ class QByteArrayView___ extends QByteArray {
     private native static void purgeBuffer(long pointer);
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#QByteArrayView">QByteArrayView::QByteArrayView(QByteArray)</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#QByteArrayView"><code>QByteArrayView::QByteArrayView(QByteArray)</code></a></p>
      */
     public QByteArrayView(QByteArray data){
         super((QPrivateConstructor)null);
@@ -12037,7 +11909,7 @@ class QByteArrayView___ extends QByteArray {
     private Runnable purgeTask;
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#compare">QByteArrayView::compare(QByteArray,Qt::CaseSensitivity)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#compare"><code>QByteArrayView::compare(QByteArray,Qt::CaseSensitivity)const</code></a></p>
      */
     @QtUninvokable
     public final int compare(QByteArray a){
@@ -12045,7 +11917,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#compare">QByteArrayView::compare(QByteArray,Qt::CaseSensitivity)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#compare"><code>QByteArrayView::compare(QByteArray,Qt::CaseSensitivity)const</code></a></p>
      */
     @QtUninvokable
     public final int compare(QByteArray a, Qt.CaseSensitivity cs){
@@ -12053,7 +11925,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#compare">QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#compare"><code>QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</code></a></p>
      */
     @QtUninvokable
     public final int compare(byte[] a){
@@ -12061,7 +11933,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#compare">QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#compare"><code>QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</code></a></p>
      */
     @QtUninvokable
     public final int compare(byte[] a, Qt.CaseSensitivity cs){
@@ -12069,7 +11941,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#compare">QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#compare"><code>QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</code></a></p>
      */
     @QtUninvokable
     public final int compare(java.nio.ByteBuffer a){
@@ -12077,7 +11949,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#compare">QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#compare"><code>QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</code></a></p>
      */
     @QtUninvokable
     public final int compare(java.nio.ByteBuffer a, Qt.CaseSensitivity cs){
@@ -12085,7 +11957,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#compare">QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#compare"><code>QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</code></a></p>
      */
     @QtUninvokable
     public final int compare(String a){
@@ -12093,7 +11965,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#compare">QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#compare"><code>QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</code></a></p>
      */
     @QtUninvokable
     public final int compare(String a, Qt.CaseSensitivity cs){
@@ -12101,7 +11973,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#contains">QByteArrayView::contains(QByteArray)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#contains"><code>QByteArrayView::contains(QByteArray)const</code></a></p>
      */
     @QtUninvokable
     public final boolean contains(QByteArray a){
@@ -12109,7 +11981,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#contains">QByteArrayView::contains(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#contains"><code>QByteArrayView::contains(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean contains(byte[] a){
@@ -12117,7 +11989,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#contains">QByteArrayView::contains(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#contains"><code>QByteArrayView::contains(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean contains(String a){
@@ -12125,7 +11997,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#contains">QByteArrayView::contains(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#contains"><code>QByteArrayView::contains(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean contains(java.nio.ByteBuffer a){
@@ -12133,7 +12005,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#QtUninvokable">QByteArrayView::endsWith(QByteArray)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#QtUninvokable"><code>QByteArrayView::endsWith(QByteArray)const</code></a></p>
      */
     @QtUninvokable
     public final boolean endsWith(QByteArray a){
@@ -12141,7 +12013,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#endsWith">QByteArrayView::endsWith(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#endsWith"><code>QByteArrayView::endsWith(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean endsWith(byte[] a){
@@ -12149,7 +12021,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#endsWith">QByteArrayView::endsWith(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#endsWith"><code>QByteArrayView::endsWith(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean endsWith(String a){
@@ -12157,7 +12029,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#endsWith">QByteArrayView::endsWith(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#endsWith"><code>QByteArrayView::endsWith(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean endsWith(java.nio.ByteBuffer a){
@@ -12165,7 +12037,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#startsWith">QByteArrayView::startsWith(QByteArray)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#startsWith"><code>QByteArrayView::startsWith(QByteArray)const</code></a></p>
      */
     @QtUninvokable
     public final boolean startsWith(QByteArray a){
@@ -12173,7 +12045,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#startsWith">QByteArrayView::startsWith(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#startsWith"><code>QByteArrayView::startsWith(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean startsWith(byte[] a){
@@ -12181,7 +12053,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#startsWith">QByteArrayView::startsWith(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#startsWith"><code>QByteArrayView::startsWith(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean startsWith(String a){
@@ -12189,7 +12061,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#startsWith">QByteArrayView::startsWith(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#startsWith"><code>QByteArrayView::startsWith(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final boolean startsWith(java.nio.ByteBuffer a){
@@ -12197,7 +12069,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#count">QByteArrayView::count(QByteArray)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#count"><code>QByteArrayView::count(QByteArray)const</code></a></p>
      */
     @QtUninvokable
     public final long count(QByteArray a){
@@ -12205,7 +12077,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#count">QByteArrayView::count(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#count"><code>QByteArrayView::count(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final long count(byte[] a){
@@ -12213,7 +12085,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#count">QByteArrayView::count(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#count"><code>QByteArrayView::count(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final long count(String a){
@@ -12221,7 +12093,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#count">QByteArrayView::count(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#count"><code>QByteArrayView::count(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final long count(java.nio.ByteBuffer a){
@@ -12229,7 +12101,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf">QByteArrayView::indexOf(QByteArray)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf"><code>QByteArrayView::indexOf(QByteArray)const</code></a></p>
      */
     @QtUninvokable
     public final long indexOf(QByteArray a){
@@ -12237,7 +12109,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf">QByteArrayView::indexOf(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf"><code>QByteArrayView::indexOf(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final long indexOf(byte[] a){
@@ -12245,7 +12117,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf">QByteArrayView::indexOf(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf"><code>QByteArrayView::indexOf(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final long indexOf(String a){
@@ -12253,7 +12125,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf">QByteArrayView::indexOf(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf"><code>QByteArrayView::indexOf(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final long indexOf(java.nio.ByteBuffer a){
@@ -12261,7 +12133,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf">QByteArrayView::indexOf(QByteArray,qsizetype)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf"><code>QByteArrayView::indexOf(QByteArray,qsizetype)const</code></a></p>
      */
     @QtUninvokable
     public final long indexOf(QByteArray a, long from){
@@ -12269,7 +12141,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf">QByteArrayView::indexOf(const char*,qsizetype)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf"><code>QByteArrayView::indexOf(const char*,qsizetype)const</code></a></p>
      */
     @QtUninvokable
     public final long indexOf(byte[] a, long from){
@@ -12277,7 +12149,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf">QByteArrayView::indexOf(const char*,qsizetype)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf"><code>QByteArrayView::indexOf(const char*,qsizetype)const</code></a></p>
      */
     @QtUninvokable
     public final long indexOf(String a, long from){
@@ -12285,7 +12157,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf">QByteArrayView::indexOf(const char*,qsizetype)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf"><code>QByteArrayView::indexOf(const char*,qsizetype)const</code></a></p>
      */
     @QtUninvokable
     public final long indexOf(java.nio.ByteBuffer a, long from){
@@ -12293,7 +12165,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf">QByteArrayView::lastIndexOf(QByteArray)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf"><code>QByteArrayView::lastIndexOf(QByteArray)const</code></a></p>
      */
     @QtUninvokable
     public final long lastIndexOf(QByteArray a){
@@ -12301,7 +12173,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf">QByteArrayView::lastIndexOf(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf"><code>QByteArrayView::lastIndexOf(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final long lastIndexOf(byte[] a){
@@ -12309,7 +12181,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf">QByteArrayView::lastIndexOf(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf"><code>QByteArrayView::lastIndexOf(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final long lastIndexOf(String a){
@@ -12317,7 +12189,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf">QByteArrayView::lastIndexOf(const char*)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf"><code>QByteArrayView::lastIndexOf(const char*)const</code></a></p>
      */
     @QtUninvokable
     public final long lastIndexOf(java.nio.ByteBuffer a){
@@ -12325,7 +12197,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf">QByteArrayView::lastIndexOf(QByteArray,qsizetype)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf"><code>QByteArrayView::lastIndexOf(QByteArray,qsizetype)const</code></a></p>
      */
     @QtUninvokable
     public final long lastIndexOf(QByteArray a, long from){
@@ -12333,7 +12205,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf">QByteArrayView::lastIndexOf(const char*,qsizetype)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf"><code>QByteArrayView::lastIndexOf(const char*,qsizetype)const</code></a></p>
      */
     @QtUninvokable
     public final long lastIndexOf(byte[] a, long from){
@@ -12341,7 +12213,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf">QByteArrayView::lastIndexOf(const char*,qsizetype)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf"><code>QByteArrayView::lastIndexOf(const char*,qsizetype)const</code></a></p>
      */
     @QtUninvokable
     public final long lastIndexOf(String a, long from){
@@ -12349,7 +12221,7 @@ class QByteArrayView___ extends QByteArray {
     }
     
     /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf">QByteArrayView::lastIndexOf(const char*,qsizetype)const</a></p>
+     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf"><code>QByteArrayView::lastIndexOf(const char*,qsizetype)const</code></a></p>
      */
     @QtUninvokable
     public final long lastIndexOf(java.nio.ByteBuffer a, long from){
@@ -12360,84 +12232,84 @@ class QByteArrayView___ extends QByteArray {
 class QStringConverter___{
     
     /**
-     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
+     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData"><code>QStringConverter::encodingForData(QByteArrayView,char16_t)</code></a></p>
      */
     public static java.util.Optional<QStringConverter.Encoding> encodingForHtml(QByteArray data){
         return encodingForHtml(new QByteArrayView(data));
     }
     
     /**
-     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
+     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData"><code>QStringConverter::encodingForData(QByteArrayView,char16_t)</code></a></p>
      */
     public static java.util.Optional<QStringConverter.Encoding> encodingForData(QByteArray data){
         return encodingForData(new QByteArrayView(data));
     }
     
     /**
-     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
+     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData"><code>QStringConverter::encodingForData(QByteArrayView,char16_t)</code></a></p>
      */
     public static java.util.Optional<QStringConverter.Encoding> encodingForData(QByteArray data, char expectedFirstCharacter){
         return encodingForData(new QByteArrayView(data), expectedFirstCharacter);
     }
     
     /**
-     * <p>See <a href="@docRoot/qstringconverter.html#encodingForHtml">QStringConverter::encodingForHtml(QByteArrayView)</a></p>
+     * <p>See <a href="@docRoot/qstringconverter.html#encodingForHtml"><code>QStringConverter::encodingForHtml(QByteArrayView)</code></a></p>
      */
     public static java.util.Optional<QStringConverter.Encoding> encodingForHtml(byte[] data){
         return encodingForHtml(new QByteArrayView(data));
     }
     
     /**
-     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
+     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData"><code>QStringConverter::encodingForData(QByteArrayView,char16_t)</code></a></p>
      */
     public static java.util.Optional<QStringConverter.Encoding> encodingForData(byte[] data){
         return encodingForData(new QByteArrayView(data));
     }
     
     /**
-     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
+     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData"><code>QStringConverter::encodingForData(QByteArrayView,char16_t)</code></a></p>
      */
     public static java.util.Optional<QStringConverter.Encoding> encodingForData(byte[] data, char expectedFirstCharacter){
         return encodingForData(new QByteArrayView(data), expectedFirstCharacter);
     }
     
     /**
-     * <p>See <a href="@docRoot/qstringconverter.html#encodingForHtml">QStringConverter::encodingForHtml(QByteArrayView)</a></p>
+     * <p>See <a href="@docRoot/qstringconverter.html#encodingForHtml"><code>QStringConverter::encodingForHtml(QByteArrayView)</code></a></p>
      */
     public static java.util.Optional<QStringConverter.Encoding> encodingForHtml(String data){
         return encodingForHtml(new QByteArrayView(data));
     }
     
     /**
-     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
+     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData"><code>QStringConverter::encodingForData(QByteArrayView,char16_t)</code></a></p>
      */
     public static java.util.Optional<QStringConverter.Encoding> encodingForData(String data){
         return encodingForData(new QByteArrayView(data));
     }
     
     /**
-     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
+     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData"><code>QStringConverter::encodingForData(QByteArrayView,char16_t)</code></a></p>
      */
     public static java.util.Optional<QStringConverter.Encoding> encodingForData(String data, char expectedFirstCharacter){
         return encodingForData(new QByteArrayView(data), expectedFirstCharacter);
     }
     
     /**
-     * <p>See <a href="@docRoot/qstringconverter.html#encodingForHtml">QStringConverter::encodingForHtml(QByteArrayView)</a></p>
+     * <p>See <a href="@docRoot/qstringconverter.html#encodingForHtml"><code>QStringConverter::encodingForHtml(QByteArrayView)</code></a></p>
      */
     public static java.util.Optional<QStringConverter.Encoding> encodingForHtml(java.nio.ByteBuffer data){
         return encodingForHtml(new QByteArrayView(data));
     }
     
     /**
-     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
+     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData"><code>QStringConverter::encodingForData(QByteArrayView,char16_t)</code></a></p>
      */
     public static java.util.Optional<QStringConverter.Encoding> encodingForData(java.nio.ByteBuffer data){
         return encodingForData(new QByteArrayView(data));
     }
     
     /**
-     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData">QStringConverter::encodingForData(QByteArrayView,char16_t)</a></p>
+     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData"><code>QStringConverter::encodingForData(QByteArrayView,char16_t)</code></a></p>
      */
     public static java.util.Optional<QStringConverter.Encoding> encodingForData(java.nio.ByteBuffer data, char expectedFirstCharacter){
         return encodingForData(new QByteArrayView(data), expectedFirstCharacter);
@@ -12448,28 +12320,28 @@ class QStringConverter___{
 class QUuid_63__{
     
     /**
-     * <p>See <a href="@docRoot/quuid.html#fromRfc4122">QUuid::fromRfc4122(QByteArrayView)</a></p>
+     * <p>See <a href="@docRoot/quuid.html#fromRfc4122"><code>QUuid::fromRfc4122(QByteArrayView)</code></a></p>
      */
     public static QUuid fromRfc4122(QByteArray data){
         return fromRfc4122(new QByteArrayView(data));
     }
     
     /**
-     * <p>See <a href="@docRoot/quuid.html#fromRfc4122">QUuid::fromRfc4122(QByteArrayView)</a></p>
+     * <p>See <a href="@docRoot/quuid.html#fromRfc4122"><code>QUuid::fromRfc4122(QByteArrayView)</code></a></p>
      */
     public static QUuid fromRfc4122(byte[] data){
         return fromRfc4122(new QByteArrayView(data));
     }
     
     /**
-     * <p>See <a href="@docRoot/quuid.html#fromRfc4122">QUuid::fromRfc4122(QByteArrayView)</a></p>
+     * <p>See <a href="@docRoot/quuid.html#fromRfc4122"><code>QUuid::fromRfc4122(QByteArrayView)</code></a></p>
      */
     public static QUuid fromRfc4122(String data){
         return fromRfc4122(new QByteArrayView(data));
     }
     
     /**
-     * <p>See <a href="@docRoot/quuid.html#fromRfc4122">QUuid::fromRfc4122(QByteArrayView)</a></p>
+     * <p>See <a href="@docRoot/quuid.html#fromRfc4122"><code>QUuid::fromRfc4122(QByteArrayView)</code></a></p>
      */
     public static QUuid fromRfc4122(java.nio.ByteBuffer data){
         return fromRfc4122(new QByteArrayView(data));
@@ -12754,7 +12626,7 @@ class QFutureInterfaceBase___ {
 class QtFuture___ {
 
     /**
-     * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
+     * <p>See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a></p>
      */
     @QtUninvokable
     public static @NonNull QFuture<Void> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal0 signal) {
@@ -12780,7 +12652,7 @@ class QtFuture___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
+     * <p>See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a></p>
      */
     @QtUninvokable
     public static <A> @NonNull QFuture<A> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal1<A> signal) {
@@ -12807,7 +12679,7 @@ class QtFuture___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
+     * <p>See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a></p>
      */
     @QtUninvokable
     public static <A,B> @NonNull QFuture<QPair<A,B>> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal2<A,B> signal) {
@@ -12834,7 +12706,7 @@ class QtFuture___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
+     * <p>See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a></p>
      */
     @QtUninvokable
     public static <A,B,C> @NonNull QFuture<Object[]> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,B,C> signal) {
@@ -12861,7 +12733,7 @@ class QtFuture___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
+     * <p>See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a></p>
      */
     @QtUninvokable
     public static <A,B,C,D> @NonNull QFuture<Object[]> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,C,D> signal) {
@@ -12888,7 +12760,7 @@ class QtFuture___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
+     * <p>See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a></p>
      */
     @QtUninvokable
     public static <A,B,C,D,E> @NonNull QFuture<Object[]> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,D,E> signal) {
@@ -12915,7 +12787,7 @@ class QtFuture___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
+     * <p>See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a></p>
      */
     @QtUninvokable
     public static <A,B,C,D,E,F> @NonNull QFuture<Object[]> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,E,F> signal) {
@@ -12942,7 +12814,7 @@ class QtFuture___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
+     * <p>See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a></p>
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G> @NonNull QFuture<Object[]> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,F,G> signal) {
@@ -12969,7 +12841,7 @@ class QtFuture___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
+     * <p>See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a></p>
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H> @NonNull QFuture<Object[]> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal) {
@@ -12996,7 +12868,7 @@ class QtFuture___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtfuture.html#connect">QtFuture::connect(Sender *, Signal)</a></p>
+     * <p>See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a></p>
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I> @NonNull QFuture<Object[]> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal) {
@@ -13024,9 +12896,9 @@ class QtFuture___ {
     
 }// class
 
-class QtFuture_6_1__ {
+class QtFuture_6_1to5__ {
     /**
-     * <p>See <a href="@docRoot/qtfuture.html#makeReadyFuture">QtFuture::makeReadyFuture(T)</a></p>
+     * <p>See <a href="@docRoot/qtfuture.html#makeReadyFuture"><code>QtFuture::makeReadyFuture(T)</code></a></p>
      */
     @QtUninvokable
     public static <T> @NonNull QFuture<T> makeReadyFuture(T value)
@@ -13039,7 +12911,7 @@ class QtFuture_6_1__ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtfuture.html#makeReadyFuture-2">QtFuture::makeReadyFuture(QList&lt;T>)</a></p>
+     * <p>See <a href="@docRoot/qtfuture.html#makeReadyFuture-2"><code>QtFuture::makeReadyFuture(QList&lt;T>)</code></a></p>
      */
     @QtUninvokable
     public static <T> @NonNull QFuture<T> makeReadyFuture(java.util.Collection<T> values)
@@ -13050,9 +12922,9 @@ class QtFuture_6_1__ {
         promise.reportFinished();
         return promise.future();
     }
-    
+
     /**
-     * <p>See <a href="@docRoot/qtfuture.html#makeReadyFuture-1">QtFuture::makeReadyFuture()</a></p>
+     * <p>See <a href="@docRoot/qtfuture.html#makeReadyFuture-1"><code>QtFuture::makeReadyFuture()</code></a></p>
      */
     @QtUninvokable
     public static @NonNull QFuture<Void> makeReadyFuture()
@@ -13063,8 +12935,11 @@ class QtFuture_6_1__ {
         return promise.future();
     }
     
+}// class
+
+class QtFuture_6_1__ {
     /**
-     * <p>See <a href="@docRoot/qtfuture.html#makeExceptionalFuture">QtFuture::makeExceptionalFuture(QException)</a></p>
+     * <p>See <a href="@docRoot/qtfuture.html#makeExceptionalFuture"><code>QtFuture::makeExceptionalFuture(QException)</code></a></p>
      */
     @QtUninvokable
     public static @NonNull QFuture<Void> makeExceptionalFuture(@StrictNonNull Throwable exception)
@@ -13079,7 +12954,7 @@ class QtFuture_6_1__ {
 
 class QtFuture_6_3__ {
     /**
-     * <p>See <a href="@docRoot/qtfuture.html#whenAny-1">QtFuture::whenAny(Futures)</a></p>
+     * <p>See <a href="@docRoot/qtfuture.html#whenAny-1"><code>QtFuture::whenAny(Futures)</code></a></p>
      */
     @QtUninvokable
     public static @NonNull QFuture<QFuture<?>> whenAny(QFuture<?>... futures) {
@@ -13100,7 +12975,7 @@ class QtFuture_6_3__ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtfuture.html#whenAny-1">QtFuture::whenAny(Futures)</a></p>
+     * <p>See <a href="@docRoot/qtfuture.html#whenAny-1"><code>QtFuture::whenAny(Futures)</code></a></p>
      */
     @QtUninvokable
     public static @NonNull QFuture<QFuture<?>> whenAny(java.util.Collection<QFuture<?>> futures) {
@@ -13121,7 +12996,7 @@ class QtFuture_6_3__ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtfuture.html#whenAll-1">QtFuture::whenAll(Futures)</a></p>
+     * <p>See <a href="@docRoot/qtfuture.html#whenAll-1"><code>QtFuture::whenAll(Futures)</code></a></p>
      */
     @QtUninvokable
     public static @NonNull QFuture<QList<QFuture<?>>> whenAll(QFuture<?>... futures) {
@@ -13147,7 +13022,7 @@ class QtFuture_6_3__ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qtfuture.html#whenAll-1">QtFuture::whenAll(Futures)</a></p>
+     * <p>See <a href="@docRoot/qtfuture.html#whenAll-1"><code>QtFuture::whenAll(Futures)</code></a></p>
      */
     @QtUninvokable
     public static @NonNull QFuture<QList<QFuture<?>>> whenAll(java.util.Collection<QFuture<?>> futures) {
@@ -13169,6 +13044,75 @@ class QtFuture_6_3__ {
                 }
             });
         }
+        return promise.future();
+    }
+}// class
+
+class QtFuture_6_6__ {
+    /**
+     * Use makeReadyValueFuture() instead
+     */
+    @QtUninvokable
+    @Deprecated
+    public static <T> @NonNull QFuture<T> makeReadyFuture(T value){
+        return makeReadyValueFuture(value);
+    }
+
+    /**
+     * Use makeReadyRangeFuture() instead
+     */
+    @QtUninvokable
+    @Deprecated
+    public static <T> @NonNull QFuture<T> makeReadyFuture(java.util.Collection<T> values){
+        return makeReadyRangeFuture(values);
+    }
+
+    /**
+     * Use makeReadyVoidFuture() instead
+     */
+    @QtUninvokable
+    @Deprecated
+    public static @NonNull QFuture<Void> makeReadyFuture(){
+        return makeReadyVoidFuture();
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#makeReadyValueFuture"><code>QtFuture::makeReadyValueFuture(T)</code></a></p>
+     */
+    @QtUninvokable
+    public static <T> @NonNull QFuture<T> makeReadyValueFuture(T value)
+    {
+        QFutureInterface<T> promise = new QFutureInterface<>();
+        promise.reportStarted();
+        promise.reportResult(value);
+        promise.reportFinished();
+        return promise.future();
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#makeReadyRangeFuture"><code>QtFuture::makeReadyRangeFuture(QList&lt;T>)</code></a></p>
+     */
+    @QtUninvokable
+    public static <T> @NonNull QFuture<T> makeReadyRangeFuture(java.util.Collection<T> values)
+    {
+        QFutureInterface<T> promise = new QFutureInterface<>();
+        promise.reportStarted();
+        promise.reportResults(values);
+        promise.reportFinished();
+        return promise.future();
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qtfuture.html#makeReadyRangeFuture"><code>QtFuture::makeReadyRangeFuture(std::initializer_list&lt;T>)</code></a></p>
+     */
+    @SafeVarargs
+    @QtUninvokable
+    public static <T> @NonNull QFuture<T> makeReadyRangeFuture(T value0, T... valuesN)
+    {
+        QFutureInterface<T> promise = new QFutureInterface<>();
+        promise.reportStarted();
+        promise.reportResults(QList.of(value0, valuesN));
+        promise.reportFinished();
         return promise.future();
     }
 }// class
@@ -13328,21 +13272,21 @@ class QMetaType_6__ extends QMetaType {
     }
 
     /**
-     * <p>See <a href="@docRoot/qmetatype.html#fromName">QMetaType::fromName(const char*)</a></p>
+     * <p>See <a href="@docRoot/qmetatype.html#fromName"><code>QMetaType::fromName(const char*)</code></a></p>
      */
     public static QMetaType fromName(String name){
         return fromName(new QByteArrayView(name));
     }
     
     /**
-     * <p>See <a href="@docRoot/qmetatype.html#fromName">QMetaType::fromName(QByteArray)</a></p>
+     * <p>See <a href="@docRoot/qmetatype.html#fromName"><code>QMetaType::fromName(QByteArray)</code></a></p>
      */
     public static QMetaType fromName(QByteArray name){
         return fromName(new QByteArrayView(name));
     }
     
     /**
-     * <p>See <a href="@docRoot/qmetatype.html#fromName">QMetaType::fromName(const char*)</a></p>
+     * <p>See <a href="@docRoot/qmetatype.html#fromName"><code>QMetaType::fromName(const char*)</code></a></p>
      */
     public static QMetaType fromName(byte[] name){
         return fromName(new QByteArrayView(name));
@@ -13532,7 +13476,7 @@ class QMetaType___ extends QMetaType {
     /**
      * This class represents a QMetaType-registered but Java-unknown QFlags type.
      */
-    public static final class GenericFlags extends QFlags<GenericFlag> implements GenericTypeInterface, Comparable<QFlags<?>>{
+    public static final class GenericFlags extends QFlags<@NonNull GenericFlag> implements GenericTypeInterface, Comparable<@NonNull QFlags<?>>{
         private static final long serialVersionUID = -7659504264600507749L;
     
         @NativeAccess
@@ -13544,26 +13488,57 @@ class QMetaType___ extends QMetaType {
         private final int type;
         
         @Override
-        public final QMetaType metaType() {
+        public final @NonNull QMetaType metaType() {
             return new QMetaType(type);
         }
         
-        public GenericFlag[] flags(){
+        public @NonNull GenericFlag @NonNull[] flags(){
             return new GenericFlag[]{new GenericFlag(value())};
         }
     
         @Override
-        public GenericFlags clone() {
+        public @NonNull GenericFlags clone() {
             return new GenericFlags(type, value());
         }
     
         @Override
-        public GenericFlags combined(GenericFlag flag) {
-            return new GenericFlags(type, value() | flag.value());
+        public @NonNull GenericFlags combined(@StrictNonNull GenericFlag flag) {
+            return clone().setFlag(flag, true);
         }
 
         @Override
-        public int compareTo(QFlags<?> o) {
+        public @NonNull GenericFlags cleared(@StrictNonNull GenericFlag flag) {
+            return clone().setFlag(flag, false);
+        }
+
+        /**
+         * Sets the flag <code>e</code>
+         * @param e enum entry
+         * @return this
+         */
+        public final @NonNull GenericFlags setFlag(@Nullable GenericFlag e){
+            return setFlag(e, true);
+        }
+
+        /**
+         * Sets or clears the flag <code>flag</code>
+         * @param e enum entry
+         * @param on set (true) or clear (false)
+         * @return this
+         */
+        public final @NonNull GenericFlags setFlag(@Nullable GenericFlag e, boolean on){
+            if(e!=null){
+                if (on) {
+                    setValue(value() | e.value());
+                }else {
+                    setValue(value() & ~e.value());
+                }
+            }
+            return this;
+        }
+
+        @Override
+        public int compareTo(@StrictNonNull QFlags<?> o) {
                 return Integer.compare(value(), o.value());
         }
     }
@@ -14056,7 +14031,7 @@ class QVariant_5__ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qvariant.html#canConvert">QVariant::canConvert(int)const</a></p>
+     * <p>See <a href="@docRoot/qvariant.html#canConvert"><code>QVariant::canConvert(int)const</code></a></p>
      */
     @QtUninvokable
     public final boolean canConvert(QMetaType.@StrictNonNull Type targetType){
@@ -14064,7 +14039,7 @@ class QVariant_5__ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qvariant.html#canConvert">QVariant::canConvert(int)const</a></p>
+     * <p>See <a href="@docRoot/qvariant.html#canConvert"><code>QVariant::canConvert(int)const</code></a></p>
      */
     @QtUninvokable
     public final boolean canConvert(@StrictNonNull Type targetType){
@@ -14072,14 +14047,14 @@ class QVariant_5__ {
     }
 
     /**
-     * <p>See <a href="@docRoot/qvariant.html#convert">QVariant::convert(int)</a></p>
+     * <p>See <a href="@docRoot/qvariant.html#convert"><code>QVariant::convert(int)</code></a></p>
      */
     public final boolean convert(@StrictNonNull Class<?> cl, @StrictNonNull QMetaType @StrictNonNull... instantiations) {
         return convert(QMetaType.fromType(cl, instantiations).id());
     }
     
     /**
-     * <p>See <a href="@docRoot/qvariant.html#QVariant-1">QVariant::QVariant(int,const void*)</a></p>
+     * <p>See <a href="@docRoot/qvariant.html#QVariant-1"><code>QVariant::QVariant(int,const void*)</code></a></p>
      */
     public QVariant(QMetaType.@StrictNonNull Type metaType){
         this(metaType.value(), null); 
@@ -14110,7 +14085,7 @@ class QVariant_5__ {
 class QVariant_6__ {
     
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qvariant.html#QVariant-1">QVariant::QVariant(QMetaType,const void*)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qvariant.html#QVariant-1"><code>QVariant::QVariant(QMetaType,const void*)</code></a></p>
      */
     public QVariant(QMetaType.@NonNull Type type, java.lang.Object copy){
         this(new QMetaType(type), copy);
@@ -14209,7 +14184,7 @@ class QVariant_6__ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qvariant.html#canConvert">QVariant::canConvert(QMetaType)const</a></p>
+     * <p>See <a href="@docRoot/qvariant.html#canConvert"><code>QVariant::canConvert(QMetaType)const</code></a></p>
      */
     @QtUninvokable
     public final boolean canConvert(QMetaType.@NonNull Type targetType){
@@ -14233,7 +14208,7 @@ class QVariant_6__ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qvariant.html#canConvert">QVariant::canConvert(QMetaType)const</a></p>
+     * <p>See <a href="@docRoot/qvariant.html#canConvert"><code>QVariant::canConvert(QMetaType)const</code></a></p>
      */
     @Deprecated
     @QtUninvokable
@@ -14254,14 +14229,14 @@ class QVariant_6__ {
     }
 
     /**
-     * <p>See <a href="@docRoot/qvariant.html#convert">QVariant::convert(QMetaType)</a></p>
+     * <p>See <a href="@docRoot/qvariant.html#convert"><code>QVariant::convert(QMetaType)</code></a></p>
      */
     public final boolean convert(@StrictNonNull Class<?> cl, @StrictNonNull QMetaType @StrictNonNull...instantiations) {
         return convert(QMetaType.fromType(cl, instantiations));
     }
     
     /**
-     * <p>See <a href="@docRoot/qvariant.html#QVariant-1">QVariant::QVariant(QMetaType,const void*)</a></p>
+     * <p>See <a href="@docRoot/qvariant.html#QVariant-1"><code>QVariant::QVariant(QMetaType,const void*)</code></a></p>
      */
     public QVariant(QMetaType.@NonNull Type metaType){
         this(new QMetaType(metaType), null); 
@@ -15243,19 +15218,19 @@ class QVariant___ {
 
 class QPartialOrdering___ {
     /**
-     * <p>See <a href="@docRoot/qpartialordering.html#Equivalent-var">QPartialOrdering::Equivalent</a></p>
+     * <p>See <a href="@docRoot/qpartialordering.html#Equivalent-var"><code>QPartialOrdering::Equivalent</code></a></p>
      */
     public static final int Equivalent = 0;
     /**
-     * <p>See <a href="@docRoot/qpartialordering.html#Less-var">QPartialOrdering::Less</a></p>
+     * <p>See <a href="@docRoot/qpartialordering.html#Less-var"><code>QPartialOrdering::Less</code></a></p>
      */
     public static final int Greater = 1;
     /**
-     * <p>See <a href="@docRoot/qpartialordering.html#Greater-var">QPartialOrdering::Greater</a></p>
+     * <p>See <a href="@docRoot/qpartialordering.html#Greater-var"><code>QPartialOrdering::Greater</code></a></p>
      */
     public static final int Less = -1;
     /**
-     * <p>See <a href="@docRoot/qpartialordering.html#Unordered-var">QPartialOrdering::Unordered</a></p>
+     * <p>See <a href="@docRoot/qpartialordering.html#Unordered-var"><code>QPartialOrdering::Unordered</code></a></p>
      */
     public static final int Unordered = -127;
 }// class
@@ -15265,7 +15240,7 @@ class QMetaMethod___ {
     private java.util.List<Class<?>> parameterClassTypes;
     
     /**
-     * <p>See <a href="@docRoot/qmetamethod.html#parameterTypes">QMetaMethod::parameterTypes() const</a></p>
+     * <p>See <a href="@docRoot/qmetamethod.html#parameterTypes"><code>QMetaMethod::parameterTypes() const</code></a></p>
      */
     @QtUninvokable
     public final java.util.List<Class<?>> parameterClassTypes() {
@@ -15279,7 +15254,7 @@ class QMetaMethod___ {
     private native final java.util.List<Class<?>> parameterClassTypes_native();
     
     /**
-     * <p>See <a href="@docRoot/qmetamethod.html#parameterType">QMetaMethod::parameterType(int index) const</a></p>
+     * <p>See <a href="@docRoot/qmetamethod.html#parameterType"><code>QMetaMethod::parameterType(int index) const</code></a></p>
      */
     @QtUninvokable
     public final Class<?> parameterClassType(int index) {
@@ -15287,7 +15262,7 @@ class QMetaMethod___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qmetamethod.html#returnType">QMetaMethod::returnType() const</a></p>
+     * <p>See <a href="@docRoot/qmetamethod.html#returnType"><code>QMetaMethod::returnType() const</code></a></p>
      */
     @QtUninvokable
     public final Class<?> returnClassType(){
@@ -15300,7 +15275,7 @@ class QMetaMethod___ {
     private native final Class<?> returnClassType_native();
         
     /**
-     * <p>See <a href="@docRoot/qmetamethod.html#methodSignature">QMetaMethod::methodSignature() const</a></p>
+     * <p>See <a href="@docRoot/qmetamethod.html#methodSignature"><code>QMetaMethod::methodSignature() const</code></a></p>
      */
     @QtUninvokable
     public final @NonNull String methodSignature() {
@@ -15338,6 +15313,10 @@ class QMetaMethod___ {
         return String.format("%1$s(%2$s)", name(), args);
     }
     
+    /**
+     * Returns the string representation of the <code>QMetaMethod</code>.
+     * @see #methodSignature()
+     */
     @Override
     @QtUninvokable
     public final @NonNull String toString() {
@@ -15345,7 +15324,7 @@ class QMetaMethod___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qmetamethod.html#invoke-1">QMetaMethod::invoke(QObject *object, QGenericReturnArgument returnValue, QGenericArgument val0 = QGenericArgument(nullptr), QGenericArgument val1 = QGenericArgument(), QGenericArgument val2 = QGenericArgument(), QGenericArgument val3 = QGenericArgument(), QGenericArgument val4 = QGenericArgument(), QGenericArgument val5 = QGenericArgument(), QGenericArgument val6 = QGenericArgument(), QGenericArgument val7 = QGenericArgument(), QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument()) const</a></p>
+     * <p>See <a href="@docRoot/qmetamethod.html#invoke-1"><code>QMetaMethod::invoke(QObject *object, QGenericReturnArgument returnValue, QGenericArgument val0 = QGenericArgument(nullptr), QGenericArgument val1 = QGenericArgument(), QGenericArgument val2 = QGenericArgument(), QGenericArgument val3 = QGenericArgument(), QGenericArgument val4 = QGenericArgument(), QGenericArgument val5 = QGenericArgument(), QGenericArgument val6 = QGenericArgument(), QGenericArgument val7 = QGenericArgument(), QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument()) const</code></a></p>
      */
     @QtUninvokable
     public final Object invoke(QObject object, Object... args) throws IllegalArgumentException, QUnsuccessfulInvocationException {
@@ -15353,7 +15332,7 @@ class QMetaMethod___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qmetamethod.html#invoke">QMetaMethod::invoke(QObject *object, Qt::ConnectionType connectionType, QGenericReturnArgument returnValue, QGenericArgument val0 = QGenericArgument(nullptr), QGenericArgument val1 = QGenericArgument(), QGenericArgument val2 = QGenericArgument(), QGenericArgument val3 = QGenericArgument(), QGenericArgument val4 = QGenericArgument(), QGenericArgument val5 = QGenericArgument(), QGenericArgument val6 = QGenericArgument(), QGenericArgument val7 = QGenericArgument(), QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument()) const</a></p>
+     * <p>See <a href="@docRoot/qmetamethod.html#invoke"><code>QMetaMethod::invoke(QObject *object, Qt::ConnectionType connectionType, QGenericReturnArgument returnValue, QGenericArgument val0 = QGenericArgument(nullptr), QGenericArgument val1 = QGenericArgument(), QGenericArgument val2 = QGenericArgument(), QGenericArgument val3 = QGenericArgument(), QGenericArgument val4 = QGenericArgument(), QGenericArgument val5 = QGenericArgument(), QGenericArgument val6 = QGenericArgument(), QGenericArgument val7 = QGenericArgument(), QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument()) const</code></a></p>
      */
     @QtUninvokable
     public final Object invoke(QObject object, Qt.ConnectionType connection, Object... args) throws IllegalArgumentException, QUnsuccessfulInvocationException {
@@ -15395,7 +15374,7 @@ class QMetaMethod___ {
     private native Object invoke_native(QObject object__id, Class<?>[] argClassTypes, int connection, Object[] args);
     
     /**
-     * <p>See <a href="@docRoot/qmetamethod.html#invokeOnGadget">QMetaMethod::invokeOnGadget(void *gadget, QGenericReturnArgument returnValue, QGenericArgument val0 = QGenericArgument(nullptr), QGenericArgument val1 = QGenericArgument(), QGenericArgument val2 = QGenericArgument(), QGenericArgument val3 = QGenericArgument(), QGenericArgument val4 = QGenericArgument(), QGenericArgument val5 = QGenericArgument(), QGenericArgument val6 = QGenericArgument(), QGenericArgument val7 = QGenericArgument(), QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument()) const</a></p>
+     * <p>See <a href="@docRoot/qmetamethod.html#invokeOnGadget"><code>QMetaMethod::invokeOnGadget(void *gadget, QGenericReturnArgument returnValue, QGenericArgument val0 = QGenericArgument(nullptr), QGenericArgument val1 = QGenericArgument(), QGenericArgument val2 = QGenericArgument(), QGenericArgument val3 = QGenericArgument(), QGenericArgument val4 = QGenericArgument(), QGenericArgument val5 = QGenericArgument(), QGenericArgument val6 = QGenericArgument(), QGenericArgument val7 = QGenericArgument(), QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument()) const</code></a></p>
      */
     @QtUninvokable
     public final @Nullable Object invokeOnGadget(Object object, Object... args) throws IllegalArgumentException, QUnsuccessfulInvocationException {
@@ -15756,19 +15735,19 @@ class QMetaProperty___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qmetaproperty.html#resetOnGadget">QMetaProperty::resetOnGadget(const void *) const</a></p>
+     * <p>See <a href="@docRoot/qmetaproperty.html#resetOnGadget"><code>QMetaProperty::resetOnGadget(const void *) const</code></a></p>
      */
     @QtUninvokable
     public native final boolean resetOnGadget(@StrictNonNull Object object);
     
     /**
-     * <p>See <a href="@docRoot/qmetaproperty.html#readOnGadget">QMetaProperty::readOnGadget(const void *) const</a></p>
+     * <p>See <a href="@docRoot/qmetaproperty.html#readOnGadget"><code>QMetaProperty::readOnGadget(const void *) const</code></a></p>
      */
     @QtUninvokable
     public native final Object readOnGadget(@StrictNonNull Object object);
     
     /**
-     * <p>See <a href="@docRoot/qmetaproperty.html#writeOnGadget">QMetaProperty::writeOnGadget(void *, const QVariant &amp;) const</a></p>
+     * <p>See <a href="@docRoot/qmetaproperty.html#writeOnGadget"><code>QMetaProperty::writeOnGadget(void *, const QVariant &amp;) const</code></a></p>
      */
     @QtUninvokable
     public native final boolean writeOnGadget(@StrictNonNull Object object, Object value);
@@ -15782,7 +15761,7 @@ class QMetaProperty___{
     private Class<?> classType;
     
     /**
-     * <p>See <a href="@docRoot/qmetaproperty.html#metaType">QMetaProperty::metaType() const</a></p>
+     * <p>See <a href="@docRoot/qmetaproperty.html#metaType"><code>QMetaProperty::metaType() const</code></a></p>
      */
     @QtUninvokable
     public final Class<?> classType(){
@@ -15806,7 +15785,7 @@ class QMetaEnum___{
     }
 
     /**
-     * <p>See <a href="@docRoot/qmetaenum.html#keysToValue">QMetaEnum::keysToValue(const char *) const</a></p>
+     * <p>See <a href="@docRoot/qmetaenum.html#keysToValue"><code>QMetaEnum::keysToValue(const char *) const</code></a></p>
      */
     @QtUninvokable
     public @Nullable Integer keysToValue(String... keys) {
@@ -15814,7 +15793,7 @@ class QMetaEnum___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qmetaenum.html#keysToValue">QMetaEnum::keysToValue(const char *) const</a></p>
+     * <p>See <a href="@docRoot/qmetaenum.html#keysToValue"><code>QMetaEnum::keysToValue(const char *) const</code></a></p>
      */
     @QtUninvokable
     public @Nullable Integer keysToValue(java.util.@StrictNonNull Collection<@NonNull String> keys) {
@@ -15949,13 +15928,6 @@ class Qt___ extends Qt {
     
 }// class
 
-class QTimeZone___{
-    // No known zone > 12 hrs West of Greenwich (Baker Island, USA)
-    public static final int MinUtcOffsetSecs = -14 * 3600;
-    // No known zone > 14 hrs East of Greenwich (Kiritimati, Christmas Island, Kiribati)
-    public static final int MaxUtcOffsetSecs = +14 * 3600;
-}// class
-
 class QCollatorSortKey___{
     
     @QtUninvokable
@@ -15985,14 +15957,14 @@ class QCborValue_java__{
 class QCborStreamReader_java__{
     
     /**
-     * <p>See <a href="@docRoot/qcborstreamreader.html#QCborStreamReader-1">QCborStreamReader::QCborStreamReader(const char*,qsizetype)</a></p>
+     * <p>See <a href="@docRoot/qcborstreamreader.html#QCborStreamReader-1"><code>QCborStreamReader::QCborStreamReader(const char*,qsizetype)</code></a></p>
      */
     public QCborStreamReader(byte[] data){
         this(new QByteArray(data));
     }
     
     /**
-     * <p>See <a href="@docRoot/qcborstreamreader.html#addData">QCborStreamReader::addData(QByteArray)</a></p>
+     * <p>See <a href="@docRoot/qcborstreamreader.html#addData"><code>QCborStreamReader::addData(QByteArray)</code></a></p>
      */
     @QtUninvokable
     public final void addData(byte[] data){
@@ -16791,7 +16763,7 @@ class QPluginLoader_java__{
     public static native void qRegisterPluginInterface(Class<? extends QtObjectInterface> iface);
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qpluginloader.html#instance">QPluginLoader::instance()</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qpluginloader.html#instance"><code>QPluginLoader::instance()</code></a></p>
      */
     @QtUninvokable
     public final <T extends QObject> T instance(Class<T> type){
@@ -16813,14 +16785,14 @@ class QPluginLoader_java__{
     private static final PluginClassLoader pluginClassLoader = new PluginClassLoader();
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qpluginloader.html#qRegisterStaticPluginFunction">qRegisterStaticPluginFunction(QStaticPlugin)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a></p>
      */
     public static void qRegisterStaticPluginFunction(QObject instance){
         qRegisterStaticPluginFunction(instance, (QJsonObject)null);
     }
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qpluginloader.html#qRegisterStaticPluginFunction">qRegisterStaticPluginFunction(QStaticPlugin)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a></p>
      */
     public static void qRegisterStaticPluginFunction(QObject instance, QJsonObject metaData) {
         if (metaData == null) {
@@ -16830,28 +16802,28 @@ class QPluginLoader_java__{
     }
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qpluginloader.html#qRegisterStaticPluginFunction">qRegisterStaticPluginFunction(QStaticPlugin)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a></p>
      */
     public static void qRegisterStaticPluginFunction(QObject instance, java.util.Map<String, Object> metaData){
         qRegisterStaticPluginFunction(instance, QJsonObject.fromVariantHash(metaData));
     }
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qpluginloader.html#qRegisterStaticPluginFunction">qRegisterStaticPluginFunction(QStaticPlugin)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a></p>
      */
     public static void qRegisterStaticPluginFunction(Class<? extends QObject> pluginClass){
         qRegisterStaticPluginFunction(pluginClass, (QJsonObject)null);
     }
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qpluginloader.html#qRegisterStaticPluginFunction">qRegisterStaticPluginFunction(QStaticPlugin)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a></p>
      */
     public static void qRegisterStaticPluginFunction(Class<? extends QObject> pluginClass, java.util.Map<String, Object> metaData){
         qRegisterStaticPluginFunction(pluginClass, QJsonObject.fromVariantHash(metaData));
     }
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qpluginloader.html#qRegisterStaticPluginFunction">qRegisterStaticPluginFunction(QStaticPlugin)</a></p>
+     * <p>See <a href="https://doc.qt.io/qt/qpluginloader.html#qRegisterStaticPluginFunction"><code>qRegisterStaticPluginFunction(QStaticPlugin)</code></a></p>
      */
     public static void qRegisterStaticPluginFunction(Class<? extends QObject> pluginClass, QJsonObject metaData) {
         try {
@@ -17027,7 +16999,7 @@ class QPluginLoader_java__{
 
 class QStaticPlugin_java__{
     /**
-     * <p>See <a href="@docRoot/qstaticplugin.html#instance-var">QStaticPlugin::instance</a></p>
+     * <p>See <a href="@docRoot/qstaticplugin.html#instance-var"><code>QStaticPlugin::instance</code></a></p>
      */
     @QtUninvokable
     public final native QObject instance();
@@ -17049,7 +17021,7 @@ class QThread___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * <p>See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a></p>
      * @see Thread#Thread(Runnable)
      */
     public static @NonNull QThread create(@StrictNonNull Runnable runnable) {
@@ -17057,7 +17029,7 @@ class QThread___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * <p>See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a></p>
      * @see Thread#Thread(Runnable)
      */
     public static @NonNull QThread create(@StrictNonNull Runnable runnable, @Nullable QObject parent) {
@@ -17065,7 +17037,7 @@ class QThread___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * <p>See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a></p>
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
     public static @NonNull QThread create(@StrictNonNull Runnable runnable, long stackSize) {
@@ -17073,7 +17045,7 @@ class QThread___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * <p>See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a></p>
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
     public static @NonNull QThread create(@StrictNonNull Runnable runnable, long stackSize, @Nullable QObject parent) {
@@ -17081,7 +17053,7 @@ class QThread___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * <p>See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a></p>
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
     public static @NonNull QThread create(ThreadGroup group, @StrictNonNull Runnable runnable, long stackSize) {
@@ -17089,7 +17061,7 @@ class QThread___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * <p>See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a></p>
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
     public static @NonNull QThread create(ThreadGroup group, @StrictNonNull Runnable runnable, long stackSize, @Nullable QObject parent) {
@@ -17097,7 +17069,7 @@ class QThread___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * <p>See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a></p>
      * @see Thread#Thread(ThreadGroup, Runnable, String)
      */
     public static @NonNull QThread create(ThreadGroup group, @StrictNonNull Runnable runnable, @Nullable String name) {
@@ -17105,7 +17077,7 @@ class QThread___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * <p>See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a></p>
      * @see Thread#Thread(ThreadGroup, Runnable, String)
      */
     public static @NonNull QThread create(ThreadGroup group, @StrictNonNull Runnable runnable, @Nullable String name, @Nullable QObject parent) {
@@ -17113,7 +17085,7 @@ class QThread___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * <p>See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a></p>
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
     public static @NonNull QThread create(ThreadGroup group, @StrictNonNull Runnable runnable, @Nullable String name, long stackSize) {
@@ -17121,7 +17093,7 @@ class QThread___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * <p>See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a></p>
      * @see Thread#Thread(Runnable, String)
      */
     public static @NonNull QThread create(@StrictNonNull Runnable runnable, @Nullable String name, long stackSize, @Nullable QObject parent) {
@@ -17129,7 +17101,7 @@ class QThread___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * <p>See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a></p>
      * @see Thread#Thread(Runnable, String)
      */
     public static @NonNull QThread create(@StrictNonNull Runnable runnable, @Nullable String name, long stackSize) {
@@ -17137,7 +17109,7 @@ class QThread___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * <p>See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a></p>
      * @see Thread#Thread(Runnable, String)
      */
     public static @NonNull QThread create(@StrictNonNull Runnable runnable, @Nullable String name, @Nullable QObject parent) {
@@ -17145,7 +17117,7 @@ class QThread___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * <p>See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a></p>
      * @see Thread#Thread(Runnable, String)
      */
     public static @NonNull QThread create(@StrictNonNull Runnable runnable, @Nullable String name) {
@@ -17153,7 +17125,7 @@ class QThread___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * <p>See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a></p>
      * @see Thread#Thread(ThreadGroup, Runnable)
      */
     public static @NonNull QThread create(ThreadGroup group, @StrictNonNull Runnable runnable) {
@@ -17161,7 +17133,7 @@ class QThread___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qthread.html#create">QThread::create(Function, Args...)</a></p>
+     * <p>See <a href="@docRoot/qthread.html#create"><code>QThread::create(Function, Args...)</code></a></p>
      * @see Thread#Thread(ThreadGroup, Runnable, String, long)
      */
     public static @NonNull QThread create(ThreadGroup group, @StrictNonNull Runnable runnable, @Nullable String name, long stackSize, @Nullable QObject parent) {
@@ -17348,6 +17320,7 @@ class QThread___{
     private native Thread.UncaughtExceptionHandler __qt_getUncaughtExceptionHandler();
     
     /**
+     * Sets the class loader of this thread
      * @see Thread#setContextClassLoader(ClassLoader)
      */
     public void setContextClassLoader(@Nullable ClassLoader cl) {
@@ -17361,6 +17334,7 @@ class QThread___{
     private native void __qt_setContextClassLoader(ClassLoader cl);
     
     /**
+     * Returns the class loader of this thread
      * @see Thread#getContextClassLoader()
      */
     public final @Nullable ClassLoader getContextClassLoader() {
@@ -17375,12 +17349,16 @@ class QThread___{
     private native void __qt_initialize(ThreadGroup group);
     private final Thread javaThread = null;
     
+    /**
+     * Returns the {@link Thread} instance repüresenting this {@link QThread}.
+     */
     public final @Nullable Thread javaThread() { return javaThread==null ? __qt_javaThread() : javaThread; }
     
     private native Thread __qt_javaThread();
     public static native @Nullable QThread thread(@NonNull Thread thread);
     
     /**
+     * Returns true if thread is running.
      * @see Thread#isAlive()
      */
     public final boolean isAlive() {
@@ -17388,6 +17366,7 @@ class QThread___{
     }
     
     /**
+     * Returns true if interruption is requested.
      * @see Thread#isInterrupted()
      */
     public final boolean isInterrupted() {
@@ -17397,6 +17376,7 @@ class QThread___{
     }
     
     /**
+     * Checks if current thread has been interrupted and clear interruption state.
      * @see Thread#interrupted()
      */
     public static boolean interrupted() {
@@ -17404,6 +17384,7 @@ class QThread___{
     }
     
     /**
+    * Interrupts the current thread.
      * @see Thread#interrupt()
      */
     public final void interrupt() {
@@ -17435,6 +17416,11 @@ class QSharedMemory_java__{
         private boolean isClosed = false;
     }
     
+    /**
+     * This type represents a locked data access.
+     * Close this after accessing data. It is recommended to use this in resource try block.
+     * @see QSharedMemory#access()
+     */
     public static class DataAccess implements AutoCloseable{
         
         private final QSharedMemory sharedMemory;
@@ -17445,11 +17431,17 @@ class QSharedMemory_java__{
             cleanable = QtJambi_LibraryUtilities.internal.registerCleaner(this, new CleanTask(sharedMemory));
         }
         
+        /**
+         * Unlocks QSharedMemory
+         */
         @Override
         public void close(){
             cleanable.clean();
         }
         
+        /**
+         * Access to QSharedMemory's data
+         */
         @QtUninvokable
         public java.nio.@NonNull ByteBuffer data() {
             if(!sharedMemory.__qt_isInUse) {
@@ -17467,6 +17459,9 @@ class QSharedMemory_java__{
     private AccessMode __qt_accessMode = AccessMode.ReadOnly;
     private boolean __qt_isInUse;
     
+    /**
+     * Locks QSharedMemory and gives access to its data.
+     */
     public @NonNull DataAccess access() throws IllegalStateException{
         if(this.isAttached() && !__qt_isInUse && lock()) {
             __qt_isInUse = true;
@@ -17676,7 +17671,7 @@ class QLoggingCategory__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qloggingcategory.html#QLoggingCategory-1">QLoggingCategory::QLoggingCategory(const char*,QtMsgType)</a></p>
+     * <p>See <a href="@docRoot/qloggingcategory.html#QLoggingCategory-1"><code>QLoggingCategory::QLoggingCategory(const char*,QtMsgType)</code></a></p>
      */
     public QLoggingCategory(java.lang.@NonNull String category, @NonNull QtMsgType severityLevel){
         this(category==null ? null : new QByteArray(category), severityLevel);
@@ -17786,7 +17781,7 @@ class QResource__{
 
 class QCryptographicHash___{
     /**
-     * <p>See <a href="@docRoot/qcryptographichash.html#addData-1">QCryptographicHash::addData(const char*)</a></p>
+     * <p>See <a href="@docRoot/qcryptographichash.html#addData-1"><code>QCryptographicHash::addData(const char*)</code></a></p>
      */
     @QtUninvokable
     public final void addData(java.nio.ByteBuffer data){
@@ -17794,14 +17789,14 @@ class QCryptographicHash___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qcryptographichash.html#hash">QCryptographicHash::hash(const char*,QCryptographicHash::Algorithm)</a></p>
+     * <p>See <a href="@docRoot/qcryptographichash.html#hash"><code>QCryptographicHash::hash(const char*,QCryptographicHash::Algorithm)</code></a></p>
      */
     public static QByteArray hash(java.nio.ByteBuffer data, QCryptographicHash.Algorithm method){
         return hash(new QByteArrayView(data), method);
     }
     
     /**
-     * <p>See <a href="@docRoot/qcryptographichash.html#addData-1">QCryptographicHash::addData(QByteArray)</a></p>
+     * <p>See <a href="@docRoot/qcryptographichash.html#addData-1"><code>QCryptographicHash::addData(QByteArray)</code></a></p>
      */
     @QtUninvokable
     public final void addData(@NonNull QByteArray data){
@@ -17809,7 +17804,7 @@ class QCryptographicHash___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qcryptographichash.html#hash">QCryptographicHash::hash(QByteArray,QCryptographicHash::Algorithm)</a></p>
+     * <p>See <a href="@docRoot/qcryptographichash.html#hash"><code>QCryptographicHash::hash(QByteArray,QCryptographicHash::Algorithm)</code></a></p>
      */
     public static @NonNull QByteArray hash(@NonNull QByteArray data, QCryptographicHash.@NonNull Algorithm method){
         return hash(new QByteArrayView(data), method);
@@ -17818,7 +17813,7 @@ class QCryptographicHash___{
 
 class QDataStream_5__{
     /**
-     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a></p>
      */
     public final <T> @NonNull QDataStream append(T object){
         int metaType = QMetaType.fromObject(object).id();
@@ -17830,7 +17825,7 @@ class QDataStream_5__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qdatastream.html#operator-gt-gt-1">QDataStream::operator&gt;&gt;</a></p>
+     * <p>See <a href="@docRoot/qdatastream.html#operator-gt-gt-1"><code>QDataStream::operator&gt;&gt;</code></a></p>
      */
     @SuppressWarnings("unchecked")
     public final <T> T readObject(Class<T> cl, @NonNull QMetaType @NonNull...instantiations){
@@ -17846,7 +17841,7 @@ class QDataStream_5__{
 
 class QDataStream_6__{
     /**
-     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a></p>
      */
     public final <T> @NonNull QDataStream append(T object){
         QMetaType metaType = QMetaType.fromObject(object);
@@ -17858,7 +17853,7 @@ class QDataStream_6__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qdatastream.html#operator-gt-gt-1">QDataStream::operator&gt;&gt;</a></p>
+     * <p>See <a href="@docRoot/qdatastream.html#operator-gt-gt-1"><code>QDataStream::operator&gt;&gt;</a></p>
      */
     @SuppressWarnings("unchecked")
     public final <T> T readObject(Class<T> cl, @NonNull QMetaType @NonNull...instantiations){
@@ -17875,7 +17870,7 @@ class QDataStream_6__{
 class QDataStream___{
     
     /**
-     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a></p>
      */
     @QtUninvokable
     public final <T> @NonNull QDataStream writeObject(T t){
@@ -17883,7 +17878,7 @@ class QDataStream___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDataStream writeString(java.lang.String s){
@@ -17891,7 +17886,7 @@ class QDataStream___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDataStream writeDouble(double v){
@@ -17899,7 +17894,7 @@ class QDataStream___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDataStream writeByte(byte v){
@@ -17907,7 +17902,7 @@ class QDataStream___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDataStream append(byte[] v){
@@ -17916,7 +17911,7 @@ class QDataStream___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDataStream writeChar(char v){
@@ -17924,7 +17919,7 @@ class QDataStream___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDataStream writeFloat(float v){
@@ -17932,7 +17927,7 @@ class QDataStream___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDataStream writeInt(int v){
@@ -17940,7 +17935,7 @@ class QDataStream___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDataStream writeLong(long v){
@@ -17948,7 +17943,7 @@ class QDataStream___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDataStream writeShort(short v){
@@ -17956,7 +17951,7 @@ class QDataStream___{
     }
     
     /**
-     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1">QDataStream::operator&lt;&lt;</a></p>
+     * <p>See <a href="@docRoot/qdatastream.html#operator-lt-lt-1"><code>QDataStream::operator&lt;&lt;</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QDataStream writeBoolean(boolean v){
@@ -17993,7 +17988,7 @@ class QString__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qstring.html#arg">QString::arg(Args &amp;&amp;... args) const</a></p>
+     * <p>See <a href="@docRoot/qstring.html#arg"><code>QString::arg(Args &amp;&amp;... args) const</code></a></p>
      */
     @QtUninvokable
     public final @NonNull QString arg(Object... args){
@@ -18067,38 +18062,38 @@ class QString__{
 
 class QtGlobal_5_ {
     /**
-     * <p>See <a href="@docRoot/qhash.html#qHash-28">qHash(T,0)</a></p>
+     * <p>See <a href="@docRoot/qhash.html#qHash-28"><code>qHash(T,0)</code></a></p>
      */
     public static <T> int qHash(T object) throws UnsupportedOperationException {
         return qHash(object, 0);
     }
 
     /**
-     * <p>See <a href="@docRoot/qhash.html#qHash-28">qHash(T,int)</a></p>
+     * <p>See <a href="@docRoot/qhash.html#qHash-28"><code>qHash(T,int)</code></a></p>
      */
     public static native <T> int qHash(T object, int seed) throws UnsupportedOperationException;
 }// class
 
 class QtGlobal_6_ {
     /**
-     * <p>See <a href="@docRoot/qhash.html#qHash-28">qHash(T,0)</a></p>
+     * <p>See <a href="@docRoot/qhash.html#qHash-28"><code>qHash(T,0)</code></a></p>
      */
     public static <T> long qHash(T object) throws UnsupportedOperationException {
         return qHash(object, 0);
     }
 
     /**
-     * <p>See <a href="@docRoot/qhash.html#qHash-28">qHash(T,long)</a></p>
+     * <p>See <a href="@docRoot/qhash.html#qHash-28"><code>qHash(T,long)</code></a></p>
      */
     public static native <T> long qHash(T object, long seed) throws UnsupportedOperationException;
 
     /**
-     * <p>See <a href="@docRoot/qhash.html#qHashMulti">qHashMulti(long,T...)</a></p>
+     * <p>See <a href="@docRoot/qhash.html#qHashMulti"><code>qHashMulti(long,T...)</code></a></p>
      */
     public static native long qHashMulti(long seed, Object... objects) throws UnsupportedOperationException;
 
     /**
-     * <p>See <a href="@docRoot/qhash.html#qHashMultiCommutative">qHashMultiCommutative(long,T...)</a></p>
+     * <p>See <a href="@docRoot/qhash.html#qHashMultiCommutative"><code>qHashMultiCommutative(long,T...)</code></a></p>
      */
     public static native long qHashMultiCommutative(long seed, Object... objects) throws UnsupportedOperationException;
 }// class

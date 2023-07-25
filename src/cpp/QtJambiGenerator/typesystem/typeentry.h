@@ -692,7 +692,7 @@ class FunctionalTypeEntry : public TypeEntry {
             QString pkg = javaPackage().replace('.', '/');
             QString javaQual = javaQualifier();
             if (pkg.isEmpty()) return javaQual.isEmpty() ? targetLangName() : javaQual + '$' + targetLangName();
-            return javaQual.isEmpty() ? pkg + '/' + targetLangName() : pkg + '.' + javaQual + '$' + targetLangName();
+            return javaQual.isEmpty() ? pkg + '/' + targetLangName() : pkg + '/' + javaQual + '$' + targetLangName();
         }
 
         QString jniName() const override {
@@ -1308,6 +1308,12 @@ class ComplexTypeEntry : public TypeEntry {
         void setQObject(bool qobject) {
             m_attributes.setFlag(IsQObject, qobject);
         }
+        bool isQEvent() const {
+            return m_attributes.testFlag(IsQEvent);
+        }
+        void setQEvent(bool b) {
+            m_attributes.setFlag(IsQEvent, b);
+        }
         bool isGLsync() const {
             return m_attributes.testFlag(IsGLsync);
         }
@@ -1761,7 +1767,8 @@ protected:
             IsValueOwner = 0x010000,
             SkipMetaTypeRegistration = 0x20000,
             ForceMetaTypeRegistration = 0x40000,
-            IsQMediaControl = 0x80000
+            IsQMediaControl = 0x80000,
+            IsQEvent = 0x100000
         };
         QFlags<ComplexAttributeFlag> m_attributes;
 

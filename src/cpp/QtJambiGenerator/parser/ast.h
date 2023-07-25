@@ -331,6 +331,7 @@ struct ClassSpecifierAST: public TypeSpecifierAST {
     bool is_final;
     bool is_deprecated;
     StringLiteralAST *deprecationComment;
+    ExpressionAST *annotationExpression;
 };
 
 struct ForwardDeclarationSpecifierAST: public TypeSpecifierAST {
@@ -445,6 +446,7 @@ struct EnumSpecifierAST: public TypeSpecifierAST {
     StringLiteralAST *deprecationComment;
     TypeSpecifierAST *base_type;
     const ListNode<EnumeratorAST*> *enumerators;
+    ExpressionAST *annotationExpression;
 };
 
 struct EnumeratorAST: public AST {
@@ -454,6 +456,7 @@ struct EnumeratorAST: public AST {
     ExpressionAST *expression;
     bool isDeprecated;
     StringLiteralAST *deprecationComment;
+    ExpressionAST *annotationExpression;
 };
 
 struct ExceptionSpecificationAST: public AST {
@@ -505,6 +508,7 @@ struct FunctionDefinitionAST: public DeclarationAST {
     StatementAST *function_body;
     WinDeclSpecAST *win_decl_specifiers;
     StringLiteralAST *deprecationComment;
+    ExpressionAST *annotationExpression;
 };
 
 struct AbstractForStatementAST: public StatementAST {
@@ -719,6 +723,7 @@ struct SimpleDeclarationAST: public DeclarationAST {
     const ListNode<InitDeclaratorAST*> *init_declarators;
     WinDeclSpecAST *win_decl_specifiers;
     StringLiteralAST *deprecationComment;
+    ExpressionAST *annotationExpression;
     UnqualifiedNameAST *arrowDecl;
 };
 

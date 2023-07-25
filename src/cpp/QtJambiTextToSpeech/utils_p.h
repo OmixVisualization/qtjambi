@@ -41,4 +41,9 @@ namespace Java{
     }
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+void qtjambi_synthesize1(JNIEnv *env, class QTextToSpeech *_this, jobject context, const QString&  text, jobject func);
+void qtjambi_synthesize2(JNIEnv *env, class QTextToSpeech *_this, jobject context, const QString&  text, jobject func);
+#endif
+
 #endif // UTILS_P_H

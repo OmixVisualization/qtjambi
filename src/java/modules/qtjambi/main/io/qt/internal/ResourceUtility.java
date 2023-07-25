@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -147,6 +148,17 @@ final class ResourceUtility {
 	private static void initialize() {
 		List<URL> cpUrls = new ArrayList<>();
 		try {
+			for(URI uri : RetroHelper.moduleLocations()) {
+				try{
+					URL url = uri.toURL();
+					if(!"jrt".equals(url.getProtocol()) && !cpUrls.contains(url)) {
+						cache.addPath(url);
+						cpUrls.add(url);
+					}
+				} catch (Exception e) {
+					java.util.logging.Logger.getLogger("io.qt.internal.fileengine").log(java.util.logging.Level.SEVERE, "", e);
+				}
+			}
 			for(ClassLoader loader : RetroHelper.classLoaders()) {
 				if(loader instanceof URLClassLoader) {
 					for(URL url : ((URLClassLoader) loader).getURLs()) {
@@ -162,21 +174,19 @@ final class ResourceUtility {
 						try {
 							String end;
 							String urlPath;
-							if("file".equals(url.getProtocol())) {
-								urlPath = url.toString();
-								end = "/META-INF/MANIFEST.MF";
-							}else {
+							if("jar".equals(url.getProtocol())) {
 								urlPath = url.getPath();
 								end = "!/META-INF/MANIFEST.MF";
-								if(!urlPath.contains(":") || !urlPath.endsWith(end)) { // this is possible if URL is not jar-based
-									urlPath = url.toString();
-									end = "/META-INF/MANIFEST.MF";
-								}
+							}else {
+								urlPath = url.toString();
+								end = "/META-INF/MANIFEST.MF";
+								if(urlPath.endsWith(end))
+									end = "META-INF/MANIFEST.MF";
 							}
 							if(urlPath.endsWith(end)) {
 								urlPath = urlPath.substring(0, urlPath.length() - end.length());
 								URL fileUrl = new URL(urlPath);
-								if(fileUrl.getPath().isEmpty()) {
+								if(!"jar".equals(url.getProtocol()) && fileUrl.getPath().isEmpty()) {
 									fileUrl = new URL(urlPath+"/");
 								}
 								if(!cpUrls.contains(fileUrl)) {

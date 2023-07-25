@@ -807,17 +807,19 @@ TypeSystem{
     }
     
     ObjectType{
-        name: "QModbusRtuSerialClient"
-        since: [6, 2]
-    }
-    
-    ObjectType{
         name: "QModbusRtuSerialSlave"
         until: 5
     }
     
     ObjectType{
         name: "QModbusRtuSerialServer"
+        ppCondition: "!defined(Q_OS_IOS)"
+        since: [6, 2]
+    }
+
+    ObjectType{
+        name: "QModbusRtuSerialClient"
+        ppCondition: "!defined(Q_OS_IOS)"
         since: [6, 2]
     }
     

@@ -185,6 +185,11 @@ public final %ITERATOR_TYPE iterator() {
 }`
         }
     }
+
+    Rejection{
+        className: "QScopedPropertyUpdateGroup"
+        since: 6.6
+    }
     
     PrimitiveType{
         name: "bool"
@@ -2135,11 +2140,6 @@ public final %ITERATOR_TYPE iterator() {
     }
     
     Rejection{
-        className: "QTimeZone"
-        enumName: "enum_1"
-    }
-    
-    Rejection{
         className: "QArrayData"
         enumName: "AllocationOption"
     }
@@ -3653,11 +3653,6 @@ public final %ITERATOR_TYPE iterator() {
     }
     
     EnumType{
-        name: "QProcessEnvironment::Initialization"
-        since: [6, 3]
-    }
-    
-    EnumType{
         name: "QLocale::QuotationStyle"
     }
     
@@ -3742,17 +3737,6 @@ public final %ITERATOR_TYPE iterator() {
     
     EnumType{
         name: "QTimeLine::State"
-    }
-    
-    EnumType{
-        name: "QUuid::Variant"
-    }
-    
-    EnumType{
-        name: "QUuid::Version"
-        RejectEnumValue{
-            name: "Name"
-        }
     }
 
     EnumType{
@@ -4092,10 +4076,6 @@ public final %ITERATOR_TYPE iterator() {
     }
     
     EnumType{
-        name: "QUuid::StringFormat"
-    }
-    
-    EnumType{
         name: "QByteArray::Base64Option"
         RejectEnumValue{
             name: "KeepTrailingEquals"
@@ -4107,14 +4087,6 @@ public final %ITERATOR_TYPE iterator() {
     
     EnumType{
         name: "QByteArray::Base64DecodingStatus"
-    }
-    
-    EnumType{
-        name: "QTimeZone::TimeType"
-    }
-    
-    EnumType{
-        name: "QTimeZone::NameType"
     }
     
     NamespaceType{
@@ -4194,6 +4166,8 @@ public final %ITERATOR_TYPE iterator() {
     
     ValueType{
         name: "QElapsedTimer"
+        Rejection{className: "Duration";  since: 6.6}
+        Rejection{className: "TimePoint"; since: 6.6}
 
         EnumType{
             name: "ClockType"
@@ -4202,6 +4176,11 @@ public final %ITERATOR_TYPE iterator() {
     
     ValueType{
         name: "QProcessEnvironment"
+
+        EnumType{
+            name: "Initialization"
+            since: [6, 3]
+        }
     }
     
     ObjectType{
@@ -4701,6 +4680,18 @@ public final %ITERATOR_TYPE iterator() {
     
     ValueType{
         name: "QMetaMethod"
+
+        EnumType{
+            name: "MethodType"
+        }
+
+        EnumType{
+            name: "Attributes"
+        }
+
+        EnumType{
+            name: "Access"
+        }
         ExtraIncludes{
             Include{
                 fileName: "QtJambi/CoreAPI"
@@ -4748,23 +4739,16 @@ public final %ITERATOR_TYPE iterator() {
         }
     }
     
-    Rejection{
-        className: "QMetaProperty"
-        functionName: "resetOnGadget"
-    }
-    
-    Rejection{
-        className: "QMetaProperty"
-        functionName: "readOnGadget"
-    }
-    
-    Rejection{
-        className: "QMetaProperty"
-        functionName: "writeOnGadget"
-    }
-    
     ValueType{
         name: "QMetaProperty"
+        Rejection{functionName: "resetOnGadget"}
+        Rejection{functionName: "readOnGadget"}
+        Rejection{functionName: "writeOnGadget"}
+        ModifyFunction{
+            signature: "write(QObject*,QVariant&&)const"
+            remove: RemoveFlag.All
+            since: 6.6
+        }
         InjectCode{
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
@@ -4834,21 +4818,15 @@ public final %ITERATOR_TYPE iterator() {
             }
         }
     }
-    
-    EnumType{
-        name: "QMetaMethod::MethodType"
-    }
-    
-    EnumType{
-        name: "QMetaMethod::Attributes"
-    }
-    
-    EnumType{
-        name: "QMetaMethod::Access"
-    }
 
     ValueType{
         name: "QModelIndex"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/CoreAPI"
+                location: Include.Global
+            }
+        }
         ModifyFunction{
             signature: "internalPointer() const"
             remove: RemoveFlag.All
@@ -4857,6 +4835,70 @@ public final %ITERATOR_TYPE iterator() {
             signature: "constInternalPointer() const"
             remove: RemoveFlag.All
             since: 6
+        }
+        ModifyFunction{
+            signature: "model() const"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: "CoreAPI::ckeckLinkExtension(__jni_env, __this_nativeId);"}
+            }
+        }
+        ModifyFunction{
+            signature: "parent() const"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: "CoreAPI::ckeckLinkExtension(__jni_env, __this_nativeId);"}
+            }
+        }
+        ModifyFunction{
+            signature: "sibling(int,int) const"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: "CoreAPI::ckeckLinkExtension(__jni_env, __this_nativeId);"}
+            }
+        }
+        ModifyFunction{
+            signature: "siblingAtColumn(int) const"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: "CoreAPI::ckeckLinkExtension(__jni_env, __this_nativeId);"}
+            }
+        }
+        ModifyFunction{
+            signature: "siblingAtRow(int) const"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: "CoreAPI::ckeckLinkExtension(__jni_env, __this_nativeId);"}
+            }
+        }
+        ModifyFunction{
+            signature: "data(int) const"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: "CoreAPI::ckeckLinkExtension(__jni_env, __this_nativeId);"}
+            }
+        }
+        ModifyFunction{
+            signature: "multiData(QModelRoleDataSpan) const"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: "CoreAPI::ckeckLinkExtension(__jni_env, __this_nativeId);"}
+            }
+        }
+        ModifyFunction{
+            signature: "flags() const"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: "CoreAPI::ckeckLinkExtension(__jni_env, __this_nativeId);"}
+            }
         }
     }
     
@@ -4886,6 +4928,22 @@ public final %ITERATOR_TYPE iterator() {
     
     ValueType{
         name: "QUuid"
+
+        EnumType{
+            name: "StringFormat"
+        }
+
+        EnumType{
+            name: "Variant"
+        }
+
+        EnumType{
+            name: "Version"
+            RejectEnumValue{
+                name: "Name"
+            }
+        }
+        Rejection{className: "Id128Bytes"; since: 6.6}
         ModifyFunction{
             signature: "QUuid(const char*)"
             remove: RemoveFlag.All
@@ -4909,6 +4967,11 @@ public final %ITERATOR_TYPE iterator() {
             signature: "operator>=(const QUuid&,const QUuid&)"
             remove: RemoveFlag.All
         }
+        ModifyFunction{
+            signature: "fromBytes(const void*,QSysInfo::Endian)"
+            remove: RemoveFlag.All
+            since: 6.6
+        }
         InjectCode{
             since: [6, 3]
             ImportFile{
@@ -4917,6 +4980,11 @@ public final %ITERATOR_TYPE iterator() {
                 quoteBeforeLine: "}// class"
             }
         }
+    }
+
+    ObjectType{
+        name: "QNativeIpcKey"
+        since: 6.6
     }
     
     ValueType{
@@ -6871,23 +6939,35 @@ public final %ITERATOR_TYPE iterator() {
     
     ValueType{
         name: "QTimeZone"
+
+        Rejection{
+            enumName: "enum_1"
+        }
+
+        EnumType{
+            name: "TimeType"
+        }
+
+        EnumType{
+            name: "NameType"
+        }
         InjectCode{
             target: CodeClass.Java
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
-                quoteAfterLine: "class QTimeZone___"
-                quoteBeforeLine: "}// class"
-            }
+            Text{content: String.raw`// No known zone > 12 hrs West of Greenwich (Baker Island, USA)
+public static final int MinUtcOffsetSecs = -14 * 3600;
+// No known zone > 14 hrs East of Greenwich (Kiritimati, Christmas Island, Kiribati)
+public static final int MaxUtcOffsetSecs = +14 * 3600;`}
+            until: 6.5
         }
-    }
-    
-    ValueType{
-        name: "QTimeZone::OffsetData"
-    }
 
-    EnumType{
-        name: "QTimeZone::Initialization"
-        since: [6,5]
+        ValueType{
+            name: "OffsetData"
+        }
+
+        EnumType{
+            name: "Initialization"
+            since: [6,5]
+        }
     }
     
     
@@ -7756,24 +7836,84 @@ if(destinationChild<0)
             until: 5
         }
         ModifyFunction{
+            signature: "operator<(QByteArray,const char*)"
+            ModifyArgument{
+                index: 2
+                NoNullPointer{}
+                ReplaceType{
+                    modifiedType: "io.qt.core.QByteArrayView"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QByteArrayView %out = qtjambi_cast<QByteArrayView>(%env, %in);"}
+                }
+            }
+            since: 6
+        }
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Compare
+            until: 5
+            Text{content: "if (other instanceof byte[]) {\n"+
+                          "    other = new io.qt.core.QByteArray((byte[]) other);\n"+
+                          "}else if (other instanceof java.nio.ByteBuffer) {\n"+
+                          "    other = new io.qt.core.QByteArray((java.nio.ByteBuffer) other);\n"+
+                          "}"}
+        }
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Compare
+            since: 6
+            Text{content: "if (other instanceof byte[]) {\n"+
+                          "    other = new io.qt.core.QByteArrayView((byte[]) other);\n"+
+                          "}else if (other instanceof java.nio.ByteBuffer) {\n"+
+                          "    other = new io.qt.core.QByteArrayView((java.nio.ByteBuffer) other);\n"+
+                          "}"}
+        }
+        ModifyFunction{
             signature: "operator==(QByteArray,const char*)"
             remove: RemoveFlag.All
             until: 5
         }
         ModifyFunction{
+            signature: "operator==(QByteArray,const char*)"
+            ModifyArgument{
+                index: 2
+                NoNullPointer{}
+                ReplaceType{
+                    modifiedType: "io.qt.core.QByteArrayView"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QByteArrayView %out = qtjambi_cast<QByteArrayView>(%env, %in);"}
+                }
+            }
+            since: 6
+        }
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Equals
+            until: 5
+            Text{content: "if (other instanceof byte[]) {\n"+
+                          "    other = new io.qt.core.QByteArray((byte[]) other);\n"+
+                          "}else if (other instanceof java.nio.ByteBuffer) {\n"+
+                          "    other = new io.qt.core.QByteArray((java.nio.ByteBuffer) other);\n"+
+                          "}"}
+        }
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Equals
+            since: 6
+            Text{content: "if (other instanceof byte[]) {\n"+
+                          "    other = new io.qt.core.QByteArrayView((byte[]) other);\n"+
+                          "}else if (other instanceof java.nio.ByteBuffer) {\n"+
+                          "    other = new io.qt.core.QByteArrayView((java.nio.ByteBuffer) other);\n"+
+                          "}"}
+        }
+        ModifyFunction{
             signature: "operator!=(QByteArray,const char*)"
             remove: RemoveFlag.All
             until: 5
-        }
-        ModifyFunction{
-            signature: "operator==(const char*)"
-            remove: RemoveFlag.All
-            since: 6
-        }
-        ModifyFunction{
-            signature: "operator<(const char*)"
-            remove: RemoveFlag.All
-            since: 6
         }
         ModifyFunction{
             signature: "operator!=(const char*)"
@@ -7894,46 +8034,6 @@ if(destinationChild<0)
                     type: "std::function<bool(char)>"
                 }
             }
-        }
-        InjectCode{
-            target: CodeClass.Java
-            position: Position.Equals
-            until: 5
-            Text{content: "if (other instanceof byte[]) {\n"+
-                          "    other = new io.qt.core.QByteArray((byte[]) other);\n"+
-                          "}else if (other instanceof java.nio.ByteBuffer) {\n"+
-                          "    other = new io.qt.core.QByteArray((java.nio.ByteBuffer) other);\n"+
-                          "}"}
-        }
-        InjectCode{
-            target: CodeClass.Java
-            position: Position.Equals
-            since: 6
-            Text{content: "if (other instanceof byte[]) {\n"+
-                          "    other = new io.qt.core.QByteArrayView((byte[]) other);\n"+
-                          "}else if (other instanceof java.nio.ByteBuffer) {\n"+
-                          "    other = new io.qt.core.QByteArrayView((java.nio.ByteBuffer) other);\n"+
-                          "}"}
-        }
-        InjectCode{
-            target: CodeClass.Java
-            position: Position.Compare
-            until: 5
-            Text{content: "if (other instanceof byte[]) {\n"+
-                          "    other = new io.qt.core.QByteArray((byte[]) other);\n"+
-                          "}else if (other instanceof java.nio.ByteBuffer) {\n"+
-                          "    other = new io.qt.core.QByteArray((java.nio.ByteBuffer) other);\n"+
-                          "}"}
-        }
-        InjectCode{
-            target: CodeClass.Java
-            position: Position.Compare
-            since: 6
-            Text{content: "if (other instanceof byte[]) {\n"+
-                          "    other = new io.qt.core.QByteArrayView((byte[]) other);\n"+
-                          "}else if (other instanceof java.nio.ByteBuffer) {\n"+
-                          "    other = new io.qt.core.QByteArrayView((java.nio.ByteBuffer) other);\n"+
-                          "}"}
         }
         InjectCode{
             target: CodeClass.Java
@@ -8844,36 +8944,6 @@ if(destinationChild<0)
                     Text{content: "JBufferConstData %out(%env, %in);"}
                 }
             }
-        }
-        ModifyFunction{
-            signature: "operator<(QByteArray,const char*)"
-            ModifyArgument{
-                index: 1
-                NoNullPointer{}
-                ReplaceType{
-                    modifiedType: "io.qt.core.QByteArrayView"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QByteArrayView %out = qtjambi_cast<QByteArrayView>(%env, %in);"}
-                }
-            }
-            since: 6
-        }
-        ModifyFunction{
-            signature: "operator==(QByteArray,const char*)"
-            ModifyArgument{
-                index: 1
-                NoNullPointer{}
-                ReplaceType{
-                    modifiedType: "io.qt.core.QByteArrayView"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QByteArrayView %out = qtjambi_cast<QByteArrayView>(%env, %in);"}
-                }
-            }
-            since: 6
         }
         ModifyFunction{
             signature: "operator=(QByteArray)"
@@ -10615,6 +10685,9 @@ if(destinationChild<0)
         ObjectType{
             name: "State"
             Rejection{functionName: "reset"}
+            Rejection{functionName: "clear"}
+            Rejection{fieldName: "clearFn"}
+            Rejection{className: "ClearDataFn"}
             since: 6
         }
         ModifyFunction{
@@ -11092,6 +11165,26 @@ if(destinationChild<0)
         Rejection{
             functionName: "setNativeArguments"
             since: 6
+        }
+        Rejection{
+            enumName: "UnixProcessFlag"
+            since: 6.6
+        }
+        Rejection{
+            className: "UnixProcessParameters"
+            since: 6.6
+        }
+        Rejection{
+            functionName: "setUnixProcessParameters"
+            since: 6.6
+        }
+        Rejection{
+            functionName: "unixProcessParameters"
+            since: 6.6
+        }
+        Rejection{
+            functionName: "setUnixProcessParameters"
+            since: 6.6
         }
 
         EnumType{
@@ -11690,6 +11783,11 @@ if(destinationChild<0)
         Rejection{functionName: "connect_functor"}
         Rejection{functionName: "disconnectImpl"}
         Rejection{fieldName: "staticQtMetaObject"}
+        ModifyFunction{
+            signature: "setProperty(const char*,QVariant&&)"
+            remove: RemoveFlag.All
+            since: 6.6
+        }
 
         ModifyFunction{
             signature: "destroyed(QObject *)"
@@ -12510,6 +12608,16 @@ if(destinationChild<0)
             }
             since: [6, 5]
         }
+        Rejection{
+            functionName: "requestPermission"
+            since: [6, 5]
+        }
+    }
+
+    ValueType{
+        name: "QPermission"
+        generate: false
+        since: [6, 5]
     }
     
     ValueType{
@@ -13886,9 +13994,22 @@ if(destinationChild<0)
             }
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QtFuture_6_1to5__"
+                quoteBeforeLine: "}// class"
+                since: [6, 1]
+                until: 6.5
+            }
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
                 quoteAfterLine: "class QtFuture_6_3__"
                 quoteBeforeLine: "}// class"
                 since: [6, 3]
+            }
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QtFuture_6_6__"
+                quoteBeforeLine: "}// class"
+                since: [6, 6]
             }
         }
         since: 6
@@ -14280,6 +14401,10 @@ if(destinationChild<0)
                           "    }\n"+
                           "}"}
         }
+        Rejection{
+            className: "QGenericRunnable"
+            since: 6.6
+        }
     }
     
     
@@ -14319,6 +14444,7 @@ if(destinationChild<0)
             signature: "value(const QString &, const QLatin1StringView &)const"
             remove: RemoveFlag.All
             since: [6, 4]
+            until: [6, 5]
         }
         ModifyFunction{
             signature: "value(QLatin1String, QLatin1String)const"
@@ -14329,6 +14455,7 @@ if(destinationChild<0)
             signature: "value(QLatin1StringView, QLatin1StringView)const"
             remove: RemoveFlag.All
             since: [6, 4]
+            until: [6, 5]
         }
         ModifyFunction{
             signature: "value(QLatin1String)const"
@@ -14339,6 +14466,7 @@ if(destinationChild<0)
             signature: "value(QLatin1StringView)const"
             remove: RemoveFlag.All
             since: [6, 4]
+            until: [6, 5]
         }
         ModifyFunction{
             signature: "hasAttribute(QLatin1String)const"
@@ -14349,6 +14477,7 @@ if(destinationChild<0)
             signature: "hasAttribute(QLatin1StringView)const"
             remove: RemoveFlag.All
             since: [6, 4]
+            until: [6, 5]
         }
         InjectCode{
             ImportFile{
@@ -16137,6 +16266,11 @@ if(destinationChild<0)
             signature: "operator==(QLatin1StringView)"
             remove: RemoveFlag.All
             since: [6, 4]
+        }
+        ModifyFunction{
+            signature: "assign(QAnyStringView)"
+            remove: RemoveFlag.All
+            since: [6, 6]
         }
         ExtraIncludes{
             Include{
@@ -18937,15 +19071,6 @@ if(destinationChild<0)
         }
     }
     
-    Rejection{
-        className: "QDebug::Stream"
-    }
-    
-    EnumType{
-        name: "QDebug::VerbosityLevel"
-        forceInteger: true
-    }
-    
     ObjectType{
         name: "QDebugStateSaver"
         implementing: "java.lang.AutoCloseable"
@@ -18962,6 +19087,13 @@ if(destinationChild<0)
         name: "QDebug"
         Rejection{
             enumName: "Latin1Content"
+        }
+        Rejection{
+            className: "Stream"
+        }
+        EnumType{
+            name: "VerbosityLevel"
+            forceInteger: true
         }
         implementing: "java.lang.AutoCloseable, java.lang.Appendable"
         CustomConstructor{
@@ -21371,6 +21503,7 @@ if(destinationChild<0)
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QRandomGenerator::QRandomGenerator*', unmatched parameter type 'const quint32[N]'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QRandomGenerator::_fillRange', unmatched parameter type 'qptrdiff'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QtFuture::makeReadyFuture*'*"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method QtFuture::makeReadyValueFuture*"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'reportFinished(const JObjectWrapper*)' for function modification in 'QtJambiFutureInterface' not found.*"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QFuture::*', unmatched parameter type '*QFuture*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QCalendar::QCalendar', unmatched parameter type 'QCalendar::SystemId'"}
@@ -21417,7 +21550,7 @@ if(destinationChild<0)
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method operator<<<T1,T2>(std::pair<T1,T2>)"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method operator>><T1,T2>(std::pair<T1,T2>&)"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping field 'QSequentialConstIterator::i' with unmatched type '*::Node*'"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QCoreApplication::requestPermission<Slot>', unmatched parameter type 'const QPermission&'"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QCoreApplication::requestPermission<*>', unmatched parameter type 'const QPermission&'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: namespace 'io.qt.core.Q*Permission' for enum '*' is not declared"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QDebug::operator<<<Args...>', unmatched parameter type 'const std::basic_string<*>&'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'QPartialOrdering(QPartialOrdering)' for function modification in 'QPartialOrdering' not found. Possible candidates: "}

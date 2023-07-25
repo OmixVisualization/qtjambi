@@ -567,7 +567,8 @@ namespace rpp {
                             "cstdint",
                             "cstdlib",
                             "chrono",
-                            "stdbool.h"
+                            "stdbool.h",
+                            "climits"
                         };
                     if((verbose & DEBUGLOG_INCLUDE_ERRORS) != 0) {
                         QString current_file(env.current_file.absoluteFilePath());
@@ -684,9 +685,9 @@ namespace rpp {
                     else
                         definition = "1";
                 }else if(macroName.startsWith("QT_DEPRECATED_VERSION_X")){
-                    definition = "QTJAMBI_DEPRECATED_X(text)";
+                    definition = "Q_DECL_DEPRECATED_X(text)";
                 }else if(macroName.startsWith("QT_DEPRECATED_VERSION")){
-                    definition = "QTJAMBI_DEPRECATED";
+                    definition = "Q_DECL_DEPRECATED";
                 }else if(macroName=="QT_REQUIRE_CONFIG"){
                     return __first;
                 }else if(macroName=="QT_DECL_METATYPE_EXTERN_TAGGED"
@@ -769,6 +770,7 @@ namespace rpp {
                 int token;
                 __first = next_token(__first, __last, &token);
                 bool isHasInclude = false;
+                bool isHasCppAttribute = false;
 
                 switch (token) {
                     case TOKEN_NUMBER:
@@ -822,6 +824,7 @@ namespace rpp {
 
                     case TOKEN_IDENTIFIER: {
                         isHasInclude = _M_current_text==std::string("__has_include");
+                        isHasCppAttribute = _M_current_text==std::string("__has_cpp_attribute");
                         result->set_long(0);
                         int _token;
                         _InputIterator ___first = next_token(__first, __last, &_token);
@@ -860,15 +863,21 @@ namespace rpp {
                                 }while(true);
                             }
                         }
-                        if(!isHasInclude)
+                        if(isHasCppAttribute){
                             __first = eval_constant_expression(__first, __last, result);
-                        next_token(__first, __last, &token);
-
-                        if(!isHasInclude){
-                            while(token == ','){
-                                __first = next_token(__first, __last, &token);
+                            next_token(__first, __last, &token);
+                            result->set_long(1);
+                        }else{
+                            if(!isHasInclude)
                                 __first = eval_constant_expression(__first, __last, result);
-                                next_token(__first, __last, &token);
+                            next_token(__first, __last, &token);
+
+                            if(!isHasInclude){
+                                while(token == ','){
+                                    __first = next_token(__first, __last, &token);
+                                    __first = eval_constant_expression(__first, __last, result);
+                                    next_token(__first, __last, &token);
+                                }
                             }
                         }
 

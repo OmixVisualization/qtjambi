@@ -29,19 +29,14 @@
 ****************************************************************************/
 package io.qt.core;
 
-import java.util.Collection;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-
-import io.qt.QNoNativeResourcesException;
-import io.qt.QNoImplementationException;
-import io.qt.QtUninvokable;
-import io.qt.NativeAccess;
+import java.util.*;
+import java.util.function.*;
+import io.qt.*;
 
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qlist.html">QList</a></p>
  */
-public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneable
+public class QList<T> extends AbstractList<T> implements java.util.List<T>, Cloneable
 {
     static {
         QtJambi_LibraryUtilities.initialize();
@@ -399,6 +394,22 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> boolean removeOne(long __this__nativeId, T t);
 	
+	/**
+     * <p>See <a href="https://doc.qt.io/qt/qlist.html#removeIf" class="member-name-class">QList::<wbr>removeIf(Predicate)</a></p>
+	 */
+    @QtUninvokable
+    public final boolean removeIf(Predicate<? super T> predicate)    {
+        Objects.requireNonNull(predicate);
+        boolean removed = false;
+        for(T value : clone()) {
+            if (predicate.test(value)) {
+                removeAll(value);
+                removed = true;
+            }
+        }
+        return removed;
+    }
+	
     @QtUninvokable
     private static native void remove(long __this__nativeId, int i, int n);
 
@@ -489,6 +500,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> T valueDefault(long __this__nativeId, int i, T defaultValue);
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#operator-eq-eq" class="member-name-class">QList::<wbr>operator==(QList&lt;T>)const</a></code></p>
+     */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     @QtUninvokable
@@ -499,6 +513,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
         return false;
     }
 
+    /**
+     * Returns the objects's hash code computed by <code>qHash(QList&lt;T>)</code>.
+     */
     @Override
     @QtUninvokable
     public int hashCode() { 
@@ -576,12 +593,6 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @QtUninvokable
     private static native <T> void swapItemsAt(long __this__nativeId, int i, int j);
     
-    @Override
-    @QtUninvokable
-    protected final void removeAtIndex(int cursor) {
-        removeAt(cursor);
-    }
-    
     @QtUninvokable
     public final QSet<T> toSet() {
 		QSet<T> set = new QSet<>(elementMetaType());
@@ -589,6 +600,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
         return set;
     }
     
+    /**
+     * <p>See <code>operator&lt;&lt;(QDataStream&amp;,<wbr>QList&lt;T>)</code></p>
+     */
     @io.qt.QtUninvokable
     public void writeTo(io.qt.core.QDataStream stream){
         writeTo(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
@@ -597,6 +611,9 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     @io.qt.QtUninvokable
     private native void writeTo(long __this__nativeId, long stream);
     
+    /**
+     * <p>See <code>operator&gt;&gt;(QDataStream&amp;,<wbr>QList&lt;T>&amp;)</code></p>
+     */
     @io.qt.QtUninvokable
     public void readFrom(io.qt.core.QDataStream stream){
         readFrom(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(stream));
@@ -615,7 +632,7 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     /**
      * Returns a QList containing given elements.
      *
-     * @param <E> the {@code QList}'s element type
+     * @param <T> the {@code QList}'s element type
      * @param element0 the first element
      * @param elements subsequent elements
      * @return a {@code QList} containing the specified element
@@ -642,7 +659,7 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
     /**
      * Returns a QStringList containing given elements.
      *
-     * @param <E> the {@code QStringList}'s element type
+     * @param <T> the {@code QStringList}'s element type
      * @param element0 the first element
      * @param elements subsequent elements
      * @return a {@code QStringList} containing the specified element
@@ -657,7 +674,7 @@ public class QList<T> extends io.qt.internal.AbstractList<T> implements Cloneabl
         }
         return result;
     }
-    
+
     static String pairPrefix() {
     	return "QPair";
     }

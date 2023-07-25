@@ -29,12 +29,8 @@
 ****************************************************************************/
 package io.qt.core;
 
-import java.util.Collection;
-import java.util.Deque;
-import java.util.NoSuchElementException;
-
-import io.qt.QtUninvokable;
-import io.qt.NativeAccess;
+import java.util.*;
+import io.qt.*;
 
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qstack.html">QStack</a></p>
@@ -177,7 +173,7 @@ public class QStack<T> extends QVector<T> implements Deque<T>
 	@Override
     @QtUninvokable
 	public java.util.Iterator<T> descendingIterator() {
-		return super.descendingIterator();
+		return constEnd().toJavaDescendingIterator();
 	}
 
 	@Override

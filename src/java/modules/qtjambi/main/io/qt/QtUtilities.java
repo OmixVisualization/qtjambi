@@ -54,9 +54,24 @@ public final class QtUtilities {
 	
 	private QtUtilities() {}
 	
+	/**
+	 * Enum for requirement.
+	 * @see QtUtilities#loadQtLibrary(String, LibraryRequirementMode, String...)
+	 * @see QtUtilities#loadUtilityLibrary(String, LibraryRequirementMode, String...)
+	 */
 	public enum LibraryRequirementMode{
+		/**
+		 * Application cannot run without specified library
+		 */
         Mandatory,
+        /**
+         * Specified library is optional
+         */
         Optional,
+        /**
+         * In case of bundled native libraries specified library
+         * has to be extracted but not loaded.
+         */
         ProvideOnly
     };
 	
@@ -250,18 +265,33 @@ public final class QtUtilities {
     	Utility.initializeNativeObject(callerInfo.declaringClass, object, arguments.arguments());
     }
     
+    /**
+     * Equivalent to {@link java.util.function.IntSupplier} with {@code byte} result.
+     */
     @FunctionalInterface
     public interface ByteSupplier{ byte getAsByte(); }
     
+    /**
+     * Equivalent to {@link java.util.function.IntSupplier} with {@code short} result.
+     */
     @FunctionalInterface
     public interface ShortSupplier{ short getAsShort(); }
     
+    /**
+     * Equivalent to {@link java.util.function.DoubleSupplier} with {@code float} result.
+     */
     @FunctionalInterface
     public interface FloatSupplier{ float getAsFloat(); }
 
+    /**
+     * Equivalent to {@link java.util.function.IntSupplier} with {@code char} result.
+     */
     @FunctionalInterface
     public interface CharSupplier{ char getAsChar(); }
     
+    /**
+     * Equivalent to {@link java.util.function.Supplier}.
+     */
     @FunctionalInterface
     public interface Supplier<T> extends java.util.function.Supplier<T>, java.io.Serializable { }
     

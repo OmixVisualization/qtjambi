@@ -30,10 +30,20 @@
 
 package io.qt;
 
+import io.qt.core.QMetaObject;
+
+/**
+ * This exception is thrown when a string-based method representation cannot be resolved in a class.
+ * @see QMetaObject#invokeMethod(io.qt.core.QObject, String, Object...)
+ * @see QMetaObject#invokeMethod(io.qt.core.QObject, String, io.qt.core.Qt.ConnectionType, Object...)
+ */
 public class QNoSuchMethodException extends QConnectionException
 {
     private static final long serialVersionUID = 1L;
 
+    /**
+     * @hidden
+     */
     public QNoSuchMethodException(String extraMessage)
     {
         super(extraMessage.length() > 0 ? "Method not found: " + extraMessage : "Method not found");

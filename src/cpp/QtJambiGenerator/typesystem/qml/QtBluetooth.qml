@@ -286,6 +286,7 @@ TypeSystem{
                                   "%env->SetByteArrayRegion(jbyteArray(%out), 0, 16, reinterpret_cast<jbyte *>(%in.data));"}
                 }
             }
+            until: 6.5
         }
         ModifyFunction{
             signature: "QBluetoothUuid(quint128)"
@@ -305,6 +306,7 @@ TypeSystem{
                                   "%env->GetByteArrayRegion(jbyteArray(%in), 0, 16, reinterpret_cast<jbyte *>(%out.data));"}
                 }
             }
+            until: 6.5
         }
         ModifyFunction{
             signature: "toUInt16(bool*) const"

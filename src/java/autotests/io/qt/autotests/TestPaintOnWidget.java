@@ -31,12 +31,7 @@ package io.qt.autotests;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.junit.AfterClass;
-import org.junit.Assume;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-import org.junit.rules.TestRule;
+import org.junit.*;
 
 import io.qt.QThreadAffinityException;
 import io.qt.core.QEventLoop;

@@ -70,6 +70,7 @@
             <exclude name="io/qt/**/Test*Xmlpatterns.java" unless="${qtjambi.xmlpatterns.any.true}"/>
             <exclude name="io/qt/**/Test*XmlPatterns.java" unless="${qtjambi.xmlpatterns.any.true}"/>
             <exclude name="io/qt/**/Test*Charts.java" unless="${qtjambi.charts.any.true}"/>
+            <exclude name="io/qt/**/Test*Graphs.java" unless="${qtjambi.graphs.any.true}"/>
             <exclude name="io/qt/**/Test*DataVis.java" unless="${qtjambi.datavisualization.any.true}"/>
             <exclude name="io/qt/**/Test*DataVisualization.java" unless="${qtjambi.datavisualization.any.true}"/>
             <exclude name="io/qt/**/Test*SpatialAudio.java" unless="${qtjambi.spatialaudio.any.true}"/>
@@ -132,6 +133,7 @@
             <exclude name="io/qt/**/TestVirtualKeyboard*.java" unless="${qtjambi.virtualkeyboard.any.true}"/>
             <exclude name="io/qt/**/TestSpatialAudio*.java" unless="${qtjambi.spatialaudio.any.true}"/>
             <exclude name="io/qt/**/TestCharts*.java" unless="${qtjambi.charts.any.true}"/>
+            <exclude name="io/qt/**/TestGraphs*.java" unless="${qtjambi.graphs.any.true}"/>
             <exclude name="io/qt/**/TestDataVis*.java" unless="${qtjambi.datavisualization.any.true}"/>
             <exclude name="io/qt/**/TestQuick3D*.java" unless="${qtjambi.quick3d.any.true}"/>
             <exclude name="io/qt/**/TestQml*.java" unless="${qtjambi.qml.any.true}"/>

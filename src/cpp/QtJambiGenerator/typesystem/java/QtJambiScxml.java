@@ -42,7 +42,7 @@ class ForeachLoopBody___ {
 
 class QScxmlStateMachine___ {
     /**
-     * <p>See <a href="@docRoot/qscxmlstatemachine.html#onEntry">QScxmlStateMachine::onEntry(QObject, const char*)</a></p>
+     * <p>See <a href="@docRoot/qscxmlstatemachine.html#onEntry"><code>QScxmlStateMachine::onEntry(QObject, const char*)</code></a></p>
      */
     public static io.qt.core.QMetaObject.Slot1<Boolean> onEntry(io.qt.core.QObject object, String slot){
         io.qt.core.QMetaMethod method = object.metaObject().method(slot);
@@ -55,7 +55,7 @@ class QScxmlStateMachine___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qscxmlstatemachine.html#onExit">QScxmlStateMachine::onExit(QObject, const char*)</a></p>
+     * <p>See <a href="@docRoot/qscxmlstatemachine.html#onExit"><code>QScxmlStateMachine::onExit(QObject, const char*)</code></a></p>
      */
     public static io.qt.core.QMetaObject.Slot1<Boolean> onExit(io.qt.core.QObject object, String slot){
         io.qt.core.QMetaMethod method = object.metaObject().method(slot);
@@ -68,7 +68,7 @@ class QScxmlStateMachine___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qscxmlstatemachine.html#onEntry">QScxmlStateMachine::onEntry(Functor)</a></p>
+     * <p>See <a href="@docRoot/qscxmlstatemachine.html#onEntry"><code>QScxmlStateMachine::onEntry(Functor)</code></a></p>
      */
     public static io.qt.core.QMetaObject.Slot1<Boolean> onEntry(io.qt.core.QMetaObject.Slot0 slot){
         io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
@@ -79,7 +79,7 @@ class QScxmlStateMachine___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qscxmlstatemachine.html#onExit">QScxmlStateMachine::onExit(Functor)</a></p>
+     * <p>See <a href="@docRoot/qscxmlstatemachine.html#onExit"><code>QScxmlStateMachine::onExit(Functor)</code></a></p>
      */
     public static io.qt.core.QMetaObject.Slot1<Boolean> onExit(io.qt.core.QMetaObject.Slot0 slot){
         io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
@@ -90,7 +90,7 @@ class QScxmlStateMachine___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qscxmlstatemachine.html#onEntry">QScxmlStateMachine::onEntry(Functor)</a></p>
+     * <p>See <a href="@docRoot/qscxmlstatemachine.html#onEntry"><code>QScxmlStateMachine::onEntry(Functor)</code></a></p>
      */
     public static io.qt.core.QMetaObject.Slot1<Boolean> onEntry(io.qt.core.QMetaObject.Emitable0 signal){
         return (isEnteringState) -> {
@@ -100,7 +100,7 @@ class QScxmlStateMachine___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qscxmlstatemachine.html#onExit">QScxmlStateMachine::onExit(Functor)</a></p>
+     * <p>See <a href="@docRoot/qscxmlstatemachine.html#onExit"><code>QScxmlStateMachine::onExit(Functor)</code></a></p>
      */
     public static io.qt.core.QMetaObject.Slot1<Boolean> onExit(io.qt.core.QMetaObject.Emitable0 signal){
         return (isEnteringState) -> {
@@ -110,7 +110,7 @@ class QScxmlStateMachine___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToState">QScxmlStateMachine::connectToState(QString, Functor, Qt::ConnectionType)</a></p>
+     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToState"><code>QScxmlStateMachine::connectToState(QString, Functor, Qt::ConnectionType)</code></a></p>
      */
     public io.qt.core.QMetaObject.Connection connectToState(String scxmlStateName,
             io.qt.core.QMetaObject.Slot0 slot, io.qt.core.Qt.ConnectionType... type){
@@ -137,7 +137,7 @@ class QScxmlStateMachine___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToState">QScxmlStateMachine::connectToState(QString, Functor, Qt::ConnectionType)</a></p>
+     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToState"><code>QScxmlStateMachine::connectToState(QString, Functor, Qt::ConnectionType)</code></a></p>
      */
     public io.qt.core.QMetaObject.Connection connectToState(String scxmlStateName,
             io.qt.core.QMetaObject.Connectable0 signal, io.qt.core.Qt.ConnectionType... type){
@@ -169,7 +169,7 @@ class QScxmlStateMachine___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToState">QScxmlStateMachine::connectToState(QString, Functor, Qt::ConnectionType)</a></p>
+     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToState"><code>QScxmlStateMachine::connectToState(QString, Functor, Qt::ConnectionType)</code></a></p>
      */
     public io.qt.core.QMetaObject.Connection connectToState(String scxmlStateName,
             io.qt.core.QMetaObject.Slot1<Boolean> slot, io.qt.core.Qt.ConnectionType... type){
@@ -199,7 +199,7 @@ class QScxmlStateMachine___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToState">QScxmlStateMachine::connectToState(QString, Functor, Qt::ConnectionType)</a></p>
+     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToState"><code>QScxmlStateMachine::connectToState(QString, Functor, Qt::ConnectionType)</code></a></p>
      */
     @SuppressWarnings("unchecked")
     public io.qt.core.QMetaObject.Connection connectToState(String scxmlStateName,
@@ -235,7 +235,7 @@ class QScxmlStateMachine___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToState">QScxmlStateMachine::connectToState(QString, QObject, const char*, Qt::ConnectionType)</a></p>
+     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToState"><code>QScxmlStateMachine::connectToState(QString, QObject, const char*, Qt::ConnectionType)</code></a></p>
      */
     public io.qt.core.QMetaObject.Connection connectToState(String scxmlStateName,
             io.qt.core.QObject object, String member, io.qt.core.Qt.ConnectionType... type){
@@ -260,7 +260,7 @@ class QScxmlStateMachine___ {
     private native io.qt.core.QMetaObject.Connection connectToState(long nativeId, String scxmlStateName, io.qt.core.QMetaObject.AbstractSlot slot, int type);
     
     /**
-     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToEvent">QScxmlStateMachine::connectToEvent(QString, Functor, Qt::ConnectionType)</a></p>
+     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToEvent"><code>QScxmlStateMachine::connectToEvent(QString, Functor, Qt::ConnectionType)</code></a></p>
      */
     public io.qt.core.QMetaObject.Connection connectToEvent(String scxmlStateName,
             io.qt.core.QMetaObject.Slot0 slot, io.qt.core.Qt.ConnectionType... type){
@@ -287,7 +287,7 @@ class QScxmlStateMachine___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToEvent">QScxmlStateMachine::connectToEvent(QString, Functor, Qt::ConnectionType)</a></p>
+     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToEvent"><code>QScxmlStateMachine::connectToEvent(QString, Functor, Qt::ConnectionType)</code></a></p>
      */
     public io.qt.core.QMetaObject.Connection connectToEvent(String scxmlStateName,
             io.qt.core.QMetaObject.Connectable0 signal, io.qt.core.Qt.ConnectionType... type){
@@ -320,7 +320,7 @@ class QScxmlStateMachine___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToEvent">QScxmlStateMachine::connectToEvent(QString, Functor, Qt::ConnectionType)</a></p>
+     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToEvent"><code>QScxmlStateMachine::connectToEvent(QString, Functor, Qt::ConnectionType)</code></a></p>
      */
     public io.qt.core.QMetaObject.Connection connectToEvent(String scxmlStateName,
             io.qt.core.QMetaObject.Slot1<QScxmlEvent> slot, io.qt.core.Qt.ConnectionType... type){
@@ -350,7 +350,7 @@ class QScxmlStateMachine___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToEvent">QScxmlStateMachine::connectToEvent(QString, Functor, Qt::ConnectionType)</a></p>
+     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToEvent"><code>QScxmlStateMachine::connectToEvent(QString, Functor, Qt::ConnectionType)</code></a></p>
      */
     @SuppressWarnings("unchecked")
     public io.qt.core.QMetaObject.Connection connectToEvent(String scxmlStateName,
@@ -386,7 +386,7 @@ class QScxmlStateMachine___ {
     }
     
     /**
-     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToEvent">QScxmlStateMachine::connectToEvent(QString, QObject, const char*, Qt::ConnectionType)</a></p>
+     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToEvent"><code>QScxmlStateMachine::connectToEvent(QString, QObject, const char*, Qt::ConnectionType)</code></a></p>
      */
     public io.qt.core.QMetaObject.Connection connectToEvent(String scxmlStateName,
             io.qt.core.QObject object, String member, io.qt.core.Qt.ConnectionType... type){

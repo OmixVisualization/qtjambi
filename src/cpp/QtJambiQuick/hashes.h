@@ -274,7 +274,13 @@ inline hash_type qHash(const QQuickRenderTarget &value, hash_type seed = 0)
     seed = hash(seed, p->sampleCount);
     switch(p->type){
     case QQuickRenderTargetPrivate::Type::NativeTexture:
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+        seed = hash(seed, p->u.nativeTexture.layoutOrState);
+        seed = hash(seed, p->u.nativeTexture.rhiFormat);
+        seed = hash(seed, p->u.nativeTexture.rhiFlags);
+#else
         seed = hash(seed, p->u.nativeTexture.layout);
+#endif
         seed = hash(seed, p->u.nativeTexture.object);
         break;
     case QQuickRenderTargetPrivate::Type::RhiRenderTarget:

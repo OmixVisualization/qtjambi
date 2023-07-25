@@ -37,6 +37,7 @@ import java.lang.annotation.Target;
 
 /**
  * Marks a non-final java method to be declared final in C++.
+ * This is useful whenever a native non-virtual method cannot be represented by a Java method with final modifier.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)

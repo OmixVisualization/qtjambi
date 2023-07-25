@@ -42,6 +42,8 @@ namespace Java{
                                             QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(execPostRoutines)
                                          )
         }
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QModelIndex,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QPluginLoader,
             QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(loadPluginInstance)
         )
@@ -160,11 +162,18 @@ namespace Java{
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(URLConnection,
                                          QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getInputStream)
-                                         QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(getContentLengthLong))
+                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getOutputStream)
+                                         QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(getContentLengthLong)
+                                         QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(getDoInput)
+                                         QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(getDoOutput))
+
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(JarURLConnection,
+                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getJarEntry))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(ZipEntry,
                                          QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getName)
-                                         QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(getSize))
+                                         QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(getSize)
+                                         QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isDirectory))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(InputStream,
                                          QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(close)

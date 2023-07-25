@@ -717,7 +717,7 @@ void NativeSlotObject::impl(int which, QSlotObjectBase *this_, QObject *, void *
                             for (int i = 0; i < converted_arguments.size(); ++i) {
                                 const ParameterTypeInfo& parameterTypeInfo = parameterTypeInfos[i+1];
                                 converted_arguments[i].l = nullptr;
-                                if(!parameterTypeInfo.convertInternalToExternal(env, &scope, a[i+1], &converted_arguments[i], true)){
+                                if(!parameterTypeInfo.convertInternalToExternal(env, &scope, a[i+1], converted_arguments[i], true)){
                                     success = false;
                                     break;
                                 }

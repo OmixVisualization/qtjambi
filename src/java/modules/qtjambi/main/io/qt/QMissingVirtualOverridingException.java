@@ -29,6 +29,9 @@
 ****************************************************************************/
 package io.qt;
 
+/**
+ * Exception thrown when a class does not define a natively defined pure-virtual method.
+ */
 public class QMissingVirtualOverridingException extends RuntimeException
 {
     private static final long serialVersionUID = 1L;

@@ -270,7 +270,7 @@ jobject AutoMultiHashAccess::uniqueKeys(JNIEnv *env, const void* container)
         while (n != e) {
             jvalue jv;
             jv.l = nullptr;
-            m_keyInternalToExternalConverter(env, nullptr, n.key(), &jv, true);
+            m_keyInternalToExternalConverter(env, nullptr, n.key(), jv, true);
             listAccess->insert(env, listContainer, idx++, 1, jv.l);
             ++n;
         }
@@ -377,14 +377,14 @@ jobject AutoMultiHashAccess::values(JNIEnv *env, const void* container, jobject 
             }
 #else
             iterator i = d->find(*this, akey);
-            if(i.e){
+            if(i.e && !i.i.isUnused()){
                 multi_iterator& it = reinterpret_cast<multi_iterator&>(i);
                 const Chain* chain = *it.e;
                 jint idx = listAccess->size(env, listContainer);
                 while(chain){
                     jvalue jv;
                     jv.l = nullptr;
-                    m_valueInternalToExternalConverter(env, nullptr, chain->value(), &jv, true);
+                    m_valueInternalToExternalConverter(env, nullptr, chain->value(), jv, true);
                     listAccess->insert(env, listContainer, idx++, 1, jv.l);
                     chain = chain->next(*this);
                 }
@@ -419,7 +419,7 @@ jboolean AutoMultiHashAccess::contains(JNIEnv *env, const void* container, jobje
         }
 #else
         iterator i = d->find(*this, akey);
-        if(i.e){
+        if(i.e && !i.i.isUnused()){
             jv.l = value;
             void* avalue = nullptr;
             if(m_valueExternalToInternalConverter(env, &scope, jv, avalue, jValueType::l)){
@@ -463,7 +463,7 @@ jint AutoMultiHashAccess::count(JNIEnv *env, const void* container, jobject key,
         }
 #else
         iterator i = d->find(*this, akey);
-        if(i.e){
+        if(i.e && !i.i.isUnused()){
             jv.l = value;
             void* avalue = nullptr;
             if(m_valueExternalToInternalConverter(env, &scope, jv, avalue, jValueType::l)){
@@ -607,7 +607,7 @@ jint AutoMultiHashAccess::remove(JNIEnv *env, void* container, jobject key, jobj
             }while(found);
 #else
             iterator i = d->find(*this, akey);
-            if(i.e){
+            if(i.e && !i.i.isUnused()){
                 jv.l = value;
                 void* avalue = nullptr;
                 if(m_valueExternalToInternalConverter(env, &scope, jv, avalue, jValueType::l)){

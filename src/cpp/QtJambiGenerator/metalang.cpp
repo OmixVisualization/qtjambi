@@ -64,6 +64,8 @@ MetaType *MetaType::copy() const {
 
 bool MetaType::isQObject() const { return m_pattern == ObjectPattern && static_cast<const ComplexTypeEntry *>(m_type_entry)->isQObject(); }
 
+bool MetaType::isQEvent() const { return m_pattern == ObjectPattern && static_cast<const ComplexTypeEntry *>(m_type_entry)->isQEvent(); }
+
 QString MetaType::cppSignature() const {
     QString s;
 
@@ -2075,6 +2077,8 @@ void MetaClass::setBaseClass(MetaClass *base_class) {
     if(base_class){
         if(base_class->typeEntry()->isQObject())
             m_type_entry->setQObject(true);
+        if(base_class->typeEntry()->isQEvent())
+            m_type_entry->setQEvent(true);
         if(base_class->typeEntry()->isQWidget())
             m_type_entry->setQWidget(true);
         if(base_class->typeEntry()->isQWindow())
@@ -3029,6 +3033,21 @@ void MetaClass::setEnclosedClasses(const MetaClassList &enclosed_classes) {
     m_enclosed_classes = enclosed_classes;
 }
 
+MetaField *MetaClass::findField(const QString &name){
+    for(MetaField *e : m_fields) {
+        if (e->name() == name)
+            return e;
+    }
+    return nullptr;
+}
+
+MetaFunction *MetaClass::findFunction(const QString &name){
+    for(MetaFunction *e : m_functions) {
+        if (e->name() == name)
+            return e;
+    }
+    return nullptr;
+}
 
 MetaEnum *MetaClass::findEnum(const QString &enumName) {
     for(MetaEnum *e : m_enums) {
@@ -3199,7 +3218,7 @@ QString MetaType::normalizedSignature() const {
 }
 
 bool MetaType::hasNativeId() const {
-    return (isQObject() || isValue() || isObject() || isFunctional() || isRValue()) && typeEntry()->isNativeIdBased();
+    return (isQObject() || isValue() || isObject() || isFunctional()) && typeEntry()->isNativeIdBased();
 }
 
 

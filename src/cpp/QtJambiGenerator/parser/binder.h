@@ -82,26 +82,25 @@ class Binder: protected DefaultVisitor {
         static void installMessageHandler(MessageHandler handler);
 
     protected:
-        virtual void visitAccessSpecifier(AccessSpecifierAST *);
-        virtual void visitClassSpecifier(ClassSpecifierAST *);
-        virtual void visitEnumSpecifier(EnumSpecifierAST *);
-        virtual void visitEnumerator(EnumeratorAST *);
-        virtual void visitFunctionDefinition(FunctionDefinitionAST *);
-        virtual void visitLinkageSpecification(LinkageSpecificationAST *);
-        virtual void visitNamespace(NamespaceAST *);
-        virtual void visitSimpleDeclaration(SimpleDeclarationAST *);
-        virtual void visitTemplateDeclaration(TemplateDeclarationAST *);
-        virtual void visitTypedef(TypedefAST *);
-        virtual void visitUsing(UsingAST *);
-        virtual void visitUsingAs(UsingAsAST *);
-        virtual void visitUsingDirective(UsingDirectiveAST *);
-        virtual void visitQProperty(QPropertyAST *);
-        virtual void visitForwardDeclarationSpecifier(ForwardDeclarationSpecifierAST *);
-        virtual void visitQGadget(QGadgetAST *);
-        virtual void visitQObject(QObjectAST *);
-
+        void visitAccessSpecifier(AccessSpecifierAST *) override;
+        void visitClassSpecifier(ClassSpecifierAST *) override;
+        void visitEnumSpecifier(EnumSpecifierAST *) override;
+        void visitEnumerator(EnumeratorAST *) override;
+        void visitFunctionDefinition(FunctionDefinitionAST *) override;
+        void visitLinkageSpecification(LinkageSpecificationAST *) override;
+        void visitNamespace(NamespaceAST *) override;
+        void visitSimpleDeclaration(SimpleDeclarationAST *) override;
+        void visitTemplateDeclaration(TemplateDeclarationAST *) override;
+        void visitTypedef(TypedefAST *) override;
+        void visitUsing(UsingAST *) override;
+        void visitUsingAs(UsingAsAST *) override;
+        void visitUsingDirective(UsingDirectiveAST *) override;
+        void visitQProperty(QPropertyAST *) override;
+        void visitForwardDeclarationSpecifier(ForwardDeclarationSpecifierAST *) override;
+        void visitQGadget(QGadgetAST *) override;
+        void visitQObject(QObjectAST *) override;
     private:
-
+        bool isDeprecated(ExpressionAST *annotationExpression, StringLiteralAST *&deprecationComment);
         int decode_token(std::size_t index) const;
         const NameSymbol *decode_symbol(std::size_t index) const;
         CodeModel::AccessPolicy decode_access_policy(std::size_t index) const;

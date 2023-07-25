@@ -2552,6 +2552,17 @@ TypeSystem{
             }
             since: [6, 5]
         }
+        ModifyFunction{
+            signature: "setWindowCapture(QWindowCapture*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcWindowCapture"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: [6, 6]
+        }
         since: [6, 2]
     }
     
@@ -2623,6 +2634,15 @@ TypeSystem{
             since: [6, 4]
         }
         since: [6, 2]
+    }
+
+    ObjectType{
+        name: "QWindowCapture"
+        since: [6, 6]
+    }
+    ObjectType{
+        name: "QCapturableWindow"
+        since: [6, 6]
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QAudioBuffer::QAudioBuffer', unmatched parameter type 'QAbstractAudioBuffer*'"}

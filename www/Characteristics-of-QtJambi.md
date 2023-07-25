@@ -201,6 +201,28 @@ All Qt functions with container parameters accept lightweight Java
 containers as well, for instance, `QWidget::addActions(QList<QAction*>)`
 maps to `QWidget.addActions(java.util.Collection<QAction>)`.
 
+#### Best Practices
+
+QtJambi container wrappers are significantly less performant than lightweight Java
+containers because every single access has Qt-Java interoperability and type conversion overhead.
+
+A Java container is based on references to `java.lang.Object` type. 
+The generic type parameter is just compile time information. 
+On the contrary, a Qt container is a data structure of actual value type (or key-value types)
+as given in its constructor. When inserting anything to Qt container in Java, 
+the native counterpart of the Java object is copied into the native container.
+In case of a type mismatch an exception is thrown:
+
+``` java
+// raw type list
+QList list = new QList(QObject.class);
+list.add("STRING"); // causes IllegalArgumentException
+```
+
+All of this makes Qt containers more expensive than Java containers.
+However, when using a Java container as Qt method parameter (like in `QWidget.addActions(java.util.Collection<QAction>)`) this effect is reversed.
+Here, sending a Qt container is much faster than a Java container because the java container needs to be converted to native container entry by entry.
+
 ### QVariant
 
 The generic Qt type `QVariant` is directly mapped to `java.lang.Object` int Java.
@@ -480,6 +502,11 @@ QObject.connect(this.statechanged, this, "onStatechanged()");
 QObject.disconnect(this.statechanged, this, "onStatechanged()"); //->true in Android
 ```
 
+##### Code Obfuscation
+
+CAUTION: Code obfuscation breaks the ability to resolve textual signal slot connections. 
+If you intend to release your application with obfuscated byte code you should only use 
+methodhandle-based or lambda-based connections.
 
 #### Emmitting
 
@@ -755,9 +782,9 @@ if(comboBox.thread() != QThread.currentThread())
     QMetaObject.invokeMethod(comboBox::clear, Qt.ConnectionType.BlockingQueuedConnection);
 ```
 
-You can switch of thread affinity checks with the Java start parameter
-`-Dqt.disable.thread.affinity.check=true`. This increases performance
-but leads to hard crashes in case of thread affinity breaches. It is
+You can switch on thread affinity checks with the Java start parameter
+`-Dqt.enable.thread.affinity.check=true`. This decreases performance
+but leads to exceptions in case of thread affinity breaches. It is
 recommended to test your application with enabled thread affinity checks
 and to disable these checks in release/productive mode.
 
@@ -1187,6 +1214,19 @@ public class Message extends QObject{
 }
 ```
 
+### Object Ownership
+
+When transfering `QObject`s from Java to QML be aware that QML engine might change the object's ownership as
+[introduced here](https://doc.qt.io/qt-6/qtqml-cppintegration-data.html#data-ownership). In Qt's terminology 
+"JavaScriptOwnership" means an object is owned by QML/JavaScript code. Do not mix up JavaScript with Java.
+*JavaScript* is the runtime-interpreted script language used in QML when defining functions and bindings.
+On the contrary, *Java* is a compiled programming language using the same type space and API as C++.
+Thus, when using Qt API in Java "CppOwnership" means an object owned by Java code.
+
+Be aware that object's ownership is transferred to QML when it is returned by a Java method (and jas no parent).
+In this case, QML might delete the object although still used in Java. It is highly recommended to only submit
+Java created `QObject`s through properties to avoid this situation.
+
 ### Java QML Modules
 
 Finally, you can bundle your custom Java QML classes into a JAR file and
@@ -1260,7 +1300,7 @@ and *QtJambi* libraries:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.5.1.jar:qtjambi-deployer-6.5.1.jar
+     -p qtjambi-6.5.2.jar:qtjambi-deployer-6.5.2.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1272,7 +1312,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.5.1.jar:qtjambi-deployer-6.5.1.jar
+     -cp qtjambi-6.5.2.jar:qtjambi-deployer-6.5.2.jar
      io.qt.qtjambi.deployer.Main plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1299,7 +1339,7 @@ This is especially necessary on macOS (arm64).
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.5.1.jar:qtjambi-deployer-6.5.1.jar
+     -p qtjambi-6.5.2.jar:qtjambi-deployer-6.5.2.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar

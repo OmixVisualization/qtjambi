@@ -30,23 +30,19 @@
 package io.qt.core;
 
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Optional;
 
 import io.qt.NativeAccess;
 import io.qt.QtObject;
 import io.qt.QtUninvokable;
-import io.qt.internal.AbstractSequentialConstIterator;
 
 /**
- * <p>Java-iterable wrapper for Qt's constant iterator types:
+ * <p>Java-iterable wrapper for Qt's constant iterator types:</p>
  * <ul>
  * <li><a href="https://doc.qt.io/qt/qlist-const-iterator.html">QList&lt;T>::const_iterator</a></li>
  * <li><a href="https://doc.qt.io/qt/qset-const-iterator.html">QSet&lt;T>::const_iterator</a></li>
  * <li>and all other sequential constant iterators</li>
  * </ul>
- * </p>
  * @param <T> value type
  * @see QList#constBegin()
  * @see QList#constEnd()
@@ -54,8 +50,7 @@ import io.qt.internal.AbstractSequentialConstIterator;
  * @see QSet#constEnd()
  * @see #iterator()
  */
-@SuppressWarnings("deprecation")
-public class QSequentialConstIterator<T> extends io.qt.internal.AbstractSequentialConstIterator<T> implements java.lang.Iterable<T>, QIterator<T> {
+public class QSequentialConstIterator<T> extends AbstractIterator<T> implements java.lang.Iterable<T> {
 
 	static {
     	QtJambi_LibraryUtilities.initialize();
@@ -65,56 +60,6 @@ public class QSequentialConstIterator<T> extends io.qt.internal.AbstractSequenti
     QSequentialConstIterator(QtObject owner) { 
     	super(owner);
 	}
-    
-    @QtUninvokable
-    static native boolean canLess(long __this__nativeId);
-    
-    /**
-     * Returns the current item's value.
-     */
-    @QtUninvokable
-    protected final T val() {
-        return value(QtJambi_LibraryUtilities.internal.nativeId(this));
-    }
-    @QtUninvokable
-    static native <T> T value(long __this__nativeId);
-
-    /**
-     * Advances the iterator to the next item in the container.
-     */
-    @QtUninvokable
-    protected final void increment() {
-        increment(QtJambi_LibraryUtilities.internal.nativeId(this));
-    }
-    @QtUninvokable
-    static native void increment(long __this__nativeId);
-
-    /**
-     * Advances the iterator to the previous item in the container.
-     */
-    @QtUninvokable
-    protected final void decrement() {
-        decrement(QtJambi_LibraryUtilities.internal.nativeId(this));
-    }
-    @QtUninvokable
-    static native void decrement(long __this__nativeId);
-
-    @QtUninvokable
-    private boolean lessThan(AbstractSequentialConstIterator<?> other) {
-        return lessThan(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(other));
-    }
-    @QtUninvokable
-    static native boolean lessThan(long __this__nativeId, long other);
-
-    /**
-     * Returns true if other points to the same item as this iterator; otherwise returns false.
-     */
-    @QtUninvokable
-    protected boolean equals(AbstractSequentialConstIterator<?> o) {
-        return operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), QtJambi_LibraryUtilities.internal.nativeId(o));
-    }
-    @QtUninvokable
-    static native boolean operator_equal(long __this__nativeId, long o);
 
     /**
      * {@inheritDoc}
@@ -125,26 +70,11 @@ public class QSequentialConstIterator<T> extends io.qt.internal.AbstractSequenti
         if (other instanceof QSequentialConstIterator) {
         	return super.equals(other);
         }
-        return isValid() && Objects.equals(other, val());
+        return isValid() && Objects.equals(other, _value());
     }
 
-    @QtUninvokable
-    boolean isValid() {
-    	long nativeId = QtJambi_LibraryUtilities.internal.nativeId(this);
-    	if(nativeId==0)
-    		return false;
-    	AbstractSequentialConstIterator<?> end = end();
-    	if(canLess(nativeId)) {
-	    	try {
-	        	return lessThan(end);
-			} catch (Exception e) {
-			}
-    	}
-		return !equals(end);
-    }
-    
     /**
-     * {@inheritDoc}
+     * Returns a Java iterator between this and the container's end.
      */
     @QtUninvokable
     public final Iterator<T> iterator(){
@@ -152,31 +82,10 @@ public class QSequentialConstIterator<T> extends io.qt.internal.AbstractSequenti
     }
     
     /**
-     * {@inheritDoc}
+     * Returns a descending Java iterator between this and the container's end.
      */
     @QtUninvokable
 	public final java.util.Iterator<T> descendingIterator() {
     	return toJavaDescendingIterator();
     }
-
-    /**
-	 * Returns the value at iterator's position in the container or emptiness in case of <code>end</code>.
-	 */
-    @QtUninvokable
-	public final Optional<T> value() {
-		return !isValid() ? Optional.empty() : Optional.ofNullable(val());
-	}
-    
-    /**
-     * Returns the current item's value if item is valid
-     * or throws NoSuchElementException otherwise.
-     */
-    @QtUninvokable
-    protected final T checkedValue() throws NoSuchElementException {
-    	if(isValid()) {
-    		return val();
-    	}else {
-    		throw new NoSuchElementException();
-    	}
-	}
 }

@@ -303,7 +303,42 @@ struct qtjambi_jnitype_copy_assignable_decider_cast{
 template<bool has_scope,
          typename NativeType, bool is_const, bool is_reference, bool is_polymorphic>
 struct qtjambi_jnitype_qobject_decider_cast<true, has_scope, NativeType, false, is_const, is_reference, false, is_polymorphic>
-        : qtjambi_move_or_copy_decider<NativeType, is_const>{};
+    : qtjambi_move_or_copy_decider<NativeType, is_const>{};
+
+#ifdef QABSTRACTITEMMODEL_H
+template<bool has_scope, bool is_const, bool is_reference, bool is_polymorphic>
+struct qtjambi_jnitype_qobject_decider_cast<true, has_scope, QModelIndex, false, is_const, is_reference, false, is_polymorphic>{
+    constexpr static jobject cast(JNIEnv * env, const QModelIndex& in, const char*, QtJambiScope*){
+        return QtJambiAPI::convertModelIndexToJavaObject(env, in);
+    }
+};
+
+template<bool has_scope, bool is_const, bool is_polymorphic>
+struct qtjambi_jnitype_qobject_decider_cast<false, has_scope, QModelIndex, false, is_const, false, false, is_polymorphic>{
+    typedef typename std::conditional<is_const, typename std::add_const<QModelIndex>::type, QModelIndex>::type QModelIndex_c;
+    static QModelIndex_c cast(JNIEnv * env, jobject in, const char*, QtJambiScope*){
+        QModelIndex* result = nullptr;
+        if(!QtJambiAPI::convertJavaToModelIndex(env, in, &result)){
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast object of type %1 to %2").arg(in ? QtJambiAPI::getObjectClassName(env, in) : QStringLiteral("null")).arg(QLatin1String(QtJambiAPI::typeName(typeid(QModelIndex)))) QTJAMBI_STACKTRACEINFO );
+        }
+        return result ? *result : QModelIndex();
+    }
+};
+
+
+template<bool has_scope, bool is_polymorphic>
+struct qtjambi_jnitype_qobject_decider_cast<false, has_scope, QModelIndex, false, true, true, false, is_polymorphic>{
+    typedef typename std::conditional<true, typename std::add_const<QModelIndex>::type, QModelIndex>::type QModelIndex_c;
+    typedef typename std::conditional<true, typename std::add_lvalue_reference<QModelIndex_c>::type, QModelIndex_c>::type QModelIndex_cr;
+    static QModelIndex_cr cast(JNIEnv * env, jobject in, const char*, QtJambiScope*){
+        QModelIndex* result = nullptr;
+        if(!QtJambiAPI::convertJavaToModelIndex(env, in, &result)){
+            JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast object of type %1 to %2").arg(in ? QtJambiAPI::getObjectClassName(env, in) : QStringLiteral("null")).arg(QLatin1String(QtJambiAPI::typeName(typeid(QModelIndex)))) QTJAMBI_STACKTRACEINFO );
+        }
+        return deref_ptr_or_default<true,QModelIndex>::deref(result);
+    }
+};
+#endif
 
 template<bool has_scope,
          bool is_const, bool is_reference>

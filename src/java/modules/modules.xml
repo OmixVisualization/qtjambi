@@ -280,8 +280,9 @@
         </if>
         
         <echo message="Creating source file for ${module}"/>
-        <delete file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-sources.jar"/>
-        <jar destfile="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-sources.jar" excludes="${jar.excludes}">
+		<mkdir dir="${deploymentdir}/sources"/>
+        <delete file="${deploymentdir}/sources/${moduledash}-${qtjambi.jar.version}-sources.jar"/>
+        <jar destfile="${deploymentdir}/sources/${moduledash}-${qtjambi.jar.version}-sources.jar" excludes="${jar.excludes}">
             <manifest>
                 <attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
                 <attribute name="Bundle-Description"      value="${module} sources"/>
@@ -382,8 +383,9 @@
 		<replace file="${outputDir}/javadocs/${moduledash}/stylesheet.css" token="#bb7a2a;" value="#41cd52;"/>
 		<replace file="${outputDir}/javadocs/${moduledash}/stylesheet.css" token="#F8981D;" value="#41cd52;"/>
 		<replace file="${outputDir}/javadocs/${moduledash}/stylesheet.css" token="#2c4557;" value="#000000;"/>
-        <delete file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-javadoc.jar"/>
-        <jar destfile="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-javadoc.jar">
+        <mkdir dir="${deploymentdir}/javadocs"/>
+		<delete file="${deploymentdir}/javadocs/${moduledash}-${qtjambi.jar.version}-javadoc.jar"/>
+        <jar destfile="${deploymentdir}/javadocs/${moduledash}-${qtjambi.jar.version}-javadoc.jar">
             <manifest>
                 <attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
                 <attribute name="Bundle-Name"      value="${module} javadoc"/>
@@ -469,7 +471,7 @@
 				<equals arg1="${library.includes}" arg2=""/>
 			</not>
 			<then>
-				<jar destfile="${deploymentdir}/${moduledash}-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.jar.version}.jar">
+				<jar destfile="${deploymentdir}/native/${moduledash}-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.jar.version}.jar">
 					<manifest>
 						<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
 						<attribute name="Bundle-Name"      value="${module} platform bundle"/>
@@ -485,7 +487,7 @@
 						<equals arg1="${sources.includes}" arg2=""/>
 					</not>
 					<then>
-						<jar destfile="${deploymentdir}/${moduledash}-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.jar.version}-sources.jar">
+						<jar destfile="${deploymentdir}/sources/${moduledash}-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.jar.version}-sources.jar">
 							<manifest>
 								<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
 								<attribute name="Bundle-Name"      value="Sources of ${module} platform bundle"/>
@@ -513,12 +515,12 @@
         <if>
             <and>
                 <available file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}.jar"/>
-                <available file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-sources.jar"/>
+                <available file="${deploymentdir}/sources/${moduledash}-${qtjambi.jar.version}-sources.jar"/>
             </and>
             <then>
                 <if>
                     <not>
-                        <available file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-javadoc.jar"/>
+                        <available file="${deploymentdir}/javadocs/${moduledash}-${qtjambi.jar.version}-javadoc.jar"/>
                     </not>
                     <then>
                         <antcall target="qtjambi-javadoc"/>
@@ -541,8 +543,8 @@
                     </and>
                     <then>
                         <copy file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}.jar" tofile="${deploymentdir}/${moduledash}-${qtjambi.jar.version}${snap}.jar"/>
-                        <copy file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-sources.jar" tofile="${deploymentdir}/${moduledash}-${qtjambi.jar.version}${snap}-sources.jar"/>
-                        <copy file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-javadoc.jar" tofile="${deploymentdir}/${moduledash}-${qtjambi.jar.version}${snap}-javadoc.jar"/>
+                        <copy file="${deploymentdir}/sources/${moduledash}-${qtjambi.jar.version}-sources.jar" tofile="${deploymentdir}/sources/${moduledash}-${qtjambi.jar.version}${snap}-sources.jar"/>
+                        <copy file="${deploymentdir}/javadocs/${moduledash}-${qtjambi.jar.version}-javadoc.jar" tofile="${deploymentdir}/javadocs/${moduledash}-${qtjambi.jar.version}${snap}-javadoc.jar"/>
                     </then>
                 </if>
                 <gpg>
@@ -550,16 +552,18 @@
                 </gpg>
                 <jar destfile="${deploymentdir}/bundles/${moduledash}-${qtjambi.jar.version}${snap}-bundle.jar">
                     <fileset dir="${deploymentdir}/" includes="${moduledash}-${qtjambi.jar.version}${snap}*" excludes="*-javadocs.zip" followsymlinks="false"/>
+                    <fileset dir="${deploymentdir}/sources/" includes="${moduledash}-${qtjambi.jar.version}${snap}*" excludes="*-javadocs.zip" followsymlinks="false"/>
+                    <fileset dir="${deploymentdir}/javadocs/" includes="${moduledash}-${qtjambi.jar.version}${snap}*" excludes="*-javadocs.zip" followsymlinks="false"/>
                 </jar>
             </then>
         </if>
-        <foreach-native dir="${deploymentdir}" module="${moduledash}" version="${qtjambi.jar.version}" target="deploy-impl-bundle-native"/>
+        <foreach-native dir="${deploymentdir}/native" module="${moduledash}" version="${qtjambi.jar.version}" target="deploy-impl-bundle-native"/>
     </target>
     
     <target name="deploy-impl-bundle-native">
         <if>
             <not>
-                <available file="${deploymentdir}/${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}.pom"/>
+                <available file="${deploymentdir}/native/${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}.pom"/>
             </not>
             <then>
                 <create-pom outputDirectory="${deploymentdir}" description="${qtjambi.module.description}" dependencies="${qtjambi.required.modules}" libraries="${qtjambi.bundle.libraries}" module="${module}"/>
@@ -569,18 +573,20 @@
             <and>
                 <istrue value="${qtjambi-deploy-snapshot}"/>
                 <not>
-                    <available file="${deploymentdir}/${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}.jar"/>
+                    <available file="${deploymentdir}/native/${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}.jar"/>
                 </not>
             </and>
             <then>
-                <copy file="${deploymentdir}/${moduledash}-native-${native-spec}-${qtjambi.jar.version}.jar" tofile="${deploymentdir}/${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}.jar"/>
+                <copy file="${deploymentdir}/native/${moduledash}-native-${native-spec}-${qtjambi.jar.version}.jar" tofile="${deploymentdir}/${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}.jar"/>
             </then>
         </if>
         <gpg>
-            <fileset dir="${deploymentdir}/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
+            <fileset dir="${deploymentdir}/native/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
         </gpg>
         <jar destfile="${deploymentdir}/bundles/${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}-bundle.jar">
-            <fileset dir="${deploymentdir}/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
+            <fileset dir="${deploymentdir}/native/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
+            <fileset dir="${deploymentdir}/sources/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
+            <fileset dir="${deploymentdir}/javadocs/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
         </jar>
     </target>
     
@@ -591,14 +597,14 @@
                 <property name="moduledash" value="${module}"/>
                 <stringreplace property="moduledash" target="." replacement="-"/>
                 <copy file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}.jar" tofile="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-SNAPSHOT.jar"/>
-                <copy file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-sources.jar" tofile="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-SNAPSHOT-sources.jar"/>
-                <copy file="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-javadoc.jar" tofile="${deploymentdir}/${moduledash}-${qtjambi.jar.version}-SNAPSHOT-javadoc.jar"/>
-                <foreach-native dir="${deploymentdir}" module="${moduledash}" version="${qtjambi.jar.version}" target="qtjambi-deploy-snapshot-native"/>
+                <copy file="${deploymentdir}/sources/${moduledash}-${qtjambi.jar.version}-sources.jar" tofile="${deploymentdir}/sources/${moduledash}-${qtjambi.jar.version}-SNAPSHOT-sources.jar"/>
+                <copy file="${deploymentdir}/javadocs/${moduledash}-${qtjambi.jar.version}-javadoc.jar" tofile="${deploymentdir}/javadocs/${moduledash}-${qtjambi.jar.version}-SNAPSHOT-javadoc.jar"/>
+                <foreach-native dir="${deploymentdir}/native" module="${moduledash}" version="${qtjambi.jar.version}" target="qtjambi-deploy-snapshot-native"/>
             </then>
         </if>
     </target>
     
     <target name="qtjambi-deploy-snapshot-native">
-        <copy file="${deploymentdir}/${moduledash}-native-${native-spec}-${qtjambi.jar.version}.jar" tofile="${deploymentdir}/${moduledash}-native-${native-spec}-${qtjambi.jar.version}-SNAPSHOT.jar"/>
+        <copy file="${deploymentdir}/native/${moduledash}-native-${native-spec}-${qtjambi.jar.version}.jar" tofile="${deploymentdir}/native/${moduledash}-native-${native-spec}-${qtjambi.jar.version}-SNAPSHOT.jar"/>
     </target>
 </project>

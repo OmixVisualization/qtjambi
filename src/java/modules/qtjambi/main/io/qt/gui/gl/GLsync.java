@@ -31,6 +31,9 @@ package io.qt.gui.gl;
 
 import io.qt.QtObject;
 
+/**
+ * <p>Java wrapper for native type <code>GLsync</code></p>
+ */
 public final class GLsync extends QtObject {
 	private GLsync(QPrivateConstructor c) {
 		super(c);

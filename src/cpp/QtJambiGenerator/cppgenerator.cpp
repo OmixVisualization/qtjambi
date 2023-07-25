@@ -314,13 +314,6 @@ void CppGenerator::writeTypeInfo(QTextStream &s, const MetaType *type, Option op
                 }
                 break;
             }
-        }else if((options & ForceConstReference) == ForceConstReference
-                 && !(options & FunctionOverride)
-                 && type->indirections().isEmpty()
-                 && !type->isPrimitive()
-                 && !type->isEnum()
-                 && !type->isFlags()){
-            s << "&";
         }
     }
 

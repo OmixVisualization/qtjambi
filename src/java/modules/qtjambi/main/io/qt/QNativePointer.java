@@ -1511,6 +1511,9 @@ public final class QNativePointer {
         }
     }
     
+    /**
+     * This exception is thrown when trying to write on a read-only native pointer.
+     */
     public static class ReadOnlyNativePointerException extends UnsupportedOperationException{
 		private static final long serialVersionUID = -8238568644716457250L;
     }

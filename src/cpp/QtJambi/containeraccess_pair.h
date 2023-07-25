@@ -141,7 +141,7 @@ public:
         {
             jvalue _first;
             _first.l = nullptr;
-            if(m_keyInternalToExternalConverter(env, nullptr, &reinterpret_cast<const QPair<K,T> *>(container)->first, &_first, true)){
+            if(m_keyInternalToExternalConverter(env, nullptr, &reinterpret_cast<const QPair<K,T> *>(container)->first, _first, true)){
                 result = _first.l;
             }
         }
@@ -164,7 +164,7 @@ public:
         {
             jvalue _value;
             _value.l = nullptr;
-            if(m_valueInternalToExternalConverter(env, nullptr, &reinterpret_cast<const QPair<K,T> *>(container)->second, &_value, true)){
+            if(m_valueInternalToExternalConverter(env, nullptr, &reinterpret_cast<const QPair<K,T> *>(container)->second, _value, true)){
                 result = _value.l;
             }
         }

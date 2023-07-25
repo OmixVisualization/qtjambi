@@ -179,7 +179,7 @@ public:
         const T& result = reinterpret_cast<const QLinkedList<T> *>(container)->first();
         jvalue _value;
         _value.l = nullptr;
-        if(m_internalToExternalConverter(env, nullptr, &result, &_value, true)){
+        if(m_internalToExternalConverter(env, nullptr, &result, _value, true)){
             return _value.l;
         }
         return nullptr;
@@ -192,7 +192,7 @@ public:
         QTJAMBI_ELEMENT_LOCKER
         {
             T qresult = reinterpret_cast<const QLinkedList<T> *>(container)->last();
-            success = m_internalToExternalConverter(env, nullptr, &qresult, &_result, true);
+            success = m_internalToExternalConverter(env, nullptr, &qresult, _result, true);
         }
         if(success){
             return _result.l;
@@ -207,7 +207,7 @@ public:
         QTJAMBI_ELEMENT_LOCKER
         {
             T result = reinterpret_cast<QLinkedList<T> *>(container)->takeFirst();
-            success = m_internalToExternalConverter(env, nullptr, &result, &_value, true);
+            success = m_internalToExternalConverter(env, nullptr, &result, _value, true);
         }
         if(success){
             return _value.l;
@@ -222,7 +222,7 @@ public:
         QTJAMBI_ELEMENT_LOCKER
         {
             T result = reinterpret_cast<QLinkedList<T> *>(container)->takeLast();
-            success = m_internalToExternalConverter(env, nullptr, &result, &_value, true);
+            success = m_internalToExternalConverter(env, nullptr, &result, _value, true);
         }
         if(success){
             return _value.l;

@@ -36,78 +36,134 @@ import io.qt.NativeAccess;
 import io.qt.QtUninvokable;
 
 /**
- * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qqueue.html">QQueue</a></p>
+ * <p>Java wrapper for Qt class <code><a href="https://doc.qt.io/qt/qqueue.html">QQueue</a></code></p>
  */
 public class QQueue<T> extends QList<T> implements Queue<T>
 {
+    /**
+     * Creating a container with given element type and size.
+     * <p>See <code><a href="https://doc.qt.io/qt/qqueue.html">QQueue::<wbr>QQueue()</a></code></p>
+     * @param metaType the type T
+     */
 	public QQueue(QMetaType metaType) {
 		super(metaType);
 	}
 	
+    /**
+     * Creating a container with given element type and size.
+     * <p>See <code><a href="https://doc.qt.io/qt/qqueue.html">QQueue::<wbr>QQueue()</a></code></p>
+     * @param metaType the type T
+     */
 	public QQueue(QMetaType.Type metaType) {
 		this(new QMetaType(metaType));
 	}
 
+    /**
+     * Creating a container with given content.
+     * <p>See <code><a href="https://doc.qt.io/qt/qqueue.html">QQueue::<wbr>QQueue(const QQueue&lt;T> &amp;)</a></code></p>
+     * @param other container
+     */
 	public QQueue(Collection<T> other) {
 		super(other);
 	}
 
+    /**
+     * Creating a container with given element type.
+     * <p>See <code><a href="https://doc.qt.io/qt/qqueue.html">QQueue::<wbr>QQueue()</a></code></p>
+     * @param elementType the type T
+     */
 	public QQueue(Class<T> elementType) {
 		super(elementType);
 	}
 
+    /**
+     * Constructor for internal use only.
+     * @param p expected to be <code>null</code>.
+     * @hidden
+     */
 	@NativeAccess
 	protected QQueue(QPrivateConstructor p){
         super(p);
     }
 	
+    /**
+     * Creating a container of type QVariant.
+     */
 	public static QQueue<Object> createVariantQueue(){
     	return new QQueue<>(new QMetaType(QMetaType.Type.QVariant));
     }
 	
+    /**
+     * Creates and returns a copy of this object.
+     * <p>See <code><a href="https://doc.qt.io/qt/qqueue.html">QQueue::<wbr>QQueue(const QQueue&lt;T> &amp;)</a></code></p>
+     */
 	@Override
 	public QQueue<T> clone(){
 		return new QQueue<>(this);
 	}
     
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qqueue.html#enqueue">QQueue::<wbr>enqueue(T)</a></code></p>
+     */
     @QtUninvokable
     public final void enqueue(T t)    {
     	append(t);
     }
     
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qqueue.html#dequeue">QQueue::<wbr>dequeue()</a></code></p>
+     */
     @QtUninvokable
     public final T dequeue()    {
         return takeFirst();
     }
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qqueue.html#head">QQueue::<wbr>head()const</a></code></p>
+     */
     @QtUninvokable
     public final T head()    {
         return first();
     }
 
+	/**
+	 * @see Queue#peek()
+	 */
     @Override
     @QtUninvokable
     public final T peek() {
         return head();
     }
 
+	/**
+	 * @see Queue#poll()
+	 */
     @Override
     @QtUninvokable
     public final T poll() {
         return dequeue();
     }
     
+	/**
+	 * @see Queue#offer(Object)
+	 */
     @Override
 	public final boolean offer(T e) {
 		enqueue(e);
 		return true;
 	}
 
+	/**
+	 * @see Queue#remove()
+	 */
 	@Override
 	public final T remove() {
 		return poll();
 	}
 
+	/**
+	 * @see Queue#element()
+	 */
 	@Override
 	public final T element() {
 		return peek();
@@ -116,7 +172,7 @@ public class QQueue<T> extends QList<T> implements Queue<T>
 	/**
      * Returns a QQueue containing given elements.
      *
-     * @param <E> the {@code QQueue}'s element type
+     * @param <T> the {@code QQueue}'s element type
      * @param element0 the first element
      * @param elements subsequent elements
      * @return a {@code QQueue} containing the specified element
@@ -127,9 +183,9 @@ public class QQueue<T> extends QList<T> implements Queue<T>
     public static <T> QQueue<T> of(T element0, T...elements) {
 		QMetaType metaType = findElementMetaType(element0, elements);
 		if(metaType==null || metaType.id()==0)
-			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QList.");
+			throw new IllegalArgumentException("QMetaType::UnknownType cannot be type of QQueue.");
 		if(metaType.id()==QMetaType.Type.Void.value())
-			throw new IllegalArgumentException("void cannot be type of QList.");
+			throw new IllegalArgumentException("void cannot be type of QQueue.");
 		QQueue<T> result = new QQueue<>(metaType);
 		result.add(element0);
 		for (T t : elements) {

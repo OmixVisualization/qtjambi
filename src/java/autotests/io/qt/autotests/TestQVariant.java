@@ -727,7 +727,7 @@ public class TestQVariant extends ApplicationInitializer {
     	}
     }
     	
-    @Test
+	@Test
     public void testQVariant_TestObjectMultiHash() {
     	Object variant = Variants.getTestObjectMultiHash();
     	assertNotNull(variant);
