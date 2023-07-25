@@ -549,6 +549,8 @@
                 </if>
                 <gpg>
                     <fileset dir="${deploymentdir}/" includes="${moduledash}-${qtjambi.jar.version}${snap}*" excludes="*-javadocs.zip" followsymlinks="false"/>
+                    <fileset dir="${deploymentdir}/sources/" includes="${moduledash}-${qtjambi.jar.version}${snap}*" excludes="*-javadocs.zip" followsymlinks="false"/>
+                    <fileset dir="${deploymentdir}/javadocs/" includes="${moduledash}-${qtjambi.jar.version}${snap}*" excludes="*-javadocs.zip" followsymlinks="false"/>
                 </gpg>
                 <jar destfile="${deploymentdir}/bundles/${moduledash}-${qtjambi.jar.version}${snap}-bundle.jar">
                     <fileset dir="${deploymentdir}/" includes="${moduledash}-${qtjambi.jar.version}${snap}*" excludes="*-javadocs.zip" followsymlinks="false"/>
