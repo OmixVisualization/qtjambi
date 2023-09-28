@@ -32,7 +32,6 @@ import static org.junit.Assert.*;
 
 import java.util.*;
 
-import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -135,7 +134,7 @@ public class TestGraphs extends ApplicationInitializer {
     	assertEquals(null, axis.parent());
     	scatter.removeSeries(series);
     	assertFalse(series.isDisposed());
-    	assertEquals(null, series.parent());
+    	assertFalse(series.parent()==null);
     }
     
     @Test
@@ -166,7 +165,7 @@ public class TestGraphs extends ApplicationInitializer {
     	assertEquals(null, axis.parent());
     	surface.removeSeries(series);
     	assertFalse(series.isDisposed());
-    	assertEquals(null, series.parent());
+    	assertFalse(series.parent()==null);
     }
     
     @Test

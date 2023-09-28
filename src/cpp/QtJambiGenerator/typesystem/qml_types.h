@@ -423,9 +423,16 @@ class NamespaceType : public ComplexType
     Q_OBJECT
     QML_ELEMENT
 public:
-    explicit NamespaceType(QObject *parent = nullptr):ComplexType{parent}{}
+    explicit NamespaceType(QObject *parent = nullptr);
+    bool hasMetaObject() const;
+    void setHasMetaObject(bool newHasMetaObject);
+
 signals:
+    void hasMetaObjectChanged();
+
 private:
+    bool m_hasMetaObject;
+    Q_PROPERTY(bool hasMetaObject READ hasMetaObject WRITE setHasMetaObject NOTIFY hasMetaObjectChanged FINAL)
 };
 
 class HeaderType : public NamespaceType

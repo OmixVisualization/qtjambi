@@ -34,6 +34,7 @@ TypeSystem{
     defaultSuperClass: "QtObject"
     qtLibrary: "QtGui"
     module: "qtjambi"    
+    LoadTypeSystem{name: "QtCore"}
 
     InjectCode{
         target: CodeClass.MetaInfo
@@ -44,11 +45,6 @@ TypeSystem{
     InjectCode{
         target: CodeClass.MetaInfo
         Text{content: "initialize_meta_info_gui();"}
-    }
-
-    Rejection{
-        className: "QWindowsMimeConverter"
-        since: [6,5]
     }
 
     Rejection{
@@ -3952,16 +3948,6 @@ TypeSystem{
     }
     
     Rejection{
-        className: "QWindow"
-        functionName: "vulkanInstance"
-    }
-    
-    Rejection{
-        className: "QWindow"
-        functionName: "surfaceHandle"
-    }
-    
-    Rejection{
         className: "QSurface"
         functionName: "surfaceHandle"
     }
@@ -3989,42 +3975,6 @@ TypeSystem{
     Rejection{
         className: "QActionGroup"
         functionName: "selected"
-        since: 6
-    }
-    
-    Rejection{
-        className: "QImage"
-        functionName: "convertToFormat_helper"
-        since: 6
-    }
-    
-    Rejection{
-        className: "QImage"
-        functionName: "convertToFormat_inplace"
-        since: 6
-    }
-    
-    Rejection{
-        className: "QImage"
-        functionName: "rgbSwapped_inplace"
-        since: 6
-    }
-    
-    Rejection{
-        className: "QImage"
-        functionName: "rgbSwapped_helper"
-        since: 6
-    }
-    
-    Rejection{
-        className: "QImage"
-        functionName: "mirrored_inplace"
-        since: 6
-    }
-    
-    Rejection{
-        className: "QImage"
-        functionName: "mirrored_helper"
         since: 6
     }
     
@@ -6252,10 +6202,6 @@ TypeSystem{
     
     ValueType{
         name: "QBrush"
-        ModifyFunction{
-            signature: "QBrush(Qt::GlobalColor, Qt::BrushStyle)"
-            remove: RemoveFlag.All
-        }
         ExtraIncludes{
             Include{
                 fileName: "QPixmap"
@@ -7389,13 +7335,6 @@ TypeSystem{
         EnumType{
             name: "Event"
         }
-        ModifyFunction{
-            signature: "operator=(const QAccessibleEvent &)"
-            Delegate{
-                deprecated: true
-                name: "set"
-            }
-        }
         ModifyField{
             name: "m_type"
             read: false
@@ -8054,6 +7993,30 @@ TypeSystem{
     
     ValueType{
         name: "QImage"
+        Rejection{
+            functionName: "convertToFormat_helper"
+            since: 6
+        }
+        Rejection{
+            functionName: "convertToFormat_inplace"
+            since: 6
+        }
+        Rejection{
+            functionName: "rgbSwapped_inplace"
+            since: 6
+        }
+        Rejection{
+            functionName: "rgbSwapped_helper"
+            since: 6
+        }
+        Rejection{
+            functionName: "mirrored_inplace"
+            since: 6
+        }
+        Rejection{
+            functionName: "mirrored_helper"
+            since: 6
+        }
         ModifyFunction{
             signature: "devType() const"
             remove: RemoveFlag.All
@@ -10105,6 +10068,24 @@ TypeSystem{
             name: "PixmapFragmentHint"
         }
         ModifyFunction{
+            signature: "setBrush(QBrush)"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "io.qt.gui.@NonNull QColor"}
+                AddImpliciteCall{type: "io.qt.gui.@NonNull QGradient"}
+                AddImpliciteCall{type: "io.qt.gui.@NonNull QPixmap"}
+                AddImpliciteCall{type: "io.qt.gui.@NonNull QImage"}
+                AddImpliciteCall{type: "io.qt.core.Qt.@NonNull GlobalColor"}
+            }
+        }
+        ModifyFunction{
+            signature: "setPen(QPen)"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "io.qt.core.Qt.@NonNull GlobalColor"}
+            }
+        }
+        ModifyFunction{
             signature: "device()const"
             ModifyArgument{
                 index: 0
@@ -10749,11 +10730,19 @@ TypeSystem{
                 location: Include.Global
             }
         }
-        InjectCode{
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiGui.java"
-                quoteAfterLine: "class QPen___"
-                quoteBeforeLine: "}// class"
+        ModifyFunction{
+            signature: "QPen(QColor)"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "io.qt.core.Qt.@NonNull GlobalColor"}
+            }
+        }
+        ModifyFunction{
+            signature: "QPen(QBrush, qreal, Qt::PenStyle, Qt::PenCapStyle, Qt::PenJoinStyle)"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "io.qt.gui.@NonNull QColor"}
+                AddImpliciteCall{type: "io.qt.core.Qt.@NonNull GlobalColor"}
             }
         }
     }
@@ -12359,6 +12348,12 @@ TypeSystem{
     
     ObjectType{
         name: "QWindow"
+        Rejection{
+            functionName: "vulkanInstance"
+        }
+        Rejection{
+            functionName: "surfaceHandle"
+        }
         ModifyFunction{
             signature: "setVisible(bool)"
             threadAffinity: true
@@ -12613,6 +12608,16 @@ TypeSystem{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiGui.java"
                 quoteAfterLine: "class QWindow___"
                 quoteBeforeLine: "}// class"
+            }
+        }
+        ModifyFunction{
+            signature: "fromWinId(WId)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
             }
         }
         ModifyFunction{
@@ -13200,6 +13205,22 @@ TypeSystem{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiGui.java"
                 quoteAfterLine: "class QAction___"
                 quoteBeforeLine: "}// class"
+            }
+        }
+        ModifyFunction{
+            signature: "setShortcut(QKeySequence)"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "QKeySequence.@NonNull StandardKey"}
+            }
+        }
+        ModifyFunction{
+            signature: "setIcon(QIcon)"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "@NonNull QPixmap"}
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
             }
         }
         ModifyFunction{
@@ -18160,6 +18181,21 @@ TypeSystem{
         }
         until: 5
     }
+    ObjectType{
+        name: "QUtiMimeConverter"
+        ppCondition: "defined(Q_OS_MACOS)"
+        since: 6.5
+    }
+
+    ObjectType{
+        name: "QWindowsMimeConverter"
+        ppCondition: "defined(Q_OS_WIN)"
+        since: 6.5
+    }
+    SuppressedWarning{text: "skipping function 'QWindowsMimeConverter::*', unmatched *type '*FORMATETC*'"; since: 6.5}
+    SuppressedWarning{text: "skipping function 'QWindowsMimeConverter::*', unmatched *type '*STGMEDIUM*'"; since: 6.5}
+    SuppressedWarning{text: "skipping function 'QWindowsMimeConverter::*', unmatched *type '*IDataObject*'"; since: 6.5}
+    SuppressedWarning{text: "Unimplementable pure virtual function: QWindowsMimeConverter::*"; since: 6.5}
     
     ValueType{
         name: "HWND__"
@@ -18223,10 +18259,6 @@ TypeSystem{
         name: "HINSTANCE"
     }
     
-    Rejection{
-        className: "QNativeInterface::Private::QCocoaWindow::TypeInfo"
-    }
-    
     InterfaceType{
         name: "QNativeInterface::Private::QCocoaWindow"
         packageName: "io.qt.gui.nativeinterface"
@@ -18234,6 +18266,9 @@ TypeSystem{
         ppCondition: "defined(Q_OS_MACOS)"
         isNativeInterface: true
         generate: "no-shell"
+        Rejection{
+            className: "TypeInfo"
+        }
         ModifyFunction{
             signature: "QCocoaWindow()"
             remove: RemoveFlag.All
@@ -18256,10 +18291,6 @@ TypeSystem{
         since: [6, 2]
     }
     
-    Rejection{
-        className: "QNativeInterface::QCocoaGLContext::TypeInfo"
-    }
-    
     InterfaceType{
         name: "QNativeInterface::QCocoaGLContext"
         packageName: "io.qt.gui.nativeinterface"
@@ -18267,6 +18298,9 @@ TypeSystem{
         ppCondition: "defined(Q_OS_MACOS)"
         isNativeInterface: true
         generate: "no-shell"
+        Rejection{
+            className: "TypeInfo"
+        }
         ModifyFunction{
             signature: "QCocoaGLContext()"
             remove: RemoveFlag.All
@@ -18277,11 +18311,21 @@ TypeSystem{
                 location: Include.Global
             }
         }
+        ModifyFunction{
+            signature: "fromNative(NSOpenGLContext*,QOpenGLContext*)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Shell
+                    ownership: Ownership.Cpp
+                }
+            }
+        }
         since: [6, 2]
-    }
-    
-    Rejection{
-        className: "QNativeInterface::Private::QWindowsWindow::TypeInfo"
     }
     
     InterfaceType{
@@ -18291,6 +18335,9 @@ TypeSystem{
         ppCondition: "defined(Q_OS_WIN)"
         isNativeInterface: true
         generate: "no-shell"
+        Rejection{
+            className: "TypeInfo"
+        }
         ModifyFunction{
             signature: "QWindowsWindow()"
             remove: RemoveFlag.All
@@ -18313,10 +18360,6 @@ TypeSystem{
         since: [6, 2]
     }
     
-    Rejection{
-        className: "QNativeInterface::QWGLContext::TypeInfo"
-    }
-    
     InterfaceType{
         name: "QNativeInterface::QWGLContext"
         packageName: "io.qt.gui.nativeinterface"
@@ -18324,6 +18367,9 @@ TypeSystem{
         ppCondition: "defined(Q_OS_WIN)"
         isNativeInterface: true
         generate: "no-shell"
+        Rejection{
+            className: "TypeInfo"
+        }
         ModifyFunction{
             signature: "QWGLContext()"
             remove: RemoveFlag.All
@@ -18334,11 +18380,21 @@ TypeSystem{
                 location: Include.Global
             }
         }
+        ModifyFunction{
+            signature: "fromNative(HGLRC,HWND,QOpenGLContext*)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Shell
+                    ownership: Ownership.Cpp
+                }
+            }
+        }
         since: [6, 2]
-    }
-    
-    Rejection{
-        className: "QNativeInterface::QGLXContext::TypeInfo"
     }
     
     InterfaceType{
@@ -18348,6 +18404,9 @@ TypeSystem{
         ppCondition: "QT_CONFIG(xcb_glx_plugin)"
         isNativeInterface: true
         generate: "no-shell"
+        Rejection{
+            className: "TypeInfo"
+        }
         ModifyFunction{
             signature: "QGLXContext()"
             remove: RemoveFlag.All
@@ -18358,17 +18417,35 @@ TypeSystem{
                 location: Include.Global
             }
         }
+        ModifyFunction{
+            signature: "fromNative(GLXContext,QOpenGLContext*)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Shell
+                    ownership: Ownership.Cpp
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "fromNative(GLXContext,void*,QOpenGLContext*)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Shell
+                    ownership: Ownership.Cpp
+                }
+            }
+        }
         since: [6, 2]
-    }
-    
-    Rejection{
-        className: "QNativeInterface::QEGLContext::TypeInfo"
-    }
-    
-    Rejection{
-        className: "QNativeInterface::QEGLContext"
-        functionName: "config"
-        since: [6, 3]
     }
     
     InterfaceType{
@@ -18378,6 +18455,13 @@ TypeSystem{
         ppCondition: "QT_CONFIG(egl)"
         isNativeInterface: true
         generate: "no-shell"
+        Rejection{
+            className: "TypeInfo"
+        }
+        Rejection{
+            functionName: "config"
+            since: [6, 3]
+        }
         ModifyFunction{
             signature: "QEGLContext()"
             remove: RemoveFlag.All
@@ -18386,6 +18470,20 @@ TypeSystem{
             Include{
                 fileName: "QtGui/QOpenGLContext"
                 location: Include.Global
+            }
+        }
+        ModifyFunction{
+            signature: "fromNative(EGLContext,EGLDisplay,QOpenGLContext*)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Shell
+                    ownership: Ownership.Cpp
+                }
             }
         }
         since: [6, 2]
@@ -18678,6 +18776,7 @@ TypeSystem{
 
     ObjectType{
         name: "QPlatformIntegration"
+        until: 6
         packageName: "io.qt.gui.qpa"
         generate: "no-shell"
         ModifyFunction{
@@ -18994,4 +19093,5 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QAccessibleTableCellInterface'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: class 'Display' inherits from unknown base class '_XDisplay'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'QPaintEngineState(*)' for function modification in 'QPaintEngineState' not found. Possible candidates: "}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QRhi*'"; until: 6.6}
 }

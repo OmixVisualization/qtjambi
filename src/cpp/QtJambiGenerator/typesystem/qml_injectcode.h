@@ -53,8 +53,8 @@ signals:
 private:
     int index = 0;
     QString metaName;
-    Q_PROPERTY(int index READ getIndex WRITE setIndex NOTIFY indexChanged)
-    Q_PROPERTY(QString metaName READ getMetaName WRITE setMetaName NOTIFY metaNameChanged)
+    Q_PROPERTY(int index READ getIndex WRITE setIndex NOTIFY indexChanged REQUIRED)
+    Q_PROPERTY(QString metaName READ getMetaName WRITE setMetaName NOTIFY metaNameChanged REQUIRED)
 };
 
 class Text : public AbstractObject{
@@ -68,7 +68,7 @@ signals:
     void contentChanged();
 private:
     QString content;
-    Q_PROPERTY(QString content READ getContent WRITE setContent NOTIFY contentChanged)
+    Q_PROPERTY(QString content READ getContent WRITE setContent NOTIFY contentChanged REQUIRED)
     Q_CLASSINFO("DefaultProperty", "content")
 };
 

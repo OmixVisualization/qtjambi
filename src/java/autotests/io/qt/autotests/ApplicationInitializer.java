@@ -49,6 +49,7 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 
+import io.qt.QNativePointer;
 import io.qt.QNoNativeResourcesException;
 import io.qt.QtObjectInterface;
 import io.qt.QtUtilities;
@@ -56,6 +57,7 @@ import io.qt.autotests.generated.General;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QIODevice;
+import io.qt.core.QMutex;
 import io.qt.core.QObject;
 import io.qt.core.QProcess;
 import io.qt.core.QProcessEnvironment;
@@ -108,6 +110,35 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 					QApplication.initialize(new String[0]);
 					break;
 				}
+				Thread mainThread = Thread.currentThread();
+				Runtime.getRuntime().addShutdownHook(new Thread(()->{
+					Thread timeoutThread = new Thread(()->{
+						try {
+							synchronized(ApplicationInitializer.class) {
+								ApplicationInitializer.class.wait(15000);
+							}
+							System.err.println("Test process does not terminate. "+mainThread.getState());
+							Runtime.getRuntime().halt(-1);
+						} catch (InterruptedException e) {
+						}
+					});
+					timeoutThread.setDaemon(true);
+					timeoutThread.start();
+				}));
+				QCoreApplication.addPostRoutine(()->{
+					Thread timeoutThread = new Thread(()->{
+						try {
+							synchronized(ApplicationInitializer.class) {
+								ApplicationInitializer.class.wait(15000);
+							}
+							System.err.println("Test process does not terminate. "+mainThread.getState());
+							Runtime.getRuntime().halt(-1);
+						} catch (InterruptedException e) {
+						}
+					});
+					timeoutThread.setDaemon(true);
+					timeoutThread.start();
+				});
 		        QThread.currentThread().setObjectName("main");
 			    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.INFO, "testInitialize: DONE");
 			}
@@ -194,6 +225,18 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 	                java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: done  io.qt.QNoNativeResourcesException: app="+e.getMessage());
 	            }
 	            app = null;		// kill hard-reference
+	            Thread timeoutThread = new Thread(()->{
+					try {
+						synchronized(ApplicationInitializer.class) {
+							ApplicationInitializer.class.wait(15000);
+						}
+						System.err.println("Test process does not terminate.");
+						Runtime.getRuntime().halt(-1);
+					} catch (InterruptedException e) {
+					}
+				});
+				timeoutThread.setDaemon(true);
+				timeoutThread.start();
 	        }
 			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: garbage PRE");
 	        runGC();
@@ -271,11 +314,10 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
     			executable += "_debug";
     	}
     	String qtBinariesPath = TestUtility.qtLibraryPath();
+    	if(isDebug)
+    		qtBinariesPath = System.getProperty("io.qt.library-path-override");
     	File utilitiesDir = new File(new File(testsDir.getParentFile(), "qtjambi"), "bin");
     	String macosPrefix = "";
-    	if(osName.startsWith("mac")) {
-    		macosPrefix = "../../../";
-    	}
 		final File tmpDir = new File(System.getProperty("java.io.tmpdir"));
 		String processName = "";
     	File jambiDeploymentDir = null;

@@ -667,6 +667,14 @@ void _FunctionModelItem::setDeleted(bool d) {
     _M_flags.setFlag(IsDeleted, d);
 }
 
+bool _FunctionModelItem::isDeclDefault() const {
+    return _M_flags.testFlag(IsDeclDefault);
+}
+
+void _FunctionModelItem::setDeclDefault(bool d) {
+    _M_flags.setFlag(IsDeclDefault, d);
+}
+
 bool _FunctionModelItem::isVariadics() const {
     return _M_flags.testFlag(IsVariadics);
 }

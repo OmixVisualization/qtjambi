@@ -392,8 +392,8 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                         switch(getEntryType(*typeId)){
                         case EntryTypes::FunctionalTypeInfo:
                             isValueFunctional = true;
-                            if(const QtJambiTypeInfo* info = getQTypeInfo(*typeId)){
-                                if(info->isPointer){
+                            if(OptionalBool op = isRegisteredAsPointerType(*typeId)){
+                                if(op.value()){
                                     void** array = length==0 ? nullptr : new void*[size_t(length)];
                                     cleaners.append(QSharedDataPointer<Cleanup>{new Cleanup{[array](){ delete[] array; }}});
                                     QVector<void*> control;
@@ -680,8 +680,8 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                         switch(getEntryType(*typeId)){
                         case EntryTypes::FunctionalTypeInfo:
                             isValueFunctional = true;
-                            if(const QtJambiTypeInfo* info = getQTypeInfo(*typeId)){
-                                if(info->isPointer){
+                            if(OptionalBool op = isRegisteredAsPointerType(*typeId)){
+                                if(op.value()){
                                     if(QtJambiAPI::convertJavaToNative(__jni_env, *typeId, val, &ptr)){
                                         arg = Java::JNA::Pointer::newInstance(__jni_env, *reinterpret_cast<void**>(ptr));
                                     }else{
@@ -1643,8 +1643,8 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
         if(returnTypeId){
             switch(getEntryType(*returnTypeId)){
             case EntryTypes::FunctionalTypeInfo:
-                if(const QtJambiTypeInfo* info = getQTypeInfo(*returnTypeId)){
-                    if(info->isPointer){
+                if(OptionalBool op = isRegisteredAsPointerType(*returnTypeId)){
+                    if(op.value()){
                         jnaReturnType = Java::JNA::Pointer::getClass(__jni_env);
                         isFunctionPointer = true;
                     }else{
@@ -1992,8 +1992,8 @@ jclass CoreAPI::getFunctionPointerReturnType(JNIEnv * __jni_env, jobject returnT
     if(returnTypeId){
         switch(getEntryType(*returnTypeId)){
         case EntryTypes::FunctionalTypeInfo:
-            if(const QtJambiTypeInfo* info = getQTypeInfo(*returnTypeId)){
-                if(info->isPointer){
+            if(OptionalBool op = isRegisteredAsPointerType(*returnTypeId)){
+                if(op.value()){
                     return Java::JNA::Pointer::getClass(__jni_env);
                 }else{
                     if(returnPointerOrReference==0 && !isReferenceMetaType){
@@ -2255,8 +2255,8 @@ jobject CoreAPI::convertFunctionPointerReturn(JNIEnv * __jni_env, jobject return
         switch(getEntryType(*returnTypeId)){
         case EntryTypes::FunctionalTypeInfo:
             isValueFunctional = true;
-            if(const QtJambiTypeInfo* info = getQTypeInfo(*returnTypeId)){
-                if(info->isPointer){
+            if(OptionalBool op = isRegisteredAsPointerType(*returnTypeId)){
+                if(op.value()){
                     if(QtJambiAPI::convertJavaToNative(__jni_env, *returnTypeId, result, &ptr)){
                         return Java::JNA::Pointer::newInstance(__jni_env, *reinterpret_cast<void**>(ptr));
                     }else{
@@ -2656,8 +2656,8 @@ void CoreAPI::getFunctionPointerParameterTypes(JNIEnv * __jni_env, jobjectArray 
                     switch(getEntryType(*typeId)){
                     case EntryTypes::FunctionalTypeInfo:
                         isValueFunctional = true;
-                        if(const QtJambiTypeInfo* info = getQTypeInfo(*typeId)){
-                            if(info->isPointer){
+                        if(OptionalBool op = isRegisteredAsPointerType(*typeId)){
+                            if(op.value()){
                                 __jni_env->SetObjectArrayElement(parameterTypes, i, Java::JNA::Pointer::getClass(__jni_env));
                                 continue;
                             }
@@ -2730,8 +2730,8 @@ void CoreAPI::getFunctionPointerParameterTypes(JNIEnv * __jni_env, jobjectArray 
                     switch(getEntryType(*typeId)){
                     case EntryTypes::FunctionalTypeInfo:
                         isValueFunctional = true;
-                        if(const QtJambiTypeInfo* info = getQTypeInfo(*typeId)){
-                            if(info->isPointer){
+                        if(OptionalBool op = isRegisteredAsPointerType(*typeId)){
+                            if(op.value()){
                                 __jni_env->SetObjectArrayElement(parameterTypes, i, Java::JNA::Pointer::getClass(__jni_env));
                                 continue;
                             }
@@ -2910,8 +2910,8 @@ void CoreAPI::convertFunctionPointerParameters(JNIEnv * __jni_env, jobjectArray 
             isPrimitive = getEntryType(*typeId)==EntryTypes::PrimitiveTypeInfo;
             switch(getEntryType(*typeId)){
             case EntryTypes::FunctionalTypeInfo:
-                if(const QtJambiTypeInfo* info = getQTypeInfo(*typeId)){
-                    if(info->isPointer){
+                if(OptionalBool op = isRegisteredAsPointerType(*typeId)){
+                    if(op.value()){
                         isFunctionPointer = true;
                     }
                 }
@@ -3159,12 +3159,12 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
     }
     if(targetTypeId){
         if(isFunctional(*targetTypeId)){
-            if(const QtJambiTypeInfo* info = getQTypeInfo(*targetTypeId)){
-                if(info->isPointer){
+            if(OptionalBool op = isRegisteredAsPointerType(*targetTypeId)){
+                if(op.value()){
                     if(sourceTypeId){
                         if(isFunctional(*sourceTypeId)){
-                            if(const QtJambiTypeInfo* info = getQTypeInfo(*sourceTypeId)){
-                                if(info->isPointer){
+                            if(OptionalBool op = isRegisteredAsPointerType(*sourceTypeId)){
+                                if(op.value()){
                                     if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, function)){
                                         QFunctionPointer ptr = nullptr;
                                         if(QtJambiAPI::convertJavaToNative(env, *sourceTypeId, function, &ptr)){
@@ -3200,8 +3200,8 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
 
     if(sourceTypeId){
         if(isFunctional(*sourceTypeId)){
-            if(const QtJambiTypeInfo* info = getQTypeInfo(*sourceTypeId)){
-                if(info->isPointer){
+            if(OptionalBool op = isRegisteredAsPointerType(*sourceTypeId)){
+                if(op.value()){
                     if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, function)){
                         if(env->IsInstanceOf(link->getJavaObjectLocalRef(env), functionalInterface)){
                             return function;

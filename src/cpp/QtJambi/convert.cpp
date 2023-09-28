@@ -2501,7 +2501,7 @@ jobject internal_convertSmartPointerToJavaObject(JNIEnv *env, const char *classN
     return internal_convertSmartPointerToJavaObject_notype(env, className, ptr_shared_pointer, sharedPointerDeleter, sharedPointerGetter);
 }
 
-jobject internal_convertQObjectToJavaObject_type(JNIEnv *env, const QObject *qt_object, const std::type_info& typeId, bool* ok)
+jobject internal_convertQObjectToJavaObject_type(JNIEnv *env, const QObject *qt_object, const std::type_info& typeId, bool* ok, NativeToJavaConversionMode mode)
 {
     if(ok) *ok = true;
     if (!qt_object)
@@ -2520,7 +2520,7 @@ jobject internal_convertQObjectToJavaObject_type(JNIEnv *env, const QObject *qt_
         if(offset!=0){
             ptr = reinterpret_cast<const char*>(ptr)-offset;
         }
-        if(typeEntry->convertToJava(env, ptr, NativeToJavaConversionMode::None, jv, jValueType::l)){
+        if(typeEntry->convertToJava(env, ptr, mode, jv, jValueType::l)){
             return jv.l;
         }else{
             return nullptr;
@@ -2530,7 +2530,7 @@ jobject internal_convertQObjectToJavaObject_type(JNIEnv *env, const QObject *qt_
     return nullptr;
 }
 
-jobject internal_convertQObjectToJavaObject_notype(JNIEnv *env, const QObject *const_qt_object, QByteArray className, jclass clazz)
+jobject internal_convertQObjectToJavaObject_notype(JNIEnv *env, const QObject *const_qt_object, QByteArray className, jclass clazz, NativeToJavaConversionMode mode)
 {
     if (!const_qt_object)
         return nullptr;
@@ -2589,7 +2589,7 @@ jobject internal_convertQObjectToJavaObject_notype(JNIEnv *env, const QObject *c
             if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
                 jvalue jv;
                 jv.l = nullptr;
-                if(typeEntry->convertToJava(env, qt_object, NativeToJavaConversionMode::None, jv, jValueType::l))
+                if(typeEntry->convertToJava(env, qt_object, mode, jv, jValueType::l))
                     return jv.l;
             }
         }
@@ -2671,6 +2671,8 @@ jobject internal_convertQObjectToJavaObject_notype(JNIEnv *env, const QObject *c
             qCWarning(DebugAPI::internalCategory, "Qt Jambi: Couldn't created wrapper for class %s", qPrintable(java_name));
             return nullptr;
         }
+        if(mode==NativeToJavaConversionMode::CppOwnership)
+            link->setCppOwnership(env);
     }
     return obj;
 }
@@ -2743,11 +2745,11 @@ jobject QtJambiAPI::convertQObjectToJavaObject(JNIEnv *env, const QObject *qt_ob
     const std::type_info* typeId = className ? getTypeByJavaName(className) : &typeid(QObject);
     if(typeId){
         bool ok;
-        jobject result = internal_convertQObjectToJavaObject_type(env, qt_object, *typeId, &ok);
+        jobject result = internal_convertQObjectToJavaObject_type(env, qt_object, *typeId, &ok, NativeToJavaConversionMode::None);
         if(ok)
             return result;
     }
-    return internal_convertQObjectToJavaObject_notype(env, qt_object, className, nullptr);
+    return internal_convertQObjectToJavaObject_notype(env, qt_object, className, nullptr, NativeToJavaConversionMode::None);
 }
 
 jobject QtJambiAPI::convertQObjectToJavaObject(JNIEnv *env, const QObject *qt_object, jclass clazz)
@@ -2762,22 +2764,35 @@ jobject QtJambiAPI::convertQObjectToJavaObject(JNIEnv *env, const QObject *qt_ob
     }
     if(typeId){
         bool ok;
-        jobject result = internal_convertQObjectToJavaObject_type(env, qt_object, *typeId, &ok);
+        jobject result = internal_convertQObjectToJavaObject_type(env, qt_object, *typeId, &ok, NativeToJavaConversionMode::None);
         if(ok)
             return result;
     }
-    return internal_convertQObjectToJavaObject_notype(env, qt_object, className.toUtf8(), clazz);
+    return internal_convertQObjectToJavaObject_notype(env, qt_object, className.toUtf8(), clazz, NativeToJavaConversionMode::None);
 }
 
 jobject QtJambiAPI::convertQObjectToJavaObject(JNIEnv *env, const QObject *qt_object, const std::type_info& typeId)
 {
     bool ok;
-    jobject result = internal_convertQObjectToJavaObject_type(env, qt_object, typeId, &ok);
+    jobject result = internal_convertQObjectToJavaObject_type(env, qt_object, typeId, &ok, NativeToJavaConversionMode::None);
     if(ok)
         return result;
     QByteArray className = getJavaName(typeId);
     if(!className.isEmpty())
-        return internal_convertQObjectToJavaObject_notype(env, qt_object, className, JavaAPI::resolveClass(env, className));
+        return internal_convertQObjectToJavaObject_notype(env, qt_object, className, JavaAPI::resolveClass(env, className), NativeToJavaConversionMode::None);
     else
-        return internal_convertQObjectToJavaObject_notype(env, qt_object, className, nullptr);
+        return internal_convertQObjectToJavaObject_notype(env, qt_object, className, nullptr, NativeToJavaConversionMode::None);
+}
+
+jobject CoreAPI::convertQObjectToJavaObjectCppOwnership(JNIEnv *env, const QObject *qt_object, const std::type_info& typeId)
+{
+    bool ok;
+    jobject result = internal_convertQObjectToJavaObject_type(env, qt_object, typeId, &ok, NativeToJavaConversionMode::CppOwnership);
+    if(ok)
+        return result;
+    QByteArray className = getJavaName(typeId);
+    if(!className.isEmpty())
+        return internal_convertQObjectToJavaObject_notype(env, qt_object, className, JavaAPI::resolveClass(env, className), NativeToJavaConversionMode::CppOwnership);
+    else
+        return internal_convertQObjectToJavaObject_notype(env, qt_object, className, nullptr, NativeToJavaConversionMode::CppOwnership);
 }

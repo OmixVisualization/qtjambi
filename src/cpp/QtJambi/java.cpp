@@ -466,13 +466,6 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,CharBuffer,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,Buffer,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(isDirect,()Z)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(isReadOnly,()Z)
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(capacity,()I)
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(limit,()I)
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(position,()I)
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(mark,()Ljava/nio/Buffer;)
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(array,()Ljava/lang/Object;)
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(hasArray,()Z)
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(arrayOffset,()I)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,Runnable,
@@ -842,6 +835,15 @@ namespace Internal{
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,ByteBuffer,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(allocateDirect,(I)Ljava/nio/ByteBuffer;)
 )
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,Buffer,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(capacity,()I)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(limit,()I)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(position,()I)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(mark,()Ljava/nio/Buffer;)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(hasArray,()Z)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(arrayOffset,()I)
+                                )
 }
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS_SC(java/util,HashSet)

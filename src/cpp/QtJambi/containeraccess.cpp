@@ -1754,8 +1754,8 @@ bool AbstractContainerAccess::isPointerType(const QMetaType& metaType){
         if(!typeId)
             typeId = getTypeByQtName(name);
         if(typeId){
-            if(const QtJambiTypeInfo* typeInfo = getQTypeInfo(*typeId)){
-                if(typeInfo->isPointer){
+            if(OptionalBool op = isRegisteredAsPointerType(*typeId)){
+                if(op.value()){
                     return true;
                 }
             }
@@ -1783,8 +1783,8 @@ bool AbstractContainerAccess::isStaticType(const QMetaType& metaType){
         if(!typeId)
             typeId = getTypeByMetaType(metaType.id());
         if(typeId){
-            if(const QtJambiTypeInfo* typeInfo = getQTypeInfo(*typeId))
-                return typeInfo->isStatic;
+            if(OptionalBool op = isRegisteredAsStaticType(*typeId))
+                return op.value();
         }
     }
     return QtJambiTypeManager::isStaticType(QLatin1String(metaType.name()));
@@ -2316,8 +2316,8 @@ AbstractContainerAccess* createPreparedContainerAccess(JNIEnv* env, SequentialCo
                 t = getTypeByQtName(memberMetaType.name());
             if(t){
                 align = getValueAlignment(*t);
-                if(const QtJambiTypeInfo* typeInfo = getQTypeInfo(*t))
-                    isStaticType = typeInfo->isStatic;
+                if(OptionalBool op = isRegisteredAsStaticType(*t))
+                    isStaticType = op.value();
             }
             if(align==0)
                 align = QtJambiTypeManager::getInternalAlignment(memberMetaType.name());

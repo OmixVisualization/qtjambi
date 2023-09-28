@@ -720,3 +720,18 @@ void AbstractType::setName(const QString &newName)
     name = newName;
     emit nameChanged();
 }
+
+NamespaceType::NamespaceType(QObject *parent):ComplexType{parent}, m_hasMetaObject(false){}
+
+bool NamespaceType::hasMetaObject() const
+{
+    return m_hasMetaObject;
+}
+
+void NamespaceType::setHasMetaObject(bool newHasMetaObject)
+{
+    if (m_hasMetaObject == newHasMetaObject)
+        return;
+    m_hasMetaObject = newHasMetaObject;
+    emit hasMetaObjectChanged();
+}

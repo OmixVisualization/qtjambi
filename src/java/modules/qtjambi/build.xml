@@ -23,6 +23,7 @@
 					</not>
 					<then>
 						<trycatch>
+							<mkdir dir="${extjardir}"/>
 							<try>
 								<get src="${jsr305.url}" dest="${extjardir}/jsr305.jar" verbose="true"/>
 							</try>
@@ -41,6 +42,7 @@
 						</or>
 					</not>
 					<then>
+					    <mkdir dir="${extjardir}"/>
 						<get src="${kotlin-annotations-jvm.url}" dest="${extjardir}/kotlin-annotations-jvm.jar" verbose="true"/>
 					</then>
 				</if>

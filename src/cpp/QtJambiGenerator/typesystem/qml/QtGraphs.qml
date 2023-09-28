@@ -34,7 +34,14 @@ TypeSystem{
     defaultSuperClass: "QtObject"
     qtLibrary: "QtGraphs"
     module: "qtjambi.graphs"
-    description: "UI Components for creating stunning 3D graphs."
+    description: "Provides functionality for visualizing data in 3D as bar, scatter, and surface graphs."
+    LoadTypeSystem{name: "QtCore";              unless: "QTJAMBI_NO_CORE"}
+    LoadTypeSystem{name: "QtOpenGL";            unless: "QTJAMBI_NO_OPENGL"}
+    LoadTypeSystem{name: "QtWidgets";           unless: "QTJAMBI_NO_WIDGETS"}
+    LoadTypeSystem{name: "QtQml";               unless: "QTJAMBI_NO_QML"}
+    LoadTypeSystem{name: "QtQuick";             unless: "QTJAMBI_NO_QUICK"}
+    LoadTypeSystem{name: "QtQuickWidgets";      unless: "QTJAMBI_NO_QUICKWIDGETS"}
+    LoadTypeSystem{name: "QtNetwork";           unless: "QTJAMBI_NO_NETWORK"}
     Rejection{
         className: "*"
         functionName: "dptr"
@@ -852,6 +859,13 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "createTextureData(QVector<QImage*>)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Dependent
+                }
+            }
             InjectCode{
                 position: Position.Beginning
                 Text{content: "QtJambi_LibraryUtilities.internal.invalidateObject(__rcTextureData);"}

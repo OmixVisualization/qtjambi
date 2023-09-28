@@ -49,6 +49,8 @@ import io.qt.core.QMetaProperty;
 import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QPair;
+import io.qt.core.Qt;
+import io.qt.core.QtAlgorithms;
 import io.qt.gui.QStandardItem;
 
 /**
@@ -324,6 +326,11 @@ public class TestMetaObject extends ApplicationInitializer {
     	Assert.assertTrue(invokablePairSupplier.returnType()!=0);
     	QMetaMethod uninvokable = object.metaObject().method("uninvokable");
     	Assert.assertFalse(uninvokable.isValid());
+    }
+    
+    @Test public void testMetaObjectFromNamespace() {
+    	Assert.assertEquals(Qt.staticMetaObject, QMetaObject.forType(Qt.class));
+    	Assert.assertEquals(null, QMetaObject.forType(QtAlgorithms.class));
     }
     
     public static void main(String args[]) {

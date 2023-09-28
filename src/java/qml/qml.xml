@@ -252,7 +252,7 @@
                 <property name="debug.conf" value="release" />
             </else>
         </if>
-        <java fork="true" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
+        <java fork="true" jvm="${tools.jvm}" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
             <jvmarg value="-Djava.library.path=${librarypath}"/>
             <!--jvmarg value="-Dio.qt.no-deployment-spec=true"/-->
             <!--jvmarg value="-Dio.qt.debug=${debug.conf}"/-->

@@ -114,6 +114,12 @@ TypeSystem{
         signature: "qWebEngineVersion()"
         targetType: "QtWebEngineCore"
     }
+
+    GlobalFunction{
+        signature: "qWebEngineGetDomainAndRegistry(QUrl)"
+        targetType: "QtWebEngineCore"
+        since: 6.6
+    }
     
     Rejection{
         className: "QWebEngineNavigationRequest"
@@ -285,11 +291,6 @@ TypeSystem{
     
     ObjectType{
         name: "QWebEngineNotification"
-    }
-
-    ObjectType{
-        name: "QWebEngineUrlResponseInterceptor"
-        since: [6, 6]
     }
 
     ObjectType{
@@ -516,17 +517,6 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "setUrlResponseInterceptor(QWebEngineUrlResponseInterceptor*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcUrlResponseInterceptor"
-                    action: ReferenceCount.Set
-                }
-            }
-            since: [6, 6]
-        }
-        ModifyFunction{
             signature: "setWebChannel(QWebChannel*,quint32)"
             ModifyArgument{
                 index: 1
@@ -700,17 +690,6 @@ TypeSystem{
                     action: ReferenceCount.Set
                 }
             }
-        }
-        ModifyFunction{
-            signature: "setUrlResponseInterceptor(QWebEngineUrlResponseInterceptor*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcUrlResponseInterceptor"
-                    action: ReferenceCount.Set
-                }
-            }
-            since: [6, 6]
         }
         ModifyFunction{
             signature: "setNotificationPresenter(std::function<void(std::unique_ptr<QWebEngineNotification>)>)"

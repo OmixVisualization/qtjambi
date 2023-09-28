@@ -44,39 +44,22 @@ class QtJambiTypeInfo
 public:
     template<typename T>
     static constexpr QtJambiTypeInfo of(){
-        return QtJambiTypeInfo(
-                                 QTypeInfo<T>::isPointer
+        return {
+#if QT_VERSION < QT_VERSION_CHECK(6, 6, 0)
+                QTypeInfo<T>::isPointer
+#else
+                std::is_pointer<T>::value
+#endif
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                                 ,QTypeInfo<T>::isStatic
+                ,QTypeInfo<T>::isStatic
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                                 );
+            };
     }
 
-    inline QtJambiTypeInfo(const QtJambiTypeInfo& info)
-        :
-          isPointer(info.isPointer)
+    uint isPointer : 1;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-          ,isStatic(info.isStatic)
+    uint isStatic : 1;
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-          {}
-
-    const uint isPointer : 1;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    const uint isStatic : 1;
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-private:
-    constexpr QtJambiTypeInfo(
-                    bool _isPointer
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                    ,bool _isStatic
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                )
-        :
-          isPointer(_isPointer)
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-          ,isStatic(_isStatic)
-#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-          {}
 };
 struct QTJAMBI_EXPORT SignalMetaInfo
 {
@@ -766,17 +749,19 @@ int registerMetaType(const QByteArray& typeName)
 }
 
 QTJAMBI_EXPORT void registerContainerAccessFactory(const std::type_info& typeId, NewContainerAccessFunction factory);
-QTJAMBI_EXPORT void registerValueTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name);
-QTJAMBI_EXPORT void registerObjectTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name);
-QTJAMBI_EXPORT void registerQObjectTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name);
-QTJAMBI_EXPORT void registerInterfaceTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name, const char *interface_iid);
-QTJAMBI_EXPORT void registerInterfaceValueTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name, const char *interface_iid);
-QTJAMBI_EXPORT void registerFunctionalTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name);
-QTJAMBI_EXPORT void registerEnumTypeInfo(const std::type_info& enumTypeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name);
-QTJAMBI_EXPORT void registerEnumTypeInfo(const std::type_info& enumTypeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name, const std::type_info& flagsTypeId, const QtJambiTypeInfo& flagsInfo, const char *flags_qt_name, const char *flags_qt_name_alias, const char *flags_java_name);
-QTJAMBI_EXPORT void registerUnspecificTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name);
-QTJAMBI_EXPORT void registerPrimitiveTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name);
+QTJAMBI_EXPORT void registerValueTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name);
+QTJAMBI_EXPORT void registerObjectTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name);
+QTJAMBI_EXPORT void registerQObjectTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name);
+QTJAMBI_EXPORT void registerInterfaceTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name, const char *interface_iid);
+QTJAMBI_EXPORT void registerInterfaceValueTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name, const char *interface_iid);
+QTJAMBI_EXPORT void registerFunctionalTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name);
+QTJAMBI_EXPORT void registerEnumTypeInfo(const std::type_info& enumTypeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name);
+QTJAMBI_EXPORT void registerEnumTypeInfo(const std::type_info& enumTypeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name, const std::type_info& flagsTypeId, QtJambiTypeInfo flagsInfo, const char *flags_qt_name, const char *flags_qt_name_alias, const char *flags_java_name);
+QTJAMBI_EXPORT void registerUnspecificTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name);
+QTJAMBI_EXPORT void registerPrimitiveTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name);
 QTJAMBI_EXPORT void registerInterfaceID(const std::type_info& typeId, const char *interface_iid);
+
+QTJAMBI_EXPORT void registerNamespaceTypeInfo(const char *qt_name, const char *java_name, const QMetaObject* namespaceMetaObject);
 QTJAMBI_EXPORT const char * registerInterfaceID(JNIEnv* env, jclass cls);
 
 QTJAMBI_EXPORT const char* mediaControlIID(JNIEnv *env, jclass javaType);

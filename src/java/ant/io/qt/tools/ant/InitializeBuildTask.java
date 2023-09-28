@@ -58,6 +58,7 @@ import java.util.TreeSet;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
+import org.apache.tools.ant.PropertyHelper;
 
 import io.qt.tools.ant.FindCompiler.Compiler;
 import io.qt.tools.ant.OSInfo.OS;
@@ -841,6 +842,19 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			String wantedConfiguration = AntUtil.getPropertyAsString(propertyHelper, Constants.CONFIGURATION);
 			detectConfiguration(wantedConfiguration); // all the magic is in here now
 		}
+		
+		String force = AntUtil.getPropertyAsString(propertyHelper, Constants.QTJAMBI_FORCE_DEBUG_INFO);
+		if(force==null || !"true".equalsIgnoreCase(force) || !"false".equalsIgnoreCase(force)) {
+			switch (OSInfo.crossOS()) {
+			case Android:
+			case IOS:
+				AntUtil.setProperty(propertyHelper, Constants.QTJAMBI_FORCE_DEBUG_INFO, "false");
+				break;
+			default:
+				AntUtil.setProperty(propertyHelper, Constants.QTJAMBI_FORCE_DEBUG_INFO, "true");
+				break;
+			}
+		}
 
 		// Moved until after auto-detect of configuration is complete
 		s = null;
@@ -1268,8 +1282,21 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			thisConfiguration = Constants.CONFIG_DEBUG_AND_RELEASE;
 			sourceValue = "detected";
 		}else if(dsoPath!=null && dsoDebugPath!=null){
-			thisConfiguration = Constants.CONFIG_DEBUG_AND_RELEASE;
-			sourceValue = "detected";
+			switch (OSInfo.crossOS()) {
+			case Windows:
+				thisConfiguration = Constants.CONFIG_DEBUG_AND_RELEASE;
+				sourceValue = "detected";
+				String compiler = (String)PropertyHelper.getProperty(getProject(), Constants.COMPILER);
+				if(compiler!=null && !compiler.startsWith("msvc")) {
+					thisConfiguration = Constants.CONFIG_RELEASE;
+					sourceValue = "detected";
+				}
+				break;
+			default:
+				thisConfiguration = Constants.CONFIG_RELEASE;
+				sourceValue = "detected";
+				break;
+			}
 		}else if(dsoDebugPath!=null) {
 			thisConfiguration = Constants.CONFIG_DEBUG;
 			sourceValue = "detected";			
@@ -1281,6 +1308,14 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			sourceValue = "default";
 		}
 		setConfiguration(thisConfiguration);
+		{
+        	String debugBundles = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.debug.bundles");
+        	if(debugBundles==null || debugBundles.isEmpty()) {
+        		AntUtil.setProperty(propertyHelper, "qtjambi.debug.bundles", "false");
+        	}else {
+        		AntUtil.setProperty(propertyHelper, "qtjambi.debug.bundles", ""+Boolean.parseBoolean(debugBundles));
+        	}
+        }
 		mySetProperty(-1, Constants.CONFIGURATION, " (" + sourceValue + ")", thisConfiguration, true);
 		return thisConfiguration;
 	}
@@ -1696,6 +1731,30 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 					if(file.exists()) {
 						try {
 							Files.copy(file.toPath(), new java.io.File(coredir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				java.io.File guidir = new java.io.File(headersdir, "QtGui");
+				guidir.mkdirs();
+				moduleDir = new File(new File(qtsources), "qtbase" + File.separator + "src" + File.separator + "gui" + File.separator + "platform" + File.separator + "darwin");
+				if (moduleDir.isDirectory()) {
+					File file = new File(moduleDir, "qutimimeconverter.h");
+					if(file.exists()) {
+						try {
+							Files.copy(file.toPath(), new java.io.File(guidir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				moduleDir = new File(new File(qtsources), "qtbase" + File.separator + "src" + File.separator + "gui" + File.separator + "platform" + File.separator + "windows");
+				if (moduleDir.isDirectory()) {
+					File file = new File(moduleDir, "qwindowsmimeconverter.h");
+					if(file.exists()) {
+						try {
+							Files.copy(file.toPath(), new java.io.File(guidir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
 						} catch (IOException e) {
 							e.printStackTrace();
 						}

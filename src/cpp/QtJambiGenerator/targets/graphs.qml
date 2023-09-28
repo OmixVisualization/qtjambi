@@ -31,13 +31,5 @@
 import QtJambiGenerator 1.0
 
 TypeSystem{
-    LoadTypeSystem{name: "QtCore";              generate: false; unless: "QTJAMBI_NO_CORE"}
-    LoadTypeSystem{name: "QtOpenGL";            generate: false; unless: "QTJAMBI_NO_OPENGL";           since: 6}
-    LoadTypeSystem{name: "QtGui";               generate: false; unless: "QTJAMBI_NO_GUI"}
-    LoadTypeSystem{name: "QtWidgets";           generate: false; unless: "QTJAMBI_NO_WIDGETS"}
-    LoadTypeSystem{name: "QtQml";               generate: false; unless: "QTJAMBI_NO_QML"}
-    LoadTypeSystem{name: "QtQuick";             generate: false; unless: "QTJAMBI_NO_QUICK"}
-    LoadTypeSystem{name: "QtQuickWidgets";      generate: false; unless: "QTJAMBI_NO_QUICKWIDGETS"}
-    LoadTypeSystem{name: "QtNetwork";           generate: false; unless: "QTJAMBI_NO_NETWORK"}
     LoadTypeSystem{name: "QtGraphs";            generate: true; unless: "QTJAMBI_NO_GRAPHS";           since: [6, 6]}
 }

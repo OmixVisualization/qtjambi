@@ -34,6 +34,23 @@
 #include "java_p.h"
 #include "registryutil_p.h"
 
+jobject gBufferArray(JNIEnv *env, jobject buffer){
+    static jmethodID mtd = [](JNIEnv *_env){
+        jclass bufferClass = Java::Runtime::Internal::Buffer::getClass(_env);
+        jthrowable exn = nullptr;
+        jmethodID result = JavaAPI::resolveMethod(_env, "base", "()Ljava/lang/Object;", bufferClass, false, &exn);
+        if(!result){
+            result = JavaAPI::resolveMethod(_env, "array", "()Ljava/lang/Object;", bufferClass, false, &exn);
+            if(exn)
+                JavaException(_env, exn).raise();
+        }
+        return result;
+    }(env);
+    jobject result = env->CallObjectMethod(buffer, mtd);
+    JavaException::check(env QTJAMBI_STACKTRACEINFO );
+    return result;
+}
+
 JBufferConstData::JBufferConstData(JNIEnv *env, jobject buffer_object, bool purgeOnDelete) :
     m_buffer_object(buffer_object ? env->NewGlobalRef(buffer_object) : nullptr),
     m_size(0),
@@ -49,8 +66,9 @@ JBufferConstData::JBufferConstData(JNIEnv *env, jobject buffer_object, bool purg
         }else{
             jobject bufferArray = nullptr;
             try{
-                bufferArray = Java::Runtime::Buffer::array(env, m_buffer_object);
-            }catch(const JavaException&){}
+                bufferArray = gBufferArray(env, m_buffer_object);
+            }catch(const JavaException&){
+            }
             if(Java::Runtime::ByteBuffer::isInstanceOf(env, m_buffer_object)){
                 if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Byte::primitiveType(env), 1))){
                     m_size = env->GetArrayLength(jarray(bufferArray));
@@ -64,7 +82,7 @@ JBufferConstData::JBufferConstData(JNIEnv *env, jobject buffer_object, bool purg
                         }
                     }
                 }else{
-                    m_size = Java::Runtime::Buffer::capacity(env, m_buffer_object);
+                    m_size = Java::Runtime::Internal::Buffer::capacity(env, m_buffer_object);
                     if(m_size>0){
                         jbyte* array = new jbyte[size_t(m_size)];
                         for(jsize i=0; i<m_size; ++i){
@@ -87,7 +105,7 @@ JBufferConstData::JBufferConstData(JNIEnv *env, jobject buffer_object, bool purg
                         }
                     }
                 }else{
-                    m_size = Java::Runtime::Buffer::capacity(env, m_buffer_object);
+                    m_size = Java::Runtime::Internal::Buffer::capacity(env, m_buffer_object);
                     if(m_size>0){
                         jint* array = new jint[size_t(m_size)];
                         for(jsize i=0; i<m_size; ++i){
@@ -110,7 +128,7 @@ JBufferConstData::JBufferConstData(JNIEnv *env, jobject buffer_object, bool purg
                         }
                     }
                 }else{
-                    m_size = Java::Runtime::Buffer::capacity(env, m_buffer_object);
+                    m_size = Java::Runtime::Internal::Buffer::capacity(env, m_buffer_object);
                     if(m_size>0){
                         jshort* array = new jshort[size_t(m_size)];
                         for(jsize i=0; i<m_size; ++i){
@@ -133,7 +151,7 @@ JBufferConstData::JBufferConstData(JNIEnv *env, jobject buffer_object, bool purg
                         }
                     }
                 }else{
-                    m_size = Java::Runtime::Buffer::capacity(env, m_buffer_object);
+                    m_size = Java::Runtime::Internal::Buffer::capacity(env, m_buffer_object);
                     if(m_size>0){
                         jchar* array = new jchar[size_t(m_size)];
                         for(jsize i=0; i<m_size; ++i){
@@ -156,7 +174,7 @@ JBufferConstData::JBufferConstData(JNIEnv *env, jobject buffer_object, bool purg
                         }
                     }
                 }else{
-                    m_size = Java::Runtime::Buffer::capacity(env, m_buffer_object);
+                    m_size = Java::Runtime::Internal::Buffer::capacity(env, m_buffer_object);
                     if(m_size>0){
                         jlong* array = new jlong[size_t(m_size)];
                         for(jsize i=0; i<m_size; ++i){
@@ -179,7 +197,7 @@ JBufferConstData::JBufferConstData(JNIEnv *env, jobject buffer_object, bool purg
                         }
                     }
                 }else{
-                    m_size = Java::Runtime::Buffer::capacity(env, m_buffer_object);
+                    m_size = Java::Runtime::Internal::Buffer::capacity(env, m_buffer_object);
                     if(m_size>0){
                         jfloat* array = new jfloat[size_t(m_size)];
                         for(jsize i=0; i<m_size; ++i){
@@ -202,7 +220,7 @@ JBufferConstData::JBufferConstData(JNIEnv *env, jobject buffer_object, bool purg
                         }
                     }
                 }else{
-                    m_size = Java::Runtime::Buffer::capacity(env, m_buffer_object);
+                    m_size = Java::Runtime::Internal::Buffer::capacity(env, m_buffer_object);
                     if(m_size>0){
                         jdouble* array = new jdouble[size_t(m_size)];
                         for(jsize i=0; i<m_size; ++i){
@@ -224,8 +242,9 @@ JBufferConstData::~JBufferConstData(){
                 if(!m_isdirect && m_size>0 && m_purgeOnDelete){
                     jobject bufferArray = nullptr;
                     try{
-                        bufferArray = Java::Runtime::Buffer::array(env, m_buffer_object);
-                    }catch(const JavaException&){}
+                        bufferArray = gBufferArray(env, m_buffer_object);
+                    }catch(const JavaException&){
+                    }
                     if(Java::Runtime::ByteBuffer::isInstanceOf(env, m_buffer_object)){
                         if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Byte::primitiveType(env), 1))){
                             env->ReleaseByteArrayElements(jbyteArray(bufferArray), reinterpret_cast<jbyte*>(m_data), JNI_ABORT);
@@ -297,8 +316,9 @@ JBufferData::~JBufferData(){
                 if(!m_isdirect && m_size>0){
                     jobject bufferArray = nullptr;
                     try{
-                        bufferArray = Java::Runtime::Buffer::array(env, m_buffer_object);
-                    }catch(const JavaException&){}
+                        bufferArray = gBufferArray(env, m_buffer_object);
+                    }catch(const JavaException&){
+                    }
                     if(Java::Runtime::ByteBuffer::isInstanceOf(env, m_buffer_object)){
                         if(bufferArray && env->IsInstanceOf(bufferArray, getArrayClass(env, Java::Runtime::Byte::primitiveType(env), 1))){
                             env->ReleaseByteArrayElements(jbyteArray(bufferArray), reinterpret_cast<jbyte*>(m_data), 0);

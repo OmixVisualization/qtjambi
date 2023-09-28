@@ -8,7 +8,7 @@ TEMPLATE = lib
 QT -= core gui
 
 DEFINES += QT_NO_VERSION_TAGGING
-CONFIG -= staticlib static
+CONFIG -= staticlib static force_debug_info separate_debug_info
 CONFIG += unversioned_libname skip_target_version_ext shared
 
 INCLUDEPATH += $$[QT_INSTALL_HEADERS]

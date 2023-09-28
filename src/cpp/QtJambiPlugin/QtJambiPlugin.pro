@@ -24,8 +24,17 @@ CONFIG(debug, debug|release) {
 QT -= gui widgets
 
 contains(QT_CONFIG, release):contains(QT_CONFIG, debug) {
-    # Qt was configued with both debug and release libs
-    CONFIG += debug_and_release build_all
+    win32-msvc* | !CONFIG(force_debug_info): {
+        # Qt was configued with both debug and release libs
+        CONFIG += debug_and_release build_all
+    }else{
+        # don't compile debug with forced debug info
+        CONFIG += release
+    }
+}
+
+CONFIG(release, debug|release): CONFIG(force_debug_info) {
+    CONFIG += separate_debug_info
 }
 
 macx:{
@@ -67,6 +76,12 @@ linux-g++* | freebsd-g++* | win32-g++* {
     QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-function
     QMAKE_LFLAGS_NOUNDEF   += -Wl,--no-undefined
     QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
+}
+
+contains(QMAKE_CXX, "g++") | contains(QMAKE_CXX, "clang++") : {
+    SOURCES_BASE = $$clean_path($$dirname(_PRO_FILE_)/..)
+    QMAKE_CXXFLAGS_DEBUG += -g -fdebug-prefix-map=$$SOURCES_BASE=../sources
+    QMAKE_CXXFLAGS_RELEASE_WITH_DEBUGINFO += -g -fdebug-prefix-map=$$SOURCES_BASE=../sources
 }
 
 HEADERS += 

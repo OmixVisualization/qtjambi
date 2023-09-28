@@ -1090,7 +1090,7 @@ public class TestInjectedCode extends ApplicationInitializer {
         file.reset();
         QByteArray data = file.readAll();
         img = new QImage();
-        img.loadFromData(data.toByteArray());
+        img.loadFromData(data.toArray());
         assertFalse(img.isNull());
         assertEquals(418, img.width());
         file.reset();
@@ -1107,12 +1107,12 @@ public class TestInjectedCode extends ApplicationInitializer {
 
         img = new QImage();
         file.reset();
-        img.loadFromData(file.readAll().toByteArray(), "JPEG");
+        img.loadFromData(file.readAll().toArray(), "JPEG");
         assertTrue(img.isNull());
 
         img = new QImage();
         file.reset();
-        img.loadFromData(file.readAll().toByteArray());
+        img.loadFromData(file.readAll().toArray());
         assertFalse(img.isNull());
         assertEquals(418, img.width());
     }
@@ -1292,7 +1292,7 @@ public class TestInjectedCode extends ApplicationInitializer {
         QTemporaryFile file = setUpPicture();
 
         assertTrue(file.open(QIODevice.OpenModeFlag.ReadOnly));
-        byte bytes[] = file.readAll().toByteArray();
+        byte bytes[] = file.readAll().toArray();
         file.close();
 
         QPicture picture = new QPicture();
@@ -1504,7 +1504,7 @@ public class TestInjectedCode extends ApplicationInitializer {
         file.setAutoRemove(true);
 
         assertTrue(file.open(QIODevice.OpenModeFlag.WriteOnly));
-        byte data[] = new QByteArray("I am a boy").toByteArray();
+        byte data[] = new QByteArray("I am a boy").toArray();
         assertEquals(10, file.write(data));
         file.close();
 

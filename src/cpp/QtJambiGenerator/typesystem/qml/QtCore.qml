@@ -115,6 +115,22 @@ exports io.qt.internal to qtjambi.deployer, qtjambi.generator, qtjambi.autotests
 exports io.qt;`
             }
     }
+
+    Template{
+        name: "core.unclonable"
+        Text{content: String.raw`
+            /**
+             * Operation not supported
+             */
+            @QtUninvokable
+            @Override
+            @Deprecated
+            public %TYPE clone() throws QNoImplementationException {
+                throw new QNoImplementationException();
+            }
+            `
+            }
+    }
     
     Template{
         name: "core.comsumer.function"
@@ -780,6 +796,10 @@ public final %ITERATOR_TYPE iterator() {
     Rejection{
         className: "ProcessOpenModeResult"
     }
+
+    Rejection{
+        className: "QAtomicOpsSupport"
+    }
     
     Rejection{
         className: "JavaVM_"
@@ -976,11 +996,6 @@ public final %ITERATOR_TYPE iterator() {
     Rejection{
         className: "QFactoryLoader"
         functionName: "library"
-    }
-
-    Rejection{
-        className: "QByteArrayView"
-        functionName: "m_data"
     }
 
     Rejection{
@@ -1209,11 +1224,6 @@ public final %ITERATOR_TYPE iterator() {
     
     Rejection{
         className: "QVector::AlignmentDummy"
-    }
-
-    Rejection{
-        enumName: "QAtomicOpsSupport"
-        until: [5, 15]
     }
     
     Rejection{
@@ -2361,32 +2371,12 @@ public final %ITERATOR_TYPE iterator() {
     }
     
     Rejection{
-        className: "QAtomicOpsSupport"
-        since: [6, 2]
-    }
-    
-    Rejection{
         className: "QCalendar::SystemId"
         since: [6, 2]
     }
     
     Rejection{
         className: "QFuture::const_iterator"
-    }
-    
-    Rejection{
-        className: "QFuture"
-        functionName: "unwrap"
-    }
-    
-    Rejection{
-        className: "QFuture"
-        functionName: "then"
-    }
-    
-    Rejection{
-        className: "QFuture"
-        functionName: "d"
     }
     
     Rejection{
@@ -2449,51 +2439,6 @@ public final %ITERATOR_TYPE iterator() {
         className: "QPluginParsedMetaData"
         functionName: "value"
         since: [6, 3]
-    }
-    
-    Rejection{
-        className: "QByteArrayView"
-        functionName: "back"
-    }
-    
-    Rejection{
-        className: "QByteArrayView"
-        functionName: "front"
-    }
-    
-    Rejection{
-        className: "QByteArrayView"
-        functionName: "rbegin"
-    }
-    
-    Rejection{
-        className: "QByteArrayView"
-        functionName: "rend"
-    }
-    
-    Rejection{
-        className: "QByteArrayView"
-        functionName: "cend"
-    }
-    
-    Rejection{
-        className: "QByteArrayView"
-        functionName: "cbegin"
-    }
-    
-    Rejection{
-        className: "QByteArrayView"
-        functionName: "crend"
-    }
-    
-    Rejection{
-        className: "QByteArrayView"
-        functionName: "crbegin"
-    }
-    
-    Rejection{
-        className: "QByteArrayView"
-        functionName: "empty"
     }
     
     Rejection{
@@ -2583,12 +2528,10 @@ public final %ITERATOR_TYPE iterator() {
     
     Rejection{
         className: "QSharedPointer"
-        functionName: "*"
     }
     
     Rejection{
         className: "QWeakPointer"
-        functionName: "*"
     }
     
     Rejection{
@@ -2780,14 +2723,6 @@ public final %ITERATOR_TYPE iterator() {
     }
     
     Rejection{
-        className: "QStringDecoder"
-    }
-    
-    Rejection{
-        className: "QStringEncoder"
-    }
-    
-    Rejection{
         className: "QStringTokenizer"
     }
     
@@ -2827,6 +2762,7 @@ public final %ITERATOR_TYPE iterator() {
     
     NamespaceType{
         name: "Qt"
+        hasMetaObject: true
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QProperty"
@@ -3707,11 +3643,6 @@ public final %ITERATOR_TYPE iterator() {
     }
     
     EnumType{
-        name: "QStringConverterBase::Flag"
-        since: 6
-    }
-    
-    EnumType{
         name: "QTextStream::FieldAlignment"
     }
     
@@ -3741,22 +3672,6 @@ public final %ITERATOR_TYPE iterator() {
 
     EnumType{
         name: "QDirIterator::IteratorFlag"
-    }
-    
-    EnumType{
-        name: "QCryptographicHash::Algorithm"
-        RejectEnumValue{
-            name: "RealSha3_224"
-        }
-        RejectEnumValue{
-            name: "RealSha3_256"
-        }
-        RejectEnumValue{
-            name: "RealSha3_384"
-        }
-        RejectEnumValue{
-            name: "RealSha3_512"
-        }
     }
     
     EnumType{
@@ -4891,6 +4806,7 @@ public final %ITERATOR_TYPE iterator() {
                 position: Position.Beginning
                 Text{content: "CoreAPI::ckeckLinkExtension(__jni_env, __this_nativeId);"}
             }
+            since: 6
         }
         ModifyFunction{
             signature: "flags() const"
@@ -4943,7 +4859,92 @@ public final %ITERATOR_TYPE iterator() {
                 name: "Name"
             }
         }
-        Rejection{className: "Id128Bytes"; since: 6.6}
+        ValueType{
+            name: "Id128Bytes"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                Text{content: String.raw`
+/**
+ * Create instance from set of bytes.
+ * @param data
+ * @throws IllegalArgumentException if number of bytes is not 16
+ */
+public Id128Bytes(byte... data) throws IllegalArgumentException{
+    this();
+    setData(data);
+}
+
+/**
+ * Create instance from set of short values.
+ * @param data
+ * @throws IllegalArgumentException if number of short values is not 8
+ */
+public Id128Bytes(short... data) throws IllegalArgumentException{
+    this();
+    setData16(data);
+}
+
+/**
+ * Create instance from set of int values.
+ * @param data
+ * @throws IllegalArgumentException if number of int values is not 4
+ */
+public Id128Bytes(int... data) throws IllegalArgumentException{
+    this();
+    setData32(data);
+}
+
+/**
+ * Create instance from set of long values.
+ * @param data
+ * @throws IllegalArgumentException if number of long values is not 2
+ */
+public Id128Bytes(long... data) throws IllegalArgumentException{
+    this();
+    setData64(data);
+}
+
+/**
+ * Create instance from set of bytes.
+ * @param data
+ * @throws IllegalArgumentException if number of bytes is not 16
+ */
+public static Id128Bytes of(byte... data) throws IllegalArgumentException{
+    return new Id128Bytes(data);
+}
+
+/**
+ * Create instance from set of short values.
+ * @param data
+ * @throws IllegalArgumentException if number of short values is not 8
+ */
+public static Id128Bytes of(short... data) throws IllegalArgumentException{
+    return new Id128Bytes(data);
+}
+
+/**
+ * Create instance from set of int values.
+ * @param data
+ * @throws IllegalArgumentException if number of int values is not 4
+ */
+public static Id128Bytes of(int... data) throws IllegalArgumentException{
+    return new Id128Bytes(data);
+}
+
+/**
+ * Create instance from set of long values.
+ * @param data
+ * @throws IllegalArgumentException if number of long values is not 2
+ */
+public static Id128Bytes of(long... data) throws IllegalArgumentException{
+    return new Id128Bytes(data);
+}
+                    `}
+            }
+            since: 6.6
+        }
+
         ModifyFunction{
             signature: "QUuid(const char*)"
             remove: RemoveFlag.All
@@ -4969,16 +4970,26 @@ public final %ITERATOR_TYPE iterator() {
         }
         ModifyFunction{
             signature: "fromBytes(const void*,QSysInfo::Endian)"
-            remove: RemoveFlag.All
+            ModifyArgument{
+                index: 1
+                NoNullPointer{}
+                ReplaceType{
+                    modifiedType: "io.qt.core.QUuid$Id128Bytes"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "const void* %out = qtjambi_cast<QUuid::Id128Bytes*>(%env, %in);"}
+                }
+            }
             since: 6.6
         }
-        InjectCode{
-            since: [6, 3]
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
-                quoteAfterLine: "class QUuid_63__"
-                quoteBeforeLine: "}// class"
+        ModifyFunction{
+            signature: "fromRfc4122(QByteArrayView)"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
             }
+            since: 6.3
         }
     }
 
@@ -5425,8 +5436,9 @@ public final %ITERATOR_TYPE iterator() {
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
+                    modifiedType: "java.nio.@Nullable ByteBuffer"
                 }
+                AddImpliciteCall{type: "byte @NonNull[]"}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);"}
@@ -7042,16 +7054,16 @@ public static final int MaxUtcOffsetSecs = +14 * 3600;`}
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                ArgumentMap{index: 1; metaName: "parent"}
-                ArgumentMap{index: 2; metaName: "first"}
-                ArgumentMap{index: 3; metaName: "last"}
-                Text{content: String.raw`if(first<0)
-    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("first>=0 expected: first=%1").arg(first) QTJAMBI_STACKTRACEINFO );
-if(last < first)
-    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("last >= first expected: first=%1, last=%2").arg(first, last) QTJAMBI_STACKTRACEINFO );
-int count = columnCount(__qt_parent);
-if(first > count)
-    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("first <= columnCount(parent) expected: first=%1, columnCount=%2").arg(first, count) QTJAMBI_STACKTRACEINFO );`}
+                ArgumentMap{index: 1; metaName: "parentV"}
+                ArgumentMap{index: 2; metaName: "firstV"}
+                ArgumentMap{index: 3; metaName: "lastV"}
+                Text{content: String.raw`if(firstV<0)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("first>=0 expected: first=%1").arg(firstV) QTJAMBI_STACKTRACEINFO );
+if(lastV < firstV)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("last >= first expected: first=%1, last=%2").arg(firstV).arg(lastV) QTJAMBI_STACKTRACEINFO );
+int count = columnCount(__qt_parentV);
+if(firstV > count)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("first <= columnCount(parent) expected: first=%1, columnCount=%2").arg(firstV, count) QTJAMBI_STACKTRACEINFO );`}
             }
         }
         ModifyFunction{
@@ -7061,16 +7073,16 @@ if(first > count)
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                ArgumentMap{index: 1; metaName: "parent"}
-                ArgumentMap{index: 2; metaName: "first"}
-                ArgumentMap{index: 3; metaName: "last"}
-                Text{content: String.raw`if(first<0)
-    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("first>=0 expected: first=%1").arg(first) QTJAMBI_STACKTRACEINFO );
-if(last < first)
-    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("last >= first expected: first=%1, last=%2").arg(first, last) QTJAMBI_STACKTRACEINFO );
-int count = rowCount(__qt_parent);
-if(first > count)
-    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("first <= rowCount(parent) expected: first=%1, rowCount=%2").arg(first, count) QTJAMBI_STACKTRACEINFO );`}
+                ArgumentMap{index: 1; metaName: "parentV"}
+                ArgumentMap{index: 2; metaName: "firstV"}
+                ArgumentMap{index: 3; metaName: "lastV"}
+                Text{content: String.raw`if(firstV<0)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("first>=0 expected: first=%1").arg(firstV) QTJAMBI_STACKTRACEINFO );
+if(lastV < firstV)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("last >= first expected: first=%1, last=%2").arg(firstV).arg(lastV) QTJAMBI_STACKTRACEINFO );
+int count = rowCount(__qt_parentV);
+if(firstV > count)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("first <= rowCount(parent) expected: first=%1, rowCount=%2").arg(firstV).arg(count) QTJAMBI_STACKTRACEINFO );`}
             }
         }
         ModifyFunction{
@@ -7080,16 +7092,16 @@ if(first > count)
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                ArgumentMap{index: 1; metaName: "parent"}
-                ArgumentMap{index: 2; metaName: "first"}
-                ArgumentMap{index: 3; metaName: "last"}
-                Text{content: String.raw`if(first<0)
-    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("first>=0 expected: first=%1").arg(first) QTJAMBI_STACKTRACEINFO );
-if(last < first)
-    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("last >= first expected: first=%1, last=%2").arg(first, last) QTJAMBI_STACKTRACEINFO );
-int count = columnCount(__qt_parent);
-if(last >= count)
-    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("last <= columnCount(parent) expected: last=%1, columnCount=%2").arg(first, count) QTJAMBI_STACKTRACEINFO );`}
+                ArgumentMap{index: 1; metaName: "parentV"}
+                ArgumentMap{index: 2; metaName: "firstV"}
+                ArgumentMap{index: 3; metaName: "lastV"}
+                Text{content: String.raw`if(firstV<0)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("first>=0 expected: first=%1").arg(firstV) QTJAMBI_STACKTRACEINFO );
+if(lastV < firstV)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("last >= first expected: first=%1, last=%2").arg(firstV).arg(lastV) QTJAMBI_STACKTRACEINFO );
+int count = columnCount(__qt_parentV);
+if(lastV >= count)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("last <= columnCount(parent) expected: last=%1, columnCount=%2").arg(firstV).arg(count) QTJAMBI_STACKTRACEINFO );`}
             }
         }
         ModifyFunction{
@@ -7099,16 +7111,16 @@ if(last >= count)
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                ArgumentMap{index: 1; metaName: "parent"}
-                ArgumentMap{index: 2; metaName: "first"}
-                ArgumentMap{index: 3; metaName: "last"}
-                Text{content: String.raw`if(first<0)
-    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("first>=0 expected: first=%1").arg(first) QTJAMBI_STACKTRACEINFO );
-if(last < first)
-    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("last >= first expected: first=%1, last=%2").arg(first, last) QTJAMBI_STACKTRACEINFO );
-int count = rowCount(__qt_parent);
-if(last >= count)
-    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("last < rowCount(parent) expected: last=%1, rowCount=%2").arg(last, count) QTJAMBI_STACKTRACEINFO );`}
+                ArgumentMap{index: 1; metaName: "parentV"}
+                ArgumentMap{index: 2; metaName: "firstV"}
+                ArgumentMap{index: 3; metaName: "lastV"}
+                Text{content: String.raw`if(firstV<0)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("first>=0 expected: first=%1").arg(firstV) QTJAMBI_STACKTRACEINFO );
+if(lastV < firstV)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("last >= first expected: first=%1, last=%2").arg(firstV).arg(lastV) QTJAMBI_STACKTRACEINFO );
+int count = rowCount(__qt_parentV);
+if(lastV >= count)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("last < rowCount(parent) expected: last=%1, rowCount=%2").arg(lastV).arg(count) QTJAMBI_STACKTRACEINFO );`}
             }
         }
         ModifyFunction{
@@ -7118,17 +7130,17 @@ if(last >= count)
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                ArgumentMap{index: 1; metaName: "sourceParent"}
-                ArgumentMap{index: 2; metaName: "sourceFirst"}
-                ArgumentMap{index: 3; metaName: "sourceLast"}
-                ArgumentMap{index: 4; metaName: "destinationParent"}
-                ArgumentMap{index: 5; metaName: "destinationChild"}
-                Text{content: String.raw`if(sourceFirst<0)
-    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("sourceFirst>=0 expected: sourceFirst=%1").arg(sourceFirst) QTJAMBI_STACKTRACEINFO );
-if(sourceLast < sourceFirst)
-    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("sourceLast >= sourceFirst expected: sourceFirst=%1, sourceLast=%2").arg(sourceFirst, sourceLast) QTJAMBI_STACKTRACEINFO );
-if(destinationChild<0)
-    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("destinationChild>=0 expected: destinationChild=%1").arg(destinationChild) QTJAMBI_STACKTRACEINFO );`}
+                ArgumentMap{index: 1; metaName: "sourceParentV"}
+                ArgumentMap{index: 2; metaName: "sourceFirstV"}
+                ArgumentMap{index: 3; metaName: "sourceLastV"}
+                ArgumentMap{index: 4; metaName: "destinationParentV"}
+                ArgumentMap{index: 5; metaName: "destinationChildV"}
+                Text{content: String.raw`if(sourceFirstV<0)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("sourceFirst>=0 expected: sourceFirst=%1").arg(sourceFirstV) QTJAMBI_STACKTRACEINFO );
+if(sourceLastV < sourceFirstV)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("sourceLast >= sourceFirst expected: sourceFirst=%1, sourceLast=%2").arg(sourceFirstV).arg(sourceLastV) QTJAMBI_STACKTRACEINFO );
+if(destinationChildV<0)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("destinationChild>=0 expected: destinationChild=%1").arg(destinationChildV) QTJAMBI_STACKTRACEINFO );`}
             }
         }
         ModifyFunction{
@@ -7138,17 +7150,17 @@ if(destinationChild<0)
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                ArgumentMap{index: 1; metaName: "sourceParent"}
-                ArgumentMap{index: 2; metaName: "sourceFirst"}
-                ArgumentMap{index: 3; metaName: "sourceLast"}
-                ArgumentMap{index: 4; metaName: "destinationParent"}
-                ArgumentMap{index: 5; metaName: "destinationChild"}
-                Text{content: String.raw`if(sourceFirst<0)
-    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("sourceFirst>=0 expected: sourceFirst=%1").arg(sourceFirst) QTJAMBI_STACKTRACEINFO );
-if(sourceLast < sourceFirst)
-    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("sourceLast >= sourceFirst expected: sourceFirst=%1, sourceLast=%2").arg(sourceFirst, sourceLast) QTJAMBI_STACKTRACEINFO );
-if(destinationChild<0)
-    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("destinationChild>=0 expected: destinationChild=%1").arg(destinationChild) QTJAMBI_STACKTRACEINFO );`}
+                ArgumentMap{index: 1; metaName: "sourceParentV"}
+                ArgumentMap{index: 2; metaName: "sourceFirstV"}
+                ArgumentMap{index: 3; metaName: "sourceLastV"}
+                ArgumentMap{index: 4; metaName: "destinationParentV"}
+                ArgumentMap{index: 5; metaName: "destinationChildV"}
+                Text{content: String.raw`if(sourceFirstV<0)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("sourceFirst>=0 expected: sourceFirst=%1").arg(sourceFirstV) QTJAMBI_STACKTRACEINFO );
+if(sourceLastV < sourceFirstV)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("sourceLast >= sourceFirst expected: sourceFirst=%1, sourceLast=%2").arg(sourceFirstV).arg(sourceLastV) QTJAMBI_STACKTRACEINFO );
+if(destinationChildV<0)
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, QString("destinationChild>=0 expected: destinationChild=%1").arg(destinationChildV) QTJAMBI_STACKTRACEINFO );`}
             }
         }
         ModifyFunction{
@@ -7462,6 +7474,42 @@ if(destinationChild<0)
     ValueType{
         name: "QByteArrayView"
 
+        Rejection{
+            functionName: "back"
+        }
+
+        Rejection{
+            functionName: "front"
+        }
+
+        Rejection{
+            functionName: "rbegin"
+        }
+
+        Rejection{
+            functionName: "rend"
+        }
+
+        Rejection{
+            functionName: "cend"
+        }
+
+        Rejection{
+            functionName: "cbegin"
+        }
+
+        Rejection{
+            functionName: "crend"
+        }
+
+        Rejection{
+            functionName: "crbegin"
+        }
+
+        Rejection{
+            functionName: "empty"
+        }
+
         IteratorType{
             name: "const_iterator"
         }
@@ -7483,8 +7531,70 @@ if(destinationChild<0)
             remove: RemoveFlag.All
         }
         ModifyFunction{
+            signature: "compare(QByteArrayView,Qt::CaseSensitivity)const"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+        }
+        ModifyFunction{
+            signature: "endsWith(QByteArrayView)const"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+        }
+        ModifyFunction{
+            signature: "startsWith(QByteArrayView)const"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+        }
+        ModifyFunction{
+            signature: "count(QByteArrayView)const"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+        }
+        ModifyFunction{
+            signature: "indexOf(QByteArrayView,qsizetype)const"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+        }
+        ModifyFunction{
+            signature: "lastIndexOf(QByteArrayView)const"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+        }
+        ModifyFunction{
+            signature: "lastIndexOf(QByteArrayView,qsizetype)const"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+        }
+
+        ModifyFunction{
             signature: "constData()const"
-            remove: RemoveFlag.All
+            rename: "toArray"
+            ModifyArgument{
+                index: 0
+                NoNullPointer{}
+                ReplaceType{
+                    modifiedType: "byte[]"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "%out = %env->NewByteArray(jsize(__qt_this->size()));\n"+
+                                  "%env->SetByteArrayRegion(%out, 0, jsize(__qt_this->size()), reinterpret_cast<const jbyte *>(%in));"}
+                }
+            }
         }
         ModifyFunction{
             signature: "operator[](qsizetype)const"
@@ -7678,43 +7788,32 @@ if(destinationChild<0)
     
     ValueType{
         name: "QByteArray"
-        Rejection{
-            functionName: "rbegin"
-        }
-        Rejection{
-            functionName: "rend"
-        }
-        Rejection{
-            functionName: "cend"
-        }
-        Rejection{
-            functionName: "cbegin"
-        }
-        Rejection{
-            functionName: "crend"
-        }
-        Rejection{
-            functionName: "crbegin"
-        }
-        Rejection{
-            functionName: "empty"
-        }
-        Rejection{
-            functionName: "erase"
-        }
-        Rejection{
-            functionName: "fromStdString"
-        }
-        Rejection{
-            functionName: "reallocData"
-        }
-        Rejection{
-            functionName: "reallocGrowData"
-        }
+        Rejection{functionName: "rbegin"}
+        Rejection{functionName: "rend"}
+        Rejection{functionName: "cend"}
+        Rejection{functionName: "cbegin"}
+        Rejection{functionName: "crend"}
+        Rejection{functionName: "crbegin"}
+        Rejection{functionName: "empty"}
+        Rejection{functionName: "erase"}
+        Rejection{functionName: "fromStdString"}
+        Rejection{functionName: "reallocData"}
+        Rejection{functionName: "reallocGrowData"}
 
         ValueType{
             name: "FromBase64Result"
-            generate: false
+            ModifyFunction{
+                signature: "operator bool() const"
+                rename: "isOk"
+            }
+            ModifyFunction{
+                signature: "operator*()"
+                remove: RemoveFlag.All
+            }
+            ModifyFunction{
+                signature: "operator*()const"
+                remove: RemoveFlag.All
+            }
             since: [5, 15]
         }
         ModifyFunction{
@@ -7780,16 +7879,6 @@ if(destinationChild<0)
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "setRawData(const char *, unsigned int)"
-            access: Modification.Protected
-            until: 5
-        }
-        ModifyFunction{
-            signature: "setRawData(const char *, qsizetype)"
-            access: Modification.Protected
-            since: 6
-        }
-        ModifyFunction{
             signature: "number(uint,int)"
             remove: RemoveFlag.All
         }
@@ -7843,32 +7932,248 @@ if(destinationChild<0)
                 ReplaceType{
                     modifiedType: "io.qt.core.QByteArrayView"
                 }
+                AddImpliciteCall{type: "byte @NonNull[]"}
+                AddImpliciteCall{type: "java.nio.@NonNull ByteBuffer"}
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QByteArrayView %out = qtjambi_cast<QByteArrayView>(%env, %in);"}
+                    Text{content: "const QByteArrayView& %out = qtjambi_cast<const QByteArrayView&>(%env, %in);"}
                 }
             }
             since: 6
         }
-        InjectCode{
-            target: CodeClass.Java
-            position: Position.Compare
+        ModifyFunction{
+            signature: "append(QByteArray)"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "java.nio.@Nullable ByteBuffer"}
+                AddImpliciteCall{type: "byte @NonNull[]"}
+            }
             until: 5
-            Text{content: "if (other instanceof byte[]) {\n"+
-                          "    other = new io.qt.core.QByteArray((byte[]) other);\n"+
-                          "}else if (other instanceof java.nio.ByteBuffer) {\n"+
-                          "    other = new io.qt.core.QByteArray((java.nio.ByteBuffer) other);\n"+
-                          "}"}
         }
-        InjectCode{
-            target: CodeClass.Java
-            position: Position.Compare
+        ModifyFunction{
+            signature: "append(QByteArrayView)"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
             since: 6
-            Text{content: "if (other instanceof byte[]) {\n"+
-                          "    other = new io.qt.core.QByteArrayView((byte[]) other);\n"+
-                          "}else if (other instanceof java.nio.ByteBuffer) {\n"+
-                          "    other = new io.qt.core.QByteArrayView((java.nio.ByteBuffer) other);\n"+
-                          "}"}
+        }
+        ModifyFunction{
+            signature: "prepend(QByteArray)"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "java.nio.@Nullable ByteBuffer"}
+                AddImpliciteCall{type: "byte @NonNull[]"}
+            }
+            until: 5
+        }
+        ModifyFunction{
+            signature: "prepend(QByteArrayView)"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+            since: 6
+        }
+        ModifyFunction{
+            signature: "insert(int,QByteArray)"
+            ModifyArgument{
+                index: 2
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "java.nio.@Nullable ByteBuffer"}
+                AddImpliciteCall{type: "byte @NonNull[]"}
+            }
+            until: 5
+        }
+        ModifyFunction{
+            signature: "insert(qsizetype,QByteArrayView)"
+            ModifyArgument{
+                index: 2
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+            since: 6
+        }
+        ModifyFunction{
+            signature: "replace(QByteArray,QByteArray)"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "java.nio.@Nullable ByteBuffer"}
+                AddImpliciteCall{type: "byte @NonNull[]"}
+            }
+            ModifyArgument{
+                index: 2
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "java.nio.@Nullable ByteBuffer"}
+                AddImpliciteCall{type: "byte @NonNull[]"}
+            }
+            until: 5
+        }
+        ModifyFunction{
+            signature: "replace(QByteArrayView,QByteArrayView)"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+            ModifyArgument{
+                index: 2
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+            since: 6
+        }
+        ModifyFunction{
+            signature: "replace(int,int,QByteArray)"
+            ModifyArgument{
+                index: 3
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "java.nio.@Nullable ByteBuffer"}
+                AddImpliciteCall{type: "byte @NonNull[]"}
+            }
+            until: 5
+        }
+        ModifyFunction{
+            signature: "replace(qsizetype,qsizetype,QByteArrayView)"
+            ModifyArgument{
+                index: 3
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+            since: 6
+        }
+        ModifyFunction{
+            signature: "compare(QByteArray,Qt::CaseSensitivity)const"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "java.nio.@Nullable ByteBuffer"}
+                AddImpliciteCall{type: "byte @NonNull[]"}
+            }
+            until: 5
+        }
+        ModifyFunction{
+            signature: "compare(QByteArrayView,Qt::CaseSensitivity)const"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+            since: 6
+        }
+        ModifyFunction{
+            signature: "contains(QByteArray)const"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "java.nio.@Nullable ByteBuffer"}
+                AddImpliciteCall{type: "byte @NonNull[]"}
+            }
+            until: 5
+        }
+        ModifyFunction{
+            signature: "contains(QByteArrayView)const"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+            since: 6
+        }
+        ModifyFunction{
+            signature: "count(QByteArray)const"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "java.nio.@Nullable ByteBuffer"}
+                AddImpliciteCall{type: "byte @NonNull[]"}
+            }
+            until: 5
+        }
+        ModifyFunction{
+            signature: "count(QByteArrayView)const"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+            since: 6
+        }
+        ModifyFunction{
+            signature: "indexOf(QByteArray,int)const"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "java.nio.@Nullable ByteBuffer"}
+                AddImpliciteCall{type: "byte @NonNull[]"}
+            }
+            until: 5
+        }
+        ModifyFunction{
+            signature: "indexOf(QByteArrayView,qsizetype)const"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+            since: 6
+        }
+        ModifyFunction{
+            signature: "lastIndexOf(QByteArray,int)const"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "java.nio.@Nullable ByteBuffer"}
+                AddImpliciteCall{type: "byte @NonNull[]"}
+            }
+            until: 5
+        }
+        ModifyFunction{
+            signature: "lastIndexOf(QByteArrayView)const"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+            since: 6
+        }
+        ModifyFunction{
+            signature: "lastIndexOf(QByteArrayView,qsizetype)const"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+            since: 6
+        }
+        ModifyFunction{
+            signature: "endsWith(QByteArray)const"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "java.nio.@Nullable ByteBuffer"}
+                AddImpliciteCall{type: "byte @NonNull[]"}
+            }
+            until: 5
+        }
+        ModifyFunction{
+            signature: "endsWith(QByteArrayView)const"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+            since: 6
+        }
+        ModifyFunction{
+            signature: "startsWith(QByteArray)const"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "java.nio.@Nullable ByteBuffer"}
+                AddImpliciteCall{type: "byte @NonNull[]"}
+            }
+            until: 5
+        }
+        ModifyFunction{
+            signature: "startsWith(QByteArrayView)const"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+            since: 6
         }
         ModifyFunction{
             signature: "operator==(QByteArray,const char*)"
@@ -7883,32 +8188,14 @@ if(destinationChild<0)
                 ReplaceType{
                     modifiedType: "io.qt.core.QByteArrayView"
                 }
+                AddImpliciteCall{type: "byte @NonNull[]"}
+                AddImpliciteCall{type: "java.nio.@NonNull ByteBuffer"}
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QByteArrayView %out = qtjambi_cast<QByteArrayView>(%env, %in);"}
+                    Text{content: "const QByteArrayView& %out = qtjambi_cast<const QByteArrayView&>(%env, %in);"}
                 }
             }
             since: 6
-        }
-        InjectCode{
-            target: CodeClass.Java
-            position: Position.Equals
-            until: 5
-            Text{content: "if (other instanceof byte[]) {\n"+
-                          "    other = new io.qt.core.QByteArray((byte[]) other);\n"+
-                          "}else if (other instanceof java.nio.ByteBuffer) {\n"+
-                          "    other = new io.qt.core.QByteArray((java.nio.ByteBuffer) other);\n"+
-                          "}"}
-        }
-        InjectCode{
-            target: CodeClass.Java
-            position: Position.Equals
-            since: 6
-            Text{content: "if (other instanceof byte[]) {\n"+
-                          "    other = new io.qt.core.QByteArrayView((byte[]) other);\n"+
-                          "}else if (other instanceof java.nio.ByteBuffer) {\n"+
-                          "    other = new io.qt.core.QByteArrayView((java.nio.ByteBuffer) other);\n"+
-                          "}"}
         }
         ModifyFunction{
             signature: "operator!=(QByteArray,const char*)"
@@ -8045,33 +8332,6 @@ if(destinationChild<0)
         }
         InjectCode{
             target: CodeClass.Java
-            until: 5
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
-                quoteAfterLine: "class QByteArray_5__"
-                quoteBeforeLine: "}// class"
-            }
-        }
-        InjectCode{
-            target: CodeClass.Java
-            since: [5, 12]
-            until: 5
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
-                quoteAfterLine: "class QByteArray_5_12__"
-                quoteBeforeLine: "}// class"
-            }
-        }
-        InjectCode{
-            since: [5, 15]
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
-                quoteAfterLine: "class QByteArray_5_15__"
-                quoteBeforeLine: "}// class"
-            }
-        }
-        InjectCode{
-            target: CodeClass.Java
             since: 6
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
@@ -8183,8 +8443,9 @@ if(destinationChild<0)
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
+                    modifiedType: "java.nio.@Nullable ByteBuffer"
                 }
+                AddImpliciteCall{type: "byte @NonNull[]"}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);"}
@@ -8211,8 +8472,9 @@ if(destinationChild<0)
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
+                    modifiedType: "java.nio.@Nullable ByteBuffer"
                 }
+                AddImpliciteCall{type: "byte @NonNull[]"}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);"}
@@ -8236,24 +8498,16 @@ if(destinationChild<0)
         }
         ModifyFunction{
             signature: "append(const char*)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferConstData %out(%env, %in);"}
-                }
-            }
+            remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "append(const char*,int)"
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
+                    modifiedType: "java.nio.@Nullable ByteBuffer"
                 }
+                AddImpliciteCall{type: "byte @NonNull[]"}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);"}
@@ -8280,8 +8534,9 @@ if(destinationChild<0)
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
+                    modifiedType: "java.nio.@Nullable ByteBuffer"
                 }
+                AddImpliciteCall{type: "byte @NonNull[]"}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);"}
@@ -8305,123 +8560,52 @@ if(destinationChild<0)
         }
         ModifyFunction{
             signature: "contains(const char*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferConstData %out(%env, %in);"}
-                }
-            }
+            remove: RemoveFlag.All
             until: 5
         }
         ModifyFunction{
             signature: "compare(const char *, Qt::CaseSensitivity) const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferConstData %out(%env, %in);"}
-                }
-            }
+            remove: RemoveFlag.All
             since: [5, 12]
             until: 5
         }
         ModifyFunction{
             signature: "count(const char*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferConstData %out(%env, %in);"}
-                }
-            }
+            remove: RemoveFlag.All
             until: 5
         }
         ModifyFunction{
             signature: "endsWith(const char*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferConstData %out(%env, %in);"}
-                }
-            }
+            remove: RemoveFlag.All
             until: 5
         }
         ModifyFunction{
             signature: "indexOf(const char*,int)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferConstData %out(%env, %in);"}
-                }
-            }
+            remove: RemoveFlag.All
             until: 5
         }
         ModifyFunction{
             signature: "insert(int,const char*)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferConstData %out(%env, %in);"}
-                }
-            }
+            remove: RemoveFlag.All
             until: 5
         }
         ModifyFunction{
             signature: "lastIndexOf(const char*,int)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferConstData %out(%env, %in);"}
-                }
-            }
+            remove: RemoveFlag.All
             until: 5
         }
         ModifyFunction{
             signature: "prepend(const char*)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferConstData %out(%env, %in);"}
-                }
-            }
+            remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "prepend(const char*, int)"
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
+                    modifiedType: "java.nio.@Nullable ByteBuffer"
                 }
+                AddImpliciteCall{type: "byte @NonNull[]"}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);"}
@@ -8448,8 +8632,9 @@ if(destinationChild<0)
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
+                    modifiedType: "java.nio.@Nullable ByteBuffer"
                 }
+                AddImpliciteCall{type: "byte @NonNull[]"}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);"}
@@ -8476,8 +8661,9 @@ if(destinationChild<0)
             ModifyArgument{
                 index: 3
                 ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
+                    modifiedType: "java.nio.@Nullable ByteBuffer"
                 }
+                AddImpliciteCall{type: "byte @NonNull[]"}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);"}
@@ -8504,8 +8690,9 @@ if(destinationChild<0)
             ModifyArgument{
                 index: 3
                 ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
+                    modifiedType: "java.nio.@Nullable ByteBuffer"
                 }
+                AddImpliciteCall{type: "byte @NonNull[]"}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);"}
@@ -8532,8 +8719,9 @@ if(destinationChild<0)
             ModifyArgument{
                 index: 2
                 ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
+                    modifiedType: "java.nio.@Nullable ByteBuffer"
                 }
+                AddImpliciteCall{type: "byte @NonNull[]"}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);"}
@@ -8560,8 +8748,9 @@ if(destinationChild<0)
             ModifyArgument{
                 index: 2
                 ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
+                    modifiedType: "java.nio.@Nullable ByteBuffer"
                 }
+                AddImpliciteCall{type: "byte @NonNull[]"}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);"}
@@ -8585,68 +8774,22 @@ if(destinationChild<0)
         }
         ModifyFunction{
             signature: "replace(QByteArray,const char*)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferConstData %out(%env, %in);"}
-                }
-            }
+            remove: RemoveFlag.All
             until: 5
         }
         ModifyFunction{
             signature: "replace(QString,const char*)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferConstData %out(%env, %in);"}
-                }
-            }
+            remove: RemoveFlag.All
             until: 5
         }
         ModifyFunction{
             signature: "replace(int,int,const char*)"
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferConstData %out(%env, %in);"}
-                }
-            }
+            remove: RemoveFlag.All
             until: 5
         }
         ModifyFunction{
             signature: "replace(const char*,const char*)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferConstData %out(%env, %in);"}
-                }
-            }
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferConstData %out(%env, %in);"}
-                }
-            }
+            remove: RemoveFlag.All
             until: 5
         }
         ModifyFunction{
@@ -8654,8 +8797,9 @@ if(destinationChild<0)
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
+                    modifiedType: "java.nio.@Nullable ByteBuffer"
                 }
+                AddImpliciteCall{type: "byte @NonNull[]"}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);"}
@@ -8678,8 +8822,9 @@ if(destinationChild<0)
             ModifyArgument{
                 index: 3
                 ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
+                    modifiedType: "java.nio.@Nullable ByteBuffer"
                 }
+                AddImpliciteCall{type: "byte @NonNull[]"}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);"}
@@ -8706,8 +8851,9 @@ if(destinationChild<0)
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
+                    modifiedType: "java.nio.@Nullable ByteBuffer"
                 }
+                AddImpliciteCall{type: "byte @NonNull[]"}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);"}
@@ -8730,8 +8876,9 @@ if(destinationChild<0)
             ModifyArgument{
                 index: 3
                 ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
+                    modifiedType: "java.nio.@Nullable ByteBuffer"
                 }
+                AddImpliciteCall{type: "byte @NonNull[]"}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);"}
@@ -8755,30 +8902,12 @@ if(destinationChild<0)
         }
         ModifyFunction{
             signature: "replace(const char*,QByteArray)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferConstData %out(%env, %in);"}
-                }
-            }
+            remove: RemoveFlag.All
             until: 5
         }
         ModifyFunction{
             signature: "replace(char,const char*)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferConstData %out(%env, %in);"}
-                }
-            }
+            remove: RemoveFlag.All
             until: 5
         }
         ModifyFunction{
@@ -8801,16 +8930,7 @@ if(destinationChild<0)
         }
         ModifyFunction{
             signature: "startsWith(const char*)const"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferConstData %out(%env, %in);"}
-                }
-            }
+            remove: RemoveFlag.All
             until: 5
         }
         ModifyFunction{
@@ -8818,8 +8938,9 @@ if(destinationChild<0)
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
+                    modifiedType: "java.nio.@Nullable ByteBuffer"
                 }
+                AddImpliciteCall{type: "byte @NonNull[]"}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);"}
@@ -8839,8 +8960,9 @@ if(destinationChild<0)
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
+                    modifiedType: "java.nio.@Nullable ByteBuffer"
                 }
+                AddImpliciteCall{type: "byte @NonNull[]"}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);"}
@@ -8857,11 +8979,13 @@ if(destinationChild<0)
         }
         ModifyFunction{
             signature: "setRawData(const char*,uint)"
+            access: Modification.Protected
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
+                    modifiedType: "java.nio.@Nullable ByteBuffer"
                 }
+                AddImpliciteCall{type: "byte @NonNull[]"}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);"}
@@ -8878,11 +9002,13 @@ if(destinationChild<0)
         }
         ModifyFunction{
             signature: "setRawData(const char*,qsizetype)"
+            access: Modification.Protected
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
+                    modifiedType: "java.nio.@Nullable ByteBuffer"
                 }
+                AddImpliciteCall{type: "byte @NonNull[]"}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "JBufferConstData %out(%env, %in);"}
@@ -8914,7 +9040,11 @@ if(destinationChild<0)
         }
         ModifyFunction{
             signature: "constData() const"
-            rename: "toByteArray"
+            rename: "toArray"
+            Delegate{
+                name: "toByteArray"
+                deprecated: true
+            }
             ModifyArgument{
                 index: 0
                 NoNullPointer{}
@@ -8930,20 +9060,7 @@ if(destinationChild<0)
         }
         ModifyFunction{
             signature: "operator=(const char*)"
-            Delegate{
-                name: "set"
-                deprecated: true
-            }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferConstData %out(%env, %in);"}
-                }
-            }
+            remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "operator=(QByteArray)"
@@ -8951,15 +9068,29 @@ if(destinationChild<0)
                 name: "set"
                 deprecated: true
             }
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "java.nio.@Nullable ByteBuffer"}
+                AddImpliciteCall{type: "byte @NonNull[]"}
+            }
+        }
+        ModifyFunction{
+            signature: "fromBase64(const QByteArray &, QByteArray::Base64Options)"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "java.nio.@Nullable ByteBuffer"}
+                AddImpliciteCall{type: "byte @NonNull[]"}
+            }
         }
         ModifyFunction{
             signature: "fromBase64Encoding(const QByteArray &, QByteArray::Base64Options)"
             ModifyArgument{
-                index: 0
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = Java::QtCore::QByteArray$FromBase64Result::newInstance(%env, qtjambi_cast<jobject>(%env, %in.decoded), jint(%in.decodingStatus));"}
-                }
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "java.nio.@Nullable ByteBuffer"}
+                AddImpliciteCall{type: "byte @NonNull[]"}
             }
             since: [5, 15]
         }
@@ -9033,11 +9164,21 @@ if(destinationChild<0)
     GlobalFunction{
         signature: "qCompress(QByteArray, int)"
         targetType: "QByteArray"
+        ModifyArgument{
+            index: 1
+            AddImpliciteCall{type: "java.nio.@Nullable ByteBuffer"}
+            AddImpliciteCall{type: "byte @NonNull[]"}
+        }
     }
 
     GlobalFunction{
         signature: "qUncompress(QByteArray)"
         targetType: "QByteArray"
+        ModifyArgument{
+            index: 1
+            AddImpliciteCall{type: "java.nio.@Nullable ByteBuffer"}
+            AddImpliciteCall{type: "byte @NonNull[]"}
+        }
     }
     
     ValueType{
@@ -9850,13 +9991,19 @@ if(destinationChild<0)
     
     ObjectType{
         name: "QAbstractEventDispatcher"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/CoreAPI"
+                location: Include.Global
+            }
+        }
         ModifyFunction{
             signature: "instance(QThread*)"
             ModifyArgument{
                 index: 0
-                DefineOwnership{
+                ConversionRule{
                     codeClass: CodeClass.Native
-                    ownership: Ownership.Cpp
+                    Text{content: "%out = CoreAPI::convertQObjectToJavaObjectCppOwnership(%env, %in);"}
                 }
             }
         }
@@ -9997,33 +10144,33 @@ if(destinationChild<0)
             }
             since: 6
         }
-    }
-    
-    ValueType{
-        name: "QAbstractEventDispatcher::TimerInfo"
-        CustomConstructor{
-            Text{content: "if(copy){\n"+
-                          "    return new(placement) QAbstractEventDispatcher::TimerInfo(copy->timerId, copy->interval, copy->timerType);\n"+
-                          "}else{\n"+
-                          "    return new(placement) QAbstractEventDispatcher::TimerInfo(0, 0, Qt::PreciseTimer);\n"+
-                          "}"}
+
+        ValueType{
+            name: "TimerInfo"
+            CustomConstructor{
+                Text{content: "if(copy){\n"+
+                              "    return new(placement) QAbstractEventDispatcher::TimerInfo(copy->timerId, copy->interval, copy->timerType);\n"+
+                              "}else{\n"+
+                              "    return new(placement) QAbstractEventDispatcher::TimerInfo(0, 0, Qt::PreciseTimer);\n"+
+                              "}"}
+            }
+            CustomConstructor{
+                type: CustomConstructor.Default
+                Text{content: "new(placement) QAbstractEventDispatcher::TimerInfo(0, 0, Qt::PreciseTimer);"}
+            }
+            CustomConstructor{
+                type: CustomConstructor.Copy
+                Text{content: "new(placement) QAbstractEventDispatcher::TimerInfo(copy->timerId, copy->interval, copy->timerType);"}
+            }
         }
-        CustomConstructor{
-            type: CustomConstructor.Default
-            Text{content: "new(placement) QAbstractEventDispatcher::TimerInfo(0, 0, Qt::PreciseTimer);"}
-        }
-        CustomConstructor{
-            type: CustomConstructor.Copy
-            Text{content: "new(placement) QAbstractEventDispatcher::TimerInfo(copy->timerId, copy->interval, copy->timerType);"}
-        }
-    }
-    
-    EnumType{
-        name: "QVersionNumber::SegmentStorage"
     }
     
     ValueType{
         name: "QVersionNumber"
+
+        EnumType{
+            name: "SegmentStorage"
+        }
         CustomConstructor{
             Text{content: "if(copy){\n"+
                           "    return new(placement) QVersionNumber(copy->majorVersion(), copy->minorVersion(), copy->microVersion());\n"+
@@ -10547,6 +10694,22 @@ if(destinationChild<0)
     
     ObjectType{
         name: "QCryptographicHash"
+
+        EnumType{
+            name: "Algorithm"
+            RejectEnumValue{
+                name: "RealSha3_224"
+            }
+            RejectEnumValue{
+                name: "RealSha3_256"
+            }
+            RejectEnumValue{
+                name: "RealSha3_384"
+            }
+            RejectEnumValue{
+                name: "RealSha3_512"
+            }
+        }
         ModifyFunction{
             signature: "addData(QIODevice*)"
             ModifyArgument{
@@ -10589,14 +10752,6 @@ if(destinationChild<0)
                 }
             }
             since: 6
-        }
-        InjectCode{
-            since: [6, 3]
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
-                quoteAfterLine: "class QCryptographicHash___"
-                quoteBeforeLine: "}// class"
-            }
         }
     }
     
@@ -10682,6 +10837,9 @@ if(destinationChild<0)
     
     ObjectType{
         name: "QStringConverterBase"
+        EnumType{
+            name: "Flag"
+        }
         ObjectType{
             name: "State"
             Rejection{functionName: "reset"}
@@ -10704,6 +10862,12 @@ if(destinationChild<0)
         Rejection{
             className: "Interface"
         }
+        EnumType{
+            name: "Encoding"
+            RejectEnumValue{
+                name: "LastEncoding"
+            }
+        }
         ModifyField{
             name: "state"
             read: true
@@ -10714,23 +10878,190 @@ if(destinationChild<0)
                             + "QtJambiAPI::registerDependency(%env, %out, __this_nativeId);"}
             }
         }
-        InjectCode{
-            since: 6
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
-                quoteAfterLine: "class QStringConverter___"
-                quoteBeforeLine: "}// class"
+        ModifyFunction{
+            signature: "encodingForHtml(QByteArrayView)"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+        }
+        ModifyFunction{
+            signature: "encodingForData(QByteArrayView,char16_t)"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
             }
         }
         since: 6
     }
-    
-    EnumType{
-        name: "QStringConverter::Encoding"
-        RejectEnumValue{
-            name: "LastEncoding"
+
+    ObjectType{
+        name: "QStringDecoder"
+        ObjectType{
+            name: "EncodedData"
+            template: true
+            generate: false
         }
-        since: 6
+        ModifyFunction{
+            signature: "decode<>(QByteArray)"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "java.lang.@NonNull String"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "%out = qtjambi_cast<jstring>(%env, QString(%in));"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "decode(QByteArrayView)"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "java.lang.@NonNull String"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "%out = qtjambi_cast<jstring>(%env, QString(%in));"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "operator()<>(QByteArray)"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "java.lang.@NonNull String"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "%out = qtjambi_cast<jstring>(%env, QString(%in));"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "operator()(QByteArrayView)"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "java.lang.@NonNull String"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "%out = qtjambi_cast<jstring>(%env, QString(%in));"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "appendToBuffer(char16_t *, QByteArrayView)"
+            remove: RemoveFlag.All
+            since: 6.6
+        }
+        ModifyFunction{
+            signature: "appendToBuffer(QChar *, QByteArrayView)"
+            InjectCode{
+                target: CodeClass.Native
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                ArgumentMap{
+                    index: 2
+                    metaName: "%2"
+                }
+                Text{
+                    content: String.raw`if(__qt_%1_buffer.size()<__qt_this->requiredSpace(__qt_%2.size()))
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, "Buffer size is less than required space." QTJAMBI_STACKTRACEINFO);`}
+            }
+            ModifyArgument{
+                index: 1
+                ArrayType{
+                    asBuffer: true
+                    minLength: 0
+                }
+            }
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "void"
+                }
+            }
+        }
+    }
+
+    ObjectType{
+        name: "QStringEncoder"
+        ObjectType{
+            name: "DecodedData"
+            template: true
+            generate: false
+        }
+        ModifyFunction{
+            signature: "encode<>(QString)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "operator()<>(QString)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "operator()(QStringView)"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.core.@NonNull QByteArray"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "%out = qtjambi_cast<jobject>(%env, QByteArray(%in));"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "encode(QStringView)"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "io.qt.core.@NonNull QByteArray"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "%out = qtjambi_cast<jobject>(%env, QByteArray(%in));"}
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "appendToBuffer(char *, QStringView)"
+            InjectCode{
+                target: CodeClass.Native
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                ArgumentMap{
+                    index: 2
+                    metaName: "%2"
+                }
+                Text{
+                    content: String.raw`if(__qt_%1_buffer.size()<__qt_this->requiredSpace(__qt_%2.size()))
+    Java::Runtime::IndexOutOfBoundsException::throwNew(%env, "Buffer size is less than required space." QTJAMBI_STACKTRACEINFO);`}
+            }
+            ModifyArgument{
+                index: 1
+                ArrayType{
+                    asBuffer: true
+                    minLength: 0
+                }
+            }
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "void"
+                }
+            }
+        }
     }
     
     
@@ -10976,8 +11307,6 @@ if(destinationChild<0)
                 fileName: "QtJambi/CoreAPI"
                 location: Include.Global
             }
-        }
-        ExtraIncludes{
             Include{
                 fileName: "QTextCodec"
                 location: Include.Global
@@ -12381,9 +12710,9 @@ if(destinationChild<0)
             signature: "instance()"
             ModifyArgument{
                 index: 0
-                DefineOwnership{
+                ConversionRule{
                     codeClass: CodeClass.Native
-                    ownership: Ownership.Cpp
+                    Text{content: "%out = CoreAPI::convertQObjectToJavaObjectCppOwnership(%env, %in);"}
                 }
             }
         }
@@ -13927,6 +14256,17 @@ if(destinationChild<0)
     
     ValueType{
         name: "QFuture"
+        Rejection{
+            functionName: "unwrap"
+        }
+
+        Rejection{
+            functionName: "then"
+        }
+
+        Rejection{
+            functionName: "d"
+        }
         disableNativeIdUsage: true
         template: true
         TemplateArguments{
@@ -14119,19 +14459,23 @@ if(destinationChild<0)
             signature: "setRunnable(QRunnable*)"
             ModifyArgument{
                 index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.core.@Nullable QRunnable"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QRunnable* %out = qtjambi_cast<QRunnable*>(%env, %in);\n"+
-                                  "if(%out && %out->autoDelete())\n"+
-                                  "    QtJambiAPI::setCppOwnership(%env, %in);"}
-                }
+                AddImpliciteCall{type: "java.lang.@NonNull Runnable"}
                 ReferenceCount{
-                    variableName: "__rcRunnable"
-                    action: ReferenceCount.Set
+                    action: ReferenceCount.Ignore
                 }
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+if(%1!=null){
+    if(%1.autoDelete()){
+        QtJambi_LibraryUtilities.internal.setCppOwnership(%1);
+    }else{
+        __rcRunnable = %1;
+    }
+}`}
             }
         }
         ModifyFunction{
@@ -14730,6 +15074,7 @@ if(destinationChild<0)
                           "public final void addData(byte[] array){\n"+
                           "    addData(java.nio.ByteBuffer.wrap(array));\n"+
                           "}"}
+            until: 6.5
         }
     }
     
@@ -15137,6 +15482,7 @@ if(destinationChild<0)
     
     ValueType{
         name: "QCollator"
+        implementing: "java.util.Comparator<@StrictNonNull String>"
         ModifyFunction{
             signature: "operator()(const QString &, const QString &)const"
             Delegate{name: "isLessThan"}
@@ -15164,12 +15510,50 @@ if(destinationChild<0)
         }
         ModifyFunction{
             signature: "compare(const QChar *, int, const QChar *, int) const"
-            remove: RemoveFlag.All
+            ModifyArgument{
+                index: 1
+                ArrayType{
+                    lengthParameter: 2
+                }
+            }
+            ModifyArgument{
+                index: 2
+                RemoveArgument{}
+            }
+            ModifyArgument{
+                index: 3
+                ArrayType{
+                    lengthParameter: 4
+                }
+            }
+            ModifyArgument{
+                index: 4
+                RemoveArgument{}
+            }
             until: [6, 3]
         }
         ModifyFunction{
             signature: "compare(const QChar *, qsizetype, const QChar *, qsizetype) const"
-            remove: RemoveFlag.All
+            ModifyArgument{
+                index: 1
+                ArrayType{
+                    lengthParameter: 2
+                }
+            }
+            ModifyArgument{
+                index: 2
+                RemoveArgument{}
+            }
+            ModifyArgument{
+                index: 3
+                ArrayType{
+                    lengthParameter: 4
+                }
+            }
+            ModifyArgument{
+                index: 4
+                RemoveArgument{}
+            }
             since: [6, 4]
         }
         ModifyFunction{
@@ -17133,6 +17517,7 @@ if(destinationChild<0)
     
     ValueType{
         name: "QMetaType"
+        //implementing: "java.util.Comparator<@Nullable Object>"
 
         Rejection{functionName: "destroy"}
         Rejection{functionName: "construct"}
@@ -17567,6 +17952,10 @@ if(destinationChild<0)
                 ReplaceType{
                     modifiedType: "java.lang.@Nullable Object"
                 }
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
+                }
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "*/\n"+
@@ -17604,6 +17993,10 @@ if(destinationChild<0)
                 index: 0
                 ReplaceType{
                     modifiedType: "java.lang.@Nullable Object"
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Ignore
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -17872,6 +18265,14 @@ if(destinationChild<0)
                                   "void * %out = variant3.data();"}
                 }
             }
+        }
+        ModifyFunction{
+            signature: "fromName(QByteArrayView)"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+            since: 6
         }
     }
     
@@ -18330,11 +18731,11 @@ if(destinationChild<0)
                 }
             }
         }
-    }
-    
-    EnumType{
-        name: "QVariant::Type"
-        extensible: true
+
+        EnumType{
+            name: "Type"
+            extensible: true
+        }
     }
     
     ObjectType{
@@ -19717,11 +20118,6 @@ if(destinationChild<0)
     
     Rejection{
         className: ""
-        functionName: "qbswap"
-    }
-    
-    Rejection{
-        className: ""
         functionName: "qbswap_helper"
     }
     
@@ -19867,16 +20263,6 @@ if(destinationChild<0)
     
     Rejection{
         className: ""
-        functionName: "qToLittleEndian"
-    }
-    
-    Rejection{
-        className: ""
-        functionName: "qToBigEndian"
-    }
-    
-    Rejection{
-        className: ""
         functionName: "qThreadStorage_setLocalData"
     }
     
@@ -19988,16 +20374,6 @@ if(destinationChild<0)
     Rejection{
         className: ""
         functionName: "qFromUnaligned"
-    }
-    
-    Rejection{
-        className: ""
-        functionName: "qFromLittleEndian"
-    }
-    
-    Rejection{
-        className: ""
-        functionName: "qFromBigEndian"
     }
     
     Rejection{
@@ -21258,9 +21634,348 @@ if(destinationChild<0)
         remove: RemoveFlag.All
         until: 5
     }
+
+    GlobalFunction{
+        signature: "qbswap<T>(T)"
+        targetType: "QtEndian"
+        Instantiation{
+            Argument{
+                type: "qint8"
+                isImplicit: true
+            }
+            Argument{
+                type: "void"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "qint16"
+                isImplicit: true
+            }
+            Argument{
+                type: "void"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "qint32"
+                isImplicit: true
+            }
+            Argument{
+                type: "void"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "qint64"
+                isImplicit: true
+            }
+            Argument{
+                type: "void"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "double"
+                isImplicit: true
+            }
+            Argument{
+                type: "void"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "float"
+                isImplicit: true
+            }
+            Argument{
+                type: "void"
+                isImplicit: true
+            }
+        }
+        until: 5
+    }
+
+    GlobalFunction{
+        signature: "qbswap<T,>(T)"
+        targetType: "QtEndian"
+        Instantiation{
+            Argument{
+                type: "qint8"
+                isImplicit: true
+            }
+            Argument{
+                type: "QVariant"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "qint16"
+                isImplicit: true
+            }
+            Argument{
+                type: "QVariant"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "qint32"
+                isImplicit: true
+            }
+            Argument{
+                type: "QVariant"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "qint64"
+                isImplicit: true
+            }
+            Argument{
+                type: "QVariant"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "double"
+                isImplicit: true
+            }
+            Argument{
+                type: "QVariant"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "float"
+                isImplicit: true
+            }
+            Argument{
+                type: "QVariant"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "QUuid::Id128Bytes"
+                isImplicit: true
+            }
+            Argument{
+                type: "QVariant"
+                isImplicit: true
+            }
+            since: 6.6
+        }
+        since: 6
+    }
+
+    GlobalFunction{
+        signature: "qToBigEndian<T>(T)"
+        targetType: "QtEndian"
+        Instantiation{
+            Argument{
+                type: "qint8"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "qint16"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "qint32"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "qint64"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "double"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "float"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "QUuid::Id128Bytes"
+                isImplicit: true
+            }
+            since: 6.6
+        }
+    }
+
+    GlobalFunction{
+        signature: "qFromBigEndian<T>(T)"
+        targetType: "QtEndian"
+        Instantiation{
+            Argument{
+                type: "qint8"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "qint16"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "qint32"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "qint64"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "double"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "float"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "QUuid::Id128Bytes"
+                isImplicit: true
+            }
+            since: 6.6
+        }
+    }
+
+    GlobalFunction{
+        signature: "qToLittleEndian<T>(T)"
+        targetType: "QtEndian"
+        Instantiation{
+            Argument{
+                type: "qint8"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "qint16"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "qint32"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "qint64"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "double"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "float"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "QUuid::Id128Bytes"
+                isImplicit: true
+            }
+            since: 6.6
+        }
+    }
+
+    GlobalFunction{
+        signature: "qFromLittleEndian<T>(T)"
+        targetType: "QtEndian"
+        Instantiation{
+            Argument{
+                type: "qint8"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "qint16"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "qint32"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "qint64"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "double"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "float"
+                isImplicit: true
+            }
+        }
+        Instantiation{
+            Argument{
+                type: "QUuid::Id128Bytes"
+                isImplicit: true
+            }
+            since: 6.6
+        }
+    }
     
     HeaderType{
         name: "QtAlgorithms"
+    }
+
+    HeaderType{
+        name: "QtEndian"
     }
     
     HeaderType{
@@ -21556,4 +22271,5 @@ if(destinationChild<0)
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'QPartialOrdering(QPartialOrdering)' for function modification in 'QPartialOrdering' not found. Possible candidates: "}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method QShortcut::QShortcut<Func1>(QKeySequence,QWidget*,Func1,Qt::ShortcutContext)"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'QBasicMutex(QBasicMutex)' for function modification in 'QBasicMutex' not found. Possible candidates: QBasicMutex() in QBasicMutex"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QString*coder::*', unmatched return type 'QString*coder::*codedData<*>'"}
 }

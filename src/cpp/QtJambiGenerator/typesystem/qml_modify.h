@@ -3,6 +3,25 @@
 
 #include "qml_abstractobject.h"
 
+class AddImpliciteCall : public AbstractObject
+{
+    Q_OBJECT
+    QML_ELEMENT
+    Q_CLASSINFO("DefaultProperty", "type")
+public:
+    explicit AddImpliciteCall(QObject *parent = nullptr);
+    QString getType() const;
+    void setType(const QString &newType);
+
+signals:
+    void typeChanged();
+
+private:
+    QString type;
+    Q_PROPERTY(QString type READ getType WRITE setType NOTIFY typeChanged REQUIRED)
+    Q_DISABLE_COPY(AddImpliciteCall)
+};
+
 class ModifyArgument : public AbstractObject
 {
     Q_OBJECT

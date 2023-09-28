@@ -35,6 +35,7 @@ TypeSystem{
     qtLibrary: "QtQuickControls2"
     module: "qtjambi.quickcontrols"
     description: "Provides lightweight QML types for creating performant user interfaces for desktop, embedded, and mobile devices. These types employ a simple styling architecture and are very efficient."
+    LoadTypeSystem{name: "QtQuick"; unless: "QTJAMBI_NO_QUICK"}
 
     InjectCode{
         position: Position.Position3

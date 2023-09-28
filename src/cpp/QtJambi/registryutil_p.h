@@ -56,6 +56,19 @@ struct InterfaceOffsetInfo{
     QMap<size_t, QSet<const std::type_info*>> inheritedInterfaces;
 };
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+struct OptionalBool{
+    inline OptionalBool() : m_hasValue(false), m_value(false) {}
+    inline OptionalBool(bool value) : m_hasValue(true), m_value(value) {}
+    inline operator bool() const {return m_hasValue;}
+    inline bool value() const {return m_hasValue && m_value;}
+    uint m_hasValue:1;
+    uint m_value:1;
+};
+#else
+#define OptionalBool std::optional<bool>
+#endif
+
 jclass getGlobalClassRef(JNIEnv *env, jclass cls, const char *className = nullptr);
 
 hash_type qHash(const std::type_index& idx, hash_type seed = 0) Q_DECL_NOEXCEPT;
@@ -71,6 +84,10 @@ bool isInterface(const std::type_info& typeId);
 const std::type_info* getInterfaceTypeForIID(const char*interface_iid);
 const std::type_info* getTypeByJavaName(const char * java_name);
 const std::type_info* getTypeByJavaName(const QString& java_name);
+bool isJavaNameNamespace(const QString& java_name);
+bool isJavaNameNamespace(const QByteArray& java_name);
+bool isQtNameNamespace(const QByteArray& qt_name);
+const QMetaObject* registeredNamespaceMetaObject(const QString& java_name);
 const std::type_info* getTypeByQtName(const char * qt_name);
 const std::type_info* getTypeByQtName(const QString& qt_name);
 const std::type_info* getTypeByQtName(const QByteArray& qt_name);
@@ -105,13 +122,14 @@ void registeredInterfaceOffsets(const std::type_info& qt_type, InterfaceOffsetIn
 const InterfaceOffsetInfo* getInterfaceOffsets(JNIEnv *env, jclass clazz, const std::type_info& typeId, const SuperTypeInfos* superTypeInfos);
 const InterfaceOffsetInfo* getInterfaceOffsets(JNIEnv *env, jclass clazz);
 QHashFunctionPtr registeredHashFunction(const std::type_info& typeId);
-const QtJambiTypeInfo* getQTypeInfo(const std::type_info& typeId);
+OptionalBool isRegisteredAsPointerType(const std::type_info& typeId);
 jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature, jclass clazz, bool isStatic = false, jthrowable* exceptionOccurred = nullptr);
 //jfieldID resolveField(JNIEnv *env, const char *fieldName, const char *signature, const char *className, bool isStatic = false, jthrowable* exceptionOccurred = nullptr);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 void registerJavaClassForCustomMetaType(JNIEnv *env, const QMetaType& metaType, jclass javaClass, bool isJObjectWrapped = false);
 void registerJavaClassForCustomMetaType(JNIEnv *env, int metaType, jclass javaClass, bool isJObjectWrapped);
 bool isJObjectWrappedMetaType(const QMetaType& metaType);
+OptionalBool isRegisteredAsStaticType(const std::type_info& typeId);
 #else
 void registerJavaClassForCustomMetaType(JNIEnv *env, QMetaType metaType, jclass javaClass, bool isJObjectWrapped = false);
 bool isJObjectWrappedMetaType(QMetaType metaType);
@@ -130,9 +148,9 @@ void registerLambdaClass(JNIEnv *env, jclass lambdaClass, const char *className)
 const char * getJavaInterfaceName(const std::type_info& typeId);
 const std::type_info* getTypeByJavaName(QByteArray javaName);
 QMap<QString,QPair<size_t,size_t>> getRegisteredTypeSizesAndAlignments();
-void registerTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name, EntryTypes entryTypes);
+void registerTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name, EntryTypes entryTypes);
 void registerTypeAlias(const std::type_info& typeId, const char *qt_name, const char *java_name);
-void registerContainerTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name, const char *java_interface);
+void registerContainerTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name, const char *java_interface);
 void registerMetaTypeID(const std::type_info& typeId, const std::type_info& nonPointerTypeId, int qtMetaType);
 QList<const PolymorphicIdHandler*> getPolymorphicIdHandlers(const std::type_info& polymorphicBaseTypeId);
 const char * registeredInterfaceID(const std::type_info& typeId);

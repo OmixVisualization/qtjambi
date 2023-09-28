@@ -95,4 +95,13 @@ public final class QScopeGuard implements AutoCloseable {
 		if(this.data.cleanable!=null)
 			this.data.cleanable.clean();
 	}
+
+    /**
+     * The qScopeGuard function can be used to call a function at the end of the scope.
+     * <p>See <a href="https://doc.qt.io/qt/qscopeguard.html#qScopeGuardx"><code>qScopeGuard&lt;T>(F &amp;&amp;f)</code></a></p>
+     */
+	@QtUninvokable
+	public static QScopeGuard qScopeGuard(Runnable runnable) {
+		return new QScopeGuard(runnable);
+	}
 }

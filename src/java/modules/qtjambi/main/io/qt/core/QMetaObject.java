@@ -53,6 +53,8 @@ import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import io.qt.NonNull;
+import io.qt.Nullable;
 import io.qt.QFlags;
 import io.qt.QNoDefaultValueException;
 import io.qt.QNoSuchMethodException;
@@ -497,7 +499,7 @@ public final class QMetaObject {
     private static native void connectSlotsByName(long object);
             
     @QtUninvokable
-    static native QMetaObject.Connection connect(QObject sender, String signal, QObject receiver, String slot, byte connection);
+    static native QMetaObject.@NonNull Connection connect(QObject sender, String signal, QObject receiver, String slot, byte connection);
     
     @QtUninvokable
     static native QMetaObject.Connection connectMethods(QObject sender, int signalIdx, long signalEnclosingMetaObject, QObject receiver, int slotIdx, long EnclosingMetaObject, byte connection);
@@ -802,14 +804,14 @@ public final class QMetaObject {
     private static native Object cast(QtObjectInterface object, Class<?> targetType);
     
     @QtUninvokable
-    public Class<?> type(){
+    public @Nullable Class<?> type(){
         return type(metaObjectPointer);
     }
     @QtUninvokable
     private static native Class<?> type(long metaObjectPointer);
 
     @QtUninvokable
-    public static native QMetaObject forType(Class<?> clazz);
+    public static native @Nullable QMetaObject forType(@Nullable Class<?> clazz);
         
     @QtUninvokable
     private static native Class<?> exactType(long metaObjectPointer);
@@ -862,7 +864,7 @@ public final class QMetaObject {
      * @throws QNoSuchMethodException if method not available
      */
     @QtUninvokable
-    public static Object invokeMethod(QObject obj, String member, Qt.ConnectionType type, Object... args) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
+    public static Object invokeMethod(QObject obj, String member, Qt.@NonNull ConnectionType type, Object... args) throws QUnsuccessfulInvocationException, QNoSuchMethodException {
         Class<?>[] parameterTypes;
         if(member.contains("(")) {
             parameterTypes = new Class<?>[0];
@@ -900,7 +902,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <R> R invokeMethod(Method0<R> method) throws QUnsuccessfulInvocationException {
+    public static <R> R invokeMethod(@StrictNonNull Method0<R> method) throws QUnsuccessfulInvocationException {
         return invokeMethod(method, Qt.ConnectionType.AutoConnection);
     }
     
@@ -924,7 +926,7 @@ public final class QMetaObject {
      */
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <R> R invokeMethod(Method0<R> method, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
+    public static <R> R invokeMethod(@StrictNonNull Method0<R> method, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
@@ -1013,7 +1015,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,R> R invokeMethod(Method1<A,R> method, A arg1) throws QUnsuccessfulInvocationException {
+    public static <A,R> R invokeMethod(@StrictNonNull Method1<A,R> method, A arg1) throws QUnsuccessfulInvocationException {
         return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1);
     }
     
@@ -1039,7 +1041,7 @@ public final class QMetaObject {
      */
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,R> R invokeMethod(Method1<A,R> method, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    public static <A,R> R invokeMethod(@StrictNonNull Method1<A,R> method, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
@@ -1132,7 +1134,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,R> R invokeMethod(Method2<A,B,R> method, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    public static <A,B,R> R invokeMethod(@StrictNonNull Method2<A,B,R> method, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2);
     }
     
@@ -1160,7 +1162,7 @@ public final class QMetaObject {
      */
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,B,R> R invokeMethod(Method2<A,B,R> method, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    public static <A,B,R> R invokeMethod(@StrictNonNull Method2<A,B,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
@@ -1253,7 +1255,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,R> R invokeMethod(Method3<A,B,C,R> method, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,R> R invokeMethod(@StrictNonNull Method3<A,B,C,R> method, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
     }
     
@@ -1283,7 +1285,7 @@ public final class QMetaObject {
      */
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,B,C,R> R invokeMethod(Method3<A,B,C,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,R> R invokeMethod(@StrictNonNull Method3<A,B,C,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
@@ -1379,7 +1381,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,R> R invokeMethod(Method4<A,B,C,D,R> method, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,R> R invokeMethod(@StrictNonNull Method4<A,B,C,D,R> method, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
         return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
     }
     
@@ -1411,7 +1413,7 @@ public final class QMetaObject {
      */
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,B,C,D,R> R invokeMethod(Method4<A,B,C,D,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,R> R invokeMethod(@StrictNonNull Method4<A,B,C,D,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
@@ -1510,7 +1512,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E,R> R invokeMethod(Method5<A,B,C,D,E,R> method, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,R> R invokeMethod(@StrictNonNull Method5<A,B,C,D,E,R> method, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
         return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
     }
     
@@ -1544,7 +1546,7 @@ public final class QMetaObject {
      */
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,B,C,D,E,R> R invokeMethod(Method5<A,B,C,D,E,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,R> R invokeMethod(@StrictNonNull Method5<A,B,C,D,E,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
@@ -1649,7 +1651,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,R> R invokeMethod(Method6<A,B,C,D,E,F,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,R> R invokeMethod(@StrictNonNull Method6<A,B,C,D,E,F,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
         return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6);
     }
     
@@ -1685,7 +1687,7 @@ public final class QMetaObject {
      */
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,B,C,D,E,F,R> R invokeMethod(Method6<A,B,C,D,E,F,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,R> R invokeMethod(@StrictNonNull Method6<A,B,C,D,E,F,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
@@ -1790,7 +1792,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,R> R invokeMethod(Method7<A,B,C,D,E,F,G,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,R> R invokeMethod(@StrictNonNull Method7<A,B,C,D,E,F,G,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
         return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
     }
     
@@ -1828,7 +1830,7 @@ public final class QMetaObject {
      */
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,R> R invokeMethod(Method7<A,B,C,D,E,F,G,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,R> R invokeMethod(@StrictNonNull Method7<A,B,C,D,E,F,G,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
@@ -1936,7 +1938,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,R> R invokeMethod(Method8<A,B,C,D,E,F,G,H,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,R> R invokeMethod(@StrictNonNull Method8<A,B,C,D,E,F,G,H,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
         return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
     }
     
@@ -1976,7 +1978,7 @@ public final class QMetaObject {
      */
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,R> R invokeMethod(Method8<A,B,C,D,E,F,G,H,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,R> R invokeMethod(@StrictNonNull Method8<A,B,C,D,E,F,G,H,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
@@ -2087,7 +2089,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I,R> R invokeMethod(Method9<A,B,C,D,E,F,G,H,I,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,I,R> R invokeMethod(@StrictNonNull Method9<A,B,C,D,E,F,G,H,I,R> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
         return invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
     }
     
@@ -2129,7 +2131,7 @@ public final class QMetaObject {
      */
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I,R> R invokeMethod(Method9<A,B,C,D,E,F,G,H,I,R> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,I,R> R invokeMethod(@StrictNonNull Method9<A,B,C,D,E,F,G,H,I,R> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed() && info.reflectiveMethod!=null) {
             QMetaMethod qmethod = fromReflectedMethod(info.reflectiveMethod);
@@ -2220,7 +2222,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static void invokeMethod(Slot0 method) throws QUnsuccessfulInvocationException {
+    public static void invokeMethod(@StrictNonNull Slot0 method) throws QUnsuccessfulInvocationException {
         invokeMethod(method, Qt.ConnectionType.AutoConnection);
     }
     
@@ -2240,7 +2242,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static void invokeMethod(Slot0 method, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
+    public static void invokeMethod(@StrictNonNull Slot0 method, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
@@ -2345,7 +2347,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A> void invokeMethod(Slot1<A> method, A arg1) throws QUnsuccessfulInvocationException {
+    public static <A> void invokeMethod(@StrictNonNull Slot1<A> method, A arg1) throws QUnsuccessfulInvocationException {
         invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1);
     }
     
@@ -2367,7 +2369,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A> void invokeMethod(Slot1<A> method, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    public static <A> void invokeMethod(@StrictNonNull Slot1<A> method, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
@@ -2481,7 +2483,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B> void invokeMethod(Slot2<A,B> method, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    public static <A,B> void invokeMethod(@StrictNonNull Slot2<A,B> method, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2);
     }
     
@@ -2505,7 +2507,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B> void invokeMethod(Slot2<A,B> method, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    public static <A,B> void invokeMethod(@StrictNonNull Slot2<A,B> method, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
@@ -2626,7 +2628,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C> void invokeMethod(Slot3<A,B,C> method, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    public static <A,B,C> void invokeMethod(@StrictNonNull Slot3<A,B,C> method, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
     }
     
@@ -2652,7 +2654,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C> void invokeMethod(Slot3<A,B,C> method, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    public static <A,B,C> void invokeMethod(@StrictNonNull Slot3<A,B,C> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -2770,7 +2772,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D> void invokeMethod(Slot4<A,B,C,D> method, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D> void invokeMethod(@StrictNonNull Slot4<A,B,C,D> method, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
         invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
     }
     
@@ -2798,7 +2800,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D> void invokeMethod(Slot4<A,B,C,D> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D> void invokeMethod(@StrictNonNull Slot4<A,B,C,D> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -2919,7 +2921,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E> void invokeMethod(Slot5<A,B,C,D,E> method, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E> void invokeMethod(@StrictNonNull Slot5<A,B,C,D,E> method, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
         invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
     }
     
@@ -2949,7 +2951,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E> void invokeMethod(Slot5<A,B,C,D,E> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E> void invokeMethod(@StrictNonNull Slot5<A,B,C,D,E> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -3072,7 +3074,7 @@ public final class QMetaObject {
      * @param arg6 Argument for the sixth parameter.
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
-    public static <A,B,C,D,E,F> void invokeMethod(Slot6<A,B,C,D,E,F> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull Slot6<A,B,C,D,E,F> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
         invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6);
     }
     
@@ -3104,7 +3106,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F> void invokeMethod(Slot6<A,B,C,D,E,F> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull Slot6<A,B,C,D,E,F> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -3231,7 +3233,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G> void invokeMethod(Slot7<A,B,C,D,E,F,G> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull Slot7<A,B,C,D,E,F,G> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
         invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
     }
     
@@ -3265,7 +3267,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G> void invokeMethod(Slot7<A,B,C,D,E,F,G> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull Slot7<A,B,C,D,E,F,G> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null) {
@@ -3395,7 +3397,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> void invokeMethod(Slot8<A,B,C,D,E,F,G,H> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull Slot8<A,B,C,D,E,F,G,H> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
         invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
     }
     
@@ -3431,7 +3433,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> void invokeMethod(Slot8<A,B,C,D,E,F,G,H> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull Slot8<A,B,C,D,E,F,G,H> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
@@ -3564,7 +3566,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(Slot9<A,B,C,D,E,F,G,H,I> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull Slot9<A,B,C,D,E,F,G,H,I> method, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
         invokeMethod(method, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
     }
     
@@ -3602,7 +3604,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke slot
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(Slot9<A,B,C,D,E,F,G,H,I> method, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull Slot9<A,B,C,D,E,F,G,H,I> method, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
         ClassAnalyzerUtility.LambdaInfo info = ClassAnalyzerUtility.lambdaInfo(method);
         QThread thread = null;
         if(info!=null && info.qobject!=null && !info.qobject.isDisposed()) {
@@ -3717,7 +3719,7 @@ public final class QMetaObject {
      * @param signal invoked signal
      */
     @QtUninvokable
-    public static void invokeMethod(AbstractPrivateSignal0 signal) throws QUnsuccessfulInvocationException {
+    public static void invokeMethod(@StrictNonNull AbstractPrivateSignal0 signal) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection);
     }
     
@@ -3737,7 +3739,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static void invokeMethod(AbstractPrivateSignal0 signal, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
+    public static void invokeMethod(@StrictNonNull AbstractPrivateSignal0 signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
@@ -3757,7 +3759,7 @@ public final class QMetaObject {
      * @param arg1 Argument for the first parameter.
      */
     @QtUninvokable
-    public static <A> void invokeMethod(AbstractPrivateSignal1<A> signal, A arg1) throws QUnsuccessfulInvocationException {
+    public static <A> void invokeMethod(@StrictNonNull AbstractPrivateSignal1<A> signal, A arg1) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1);
     }
     
@@ -3779,7 +3781,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A> void invokeMethod(AbstractPrivateSignal1<A> signal, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    public static <A> void invokeMethod(@StrictNonNull AbstractPrivateSignal1<A> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
@@ -3798,7 +3800,7 @@ public final class QMetaObject {
      * @param signal invoked signal
      */
     @QtUninvokable
-    public static <A> void invokeMethod(AbstractSignal1Default1<A> signal) throws QUnsuccessfulInvocationException {
+    public static <A> void invokeMethod(@StrictNonNull AbstractSignal1Default1<A> signal) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection);
     }
     
@@ -3819,7 +3821,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A> void invokeMethod(AbstractSignal1Default1<A> signal, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
+    public static <A> void invokeMethod(@StrictNonNull AbstractSignal1Default1<A> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, signal.arg1Default.get());
     }
     
@@ -3833,7 +3835,7 @@ public final class QMetaObject {
      * @param arg2 Argument for the second parameter.
      */
     @QtUninvokable
-    public static <A,B> void invokeMethod(AbstractPrivateSignal2<A,B> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    public static <A,B> void invokeMethod(@StrictNonNull AbstractPrivateSignal2<A,B> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2);
     }
     
@@ -3857,7 +3859,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B> void invokeMethod(AbstractPrivateSignal2<A,B> signal, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    public static <A,B> void invokeMethod(@StrictNonNull AbstractPrivateSignal2<A,B> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
@@ -3878,7 +3880,7 @@ public final class QMetaObject {
      * @param arg1 Argument for the first parameter.
      */
     @QtUninvokable
-    public static <A,B> void invokeMethod(AbstractSignal2Default1<A,B> signal, A arg1) throws QUnsuccessfulInvocationException {
+    public static <A,B> void invokeMethod(@StrictNonNull AbstractSignal2Default1<A,B> signal, A arg1) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1);
     }
     
@@ -3901,7 +3903,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B> void invokeMethod(AbstractSignal2Default1<A,B> signal, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    public static <A,B> void invokeMethod(@StrictNonNull AbstractSignal2Default1<A,B> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, signal.arg2Default.get());
     }
     
@@ -3913,7 +3915,7 @@ public final class QMetaObject {
      * @param signal invoked signal
      */
     @QtUninvokable
-    public static <A,B> void invokeMethod(AbstractSignal2Default2<A,B> signal) throws QUnsuccessfulInvocationException {
+    public static <A,B> void invokeMethod(@StrictNonNull AbstractSignal2Default2<A,B> signal) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection);
     }
     
@@ -3935,7 +3937,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B> void invokeMethod(AbstractSignal2Default2<A,B> signal, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
+    public static <A,B> void invokeMethod(@StrictNonNull AbstractSignal2Default2<A,B> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, signal.arg1Default.get());
     }
     
@@ -3951,7 +3953,7 @@ public final class QMetaObject {
      * @param arg3 Argument for the third parameter.
      */
     @QtUninvokable
-    public static <A,B,C> void invokeMethod(AbstractPrivateSignal3<A,B,C> signal, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    public static <A,B,C> void invokeMethod(@StrictNonNull AbstractPrivateSignal3<A,B,C> signal, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
     }
     
@@ -3977,7 +3979,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C> void invokeMethod(AbstractPrivateSignal3<A,B,C> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    public static <A,B,C> void invokeMethod(@StrictNonNull AbstractPrivateSignal3<A,B,C> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
@@ -4000,7 +4002,7 @@ public final class QMetaObject {
      * @param arg2 Argument for the second parameter.
      */
     @QtUninvokable
-    public static <A,B,C> void invokeMethod(AbstractSignal3Default1<A,B,C> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    public static <A,B,C> void invokeMethod(@StrictNonNull AbstractSignal3Default1<A,B,C> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2);
     }
     
@@ -4025,7 +4027,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C> void invokeMethod(AbstractSignal3Default1<A,B,C> signal, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    public static <A,B,C> void invokeMethod(@StrictNonNull AbstractSignal3Default1<A,B,C> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, arg2, signal.arg3Default.get());
     }
     
@@ -4039,7 +4041,7 @@ public final class QMetaObject {
      * @param arg1 Argument for the first parameter.
      */
     @QtUninvokable
-    public static <A,B,C> void invokeMethod(AbstractSignal3Default2<A,B,C> signal, A arg1) throws QUnsuccessfulInvocationException {
+    public static <A,B,C> void invokeMethod(@StrictNonNull AbstractSignal3Default2<A,B,C> signal, A arg1) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1);
     }
     
@@ -4063,7 +4065,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C> void invokeMethod(AbstractSignal3Default2<A,B,C> signal, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    public static <A,B,C> void invokeMethod(@StrictNonNull AbstractSignal3Default2<A,B,C> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, signal.arg2Default.get());
     }
     
@@ -4076,7 +4078,7 @@ public final class QMetaObject {
      * @param signal invoked signal
      */
     @QtUninvokable
-    public static <A,B,C> void invokeMethod(AbstractSignal3Default3<A,B,C> signal) throws QUnsuccessfulInvocationException {
+    public static <A,B,C> void invokeMethod(@StrictNonNull AbstractSignal3Default3<A,B,C> signal) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection);
     }
     
@@ -4099,7 +4101,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C> void invokeMethod(AbstractSignal3Default3<A,B,C> signal, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
+    public static <A,B,C> void invokeMethod(@StrictNonNull AbstractSignal3Default3<A,B,C> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, signal.arg1Default.get());
     }
     
@@ -4117,7 +4119,7 @@ public final class QMetaObject {
      * @param arg4 Argument for the fourth parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D> void invokeMethod(AbstractPrivateSignal4<A,B,C,D> signal, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D> void invokeMethod(@StrictNonNull AbstractPrivateSignal4<A,B,C,D> signal, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
     }
     
@@ -4145,7 +4147,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D> void invokeMethod(AbstractPrivateSignal4<A,B,C,D> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D> void invokeMethod(@StrictNonNull AbstractPrivateSignal4<A,B,C,D> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
@@ -4170,7 +4172,7 @@ public final class QMetaObject {
      * @param arg3 Argument for the third parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D> void invokeMethod(AbstractSignal4Default1<A,B,C,D> signal, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D> void invokeMethod(@StrictNonNull AbstractSignal4Default1<A,B,C,D> signal, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
     }
     
@@ -4197,7 +4199,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D> void invokeMethod(AbstractSignal4Default1<A,B,C,D> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D> void invokeMethod(@StrictNonNull AbstractSignal4Default1<A,B,C,D> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, arg2, arg3, signal.arg4Default.get());
     }
     
@@ -4213,7 +4215,7 @@ public final class QMetaObject {
      * @param arg2 Argument for the second parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D> void invokeMethod(AbstractSignal4Default2<A,B,C,D> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D> void invokeMethod(@StrictNonNull AbstractSignal4Default2<A,B,C,D> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2);
     }
     
@@ -4239,7 +4241,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D> void invokeMethod(AbstractSignal4Default2<A,B,C,D> signal, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D> void invokeMethod(@StrictNonNull AbstractSignal4Default2<A,B,C,D> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, arg2, signal.arg3Default.get());
     }
     
@@ -4254,7 +4256,7 @@ public final class QMetaObject {
      * @param arg1 Argument for the first parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D> void invokeMethod(AbstractSignal4Default3<A,B,C,D> signal, A arg1) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D> void invokeMethod(@StrictNonNull AbstractSignal4Default3<A,B,C,D> signal, A arg1) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1);
     }
     
@@ -4279,7 +4281,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D> void invokeMethod(AbstractSignal4Default3<A,B,C,D> signal, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D> void invokeMethod(@StrictNonNull AbstractSignal4Default3<A,B,C,D> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, signal.arg2Default.get());
     }
     
@@ -4293,7 +4295,7 @@ public final class QMetaObject {
      * @param signal invoked signal
      */
     @QtUninvokable
-    public static <A,B,C,D> void invokeMethod(AbstractSignal4Default4<A,B,C,D> signal) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D> void invokeMethod(@StrictNonNull AbstractSignal4Default4<A,B,C,D> signal) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection);
     }
     
@@ -4317,7 +4319,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D> void invokeMethod(AbstractSignal4Default4<A,B,C,D> signal, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D> void invokeMethod(@StrictNonNull AbstractSignal4Default4<A,B,C,D> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, signal.arg1Default.get());
     }
     
@@ -4367,7 +4369,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E> void invokeMethod(AbstractPrivateSignal5<A,B,C,D,E> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E> void invokeMethod(AbstractPrivateSignal5<A,B,C,D,E> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
@@ -4394,7 +4396,7 @@ public final class QMetaObject {
      * @param arg4 Argument for the fourth parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E> void invokeMethod(AbstractSignal5Default1<A,B,C,D,E> signal, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractSignal5Default1<A,B,C,D,E> signal, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
     }
     
@@ -4423,7 +4425,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E> void invokeMethod(AbstractSignal5Default1<A,B,C,D,E> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractSignal5Default1<A,B,C,D,E> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, arg2, arg3, arg4, signal.arg5Default.get());
     }
     
@@ -4441,7 +4443,7 @@ public final class QMetaObject {
      * @param arg3 Argument for the third parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E> void invokeMethod(AbstractSignal5Default2<A,B,C,D,E> signal, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractSignal5Default2<A,B,C,D,E> signal, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
     }
     
@@ -4469,7 +4471,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E> void invokeMethod(AbstractSignal5Default2<A,B,C,D,E> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractSignal5Default2<A,B,C,D,E> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, arg2, arg3, signal.arg4Default.get());
     }
     
@@ -4486,7 +4488,7 @@ public final class QMetaObject {
      * @param arg2 Argument for the second parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E> void invokeMethod(AbstractSignal5Default3<A,B,C,D,E> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractSignal5Default3<A,B,C,D,E> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2);
     }
     
@@ -4513,7 +4515,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E> void invokeMethod(AbstractSignal5Default3<A,B,C,D,E> signal, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractSignal5Default3<A,B,C,D,E> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, arg2, signal.arg3Default.get());
     }
     
@@ -4529,7 +4531,7 @@ public final class QMetaObject {
      * @param arg1 Argument for the first parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E> void invokeMethod(AbstractSignal5Default4<A,B,C,D,E> signal, A arg1) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractSignal5Default4<A,B,C,D,E> signal, A arg1) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1);
     }
     
@@ -4555,7 +4557,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E> void invokeMethod(AbstractSignal5Default4<A,B,C,D,E> signal, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractSignal5Default4<A,B,C,D,E> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, signal.arg2Default.get());
     }
     
@@ -4570,7 +4572,7 @@ public final class QMetaObject {
      * @param signal invoked signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E> void invokeMethod(AbstractSignal5Default5<A,B,C,D,E> signal) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractSignal5Default5<A,B,C,D,E> signal) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection);
     }
     
@@ -4595,7 +4597,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E> void invokeMethod(AbstractSignal5Default5<A,B,C,D,E> signal, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractSignal5Default5<A,B,C,D,E> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, signal.arg1Default.get());
     }
     
@@ -4648,7 +4650,7 @@ public final class QMetaObject {
      * @param arg6 Argument for the sixth parameter.
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
-    public static <A,B,C,D,E,F> void invokeMethod(AbstractPrivateSignal6<A,B,C,D,E,F> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F> void invokeMethod(AbstractPrivateSignal6<A,B,C,D,E,F> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
@@ -4677,7 +4679,7 @@ public final class QMetaObject {
      * @param arg5 Argument for the fifth parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F> void invokeMethod(AbstractSignal6Default1<A,B,C,D,E,F> signal, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractSignal6Default1<A,B,C,D,E,F> signal, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
     }
     
@@ -4707,7 +4709,7 @@ public final class QMetaObject {
      * @param arg5 Argument for the fifth parameter.
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
-    public static <A,B,C,D,E,F> void invokeMethod(AbstractSignal6Default1<A,B,C,D,E,F> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractSignal6Default1<A,B,C,D,E,F> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, signal.arg6Default.get());
     }
     
@@ -4727,7 +4729,7 @@ public final class QMetaObject {
      * @param arg4 Argument for the fourth parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F> void invokeMethod(AbstractSignal6Default2<A,B,C,D,E,F> signal, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractSignal6Default2<A,B,C,D,E,F> signal, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
     }
     
@@ -4756,7 +4758,7 @@ public final class QMetaObject {
      * @param arg4 Argument for the fourth parameter.
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
-    public static <A,B,C,D,E,F> void invokeMethod(AbstractSignal6Default2<A,B,C,D,E,F> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractSignal6Default2<A,B,C,D,E,F> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, arg2, arg3, arg4, signal.arg5Default.get());
     }
     
@@ -4775,7 +4777,7 @@ public final class QMetaObject {
      * @param arg3 Argument for the third parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F> void invokeMethod(AbstractSignal6Default3<A,B,C,D,E,F> signal, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractSignal6Default3<A,B,C,D,E,F> signal, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
     }
     
@@ -4803,7 +4805,7 @@ public final class QMetaObject {
      * @param arg3 Argument for the third parameter.
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
-    public static <A,B,C,D,E,F> void invokeMethod(AbstractSignal6Default3<A,B,C,D,E,F> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractSignal6Default3<A,B,C,D,E,F> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, arg2, arg3, signal.arg4Default.get());
     }
     
@@ -4821,7 +4823,7 @@ public final class QMetaObject {
      * @param arg2 Argument for the second parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F> void invokeMethod(AbstractSignal6Default4<A,B,C,D,E,F> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractSignal6Default4<A,B,C,D,E,F> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2);
     }
     
@@ -4848,7 +4850,7 @@ public final class QMetaObject {
      * @param arg2 Argument for the second parameter.
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
-    public static <A,B,C,D,E,F> void invokeMethod(AbstractSignal6Default4<A,B,C,D,E,F> signal, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractSignal6Default4<A,B,C,D,E,F> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, arg2, signal.arg3Default.get());
     }
     
@@ -4865,7 +4867,7 @@ public final class QMetaObject {
      * @param arg1 Argument for the first parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F> void invokeMethod(AbstractSignal6Default5<A,B,C,D,E,F> signal, A arg1) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractSignal6Default5<A,B,C,D,E,F> signal, A arg1) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1);
     }
     
@@ -4891,7 +4893,7 @@ public final class QMetaObject {
      * @param arg1 Argument for the first parameter.
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
-    public static <A,B,C,D,E,F> void invokeMethod(AbstractSignal6Default5<A,B,C,D,E,F> signal, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractSignal6Default5<A,B,C,D,E,F> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, signal.arg2Default.get());
     }
     
@@ -4907,7 +4909,7 @@ public final class QMetaObject {
      * @param signal invoked signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F> void invokeMethod(AbstractSignal6Default6<A,B,C,D,E,F> signal) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractSignal6Default6<A,B,C,D,E,F> signal) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection);
     }
     
@@ -4932,7 +4934,7 @@ public final class QMetaObject {
      * @param type synchronous or asynchronous invocation
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
-    public static <A,B,C,D,E,F> void invokeMethod(AbstractSignal6Default6<A,B,C,D,E,F> signal, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractSignal6Default6<A,B,C,D,E,F> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, signal.arg1Default.get());
     }
     
@@ -4990,7 +4992,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractPrivateSignal7<A,B,C,D,E,F,G> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractPrivateSignal7<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
@@ -5021,7 +5023,7 @@ public final class QMetaObject {
      * @param arg6 Argument for the sixth parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default1<A,B,C,D,E,F,G> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default1<A,B,C,D,E,F,G> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6);
     }
     
@@ -5054,7 +5056,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default1<A,B,C,D,E,F,G> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default1<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, arg6, signal.arg7Default.get());
     }
     
@@ -5076,7 +5078,7 @@ public final class QMetaObject {
      * @param arg5 Argument for the fifth parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default2<A,B,C,D,E,F,G> signal, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default2<A,B,C,D,E,F,G> signal, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
     }
     
@@ -5108,7 +5110,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default2<A,B,C,D,E,F,G> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default2<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, signal.arg6Default.get());
     }
     
@@ -5129,7 +5131,7 @@ public final class QMetaObject {
      * @param arg4 Argument for the fourth parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default3<A,B,C,D,E,F,G> signal, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default3<A,B,C,D,E,F,G> signal, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
     }
     
@@ -5160,7 +5162,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default3<A,B,C,D,E,F,G> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default3<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, arg2, arg3, arg4, signal.arg5Default.get());
     }
     
@@ -5180,7 +5182,7 @@ public final class QMetaObject {
      * @param arg3 Argument for the third parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default4<A,B,C,D,E,F,G> signal, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default4<A,B,C,D,E,F,G> signal, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
     }
     
@@ -5210,7 +5212,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default4<A,B,C,D,E,F,G> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default4<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, arg2, arg3, signal.arg4Default.get());
     }
     
@@ -5229,7 +5231,7 @@ public final class QMetaObject {
      * @param arg2 Argument for the second parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default5<A,B,C,D,E,F,G> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default5<A,B,C,D,E,F,G> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2);
     }
     
@@ -5258,7 +5260,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default5<A,B,C,D,E,F,G> signal, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default5<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, arg2, signal.arg3Default.get());
     }
     
@@ -5276,7 +5278,7 @@ public final class QMetaObject {
      * @param arg1 Argument for the first parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default6<A,B,C,D,E,F,G> signal, A arg1) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default6<A,B,C,D,E,F,G> signal, A arg1) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1);
     }
     
@@ -5304,7 +5306,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default6<A,B,C,D,E,F,G> signal, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default6<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, signal.arg2Default.get());
     }
     
@@ -5321,7 +5323,7 @@ public final class QMetaObject {
      * @param signal invoked signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default7<A,B,C,D,E,F,G> signal) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default7<A,B,C,D,E,F,G> signal) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection);
     }
     
@@ -5348,7 +5350,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G> void invokeMethod(AbstractSignal7Default7<A,B,C,D,E,F,G> signal, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default7<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, signal.arg1Default.get());
     }
     
@@ -5410,7 +5412,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
@@ -5443,7 +5445,7 @@ public final class QMetaObject {
      * @param arg7 Argument for the seventh parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default1<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default1<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
     }
     
@@ -5478,7 +5480,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default1<A,B,C,D,E,F,G,H> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default1<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, signal.arg8Default.get());
     }
     
@@ -5502,7 +5504,7 @@ public final class QMetaObject {
      * @param arg6 Argument for the sixth parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default2<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default2<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6);
     }
     
@@ -5536,7 +5538,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default2<A,B,C,D,E,F,G,H> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default2<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, arg6, signal.arg7Default.get());
     }
     
@@ -5559,7 +5561,7 @@ public final class QMetaObject {
      * @param arg5 Argument for the fifth parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default3<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default3<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
     }
     
@@ -5592,7 +5594,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default3<A,B,C,D,E,F,G,H> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default3<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, signal.arg6Default.get());
     }
     
@@ -5614,7 +5616,7 @@ public final class QMetaObject {
      * @param arg4 Argument for the fourth parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default4<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default4<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
     }
     
@@ -5646,7 +5648,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default4<A,B,C,D,E,F,G,H> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default4<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, type, arg1, arg2, arg3, arg4, signal.arg5Default.get());
     }
     
@@ -5667,7 +5669,7 @@ public final class QMetaObject {
      * @param arg3 Argument for the third parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default5<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default5<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
     }
     
@@ -5698,7 +5700,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default5<A,B,C,D,E,F,G,H> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default5<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, type, arg1, arg2, arg3, signal.arg4Default.get());
     }
     
@@ -5718,7 +5720,7 @@ public final class QMetaObject {
      * @param arg2 Argument for the second parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default6<A,B,C,D,E,F,G,H> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default6<A,B,C,D,E,F,G,H> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2);
     }
     
@@ -5748,7 +5750,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default6<A,B,C,D,E,F,G,H> signal, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default6<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, type, arg1, arg2, signal.arg3Default.get());
     }
     
@@ -5767,7 +5769,7 @@ public final class QMetaObject {
      * @param arg1 Argument for the first parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default7<A,B,C,D,E,F,G,H> signal, A arg1) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default7<A,B,C,D,E,F,G,H> signal, A arg1) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1);
     }
     
@@ -5796,7 +5798,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default7<A,B,C,D,E,F,G,H> signal, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default7<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, type, arg1, signal.arg2Default.get());
     }
     
@@ -5814,7 +5816,7 @@ public final class QMetaObject {
      * @param signal invoked signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default8<A,B,C,D,E,F,G,H> signal) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default8<A,B,C,D,E,F,G,H> signal) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection);
     }
     
@@ -5842,7 +5844,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> void invokeMethod(AbstractSignal8Default8<A,B,C,D,E,F,G,H> signal, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default8<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, type, signal.arg1Default.get());
     }
     
@@ -5897,7 +5899,7 @@ public final class QMetaObject {
      * @param arg8 Argument for the eighth parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default1<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default1<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
     }
     
@@ -5923,7 +5925,7 @@ public final class QMetaObject {
      * @param arg7 Argument for the seventh parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default2<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default2<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
     }
     
@@ -5948,7 +5950,7 @@ public final class QMetaObject {
      * @param arg6 Argument for the sixth parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default3<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default3<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6);
     }
     
@@ -5972,7 +5974,7 @@ public final class QMetaObject {
      * @param arg5 Argument for the fifth parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default4<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default4<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
     }
     
@@ -5995,7 +5997,7 @@ public final class QMetaObject {
      * @param arg4 Argument for the fourth parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default5<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default5<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
     }
     
@@ -6017,7 +6019,7 @@ public final class QMetaObject {
      * @param arg3 Argument for the third parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default6<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default6<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
     }
     
@@ -6038,7 +6040,7 @@ public final class QMetaObject {
      * @param arg2 Argument for the second parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default7<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default7<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2);
     }
     
@@ -6058,7 +6060,7 @@ public final class QMetaObject {
      * @param arg1 Argument for the first parameter.
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default8<A,B,C,D,E,F,G,H,I> signal, A arg1) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default8<A,B,C,D,E,F,G,H,I> signal, A arg1) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1);
     }
     
@@ -6077,7 +6079,7 @@ public final class QMetaObject {
      * @param signal invoked signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default9<A,B,C,D,E,F,G,H,I> signal) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default9<A,B,C,D,E,F,G,H,I> signal) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection);
     }
     
@@ -6115,7 +6117,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
@@ -6160,7 +6162,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default1<A,B,C,D,E,F,G,H,I> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default1<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, signal.arg9Default.get());
     }
     
@@ -6196,7 +6198,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default2<A,B,C,D,E,F,G,H,I> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default2<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, signal.arg8Default.get());
     }
     
@@ -6231,7 +6233,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default3<A,B,C,D,E,F,G,H,I> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default3<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, arg6, signal.arg7Default.get());
     }
     
@@ -6265,7 +6267,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default4<A,B,C,D,E,F,G,H,I> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default4<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, signal.arg6Default.get());
     }
     
@@ -6298,7 +6300,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default5<A,B,C,D,E,F,G,H,I> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default5<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, arg2, arg3, arg4, signal.arg5Default.get());
     }
     
@@ -6330,7 +6332,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default6<A,B,C,D,E,F,G,H,I> signal, Qt.ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default6<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, arg2, arg3, signal.arg4Default.get());
     }
     
@@ -6361,7 +6363,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default7<A,B,C,D,E,F,G,H,I> signal, Qt.ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default7<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, arg2, signal.arg3Default.get());
     }
     
@@ -6391,7 +6393,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default8<A,B,C,D,E,F,G,H,I> signal, Qt.ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default8<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, arg1, signal.arg2Default.get());
     }
     
@@ -6420,7 +6422,7 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(AbstractSignal9Default9<A,B,C,D,E,F,G,H,I> signal, Qt.ConnectionType type) throws QUnsuccessfulInvocationException {
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default9<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
     	invokeMethod(signal, type, signal.arg1Default.get());
     }
 
@@ -6483,7 +6485,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... connectionType) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt. @NonNull ConnectionType @NonNull... connectionType) {
             return addConnectionToSlotObject(slot, connectionType);
         }
     
@@ -6493,7 +6495,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot0 slot) {
+        public final boolean disconnect(@StrictNonNull Slot0 slot) {
             return removeConnectionToSlotObject(slot);
         }
     }
@@ -6532,7 +6534,7 @@ public final class QMetaObject {
          * @throws java.lang.RuntimeException Raised if the signal object could not be successfully introspected or if the
          *                                    signatures of the signal and slot are incompatible.
          */
-        public final QMetaObject.Connection connect(Object receiver, String method, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Object receiver, @StrictNonNull String method, Qt.@NonNull ConnectionType @NonNull... type) {
             if (receiver == null)
                 throw new NullPointerException("Receiver must be non-null");
             if (method == null)
@@ -6549,7 +6551,7 @@ public final class QMetaObject {
          * connection has not been previously established by a call to connect.
          * @throws QNoSuchSlotException Raised if the method passed in the slot object was not found
          */
-        public final boolean disconnect(Object receiver, String method) {
+        public final boolean disconnect(@Nullable Object receiver, @Nullable String method) {
             if (method != null && receiver == null)
                 throw new IllegalArgumentException("Receiver cannot be null if you specify a method");
             if (receiver == null && this instanceof DisposedSignal)
@@ -6570,7 +6572,7 @@ public final class QMetaObject {
          *
          *  @see #disconnect(Object, String)
          **/
-        public final boolean disconnect(Object receiver) {
+        public final boolean disconnect(@Nullable Object receiver) {
             return disconnect(receiver, null);
         }
     
@@ -6590,7 +6592,7 @@ public final class QMetaObject {
          * @param connection the connection to be removed
          * @return true if the disconnection was successful.
          */
-        public final boolean disconnect(QMetaObject.Connection connection) {
+        public final boolean disconnect(QMetaObject.@NonNull Connection connection) {
             return removeConnection(connection);
         }
     }
@@ -7141,7 +7143,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -7151,7 +7153,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot0 slot) {
+        public final boolean disconnect(@StrictNonNull Slot0 slot) {
             return removeConnectionToSlotObject(slot);
         }
     
@@ -7163,7 +7165,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Connectable0 signal, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable0 signal, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSignalObject((AbstractSignal)signal, type);
         }
     
@@ -7173,7 +7175,7 @@ public final class QMetaObject {
          * @param signal the signal to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Connectable0 signal) {
+        public final boolean disconnect(@StrictNonNull Connectable0 signal) {
             return removeConnectionToSignalObject((AbstractSignal)signal);
         }
     }
@@ -7206,7 +7208,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -7218,7 +7220,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
         
@@ -7228,7 +7230,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot0 slot) {
+        public final boolean disconnect(@StrictNonNull Slot0 slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -7238,7 +7240,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot1<? super A> slot) {
+        public final boolean disconnect(@StrictNonNull Slot1<? super A> slot) {
             return removeConnectionToSlotObject(slot);
         }
     
@@ -7250,7 +7252,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Connectable1<? super A> signal, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable1<? super A> signal, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSignalObject((AbstractSignal)signal, type);
         }
         
@@ -7260,7 +7262,7 @@ public final class QMetaObject {
          * @param signal the signal to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Connectable1<? super A> signal) {
+        public final boolean disconnect(@StrictNonNull Connectable1<? super A> signal) {
             return removeConnectionToSignalObject((AbstractSignal)signal);
         }
     }
@@ -7294,7 +7296,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -7306,7 +7308,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -7318,7 +7320,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot2<? super A,? super B> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot2<? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
         
@@ -7328,7 +7330,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot0 slot) {
+        public final boolean disconnect(@StrictNonNull Slot0 slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -7338,7 +7340,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot1<? super A> slot) {
+        public final boolean disconnect(@StrictNonNull Slot1<? super A> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -7348,7 +7350,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot2<? super A,? super B> slot) {
+        public final boolean disconnect(@StrictNonNull Slot2<? super A,? super B> slot) {
             return removeConnectionToSlotObject(slot);
         }
     
@@ -7360,7 +7362,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Connectable2<? super A,? super B> signal, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable2<? super A,? super B> signal, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSignalObject((AbstractSignal)signal, type);
         }
         
@@ -7370,7 +7372,7 @@ public final class QMetaObject {
          * @param signal the signal to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Connectable2<? super A,? super B> signal) {
+        public final boolean disconnect(@StrictNonNull Connectable2<? super A,? super B> signal) {
             return removeConnectionToSignalObject((AbstractSignal)signal);
         }
     }
@@ -7406,7 +7408,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -7418,7 +7420,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -7430,7 +7432,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot2<? super A,? super B> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot2<? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -7442,7 +7444,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
         
@@ -7452,7 +7454,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot0 slot) {
+        public final boolean disconnect(@StrictNonNull Slot0 slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -7462,7 +7464,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot1<? super A> slot) {
+        public final boolean disconnect(@StrictNonNull Slot1<? super A> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -7472,7 +7474,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot2<? super A,? super B> slot) {
+        public final boolean disconnect(@StrictNonNull Slot2<? super A,? super B> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -7482,7 +7484,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot3<? super A,? super B,? super C> slot) {
+        public final boolean disconnect(@StrictNonNull Slot3<? super A,? super B,? super C> slot) {
             return removeConnectionToSlotObject(slot);
         }
     
@@ -7494,7 +7496,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Connectable3<? super A,? super B,? super C> signal, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable3<? super A,? super B,? super C> signal, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSignalObject((AbstractSignal)signal, type);
         }
         
@@ -7504,7 +7506,7 @@ public final class QMetaObject {
          * @param signal the signal to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Connectable3<? super A,? super B,? super C> signal) {
+        public final boolean disconnect(@StrictNonNull Connectable3<? super A,? super B,? super C> signal) {
             return removeConnectionToSignalObject((AbstractSignal)signal);
         }
     }
@@ -7541,7 +7543,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -7553,7 +7555,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -7565,7 +7567,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot2<? super A,? super B> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot2<? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -7577,7 +7579,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -7589,7 +7591,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
         
@@ -7599,7 +7601,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot0 slot) {
+        public final boolean disconnect(@StrictNonNull Slot0 slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -7609,7 +7611,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot1<? super A> slot) {
+        public final boolean disconnect(@StrictNonNull Slot1<? super A> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -7619,7 +7621,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot2<? super A,? super B> slot) {
+        public final boolean disconnect(@StrictNonNull Slot2<? super A,? super B> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -7629,7 +7631,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot3<? super A,? super B,? super C> slot) {
+        public final boolean disconnect(@StrictNonNull Slot3<? super A,? super B,? super C> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -7639,7 +7641,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot4<? super A,? super B,? super C,? super D> slot) {
+        public final boolean disconnect(@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot) {
             return removeConnectionToSlotObject(slot);
         }
     
@@ -7651,7 +7653,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Connectable4<? super A,? super B,? super C,? super D> signal, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable4<? super A,? super B,? super C,? super D> signal, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSignalObject((AbstractSignal)signal, type);
         }
         
@@ -7661,7 +7663,7 @@ public final class QMetaObject {
          * @param signal the signal to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Connectable4<? super A,? super B,? super C,? super D> signal) {
+        public final boolean disconnect(@StrictNonNull Connectable4<? super A,? super B,? super C,? super D> signal) {
             return removeConnectionToSignalObject((AbstractSignal)signal);
         }
     }
@@ -7698,7 +7700,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -7710,7 +7712,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -7722,7 +7724,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot2<? super A,? super B> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot2<? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -7734,7 +7736,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -7746,7 +7748,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -7758,7 +7760,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
         
@@ -7768,7 +7770,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot0 slot) {
+        public final boolean disconnect(@StrictNonNull Slot0 slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -7778,7 +7780,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot1<? super A> slot) {
+        public final boolean disconnect(@StrictNonNull Slot1<? super A> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -7788,7 +7790,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot2<? super A,? super B> slot) {
+        public final boolean disconnect(@StrictNonNull Slot2<? super A,? super B> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -7798,7 +7800,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot3<? super A,? super B,? super C> slot) {
+        public final boolean disconnect(@StrictNonNull Slot3<? super A,? super B,? super C> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -7808,7 +7810,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot4<? super A,? super B,? super C,? super D> slot) {
+        public final boolean disconnect(@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -7818,7 +7820,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
+        public final boolean disconnect(@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
             return removeConnectionToSlotObject(slot);
         }
     
@@ -7830,7 +7832,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Connectable5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable5<? super A,? super B,? super C,? super D,? super E> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSignalObject((AbstractSignal)slot, type);
         }
         
@@ -7840,7 +7842,7 @@ public final class QMetaObject {
          * @param signal the signal to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Connectable5<? super A,? super B,? super C,? super D,? super E> signal) {
+        public final boolean disconnect(@StrictNonNull Connectable5<? super A,? super B,? super C,? super D,? super E> signal) {
             return removeConnectionToSignalObject((AbstractSignal)signal);
         }
     }
@@ -7879,7 +7881,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -7891,7 +7893,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -7903,7 +7905,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot2<? super A,? super B> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot2<? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -7915,7 +7917,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -7927,7 +7929,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -7939,7 +7941,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -7951,7 +7953,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
         
@@ -7961,7 +7963,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot0 slot) {
+        public final boolean disconnect(@StrictNonNull Slot0 slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -7971,7 +7973,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot1<? super A> slot) {
+        public final boolean disconnect(@StrictNonNull Slot1<? super A> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -7981,7 +7983,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot2<? super A,? super B> slot) {
+        public final boolean disconnect(@StrictNonNull Slot2<? super A,? super B> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -7991,7 +7993,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot3<? super A,? super B,? super C> slot) {
+        public final boolean disconnect(@StrictNonNull Slot3<? super A,? super B,? super C> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8001,7 +8003,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot4<? super A,? super B,? super C,? super D> slot) {
+        public final boolean disconnect(@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8011,7 +8013,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
+        public final boolean disconnect(@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8021,7 +8023,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot) {
+        public final boolean disconnect(@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot) {
             return removeConnectionToSlotObject(slot);
         }
     
@@ -8033,7 +8035,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Connectable6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSignalObject((AbstractSignal)slot, type);
         }
         
@@ -8043,7 +8045,7 @@ public final class QMetaObject {
          * @param signal the signal to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Connectable6<? super A,? super B,? super C,? super D,? super E,? super F> signal) {
+        public final boolean disconnect(@StrictNonNull Connectable6<? super A,? super B,? super C,? super D,? super E,? super F> signal) {
             return removeConnectionToSignalObject((AbstractSignal)signal);
         }
     }
@@ -8083,7 +8085,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -8095,7 +8097,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -8107,7 +8109,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot2<? super A,? super B> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot2<? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -8119,7 +8121,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -8131,7 +8133,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -8143,7 +8145,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -8155,7 +8157,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -8167,7 +8169,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
         
@@ -8177,7 +8179,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot0 slot) {
+        public final boolean disconnect(@StrictNonNull Slot0 slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8187,7 +8189,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot1<? super A> slot) {
+        public final boolean disconnect(@StrictNonNull Slot1<? super A> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8197,7 +8199,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot2<? super A,? super B> slot) {
+        public final boolean disconnect(@StrictNonNull Slot2<? super A,? super B> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8207,7 +8209,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot3<? super A,? super B,? super C> slot) {
+        public final boolean disconnect(@StrictNonNull Slot3<? super A,? super B,? super C> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8217,7 +8219,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot4<? super A,? super B,? super C,? super D> slot) {
+        public final boolean disconnect(@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8227,7 +8229,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
+        public final boolean disconnect(@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8237,7 +8239,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot) {
+        public final boolean disconnect(@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8247,7 +8249,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot) {
+        public final boolean disconnect(@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot) {
             return removeConnectionToSlotObject(slot);
         }
     
@@ -8259,7 +8261,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Connectable7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSignalObject((AbstractSignal)slot, type);
         }
         
@@ -8269,7 +8271,7 @@ public final class QMetaObject {
          * @param signal the signal to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Connectable7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> signal) {
+        public final boolean disconnect(@StrictNonNull Connectable7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> signal) {
             return removeConnectionToSignalObject((AbstractSignal)signal);
         }
     }
@@ -8309,7 +8311,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -8321,7 +8323,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -8333,7 +8335,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot2<? super A,? super B> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot2<? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -8345,7 +8347,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -8357,7 +8359,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -8369,7 +8371,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -8381,7 +8383,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -8393,7 +8395,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -8405,7 +8407,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
         
@@ -8415,7 +8417,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot0 slot) {
+        public final boolean disconnect(@StrictNonNull Slot0 slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8425,7 +8427,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot1<? super A> slot) {
+        public final boolean disconnect(@StrictNonNull Slot1<? super A> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8435,7 +8437,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot2<? super A,? super B> slot) {
+        public final boolean disconnect(@StrictNonNull Slot2<? super A,? super B> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8445,7 +8447,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot3<? super A,? super B,? super C> slot) {
+        public final boolean disconnect(@StrictNonNull Slot3<? super A,? super B,? super C> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8455,7 +8457,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot4<? super A,? super B,? super C,? super D> slot) {
+        public final boolean disconnect(@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8465,7 +8467,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
+        public final boolean disconnect(@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8475,7 +8477,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot) {
+        public final boolean disconnect(@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8485,7 +8487,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot) {
+        public final boolean disconnect(@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8495,7 +8497,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot) {
+        public final boolean disconnect(@StrictNonNull Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot) {
             return removeConnectionToSlotObject(slot);
         }
     
@@ -8507,7 +8509,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Connectable8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSignalObject((AbstractSignal)slot, type);
         }
         
@@ -8517,7 +8519,7 @@ public final class QMetaObject {
          * @param signal the signal to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Connectable8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> signal) {
+        public final boolean disconnect(@StrictNonNull Connectable8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> signal) {
             return removeConnectionToSignalObject((AbstractSignal)signal);
         }
     }
@@ -8558,7 +8560,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot0 slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -8570,7 +8572,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot1<? super A> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -8582,7 +8584,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot2<? super A,? super B> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot2<? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -8594,7 +8596,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot3<? super A,? super B,? super C> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -8606,7 +8608,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot4<? super A,? super B,? super C,? super D> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -8618,7 +8620,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -8630,7 +8632,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -8642,7 +8644,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -8654,7 +8656,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
     
@@ -8666,7 +8668,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSlotObject(slot, type);
         }
         
@@ -8676,7 +8678,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot0 slot) {
+        public final boolean disconnect(@StrictNonNull Slot0 slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8686,7 +8688,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot1<? super A> slot) {
+        public final boolean disconnect(@StrictNonNull Slot1<? super A> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8696,7 +8698,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot2<? super A,? super B> slot) {
+        public final boolean disconnect(@StrictNonNull Slot2<? super A,? super B> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8706,7 +8708,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot3<? super A,? super B,? super C> slot) {
+        public final boolean disconnect(@StrictNonNull Slot3<? super A,? super B,? super C> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8716,7 +8718,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot4<? super A,? super B,? super C,? super D> slot) {
+        public final boolean disconnect(@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8726,7 +8728,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
+        public final boolean disconnect(@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8736,7 +8738,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot) {
+        public final boolean disconnect(@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8746,7 +8748,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot) {
+        public final boolean disconnect(@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8756,7 +8758,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot) {
+        public final boolean disconnect(@StrictNonNull Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot) {
             return removeConnectionToSlotObject(slot);
         }
         
@@ -8766,7 +8768,7 @@ public final class QMetaObject {
          * @param slot the slot to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot) {
+        public final boolean disconnect(@StrictNonNull Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot) {
             return removeConnectionToSlotObject(slot);
         }
     
@@ -8778,7 +8780,7 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.Connection connect(Connectable9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot, Qt.@NonNull ConnectionType @NonNull... type) {
             return addConnectionToSignalObject((AbstractSignal)slot, type);
         }
         
@@ -8788,7 +8790,7 @@ public final class QMetaObject {
          * @param signal the signal to be disconnected
          * @return <code>true</code> if successfully disconnected, or <code>false</code> otherwise.
          */
-        public final boolean disconnect(Connectable9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> signal) {
+        public final boolean disconnect(@StrictNonNull Connectable9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> signal) {
             return removeConnectionToSignalObject((AbstractSignal)signal);
         }
     }
@@ -12667,90 +12669,106 @@ public final class QMetaObject {
     }
     
     @QtUninvokable
-    public static AbstractPrivateSignal0 findSignal(QObject sender, String name) {
+    public static @Nullable AbstractPrivateSignal0 findSignal(@StrictNonNull QObject sender, @StrictNonNull String name) {
         return (AbstractPrivateSignal0)findSignalImpl(sender, name);
     }
     
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A> AbstractPrivateSignal1<A> findSignal(QObject sender, String name, Class<A> typeA) {
+    public static <A> @Nullable AbstractPrivateSignal1<A> findSignal(@StrictNonNull QObject sender, @StrictNonNull String name, @StrictNonNull Class<A> typeA) {
         return (AbstractPrivateSignal1<A>)findSignalImpl(sender, name, typeA);
     }
     
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,B> AbstractPrivateSignal2<A,B> findSignal(
-            QObject sender, String name, 
-            Class<A> typeA, Class<B> typeB) {
+    public static <A,B> @Nullable AbstractPrivateSignal2<A,B> findSignal(
+    		@StrictNonNull QObject sender, @StrictNonNull String name, 
+    		@StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB) {
         return (AbstractPrivateSignal2<A,B>)findSignalImpl(sender, 
                 name, typeA, typeB);
     }
     
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,B,C> AbstractPrivateSignal3<A,B,C> findSignal(
-            QObject sender, String name, 
-            Class<A> typeA, Class<B> typeB, Class<C> typeC) {
+    public static <A,B,C> @Nullable AbstractPrivateSignal3<A,B,C> findSignal(
+    		@StrictNonNull QObject sender, @StrictNonNull String name, 
+    		@StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, 
+    		@StrictNonNull Class<C> typeC) {
         return (AbstractPrivateSignal3<A,B,C>)findSignalImpl(sender, 
                 name, typeA, typeB, typeC);
     }
     
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,B,C,D> AbstractPrivateSignal4<A,B,C,D> findSignal(
-            QObject sender, String name, 
-            Class<A> typeA, Class<B> typeB, Class<C> typeC, Class<D> typeD) {
+    public static <A,B,C,D> @Nullable AbstractPrivateSignal4<A,B,C,D> findSignal(
+    		@StrictNonNull QObject sender, @StrictNonNull String name, 
+    		@StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, 
+    		@StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD) {
         return (AbstractPrivateSignal4<A,B,C,D>)findSignalImpl(sender, 
                 name, typeA, typeB, typeC, typeD);
     }
     
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,B,C,D,E> AbstractPrivateSignal5<A,B,C,D,E> findSignal(
-            QObject sender, String name, 
-            Class<A> typeA, Class<B> typeB, Class<C> typeC, Class<D> typeD, Class<E> typeE) {
+    public static <A,B,C,D,E> @Nullable AbstractPrivateSignal5<A,B,C,D,E> findSignal(
+    		@StrictNonNull QObject sender, @StrictNonNull String name, 
+    		@StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, 
+    		@StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, 
+    		@StrictNonNull Class<E> typeE) {
         return (AbstractPrivateSignal5<A,B,C,D,E>)findSignalImpl(sender, 
                 name, typeA, typeB, typeC, typeD, typeE);
     }
     
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,B,C,D,E,F> AbstractPrivateSignal6<A,B,C,D,E,F> findSignal(
-            QObject sender, String name, 
-            Class<A> typeA, Class<B> typeB, Class<C> typeC, Class<D> typeD, Class<E> typeE, Class<F> typeF) {
+    public static <A,B,C,D,E,F> @Nullable AbstractPrivateSignal6<A,B,C,D,E,F> findSignal(
+    		@StrictNonNull QObject sender, @StrictNonNull String name, 
+    		@StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, 
+    		@StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, 
+    		@StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF) {
         return (AbstractPrivateSignal6<A,B,C,D,E,F>)findSignalImpl(sender, 
                 name, typeA, typeB, typeC, typeD, typeE, typeF);
     }
     
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,B,C,D,E,F,G> AbstractPrivateSignal7<A,B,C,D,E,F,G> findSignal(
-            QObject sender, String name, 
-            Class<A> typeA, Class<B> typeB, Class<C> typeC, Class<D> typeD, Class<E> typeE, Class<F> typeF, Class<G> typeG) {
+    public static <A,B,C,D,E,F,G> @Nullable AbstractPrivateSignal7<A,B,C,D,E,F,G> findSignal(
+    		@StrictNonNull QObject sender, @StrictNonNull String name, 
+    		@StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, 
+    		@StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, 
+    		@StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, 
+    		@StrictNonNull Class<G> typeG) {
         return (AbstractPrivateSignal7<A,B,C,D,E,F,G>)findSignalImpl(sender, 
                 name, typeA, typeB, typeC, typeD, typeE, typeF, typeG);
     }
     
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> AbstractPrivateSignal8<A,B,C,D,E,F,G,H> findSignal(
-            QObject sender, String name, 
-            Class<A> typeA, Class<B> typeB, Class<C> typeC, Class<D> typeD, Class<E> typeE, Class<F> typeF, Class<G> typeG, Class<H> typeH) {
+    public static <A,B,C,D,E,F,G,H> @Nullable AbstractPrivateSignal8<A,B,C,D,E,F,G,H> findSignal(
+    		@StrictNonNull QObject sender, @StrictNonNull String name, 
+    		@StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, 
+    		@StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, 
+    		@StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, 
+    		@StrictNonNull Class<G> typeG, @StrictNonNull Class<H> typeH) {
         return (AbstractPrivateSignal8<A,B,C,D,E,F,G,H>)findSignalImpl(sender, 
                 name, typeA, typeB, typeC, typeD, typeE, typeF, typeG, typeH);
     }
     
     @SuppressWarnings("unchecked")
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> findSignal(
-            QObject sender, String name, 
-            Class<A> typeA, Class<B> typeB, Class<C> typeC, Class<D> typeD, Class<E> typeE, Class<F> typeF, Class<G> typeG, Class<H> typeH, Class<I> typeI) {
+    public static <A,B,C,D,E,F,G,H,I> @Nullable AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> findSignal(
+    		@StrictNonNull QObject sender, @StrictNonNull String name, 
+    		@StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, 
+    		@StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, 
+    		@StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, 
+    		@StrictNonNull Class<G> typeG, @StrictNonNull Class<H> typeH, 
+    		@StrictNonNull Class<I> typeI) {
         return (AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I>)findSignalImpl(sender, 
                 name, typeA, typeB, typeC, typeD, typeE, typeF, typeG, typeH, typeI);
     }
     
     @QtUninvokable
-    public static AbstractSignal findSignal(QObject sender, String name, Class<?>... types){
+    public static @Nullable AbstractSignal findSignal(@StrictNonNull QObject sender, @StrictNonNull String name, @NonNull Class<?> @NonNull... types){
         return findSignalImpl(sender, name, types);		
     }
     

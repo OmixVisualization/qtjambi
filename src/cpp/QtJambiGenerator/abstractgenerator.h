@@ -84,7 +84,7 @@ class AbstractGenerator : public QObject {
             SuperCall                       = 0x000400000,
             GlobalRefJObject                = 0x000800000,
             DefaultFunction                 = 0x001000000,
-            InitializerListAsArray          = 0x002000000,
+            VarArgsAsArray                  = 0x002000000,
             CollectionAsCollection          = 0x004000000,
             NoQCollectionContainers         = 0x008000000,
 

@@ -105,6 +105,14 @@ private:
 
 namespace CoreAPI{
 
+QTJAMBI_EXPORT jobject convertQObjectToJavaObjectCppOwnership(JNIEnv *env, const QObject *qt_object, const std::type_info& typeId);
+
+template<typename O>
+jobject convertQObjectToJavaObjectCppOwnership(JNIEnv *env, const O *qt_object)
+{
+    return convertQObjectToJavaObjectCppOwnership(env, qt_object, typeid(O));
+}
+
 QTJAMBI_EXPORT void ckeckLinkExtension(JNIEnv *env, QtJambiNativeID nativeId);
 
 QTJAMBI_EXPORT QReadWriteLock* objectDataLock();

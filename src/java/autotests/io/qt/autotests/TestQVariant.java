@@ -52,6 +52,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -747,6 +748,7 @@ public class TestQVariant extends ApplicationInitializer {
     	
     @Test
     public void testQVariant_UnknownEnumMultiHash() {
+    	Assume.assumeTrue("Is expected and accepted to fail in Qt5.", QLibraryInfo.version().majorVersion()>=6);
     	Object variant = Variants.getUnknownEnumMultiHash();
     	assertNotNull(variant);
     	assertTrue(variant.getClass().getName(), variant instanceof QMultiHash);

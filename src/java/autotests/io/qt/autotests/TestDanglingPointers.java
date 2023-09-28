@@ -110,7 +110,11 @@ public class TestDanglingPointers extends ApplicationInitializer{
     	try {
     		item0.widget();
 		} catch (QDanglingPointerException e) {
-			Assert.assertEquals(String.format("Dangling pointer to object of type %1$s", QWidgetItem.class.getName()), e.getMessage());
+			try {
+				Assert.assertEquals(String.format("Dangling pointer to object of type %1$s", QWidgetItem.class.getName()), e.getMessage());
+			} catch (org.junit.ComparisonFailure e2) {
+				Assert.assertEquals(String.format("Cannot convert dangling pointer to object of type %1$s", QWidget.class.getName()), e.getMessage());
+			}
 		}
     }
     

@@ -47,14 +47,14 @@
                             <param name="isdebug" value="true"/>
                             <param name="debug.conf" value="debug"/>
                             <param name="platformjar.debug.suffix" value="-debug"/>
-                            <param name="plugindestdir" value="${deploymentdir}/native/${qtjambi.osname}/debug"/>
+                            <param name="plugindestdir" value="${deploymentdir}/platforms/${qtjambi.osname}/debug"/>
                         </antcall>
                     </then>
                     <else>
                         <antcall target="bundle-plugin-impl">
                             <param name="debug.conf" value="release"/>
                             <param name="platformjar.debug.suffix" value=""/>
-                            <param name="plugindestdir" value="${deploymentdir}/native/${qtjambi.osname}/release"/>
+                            <param name="plugindestdir" value="${deploymentdir}/platforms/${qtjambi.osname}/release"/>
                         </antcall>
                     </else>
                 </if>
@@ -124,9 +124,9 @@
 		<if>
 			<istrue value="${qtjambi.pluginloader.build.from.source}"/>
 			<then>
-                <trycatch>
+				<trycatch>
 					<try>
-						<java fork="true" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
+						<java fork="true" jvm="${tools.jvm}" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
 							<jvmarg value="-Djava.library.path=${librarypath}"/>
 							<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/tmp"/>
 							<jvmarg value="${XstartOnFirstThread}"/>
@@ -152,7 +152,7 @@
 					<finally>
 						<delete dir="${outputDir}/tmp"/>
 					</finally>
-                </trycatch>
+				</trycatch>
 				<qmake recursive="true"
 					  dir="${plugins.builddir}/${module}"
 					  pro="${plugins.builddir}/${module}/plugin.pro"
@@ -210,9 +210,9 @@
 					  todir="${plugindestdir}/plugins/${plugin-subdir}"/>
 			</then>
 			<else>
-                <trycatch>
+				<trycatch>
 					<try>
-						<java fork="true" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
+						<java fork="true" jvm="${tools.jvm}" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
 							<jvmarg value="-Djava.library.path=${librarypath}"/>
 							<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/tmp"/>
 							<jvmarg value="${XstartOnFirstThread}"/>
@@ -236,7 +236,7 @@
 					<finally>
 						<delete dir="${outputDir}/tmp"/>
 					</finally>
-                </trycatch>
+				</trycatch>
 			</else>
 		</if>
 		<if>
@@ -320,21 +320,30 @@
 						</if>
 					</else>
 				</if>
-				<echo>jar-includes=${jar-includes}</echo>
-				<condition property="plugintargetdir" value="${outputDir}/${targetdirname}/tests" else="${deploymentdir}/native">
-					<istrue value="${qtjambi.testbuild}"/>
-				</condition>
-				<jar destfile="${plugintargetdir}/${moduledash}-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.jar.version}.jar">
-					<manifest>
-						<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
-						<attribute name="Bundle-Name"      value="QtJambi ${module} plugin platform bundle"/>
-						<attribute name="Bundle-Description"      value="QtJambi ${module} plugin platform bundle"/>
-						<attribute name="Bundle-License"         value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999"/>
-						<attribute name="Bundle-Version"         value="${qtjambi.version.bundle}"/>
-						<attribute name="Bundle-ManifestVersion" value="2"/>
-					</manifest>
-					<fileset dir="${plugindestdir}" includes="${jar-includes}"/>
-				</jar>
+				<if>
+					<or>
+						<isfalse value="${platformjar.debug}"/>
+						<istrue value="${qtjambi.debug.bundles}"/>
+					</or>
+					<then>
+						<echo>jar-includes=${jar-includes}</echo>
+						<condition property="plugintargetdir" value="${outputDir}/${targetdirname}/tests" else="${deploymentdir}/native">
+							<istrue value="${qtjambi.testbuild}"/>
+						</condition>
+						<jar destfile="${plugintargetdir}/${moduledash}-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.jar.version}.jar">
+							<manifest>
+								<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
+								<attribute name="Bundle-Name"      value="QtJambi ${module} plugin platform bundle"/>
+								<attribute name="Bundle-Description"      value="QtJambi ${module} plugin platform bundle"/>
+								<attribute name="Bundle-License"         value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999"/>
+								<attribute name="Bundle-Version"         value="${qtjambi.version.bundle}"/>
+								<attribute name="Bundle-ManifestVersion" value="2"/>
+							</manifest>
+							<fileset dir="${plugindestdir}" includes="${jar-includes}"/>
+						</jar>
+					</then>
+				</if>
+				<delete file="${plugindestdir}/qtjambi-deployment.xml"/>
 			</then>
 		</if>
     </target>
@@ -528,8 +537,8 @@
         </if>
         <gpg>
             <fileset dir="${deploymentdir}/native/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
-            <fileset dir="${deploymentdir}/native/sources/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
-            <fileset dir="${deploymentdir}/native/javadocs/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
+            <fileset dir="${deploymentdir}/sources/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
+            <fileset dir="${deploymentdir}/javadocs/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>
         </gpg>
         <jar destfile="${deploymentdir}/bundles/${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}-bundle.jar">
             <fileset dir="${deploymentdir}/native/" includes="${moduledash}-native-${native-spec}-${qtjambi.jar.version}${snap}*" followsymlinks="false"/>

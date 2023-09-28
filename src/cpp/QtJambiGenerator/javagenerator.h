@@ -66,6 +66,7 @@ public:
     void writeFunctionArgument(QTextStream &s,
                               const MetaFunction *java_function,
                               const MetaArgument *java_argument,
+                              const QString* alternativeType = nullptr,
                               Option options = Option::NoOption);
     void writeFunctional(QTextStream &s, const MetaFunctional *java_functional);
     void writeEnum(QTextStream &s, const MetaEnum *java_enum);
@@ -74,14 +75,12 @@ public:
     void writeMultiSignal(QTextStream &s, const MetaFunctionList& signalList);
     void writeFunction(QTextStream &s, const MetaFunction *java_function,
                        uint included_attributes = 0, uint excluded_attributes = 0, Option option = NoOption);
-    void writeFieldAccessors(QTextStream &s, const MetaField *field, Option functionOptions = NoOption);
+    void writeFieldAccessors(QTextStream &s, const MetaField *field, Option functionOptions = NoOption, QList<const MetaFunction *> *overloadedFunctions = nullptr);
     void write(QTextStream &s, const MetaClass *java_class, int nesting_level = 0) override;
     void write(QTextStream &s, const MetaFunctional *java_class, int nesting_level = 0) override;
 
     void writeFunctionOverloads(QTextStream &s, const MetaFunction *java_function,
-                                uint included_attributes, uint excluded_attributes, Option option, const QString& alternativeFunctionName = QString());
-    void writeEnumOverload(QTextStream &s, const MetaFunction *java_function,
-                           uint include_attributes, uint exclude_attributes, Option option);
+                                uint included_attributes = 0, uint excluded_attributes = 0, Option option = NoOption, const QString& alternativeFunctionName = QString());
     void writeExtraFunctions(QTextStream &s, const MetaClass *java_class);
     void writeExtraFunctions(QTextStream &s, const MetaFunctional *java_class, bool inInterface);
     void writeToStringFunction(QTextStream &s, const MetaClass *java_class);
@@ -91,7 +90,7 @@ public:
                                  Option options = NoOption);
     void writeConstructorContents(QTextStream &s, const MetaFunction *java_function);
     void writeFunctionArguments(QTextStream &s, const MetaFunction *java_function,
-                                int count = -1, Option options = NoOption);
+                                const QMap<int,const QString*>& replacedArguments = {}, int count = -1, Option options = NoOption);
     void writeJavaCallThroughContents(QTextStream &s, const MetaFunction *java_function, uint attributes = 0);
     void writeOwnershipForContainer(QTextStream &s, const MetaFunction *java_function, TS::Ownership ownership, MetaType *type, const QString &arg_name);
     void writeFunctionCallForOwnership(QTextStream &s, const MetaFunction *java_function, TS::Ownership owner, const QString& variable);
@@ -104,6 +103,7 @@ public:
                               uint included_attributes,
                               uint excluded_attributes,
                               Option option = NoOption,
+                              const QMap<int,const QString*>& replacedArguments = {},
                               int arg_count = -1,
                               const QString& alternativeFunctionName = QString());
     void setupForFunction(const MetaFunction *java_function,
@@ -132,22 +132,6 @@ public:
 
     bool shouldGenerate(const MetaFunctional *) const override { return false; }
     void generate() override;
-
-    void writeIteratorFunctions(QTextStream &s, const MetaClass *java_class);
-    void writeAbstractMapFunctions(QTextStream &s, const MetaClass *java_class);
-    void writeAbstractMultiMapFunctions(QTextStream &s, const MetaClass *java_class);
-    void writeAbstractListFunctions(QTextStream &s, const MetaClass *java_class);
-    void writeMapFunctions(QTextStream &s, const MetaClass *java_class);
-    void writeMultiMapFunctions(QTextStream &s, const MetaClass *java_class);
-    void writeMultiHashFunctions(QTextStream &s, const MetaClass *java_class);
-    void writeHashFunctions(QTextStream &s, const MetaClass *java_class);
-    void writeCollectionFunctions(QTextStream &s, const MetaClass *java_class);
-    void writeListFunctions(QTextStream &s, const MetaClass *java_class);
-    void writeLinkedListFunctions(QTextStream &s, const MetaClass *java_class);
-    void writeSetFunctions(QTextStream &s, const MetaClass *java_class);
-    void writeQueueFunctions(QTextStream &s, const MetaClass *java_class);
-    void writeStackFunctions(QTextStream &s, const MetaClass *java_class);
-    void writeVectorFunctions(QTextStream &s, const MetaClass *java_class);
 
     /*virtual*/ QString resolveOutputDirectory() const override { return javaOutputDirectory(); }
 

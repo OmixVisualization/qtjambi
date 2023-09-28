@@ -963,13 +963,13 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         // We need a reader as well, and the reader must not be annotated as disabled
                         // The reader can be called 'xxx', 'getXxx', 'isXxx' or 'hasXxx'
                         // (just booleans for the last two)
-                        Method readerMethod = findPropertyReader(getDeclaredMethod(clazz, propertyName, null), propertyName, paramType);
+                        Method readerMethod = findPropertyReader(getDeclaredMethod(clazz, propertyName), propertyName, paramType);
                         if (readerMethod == null)
-                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "get" + capitalizeFirst(propertyName), null), propertyName, paramType);
+                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "get" + capitalizeFirst(propertyName)), propertyName, paramType);
                         if (readerMethod == null && isBoolean(paramType))
-                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "is" + capitalizeFirst(propertyName), null), propertyName, paramType);
+                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "is" + capitalizeFirst(propertyName)), propertyName, paramType);
                         if (readerMethod == null && isBoolean(paramType))
-                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "has" + capitalizeFirst(propertyName), null), propertyName, paramType);
+                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "has" + capitalizeFirst(propertyName)), propertyName, paramType);
 
                         if (readerMethod != null) { // yay
                             reader = PropertyAnnotation.readerAnnotation(readerMethod);
@@ -1011,11 +1011,90 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
             }
             
             for(Method possibleBindable : possibleBindables) {
-            	String name = possibleBindable.getName();
-            	if(name.startsWith("bindable") && name.length() > 8) {
-            		name = PropertyAnnotation.removeAndLowercaseFirst(name, 8);
-            		if (propertyReaders.containsKey(name)) {
-            			propertyBindables.put(name, possibleBindable);
+            	String propertyName = possibleBindable.getName();
+            	if(propertyName.startsWith("bindable") && propertyName.length() > 8) {
+            		propertyName = PropertyAnnotation.removeAndLowercaseFirst(propertyName, 8);
+            		if (propertyReaders.containsKey(propertyName) || propertyWriters.containsKey(propertyName)) {
+            			propertyBindables.put(propertyName, possibleBindable);
+            		}else {
+            			QPropertyTypeInfo typeInfo = getQPropertyTypeInfo(possibleBindable);
+            			if(typeInfo!=null) {
+	            			Class<?> paramType = typeInfo.propertyType;
+	            			Method readerMethod = findPropertyReader(getDeclaredMethod(clazz, propertyName), propertyName, paramType);
+	                        if (readerMethod == null)
+	                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "get" + capitalizeFirst(propertyName)), propertyName, paramType);
+	                        if (readerMethod == null && isBoolean(paramType))
+	                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "is" + capitalizeFirst(propertyName)), propertyName, paramType);
+	                        if (readerMethod == null && isBoolean(paramType))
+	                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "has" + capitalizeFirst(propertyName)), propertyName, paramType);
+	
+	                        if (readerMethod != null) { // yay
+	                            propertyReaders.put(propertyName, readerMethod);
+	                            propertyBindables.put(propertyName, possibleBindable);
+	
+	                            propertyDesignableResolvers.put(propertyName, isDesignable(readerMethod, clazz));
+	                            propertyScriptableResolvers.put(propertyName, isScriptable(readerMethod, clazz));
+	                            propertyUserResolvers.put(propertyName, isUser(readerMethod, clazz));
+	                            propertyRequiredResolvers.put(propertyName, isRequired(readerMethod, clazz));
+	                        }else {
+	                        	Method writerMethod = findPropertyWriter(getDeclaredMethod(clazz, "set"+propertyName.toUpperCase().charAt(0)+propertyName.substring(1), paramType), propertyName, paramType);
+	                        	if(writerMethod != null) {
+	                        		PropertyAnnotation writer = PropertyAnnotation.writerAnnotation(readerMethod);
+	                                if (writer == null) {
+	                                	propertyWriters.computeIfAbsent(propertyName, arrayListFactory()).add(writerMethod);
+	                                	propertyDesignableResolvers.put(propertyName, isDesignable(writerMethod, clazz));
+	    	                            propertyScriptableResolvers.put(propertyName, isScriptable(writerMethod, clazz));
+	    	                            propertyUserResolvers.put(propertyName, isUser(writerMethod, clazz));
+	    	                            propertyRequiredResolvers.put(propertyName, isRequired(writerMethod, clazz));
+	                                }
+	                        	}
+	                        }
+            			}
+            		}
+            	}
+            }
+            
+            for(MetaObjectData.SignalInfo signalInfo : metaObjectData.signalInfos) {
+            	if(signalInfo.field.getName().endsWith("Changed")) {
+            		String propertyName = signalInfo.field.getName();
+            		propertyName = propertyName.substring(0, propertyName.length()-7);
+            		if (!propertyReaders.containsKey(propertyName)) {
+            			Class<?> paramType = signalInfo.signalTypes.size()==1 ? signalInfo.signalTypes.get(0).type : null;
+            			Method readerMethod = findPropertyReader(getDeclaredMethod(clazz, propertyName), propertyName, paramType);
+                        if (readerMethod == null)
+                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "get" + capitalizeFirst(propertyName)), propertyName, paramType);
+                        if (readerMethod == null && isBoolean(paramType))
+                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "is" + capitalizeFirst(propertyName)), propertyName, paramType);
+                        if (readerMethod == null && isBoolean(paramType))
+                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "has" + capitalizeFirst(propertyName)), propertyName, paramType);
+
+                        if (readerMethod != null) { // yay
+                            propertyReaders.put(propertyName, readerMethod);
+                            propertyNotifies.put(propertyName, signalInfo.field);
+
+                            propertyDesignableResolvers.put(propertyName, isDesignable(readerMethod, clazz));
+                            propertyScriptableResolvers.put(propertyName, isScriptable(readerMethod, clazz));
+                            propertyUserResolvers.put(propertyName, isUser(readerMethod, clazz));
+                            propertyRequiredResolvers.put(propertyName, isRequired(readerMethod, clazz));
+                        }else {
+                        	Method writerMethod;
+                        	if(paramType==null) {
+                        		
+                        	}else{
+                        		
+                        	}
+                        	writerMethod = findPropertyWriter(getDeclaredMethod(clazz, "set"+propertyName.toUpperCase().charAt(0)+propertyName.substring(1), paramType), propertyName, paramType);
+                        	if(writerMethod != null) {
+                        		PropertyAnnotation writer = PropertyAnnotation.writerAnnotation(readerMethod);
+                                if (writer == null) {
+                                	propertyWriters.computeIfAbsent(propertyName, arrayListFactory()).add(writerMethod);
+                                	propertyDesignableResolvers.put(propertyName, isDesignable(writerMethod, clazz));
+    	                            propertyScriptableResolvers.put(propertyName, isScriptable(writerMethod, clazz));
+    	                            propertyUserResolvers.put(propertyName, isUser(writerMethod, clazz));
+    	                            propertyRequiredResolvers.put(propertyName, isRequired(writerMethod, clazz));
+                                }
+                        	}
+                        }
             		}
             	}
             }
@@ -2070,7 +2149,24 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
         if (reader != null
             && (!reader.name().equals(propertyName)
                 || !reader.enabled()
-                || !method.getReturnType().isAssignableFrom(paramType))) {
+                || (paramType!=null && !method.getReturnType().isAssignableFrom(paramType)))) {
+            return null;
+        } else {
+            return method;
+        }
+    }
+    
+    private static Method findPropertyWriter(Method method, String propertyName, Class<?> paramType) {
+        if (method == null)
+            return null;
+
+        PropertyAnnotation reader = PropertyAnnotation.writerAnnotation(method);
+        if (reader != null
+            && (!reader.name().equals(propertyName)
+        		|| method.getParameterCount()!=1
+        		|| method.getReturnType()!=void.class
+                || !reader.enabled()
+                || (paramType!=null && !method.getParameterTypes()[0].isAssignableFrom(paramType)))) {
             return null;
         } else {
             return method;
@@ -2227,7 +2323,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                 && declaredMethod.getReturnType() == Void.TYPE);
     }
 
-    private static Method getDeclaredMethod(Class<?> clazz, String name, Class<?> args[]) {
+    private static Method getDeclaredMethod(Class<?> clazz, String name, Class<?>... args) {
         try {
             return clazz.getDeclaredMethod(name, args);
         } catch (NoSuchMethodException e) {

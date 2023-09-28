@@ -288,6 +288,24 @@ public abstract class AbstractInitializeTask extends Task {
 				mySetProperty(-1, "source.java.version", " (auto-detected)", minJavaVersion, true);
 			}
         }
+        String javaHome = AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_HOME_TARGET);
+        switch(OSInfo.os()) {
+		case Windows:
+			File jvm;
+			if((jvm = new File(new File(javaHome, "bin"), "java.exe")).exists()) {
+				mySetProperty(-1, "tools.jvm", " (taken from "+Constants.JAVA_HOME_TARGET+")", jvm.getAbsolutePath(), true);
+			}else {
+				mySetProperty(-1, "tools.jvm", " (default)", "java", true);
+			}
+			break;
+		default:
+			if((jvm = new File(new File(javaHome, "bin"), "java")).exists()) {
+				mySetProperty(-1, "tools.jvm", " (taken from "+Constants.JAVA_HOME_TARGET+")", jvm.getAbsolutePath(), true);
+			}else {
+				mySetProperty(-1, "tools.jvm", " (default)", "java", true);
+			}
+			break;
+        }
         return result;
     }
     
@@ -340,7 +358,7 @@ public abstract class AbstractInitializeTask extends Task {
         	switch(System.getProperty("os.arch").toLowerCase()) {
         	case "arm64":
         	case "aarch64":
-        		if(qtMajorVersion>=6 && qtMinorVersion>=2) {
+        		if((qtMajorVersion>=6 && qtMinorVersion>=2) || qtMajorVersion>6) {
         			sourceValue = " (from "+Constants.JAVA_HOME_TARGET+")";
         			mySetProperty(-1, Constants.JAVA_ARM64_HOME_TARGET, sourceValue, AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_HOME_TARGET), true);
         		}
@@ -376,6 +394,18 @@ public abstract class AbstractInitializeTask extends Task {
                     }
                 }
                 mySetProperty(-1, Constants.JAVA_X64_HOME_TARGET, sourceValue, s, true);
+                if(qtMajorVersion==5) {
+                	if(s!=null) {
+                		File jvm;
+	        			if((jvm = new File(new File(s, "bin"), "java")).exists()) {
+	        				mySetProperty(-1, "tools.jvm", " (taken from "+Constants.JAVA_X64_HOME_TARGET+")", jvm.getAbsolutePath(), true);
+	        			}else {
+	        				mySetProperty(-1, "tools.jvm", " (default)", "java", true);
+	        			}
+                	}else {
+                		throw new BuildException("Cannot build Qt5 without x64 JVM.");
+                	}
+                }
         		break;
         	case "x86_64":
         	case "x64":
@@ -548,12 +578,6 @@ public abstract class AbstractInitializeTask extends Task {
          Constants.CONFIG_TEST.equals(configuration) || Constants.CONFIG_DEBUG_AND_RELEASE.equals(configuration)) {
             this.configurationViaSetter = true;
             setConfigurationInternal(configuration);
-            if(Constants.CONFIG_DEBUG_AND_RELEASE.equals(configuration)) {
-            	String debugBundles = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.debug.bundles");
-            	if(debugBundles==null || debugBundles.isEmpty()) {
-            		AntUtil.setProperty(propertyHelper, "qtjambi.debug.bundles", "true");
-            	}
-            }
             return;
         }
         throw new BuildException("invalid value for 'configuration' of '" + prettyValue(configuration) + "' allowed settings 'debug', 'release', 'test', 'debug_and_release'");

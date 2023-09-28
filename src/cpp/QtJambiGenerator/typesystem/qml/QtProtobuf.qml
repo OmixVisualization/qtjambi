@@ -34,6 +34,7 @@ TypeSystem{
     defaultSuperClass: "QtObject"
     qtLibrary: "QtProtobuf"
     module: "qtjambi.protobuf"
+    description: "Provides an ability to generate Qt-based classes from protobuf specifications."
     ObjectType{
         name: "QAbstractProtobufSerializer"
     }

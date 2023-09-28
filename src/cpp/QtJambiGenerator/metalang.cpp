@@ -1079,6 +1079,21 @@ QList<Parameter> MetaFunction::addedParameterTypes() const
     return result;
 }
 
+QStringList MetaFunction::impliciteCalls(int key) const{
+    QStringList result;
+    FunctionModificationList modifications = this->modifications(implementingClass());
+    if(implementingClass()!=declaringClass())
+        modifications << this->modifications(declaringClass());
+    for(const FunctionModification& modification : modifications) {
+        for(const ArgumentModification& argument_modification : modification.argument_mods) {
+            if(argument_modification.type==ArgumentModification::Default && argument_modification.index == key){
+                result << argument_modification.impliciteCalls;
+            }
+        }
+    }
+    return result;
+}
+
 ArgumentRemove MetaFunction::argumentRemoved(int key) const {
     FunctionModificationList modifications = this->modifications(implementingClass());
     if(implementingClass()!=declaringClass())
@@ -1594,6 +1609,29 @@ QString MetaFunction::minimalSignature() const {
 
     minimalSignature = QMetaObject::normalizedSignature(minimalSignature.toLocal8Bit().constData());
     m_cached_minimal_signature = minimalSignature;
+
+    return minimalSignature;
+}
+
+QString MetaFunction::minimalSignatureNoTemplate() const {
+    if (!m_cached_minimal_signature_no_template.isEmpty())
+        return m_cached_minimal_signature_no_template;
+
+    QStringList args;
+    QString minimalSignature = originalName() + "(";
+    const MetaArgumentList& arguments = this->arguments();
+
+    args.clear();
+    for (int i = 0; i < arguments.count(); ++i) {
+        MetaType *t = arguments[i]->type();
+        args << t->minimalSignature();
+    }
+    minimalSignature += args.join(",") + ")";
+    if (isConstant())
+        minimalSignature += "const";
+
+    minimalSignature = QMetaObject::normalizedSignature(minimalSignature.toLocal8Bit().constData());
+    m_cached_minimal_signature_no_template = minimalSignature;
 
     return minimalSignature;
 }
@@ -2333,6 +2371,10 @@ void MetaClass::addInvalidFunction(MetaFunction *function) {
     }
 }
 
+void MetaClass::addDeletedFunction(MetaFunction *function) {
+    m_deletedFunctions << function;
+}
+
 bool MetaClass::hasSignal(const MetaFunction *other) const {
     if (!other->isSignal())
         return false;
@@ -2798,6 +2840,7 @@ MetaClass::MetaClass()
 
 const MetaFunctionList& MetaClass::functions() const { return m_functions; }
 const MetaFunctionList& MetaClass::invalidFunctions() const { return m_invalidfunctions; }
+const MetaFunctionList& MetaClass::deletedFunctions() const { return m_deletedFunctions; }
 
 bool MetaClass::hasExplicitCopyConstructor() const {
     if(m_has_explicitcopyconstructor==0){

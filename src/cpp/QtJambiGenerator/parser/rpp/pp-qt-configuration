@@ -78,7 +78,7 @@
 #define Q_EMIT
 #define SIGNAL(A) #A
 #define SLOT(A) #A
-#define Q_NAMESPACE_EXPORT()
+#define Q_NAMESPACE_EXPORT(...)
 #define Q_COMPILER_INITIALIZER_LISTS
 
 #define Q_DECL_DEPRECATED [[deprecated]]

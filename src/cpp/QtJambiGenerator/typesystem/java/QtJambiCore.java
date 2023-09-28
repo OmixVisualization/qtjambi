@@ -11078,302 +11078,7 @@ class QDate___ extends QDate {
     }
 }// class
 
-class QByteArray_5_12__ extends QByteArray {
-
-    /**
-     * <p>Overloaded function for {@link #compare(byte[], Qt.CaseSensitivity)}
-     *  with <code>cs = Qt.CaseSensitivity.CaseSensitive</code>.</p>
-     */
-    @QtUninvokable
-    public final int compare(byte[] b) {
-        return compare(new QByteArray(b));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#compare"><code>QByteArray::compare(const char*,Qt::CaseSensitivity)const</code></a></p>
-     */
-    @QtUninvokable
-    public final int compare(byte[] b, Qt.CaseSensitivity cs) {
-        return compare(new QByteArray(b), cs);
-    }
-    
-    /**
-     * <p>Overloaded function for {@link #compare(String, Qt.CaseSensitivity)}
-     *  with <code>cs = Qt.CaseSensitivity.CaseSensitive</code>.</p>
-     */
-    @QtUninvokable
-    public final int compare(String str) {
-        return compare(new QByteArray(str));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#compare"><code>QByteArray::compare(const char*,Qt::CaseSensitivity)const</code></a></p>
-     */
-    @QtUninvokable
-    public final int compare(String str, Qt.CaseSensitivity cs) {
-        return compare(new QByteArray(str), cs);
-    }
-}// class
-
-class QByteArray_5_15__ extends QByteArray {
-    /**
-     * Result class for {@link #fromBase64Encoding(QByteArray, QByteArray.Base64Options)}
-     */
-    public static class FromBase64Result{
-        public final QByteArray decoded;
-        public final QByteArray.Base64DecodingStatus decodingStatus;
-        private FromBase64Result(QByteArray decoded, int decodingStatus) {
-            super();
-            this.decoded = decoded;
-            this.decodingStatus = Base64DecodingStatus.resolve(decodingStatus);
-        }
-    }
-}// class
-
 class QByteArray___ extends QByteArray {
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#QByteArray"><code>QByteArray(const char *)</code></a></p>
-     */
-    public QByteArray(byte data[]) {
-        this(java.nio.ByteBuffer.wrap(data), data.length);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#prepend"><code>QByteArray::prepend(const char *)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray prepend(byte[] data) {
-        return this.prepend(java.nio.ByteBuffer.wrap(data), data.length);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#append"><code>QByteArray::append(const char *)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray append(byte[] a){
-        return append(java.nio.ByteBuffer.wrap(a), a.length);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#operator-eq-1"><code>QByteArray::operator=(const char*)</code></a></p>
-     */
-    @QtUninvokable
-    public final void assign(byte[] data){
-        assign(java.nio.ByteBuffer.wrap(data));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#operator-eq-1"><code>QByteArray::operator=(const char*)</code></a></p>
-     */
-    @QtUninvokable
-    public final void assign(String data){
-        assign(new QByteArray(data));
-    }
-    
-    /**
-     * @deprecated Use {@link #assign(io.qt.core.QByteArray)} instead.
-     */
-     @Deprecated
-    @QtUninvokable
-    public final void set(byte[] data){
-        set(java.nio.ByteBuffer.wrap(data));
-    }
-    
-    /**
-     * @deprecated Use {@link #assign(String)} instead.
-     */
-     @Deprecated
-    @QtUninvokable
-    public final void set(String data){
-        set(new QByteArray(data));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearraylist.html#join"><code>QByteArrayList::join()</code></a></p>
-     */
-    @QtUninvokable
-    public native static QByteArray join(java.util.Collection<QByteArray> stringList);
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearraylist.html#join"><code>QByteArrayList::join(char)</code></a></p>
-     */
-    @QtUninvokable
-    public native static QByteArray join(java.util.Collection<QByteArray> stringList, byte sep);
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearraylist.html#join"><code>QByteArrayList::join(QByteArray)</code></a></p>
-     */
-    @QtUninvokable
-    public native static QByteArray join(java.util.Collection<QByteArray> stringList, QByteArray sep);
-    
-}// class
-
-class QByteArray_5__ extends QByteArray {
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#QByteArray-1"><code>QByteArray::QByteArray(const char*)</code></a></p>
-     */
-    public QByteArray(String s) {
-        this();
-        append(s);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#QByteArray-1"><code>QByteArray::QByteArray(const char*,int)</code></a></p>
-     */
-    public QByteArray(byte data[], int size) {
-        this(java.nio.ByteBuffer.wrap(data), size==-1 ? data.length : Math.min(size, data.length));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#prepend"><code>QByteArray::prepend(const char *,int)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray prepend(byte[] data, int size) {
-        return this.prepend(java.nio.ByteBuffer.wrap(data), size==-1 ? data.length : Math.min(size, data.length));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#append"><code>QByteArray::append(const char *,int)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray append(byte[] a, int size){
-        return append(java.nio.ByteBuffer.wrap(a), size==-1 ? a.length : Math.min(size, a.length));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#count-2"><code>QByteArray::count(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final int count(byte data[]) {
-        return count(java.nio.ByteBuffer.wrap(data));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#contains-2"><code>QByteArray::contains(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean contains(byte data[]) {
-        return contains(java.nio.ByteBuffer.wrap(data));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#startsWith-2"><code>QByteArray::startsWith(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean startsWith(String str) {
-        return startsWith(new QByteArray(str));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#startsWith-2"><code>QByteArray::startsWith(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean startsWith(byte[] str) {
-        return startsWith(java.nio.ByteBuffer.wrap(str));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#contains-2"><code>QByteArray::contains(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean contains(String str) {
-        return contains(new QByteArray(str));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#contains-2"><code>QByteArray::contains(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final int count(String str) {
-        return count(new QByteArray(str));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#endsWith-2"><code>QByteArray::endsWith(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean endsWith(String str) {
-        return endsWith(new QByteArray(str));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#endsWith-2"><code>QByteArray::endsWith(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean endsWith(byte[] str) {
-        return endsWith(java.nio.ByteBuffer.wrap(str));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#prepend-3"><code>QByteArray::prepend(const char*)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray prepend(String str) {
-        return prepend(new QByteArray(str));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-1"><code>QByteArray::replace(int,int,const char*)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray replace(int index, int len, byte[] data) {
-        this.replace(index, len, java.nio.ByteBuffer.wrap(data), data.length);
-        return this;
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#insert-3"><code>QByteArray::insert(int,const char*)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray insert(int i, byte[] data) {
-        this.insert(i, java.nio.ByteBuffer.wrap(data), data.length);
-        return this;
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-8"><code>QByteArray::replace(QByteArray,const char*)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray replace(QByteArray before, String after) {
-        return replace(before, new QByteArray(after));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-8"><code>QByteArray::replace(const char*,QByteArray)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray replace(byte[] before, QByteArray after) {
-        return replace(new QByteArray(before), after);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-8"><code>QByteArray::replace(QByteArray,const char*)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray replace(QByteArray before, byte[] after) {
-        return replace(before, new QByteArray(after));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-5"><code>QByteArray::replace(const char*,const char*)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray replace(String before, String after) {
-        return replace(new QByteArray(before), new QByteArray(after));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-5"><code>QByteArray::replace(const char*,const char*)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray replace(byte[] before, byte[] after) {
-        return replace(new QByteArray(before), new QByteArray(after));
-    }
-}// class
-
-class QByteArray_6__ extends QByteArray {
 
     private static byte[] getBytes(String s) {
         if(s==null)
@@ -11386,444 +11091,38 @@ class QByteArray_6__ extends QByteArray {
     }
 
     /**
-     * <p>See <a href="@docRoot/qbytearray.html#QByteArray"><code>QByteArray::QByteArray(const char*)</code></a></p>
+     * <p>See <a href="@docRoot/qbytearray.html#QByteArray-1"><code>QByteArray::QByteArray(const char*)</code></a></p>
      */
-    public QByteArray(String s) {
+    public QByteArray(@NonNull String s) {
         this(getBytes(s));
     }
+    
+    /**
+     * <p>See <a href="@docRoot/qbytearraylist.html#join"><code>QByteArrayList::join()</code></a></p>
+     */
+    @QtUninvokable
+    public native static @NonNull QByteArray join(java.util.@NonNull Collection<@NonNull QByteArray> stringList);
+    
+    /**
+     * <p>See <a href="@docRoot/qbytearraylist.html#join"><code>QByteArrayList::join(char)</code></a></p>
+     */
+    @QtUninvokable
+    public native static @NonNull QByteArray join(java.util.@NonNull Collection<@NonNull QByteArray> stringList, byte sep);
+    
+    /**
+     * <p>See <a href="@docRoot/qbytearraylist.html#join"><code>QByteArrayList::join(QByteArray)</code></a></p>
+     */
+    @QtUninvokable
+    public native static @NonNull QByteArray join(java.util.@NonNull Collection<@NonNull QByteArray> stringList, @NonNull QByteArray sep);
+    
+}// class
 
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#QByteArray"><code>QByteArray::QByteArray(const char*,qsizetype)</code></a></p>
-     */
-    public QByteArray(byte data[], long size) {
-        this(java.nio.ByteBuffer.wrap(data), size==-1 ? data.length : Math.min(size, data.length));
-    }
+class QByteArray_5__ extends QByteArray {
 
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#prepend"><code>QByteArray::prepend(const char *,qsizetype)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray prepend(byte[] data, long size) {
-        return this.prepend(java.nio.ByteBuffer.wrap(data), size==-1 ? data.length : Math.min(size, data.length));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#append"><code>QByteArray::append(const char *,qsizetype)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray append(byte[] a, long size){
-        return append(java.nio.ByteBuffer.wrap(a), size==-1 ? a.length : Math.min(size, a.length));
-    }
+}// class
 
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#contains"><code>QByteArray::contains(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean contains(String str) {
-        return contains(new QByteArrayView(str));
-    }
+class QByteArray_6__ extends QByteArray {
 
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#count"><code>QByteArray::count(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long count(String str) {
-        return count(new QByteArrayView(str));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#endsWith"><code>QByteArray::endsWith(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean endsWith(String str) {
-        return endsWith(new QByteArrayView(str));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#endsWith"><code>QByteArray::endsWith(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean endsWith(byte[] str) {
-        return endsWith(new QByteArrayView(str));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#endsWith"><code>QByteArray::endsWith(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean endsWith(java.nio.ByteBuffer str) {
-        return endsWith(new QByteArrayView(str));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#endsWith"><code>QByteArray::endsWith(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean endsWith(QByteArray str) {
-        return endsWith(new QByteArrayView(str));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#prepend"><code>QByteArray::prepend(const char*)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray prepend(String str) {
-        return prepend(getBytes(str));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#startsWith"><code>QByteArray::startsWith(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean startsWith(String str) {
-        return startsWith(new QByteArrayView(str));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#startsWith"><code>QByteArray::startsWith(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean startsWith(byte[] str) {
-        return startsWith(new QByteArrayView(str));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#startsWith"><code>QByteArray::startsWith(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean startsWith(java.nio.ByteBuffer str) {
-        return startsWith(new QByteArrayView(str));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#startsWith"><code>QByteArray::startsWith(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean startsWith(QByteArray str) {
-        return startsWith(new QByteArrayView(str));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#append"><code>QByteArray::append(const char*)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray append(String a){
-        return append(getBytes(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#compare"><code>QByteArray::compare(const char*, Qt::CaseSensitivity)const</code></a></p>
-     */
-    @QtUninvokable
-    public final int compare(String str) {
-        return compare(str, Qt.CaseSensitivity.CaseSensitive);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#compare"><code>QByteArray::compare(const char*, Qt::CaseSensitivity)const</code></a></p>
-     */
-    @QtUninvokable
-    public final int compare(String str, Qt.CaseSensitivity cs) {
-        return compare(new QByteArrayView(str), cs);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#count"><code>QByteArray::count(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long count(byte data[]) {
-        return count(new QByteArrayView(data));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#contains"><code>QByteArray::contains(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean contains(byte data[]) {
-        return contains(new QByteArrayView(data));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#compare"><code>QByteArray::compare(const char*, Qt::CaseSensitivity)const</code></a></p>
-     */
-    @QtUninvokable
-    public final int compare(byte[] b) {
-        return compare(b, Qt.CaseSensitivity.CaseSensitive);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#compare"><code>QByteArray::compare(const char*, Qt::CaseSensitivity)const</code></a></p>
-     */
-    @QtUninvokable
-    public final int compare(byte[] b, Qt.CaseSensitivity cs) {
-        return compare(new QByteArrayView(b), cs);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#compare"><code>QByteArray::compare(const char*, Qt::CaseSensitivity)const</code></a></p>
-     */
-    @QtUninvokable
-    public final int compare(QByteArray b) {
-        return compare(b, Qt.CaseSensitivity.CaseSensitive);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#compare"><code>QByteArray::compare(const char*, Qt::CaseSensitivity)const</code></a></p>
-     */
-    @QtUninvokable
-    public final int compare(QByteArray b, Qt.CaseSensitivity cs) {
-        return compare(new QByteArrayView(b), cs);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#count"><code>QByteArray::count(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long count(java.nio.ByteBuffer data) {
-        return count(new QByteArrayView(data));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#count"><code>QByteArray::count(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long count(QByteArray data) {
-        return count(new QByteArrayView(data));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#contains"><code>QByteArray::contains(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean contains(java.nio.ByteBuffer data) {
-        return contains(new QByteArrayView(data));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#contains"><code>QByteArray::contains(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean contains(QByteArray data) {
-        return contains(new QByteArrayView(data));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#compare"><code>QByteArray::compare(const char*, Qt::CaseSensitivity)const</code></a></p>
-     */
-    @QtUninvokable
-    public final int compare(java.nio.ByteBuffer b) {
-        return compare(b, Qt.CaseSensitivity.CaseSensitive);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#compare"><code>QByteArray::compare(const char*, Qt::CaseSensitivity)const</code></a></p>
-     */
-    @QtUninvokable
-    public final int compare(java.nio.ByteBuffer b, Qt.CaseSensitivity cs) {
-        return compare(new QByteArrayView(b), cs);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#indexOf"><code>QByteArray::indexOf(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long indexOf(String strg) {
-        return indexOf(strg, (int)0);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#indexOf"><code>QByteArray::indexOf(const char*,qsizetype)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long indexOf(String strg, long from){
-        return indexOf(new QByteArrayView(strg), from);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#indexOf"><code>QByteArray::indexOf(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long indexOf(byte[] other) {
-        return indexOf(other, (int)0);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#indexOf"><code>QByteArray::indexOf(const char*,qsizetype)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long indexOf(byte[] other, long from){
-        return indexOf(new QByteArrayView(other), from);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#indexOf"><code>QByteArray::indexOf(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long indexOf(java.nio.ByteBuffer other) {
-        return indexOf(other, (int)0);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#indexOf"><code>QByteArray::indexOf(const char*,qsizetype)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long indexOf(java.nio.ByteBuffer other, long from){
-        return indexOf(new QByteArrayView(other), from);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#indexOf"><code>QByteArray::indexOf(QByteArray)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long indexOf(QByteArray other) {
-        return indexOf(other, (long)0);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#indexOf"><code>QByteArray::indexOf(QByteArray,qsizetype)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long indexOf(QByteArray other, long from){
-        return indexOf(new QByteArrayView(other), from);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf"><code>QByteArray::lastIndexOf(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long lastIndexOf(String strg) {
-        return lastIndexOf(strg, (long)0);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf"><code>QByteArray::lastIndexOf(const char*,qsizetype)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long lastIndexOf(String strg, long from){
-        return lastIndexOf(new QByteArrayView(strg), from);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf"><code>QByteArray::lastIndexOf(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long lastIndexOf(byte[] other) {
-        return lastIndexOf(other, (long)0);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf"><code>QByteArray::lastIndexOf(const char*,qsizetype)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long lastIndexOf(byte[] other, long from){
-        return lastIndexOf(new QByteArrayView(other), from);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf"><code>QByteArray::lastIndexOf(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long lastIndexOf(java.nio.ByteBuffer other) {
-        return lastIndexOf(other, (long)0);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf"><code>QByteArray::lastIndexOf(const char*,qsizetype)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long lastIndexOf(java.nio.ByteBuffer other, long from){
-        return lastIndexOf(new QByteArrayView(other), from);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf"><code>QByteArray::lastIndexOf(QByteArray)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long lastIndexOf(QByteArray other) {
-        return lastIndexOf(other, (long)0);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#lastIndexOf"><code>QByteArray::lastIndexOf(QByteArray,qsizetype)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long lastIndexOf(QByteArray other, long from){
-        return lastIndexOf(new QByteArrayView(other), from);
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace"><code>QByteArray::replace(qsizetype,qsizetype,QByteArrayView)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray replace(long index, long len, byte[] data) {
-        this.replace(index, len, java.nio.ByteBuffer.wrap(data), data.length);
-        return this;
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#insert"><code>QByteArray::insert(qsizetype,QByteArrayView)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray insert(long i, byte[] data) {
-        this.insert(i, java.nio.ByteBuffer.wrap(data), data.length);
-        return this;
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-4"><code>QByteArray::replace(QByteArrayView,QByteArrayView)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray replace(QByteArray before, byte[] after) {
-        return replace(new QByteArrayView(before), new QByteArrayView(after));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-4"><code>QByteArray::replace(QByteArrayView,QByteArrayView)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray replace(QByteArray before, String after) {
-        return replace(new QByteArrayView(before), new QByteArrayView(after));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-4"><code>QByteArray::replace(QByteArrayView,QByteArrayView)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray replace(byte[] before, String after) {
-        return replace(new QByteArrayView(before), new QByteArrayView(after));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-4"><code>QByteArray::replace(QByteArrayView,QByteArrayView)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray replace(byte[] before, QByteArray after) {
-        return replace(new QByteArrayView(before), new QByteArrayView(after));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-4"><code>QByteArray::replace(QByteArrayView,QByteArrayView)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray replace(String before, QByteArray after) {
-        return replace(new QByteArrayView(before), new QByteArrayView(after));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-4"><code>QByteArray::replace(QByteArrayView,QByteArrayView)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray replace(String before, byte[] after) {
-        return replace(new QByteArrayView(before), new QByteArrayView(after));
-    }
-
-    /**
-     * <p>See <a href="@docRoot/qbytearray.html#replace-4"><code>QByteArray::replace(QByteArrayView,QByteArrayView)</code></a></p>
-     */
-    @QtUninvokable
-    public final QByteArray replace(String before, String after) {
-        return replace(new QByteArrayView(before), new QByteArrayView(after));
-    }
 }// class
 
 class QByteArray_63__ extends QByteArray {
@@ -11831,31 +11130,47 @@ class QByteArray_63__ extends QByteArray {
      * <p>See <a href="@docRoot/qbytearraylist.html#join"><code>QByteArrayList::join(QByteArrayView)</code></a></p>
      */
     @QtUninvokable
-    public native static QByteArray join(java.util.Collection<QByteArray> stringList, QByteArrayView sep);
+    public native static @NonNull QByteArray join(java.util.@NonNull Collection<@NonNull QByteArray> stringList, @NonNull QByteArrayView sep);
 }// class
 
 class QByteArrayView___ extends QByteArray {
     
     /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#fromArray"><code>QByteArrayView::fromArray&lt;Byte,Size>(const Byte(&amp;)[Size])</code></a></p>
+     */
+    public static @NonNull QByteArrayView fromArray(byte @NonNull[] data){
+        return new QByteArrayView(data);
+    }
+
+    /**
      * <p>See <a href="@docRoot/qbytearrayview.html#QByteArrayView"><code>QByteArrayView::QByteArrayView(const char*)</code></a></p>
      */
-    public QByteArrayView(byte[] data){
+    public QByteArrayView(byte @NonNull[] data){
+        this(data, data.length);
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#QByteArrayView"><code>QByteArrayView::QByteArrayView(const char*, qsizetype)</code></a></p>
+     */
+    public QByteArrayView(byte @NonNull[] data, int size){
         super((QPrivateConstructor)null);
         Long[] pointerOut = {null};
-        initialize_native(this, data, pointerOut);
+        if(size<0 || size>data.length)
+            size = data.length;
+        initialize_native(this, data, size, pointerOut);
         if(pointerOut[0]!=null) {
             long pointer = pointerOut[0];
             purgeTask = ()->purgeBytes(pointer);
             QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);                
         }
     }
-    private native static void initialize_native(QByteArrayView instance, byte[] data, Long[] pointerOut);
+    private native static void initialize_native(QByteArrayView instance, byte[] data, int size, Long[] pointerOut);
     private native static void purgeBytes(long pointer);
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#QByteArrayView"><code>QByteArrayView::QByteArrayView(const char*)</code></a></p>
      */
-    public QByteArrayView(String data){
+    public QByteArrayView(@NonNull String data){
         super((QPrivateConstructor)null);
         Long[] pointerOut = {null};
         initialize_native(this, data, pointerOut);
@@ -11867,19 +11182,26 @@ class QByteArrayView___ extends QByteArray {
     }
     private native static void initialize_native(QByteArrayView instance, String data, Long[] pointerOut);
     private native static void purgeString(long pointer);
-    
+
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#QByteArrayView"><code>QByteArrayView::QByteArrayView(const char*)</code></a></p>
      */
-    public QByteArrayView(java.nio.ByteBuffer data){
+    public QByteArrayView(java.nio.@NonNull ByteBuffer data){
+        this(data, data.capacity());
+    }
+    
+    /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#QByteArrayView"><code>QByteArrayView::QByteArrayView(const char*, qsizetype)</code></a></p>
+     */
+    public QByteArrayView(java.nio.@NonNull ByteBuffer data, long size){
         super((QPrivateConstructor)null);
         if(data.isDirect()) {
-            initialize_native(this, data);
+            initialize_native(this, data, size);
             purgeTask = data::hashCode;
             QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);
         }else {
             Long[] pointerOut = {null};
-            initialize_native(this, data, pointerOut);
+            initialize_native(this, data, size, pointerOut);
             if(pointerOut[0]!=null) {
                 long pointer = pointerOut[0];
                 purgeTask = ()->purgeBuffer(pointer);
@@ -11887,14 +11209,14 @@ class QByteArrayView___ extends QByteArray {
             }
         }
     }
-    private native static void initialize_native(QByteArrayView instance, java.nio.ByteBuffer data);
-    private native static void initialize_native(QByteArrayView instance, java.nio.Buffer data, Long[] pointerOut);
+    private native static void initialize_native(QByteArrayView instance, java.nio.ByteBuffer data, long size);
+    private native static void initialize_native(QByteArrayView instance, java.nio.ByteBuffer data, long size, Long[] pointerOut);
     private native static void purgeBuffer(long pointer);
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#QByteArrayView"><code>QByteArrayView::QByteArrayView(QByteArray)</code></a></p>
      */
-    public QByteArrayView(QByteArray data){
+    public QByteArrayView(@NonNull QByteArray data){
         super((QPrivateConstructor)null);
         if(data!=null) {
             initialize_native(this, data);
@@ -11907,446 +11229,6 @@ class QByteArrayView___ extends QByteArray {
     private native static void initialize_native(QByteArrayView instance, QByteArray data);
     
     private Runnable purgeTask;
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#compare"><code>QByteArrayView::compare(QByteArray,Qt::CaseSensitivity)const</code></a></p>
-     */
-    @QtUninvokable
-    public final int compare(QByteArray a){
-        return compare(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#compare"><code>QByteArrayView::compare(QByteArray,Qt::CaseSensitivity)const</code></a></p>
-     */
-    @QtUninvokable
-    public final int compare(QByteArray a, Qt.CaseSensitivity cs){
-        return compare(new QByteArrayView(a), cs);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#compare"><code>QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</code></a></p>
-     */
-    @QtUninvokable
-    public final int compare(byte[] a){
-        return compare(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#compare"><code>QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</code></a></p>
-     */
-    @QtUninvokable
-    public final int compare(byte[] a, Qt.CaseSensitivity cs){
-        return compare(new QByteArrayView(a), cs);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#compare"><code>QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</code></a></p>
-     */
-    @QtUninvokable
-    public final int compare(java.nio.ByteBuffer a){
-        return compare(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#compare"><code>QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</code></a></p>
-     */
-    @QtUninvokable
-    public final int compare(java.nio.ByteBuffer a, Qt.CaseSensitivity cs){
-        return compare(new QByteArrayView(a), cs);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#compare"><code>QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</code></a></p>
-     */
-    @QtUninvokable
-    public final int compare(String a){
-        return compare(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#compare"><code>QByteArrayView::compare(const char*,Qt::CaseSensitivity)const</code></a></p>
-     */
-    @QtUninvokable
-    public final int compare(String a, Qt.CaseSensitivity cs){
-        return compare(new QByteArrayView(a), cs);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#contains"><code>QByteArrayView::contains(QByteArray)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean contains(QByteArray a){
-        return contains(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#contains"><code>QByteArrayView::contains(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean contains(byte[] a){
-        return contains(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#contains"><code>QByteArrayView::contains(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean contains(String a){
-        return contains(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#contains"><code>QByteArrayView::contains(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean contains(java.nio.ByteBuffer a){
-        return contains(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#QtUninvokable"><code>QByteArrayView::endsWith(QByteArray)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean endsWith(QByteArray a){
-        return endsWith(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#endsWith"><code>QByteArrayView::endsWith(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean endsWith(byte[] a){
-        return endsWith(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#endsWith"><code>QByteArrayView::endsWith(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean endsWith(String a){
-        return endsWith(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#endsWith"><code>QByteArrayView::endsWith(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean endsWith(java.nio.ByteBuffer a){
-        return endsWith(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#startsWith"><code>QByteArrayView::startsWith(QByteArray)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean startsWith(QByteArray a){
-        return startsWith(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#startsWith"><code>QByteArrayView::startsWith(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean startsWith(byte[] a){
-        return startsWith(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#startsWith"><code>QByteArrayView::startsWith(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean startsWith(String a){
-        return startsWith(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#startsWith"><code>QByteArrayView::startsWith(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final boolean startsWith(java.nio.ByteBuffer a){
-        return startsWith(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#count"><code>QByteArrayView::count(QByteArray)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long count(QByteArray a){
-        return count(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#count"><code>QByteArrayView::count(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long count(byte[] a){
-        return count(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#count"><code>QByteArrayView::count(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long count(String a){
-        return count(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#count"><code>QByteArrayView::count(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long count(java.nio.ByteBuffer a){
-        return count(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf"><code>QByteArrayView::indexOf(QByteArray)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long indexOf(QByteArray a){
-        return indexOf(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf"><code>QByteArrayView::indexOf(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long indexOf(byte[] a){
-        return indexOf(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf"><code>QByteArrayView::indexOf(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long indexOf(String a){
-        return indexOf(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf"><code>QByteArrayView::indexOf(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long indexOf(java.nio.ByteBuffer a){
-        return indexOf(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf"><code>QByteArrayView::indexOf(QByteArray,qsizetype)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long indexOf(QByteArray a, long from){
-        return indexOf(new QByteArrayView(a), from);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf"><code>QByteArrayView::indexOf(const char*,qsizetype)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long indexOf(byte[] a, long from){
-        return indexOf(new QByteArrayView(a), from);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf"><code>QByteArrayView::indexOf(const char*,qsizetype)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long indexOf(String a, long from){
-        return indexOf(new QByteArrayView(a), from);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#indexOf"><code>QByteArrayView::indexOf(const char*,qsizetype)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long indexOf(java.nio.ByteBuffer a, long from){
-        return indexOf(new QByteArrayView(a), from);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf"><code>QByteArrayView::lastIndexOf(QByteArray)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long lastIndexOf(QByteArray a){
-        return lastIndexOf(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf"><code>QByteArrayView::lastIndexOf(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long lastIndexOf(byte[] a){
-        return lastIndexOf(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf"><code>QByteArrayView::lastIndexOf(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long lastIndexOf(String a){
-        return lastIndexOf(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf"><code>QByteArrayView::lastIndexOf(const char*)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long lastIndexOf(java.nio.ByteBuffer a){
-        return lastIndexOf(new QByteArrayView(a));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf"><code>QByteArrayView::lastIndexOf(QByteArray,qsizetype)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long lastIndexOf(QByteArray a, long from){
-        return lastIndexOf(new QByteArrayView(a), from);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf"><code>QByteArrayView::lastIndexOf(const char*,qsizetype)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long lastIndexOf(byte[] a, long from){
-        return lastIndexOf(new QByteArrayView(a), from);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf"><code>QByteArrayView::lastIndexOf(const char*,qsizetype)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long lastIndexOf(String a, long from){
-        return lastIndexOf(new QByteArrayView(a), from);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#lastIndexOf"><code>QByteArrayView::lastIndexOf(const char*,qsizetype)const</code></a></p>
-     */
-    @QtUninvokable
-    public final long lastIndexOf(java.nio.ByteBuffer a, long from){
-        return lastIndexOf(new QByteArrayView(a), from);
-    }
-}// class
-
-class QStringConverter___{
-    
-    /**
-     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData"><code>QStringConverter::encodingForData(QByteArrayView,char16_t)</code></a></p>
-     */
-    public static java.util.Optional<QStringConverter.Encoding> encodingForHtml(QByteArray data){
-        return encodingForHtml(new QByteArrayView(data));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData"><code>QStringConverter::encodingForData(QByteArrayView,char16_t)</code></a></p>
-     */
-    public static java.util.Optional<QStringConverter.Encoding> encodingForData(QByteArray data){
-        return encodingForData(new QByteArrayView(data));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData"><code>QStringConverter::encodingForData(QByteArrayView,char16_t)</code></a></p>
-     */
-    public static java.util.Optional<QStringConverter.Encoding> encodingForData(QByteArray data, char expectedFirstCharacter){
-        return encodingForData(new QByteArrayView(data), expectedFirstCharacter);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qstringconverter.html#encodingForHtml"><code>QStringConverter::encodingForHtml(QByteArrayView)</code></a></p>
-     */
-    public static java.util.Optional<QStringConverter.Encoding> encodingForHtml(byte[] data){
-        return encodingForHtml(new QByteArrayView(data));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData"><code>QStringConverter::encodingForData(QByteArrayView,char16_t)</code></a></p>
-     */
-    public static java.util.Optional<QStringConverter.Encoding> encodingForData(byte[] data){
-        return encodingForData(new QByteArrayView(data));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData"><code>QStringConverter::encodingForData(QByteArrayView,char16_t)</code></a></p>
-     */
-    public static java.util.Optional<QStringConverter.Encoding> encodingForData(byte[] data, char expectedFirstCharacter){
-        return encodingForData(new QByteArrayView(data), expectedFirstCharacter);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qstringconverter.html#encodingForHtml"><code>QStringConverter::encodingForHtml(QByteArrayView)</code></a></p>
-     */
-    public static java.util.Optional<QStringConverter.Encoding> encodingForHtml(String data){
-        return encodingForHtml(new QByteArrayView(data));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData"><code>QStringConverter::encodingForData(QByteArrayView,char16_t)</code></a></p>
-     */
-    public static java.util.Optional<QStringConverter.Encoding> encodingForData(String data){
-        return encodingForData(new QByteArrayView(data));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData"><code>QStringConverter::encodingForData(QByteArrayView,char16_t)</code></a></p>
-     */
-    public static java.util.Optional<QStringConverter.Encoding> encodingForData(String data, char expectedFirstCharacter){
-        return encodingForData(new QByteArrayView(data), expectedFirstCharacter);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qstringconverter.html#encodingForHtml"><code>QStringConverter::encodingForHtml(QByteArrayView)</code></a></p>
-     */
-    public static java.util.Optional<QStringConverter.Encoding> encodingForHtml(java.nio.ByteBuffer data){
-        return encodingForHtml(new QByteArrayView(data));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData"><code>QStringConverter::encodingForData(QByteArrayView,char16_t)</code></a></p>
-     */
-    public static java.util.Optional<QStringConverter.Encoding> encodingForData(java.nio.ByteBuffer data){
-        return encodingForData(new QByteArrayView(data));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qstringconverter.html#encodingForData"><code>QStringConverter::encodingForData(QByteArrayView,char16_t)</code></a></p>
-     */
-    public static java.util.Optional<QStringConverter.Encoding> encodingForData(java.nio.ByteBuffer data, char expectedFirstCharacter){
-        return encodingForData(new QByteArrayView(data), expectedFirstCharacter);
-    }
-    
-}// class
-
-class QUuid_63__{
-    
-    /**
-     * <p>See <a href="@docRoot/quuid.html#fromRfc4122"><code>QUuid::fromRfc4122(QByteArrayView)</code></a></p>
-     */
-    public static QUuid fromRfc4122(QByteArray data){
-        return fromRfc4122(new QByteArrayView(data));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/quuid.html#fromRfc4122"><code>QUuid::fromRfc4122(QByteArrayView)</code></a></p>
-     */
-    public static QUuid fromRfc4122(byte[] data){
-        return fromRfc4122(new QByteArrayView(data));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/quuid.html#fromRfc4122"><code>QUuid::fromRfc4122(QByteArrayView)</code></a></p>
-     */
-    public static QUuid fromRfc4122(String data){
-        return fromRfc4122(new QByteArrayView(data));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/quuid.html#fromRfc4122"><code>QUuid::fromRfc4122(QByteArrayView)</code></a></p>
-     */
-    public static QUuid fromRfc4122(java.nio.ByteBuffer data){
-        return fromRfc4122(new QByteArrayView(data));
-    }
-    
 }// class
 
 class QIODevice_prefix__ extends QIODevice {
@@ -12355,14 +11237,14 @@ class QIODevice_prefix__ extends QIODevice {
          * @param buffer
          * @return new new QIODevice or null if no direct buffer
          */
-        public native static QIODevice fromDirectBuffer(java.nio.Buffer buffer);
+        public native static @NonNull QIODevice fromDirectBuffer(java.nio.@NonNull Buffer buffer);
         
         /**
          * Creates a new open QIODevice for reading from given InputStream
          * @param stream
          * @return new open read-only QIODevice
          */
-        public static QIODevice fromInputStream(java.io.InputStream stream) {
+        public static @NonNull QIODevice fromInputStream(java.io.@StrictNonNull InputStream stream) {
             return new QIODevice() {
                 {
                     setOpenMode(QIODevice.OpenModeFlag.ReadOnly);
@@ -12480,7 +11362,7 @@ class QIODevice_infix__ {
          * @param stream
          * @return new open write-only QIODevice
          */
-        public static QIODevice fromOutputStream(java.io.OutputStream stream) {
+        public static @NonNull QIODevice fromOutputStream(java.io.@StrictNonNull OutputStream stream) {
             return new QIODevice() {
                 {
                     setOpenMode(QIODevice.OpenModeFlag.WriteOnly);
@@ -12621,6 +11503,8 @@ class QAbstractFileEngine_UnMapExtensionOption___ extends QAbstractFileEngine_Un
 class QFutureInterfaceBase___ {
     @QtUninvokable
     public native final void reportException(Throwable e);
+
+    private Object __rcRunnable;
 }// class
 
 class QtFuture___ {
@@ -13139,28 +12023,28 @@ class QJsonDocument_5__{
     /**
      * <p>Overloaded function for {@link #fromRawData(java.nio.ByteBuffer, QJsonDocument.DataValidation)}.</p>
      */
-    public static QJsonDocument fromRawData(String data) {
+    public static @NonNull QJsonDocument fromRawData(@NonNull String data) {
         return fromRawData(data, QJsonDocument.DataValidation.Validate);
     }
     
     /**
      * <p>Overloaded function for {@link #fromRawData(java.nio.ByteBuffer, QJsonDocument.DataValidation)}.</p>
      */
-    public static QJsonDocument fromRawData(String data, QJsonDocument.DataValidation validation) {
+    public static @NonNull QJsonDocument fromRawData(@NonNull String data, QJsonDocument.@NonNull DataValidation validation) {
         return fromRawData(data.getBytes(), validation);
     }
     
     /**
      * <p>Overloaded function for {@link #fromRawData(java.nio.ByteBuffer, QJsonDocument.DataValidation)}.</p>
      */
-    public static QJsonDocument fromRawData(byte[] data) {
+    public static @NonNull QJsonDocument fromRawData(byte @NonNull[] data) {
         return fromRawData(data, QJsonDocument.DataValidation.Validate);
     }
     
     /**
      * <p>Overloaded function for {@link #fromRawData(java.nio.ByteBuffer, QJsonDocument.DataValidation)}.</p>
      */
-    public static QJsonDocument fromRawData(byte[] data, QJsonDocument.DataValidation validation) {
+    public static @NonNull QJsonDocument fromRawData(byte @NonNull[] data, QJsonDocument.@NonNull DataValidation validation) {
         java.nio.ByteBuffer buffer = java.nio.ByteBuffer.wrap(data);
         return fromRawData(buffer, buffer.capacity(), validation);
     }
@@ -13180,8 +12064,8 @@ class QLockFile__{
             }
             
             public final long pid;
-            public final String hostname;
-            public final String appname;
+            public final @NonNull String hostname;
+            public final @NonNull String appname;
     }
 }// class
 
@@ -13192,21 +12076,21 @@ class QPropertyAnimation___ extends QPropertyAnimation {
      * <p>Overloaded constructor for {@link #QPropertyAnimation(QObject,QByteArray,QObject)}
      * with <code>parent = null</code>.</p>
      */
-    public QPropertyAnimation(QObject target, String propertyName){
+    public QPropertyAnimation(@Nullable QObject target, @NonNull String propertyName){
         this(target, new QByteArray(propertyName), null);
     }
     
     /**
      * <p>Overloaded constructor for {@link #QPropertyAnimation(QObject,QByteArray,QObject)}.</p>
      */
-    public QPropertyAnimation(QObject target, String propertyName, QObject parent){
+    public QPropertyAnimation(@Nullable QObject target, @NonNull String propertyName, @Nullable QObject parent){
         this(target, new QByteArray(propertyName), parent);
     }
     
     /**
      * <p>Overloaded function for {@link #setPropertyName(QByteArray)}.</p>
      */
-    public final void setPropertyName(String propertyName)    {
+    public final void setPropertyName(@NonNull String propertyName)    {
         setPropertyName(new QByteArray(propertyName));
     }
     
@@ -13215,7 +12099,7 @@ class QPropertyAnimation___ extends QPropertyAnimation {
 class QMetaType_5__ extends QMetaType {
     private static int metaTypeIdByName(java.lang.String typeName) {return type(typeName);}
     
-    public static QMetaType fromObject(Object obj) {
+    public static @NonNull QMetaType fromObject(@Nullable Object obj) {
         if(obj==null)
             return new QMetaType(QMetaType.Type.Nullptr);
         Class<?> objClass = QtJambi_LibraryUtilities.internal.getClass(obj);
@@ -13247,7 +12131,7 @@ class QMetaType_5__ extends QMetaType {
 class QMetaType_6__ extends QMetaType {
     private static int metaTypeIdByName(java.lang.String typeName) {return fromName(typeName).id();}
     
-    public static QMetaType fromObject(Object obj) {
+    public static @NonNull QMetaType fromObject(@Nullable Object obj) {
         if(obj==null)
             return new QMetaType(QMetaType.Type.Nullptr);
         Class<?> objClass = QtJambi_LibraryUtilities.internal.getClass(obj);
@@ -13270,27 +12154,6 @@ class QMetaType_6__ extends QMetaType {
         }
         return QMetaType.fromType(objClass);
     }
-
-    /**
-     * <p>See <a href="@docRoot/qmetatype.html#fromName"><code>QMetaType::fromName(const char*)</code></a></p>
-     */
-    public static QMetaType fromName(String name){
-        return fromName(new QByteArrayView(name));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qmetatype.html#fromName"><code>QMetaType::fromName(QByteArray)</code></a></p>
-     */
-    public static QMetaType fromName(QByteArray name){
-        return fromName(new QByteArrayView(name));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qmetatype.html#fromName"><code>QMetaType::fromName(const char*)</code></a></p>
-     */
-    public static QMetaType fromName(byte[] name){
-        return fromName(new QByteArrayView(name));
-    }
     
 }// class
 
@@ -13300,7 +12163,7 @@ class QMetaType___ extends QMetaType {
      * Overloaded constructor for {@link #QMetaType(int)}.
      * @param type
      */
-    public QMetaType(QMetaType.Type type){
+    public QMetaType(QMetaType.@StrictNonNull Type type){
         this(type.value());
     }
     
@@ -13310,7 +12173,7 @@ class QMetaType___ extends QMetaType {
      */
     @Override
     @QtUninvokable
-    public final String toString() {
+    public final @NonNull String toString() {
         return ""+name();
     }
     
@@ -13318,7 +12181,7 @@ class QMetaType___ extends QMetaType {
      * @deprecated Use {@link #qRegisterMetaType(Class, QMetaType...)} instead.
      */
     @Deprecated
-    public static int registerMetaType(Class<?> clazz, QMetaType... instantiations){
+    public static int registerMetaType(@NonNull Class<?> clazz, @NonNull QMetaType @NonNull... instantiations){
         return qRegisterMetaType(clazz, instantiations);
     }
     
@@ -13326,7 +12189,7 @@ class QMetaType___ extends QMetaType {
      * @deprecated Use {@link #qMetaTypeId(Class, QMetaType...)} instead.
      */
     @Deprecated
-    public static int metaTypeId(Class<?> clazz, QMetaType... instantiations){
+    public static int metaTypeId(@NonNull Class<?> clazz, @NonNull QMetaType @NonNull... instantiations){
         return qMetaTypeId(clazz, instantiations);
     }
     
@@ -13352,7 +12215,7 @@ class QMetaType___ extends QMetaType {
      * @param datastreamOutFn (only lambda expressions allowed)
      * @return the registered meta type
      */
-    public static <T> int registerDataStreamOperators(DataStreamInFn<T> datastreamInFn, DataStreamOutFn<T> datastreamOutFn) {
+    public static <T> int registerDataStreamOperators(@StrictNonNull DataStreamInFn<T> datastreamInFn, @StrictNonNull DataStreamOutFn<T> datastreamOutFn) {
         java.util.Objects.requireNonNull(datastreamInFn);
         java.util.Objects.requireNonNull(datastreamOutFn);
         int[] datastreamInTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(DataStreamInFn.class, datastreamInFn);
@@ -13383,7 +12246,7 @@ class QMetaType___ extends QMetaType {
      * @param debugstreamFn (only lambda expressions allowed)
      * @return the registered meta type
      */
-    public static <T> int registerDebugStreamOperator(DebugStreamFn<T> debugstreamFn) {
+    public static <T> int registerDebugStreamOperator(@StrictNonNull DebugStreamFn<T> debugstreamFn) {
         java.util.Objects.requireNonNull(debugstreamFn);
         int[] debugstreamTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(DebugStreamFn.class, debugstreamFn);
         Class<?>[] debugstreamClassTypes = QtJambi_LibraryUtilities.internal.lambdaClassTypes(DebugStreamFn.class, debugstreamFn);
@@ -13409,7 +12272,7 @@ class QMetaType___ extends QMetaType {
      * @param debugstreamFn (only lambda expressions allowed)
      * @return the registered meta type
      */
-    public static <T1,T2> boolean registerConverter(ConverterFn<T1,T2> converterFn) {
+    public static <T1,T2> boolean registerConverter(@StrictNonNull ConverterFn<T1,T2> converterFn) {
         java.util.Objects.requireNonNull(converterFn);
         int[] converterTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(ConverterFn.class, converterFn);
         Class<?>[] converterClassTypes = QtJambi_LibraryUtilities.internal.lambdaClassTypes(ConverterFn.class, converterFn);
@@ -13428,7 +12291,7 @@ class QMetaType___ extends QMetaType {
      * @return java class
      */
     @QtUninvokable
-    public final Class<?> javaType(){
+    public final @Nullable Class<?> javaType(){
         return javaType(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     
@@ -13437,14 +12300,14 @@ class QMetaType___ extends QMetaType {
      * @return java class
      */
     @QtUninvokable
-    public static native Class<?> javaType(int metaTypeId);
+    public static native @Nullable Class<?> javaType(int metaTypeId);
 
     /**
      * Interface super type for all generic classes representing a QMetaType-registered but Java-unknown value type.
      */
     public interface GenericTypeInterface{
         @QtUninvokable
-        public QMetaType metaType();
+        public @NonNull QMetaType metaType();
     }
     
     /**
@@ -13467,10 +12330,10 @@ class QMetaType___ extends QMetaType {
         public int ordinal() { return -1; }
         
         @Override 
-        public String name() { return "unknown"; }
+        public @NonNull String name() { return "unknown"; }
         
         @Override 
-        public Class<? extends QtFlagEnumerator> getDeclaringClass() { return GenericFlag.class; }
+        public @NonNull Class<? extends QtFlagEnumerator> getDeclaringClass() { return GenericFlag.class; }
     }
     
     /**
@@ -13561,7 +12424,7 @@ class QMetaType___ extends QMetaType {
     
         
         @Override
-        public final QMetaType metaType() {
+        public final @NonNull QMetaType metaType() {
             return new QMetaType(type);
         }
     
@@ -13571,14 +12434,14 @@ class QMetaType___ extends QMetaType {
         }
     
         @Override
-        public final String name() {
+        public final @NonNull String name() {
             return name==null ? "unknown" : name;
         }
         
         abstract String valueString();
     
         @Override
-        public String toString() {
+        public @NonNull String toString() {
             if(name==null) {
                 return String.format("%1$s(%2$s)", typeName(type), valueString());
             }else {
@@ -13596,7 +12459,7 @@ class QMetaType___ extends QMetaType {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (this == obj)
                 return true;
             if (obj == null)
@@ -13633,7 +12496,7 @@ class QMetaType___ extends QMetaType {
         }
     
         @Override
-        public Class<? extends QtEnumerator> getDeclaringClass() {
+        public @NonNull Class<? extends QtEnumerator> getDeclaringClass() {
             return GenericEnumerator.class;
         }
     
@@ -13650,7 +12513,7 @@ class QMetaType___ extends QMetaType {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (this == obj)
                 return true;
             if (!super.equals(obj))
@@ -13682,7 +12545,7 @@ class QMetaType___ extends QMetaType {
         }
     
         @Override
-        public Class<? extends QtByteEnumerator> getDeclaringClass() {
+        public @NonNull Class<? extends QtByteEnumerator> getDeclaringClass() {
             return GenericByteEnumerator.class;
         }
     
@@ -13699,7 +12562,7 @@ class QMetaType___ extends QMetaType {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (this == obj)
                 return true;
             if (!super.equals(obj))
@@ -13731,7 +12594,7 @@ class QMetaType___ extends QMetaType {
         }
     
         @Override
-        public Class<? extends QtShortEnumerator> getDeclaringClass() {
+        public @NonNull Class<? extends QtShortEnumerator> getDeclaringClass() {
             return GenericShortEnumerator.class;
         }
     
@@ -13748,7 +12611,7 @@ class QMetaType___ extends QMetaType {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (this == obj)
                 return true;
             if (!super.equals(obj))
@@ -13780,7 +12643,7 @@ class QMetaType___ extends QMetaType {
         }
     
         @Override
-        public Class<? extends QtLongEnumerator> getDeclaringClass() {
+        public @NonNull Class<? extends QtLongEnumerator> getDeclaringClass() {
             return GenericLongEnumerator.class;
         }
     
@@ -13797,7 +12660,7 @@ class QMetaType___ extends QMetaType {
         }
 
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals(@Nullable Object obj) {
             if (this == obj)
                 return true;
             if (!super.equals(obj))
@@ -13822,7 +12685,7 @@ class QMetaType___ extends QMetaType {
         private native java.nio.ByteBuffer buffer(int type);
         
         @Override
-        public GenericValue clone() {
+        public @NonNull GenericValue clone() {
             return clone(type);
         }
 
@@ -13830,11 +12693,11 @@ class QMetaType___ extends QMetaType {
         private final int type = QMetaType.Type.UnknownType.value();
         
         @QtUninvokable
-        public QMetaType metaType() {
+        public @NonNull QMetaType metaType() {
             return new QMetaType(type);
         }
         
-        public java.nio.ByteBuffer buffer(){
+        public java.nio.@NonNull ByteBuffer buffer(){
             return buffer(type);
         }
     }
@@ -13849,7 +12712,7 @@ class QMetaType___ extends QMetaType {
         private final int type = QMetaType.Type.UnknownType.value();
         
         @QtUninvokable
-        public QMetaType metaType() {
+        public @NonNull QMetaType metaType() {
             return new QMetaType(type);
         }
     }
@@ -13864,7 +12727,7 @@ class QMetaType___ extends QMetaType {
         private final int type = QMetaType.Type.UnknownType.value();
         
         @QtUninvokable
-        public QMetaType metaType() {
+        public @NonNull QMetaType metaType() {
             return new QMetaType(type);
         }
     }
@@ -13912,7 +12775,7 @@ class QVariant_5__ {
      * @deprecated Use {@link QDataStream#writeObject(Object)} instead.
      */
     @Deprecated
-    public static void saveObject(@StrictNonNull QDataStream stream, Object object){
+    public static void saveObject(@StrictNonNull QDataStream stream, @Nullable Object object){
         saveObject(stream, object, null);
     }
     
@@ -13920,7 +12783,7 @@ class QVariant_5__ {
      * @deprecated Use {@link QDataStream#writeObject(Object)} instead.
      */
     @Deprecated
-    public static void saveObject(@StrictNonNull QDataStream stream, Object object, Boolean[] ok){
+    public static void saveObject(@StrictNonNull QDataStream stream, @Nullable Object object, @Nullable Boolean @Nullable[] ok){
         QVariant variant = new QVariant(object);
         int metaType = variant.userType();
         stream.append(metaType);
@@ -13933,7 +12796,7 @@ class QVariant_5__ {
      * @deprecated Use {@link QDataStream#readObject(Class, QMetaType...)} instead.
      */
     @Deprecated
-    public static Object loadObject(@StrictNonNull QDataStream stream){
+    public static @Nullable Object loadObject(@StrictNonNull QDataStream stream){
         return loadObject(stream, null);
     }
     
@@ -13941,7 +12804,7 @@ class QVariant_5__ {
      * @deprecated Use {@link QDataStream#readObject(Class, QMetaType...)} instead.
      */
     @Deprecated
-    public static Object loadObject(@StrictNonNull QDataStream stream, Boolean ok[]){
+    public static @Nullable Object loadObject(@StrictNonNull QDataStream stream, @Nullable Boolean @Nullable[] ok){
         java.util.Optional<Object> optional = QMetaType.load(stream, stream.readInt());
         if(ok!=null && ok.length>0)
             ok[0] = optional.isPresent();
@@ -13952,7 +12815,7 @@ class QVariant_5__ {
      * Convenient static function for type conversion.
      * @see {@link #convert(int)}
      */
-    public static Object convert(Object obj, int metaType) {
+    public static Object convert(@Nullable Object obj, int metaType) {
         return convert(obj, metaType, null);
     }
     
@@ -13960,7 +12823,7 @@ class QVariant_5__ {
      * Convenient static function for type conversion.
      * @see {@link #convert(int)}
      */
-    public static Object convert(Object obj, int metaType, boolean ok[]) {
+    public static Object convert(@Nullable Object obj, int metaType, boolean @Nullable[] ok) {
         if(obj==null){
             if(ok!=null && ok.length>0)
                 ok[0] = true;
@@ -13986,7 +12849,7 @@ class QVariant_5__ {
      * Convenient static function for type conversion.
      * @see {@link #convert(int)}
      */
-    public static Object convert(Object obj, @StrictNonNull QMetaType metaType) {
+    public static Object convert(@Nullable Object obj, @StrictNonNull QMetaType metaType) {
         return convert(obj, metaType.id(), null);
     }
     
@@ -13994,7 +12857,7 @@ class QVariant_5__ {
      * Convenient static function for type conversion.
      * @see {@link #convert(int)}
      */
-    public static Object convert(Object obj, @StrictNonNull QMetaType metaType, boolean ok[]) {
+    public static Object convert(@Nullable Object obj, @StrictNonNull QMetaType metaType, boolean @Nullable[] ok) {
         return convert(obj, metaType.id(), ok);
     }
     
@@ -14002,7 +12865,7 @@ class QVariant_5__ {
      * Convenient static function for type conversion.
      * @see {@link #convert(int)}
      */
-    public static Object convert(Object obj, QMetaType.@StrictNonNull Type metaType) {
+    public static Object convert(@Nullable Object obj, QMetaType.@StrictNonNull Type metaType) {
         return convert(obj, metaType.value(), null);
     }
     
@@ -14010,7 +12873,7 @@ class QVariant_5__ {
      * Convenient static function for type conversion.
      * @see {@link #convert(int)}
      */
-    public static Object convert(Object obj, QMetaType.@StrictNonNull Type metaType, boolean ok[]) {
+    public static Object convert(@Nullable Object obj, QMetaType.@StrictNonNull Type metaType, boolean @Nullable[] ok) {
         return convert(obj, metaType.value(), ok);
     }
     
@@ -14018,7 +12881,7 @@ class QVariant_5__ {
      * Convenient static function for type conversion.
      * @see {@link #convert(int)}
      */
-    public static Object convert(Object obj, @StrictNonNull Type metaType) {
+    public static Object convert(@Nullable Object obj, @StrictNonNull Type metaType) {
         return convert(obj, metaType.value(), null);
     }
     
@@ -14026,7 +12889,7 @@ class QVariant_5__ {
      * Convenient static function for type conversion.
      * @see {@link #convert(int)}
      */
-    public static Object convert(Object obj, @StrictNonNull Type metaType, boolean ok[]) {
+    public static Object convert(@Nullable Object obj, @StrictNonNull Type metaType, boolean @Nullable[] ok) {
         return convert(obj, metaType.value(), ok);
     }
     
@@ -14065,7 +12928,7 @@ class QVariant_5__ {
      * @see {@link #canConvert(int)}
      */
     @Deprecated
-    public static boolean canConvert(Object obj, int targetType) {
+    public static boolean canConvert(@Nullable Object obj, int targetType) {
         QMetaType objectType = QMetaType.fromObject(obj);
         if(objectType.id()==targetType)
             return true;
@@ -14077,7 +12940,7 @@ class QVariant_5__ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(int)}
      */
-    public static boolean canConvert(Object obj, QMetaType.@StrictNonNull Type type) {
+    public static boolean canConvert(@Nullable Object obj, QMetaType.@StrictNonNull Type type) {
         return canConvert(obj, type.value());
     }
 }// class
@@ -14087,7 +12950,7 @@ class QVariant_6__ {
     /**
      * <p>See <a href="https://doc.qt.io/qt/qvariant.html#QVariant-1"><code>QVariant::QVariant(QMetaType,const void*)</code></a></p>
      */
-    public QVariant(QMetaType.@NonNull Type type, java.lang.Object copy){
+    public QVariant(QMetaType.@NonNull Type type, java.lang.@Nullable Object copy){
         this(new QMetaType(type), copy);
     }
     
@@ -14095,7 +12958,7 @@ class QVariant_6__ {
      * @deprecated Use {@link QDataStream#writeObject(Object)} instead.
      */
     @Deprecated
-    public static void saveObject(@StrictNonNull QDataStream stream, Object object){
+    public static void saveObject(@StrictNonNull QDataStream stream, @Nullable Object object){
         saveObject(stream, object, null);
     }
     
@@ -14103,7 +12966,7 @@ class QVariant_6__ {
      * @deprecated Use {@link QDataStream#writeObject(Object)} instead.
      */
     @Deprecated
-    public static void saveObject(@StrictNonNull QDataStream stream, Object object, Boolean[] ok){
+    public static void saveObject(@StrictNonNull QDataStream stream, @Nullable Object object, Boolean @Nullable[] ok){
         QVariant variant = new QVariant(object);
         QMetaType metaType = variant.metaType();
         stream.append(metaType.id());
@@ -14124,7 +12987,7 @@ class QVariant_6__ {
      * @deprecated Use {@link QDataStream#readObject(Class, QMetaType...)} instead.
      */
     @Deprecated
-    public static Object loadObject(@StrictNonNull QDataStream stream, Boolean ok[]){
+    public static Object loadObject(@StrictNonNull QDataStream stream, Boolean @Nullable[] ok){
         QMetaType metaType = new QMetaType(stream.readInt());
         java.util.Optional<Object> optional = metaType.load(stream);
         if(ok!=null && ok.length>0)
@@ -14136,7 +12999,7 @@ class QVariant_6__ {
      * Convenient static function for type conversion.
      * @see {@link #convert(QMetaType)}
      */
-    public static Object convert(Object obj, @StrictNonNull QMetaType metaType) {
+    public static Object convert(@Nullable Object obj, @StrictNonNull QMetaType metaType) {
         return convert(obj, metaType, null);
     }
     
@@ -14144,7 +13007,7 @@ class QVariant_6__ {
      * Convenient static function for type conversion.
      * @see {@link #convert(QMetaType)}
      */
-    public static Object convert(Object obj, @StrictNonNull QMetaType metaType, boolean ok[]) {
+    public static Object convert(@Nullable Object obj, @StrictNonNull QMetaType metaType, boolean @Nullable[] ok) {
         java.util.Objects.requireNonNull(metaType);
         if(obj==null){
             if(ok!=null && ok.length>0)
@@ -14171,7 +13034,7 @@ class QVariant_6__ {
      * Convenient static function for type conversion.
      * @see {@link #convert(int)}
      */
-    public static Object convert(Object obj, int metaType) {
+    public static Object convert(@Nullable Object obj, int metaType) {
         return convert(obj, metaType, null);
     }
     
@@ -14179,7 +13042,7 @@ class QVariant_6__ {
      * Convenient static function for type conversion.
      * @see {@link #convert(QMetaType)}
      */
-    public static Object convert(Object obj, int metaType, boolean ok[]) {
+    public static Object convert(@Nullable Object obj, int metaType, boolean @Nullable[] ok) {
         return convert(obj, new QMetaType(metaType), ok);
     }
     
@@ -14195,7 +13058,7 @@ class QVariant_6__ {
      * Convenient static function for type conversion.
      * @see {@link #convert(QMetaType)}
      */
-    public static Object convert(Object obj, QMetaType.@NonNull Type type) {
+    public static Object convert(@Nullable Object obj, QMetaType.@NonNull Type type) {
         return convert(obj, new QMetaType(type));
     }
     
@@ -14203,7 +13066,7 @@ class QVariant_6__ {
      * Convenient static function for type conversion.
      * @see {@link #convert(QMetaType)}
      */
-    public static Object convert(Object obj, QMetaType.@NonNull Type type, boolean ok[]) {
+    public static Object convert(@Nullable Object obj, QMetaType.@NonNull Type type, boolean @Nullable[] ok) {
         return convert(obj, new QMetaType(type), ok);
     }
     
@@ -14220,7 +13083,7 @@ class QVariant_6__ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvert(Object obj, @StrictNonNull QMetaType type) {
+    public static boolean canConvert(@Nullable Object obj, @StrictNonNull QMetaType type) {
         QMetaType objectType = QMetaType.fromObject(obj);
         if(objectType.equals(type))
             return true;
@@ -14246,7 +13109,7 @@ class QVariant_6__ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvert(Object obj, QMetaType.@NonNull Type type) {
+    public static boolean canConvert(@Nullable Object obj, QMetaType.@NonNull Type type) {
         return canConvert(obj, new QMetaType(type));
     }
     
@@ -14255,7 +13118,7 @@ class QVariant_6__ {
      * @see {@link #canConvert(QMetaType)}
      */
     @Deprecated
-    public static boolean canConvert(Object obj, int targetType) {
+    public static boolean canConvert(@Nullable Object obj, int targetType) {
         return canConvert(obj, new QMetaType(targetType));
     }
 }// class
@@ -14287,7 +13150,7 @@ class QVariant___ {
      * Use {@link QMetaType#fromObject(Object)} instead.
      */
     @Deprecated
-    public static int type(Object obj) {
+    public static int type(@Nullable Object obj) {
         return QMetaType.fromObject(obj).id();
     }
     
@@ -14296,7 +13159,7 @@ class QVariant___ {
      * @see {@link #convert(QMetaType)}
      */
     @SuppressWarnings("unchecked")
-    public static <T> T convert(Object obj, @StrictNonNull Class<T> cl, @StrictNonNull QMetaType @StrictNonNull... instantiations) {
+    public static <T> T convert(@Nullable Object obj, @StrictNonNull Class<T> cl, @StrictNonNull QMetaType @StrictNonNull... instantiations) {
         boolean[] ok = {false};
         Object result = convert(obj, QMetaType.fromType(cl, instantiations), ok);
         Class<?> _cl = cl.isPrimitive() ? getComplexType(cl) : cl;
@@ -14307,7 +13170,7 @@ class QVariant___ {
      * Use {@link #isValid()} instead.
      */
     @Deprecated
-    public static boolean isValid(Object variant) {
+    public static boolean isValid(@Nullable Object variant) {
         return new QVariant(variant).isValid();
     }
         
@@ -14331,7 +13194,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static <E extends Enum<?>> boolean canConvertToEnum(@StrictNonNull Class<E> enumClass, Object obj)
+    public static <E extends Enum<?>> boolean canConvertToEnum(@StrictNonNull Class<E> enumClass, @Nullable Object obj)
     {
         if(enumClass.isInstance(obj)) {
             return true;
@@ -14356,7 +13219,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToFlags(Object obj)
+    public static boolean canConvertToFlags(@Nullable Object obj)
     {
         return obj instanceof QFlags || new QVariant(obj).canConvert(QMetaType.Type.Int);
     }
@@ -14365,7 +13228,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static <E extends Enum<?>> E toEnum(@StrictNonNull Class<E> enumClass, Object obj) {
+    public static <E extends Enum<?>> E toEnum(@StrictNonNull Class<E> enumClass, @Nullable Object obj) {
         return toEnum(enumClass, obj, (boolean[])null);
     }
     
@@ -14373,7 +13236,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static <E extends Enum<?>> E toEnum(@StrictNonNull Class<E> enumClass, Object obj, boolean ok[]) {
+    public static <E extends Enum<?>> E toEnum(@StrictNonNull Class<E> enumClass, @Nullable Object obj, boolean @Nullable[] ok) {
         if(enumClass.isInstance(obj)) {
             try {
                 if(ok!=null && ok.length>0)
@@ -14432,7 +13295,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #convert(QMetaType)}
      */
-    public static <F extends QFlags<?>> F toFlags(@StrictNonNull Class<F> flagsClass, Object obj) {
+    public static <F extends QFlags<?>> F toFlags(@StrictNonNull Class<F> flagsClass, @Nullable Object obj) {
         return toFlags(flagsClass, obj, null);
     }
     
@@ -14440,7 +13303,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #convert(QMetaType)}
      */
-    public static <F extends QFlags<?>> F toFlags(@StrictNonNull Class<F> flagsClass, Object obj, boolean ok[]) {
+    public static <F extends QFlags<?>> F toFlags(@StrictNonNull Class<F> flagsClass, @Nullable Object obj, boolean @Nullable[] ok) {
         if(flagsClass.isInstance(obj)) {
             try{
                 if(ok!=null && ok.length>0)
@@ -14467,7 +13330,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToDouble(Object obj){
+    public static boolean canConvertToDouble(@Nullable Object obj){
         return obj instanceof Number || canConvert(obj, QMetaType.Type.Double);
     }
     
@@ -14475,13 +13338,13 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toDouble()}
      */
-    public static double toDouble(Object obj) { return toDouble(obj, null); }
+    public static double toDouble(@Nullable Object obj) { return toDouble(obj, null); }
     
     /**
      * Convenient static function for type conversion.
      * @see {@link #toDouble()}
      */
-    public static double toDouble(Object obj, boolean ok[]){
+    public static double toDouble(@Nullable Object obj, boolean @Nullable[] ok){
         if (obj==null) {
             if(ok!=null && ok.length>0)
                 ok[0] = true;
@@ -14500,7 +13363,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToFloat(Object obj){
+    public static boolean canConvertToFloat(@Nullable Object obj){
         return obj instanceof Number || canConvert(obj, QMetaType.Type.Float);
     }
     
@@ -14508,13 +13371,13 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toFloat()}
      */
-    public static float toFloat(Object obj) { return toFloat(obj, null); }
+    public static float toFloat(@Nullable Object obj) { return toFloat(obj, null); }
     
     /**
      * Convenient static function for type conversion.
      * @see {@link #toFloat()}
      */
-    public static float toFloat(Object obj, boolean ok[]){
+    public static float toFloat(@Nullable Object obj, boolean @Nullable[] ok){
         if (obj==null) {
             if(ok!=null && ok.length>0)
                 ok[0] = true;
@@ -14537,7 +13400,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToString(Object obj){
+    public static boolean canConvertToString(@Nullable Object obj){
         return true;
     }
 
@@ -14545,7 +13408,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toString()}
      */
-    public static @NonNull String toString(Object obj){
+    public static @NonNull String toString(@Nullable Object obj){
         return obj==null ? new String() : ""+obj;
     }
     
@@ -14553,7 +13416,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToBoolean(Object obj){
+    public static boolean canConvertToBoolean(@Nullable Object obj){
         return obj instanceof Boolean || obj instanceof Number || canConvert(obj, QMetaType.Type.Bool);
     }
 
@@ -14561,7 +13424,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toBoolean()}
      */
-    public static boolean toBoolean(Object obj){
+    public static boolean toBoolean(@Nullable Object obj){
         if (obj==null) {
             return false;
         } else if (obj instanceof Boolean) {
@@ -14577,7 +13440,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToByteArray(Object obj){
+    public static boolean canConvertToByteArray(@Nullable Object obj){
         return obj instanceof QByteArray || canConvert(obj, QMetaType.Type.QByteArray);
     }
     
@@ -14585,7 +13448,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toByteArray()}
      */
-    public static @NonNull QByteArray toByteArray(Object obj)
+    public static @NonNull QByteArray toByteArray(@Nullable Object obj)
     {
         if(obj instanceof QByteArray) {
             if(!((QtObjectInterface)obj).isDisposed())
@@ -14603,7 +13466,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToBitArray(Object obj)
+    public static boolean canConvertToBitArray(@Nullable Object obj)
     {
         return obj instanceof QBitArray || canConvert(obj, QMetaType.Type.QBitArray);
     }
@@ -14612,7 +13475,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toBitArray()}
      */
-    public static @NonNull QBitArray toBitArray(Object obj)
+    public static @NonNull QBitArray toBitArray(@Nullable Object obj)
     {
         if(obj instanceof QBitArray) {
             if(!((QtObjectInterface)obj).isDisposed())
@@ -14630,7 +13493,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToChar(Object obj)
+    public static boolean canConvertToChar(@Nullable Object obj)
     {
         return obj instanceof Character || canConvert(obj, QMetaType.Type.QChar);
     }
@@ -14639,7 +13502,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toChar()}
      */
-    public static char toChar(Object obj)
+    public static char toChar(@Nullable Object obj)
     {
         if(obj==null)
             return 0;
@@ -14653,7 +13516,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToDate(Object obj)
+    public static boolean canConvertToDate(@Nullable Object obj)
     {
         return obj instanceof QDate || canConvert(obj, QMetaType.Type.QDate);
     }
@@ -14662,7 +13525,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toDate()}
      */
-    public static @NonNull QDate toDate(Object obj)
+    public static @NonNull QDate toDate(@Nullable Object obj)
     {
         if(obj instanceof QDate) {
             if(!((QtObjectInterface)obj).isDisposed())
@@ -14680,7 +13543,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToDateTime(Object obj)
+    public static boolean canConvertToDateTime(@Nullable Object obj)
     {
         return obj instanceof QDateTime || canConvert(obj, QMetaType.Type.QDateTime);
     }
@@ -14689,7 +13552,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toDateTime()}
      */
-    public static @NonNull QDateTime toDateTime(Object obj)
+    public static @NonNull QDateTime toDateTime(@Nullable Object obj)
     {
         if(obj instanceof QDateTime) {
             if(!((QtObjectInterface)obj).isDisposed())
@@ -14707,7 +13570,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToInt(Object obj)
+    public static boolean canConvertToInt(@Nullable Object obj)
     {
         return obj instanceof Number || canConvert(obj, QMetaType.Type.Int);
     }
@@ -14716,13 +13579,13 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toInt()}
      */
-    public static int toInt(Object obj) { return toInt(obj, null); }
+    public static int toInt(@Nullable Object obj) { return toInt(obj, null); }
     
     /**
      * Convenient static function for type conversion.
      * @see {@link #toFloat()}
      */
-    public static int toInt(Object obj, boolean ok[]){
+    public static int toInt(@Nullable Object obj, boolean @Nullable[] ok){
         if(obj==null) {
             if(ok!=null && ok.length>0)
                 ok[0] = true;
@@ -14741,7 +13604,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToLine(Object obj)
+    public static boolean canConvertToLine(@Nullable Object obj)
     {
         return obj instanceof QLine || canConvert(obj, QMetaType.Type.QLine);
     }
@@ -14750,7 +13613,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toLine()}
      */
-    public static @NonNull QLine toLine(Object obj)
+    public static @NonNull QLine toLine(@Nullable Object obj)
     {
         if(obj instanceof QLine) {
             if(!((QtObjectInterface)obj).isDisposed())
@@ -14768,7 +13631,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToLineF(Object obj)
+    public static boolean canConvertToLineF(@Nullable Object obj)
     {
         return obj instanceof QLineF || canConvert(obj, QMetaType.Type.QLineF);
     }
@@ -14777,7 +13640,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toLineF()}
      */
-    public static @NonNull QLineF toLineF(Object obj)
+    public static @NonNull QLineF toLineF(@Nullable Object obj)
     {
         if(obj instanceof QLineF) {
             if(!((QtObjectInterface)obj).isDisposed())
@@ -14795,7 +13658,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToLocale(Object obj)
+    public static boolean canConvertToLocale(@Nullable Object obj)
     {
         return obj instanceof QLocale || canConvert(obj, QMetaType.Type.QLocale);
     }
@@ -14804,7 +13667,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toLocale()}
      */
-    public static @NonNull QLocale toLocale(Object obj)
+    public static @NonNull QLocale toLocale(@Nullable Object obj)
     {
         if(obj instanceof QLocale) {
             if(!((QtObjectInterface)obj).isDisposed())
@@ -14822,7 +13685,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToPoint(Object obj)
+    public static boolean canConvertToPoint(@Nullable Object obj)
     {
         return obj instanceof QPoint || canConvert(obj, QMetaType.Type.QPoint);
     }
@@ -14831,7 +13694,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toPoint()}
      */
-    public static @NonNull QPoint toPoint(Object obj)
+    public static @NonNull QPoint toPoint(@Nullable Object obj)
     {
         if(obj instanceof QPoint) {
             if(!((QtObjectInterface)obj).isDisposed())
@@ -14849,7 +13712,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToPointF(Object obj)
+    public static boolean canConvertToPointF(@Nullable Object obj)
     {
         return obj instanceof QPointF || canConvert(obj, QMetaType.Type.QPointF);
     }
@@ -14858,7 +13721,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toPointF()}
      */
-    public static @NonNull QPointF toPointF(Object obj)
+    public static @NonNull QPointF toPointF(@Nullable Object obj)
     {
         if(obj instanceof QPointF) {
             if(!((QtObjectInterface)obj).isDisposed())
@@ -14876,7 +13739,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToRect(Object obj)
+    public static boolean canConvertToRect(@Nullable Object obj)
     {
         return obj instanceof QRect || canConvert(obj, QMetaType.Type.QRect);
     }
@@ -14885,7 +13748,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toRect()}
      */
-    public static @NonNull QRect toRect(Object obj)
+    public static @NonNull QRect toRect(@Nullable Object obj)
     {
         if(obj instanceof QRect) {
             if(!((QtObjectInterface)obj).isDisposed())
@@ -14903,7 +13766,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToRectF(Object obj)
+    public static boolean canConvertToRectF(@Nullable Object obj)
     {
         return obj instanceof QRectF || canConvert(obj, QMetaType.Type.QRectF);
     }
@@ -14912,7 +13775,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toRectF()}
      */
-    public static @NonNull QRectF toRectF(Object obj)
+    public static @NonNull QRectF toRectF(@Nullable Object obj)
     {
         if(obj instanceof QRectF) {
             if(!((QtObjectInterface)obj).isDisposed())
@@ -14930,7 +13793,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToRegularExpression(Object obj)
+    public static boolean canConvertToRegularExpression(@Nullable Object obj)
     {
         return obj instanceof QRegularExpression || canConvert(obj, QMetaType.Type.QRegularExpression);
     }
@@ -14939,7 +13802,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toRegularExpression()}
      */
-    public static @NonNull QRegularExpression toRegularExpression(Object obj)
+    public static @NonNull QRegularExpression toRegularExpression(@Nullable Object obj)
     {
         if(obj instanceof QRegularExpression) {
             if(!((QtObjectInterface)obj).isDisposed())
@@ -14957,7 +13820,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToSize(Object obj)
+    public static boolean canConvertToSize(@Nullable Object obj)
     {
         return obj instanceof QSize || canConvert(obj, QMetaType.Type.QSize);
     }
@@ -14966,7 +13829,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toSize()}
      */
-    public static @NonNull QSize toSize(Object obj)
+    public static @NonNull QSize toSize(@Nullable Object obj)
     {
         if(obj instanceof QSize) {
             if(!((QtObjectInterface)obj).isDisposed())
@@ -14984,7 +13847,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToSizeF(Object obj)
+    public static boolean canConvertToSizeF(@Nullable Object obj)
     {
         return obj instanceof QSizeF || canConvert(obj, QMetaType.Type.QSizeF);
     }
@@ -14993,7 +13856,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toSizeF()}
      */
-    public static @NonNull QSizeF toSizeF(Object obj)
+    public static @NonNull QSizeF toSizeF(@Nullable Object obj)
     {
         if(obj instanceof QSizeF) {
             if(!((QtObjectInterface)obj).isDisposed())
@@ -15011,7 +13874,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToTime(Object obj)
+    public static boolean canConvertToTime(@Nullable Object obj)
     {
         return obj instanceof QTime || canConvert(obj, QMetaType.Type.QTime);
     }
@@ -15020,7 +13883,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toTime()}
      */
-    public static @NonNull QTime toTime(Object obj)
+    public static @NonNull QTime toTime(@Nullable Object obj)
     {
         if(obj instanceof QTime) {
             if(!((QtObjectInterface)obj).isDisposed())
@@ -15038,7 +13901,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToLong(Object obj)
+    public static boolean canConvertToLong(@Nullable Object obj)
     {
         return obj instanceof Number || canConvert(obj, QMetaType.Type.LongLong);
     }
@@ -15047,7 +13910,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toLong()}
      */
-    public static long toLong(Object obj, boolean ok[]){
+    public static long toLong(@Nullable Object obj, boolean @Nullable[] ok){
         if(obj==null) {
             if(ok!=null && ok.length>0)
                 ok[0] = true;
@@ -15066,7 +13929,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToList(Object obj)
+    public static boolean canConvertToList(@Nullable Object obj)
     {
         return obj instanceof java.util.Collection || canConvert(obj, QMetaType.Type.QVariantList);
     }
@@ -15076,7 +13939,7 @@ class QVariant___ {
      * @see {@link #toList()}
      */
     @SuppressWarnings("unchecked")
-    public static @NonNull QList<Object> toList(Object obj)
+    public static @NonNull QList<@Nullable Object> toList(@Nullable Object obj)
     {
         if (obj instanceof java.util.Collection){
             if (obj instanceof QList && ((QList<?>)obj).elementMetaType().javaType()==Object.class)
@@ -15097,7 +13960,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToStringList(Object obj)
+    public static boolean canConvertToStringList(@Nullable Object obj)
     {
         return obj instanceof java.util.Collection || canConvert(obj, QMetaType.Type.QStringList);
     }
@@ -15106,7 +13969,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toStringList()}
      */
-    public static @NonNull QStringList toStringList(Object obj)
+    public static @NonNull QStringList toStringList(@Nullable Object obj)
     {
         if (obj instanceof java.util.Collection){
             if (obj instanceof QStringList) {
@@ -15130,7 +13993,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToCollection(Object obj)
+    public static boolean canConvertToCollection(@Nullable Object obj)
     {
         return obj instanceof java.util.Collection || canConvert(obj, QMetaType.Type.QVariantList);
     }
@@ -15139,7 +14002,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #toList()}
      */
-    public static java.util.@NonNull Collection<?> toCollection(Object obj)
+    public static java.util.@NonNull Collection<?> toCollection(@Nullable Object obj)
     {
         if (obj instanceof java.util.Collection){
             return (java.util.Collection<?>)obj;
@@ -15156,7 +14019,7 @@ class QVariant___ {
      * Convenient static function for type conversion.
      * @see {@link #canConvert(QMetaType)}
      */
-    public static boolean canConvertToMap(Object obj)
+    public static boolean canConvertToMap(@Nullable Object obj)
     {
         return obj instanceof java.util.Map || canConvert(obj, QMetaType.Type.QVariantHash);
     }
@@ -15166,7 +14029,7 @@ class QVariant___ {
      * @see {@link #toHash()}
      */
     @SuppressWarnings("unchecked")
-    public static @NonNull QHash<String,Object> toHash(Object obj)
+    public static @NonNull QHash<@NonNull String,@Nullable Object> toHash(@Nullable Object obj)
     {
         if (obj instanceof java.util.Map) {
             if(obj instanceof QHash 
@@ -15193,7 +14056,7 @@ class QVariant___ {
      * @see {@link #toMap()}
      */
     @SuppressWarnings("unchecked")
-    public static @NonNull QMap<String,Object> toMap(Object obj)
+    public static @NonNull QMap<@NonNull String,@Nullable Object> toMap(@Nullable Object obj)
     {
         if (obj instanceof java.util.Map) {
             if(obj instanceof QMap 
@@ -15213,6 +14076,14 @@ class QVariant___ {
             }
         }
         return QMap.createVariantMap();
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qvariant.html#qvariant_cast"><code>qvariant_cast&lt;T>(QVariant)</code></a></p>
+     */
+    @QtUninvokable
+    public static <T extends @Nullable QtObjectInterface> T qvariant_cast(@StrictNonNull Object object, java.lang.@StrictNonNull Class<T> targetType, io.qt.core.@StrictNonNull QMetaType @StrictNonNull... instantiations) {
+        return fromValue(object).value(targetType, instantiations);
     }
 }// class
 
@@ -15243,7 +14114,7 @@ class QMetaMethod___ {
      * <p>See <a href="@docRoot/qmetamethod.html#parameterTypes"><code>QMetaMethod::parameterTypes() const</code></a></p>
      */
     @QtUninvokable
-    public final java.util.List<Class<?>> parameterClassTypes() {
+    public final java.util.@NonNull List<@Nullable Class<?>> parameterClassTypes() {
         if(parameterClassTypes==null) {
             parameterClassTypes = java.util.Collections.unmodifiableList(parameterClassTypes_native());
         }
@@ -15257,7 +14128,7 @@ class QMetaMethod___ {
      * <p>See <a href="@docRoot/qmetamethod.html#parameterType"><code>QMetaMethod::parameterType(int index) const</code></a></p>
      */
     @QtUninvokable
-    public final Class<?> parameterClassType(int index) {
+    public final @Nullable Class<?> parameterClassType(int index) {
         return parameterClassTypes().get(index);
     }
     
@@ -15265,7 +14136,7 @@ class QMetaMethod___ {
      * <p>See <a href="@docRoot/qmetamethod.html#returnType"><code>QMetaMethod::returnType() const</code></a></p>
      */
     @QtUninvokable
-    public final Class<?> returnClassType(){
+    public final @Nullable Class<?> returnClassType(){
         if(returnClassType==null)
             returnClassType = returnClassType_native();
         return returnClassType;
@@ -15327,7 +14198,7 @@ class QMetaMethod___ {
      * <p>See <a href="@docRoot/qmetamethod.html#invoke-1"><code>QMetaMethod::invoke(QObject *object, QGenericReturnArgument returnValue, QGenericArgument val0 = QGenericArgument(nullptr), QGenericArgument val1 = QGenericArgument(), QGenericArgument val2 = QGenericArgument(), QGenericArgument val3 = QGenericArgument(), QGenericArgument val4 = QGenericArgument(), QGenericArgument val5 = QGenericArgument(), QGenericArgument val6 = QGenericArgument(), QGenericArgument val7 = QGenericArgument(), QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument()) const</code></a></p>
      */
     @QtUninvokable
-    public final Object invoke(QObject object, Object... args) throws IllegalArgumentException, QUnsuccessfulInvocationException {
+    public final @Nullable Object invoke(@NonNull QObject object, @Nullable Object... args) throws IllegalArgumentException, QUnsuccessfulInvocationException {
         return invoke(object, Qt.ConnectionType.AutoConnection, args);
     }
     
@@ -15335,7 +14206,7 @@ class QMetaMethod___ {
      * <p>See <a href="@docRoot/qmetamethod.html#invoke"><code>QMetaMethod::invoke(QObject *object, Qt::ConnectionType connectionType, QGenericReturnArgument returnValue, QGenericArgument val0 = QGenericArgument(nullptr), QGenericArgument val1 = QGenericArgument(), QGenericArgument val2 = QGenericArgument(), QGenericArgument val3 = QGenericArgument(), QGenericArgument val4 = QGenericArgument(), QGenericArgument val5 = QGenericArgument(), QGenericArgument val6 = QGenericArgument(), QGenericArgument val7 = QGenericArgument(), QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument()) const</code></a></p>
      */
     @QtUninvokable
-    public final Object invoke(QObject object, Qt.ConnectionType connection, Object... args) throws IllegalArgumentException, QUnsuccessfulInvocationException {
+    public final @Nullable Object invoke(@NonNull QObject object, Qt.@NonNull ConnectionType connection, @Nullable Object @NonNull... args) throws IllegalArgumentException, QUnsuccessfulInvocationException {
         if(!isValid())
             throw new QUnsuccessfulInvocationException("Cannot invoke an invalid QMetaMethod.");
         if(parameterCount() != args.length) {
@@ -15377,7 +14248,7 @@ class QMetaMethod___ {
      * <p>See <a href="@docRoot/qmetamethod.html#invokeOnGadget"><code>QMetaMethod::invokeOnGadget(void *gadget, QGenericReturnArgument returnValue, QGenericArgument val0 = QGenericArgument(nullptr), QGenericArgument val1 = QGenericArgument(), QGenericArgument val2 = QGenericArgument(), QGenericArgument val3 = QGenericArgument(), QGenericArgument val4 = QGenericArgument(), QGenericArgument val5 = QGenericArgument(), QGenericArgument val6 = QGenericArgument(), QGenericArgument val7 = QGenericArgument(), QGenericArgument val8 = QGenericArgument(), QGenericArgument val9 = QGenericArgument()) const</code></a></p>
      */
     @QtUninvokable
-    public final @Nullable Object invokeOnGadget(Object object, Object... args) throws IllegalArgumentException, QUnsuccessfulInvocationException {
+    public final @Nullable Object invokeOnGadget(@NonNull Object object, @Nullable Object @NonNull... args) throws IllegalArgumentException, QUnsuccessfulInvocationException {
         if(!isValid())
             throw new QUnsuccessfulInvocationException("Cannot invoke an invalid QMetaMethod.");
         if(parameterCount() != args.length) {
@@ -17777,38 +16648,6 @@ class QResource__{
         CoreUtility.addClassPath(url);
     }
     
-}// class
-
-class QCryptographicHash___{
-    /**
-     * <p>See <a href="@docRoot/qcryptographichash.html#addData-1"><code>QCryptographicHash::addData(const char*)</code></a></p>
-     */
-    @QtUninvokable
-    public final void addData(java.nio.ByteBuffer data){
-        addData(new QByteArrayView(data));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qcryptographichash.html#hash"><code>QCryptographicHash::hash(const char*,QCryptographicHash::Algorithm)</code></a></p>
-     */
-    public static QByteArray hash(java.nio.ByteBuffer data, QCryptographicHash.Algorithm method){
-        return hash(new QByteArrayView(data), method);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qcryptographichash.html#addData-1"><code>QCryptographicHash::addData(QByteArray)</code></a></p>
-     */
-    @QtUninvokable
-    public final void addData(@NonNull QByteArray data){
-        addData(new QByteArrayView(data));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qcryptographichash.html#hash"><code>QCryptographicHash::hash(QByteArray,QCryptographicHash::Algorithm)</code></a></p>
-     */
-    public static @NonNull QByteArray hash(@NonNull QByteArray data, QCryptographicHash.@NonNull Algorithm method){
-        return hash(new QByteArrayView(data), method);
-    }
 }// class
 
 class QDataStream_5__{

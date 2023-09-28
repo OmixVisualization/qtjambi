@@ -1940,8 +1940,10 @@ void CppImplGenerator::writeToStringFunction(QTextStream &s, const MetaClass *ja
                 s << INDENT << "QtJambiAPI::checkNullPointer(__jni_env, __qt_this);" << Qt::endl;
 
                 s << INDENT << "QString res;" << Qt::endl
-                  << INDENT << "QDebug(&res) << " << deref << "__qt_this;" << Qt::endl;
-                s << INDENT << "__java_return_value = qtjambi_cast<jstring>(__jni_env, res);" << Qt::endl;
+                  << INDENT << "QDebug(&res).noquote() << " << deref << "__qt_this;" << Qt::endl
+                  << INDENT << "if(!res.isEmpty() && res.back().isSpace())" << Qt::endl
+                  << INDENT << "    res = res.trimmed();" << Qt::endl
+                  << INDENT << "__java_return_value = qtjambi_cast<jstring>(__jni_env, res);" << Qt::endl;
                 writeClassCodeInjections(s, java_class, CodeSnip::ToString);
                 if(!java_class->typeEntry()->ppCondition().isEmpty()){
                     s << Qt::endl << "#else" << Qt::endl
@@ -8573,7 +8575,10 @@ bool CppImplGenerator::writeQtToJava(QTextStream &s,
             }
             QString qualifiedTargetLangName = elementType->fullName().mid(elementType->package().length()+1).replace(".", "$");
             s << "QtJambiAPI::toJObjectArray<";
-            writeTypeInfo(s, elementType, Option(ForceValueType));
+            if(elementType->indirections().isEmpty())
+                writeTypeInfo(s, elementType, Option(ForceValueType));
+            else
+                writeTypeInfo(s, elementType, Option(NoOption));
             s << ">(" << __jni_env
               << ", \"" << elementType->package().replace(".", "/") << "/" << qualifiedTargetLangName << "\""
               << ", " << qt_name
@@ -12104,6 +12109,13 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const MetaClass *cls,
                 }
                 if(!usedTypeID)
                     s << INDENT << "Q_UNUSED(typeId)" << Qt::endl;
+            }else if(cls->isNamespace() && !cls->isFake()){
+                s << INDENT << "registerNamespaceTypeInfo(\"" << qtName << "\", \"" << javaTypeName;
+                if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6, 0, 0)
+                    && reinterpret_cast<const NamespaceTypeEntry*>(cls->typeEntry())->hasMetaObject())
+                    s << "\", &" << qtName << "::staticMetaObject);";
+                else s <<"\", nullptr);";
+                s << Qt::endl;
             }
 
             s << Qt::endl << "// BEGIN: enums and flags" << Qt::endl;

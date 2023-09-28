@@ -33,10 +33,8 @@ import org.junit.*;
 import io.qt.*;
 import io.qt.core.*;
 import io.qt.gui.*;
-import io.qt.opengl.*;
 import io.qt.qml.*;
 import io.qt.quick.*;
-import io.qt.autotests.TestQuickQt6.*;
 import static io.qt.autotests.TestQuickQt6.*;
 
 public class TestQuickFramebufferObjectQt6 extends ApplicationInitializer {

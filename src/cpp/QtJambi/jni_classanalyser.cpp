@@ -41,7 +41,8 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_ClassAnalyzerUtility_isGeneratedClas
  jstring className)
 {
     try{
-        return getTypeByJavaName(qtjambi_cast<QString>(env, className).replace(".", "/"))!=nullptr;
+        QString cn = qtjambi_cast<QString>(env, className).replace(".", "/");
+        return getTypeByJavaName(cn)!=nullptr || isJavaNameNamespace(cn);
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }

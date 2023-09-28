@@ -2968,7 +2968,7 @@ void XmlTypeSystemReaderPrivate::parseNamespaceType(const QDomElement &element){
                     break;
                 }
             }
-            std::unique_ptr<NamespaceTypeEntry> entry(new NamespaceTypeEntry(name, element.localName()=="header-type"));
+            std::unique_ptr<NamespaceTypeEntry> entry(new NamespaceTypeEntry(name, element.localName()=="header-type", false));
             if(!targetName.isEmpty())
                 entry->setTargetLangName(targetName);
             parseAttributesOfComplexType(element, attributes, entry.get());

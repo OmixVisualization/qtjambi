@@ -92,8 +92,8 @@ public abstract class NativeUtility {
 		});
 		cleanupRegistrationThread.setName("QtJambiCleanupThread");
 		cleanupRegistrationThread.setDaemon(true);
-		cleanupRegistrationThread.start();
 		QtJambi_LibraryUtilities.initialize();
+		cleanupRegistrationThread.start();
 	}
 
 	@NativeAccess

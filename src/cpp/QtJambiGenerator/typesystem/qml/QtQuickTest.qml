@@ -35,6 +35,7 @@ TypeSystem{
     qtLibrary: "QtQuickTest"
     module: "qtjambi.quicktest"
     description: "A unit test framework for QML applications, where the test cases are written as JavaScript functions."
+    LoadTypeSystem{name: "QtQuick"; unless: "QTJAMBI_NO_QUICK"}
 
     RequiredLibrary{
         name: "QtQuick"

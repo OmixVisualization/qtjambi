@@ -3525,7 +3525,7 @@ const QSharedPointer<QtJambiLink>& QObjectTypeEntry::createLinkForNativeQObject(
     return QtJambiLink::createLinkForNativeQObject(env, javaObject, object, false, false, m_superTypeForCustomMetaObject);
 }
 
-QtJambiTypeEntry::NativeToJavaResult QObjectTypeEntry::convertToJava(JNIEnv *env, const void *ptr, NativeToJavaConversionMode, jvalue& output, jValueType javaType) const{
+QtJambiTypeEntry::NativeToJavaResult QObjectTypeEntry::convertToJava(JNIEnv *env, const void *ptr, NativeToJavaConversionMode mode, jvalue& output, jValueType javaType) const{
     if(javaType!=jValueType::l)
         JavaException::raiseIllegalArgumentException(env, "Cannot convert object type" QTJAMBI_STACKTRACEINFO );
     QObject* qt_object = reinterpret_cast<QObject*>( const_cast<void*>(ptr) );
@@ -3582,7 +3582,10 @@ QtJambiTypeEntry::NativeToJavaResult QObjectTypeEntry::convertToJava(JNIEnv *env
     }
     output.l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
     JavaException::check(env QTJAMBI_STACKTRACEINFO );
-    return createLinkForNativeQObject(env, output.l, qt_object);
+    QSharedPointer<QtJambiLink> link = createLinkForNativeQObject(env, output.l, qt_object);
+    if(mode==NativeToJavaConversionMode::CppOwnership)
+        link->setCppOwnership(env);
+    return link;
 }
 
 bool QObjectTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType javaType) const{

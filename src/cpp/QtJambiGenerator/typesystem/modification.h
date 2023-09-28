@@ -134,6 +134,7 @@ struct ArgumentModification {
     int arrayLengthParameter;
     int minArrayLength;
     int maxArrayLength;
+    QStringList impliciteCalls;
 };
 
 struct Modification {

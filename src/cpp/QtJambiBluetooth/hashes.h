@@ -46,10 +46,12 @@ inline hash_type qHash(const QBluetoothUuid &value, hash_type seed = 0)
     return qHash(value.toByteArray(), seed);
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 6, 0)
 inline hash_type qHash(const QBluetoothAddress &value, hash_type seed = 0)
 {
     return qHash(value.toString(), seed);
 }
+#endif
 
 inline hash_type qHash(const QBluetoothDeviceInfo &value, hash_type seed = 0)
 {

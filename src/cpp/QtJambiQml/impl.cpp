@@ -3527,13 +3527,15 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_
 void initialize_meta_info_QQmlListProperty(){
     using namespace RegistryAPI;
     if(JniEnvironment env{300}){
-        if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enabled-qml-debugging-nowarn"))){
+        if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enabled-qml-debugging-nowarn"))
+            || Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-qml-debugging-nowarn"))){
 #if QT_VERSION < QT_VERSION_CHECK(6,4,0)
             QQmlDebuggingEnabler(false);
 #else
             QQmlDebuggingEnabler::enableDebugging(false);
 #endif
-        }else if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enabled-qml-debugging"))){
+        }else if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enabled-qml-debugging"))
+                   || Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-qml-debugging"))){
 #if QT_VERSION < QT_VERSION_CHECK(6,4,0)
             QQmlDebuggingEnabler(true);
 #else

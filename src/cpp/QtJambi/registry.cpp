@@ -59,7 +59,7 @@ QT_WARNING_DISABLE_DEPRECATED
 Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gLock, (QReadWriteLock::Recursive))
 typedef QMap<size_t, EntryTypes> TypeEntryTypesHash;
 typedef QMap<size_t, const char*> TypeStringHash;
-typedef QMap<size_t, QSharedPointer<QtJambiTypeInfo>> TypeIdToQTypeInfoHash;
+typedef QMap<size_t, QtJambiTypeInfo> TypeIdToQTypeInfoHash;
 typedef QHash<QByteArray, const char*> StringStringHash;
 typedef QHash<QByteArray, const std::type_info*> StringTypeHash;
 typedef QHash<QByteArray, QList<const std::type_info*>> StringTypesHash;
@@ -68,6 +68,10 @@ Q_GLOBAL_STATIC(TypeIdToQTypeInfoHash, gQTypeInfoHash)
 Q_GLOBAL_STATIC(TypeEntryTypesHash, gEntryTypesHash)
 Q_GLOBAL_STATIC(StringTypeHash, gQtNameTypeHash)
 Q_GLOBAL_STATIC(StringStringHash, gQtFunctionalJavaNameHash)
+Q_GLOBAL_STATIC(StringStringHash, gQtNamespaceJavaNameHash)
+Q_GLOBAL_STATIC(StringStringHash, gJavaNamespaceQtNameHash)
+typedef QMap<QByteArray, const QMetaObject*> NamespaceMetaObjectHash;
+Q_GLOBAL_STATIC(NamespaceMetaObjectHash, gNamespaceMetaObjectHash)
 Q_GLOBAL_STATIC(TypeStringHash, gTypeJavaNameHash)
 Q_GLOBAL_STATIC(StringTypesHash, gJavaNameTypeHash)
 typedef QSet<size_t> TypeSet;
@@ -383,7 +387,7 @@ void registerTypeAlias(const std::type_info& typeId, const char *qt_name, const 
         (*gJavaNameTypeHash)[java_name].append(&typeId);
 }
 
-void registerTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name, EntryTypes entryTypes)
+void registerTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name, EntryTypes entryTypes)
 {
     {
         QWriteLocker locker(gLock());
@@ -391,8 +395,12 @@ void registerTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info,
         if(!gTypeQtNameHash->contains(unique_id(typeId))){
             gTypeQtNameHash->insert(unique_id(typeId), qt_name);
         }
-        if(!gQTypeInfoHash->contains(unique_id(typeId))){
-            gQTypeInfoHash->insert(unique_id(typeId), QSharedPointer<QtJambiTypeInfo>(new QtJambiTypeInfo(info)));
+        if(
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+            entryTypes==EntryTypes::FunctionalTypeInfo &&
+#endif
+            !gQTypeInfoHash->contains(unique_id(typeId))){
+            gQTypeInfoHash->insert(unique_id(typeId), info);
         }
         gQtNameTypeHash->insert(qt_name, &typeId);
 
@@ -452,7 +460,7 @@ CoreAPI::NITypeInfo CoreAPI::getNativeInterfaceInfo(JNIEnv * env, jclass cls){
 }
 #endif
 
-void RegistryAPI::registerInterfaceTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name, const char *interface_iid)
+void RegistryAPI::registerInterfaceTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name, const char *interface_iid)
 {
     registerTypeInfo(typeId, info, qt_name, java_name, EntryTypes::InterfaceTypeInfo);
     QWriteLocker locker(gLock());
@@ -494,7 +502,7 @@ const char * RegistryAPI::registerInterfaceID(JNIEnv* env, jclass cls)
     }
 }
 
-void RegistryAPI::registerInterfaceValueTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name, const char *interface_iid)
+void RegistryAPI::registerInterfaceValueTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name, const char *interface_iid)
 {
     registerTypeInfo(typeId, info, qt_name, java_name, EntryTypes::InterfaceValueTypeInfo);
     QWriteLocker locker(gLock());
@@ -503,32 +511,32 @@ void RegistryAPI::registerInterfaceValueTypeInfo(const std::type_info& typeId, c
     gTypeIIDHash->insert(java_name, interface_iid);
 }
 
-void RegistryAPI::registerFunctionalTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name)
+void RegistryAPI::registerFunctionalTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name)
 {
     registerTypeInfo(typeId, info, qt_name, java_name, EntryTypes::FunctionalTypeInfo);
 }
 
-void RegistryAPI::registerQObjectTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name)
+void RegistryAPI::registerQObjectTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name)
 {
     registerTypeInfo(typeId, info, qt_name, java_name, EntryTypes::QObjectTypeInfo);
 }
 
-void RegistryAPI::registerObjectTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name)
+void RegistryAPI::registerObjectTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name)
 {
     registerTypeInfo(typeId, info, qt_name, java_name, EntryTypes::ObjectTypeInfo);
 }
 
-void RegistryAPI::registerValueTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name)
+void RegistryAPI::registerValueTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name)
 {
     registerTypeInfo(typeId, info, qt_name, java_name, EntryTypes::ValueTypeInfo);
 }
 
-void RegistryAPI::registerEnumTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name)
+void RegistryAPI::registerEnumTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name)
 {
     registerTypeInfo(typeId, info, qt_name, java_name, EntryTypes::EnumTypeInfo);
 }
 
-void RegistryAPI::registerEnumTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name, const std::type_info& flagsTypeId, const QtJambiTypeInfo& flagsInfo, const char *flags_qt_name, const char *flags_qt_name_alias, const char *flags_java_name)
+void RegistryAPI::registerEnumTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name, const std::type_info& flagsTypeId, QtJambiTypeInfo flagsInfo, const char *flags_qt_name, const char *flags_qt_name_alias, const char *flags_java_name)
 {
     registerTypeInfo(typeId, info, qt_name, java_name, EntryTypes::EnumTypeInfo);
     registerTypeInfo(flagsTypeId, flagsInfo, flags_qt_name, flags_java_name, EntryTypes::FlagsTypeInfo);
@@ -540,23 +548,37 @@ void RegistryAPI::registerEnumTypeInfo(const std::type_info& typeId, const QtJam
     gEnumFlagIDHash->insert(unique_id(typeId), &flagsTypeId);
 }
 
-void RegistryAPI::registerUnspecificTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name)
+void RegistryAPI::registerUnspecificTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name)
 {
     registerTypeInfo(typeId, info, qt_name, java_name, EntryTypes::Unspecific);
 }
 
-void RegistryAPI::registerPrimitiveTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name)
+void RegistryAPI::registerPrimitiveTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name)
 {
     registerTypeInfo(typeId, info, qt_name, java_name, EntryTypes::PrimitiveTypeInfo);
 }
 
-void registerContainerTypeInfo(const std::type_info& typeId, const QtJambiTypeInfo& info, const char *qt_name, const char *java_name, const char *java_interface)
+void registerContainerTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name, const char *java_interface)
 {
     registerTypeInfo(typeId, info, qt_name, java_name, EntryTypes::Unspecific);
     QWriteLocker locker(gLock());
     Q_UNUSED(locker)
     if(!gTypeJavaInterfaceHash->contains(unique_id(typeId))){
         gTypeJavaInterfaceHash->insert(unique_id(typeId), java_interface);
+    }
+}
+
+void RegistryAPI::registerNamespaceTypeInfo(const char *qt_name, const char *java_name, const QMetaObject* namespaceMetaObject){
+    QWriteLocker locker(gLock());
+    Q_UNUSED(locker)
+    if(!gJavaNamespaceQtNameHash->contains(java_name)){
+        gJavaNamespaceQtNameHash->insert(java_name, qt_name);
+    }
+    if(!gQtNamespaceJavaNameHash->contains(qt_name)){
+        gQtNamespaceJavaNameHash->insert(qt_name, java_name);
+    }
+    if(namespaceMetaObject && !gNamespaceMetaObjectHash->contains(java_name)){
+        gNamespaceMetaObjectHash->insert(java_name, namespaceMetaObject);
     }
 }
 
@@ -770,6 +792,28 @@ const char* getJavaNameByFunctional(const char* qt_name)
     return gQtFunctionalJavaNameHash->value(qt_name, nullptr);
 }
 
+bool isJavaNameNamespace(const QString& java_name){
+    return isJavaNameNamespace(java_name.toLatin1());
+}
+
+bool isJavaNameNamespace(const QByteArray& java_name){
+    QReadLocker locker(gLock());
+    Q_UNUSED(locker)
+    return gJavaNamespaceQtNameHash->contains(java_name);
+}
+
+const QMetaObject* registeredNamespaceMetaObject(const QString& java_name){
+    QReadLocker locker(gLock());
+    Q_UNUSED(locker)
+    return gNamespaceMetaObjectHash->value(java_name.toLatin1());
+}
+
+bool isQtNameNamespace(const QByteArray& qt_name){
+    QReadLocker locker(gLock());
+    Q_UNUSED(locker)
+    return gQtNamespaceJavaNameHash->contains(qt_name);
+}
+
 const std::type_info* getTypeByQtName(const QByteArray& qt_name)
 {
     QReadLocker locker(gLock());
@@ -787,12 +831,25 @@ const std::type_info* getTypeByQtName(const char* qt_name)
     return getTypeByQtName(QByteArray(qt_name));
 }
 
-const QtJambiTypeInfo* getQTypeInfo(const std::type_info& typeId)
-{
+OptionalBool isRegisteredAsPointerType(const std::type_info& typeId){
     QReadLocker locker(gLock());
     Q_UNUSED(locker)
-    return gQTypeInfoHash->value(unique_id(typeId), QSharedPointer<QtJambiTypeInfo>(nullptr)).data();
+    if(gQTypeInfoHash->contains(unique_id(typeId))){
+        return OptionalBool(gQTypeInfoHash->value(unique_id(typeId)).isPointer);
+    }
+    return OptionalBool();
 }
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+OptionalBool isRegisteredAsStaticType(const std::type_info& typeId){
+    QReadLocker locker(gLock());
+    Q_UNUSED(locker)
+    if(gQTypeInfoHash->contains(unique_id(typeId))){
+        return OptionalBool(gQTypeInfoHash->value(unique_id(typeId)).isStatic);
+    }
+    return OptionalBool();
+}
+#endif
 
 const char * getQtName(const std::type_info& typeId)
 {

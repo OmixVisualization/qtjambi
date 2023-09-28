@@ -48,7 +48,7 @@ public abstract class QtGadget extends QtObject {
      * @return the static meta-object of the gadget.
      */
 	@io.qt.QtUninvokable
-	public QMetaObject staticMetaObject() {
+	public @Nullable QMetaObject staticMetaObject() {
 		return staticMetaObject;
 	}
 }

@@ -32,13 +32,15 @@
 #if !__has_include(<vulkan/vulkan.h>)
 #define QVULKANINSTANCE_H
 typedef typename std::conditional<sizeof(void*)==sizeof(qint64), struct VkImage_T *, uint64_t>::type VkImage;
-//typedef std::conditional<sizeof(void*)==sizeof(qint64), struct VkPhysicalDevice_T *, uint64_t>::type VkPhysicalDevice;
+typedef std::conditional<sizeof(void*)==sizeof(qint64), struct VkPhysicalDevice_T *, uint64_t>::type VkPhysicalDevice;
+typedef std::conditional<sizeof(void*)==sizeof(qint64), struct VkDevice_T *, uint64_t>::type VkDevice;
 //typedef struct VkDevice_T *VkDevice;
 typedef enum VkImageLayout{}VkImageLayout;
 typedef enum VkFormat{}VkFormat;
 #endif
 
 #include <QtQuick/QQuickRenderTarget>
+#include <QtQuick/QQuickGraphicsDevice>
 #include <qsgtexture_platform.h>
 #endif
 
@@ -279,6 +281,14 @@ QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *, jlong im
     return QQuickRenderTarget::fromVulkanImage(CastHelper<VkImage>::cast(image), VkImageLayout(layout), VkFormat(format), pixelSize, sampleCount);
 }
 #endif
+
+QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromPhysicalDevice(JNIEnv *, jlong physicalDevice){
+    return QQuickGraphicsDevice::fromPhysicalDevice(VkPhysicalDevice(physicalDevice));
+}
+
+QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromDeviceObjects(JNIEnv *, jlong physicalDevice, jlong device, int queueFamilyIndex, int queueIndex){
+    return QQuickGraphicsDevice::fromDeviceObjects(VkPhysicalDevice(physicalDevice), VkDevice(device), queueFamilyIndex, queueIndex);
+}
 #endif
 
 

@@ -24,7 +24,9 @@ import org.apache.tools.ant.taskdefs.Sequential;
 public class TryCatchTask extends Task {
 	
 	public static final class CatchBlock extends Sequential {
+		
 		private String throwable = BuildException.class.getName();
+		private boolean print;
 
 		public CatchBlock() {
 			super();
@@ -33,11 +35,20 @@ public class TryCatchTask extends Task {
 		public void setThrowable(String throwable) {
 			this.throwable = throwable;
 		}
+		
+		public void setPrint(boolean print) {
+			this.print = print;
+		}
 
 		public boolean execute(Throwable t) throws BuildException {
 			try {
 				Class<?> c = Thread.currentThread().getContextClassLoader().loadClass(throwable);
 				if (c.isAssignableFrom(t.getClass())) {
+					getProject().setProperty("throwable", t.getClass().getName());
+					getProject().setProperty("message", t.getMessage());
+					if(this.print) {
+						t.printStackTrace();
+					}
 					execute();
 					return true;
 				}

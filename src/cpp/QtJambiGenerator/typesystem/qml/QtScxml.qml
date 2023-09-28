@@ -492,6 +492,26 @@ TypeSystem{
         Rejection{functionName: "onExit"}
         Rejection{functionName: "onEntry"}
         ModifyFunction{
+            signature: "fromData(QIODevice*,QString)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "fromFile(QString)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+        ModifyFunction{
             signature: "setDataModel(QScxmlDataModel*)"
             ModifyArgument{
                 index: 1

@@ -30,12 +30,15 @@
 package io.qt.qtjambi.deployer;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -43,7 +46,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.AbstractMap.SimpleEntry;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -283,7 +285,9 @@ final class QMLGenerator {
 				String os = entry.getKey();
 				boolean isAndroid = false;
 				if(os!=null && (platform==null || platform.startsWith(os))) {
-					File newFile;
+					File targetLibFile;
+					URL debuginfoURL = null;
+					File targetDebuginfoFile = null;
                     switch(os.toLowerCase()) {
 					case "win32":
 					case "win64":
@@ -293,40 +297,150 @@ final class QMLGenerator {
 					case "windows-x86":
 					case "windows-x64":
                         if(isDebug==null){
-							newFile = new File(dir, "jarimport" + (entry.getValue().toExternalForm().endsWith("d.dll") ? "d.dll" : ".dll"));
+							targetLibFile = new File(dir, "jarimport" + (entry.getValue().toExternalForm().endsWith("d.dll") ? "d.dll" : ".dll"));
 						}else{
-							newFile = new File(dir, "jarimport" + (isDebug ? "d.dll" : ".dll"));
+							targetLibFile = new File(dir, "jarimport" + (isDebug ? "d.dll" : ".dll"));
+                        }
+                        if(Boolean.FALSE.equals(isDebug) || !entry.getValue().toExternalForm().endsWith("d.dll")) {
+                        	URL url = entry.getValue();
+                        	switch(url.getProtocol()) {
+        					case "file":
+        						try {
+        							File rfile = new File(url.toURI());
+        							File dfile = new File(rfile.getParentFile(), rfile.getName().substring(0, rfile.getName().length()-3) + "pdb");
+        							if(!dfile.exists()) {
+        								dfile = new File(rfile.getAbsolutePath()+".debug");
+        							}
+        							if(dfile.exists()) {
+        								debuginfoURL = dfile.toURI().toURL();
+        								targetDebuginfoFile = new File(dir, "jarimport"+(dfile.getName().endsWith(".pdb") ? ".pdb" : ".dll.debug"));
+        							}
+        						} catch (URISyntaxException e1) {
+        						}
+        						break;
+        					case "jar":
+        						String path = url.toString();
+        						int idx = path.indexOf("!/");
+        						if(idx>0 && (path.endsWith(".dll") || path.endsWith(".exe"))) {
+        							String jarFileURL = path.substring(4, idx);
+        							String filePath = path.substring(idx);
+        							try {
+        								debuginfoURL = new URL(jarFileURL.replace("-native-", "-debuginfo-"));
+        								if(!new File(debuginfoURL.toURI()).exists()) {
+        									debuginfoURL = new URL(jarFileURL.replace("-native-", "-debuginfo-").replace("/native/", "/debuginfo/"));
+        									if(!new File(debuginfoURL.toURI()).exists()) {
+        										debuginfoURL = null;
+        									}
+        								}
+        								if(debuginfoURL!=null) {
+        									debuginfoURL = new URL("jar:"+debuginfoURL.toString()+filePath.substring(0, filePath.length()-3)+"pdb");
+        									try(InputStream s = debuginfoURL.openStream()){
+        										targetDebuginfoFile = new File(dir, "jarimport.pdb");
+        									} catch (IOException e) {
+        										debuginfoURL = new URL("jar:"+debuginfoURL.toString()+filePath+".debug");
+        										try(InputStream s = debuginfoURL.openStream()){
+        											targetDebuginfoFile = new File(dir, "jarimport.dll.debug");
+        										} catch (IOException e2) {
+        											debuginfoURL = null;
+        										}
+        									}
+        								}
+        							} catch (URISyntaxException e) {
+        							}
+        						}
+        						break;
+        					}
                         }
 						System.gc();
 						break;
 					case "android-x64":
 						File _dir = new File(parentDir, "lib/x86_64");
 						_dir.mkdirs();
-						newFile = new File(_dir, "libqml_"+packageName.replace('/', '_')+"_jarimport_x86_64.so");
+						targetLibFile = new File(_dir, "libqml_"+packageName.replace('/', '_')+"_jarimport_x86_64.so");
 						isAndroid = true;
 						break;
 					case "android-x86":
 						_dir = new File(parentDir, "lib/x86");
 						_dir.mkdirs();
-						newFile = new File(_dir, "libqml_"+packageName.replace('/', '_')+"_jarimport_x86.so");
+						targetLibFile = new File(_dir, "libqml_"+packageName.replace('/', '_')+"_jarimport_x86.so");
 						isAndroid = true;
 						break;
 					case "android-arm64":
 						_dir = new File(parentDir, "lib/arm64-v8a");
 						_dir.mkdirs();
-						newFile = new File(_dir, "libqml_"+packageName.replace('/', '_')+"_jarimport_arm64-v8a.so");
+						targetLibFile = new File(_dir, "libqml_"+packageName.replace('/', '_')+"_jarimport_arm64-v8a.so");
 						isAndroid = true;
 						break;
 					case "android-arm":
 						_dir = new File(parentDir, "lib/armeabi-v7a");
 						_dir.mkdirs();
-						newFile = new File(_dir, "libqml_"+packageName.replace('/', '_')+"_jarimport_armeabi-v7a.so");
+						targetLibFile = new File(_dir, "libqml_"+packageName.replace('/', '_')+"_jarimport_armeabi-v7a.so");
 						isAndroid = true;
 						break;
 					case "macos":
 					case "osx":
-						newFile = new File(dir, "libjarimport.dylib");
-                        break;
+						targetLibFile = new File(dir, "libjarimport.dylib");
+						if(Boolean.FALSE.equals(isDebug)) {
+                        	URL url = entry.getValue();
+							switch(url.getProtocol()) {
+							case "file":
+								try {
+									File rfile = new File(url.toURI());
+									File dfile = new File(rfile.getAbsolutePath()+".dSYM/Contents/Resources/DWARF/libjarimport.dylib");
+									if(dfile.exists()) {
+										debuginfoURL = dfile.toURI().toURL();
+										targetDebuginfoFile = new File(dir, "libjarimport.dylib.dSYM/Contents/Resources/DWARF/libjarimport.dylib");
+									}
+									dfile = new File(rfile.getAbsolutePath()+".dSYM/Contents/Info.plist");
+									if(dfile.exists()) {
+										try(InputStream s = new FileInputStream(dfile)){
+											File targetDebuginfoFile2 = new File(dir, "libjarimport.dylib.dSYM/Contents/Info.plist");
+											targetDebuginfoFile2.getParentFile().mkdirs();
+				                    		Files.copy(s, targetDebuginfoFile2.toPath(), StandardCopyOption.REPLACE_EXISTING);
+										} catch (IOException e) {
+										}
+									}
+								} catch (URISyntaxException e1) {
+								}
+								break;
+							case "jar":
+								String path = url.toString();
+								int idx = path.indexOf("!/");
+								if(idx>0) {
+									String jarFileURL = path.substring(4, idx);
+									String filePath = path.substring(idx);
+									try {
+										debuginfoURL = new URL(jarFileURL.replace("-native-", "-debuginfo-"));
+										if(!new File(debuginfoURL.toURI()).exists()) {
+											debuginfoURL = new URL(jarFileURL.replace("-native-", "-debuginfo-").replace("/native/", "/debuginfo/"));
+											if(!new File(debuginfoURL.toURI()).exists()) {
+												debuginfoURL = null;
+											}
+										}
+										if(debuginfoURL!=null) {
+											URL debuginfoBaseURL = debuginfoURL;
+											debuginfoURL = new URL("jar:"+debuginfoBaseURL.toString()+filePath+".dSYM/Contents/Resources/DWARF/libjarimport.dylib");
+											try(InputStream s = debuginfoURL.openStream()){
+												targetDebuginfoFile = new File(dir, "libjarimport.dylib.dSYM/Contents/Resources/DWARF/libjarimport.dylib");
+											} catch (IOException e) {
+												debuginfoURL = null;
+											}
+											URL debuginfoURL2 = new URL("jar:"+debuginfoBaseURL.toString()+filePath+".dSYM/Contents/Info.plist");
+											try(InputStream s = debuginfoURL2.openStream()){
+												File targetDebuginfoFile2 = new File(dir, "libjarimport.dylib.dSYM/Contents/Info.plist");
+												targetDebuginfoFile2.getParentFile().mkdirs();
+					                    		Files.copy(s, targetDebuginfoFile2.toPath(), StandardCopyOption.REPLACE_EXISTING);
+											} catch (IOException e) {
+												debuginfoURL2 = null;
+											}
+										}
+									} catch (URISyntaxException e) {
+									}
+								}
+								break;
+							}
+                        }
+						break;
 					case "linux":
 					case "linux32":
 					case "linux64":
@@ -334,16 +448,66 @@ final class QMLGenerator {
 					case "linux-aarch64":
 					case "linux-x86":
 					case "linux-x64":
-						newFile = new File(dir, "libjarimport.so");
+						targetLibFile = new File(dir, "libjarimport.so");
+						if(Boolean.FALSE.equals(isDebug)) {
+							URL url = entry.getValue();
+							switch(url.getProtocol()) {
+							case "file":
+								try {
+									File rfile = new File(url.toURI());
+									File dfile = new File(rfile.getAbsolutePath()+".debug");
+									if(dfile.exists()) {
+										debuginfoURL = dfile.toURI().toURL();
+										targetDebuginfoFile = new File(dir, "libjarimport.so.debug");
+									}
+								} catch (URISyntaxException e1) {
+								}
+								break;
+							case "jar":
+								String path = url.toString();
+								int idx = path.indexOf("!/");
+								if(idx>0) {
+									String jarFileURL = path.substring(4, idx);
+									String filePath = path.substring(idx);
+									try {
+										debuginfoURL = new URL(jarFileURL.replace("-native-", "-debuginfo-"));
+										if(!new File(debuginfoURL.toURI()).exists()) {
+											debuginfoURL = new URL(jarFileURL.replace("-native-", "-debuginfo-").replace("/native/", "/debuginfo/"));
+											if(!new File(debuginfoURL.toURI()).exists()) {
+												debuginfoURL = null;
+											}
+										}
+										if(debuginfoURL!=null) {
+											debuginfoURL = new URL("jar:"+debuginfoURL.toString()+filePath+".debug");
+											try(InputStream s = debuginfoURL.openStream()){
+												targetDebuginfoFile = new File(dir, "libjarimport.so.debug");
+											} catch (IOException e) {
+												debuginfoURL = null;
+											}
+										}
+									} catch (URISyntaxException e) {
+									}
+								}
+								break;
+							}
+                        }
 						break;
 						default: continue;
 					}
                     try(InputStream in = entry.getValue().openStream()){
-                    	Files.copy(in, newFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    	targetLibFile.getParentFile().mkdirs();
+                    	Files.copy(in, targetLibFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
                     	found = true;
 					}catch(IOException e) {
-                        throw new Error("Unable to write file "+newFile, e);
+                        throw new Error("Unable to write file "+targetLibFile, e);
 					}
+                    if(debuginfoURL!=null && targetDebuginfoFile!=null) {
+                    	try(InputStream in = debuginfoURL.openStream()){
+                    		targetDebuginfoFile.getParentFile().mkdirs();
+                        	Files.copy(in, targetDebuginfoFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+    					}catch(IOException e) {
+    					}
+                    }
 				}
 				if(found) {
 					try{
@@ -380,6 +544,7 @@ final class QMLGenerator {
                     }catch(IOException e) {
                         throw new Error("Unable to write file "+new File(dir, "qmldir"), e);
 					}
+                    System.out.println("Plugin written to "+dir.getAbsolutePath());
 				}
 			}
 		}else {

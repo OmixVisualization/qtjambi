@@ -64,6 +64,9 @@ ComplexTypeEntry::ComplexTypeEntry(const QString &name, Type t)
         m_qualified_cpp_name(name),
         m_type_flags() {
     m_attributes.setFlag(IsNativeIdBased, TypeDatabase::instance()->useNativeIds());
+    if(name==QLatin1String("QByteArrayView")){
+        setQByteArrayView(true);
+    }
     Include inc;
     inc.name = "QtCore/QVariant";
     inc.type = Include::IncludePath;

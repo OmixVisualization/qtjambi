@@ -31,11 +31,7 @@ package io.qt.autotests;
 
 import org.junit.BeforeClass;
 
-import io.qt.core.QCoreApplication;
-import io.qt.core.QEventLoop;
-import io.qt.core.QThread;
-import io.qt.core.QThreadPool;
-import io.qt.core.QTimer;
+import io.qt.core.*;
 
 public class TestQThreadPool extends ApplicationInitializer {
 	@BeforeClass

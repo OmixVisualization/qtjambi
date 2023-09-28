@@ -132,6 +132,37 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #undef quint64
 #include <QtGui/qpa/qplatformintegration.h>
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+#include <QtGui/rhi/qrhi.h>
+#include <QtGui/rhi/qshader.h>
+#include <QtGui/rhi/qshaderdescription.h>
+#       ifndef Q_OS_WIN
+#       	define Q_OS_WIN
+#       	ifndef Q_OS_MACOS
+#               define Q_FORWARD_DECLARE_OBJC_CLASS(X)
+#       		define Q_OS_MACOS
+#       		include <QtGui/rhi/qrhi_platform.h>
+#       		undef Q_OS_MACOS
+#			else
+#       		include <QtGui/rhi/qrhi_platform.h>
+#			endif
+#       	undef Q_OS_WIN
+#       elif !defined(Q_OS_MACOS)
+#           define Q_FORWARD_DECLARE_OBJC_CLASS(X)
+#       	define Q_OS_MACOS
+#       	include <QtGui/rhi/qrhi_platform.h>
+#       	undef Q_OS_MACOS
+#		else
+#       	include <QtGui/rhi/qrhi_platform.h>
+#		endif
+#include <QtJambiGuiRhi/hashes.h>
+#endif
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+#include <QtGui/qutimimeconverter.h>
+#include <QtGui/qwindowsmimeconverter.h>
+#endif
+
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QtPlatformHeaders/QtPlatformHeaders>
 #endif

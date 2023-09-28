@@ -30,7 +30,6 @@ package io.qt.autotests;
 
 import java.util.List;
 
-import io.qt.autotests.ApplicationInitializer;
 import io.qt.bluetooth.QBluetoothAddress;
 import io.qt.bluetooth.QBluetoothLocalDevice;
 

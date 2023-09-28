@@ -47,13 +47,22 @@ import io.qt.QtPointerType;
 import io.qt.QtPrimitiveType;
 import io.qt.QtPropertyBindable;
 import io.qt.QtReferenceType;
+import io.qt.core.QBindable;
+import io.qt.core.QBooleanBindable;
+import io.qt.core.QByteBindable;
+import io.qt.core.QCharBindable;
+import io.qt.core.QDoubleBindable;
+import io.qt.core.QFloatBindable;
+import io.qt.core.QIntBindable;
 import io.qt.core.QList;
+import io.qt.core.QLongBindable;
 import io.qt.core.QMetaObject;
 import io.qt.core.QMetaProperty;
 import io.qt.core.QMetaType;
 import io.qt.core.QObject;
 import io.qt.core.QQueue;
 import io.qt.core.QSet;
+import io.qt.core.QShortBindable;
 import io.qt.core.QStack;
 import io.qt.core.QUntypedBindable;
 import io.qt.core.QUntypedPropertyData;
@@ -211,6 +220,130 @@ abstract class AbstractMetaObjectUtility {
                     		type = char.class;
                     	}
                         return new MetaObjectUtility.QPropertyTypeInfo(rawType, type, null, false, false, field.getType()==QObject.QProperty.class);
+                	}
+            	}
+    		}
+    	}
+    	return null;
+    }
+    
+    static MetaObjectUtility.QPropertyTypeInfo getQPropertyTypeInfo(Method method) {
+    	if(method.getReturnType()==QBooleanBindable.class) {
+    		return new MetaObjectUtility.QPropertyTypeInfo(boolean.class, boolean.class, null, false, false, method.getReturnType()==QBooleanBindable.class);
+    	}else if(method.getReturnType()==QByteBindable.class) {
+    		return new MetaObjectUtility.QPropertyTypeInfo(byte.class, byte.class, null, false, false, method.getReturnType()==QByteBindable.class);
+    	}else if(method.getReturnType()==QIntBindable.class) {
+    		return new MetaObjectUtility.QPropertyTypeInfo(int.class, int.class, null, false, false, method.getReturnType()==QIntBindable.class);
+    	}else if(method.getReturnType()==QShortBindable.class) {
+    		return new MetaObjectUtility.QPropertyTypeInfo(short.class, short.class, null, false, false, method.getReturnType()==QShortBindable.class);
+    	}else if(method.getReturnType()==QLongBindable.class) {
+    		return new MetaObjectUtility.QPropertyTypeInfo(long.class, long.class, null, false, false, method.getReturnType()==QLongBindable.class);
+    	}else if(method.getReturnType()==QFloatBindable.class) {
+    		return new MetaObjectUtility.QPropertyTypeInfo(float.class, float.class, null, false, false, method.getReturnType()==QFloatBindable.class);
+    	}else if(method.getReturnType()==QDoubleBindable.class) {
+    		return new MetaObjectUtility.QPropertyTypeInfo(double.class, double.class, null, false, false, method.getReturnType()==QDoubleBindable.class);
+    	}else if(method.getReturnType()==QCharBindable.class) {
+    		return new MetaObjectUtility.QPropertyTypeInfo(char.class, char.class, null, false, false, method.getReturnType()==QCharBindable.class);
+    	}else if(method.getReturnType()==QBindable.class) {
+    		if(ClassAnalyzerUtility.useAnnotatedType) {
+	        	AnnotatedElement t = method.getAnnotatedReturnType();
+	        	if (t instanceof AnnotatedParameterizedType) {
+	            	AnnotatedParameterizedType p = (AnnotatedParameterizedType) t;
+	            	AnnotatedElement actualTypes[] = p.getAnnotatedActualTypeArguments();
+	            	if(actualTypes.length==1) {
+	            		AnnotatedElement actualType = actualTypes[0];
+	                	boolean isPrimitive = actualType.isAnnotationPresent(QtPrimitiveType.class);
+	                	boolean isPointer = actualType.isAnnotationPresent(QtPointerType.class);
+	                	QtReferenceType referenceType = actualType.getAnnotation(QtReferenceType.class);
+	                	boolean isReference = !isPointer && referenceType!=null && !referenceType.isConst();
+	                	if(!isPrimitive) {
+	                		AnnotatedElement annotatedOwnerType = RetroHelper.getAnnotatedOwnerType(actualType);
+	                		if(annotatedOwnerType!=null) {
+	                			isPrimitive = annotatedOwnerType.isAnnotationPresent(QtPrimitiveType.class);
+	                		}
+	                	}
+	                	Type type = ((java.lang.reflect.AnnotatedType)actualType).getType();
+	                    Class<?> rawType;
+	                    if (type instanceof Class) {
+	                        rawType = (Class<?>) type;
+	                    }else if (type instanceof ParameterizedType) {
+	                    	ParameterizedType ptype = (ParameterizedType)type;
+	                        rawType = (Class<?>)ptype.getRawType();
+	                    } else {
+	                    	return null;
+	                    }
+	                    if(isPrimitive) {
+	                    	if(rawType==Integer.class) {
+	                    		rawType = int.class;
+	                    		type = int.class;
+	                    	}else if(rawType==Short.class) {
+	                    		rawType = short.class;
+	                    		type = short.class;
+	                    	}else if(rawType==Byte.class) {
+	                    		rawType = byte.class;
+	                    		type = byte.class;
+	                    	}else if(rawType==Long.class) {
+	                    		rawType = long.class;
+	                    		type = long.class;
+	                    	}else if(rawType==Double.class) {
+	                    		rawType = double.class;
+	                    		type = double.class;
+	                    	}else if(rawType==Float.class) {
+	                    		rawType = float.class;
+	                    		type = float.class;
+	                    	}else if(rawType==Boolean.class) {
+	                    		rawType = boolean.class;
+	                    		type = boolean.class;
+	                    	}else if(rawType==Character.class) {
+	                    		rawType = char.class;
+	                    		type = char.class;
+	                    	}
+	                    }
+	                    return new MetaObjectUtility.QPropertyTypeInfo(rawType, type, actualType, isPointer, isReference, method.getReturnType()==QBindable.class);
+	            	}
+	        	}
+    		}else {
+    			Type t = method.getGenericReturnType();
+            	if (t instanceof ParameterizedType) {
+                	ParameterizedType p = (ParameterizedType) t;
+                	Type actualTypes[] = p.getActualTypeArguments();
+                	if(actualTypes.length==1) {
+                		Type type = actualTypes[0];
+                        Class<?> rawType;
+                        if (type instanceof Class) {
+                            rawType = (Class<?>) type;
+                        }else if (type instanceof ParameterizedType) {
+                        	ParameterizedType ptype = (ParameterizedType)type;
+                            rawType = (Class<?>)ptype.getRawType();
+                        } else {
+                        	return null;
+                        }
+                        if(rawType==Integer.class) {
+                    		rawType = int.class;
+                    		type = int.class;
+                    	}else if(rawType==Short.class) {
+                    		rawType = short.class;
+                    		type = short.class;
+                    	}else if(rawType==Byte.class) {
+                    		rawType = byte.class;
+                    		type = byte.class;
+                    	}else if(rawType==Long.class) {
+                    		rawType = long.class;
+                    		type = long.class;
+                    	}else if(rawType==Double.class) {
+                    		rawType = double.class;
+                    		type = double.class;
+                    	}else if(rawType==Float.class) {
+                    		rawType = float.class;
+                    		type = float.class;
+                    	}else if(rawType==Boolean.class) {
+                    		rawType = boolean.class;
+                    		type = boolean.class;
+                    	}else if(rawType==Character.class) {
+                    		rawType = char.class;
+                    		type = char.class;
+                    	}
+                        return new MetaObjectUtility.QPropertyTypeInfo(rawType, type, null, false, false, method.getReturnType()==QBindable.class);
                 	}
             	}
     		}

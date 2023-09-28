@@ -871,6 +871,13 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "createTextureData(QVector<QImage*>)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Dependent
+                }
+            }
             InjectCode{
                 position: Position.Beginning
                 Text{content: "QtJambi_LibraryUtilities.internal.invalidateObject(__rcTextureData);"}

@@ -47,30 +47,12 @@ public interface QtByteEnumerator extends QtAbstractEnumerator {
 	}
 	
 	/**
-	 * @see Enum#ordinal()
-	 * @return the ordinal of this enumeration constant
-	 */
-	public int ordinal();
-	
-	/**
-	 * @see Enum#name()
-	 * @return the name of this enum constant
-	 */
-	public String name();
-	
-	/**
-	 * @see Enum#getDeclaringClass()
-	 * @return the Class object corresponding to this enum constant's enum type
-	 */
-	public Class<? extends QtByteEnumerator> getDeclaringClass();
-	
-	/**
 	 * Creates a comparator for enumeration values
 	 * @param <E>
 	 * @return comparator
 	 */
-	public static <E extends QtByteEnumerator> Comparator<E> comparator() {
-		return (E e1, E e2)->{
+	public static <E extends QtByteEnumerator> @NonNull Comparator<@StrictNonNull E> comparator() {
+		return (@StrictNonNull E e1, @StrictNonNull E e2)->{
 			return Byte.compare(e1.value(), e2.value());
 		};
 	}

@@ -34,6 +34,7 @@ TypeSystem{
     defaultSuperClass: "QtObject"
     qtLibrary: "QtGrpc"
     module: "qtjambi.grpc"
+    description: "Provides an ability to generate Qt-based classes from protobuf specifications used to communicate with gRPC services."
     ObjectType{
         name: "QAbstractGrpcChannel"
     }
@@ -54,6 +55,14 @@ TypeSystem{
         name: "QGrpcCallCredentials"
     }
     ObjectType{
+        name: "QGrpcChannelOptions"
+        since: 6.6
+    }
+    ObjectType{
+        name: "QGrpcCallOptions"
+        since: 6.6
+    }
+    ObjectType{
         name: "QGrpcCallReply"
     }
     ObjectType{
@@ -61,6 +70,12 @@ TypeSystem{
     }
     ObjectType{
         name: "QGrpcHttp2Channel"
+    }
+    ObjectType{
+        name: "QGrpcChannelOptions"
+    }
+    ObjectType{
+        name: "QGrpcCallOptions"
     }
     ObjectType{
         name: "QGrpcInsecureCallCredentials"

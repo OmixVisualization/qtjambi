@@ -153,6 +153,10 @@ TypeSystem{
                     codeClass: CodeClass.Native
                     Text{content: "jobject %out = qtjambi_cast<jobject>(%env, %in);"}
                 }
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
             }
         }
         ModifyFunction{

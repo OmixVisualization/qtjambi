@@ -30,9 +30,10 @@
 #ifndef QTDYNAMICMETAOBJECT_P_H
 #define QTDYNAMICMETAOBJECT_P_H
 
-#include <QtCore/private/qobject_p.h>
 #include <QtCore/QMetaObject>
+#include <QtCore/QObject>
 #include <QtCore/QSharedPointer>
+#include <QtCore/private/qobject_p.h>
 #include "qtjambiapi.h"
 #include "utils.h"
 #include "jobjectwrapper.h"

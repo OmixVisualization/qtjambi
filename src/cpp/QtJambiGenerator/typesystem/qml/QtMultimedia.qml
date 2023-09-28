@@ -35,6 +35,8 @@ TypeSystem{
     qtLibrary: "QtMultimedia"
     module: "qtjambi.multimedia"
     description: "Classes for audio, video, radio and camera functionality."
+    LoadTypeSystem{name: "QtGuiRhi"; since: 6.6}
+
     InjectCode{
         target: CodeClass.MetaInfo
         position: Position.Position1
@@ -77,10 +79,6 @@ TypeSystem{
     
     Rejection{
         className: "QPlatformVideoSink"
-    }
-    
-    Rejection{
-        className: "QRhi"
     }
     
     Rejection{
@@ -462,61 +460,86 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "constData<T>()const"
-            remove: RemoveFlag.All
+            Instantiation{
+                Argument{
+                    type: "char"
+                }
+                rename: "dataAsReadOnlyBuffer"
+                ModifyArgument{
+                    index: 0
+                    ReplaceType{
+                        modifiedType: "java.nio.@NonNull ByteBuffer"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "%out = %env->NewDirectByteBuffer(const_cast<char*>(%in), __qt_this->byteCount());\n"+
+                                      "%out = Java::Runtime::ByteBuffer::asReadOnlyBuffer(%env, %out);"}
+                    }
+                }
+            }
             since: 6
         }
         ModifyFunction{
             signature: "data<T>()const"
-            remove: RemoveFlag.All
+            Instantiation{
+                rename: "dataAsArray"
+                Argument{
+                    type: "char"
+                }
+                ModifyArgument{
+                    index: 0
+                    ReplaceType{
+                        modifiedType: "byte[]"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "%out = %env->NewByteArray(__qt_this->byteCount());\n"+
+                                      "%env->SetByteArrayRegion(%out, 0, __qt_this->byteCount(), reinterpret_cast<const jbyte*>(%in));"}
+                    }
+                }
+            }
             since: 6
         }
         ModifyFunction{
             signature: "data<T>()"
-            remove: RemoveFlag.All
+            Instantiation{
+                Argument{
+                    type: "char"
+                }
+                rename: "dataAsBuffer"
+                ModifyArgument{
+                    index: 0
+                    ReplaceType{
+                        modifiedType: "java.nio.@NonNull ByteBuffer"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "%out = %env->NewDirectByteBuffer(%in, __qt_this->byteCount());"}
+                    }
+                }
+            }
             since: 6
         }
         ModifyFunction{
             signature: "data() const"
-            rename: "toByteArray"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "byte[]"
-                }
-                NoNullPointer{}
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = %env->NewByteArray(__qt_this->byteCount());\n"+
-                                  "%env->SetByteArrayRegion(%out, 0, __qt_this->byteCount(), reinterpret_cast<const jbyte *>(%in));"}
-                }
-            }
+            remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "constData() const"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "java.nio.@NonNull ByteBuffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = %env->NewDirectByteBuffer(const_cast<void*>(%in), __qt_this->byteCount());\n"+
-                                  "%out = Java::Runtime::ByteBuffer::asReadOnlyBuffer(%env, %out);"}
-                }
-            }
+            remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "data()"
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "java.nio.@NonNull ByteBuffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = %env->NewDirectByteBuffer(%in, __qt_this->byteCount());"}
-                }
+            remove: RemoveFlag.All
+        }
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiMultimedia.java"
+                quoteAfterLine: "class QAudioBuffer__6_"
+                quoteBeforeLine: "}// class"
             }
+            since: 6
         }
     }
     
@@ -2582,6 +2605,17 @@ TypeSystem{
                 }
             }
         }
+        ModifyFunction{
+            signature: "setRhi(QRhi*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcRhi"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: [6, 6]
+        }
         since: [6, 2]
     }
     
@@ -2666,10 +2700,6 @@ TypeSystem{
     }
     SuppressedWarning{
         text: "WARNING(MetaJavaBuilder) :: skipping function 'QVideoSink::platformVideoSink', unmatched return type 'QPlatformVideoSink*'"
-        since: [6, 2]
-    }
-    SuppressedWarning{
-        text: "WARNING(MetaJavaBuilder) :: skipping function *, unmatched *type 'QRhi*'"
         since: [6, 2]
     }
     SuppressedWarning{

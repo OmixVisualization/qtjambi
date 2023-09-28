@@ -519,6 +519,7 @@ namespace rpp {
                             "windows.h",
                             "Windows.h",
                             "xcb/xcb.h",
+                            "qpa/qplatformscreen.h",
                             "CoreFoundation/CoreFoundation.h",
                             "qplatformdefs.h",
                             "QtActiveQt/QtActiveQtDepends",

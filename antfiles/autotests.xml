@@ -528,8 +528,8 @@
 			</then>
 			<else>
 				<qtjambi-resolve-path var="absOutputDir"     path="${outputDir}" />
-				<property name="jambiLib"      location="${deploymentdir}/native/${qtjambi.osname}/${kind}/lib"/>
-				<property name="jambiBin"      location="${deploymentdir}/native/${qtjambi.osname}/${kind}/bin"/>
+				<property name="jambiLib"      location="${deploymentdir}/platforms/${qtjambi.osname}/${kind}/lib"/>
+				<property name="jambiBin"      location="${deploymentdir}/platforms/${qtjambi.osname}/${kind}/bin"/>
 				<if>
 					<equals arg1="${jdk-exec-version}" arg2="8"/>
 					<then>
@@ -599,16 +599,16 @@
 							<os family="windows"/>
 							<then>
 								<property name="qtPath"           location="${qtjambi.qt.bindir}" />
-								<property name="qtJambiPath"      location="${deploymentdir}/native/${qtjambi.osname}/${kind}/bin" />
+								<property name="qtJambiPath"      location="${deploymentdir}/platforms/${qtjambi.osname}/${kind}/bin" />
 								<property name="testLibPath"      location="${outputDir}/${qtjambi.osname}/tests/bin" />
 							</then>
 							<else>
 								<property name="qtPath"           location="${qtjambi.qt.libdir}" />
-								<property name="qtJambiPath"      location="${deploymentdir}/native/${qtjambi.osname}/${kind}/lib" />
+								<property name="qtJambiPath"      location="${deploymentdir}/platforms/${qtjambi.osname}/${kind}/lib" />
 								<property name="testLibPath"      location="${outputDir}/${qtjambi.osname}/tests/lib" />
 							</else>
 						</if>
-						<property name="qtjambiPluginPath"   location="${deploymentdir}/native/${qtjambi.osname}/${kind}/plugins" />
+						<property name="qtjambiPluginPath"   location="${deploymentdir}/platforms/${qtjambi.osname}/${kind}/plugins" />
 						<property name="testPluginPath"   location="${outputDir}/${qtjambi.osname}/tests/${kind}/plugins" />
 						<property name="testQmlPath"   location="${outputDir}/${qtjambi.osname}/tests/${kind}/qml" />
 						<condition property="qtjambi.enable-method-logs" value="true" else="false">
@@ -739,17 +739,17 @@
 									<env key="${env.qtjambi.debug.trace}" value="1"/>
 									<env key="QT_MULTIMEDIA_PREFERRED_PLUGINS" value="Test"/>
 									<!--env key="QML_IMPORT_PATH" value="${absQtPath}/../qml"/-->
-									<env key="DYLD_FRAMEWORK_PATH" value="${qtPath}"/>
-									<env key="DYLD_LIBRARY_PATH" value="${qtJambiPath}"/>
 						<!--            <jvmarg value="-verbose"/> -->
 									<formatter type="xml" usefile="yes" />
 									<batchtest fork="yes" todir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}">
 										<fileset refid="qtjambi.autotest.classes"/>
 									</batchtest>
 								</junit>
-								<modify-test-results dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}" version="${qtjambi.jar.version}" mode="${kind}" jdk="${jdk-exec-version}"/>
 							</try>
+							<catch throwable="java.lang.Throwable" print="true">
+							</catch>
 							<finally>
+								<modify-test-results dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}" version="${qtjambi.jar.version}" mode="${kind}" jdk="${jdk-exec-version}"/>
 							</finally>
 						</trycatch>
 					</then>
@@ -760,13 +760,13 @@
 
     <target name="run">
         <if>
-            <available file="${deploymentdir}/native/${qtjambi.osname}/debug" type="dir"/>
+            <available file="${deploymentdir}/platforms/${qtjambi.osname}/debug" type="dir"/>
             <then>
                 <antcall target="debug.run"/>
             </then>
             <else>
                 <if>
-                    <available file="${deploymentdir}/native/${qtjambi.osname}/release" type="dir"/>
+                    <available file="${deploymentdir}/platforms/${qtjambi.osname}/release" type="dir"/>
                     <then>
                         <antcall target="release.run"/>
                     </then>
@@ -780,7 +780,7 @@
     
     <target name="release.run">
         <if>
-            <available file="${deploymentdir}/native/${qtjambi.osname}/release" type="dir"/>
+            <available file="${deploymentdir}/platforms/${qtjambi.osname}/release" type="dir"/>
             <then>
                 <if>
                     <os family="mac"/>
@@ -823,7 +823,7 @@
     
     <target name="debug.run">
         <if>
-            <available file="${deploymentdir}/native/${qtjambi.osname}/debug" type="dir"/>
+            <available file="${deploymentdir}/platforms/${qtjambi.osname}/debug" type="dir"/>
             <then>
                 <if>
                     <os family="mac"/>
@@ -866,7 +866,7 @@
     
     <target name="release.run8">
         <if>
-            <available file="${deploymentdir}/native/${qtjambi.osname}/release" type="dir"/>
+            <available file="${deploymentdir}/platforms/${qtjambi.osname}/release" type="dir"/>
             <then>
                 <antcall target="run.test">
                     <param name="jdk-exec-version" value="8"/>
@@ -882,7 +882,7 @@
     
     <target name="debug.run8">
         <if>
-            <available file="${deploymentdir}/native/${qtjambi.osname}/debug" type="dir"/>
+            <available file="${deploymentdir}/platforms/${qtjambi.osname}/debug" type="dir"/>
             <then>
                 <antcall target="run.test">
                     <param name="jdk-exec-version" value="8"/>
@@ -949,10 +949,20 @@
     <target name="tests.run.all-impl" depends="init.build">
         <trycatch>
             <try>
-                <antcall target="release.run"/>
-                <antcall target="debug.run"/>
-                <antcall target="release.run8"/>
-                <antcall target="debug.run8"/>
+				<if>
+					<available file="${deploymentdir}/platforms/${qtjambi.osname}/release" type="dir"/>
+					<then>
+						<antcall target="release.run"/>
+						<antcall target="release.run8"/>
+					</then>
+				</if>
+				<if>
+					<available file="${deploymentdir}/platforms/${qtjambi.osname}/debug" type="dir"/>
+					<then>
+						<antcall target="debug.run"/>
+						<antcall target="debug.run8"/>
+					</then>
+				</if>
             </try>
             <finally>
                 <if>

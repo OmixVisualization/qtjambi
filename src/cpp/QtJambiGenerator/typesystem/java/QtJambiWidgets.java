@@ -263,37 +263,6 @@ class QShortcut__{
     }
 }// class
 
-class QAbstractButton___ extends QAbstractButton {
-
-        /**
-         * Sets the shortcut to the key sequence for the given key string. For
-         * example "Ctrl+O" gives CTRL+'O'. The strings "Ctrl", "Shift", "Alt" and
-         * "Meta" are recognized, as well as their translated equivalents in the
-         * "QShortcut" context (using QObject::tr()). Up to four key codes may be
-         * entered by separating them with commas, e.g. "Alt+X,Ctrl+S,Q".
-         *
-         * @param key
-         *            The description of the key sequence. Typically used with tr()
-         *            so key sequences can be locale aware.
-         */
-        public final void setShortcut(String key) {
-            setShortcut(new QKeySequence(key));
-        }
-
-        /**
-         * Sets the shortcut to the key sequence for the given key. The result will
-         * depend on the currently running platform. The key sequence will be based
-         * on the first element in the list of key bindings for the key.
-         *
-         * @param key
-         *            The key for which to select a key sequence
-         */
-        public final void setShortcut(QKeySequence.StandardKey key) {
-            setShortcut(new QKeySequence(key));
-        }
-
-}// class
-
 class QLayout___ extends QLayout {
     @QtUninvokable
     public final void addWidget(io.qt.widgets.@Nullable QWidget w){
@@ -625,37 +594,6 @@ class QSplitter___ extends QSplitter {
 class QAction___ extends QAction {
 
         private QActionGroup __rcActionGroup = null;
-
-        /**
-         * Sets the shortcut to the key sequence for the given key string. For
-         * example "Ctrl+O" gives CTRL+'O'. The strings "Ctrl", "Shift", "Alt" and
-         * "Meta" are recognized, as well as their translated equivalents in the
-         * "QShortcut" context (using QObject::tr()). Up to four key codes may be
-         * entered by separating them with commas, e.g. "Alt+X,Ctrl+S,Q".
-         *
-         * @param key
-         *            The description of the key sequence. Typically used with tr()
-         *            so key sequences can be locale aware.
-         */
-        public final void setShortcut(String key) {
-            setShortcut(new QKeySequence(key));
-        }
-
-        /**
-         * Sets the shortcut to the key sequence for the given key. The result will
-         * depend on the currently running platform. The key sequence will be based
-         * on the first element in the list of key bindings for the key.
-         *
-         * @param key
-         *            The key for which to select a key sequence
-         */
-        public final void setShortcut(QKeySequence.StandardKey key) {
-            setShortcut(new QKeySequence(key));
-        }
-
-        public final void setIcon(QPixmap pm) {
-            setIcon(new QIcon(pm));
-        }
 
 }// class
 

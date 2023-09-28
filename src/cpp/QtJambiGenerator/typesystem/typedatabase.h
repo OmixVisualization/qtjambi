@@ -38,6 +38,7 @@
 #define TYPEDATABASE_H_
 
 #include <QList>
+#include <QSet>
 #include <qstringlist.h>
 #include <QVersionNumber>
 
@@ -199,6 +200,7 @@ private:
 
     DefinedPtr m_defined;
     QMap<QString,TypeSystemTypeEntry*> m_typeSystemsByQtLibrary;
+    QSet<QString> m_loadedTypesystems;
     QList<TypeSystemTypeEntry*> m_otherTypeSystems;
     ComplexTypeEntry * m_pixmapType;
     ComplexTypeEntry * m_bitmapType;

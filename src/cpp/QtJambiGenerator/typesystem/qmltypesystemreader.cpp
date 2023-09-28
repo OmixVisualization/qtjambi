@@ -747,7 +747,7 @@ void QmlTypeSystemReaderPrivate::parseRejection(Rejection* element){
         QString function = element->getFunctionName();
         QString field = element->getFieldName();
         QString enum_ = element->getEnumName();
-        if (cls == "*" && function == "*" && field == "*" && enum_ == "*") {
+        if (cls == "*" && function.isEmpty() && field.isEmpty() && enum_.isEmpty()) {
             TypesystemException::raise(QString("bad reject entry, neither 'className', 'functionName' nor 'fieldName'"));
         }
         m_database->addRejection(cls, function, field, enum_);
@@ -1143,7 +1143,7 @@ QList<AbstractObject*> QmlTypeSystemReaderPrivate::parseChildrenOfComplexType(co
                 QString function = rejection->getFunctionName();
                 QString field = rejection->getFieldName();
                 QString enum_ = rejection->getEnumName();
-                if (cls == "*" && function == "*" && field == "*" && enum_ == "*") {
+                if (cls == "*" && function.isEmpty() && field.isEmpty() && enum_.isEmpty()) {
                     TypesystemException::raise(QString("bad reject entry, neither 'enumName', 'functionFame' nor 'fieldName'"));
                 }
                 cls = cls=="*" ? element->getName() : element->getName() + "::" + cls;
@@ -1597,6 +1597,10 @@ void QmlTypeSystemReaderPrivate::parseModifyArgument(ModifyArgument* element, Ab
                             TypesystemException::raise(QStringLiteral("Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), item->metaObject()->className()));
                         }
                         argumentModification.removed = true;
+                    }
+                }else if(AddImpliciteCall* childElement = qobject_cast<AddImpliciteCall*>(item)){
+                    if (checkQtVersion(childElement)){
+                        argumentModification.impliciteCalls << childElement->getType();
                     }
                 }else{
                     TypesystemException::raise(QString("Unexpected child element %1 in %2.").arg(item->metaObject()->className(), element->metaObject()->className()));
@@ -2576,7 +2580,7 @@ void QmlTypeSystemReaderPrivate::parseNamespaceType(const QString& nameSpace, Na
 //                    targetName = name.mid(0, name.length()-element->getName().length()-2) + "$" + element->getName();
 //                }
 //            }
-            std::unique_ptr<NamespaceTypeEntry> entry(new NamespaceTypeEntry(name, qobject_cast<HeaderType*>(element)!=nullptr));
+            std::unique_ptr<NamespaceTypeEntry> entry(new NamespaceTypeEntry(name, qobject_cast<HeaderType*>(element)!=nullptr, element->hasMetaObject()));
             if(!targetName.isEmpty())
                 entry->setTargetLangName(targetName.replace("::", "$"));
             parseAttributesOfComplexType(element, entry.get());

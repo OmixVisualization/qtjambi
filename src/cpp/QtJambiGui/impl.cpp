@@ -102,20 +102,6 @@ void initialize_meta_info_gui(){
     GuiAPI::installThreadedPixmapsChecker([]()->bool{ return QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedPixmaps); });
 }
 
-extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_qpa_QPlatformIntegration_instance)
-    (JNIEnv *env, jclass)
-{
-    jobject result{nullptr};
-    QTJAMBI_TRY{
-        result = qtjambi_cast<jobject>(env, QGuiApplicationPrivate::platformIntegration());
-        QtJambiAPI::setCppOwnership(env, result);
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(env);
-    }QTJAMBI_TRY_END
-        return result;
-}
-
 extern "C" Q_DECL_EXPORT void JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QPainter_threadCheck)
 (JNIEnv *env, jclass, jobject _object)

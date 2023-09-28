@@ -46,12 +46,4 @@ public interface QtFlagEnumerator extends QtEnumerator, QtAbstractFlagEnumerator
 			return o;
 		return o==0 ? 0 : 0x01 << (o-1);
 	}
-
-	/**
-	 * Create a QFlags of the enum entry.
-	 * @return QFlags
-	 */
-	public default QFlags<?> asFlags(){
-		return EnumUtility.asFlags(this, QFlags.ConcreteWrapper::new);
-	}
 }

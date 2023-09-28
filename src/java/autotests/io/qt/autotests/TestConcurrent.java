@@ -521,7 +521,7 @@ public class TestConcurrent extends ApplicationInitializer {
     		}
     	});
     	FutureHandler.cancelInTheFuture(promise.future());
-    	Assert.assertTrue(isCanceled[0]);
+    	Assert.assertTrue("FutureHandler.cancelInTheFuture() did not cancel.", isCanceled[0]);
     }
     
     @Test
@@ -543,7 +543,7 @@ public class TestConcurrent extends ApplicationInitializer {
     		}
     	});
     	FutureHandler.cancelInTheFuture(FutureHandler.forward(promise.future()));
-    	Assert.assertTrue(isCanceled[0]);
+    	Assert.assertTrue("FutureHandler.cancelInTheFuture() after forwarding did not cancel.", isCanceled[0]);
     }
 
     public static void main(String args[]) {

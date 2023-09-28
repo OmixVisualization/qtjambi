@@ -234,7 +234,7 @@ public abstract class ClassAnalyzerUtility {
 					}
 					builder.append(')');
 					return new Throwing(new QMissingVirtualOverridingException(String.format(
-							"Cannot convert %2$s to %1$s because class is required to implement virtual method: %3$s",
+							"Incomplete %1$s subtype: Class %2$s needs to implement virtual method: %3$s",
 							pair.first.getSimpleName(), pair.second.getName(), builder)));
 				} else if (missingMethods.size() > 1) {
 					StringBuilder builder = new StringBuilder();
@@ -263,7 +263,7 @@ public abstract class ClassAnalyzerUtility {
 						builder.append(')');
 					}
 					return new Throwing(new QMissingVirtualOverridingException(String.format(
-							"Cannot convert %2$s to %1$s because class is required to implement following virtual methods: %3$s",
+							"Incomplete %1$s subtype: Class %2$s needs to implement following virtual methods: %3$s",
 							pair.first.getSimpleName(), pair.second.getName(), builder)));
 				}
 	
@@ -290,7 +290,7 @@ public abstract class ClassAnalyzerUtility {
 					}
 					builder.append(')');
 					return new Throwing(new QNonVirtualOverridingException(String.format(
-							"Cannot convert %2$s to %1$s because following method has to be declared final: %3$s",
+							"Malformed %1$s subtype: Following method has to be declared final in class %2$s: %3$s",
 							pair.first.getSimpleName(), pair.second.getName(), builder), true));
 				} else if (nonFinalMethods.size() > 1) {
 					StringBuilder builder = new StringBuilder();
@@ -320,7 +320,7 @@ public abstract class ClassAnalyzerUtility {
 						builder.append(')');
 					}
 					return new Throwing(new QNonVirtualOverridingException(String.format(
-							"Cannot convert %2$s to %1$s because following methods have to be declared final: %3$s",
+							"Malformed %1$s subtype: Following methods have to be declared final in class %2$s: %3$s",
 							pair.first.getSimpleName(), pair.second.getName(), builder), true));
 				}
 	
@@ -347,7 +347,7 @@ public abstract class ClassAnalyzerUtility {
 					}
 					builder.append(')');
 					return new Throwing(new QNonVirtualOverridingException(
-							String.format("Cannot convert %2$s to %1$s because it overrides following final method: %3$s",
+							String.format("Malformed %1$s subtype: Class %2$s overrides following final method: %3$s",
 									pair.first.getSimpleName(), pair.second.getName(), builder),
 							true));
 				} else if (nonOverridableMethods.size() > 1) {
@@ -378,7 +378,7 @@ public abstract class ClassAnalyzerUtility {
 						builder.append(')');
 					}
 					return new Throwing(new QNonVirtualOverridingException(
-							String.format("Cannot convert %2$s to %1$s because it overrides following final methods: %3$s",
+							String.format("Malformed %1$s subtype: Class %2$s overrides following final methods: %3$s",
 									pair.first.getSimpleName(), pair.second.getName(), builder),
 							true));
 				}

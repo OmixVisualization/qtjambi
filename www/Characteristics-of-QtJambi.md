@@ -610,7 +610,7 @@ implementation.
 QtJambi automatically detects properties by looking for typical getters
 and setters. For instance, if the class has two methods `int getFoo()`
 and `void setFoo(int)` the class is considered to have a property called
-"foo".
+"foo". 
 
 All features supported by [Qt
 properties](https://doc.qt.io/qt-6/properties.html) are also available
@@ -1034,7 +1034,7 @@ device.close();
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.5.1.jar:qtjambi-uic-6.5.1.jar
+     -p qtjambi-6.5.3.jar:qtjambi-uic-6.5.3.jar
      -m qtjambi.uic --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -1042,7 +1042,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.5.1.jar:qtjambi-uic-6.5.1.jar
+     -cp qtjambi-6.5.3.jar:qtjambi-uic-6.5.3.jar
      io.qt.uic.Main --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -1300,7 +1300,7 @@ and *QtJambi* libraries:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.5.2.jar:qtjambi-deployer-6.5.2.jar
+     -p qtjambi-6.5.3.jar:qtjambi-deployer-6.5.3.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1312,7 +1312,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.5.2.jar:qtjambi-deployer-6.5.2.jar
+     -cp qtjambi-6.5.3.jar:qtjambi-deployer-6.5.3.jar
      io.qt.qtjambi.deployer.Main plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1339,7 +1339,7 @@ This is especially necessary on macOS (arm64).
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.5.2.jar:qtjambi-deployer-6.5.2.jar
+     -p qtjambi-6.5.3.jar:qtjambi-deployer-6.5.3.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar

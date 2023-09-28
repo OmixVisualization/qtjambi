@@ -1314,6 +1314,12 @@ class ComplexTypeEntry : public TypeEntry {
         void setQEvent(bool b) {
             m_attributes.setFlag(IsQEvent, b);
         }
+        bool isQByteArrayView() const {
+            return m_attributes.testFlag(IsQByteArrayView);
+        }
+        void setQByteArrayView(bool b) {
+            m_attributes.setFlag(IsQByteArrayView, b);
+        }
         bool isGLsync() const {
             return m_attributes.testFlag(IsGLsync);
         }
@@ -1768,7 +1774,8 @@ protected:
             SkipMetaTypeRegistration = 0x20000,
             ForceMetaTypeRegistration = 0x40000,
             IsQMediaControl = 0x80000,
-            IsQEvent = 0x100000
+            IsQEvent = 0x100000,
+            IsQByteArrayView = 0x200000
         };
         QFlags<ComplexAttributeFlag> m_attributes;
 
@@ -1857,11 +1864,14 @@ class AliasTypeEntry : public ComplexTypeEntry {
 
 class NamespaceTypeEntry : public ComplexTypeEntry {
 public:
-        NamespaceTypeEntry(const QString &name, bool isHeader) : ComplexTypeEntry(name, NamespaceType), m_isHeader(isHeader) {
+        NamespaceTypeEntry(const QString &name, bool isHeader, bool hasMetaObject) : ComplexTypeEntry(name, NamespaceType), m_isHeader(isHeader), m_hasMetaObject(hasMetaObject) {
             disableNativeIdUsage();
         }
         bool isHeader() const{return m_isHeader;}
-private: uint m_isHeader : 1;
+        bool hasMetaObject() const{return m_hasMetaObject;}
+private:
+        uint m_isHeader : 1;
+        uint m_hasMetaObject : 1;
 };
 
 class ImplementorTypeEntry;

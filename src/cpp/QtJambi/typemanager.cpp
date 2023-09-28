@@ -1718,8 +1718,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                 }
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                 align = getValueAlignment(*t);
-                if(const QtJambiTypeInfo* typeInfo = getQTypeInfo(*t))
-                    isStaticType = typeInfo->isStatic;
+                if(OptionalBool op = isRegisteredAsStaticType(*t))
+                    isStaticType = op.value();
                 if(isFunctional(*t)){
                     QString typeName = QtJambiAPI::typeName(*t);
                     if(!typeName.startsWith("std::function") && (typeName.contains("(*)"))){
@@ -5653,8 +5653,8 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                     }
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                     align = getValueAlignment(*t);
-                    if(const QtJambiTypeInfo* typeInfo = getQTypeInfo(*t))
-                        isStaticType = typeInfo->isStatic;
+                    if(OptionalBool op = isRegisteredAsStaticType(*t))
+                        isStaticType = op.value();
                     if(isFunctional(*t)){
                         QString typeName = QtJambiAPI::typeName(*t);
                         if(!typeName.startsWith("std::function") && (typeName.contains("(*)"))){
@@ -6844,8 +6844,8 @@ bool QtJambiTypeManager::isStaticType(const QString &internalTypeName){
                 if(isPointer1){
                     isStaticType1 = false;
                 }else{
-                    if(const QtJambiTypeInfo* typeInfo = getQTypeInfo(*t1)){
-                        isStaticType1 = typeInfo->isStatic;
+                    if(OptionalBool op = isRegisteredAsStaticType(*t1)){
+                        isStaticType1 = op.value();
                     }
                 }
             }else{
@@ -6855,8 +6855,8 @@ bool QtJambiTypeManager::isStaticType(const QString &internalTypeName){
                 if(isPointer2){
                     isStaticType2 = false;
                 }else{
-                    if(const QtJambiTypeInfo* typeInfo = getQTypeInfo(*t2)){
-                        isStaticType2 = typeInfo->isStatic;
+                    if(OptionalBool op = isRegisteredAsStaticType(*t2)){
+                        isStaticType2 = op.value();
                     }
                 }
             }else{

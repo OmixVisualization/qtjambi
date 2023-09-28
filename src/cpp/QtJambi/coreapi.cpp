@@ -1012,8 +1012,8 @@ int CoreAPI::registerMetaType(JNIEnv *env, jclass containerType, jobjectArray in
                 if(!isPointer){
                     if(const std::type_info* t = getTypeByQtName(elementType)){
     #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                        if(const QtJambiTypeInfo* typeInfo = getQTypeInfo(*t)){
-                            isStaticType = typeInfo->isStatic;
+                        if(OptionalBool op = isRegisteredAsStaticType(*t)){
+                            isStaticType = op.value();
                         }
     #endif
                         size = getValueSize(*t);
@@ -1498,3 +1498,4 @@ jobject CoreAPI::getExtraSignal(JNIEnv *env, QtJambiNativeID sender__id, QtJambi
     }
     return nullptr;
 }
+

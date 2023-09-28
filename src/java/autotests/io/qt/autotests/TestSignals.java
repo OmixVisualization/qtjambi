@@ -132,7 +132,6 @@ public class TestSignals extends ApplicationInitializer{
 		receivedK[0] = value;
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Test
     public void testGenericSignal() {
 		GenericSender<String> sender = new GenericSender<>();

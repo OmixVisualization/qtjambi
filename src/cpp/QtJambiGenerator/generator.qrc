@@ -13,6 +13,8 @@
         <file alias="QtDesigner.qml">typesystem/qml/QtDesigner.qml</file>
         <file alias="QtGamepad.qml">typesystem/qml/QtGamepad.qml</file>
         <file alias="QtGui.qml">typesystem/qml/QtGui.qml</file>
+        <file alias="QtGuiQpa.qml">typesystem/qml/QtGuiQpa.qml</file>
+        <file alias="QtGuiRhi.qml">typesystem/qml/QtGuiRhi.qml</file>
         <file alias="QtHelp.qml">typesystem/qml/QtHelp.qml</file>
         <file alias="QtHttpServer.qml">typesystem/qml/QtHttpServer.qml</file>
         <file alias="QtLocation.qml">typesystem/qml/QtLocation.qml</file>

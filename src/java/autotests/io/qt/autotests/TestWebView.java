@@ -34,11 +34,12 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.QNativePointer;
 import io.qt.QtEnumerator;
-import io.qt.QtUtilities;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QLibraryInfo;
 import io.qt.core.QMetaObject;
+import io.qt.core.QMutex;
 import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QTimer;
@@ -57,16 +58,21 @@ public class TestWebView extends ApplicationInitializer {
     public static void testInitialize() throws Exception {
     	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS))
     		QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
-//    	QQuickWindow.setGraphicsApi(QSGRendererInterface.GraphicsApi.OpenGLRhi);
 		QtWebView.initialize();
-		QtUtilities.initializePackage("io.qt.quick");
-		QtUtilities.initializePackage("io.qt.quick.controls");
-		if(QLibraryInfo.version().majorVersion()>=6) {
-			io.qt.QtUtilities.loadQtLibrary("QuickControls2Impl");
-			io.qt.QtUtilities.loadQtLibrary("QuickLayouts");
-			io.qt.QtUtilities.loadQtLibrary("WebViewQuick");
-		}
+		Thread timeoutThread = new Thread(()->{
+			try {
+				synchronized(TestWebView.class) {
+					TestWebView.class.wait(5000);
+				}
+				System.err.println("TestWebView does not initialize. Doing a forced crash...");
+				QNativePointer.fromNative(1).object(QMutex.class).lock();
+			} catch (InterruptedException e) {
+			}
+		});
+		timeoutThread.setDaemon(true);
+		timeoutThread.start();
         ApplicationInitializer.testInitializeWithGui();
+        timeoutThread.interrupt();
         assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
     }
 

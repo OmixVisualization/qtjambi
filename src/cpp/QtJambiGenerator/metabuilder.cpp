@@ -498,8 +498,9 @@ bool MetaBuilder::build(FileModelItem&& dom) {
     // Start the generation...
     for(const ClassModelItem& cls : m_dom->classes()){
         MetaClass* meta_class = traverseClass(cls, pendingClasses, pendingFunctionals);
-        if(meta_class)
+        if(meta_class){
             addClass(meta_class);
+        }
     }
 
     for(const NamespaceModelItem& ns : m_dom->namespaces()){
@@ -565,6 +566,15 @@ bool MetaBuilder::build(FileModelItem&& dom) {
             MetaClass *cls = traverseTypeAlias(tai);
             if(cls){
                 addClass(cls);
+            }
+        }
+    }
+
+    for(const QPair<MetaClass*,QString>& pair : qAsConst(m_pendingScopedClasses)){
+        if(MetaClass *cls = m_meta_classes.findClass(pair.second, MetaClassList::QualifiedCppName)){
+            if(cls!=pair.first->enclosingClass()){
+                cls->addEnclosedClass(pair.first);
+                pair.first->setEnclosingClass(cls);
             }
         }
     }
@@ -1005,7 +1015,8 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                         }
                         if(meta_function->href().isEmpty()){
                             for(const DocFunction* function : qAsConst(functions)){
-                                if(function->minimalSignature()==meta_function->minimalSignature()){
+                                if(function->minimalSignature()==meta_function->minimalSignatureNoTemplate()
+                                    || (meta_function->functionTemplate() && function->minimalSignature()==meta_function->functionTemplate()->minimalSignatureNoTemplate())){
                                     meta_function->setHref(function->href());
                                     meta_function->setBrief(function->brief());
                                     break;
@@ -1166,7 +1177,8 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                         }
                         if(meta_function->href().isEmpty()){
                             for(const DocFunction* function : qAsConst(functions)){
-                                if(function->minimalSignature()==meta_function->minimalSignature()){
+                                if(function->minimalSignature()==meta_function->minimalSignatureNoTemplate()
+                                        || (meta_function->functionTemplate() && function->minimalSignature()==meta_function->functionTemplate()->minimalSignatureNoTemplate())){
                                     meta_function->setHref(function->href());
                                     meta_function->setBrief(function->brief());
                                     break;
@@ -2009,6 +2021,21 @@ void MetaBuilder::addClass(MetaClass *cls) {
             m_classNames.insert(fullQualifiedName, {});
         }
         m_meta_classes << cls;
+        if(m_current_class){
+            if(!cls->qualifiedCppName().startsWith(m_current_class->qualifiedCppName())){
+                QStringList qualifiedCppName = cls->qualifiedCppName().split("::");
+                if(qualifiedCppName.size()>1){
+                    qualifiedCppName.removeLast();
+                    m_pendingScopedClasses.append({cls, qualifiedCppName.join("::")});
+                }
+            }
+        }else if(cls->qualifiedCppName().contains("::")){
+            QStringList qualifiedCppName = cls->qualifiedCppName().split("::");
+            if(qualifiedCppName.size()>1){
+                qualifiedCppName.removeLast();
+                m_pendingScopedClasses.append({cls, qualifiedCppName.join("::")});
+            }
+        }
         if(!cls->typeEntry()->isString())
             if(TypeSystemTypeEntry* ts = m_database->findTypeSystem(cls->targetTypeSystem())){
                 m_typeSystemByPackage[cls->package()] = ts;
@@ -3812,6 +3839,8 @@ MetaClass *MetaBuilder::traverseClass(ClassModelItem class_item, QList<PendingCl
             type->setQObject(true);
         }else if(full_class_name==QLatin1String("QEvent")){
             type->setQEvent(true);
+        }else if(full_class_name==QLatin1String("QByteArrayView")){
+            type->setQByteArrayView(true);
         }else if(full_class_name==QLatin1String("QWidget")){
             type->setQWidget(true);
         }else if(full_class_name==QLatin1String("QWindow")){
@@ -4202,9 +4231,20 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
         if (meta_function) {
             if(m_current_class){
                 if(function_item->isInline() && !meta_function->isConstructor() && !meta_function->originalSignature().isEmpty()){
-                    for(MetaFunction *f : m_current_class->queryFunctionsByName(meta_function->originalName())) {
+                    for(MetaFunction *f : m_current_class->queryFunctionsByOriginalName(meta_function->originalName())) {
                         if(f->originalSignature()==meta_function->originalSignature()
                                 || f->minimalSignature()==meta_function->minimalSignature()){
+                            delete meta_function;
+                            meta_function = nullptr;
+                            break;
+                        }
+                    }
+                    if(!meta_function)
+                        continue;
+                }else if((function_item->hasBody() || function_item->isDeclDefault()) && !function_item->isInline()){
+                    for(MetaFunction *f : m_current_class->queryFunctionsByOriginalName(meta_function->originalName())) {
+                        if(f->originalSignature()==meta_function->originalSignature()
+                            || f->minimalSignature()==meta_function->minimalSignature()){
                             delete meta_function;
                             meta_function = nullptr;
                             break;
@@ -4240,7 +4280,7 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                                 if(!targetClass){
                                     ComplexTypeEntry *gte = m_database->findComplexType(mod.targetType);
                                     if(!gte){
-                                        gte = new NamespaceTypeEntry(mod.targetType, true);
+                                        gte = new NamespaceTypeEntry(mod.targetType, true, false);
                                         gte->setTargetTypeSystem(ts->name());
                                         gte->setTargetLangPackage(ts->name());
                                         gte->setCodeGeneration(TypeEntry::GenerateAll);
@@ -4276,7 +4316,7 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                         if(!targetClass){
                             ComplexTypeEntry *gte = m_database->findComplexType(mod.targetType);
                             if(!gte){
-                                gte = new NamespaceTypeEntry(mod.targetType, true);
+                                gte = new NamespaceTypeEntry(mod.targetType, true, false);
                                 gte->setTargetTypeSystem(m_current_class->typeEntry()->targetTypeSystem());
                                 gte->setTargetLangPackage(m_current_class->typeEntry()->targetTypeSystem());
                                 gte->setCodeGeneration(TypeEntry::GenerateAll);
@@ -4496,6 +4536,8 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                                 && !meta_function->isPrivate() && !function_item->isDeleted()){
                             targetClass->typeEntry()->setHasEquals();
                         }
+                    }else if(function_item->isDeleted()){
+                        targetClass->addDeletedFunction(meta_function);
                     }
                     if(!meta_function->isFinalInCpp()){
                         targetClass->typeEntry()->setHasVirtualFunctions();
@@ -5256,6 +5298,8 @@ bool MetaBuilder::setupFunctionTemplateInstantiations(MetaClass *meta_class){
                                 }
                             }else if(template_instantiation.arguments[k].name==tparam->name()){
                                 untreatedTemplateParameters.removeOne(tparam);
+                            }else if(!tparam->defaultType().isEmpty()){
+                                untreatedTemplateParameters.removeOne(tparam);
                             }
                         }else{
                             untreatedTemplateParameters.removeOne(tparam);
@@ -5451,6 +5495,7 @@ void MetaBuilder::fixFunctions(MetaClass * cls) {
     MetaClass *interfaceImplClass{nullptr};
     MetaClass *super_class = cls->baseClass();
     MetaFunctionList funcs = cls->functions();
+    MetaFunctionList deletedFuncs = cls->deletedFunctions();
 
 //     printf("fix functions for %s\n", qPrintable(name()));
 
@@ -5539,6 +5584,14 @@ void MetaBuilder::fixFunctions(MetaClass * cls) {
                                 }
                                 if (!sf->isFinalInTargetLang() && f->isFinalInTargetLang() && !f->isDeclaredFinalInCpp()) {
                                     *f -= MetaAttributes::FinalInTargetLang;
+                                    if(!sf->implementingClass()->isInterface() || sf->wasPublic()){
+                                        if(!sf->wasPrivate())
+                                            *f += MetaAttributes::Override;
+                                        else if(sf->isDeprecated() && !f->isDeprecated()){
+                                            *f += MetaAttributes::Deprecated;
+                                            f->setDeprecatedComment(sf->deprecatedComment());
+                                        }
+                                    }
                                     //                                 printf("   --- inherit virtual\n");
                                 }
                                 if (!f->isFinalInTargetLang() && f->isPrivate() && !sf->isPrivate()) {
@@ -5644,6 +5697,25 @@ void MetaBuilder::fixFunctions(MetaClass * cls) {
                         *f += MetaAttributes::FinalInCpp;
 //                        ReportHandler::warning(QString("final overriding method %1 in class %2").arg(f->signature()).arg(f->implementingClass()->qualifiedCppName()));
                         break;
+                    }
+                }
+            }
+            if(!sf->isFinalInCpp()){
+                for (int fi = 0; fi < deletedFuncs.size(); ++fi) {
+                    MetaFunction *f = deletedFuncs.at(fi);
+                    if (f->isRemovedFromAllLanguages(f->implementingClass()))
+                        continue;
+                    //ReportHandler::warning(QString("deleted method %1 in class %2").arg(f->signature()).arg(f->implementingClass()->qualifiedCppName()));
+                    const uint cmp = f->compareTo(sf);
+                    if ((cmp & MetaFunction::EqualModifiedName)
+                        && (cmp & MetaFunction::EqualArguments)) {
+                        f = f->copy();
+                        f->setFunctionType(MetaFunction::EmptyFunction);
+                        f->setVisibility(sf->visibility());
+                        *f += MetaAttributes::FinalInTargetLang;
+                        *f += MetaAttributes::FinalInCpp;
+                        *f += MetaAttributes::Override;
+                        funcs_to_add[f] = interfaceImplClass ? sf->modifications(interfaceImplClass) : FunctionModificationList{};
                     }
                 }
             }

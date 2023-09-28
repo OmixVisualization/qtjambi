@@ -200,7 +200,7 @@ public class MakeTask extends Task {
     	        	String ndkRoot = (String)PropertyHelper.getProperty(getProject(), "qtjambi.android.ndk");
     	        	if(ndkRoot!=null) {
     	        		newEnv = new TreeMap<>();
-    	        		newEnv.put("ANDROID_NDK_ROOT", ndkRoot);
+    	        		newEnv.put("ANDROID_NDK_ROOT", ndkRoot.replace('\\', '/'));
     	        		File nrkRootFile = new File(ndkRoot);
     	    	        switch(OSInfo.os()) {
     	    	        case Windows:

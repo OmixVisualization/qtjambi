@@ -72,6 +72,10 @@ class AbstractMetaObjectUtility {
         return null;
     }
     
+    static MetaObjectUtility.QPropertyTypeInfo getQPropertyTypeInfo(Method method) {
+        return null;
+    }
+    
     static <PropertyInfo> PropertyInfo analyzeProperty(QObject object, QtObject property, Class<PropertyInfo> propertyInfoClass) {
         return null;
     }

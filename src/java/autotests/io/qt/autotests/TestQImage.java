@@ -40,7 +40,6 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 
 import io.qt.QtUtilities;
-import io.qt.autotests.ApplicationInitializer;
 import io.qt.core.QByteArray;
 import io.qt.core.QCoreApplication;
 import io.qt.gui.QImage;

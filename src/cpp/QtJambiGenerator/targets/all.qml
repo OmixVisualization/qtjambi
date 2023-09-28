@@ -33,6 +33,8 @@ import QtJambiGenerator 1.0
 TypeSystem{
     LoadTypeSystem{name: "QtCore";              generate: true; unless: "QTJAMBI_NO_CORE"}
     LoadTypeSystem{name: "QtGui";               generate: true; unless: "QTJAMBI_NO_GUI"}
+    LoadTypeSystem{name: "QtGuiQpa";            generate: true; unless: "QTJAMBI_NO_GUI";              since: 7}
+    LoadTypeSystem{name: "QtGuiRhi";            generate: true; unless: "QTJAMBI_NO_GUI";              since: 6.6}
     LoadTypeSystem{name: "QtOpenGL";            generate: true; unless: "QTJAMBI_NO_OPENGL";           since: 6}
     LoadTypeSystem{name: "QtConcurrent";        generate: true; unless: "QTJAMBI_NO_CONCURRENT"}
     LoadTypeSystem{name: "QtWidgets";           generate: true; unless: "QTJAMBI_NO_WIDGETS"}

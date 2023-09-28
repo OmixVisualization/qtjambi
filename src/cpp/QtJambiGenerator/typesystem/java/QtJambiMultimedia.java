@@ -262,6 +262,40 @@ class QAudioFormat__{
     }
 }// class
 
+class QAudioBuffer__6_{
+
+    public final QAudioFrame.AsByte dataAsU8M(){
+        return QAudioFrame.dataAsAudioFrame(dataAsBuffer(), QAudioFormat.ChannelConfig.ChannelConfigMono);
+    }
+
+    public final QAudioFrame.AsShort dataAsS16M(){
+        return QAudioFrame.dataAsAudioFrame(dataAsBuffer().asShortBuffer(), QAudioFormat.ChannelConfig.ChannelConfigMono);
+    }
+
+    public final QAudioFrame.AsInt dataAsS32M(){
+        return QAudioFrame.dataAsAudioFrame(dataAsBuffer().asIntBuffer(), QAudioFormat.ChannelConfig.ChannelConfigMono);
+    }
+
+    public final QAudioFrame.AsFloat dataAsF32M(){
+        return QAudioFrame.dataAsAudioFrame(dataAsBuffer().asFloatBuffer(), QAudioFormat.ChannelConfig.ChannelConfigMono);
+    }
+
+    public final QAudioFrame.AsByte dataAsU8S(){
+        return QAudioFrame.dataAsAudioFrame(dataAsBuffer(), QAudioFormat.ChannelConfig.ChannelConfigStereo);
+    }
+
+    public final QAudioFrame.AsShort dataAsS16S(){
+        return QAudioFrame.dataAsAudioFrame(dataAsBuffer().asShortBuffer(), QAudioFormat.ChannelConfig.ChannelConfigStereo);
+    }
+
+    public final QAudioFrame.AsInt dataAsS32S(){
+        return QAudioFrame.dataAsAudioFrame(dataAsBuffer().asIntBuffer(), QAudioFormat.ChannelConfig.ChannelConfigStereo);
+    }
+
+    public final QAudioFrame.AsFloat dataAsF32S(){
+        return QAudioFrame.dataAsAudioFrame(dataAsBuffer().asFloatBuffer(), QAudioFormat.ChannelConfig.ChannelConfigStereo);
+    }
+}// class
 
 class QCamera__{
     

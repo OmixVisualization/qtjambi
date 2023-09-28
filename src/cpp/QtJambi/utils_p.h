@@ -82,7 +82,8 @@ typedef void(*SmartPointerDeleter)(void *, bool);
 enum class NativeToJavaConversionMode{
     None,
     MakeCopyOfValues,
-    TransferOwnership
+    TransferOwnership,
+    CppOwnership
 };
 
 jobject internal_convertNativeToJavaObject(JNIEnv *env, const void *qt_object, const std::type_info& typeId, const char *qtName, NativeToJavaConversionMode mode, bool *ok = nullptr);

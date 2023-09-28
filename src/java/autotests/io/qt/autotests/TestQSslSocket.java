@@ -42,7 +42,6 @@ import java.util.List;
 import org.junit.After;
 import org.junit.BeforeClass;
 
-import io.qt.autotests.ApplicationInitializer;
 import io.qt.core.QDateTime;
 import io.qt.core.Qt;
 import io.qt.network.QAbstractSocket;

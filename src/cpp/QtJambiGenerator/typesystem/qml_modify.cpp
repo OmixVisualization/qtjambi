@@ -1318,3 +1318,18 @@ void Delegate::setIsSelfReturning(bool newIsSelfReturning)
     m_isSelfReturning = newIsSelfReturning;
     emit isSelfReturningChanged();
 }
+
+AddImpliciteCall::AddImpliciteCall(QObject *parent) : AbstractObject(parent){}
+
+QString AddImpliciteCall::getType() const
+{
+    return type;
+}
+
+void AddImpliciteCall::setType(const QString &newType)
+{
+    if (type == newType)
+        return;
+    type = newType;
+    emit typeChanged();
+}

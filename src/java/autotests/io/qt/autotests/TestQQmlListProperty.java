@@ -35,7 +35,6 @@ import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 
 import io.qt.QtUtilities;
-import io.qt.autotests.ApplicationInitializer;
 import io.qt.core.QObject;
 import io.qt.core.QUrl;
 import io.qt.gui.QMatrix4x4;

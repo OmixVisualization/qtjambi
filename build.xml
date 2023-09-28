@@ -182,7 +182,7 @@ Further options:
     
     <target name="targetproxy">
         <antcall inheritAll="false" target="${proxy.target}"/>
-   </target>
+    </target>
 
     <target name="javadocs" depends="log, init.taskdef" description="Generates the Java Doc pages for QtJambi">
         <foreach-version targets="javadocs-impl"/>

@@ -228,9 +228,9 @@ signals:
 
 private:
     QString className = "*";
-    QString functionName = "*";
-    QString fieldName = "*";
-    QString enumName = "*";
+    QString functionName = "";
+    QString fieldName = "";
+    QString enumName = "";
     Q_PROPERTY(QString className READ getClassName WRITE setClassName NOTIFY classNameChanged)
     Q_PROPERTY(QString functionName READ getFunctionName WRITE setFunctionName NOTIFY functionNameChanged)
     Q_PROPERTY(QString fieldName READ getFieldName WRITE setFieldName NOTIFY fieldNameChanged)

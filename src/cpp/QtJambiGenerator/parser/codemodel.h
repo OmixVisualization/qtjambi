@@ -655,6 +655,8 @@ class _FunctionModelItem: public _MemberModelItem {
         void setHasBody(bool hasBody);
         bool isDeleted() const;
         void setDeleted(bool deleted);
+        bool isDeclDefault() const;
+        void setDeclDefault(bool d);
         OperatorType operatorType() const;
         void setOperatorType(OperatorType op);
 
@@ -680,7 +682,8 @@ class _FunctionModelItem: public _MemberModelItem {
             IsInvokable = 0x020,
             IsDeclFinal = 0x040,
             HasBody = 0x080,
-            IsDeleted = 0x100
+            IsDeleted = 0x100,
+            IsDeclDefault = 0x200
         };
         ArgumentList _M_arguments;
         CodeModel::FunctionType _M_functionType;

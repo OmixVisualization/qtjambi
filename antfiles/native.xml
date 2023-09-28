@@ -45,7 +45,7 @@
 		</pathconvert>
 		<trycatch>
 			<try>
-				<java fork="true" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
+				<java fork="true" jvm="${tools.jvm}" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
 					<jvmarg value="-Djava.library.path=${librarypath}"/>
 					<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/tmp"/>
 					<!--jvmarg value="-Dio.qt.verbose-loading=true"/-->
@@ -98,12 +98,7 @@
         <equals arg1="${qtjambi.configuration}" arg2="debug_and_release" />
         <then>
             <antcall target="library.native.bundle.release"/>
-			<if>
-				<istrue value="${qtjambi.debug.bundles}"/>
-				<then>
-					<antcall target="library.native.bundle.debug"/>
-				</then>
-			</if>
+			<antcall target="library.native.bundle.debug"/>
         </then>
       </if>
 
@@ -134,12 +129,7 @@
         <equals arg1="${qtjambi.configuration}" arg2="debug_and_release" />
         <then>
             <antcall target="library.native.bundle.plugins.release"/>
-			<if>
-				<istrue value="${qtjambi.debug.bundles}"/>
-				<then>
-					<antcall target="library.native.bundle.plugins.debug"/>
-				</then>
-			</if>
+			<antcall target="library.native.bundle.plugins.debug"/>
         </then>
       </if>
 
@@ -169,82 +159,136 @@
 	<if>
 		<equals arg1="${qtjambi.osname}" arg2="android"/>
 		<then>
-			<delete dir="${deploymentdir}/native/android-arm/release"/>
-			<mkdir dir="${deploymentdir}/native/android-arm/release"/>
-			<delete dir="${deploymentdir}/native/android-arm64/release"/>
-			<mkdir dir="${deploymentdir}/native/android-arm64/release"/>
-			<delete dir="${deploymentdir}/native/android-x86/release"/>
-			<mkdir dir="${deploymentdir}/native/android-x86/release"/>
-			<delete dir="${deploymentdir}/native/android-x64/release"/>
-			<mkdir dir="${deploymentdir}/native/android-x64/release"/>
+			<antcall target="library.native.bundle.release-impl">
+				<param name="qtjambi.osname" value="android-arm"/>
+			</antcall>
+			<antcall target="library.native.bundle.release-impl">
+				<param name="qtjambi.osname" value="android-arm64"/>
+			</antcall>
+			<antcall target="library.native.bundle.release-impl">
+				<param name="qtjambi.osname" value="android-x86"/>
+			</antcall>
+			<antcall target="library.native.bundle.release-impl">
+				<param name="qtjambi.osname" value="android-x64"/>
+			</antcall>
 		</then>
 		<else>
-			<delete dir="${deploymentdir}/native/${qtjambi.osname}/release"/>
-			<mkdir dir="${deploymentdir}/native/${qtjambi.osname}/release"/>
+			<antcall target="library.native.bundle.release-impl"/>
 		</else>
 	</if>
-    <ant antfile="${basedir}/src/java/modules/modules.xml" inheritrefs="true" target="build">
-        <property name="qtjambi-native-bundle" value="true"/>
-        <property name="platformjar.debug" value="false"/>
-        <property name="platformjar.debug.suffix" value=""/>
-    </ant>
-    <antcall target="library.native.bundle.plugins.release"/>
-    <antcall target="create-qtlib-native-bundle">
+  </target>
+  
+  <target name="library.native.bundle.release-impl">
+	<delete dir="${deploymentdir}/platforms/${qtjambi.osname}/release"/>
+	<mkdir dir="${deploymentdir}/platforms/${qtjambi.osname}/release"/>
+	<ant antfile="${basedir}/src/java/modules/modules.xml" inheritrefs="true" target="build">
+		<property name="qtjambi-native-bundle" value="true"/>
+		<property name="platformjar.debug" value="false"/>
+		<property name="platformjar.debug.suffix" value=""/>
+	</ant>
+	<antcall target="library.native.bundle.plugins.release"/>
+	<antcall target="create-qtlib-native-bundle">
 		<param name="debug.conf" value="release"/>
-        <param name="platformjar.debug.suffix" value=""/>
+		<param name="platformjar.debug.suffix" value=""/>
 	</antcall>
   </target>
 
   <target name="library.native.bundle.plugins.release">
-    <ant antfile="${basedir}/src/java/plugins/plugins.xml" inheritrefs="true" target="build">
-        <property name="qtjambi-build" value="true"/>
-        <property name="qtjambi.testbuild" value="false"/>
-        <property name="platformjar.debug" value="false"/>
-        <property name="qtjambi.plugin.bundle" value="true"/>
-    </ant>
-    <if>
-        <istrue value="${qtjambi.qml.any.true}"/>
-        <then>
-            <ant antfile="${basedir}/src/java/qml/qml.xml" inheritrefs="true" target="build">
-                <property name="qtjambi-build" value="true"/>
-                <property name="qtjambi.testbuild" value="false"/>
-                <property name="platformjar.debug" value="false"/>
-                <property name="qtjambi.qml.bundle" value="true"/>
-            </ant>
-        </then>
-    </if>
-    <ant target="library.native.bundle.plugins-create">
-        <property name="platformjar.debug" value="false"/>
-        <property name="platformjar.configuration" value="release"/>
-        <property name="platformjar.debug.suffix" value=""/>
-    </ant>
+	<if>
+		<equals arg1="${qtjambi.osname}" arg2="android"/>
+		<then>
+			<antcall target="library.native.bundle.plugins.release-impl">
+				<param name="qtjambi.osname" value="android-arm"/>
+			</antcall>
+			<antcall target="library.native.bundle.plugins.release-impl">
+				<param name="qtjambi.osname" value="android-arm64"/>
+			</antcall>
+			<antcall target="library.native.bundle.plugins.release-impl">
+				<param name="qtjambi.osname" value="android-x86"/>
+			</antcall>
+			<antcall target="library.native.bundle.plugins.release-impl">
+				<param name="qtjambi.osname" value="android-x64"/>
+			</antcall>
+		</then>
+		<else>
+			<antcall target="library.native.bundle.plugins.release-impl"/>
+		</else>
+	</if>
+  </target>
+
+  <target name="library.native.bundle.plugins.release-impl">
+	<ant antfile="${basedir}/src/java/plugins/plugins.xml" inheritrefs="true" target="build">
+		<property name="qtjambi-build" value="true"/>
+		<property name="qtjambi.testbuild" value="false"/>
+		<property name="platformjar.debug" value="false"/>
+		<property name="qtjambi.plugin.bundle" value="true"/>
+	</ant>
+	<if>
+		<istrue value="${qtjambi.qml.any.true}"/>
+		<then>
+			<ant antfile="${basedir}/src/java/qml/qml.xml" inheritrefs="true" target="build">
+				<property name="qtjambi-build" value="true"/>
+				<property name="qtjambi.testbuild" value="false"/>
+				<property name="platformjar.debug" value="false"/>
+				<property name="qtjambi.qml.bundle" value="true"/>
+			</ant>
+		</then>
+	</if>
+	<ant target="library.native.bundle.plugins-create">
+		<property name="platformjar.debug" value="false"/>
+		<property name="platformjar.configuration" value="release"/>
+		<property name="platformjar.debug.suffix" value=""/>
+	</ant>
   </target>
 
   <target name="library.native.bundle.debug">
 	<if>
 		<equals arg1="${qtjambi.osname}" arg2="android"/>
 		<then>
-			<delete dir="${deploymentdir}/native/android-arm/debug"/>
-			<mkdir dir="${deploymentdir}/native/android-arm/debug"/>
-			<delete dir="${deploymentdir}/native/android-arm64/debug"/>
-			<mkdir dir="${deploymentdir}/native/android-arm64/debug"/>
-			<delete dir="${deploymentdir}/native/android-x86/debug"/>
-			<mkdir dir="${deploymentdir}/native/android-x86/debug"/>
-			<delete dir="${deploymentdir}/native/android-x64/debug"/>
-			<mkdir dir="${deploymentdir}/native/android-x64/debug"/>
+			<antcall target="library.native.bundle.debug-impl">
+				<param name="qtjambi.osname" value="android-arm"/>
+			</antcall>
+			<antcall target="library.native.bundle.debug-impl">
+				<param name="qtjambi.osname" value="android-arm64"/>
+			</antcall>
+			<antcall target="library.native.bundle.debug-impl">
+				<param name="qtjambi.osname" value="android-x86"/>
+			</antcall>
+			<antcall target="library.native.bundle.debug-impl">
+				<param name="qtjambi.osname" value="android-x64"/>
+			</antcall>
 		</then>
 		<else>
-			<delete dir="${deploymentdir}/native/${qtjambi.osname}/debug"/>
-			<mkdir dir="${deploymentdir}/native/${qtjambi.osname}/debug"/>
+			<antcall target="library.native.bundle.debug-impl"/>
 		</else>
 	</if>
-    <ant antfile="${basedir}/src/java/modules/modules.xml" inheritrefs="true" target="build">
-        <property name="qtjambi-native-bundle" value="true"/>
-        <property name="platformjar.debug" value="true"/>
-        <property name="platformjar.debug.suffix" value="-debug"/>
-        <property name="platformjar.debug.suffix2" value="_debug"/>
-    </ant>
-    <antcall target="library.native.bundle.plugins.debug"/>
+  </target>
+
+  <target name="library.native.bundle.debug-impl">
+	<if>
+		<equals arg1="${qtjambi.osname}" arg2="android"/>
+		<then>
+			<delete dir="${deploymentdir}/platforms/android-arm/debug"/>
+			<mkdir dir="${deploymentdir}/platforms/android-arm/debug"/>
+			<delete dir="${deploymentdir}/platforms/android-arm64/debug"/>
+			<mkdir dir="${deploymentdir}/platforms/android-arm64/debug"/>
+			<delete dir="${deploymentdir}/platforms/android-x86/debug"/>
+			<mkdir dir="${deploymentdir}/platforms/android-x86/debug"/>
+			<delete dir="${deploymentdir}/platforms/android-x64/debug"/>
+			<mkdir dir="${deploymentdir}/platforms/android-x64/debug"/>
+		</then>
+		<else>
+			<delete dir="${deploymentdir}/platforms/${qtjambi.osname}/debug"/>
+			<mkdir dir="${deploymentdir}/platforms/${qtjambi.osname}/debug"/>
+		</else>
+	</if>
+	<ant antfile="${basedir}/src/java/modules/modules.xml" inheritrefs="true" target="build">
+		<property name="qtjambi-native-bundle" value="true"/>
+		<property name="platformjar.debug" value="true"/>
+		<property name="platformjar.debug.suffix" value="-debug"/>
+		<property name="platformjar.debug.suffix2" value="_debug"/>
+	</ant>
+	<antcall target="library.native.bundle.plugins.debug"/>
 	<if>
 		<or>
 			<equals arg1="${qtjambi.osname}" arg2="mac"/>
@@ -263,35 +307,64 @@
   </target>
 
   <target name="library.native.bundle.plugins.debug">
-    <ant antfile="${basedir}/src/java/plugins/plugins.xml" inheritrefs="true" target="build">
-        <property name="qtjambi-build" value="true"/>
-        <property name="qtjambi.testbuild" value="false"/>
-        <property name="platformjar.debug" value="true"/>
-        <property name="qtjambi.plugin.bundle" value="true"/>
-    </ant>
-    <if>
-        <istrue value="${qtjambi.qml.any.true}"/>
-        <then>
-            <ant antfile="${basedir}/src/java/qml/qml.xml" inheritrefs="true" target="build">
-                <property name="qtjambi-build" value="true"/>
-                <property name="qtjambi.testbuild" value="false"/>
-                <property name="platformjar.debug" value="true"/>
-                <property name="qtjambi.qml.bundle" value="true"/>
-            </ant>
-        </then>
-    </if>
-    <ant target="library.native.bundle.plugins-create">
-        <property name="platformjar.debug" value="true"/>
-        <property name="platformjar.configuration" value="debug"/>
-        <property name="platformjar.debug.suffix" value="-debug"/>
-    </ant>
+	<if>
+		<equals arg1="${qtjambi.osname}" arg2="android"/>
+		<then>
+			<antcall target="library.native.bundle.plugins.debug-impl">
+				<param name="qtjambi.osname" value="android-arm"/>
+			</antcall>
+			<antcall target="library.native.bundle.plugins.debug-impl">
+				<param name="qtjambi.osname" value="android-arm64"/>
+			</antcall>
+			<antcall target="library.native.bundle.plugins.debug-impl">
+				<param name="qtjambi.osname" value="android-x86"/>
+			</antcall>
+			<antcall target="library.native.bundle.plugins.debug-impl">
+				<param name="qtjambi.osname" value="android-x64"/>
+			</antcall>
+		</then>
+		<else>
+			<antcall target="library.native.bundle.plugins.debug-impl"/>
+		</else>
+	</if>
+  </target>
+
+  <target name="library.native.bundle.plugins.debug-impl">
+	<ant antfile="${basedir}/src/java/plugins/plugins.xml" inheritrefs="true" target="build">
+		<property name="qtjambi-build" value="true"/>
+		<property name="qtjambi.testbuild" value="false"/>
+		<property name="platformjar.debug" value="true"/>
+		<property name="qtjambi.plugin.bundle" value="true"/>
+	</ant>
+	<if>
+		<istrue value="${qtjambi.qml.any.true}"/>
+		<then>
+			<ant antfile="${basedir}/src/java/qml/qml.xml" inheritrefs="true" target="build">
+				<property name="qtjambi-build" value="true"/>
+				<property name="qtjambi.testbuild" value="false"/>
+				<property name="platformjar.debug" value="true"/>
+				<property name="qtjambi.qml.bundle" value="true"/>
+			</ant>
+		</then>
+	</if>
+	<ant target="library.native.bundle.plugins-create">
+		<property name="platformjar.debug" value="true"/>
+		<property name="platformjar.configuration" value="debug"/>
+		<property name="platformjar.debug.suffix" value="-debug"/>
+	</ant>
   </target>
 
   <target name="library.native.bundle.plugins-create">
     <if>
-        <available file="${plugins.builddir}/${platformjar.configuration}/plugins/containeraccess" type="dir"/>
+		<and>
+			<available file="${plugins.builddir}/${platformjar.configuration}/plugins/containeraccess" type="dir"/>
+			<or>
+				<isfalse value="${platformjar.debug}"/>
+				<istrue value="${qtjambi.debug.bundles}"/>
+			</or>
+		</and>
         <then>
-			<create-native-deployment outputDirectory="${deploymentdir}/native/${qtjambi.osname}/${platformjar.configuration}" debug="${platformjar.debug}" module="containeraccess" plugin="true" forcedebuginfo="${qtjambi.force.debug.info}"/>
+			<create-native-deployment outputDirectory="${deploymentdir}/platforms/${qtjambi.osname}/${platformjar.configuration}" debug="${platformjar.debug}" module="containeraccess" plugin="true" forcedebuginfo="false"/>
 			<jar destfile="${deploymentdir}/qtjambi-plugin-containeraccess-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.jar.version}.jar">
 				<manifest>
 					<attribute name="Built-By" value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
@@ -301,7 +374,7 @@
 					<attribute name="Bundle-Version"         value="${qtjambi.version.bundle}"/>
 					<attribute name="Bundle-ManifestVersion" value="2"/>
 				</manifest>
-				<fileset dir="${deploymentdir}/native/${qtjambi.osname}/${platformjar.configuration}" includes="${library.includes}"/>
+				<fileset dir="${deploymentdir}/platforms/${qtjambi.osname}/${platformjar.configuration}" includes="${library.includes}"/>
 			</jar>
         </then>
     </if>
@@ -315,9 +388,15 @@
   </target>
   <target name="create-qtlib-native-bundle">
 		<if>
-			<not>
-				<available file="${deploymentdir}/native/qt-lib-core-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.version.bundle}.jar"/>
-			</not>
+			<and>
+				<not>
+					<available file="${deploymentdir}/native/qt-lib-core-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.version.bundle}.jar"/>
+				</not>
+				<or>
+					<equals arg1="${debug.conf}" arg2="release"/>
+					<istrue value="${qtjambi.debug.bundles}"/>
+				</or>
+			</and>
 			<then>
 				<echo>${deploymentdir}/native/qt-lib-core-native-${qtjambi.osname}${platformjar.debug.suffix}-${qtjambi.version.bundle}.jar not available.</echo>
 				<trycatch>
@@ -340,7 +419,7 @@
 						<condition property="force" value="--force-debug-info" else="--">
 							<istrue value="${qtjambi.force.debug.info}"/>
 						</condition>
-						<java fork="true" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
+						<java fork="true" jvm="${tools.jvm}" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
 							<jvmarg value="-Djava.library.path=${librarypath}"/>
 							<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/tmp"/>
 							<jvmarg value="${XstartOnFirstThread}"/>
@@ -366,6 +445,14 @@
 								<fileset dir="${deploymentdir}/native" includes="qtjambi-deployer-native-*-${qtjambi.jar.version}.jar"/>
 							</classpath>
 						</java>
+						<if>
+							<istrue value="${qtjambi.force.debug.info}"/>
+							<then>
+								<move todir="${deploymentdir}/debuginfo">
+								  <fileset dir="${deploymentdir}/native" includes="qt-*-debuginfo-${qtjambi.osname}-*.jar"/>
+								</move>
+							</then>
+						</if>
 					</try>
 					<finally>
 						<delete dir="${outputDir}/tmp"/>

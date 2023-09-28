@@ -113,6 +113,8 @@ public final class LibraryBundle {
     private boolean hasPluginPaths;
     private boolean hasQmlPaths;
     private boolean hasTrPaths;
+    private boolean hasSourcePaths;
+    private boolean isDebuginfo;
     private List<Library> libraries;
     private List<QPair<String,Boolean>> files;
     private List<String> qmlLibraries;
@@ -166,7 +168,10 @@ public final class LibraryBundle {
         if(depl.module!=null && depl.module.isEmpty())
         	depl.module = null;
         String configuration = doc.getDocumentElement().getAttribute("configuration");
-        if(LibraryBundle.Configuration.Release.toString().equalsIgnoreCase(configuration))
+        if("debuginfo".equals(configuration)) {
+        	depl.configuration = LibraryBundle.Configuration.Release;
+        	depl.isDebuginfo = true;
+        }else if(LibraryBundle.Configuration.Release.toString().equalsIgnoreCase(configuration))
         	depl.configuration = LibraryBundle.Configuration.Release;
         else if(LibraryBundle.Configuration.Debug.toString().equalsIgnoreCase(configuration))
         	depl.configuration = LibraryBundle.Configuration.Debug;
@@ -189,6 +194,8 @@ public final class LibraryBundle {
                 	depl.hasPluginPaths = true;
                 }else if(name.startsWith("translations/")) {
                 	depl.hasTrPaths = true;
+                }else if(name.startsWith("sources/")) {
+                	depl.hasSourcePaths = true;
                 }
 				Library libraryEntry;
 				switch(elementName) {
@@ -294,6 +301,10 @@ public final class LibraryBundle {
 		URL source() {
 			return depl.url;
 		}
+		
+		LibraryBundle bundle() {
+			return depl;
+		}
 	    
 	    public String getName() {
 			return name;
@@ -319,12 +330,6 @@ public final class LibraryBundle {
 	    	}
 	    }
 	    
-	    public boolean isHeadersExtracting() {
-	    	synchronized(this.headersExtractionFunctions) {
-	    		return !headersExtractionFunctions.isEmpty();
-	    	}
-	    }
-	    
 	    public boolean isLoaded() {
 	        return loaded;
 	    }
@@ -337,9 +342,6 @@ public final class LibraryBundle {
 //	        	synchronized(this.qmlExtractionFunctions) {
 //	        		qmlExtractionFunctions.clear();
 //	        	}
-	        	synchronized(this.headersExtractionFunctions) {
-	        		headersExtractionFunctions.clear();
-	        	}
 	        }
 	    }
 	    
@@ -349,46 +351,34 @@ public final class LibraryBundle {
 
 	    private final List<ExtractionFunction> extractionFunctions = new LinkedList<>();
 	    private final List<ExtractionFunction> qmlExtractionFunctions = new LinkedList<>();
-	    private final List<ExtractionFunction> headersExtractionFunctions = new LinkedList<>();
 
 		void addExtractionFunction(ExtractionFunction loadFunction) {
-			synchronized(this.extractionFunctions) {
-				this.extractionFunctions.add(loadFunction);
-			}
+			addExtractionFunctions(Collections.singletonList(loadFunction));
 		}
 		
 		void addQmlExtractionFunction(ExtractionFunction loadFunction) {
-			synchronized(this.qmlExtractionFunctions) {
-				this.qmlExtractionFunctions.add(loadFunction);
-			}
-		}
-		
-		void addHeadersExtractionFunction(ExtractionFunction loadFunction) {
-			synchronized(this.headersExtractionFunctions) {
-				this.headersExtractionFunctions.add(loadFunction);
-			}
+			addQmlExtractionFunctions(Collections.singletonList(loadFunction));
 		}
 		
 		void addExtractionFunctions(Collection<ExtractionFunction> loadFunctions) {
 			synchronized(this.extractionFunctions) {
+				if(this.extractionFunctions.isEmpty()) {
+					this.extractionFunctions.add(()->Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format("extracting %1$s", name)));
+				}
 				this.extractionFunctions.addAll(loadFunctions);
 			}
 		}
 		
 		void addQmlExtractionFunctions(Collection<ExtractionFunction> loadFunctions) {
 			synchronized(this.qmlExtractionFunctions) {
+				if(this.qmlExtractionFunctions.isEmpty()) {
+					this.qmlExtractionFunctions.add(()->Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format("extracting qml of %1$s", name)));
+				}
 				this.qmlExtractionFunctions.addAll(loadFunctions);
 			}
 		}
 		
-		void addHeadersExtractionFunctions(Collection<ExtractionFunction> loadFunctions) {
-			synchronized(this.headersExtractionFunctions) {
-				this.headersExtractionFunctions.addAll(loadFunctions);
-			}
-		}
-		
 		public void extract() throws Throwable {
-			Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format("extracting %1$s", name));
 			ExtractionFunction first = null;
 			while(true){
 				synchronized(this.extractionFunctions) {
@@ -403,7 +393,6 @@ public final class LibraryBundle {
 		}
 		
 		public void extractQml() throws Throwable {
-			Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format("extracting qml of %1$s", name));
 			ExtractionFunction first = null;
 			while(true){
 				synchronized(this.qmlExtractionFunctions) {
@@ -412,21 +401,6 @@ public final class LibraryBundle {
 						break;
 					else
 						first = this.qmlExtractionFunctions.get(0);
-				}
-				first.extract();
-			}
-		}
-		
-		public void extractHeaders() throws Throwable {
-			Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format("extracting headers of %1$s", name));
-			ExtractionFunction first = null;
-			while(true){
-				synchronized(this.headersExtractionFunctions) {
-					this.headersExtractionFunctions.remove(first);
-					if(this.headersExtractionFunctions.isEmpty())
-						break;
-					else
-						first = this.headersExtractionFunctions.get(0);
 				}
 				first.extract();
 			}
@@ -492,5 +466,13 @@ public final class LibraryBundle {
 		WrongVersionException(String msg) {
 			super(msg);
 		}
+	}
+
+	public boolean hasSourcePaths() {
+		return hasSourcePaths;
+	}
+
+	public boolean isDebuginfo() {
+		return isDebuginfo;
 	}
 }

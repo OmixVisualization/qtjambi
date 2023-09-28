@@ -34,6 +34,7 @@ TypeSystem{
     defaultSuperClass: "QtObject"
     qtLibrary: "QtWidgets"
     module: "qtjambi"
+    LoadTypeSystem{name: "QtGui"; unless: "QTJAMBI_NO_GUI"}
     Template{
         name: "gui.addAction"
         Text{content: "public final QAction addAction(%EXTRA String text %INFIX_EXTRA, Object receiver, String method %END_EXTRA %CONNECTION_TYPE) {\n"+
@@ -5300,13 +5301,6 @@ TypeSystem{
     
     ObjectType{
         name: "QGraphicsSceneContextMenuEvent"
-        ModifyFunction{
-            signature: "operator=(const QGraphicsSceneContextMenuEvent &)"
-            Delegate{
-                name: "set"
-                deprecated: true
-            }
-        }
     }
     
     ObjectType{
@@ -5331,13 +5325,6 @@ TypeSystem{
                 }
             }
         }
-        ModifyFunction{
-            signature: "operator=(const QGraphicsSceneDragDropEvent &)"
-            Delegate{
-                name: "set"
-                deprecated: true
-            }
-        }
     }
     
     ObjectType{
@@ -5352,79 +5339,30 @@ TypeSystem{
                 }
             }
         }
-        ModifyFunction{
-            signature: "operator=(const QGraphicsSceneEvent &)"
-            Delegate{
-                name: "set"
-                deprecated: true
-            }
-        }
     }
     
     ObjectType{
         name: "QGraphicsSceneMoveEvent"
-        ModifyFunction{
-            signature: "operator=(const QGraphicsSceneMoveEvent &)"
-            Delegate{
-                name: "set"
-                deprecated: true
-            }
-        }
     }
     
     ObjectType{
         name: "QGraphicsSceneResizeEvent"
-        ModifyFunction{
-            signature: "operator=(const QGraphicsSceneResizeEvent &)"
-            Delegate{
-                name: "set"
-                deprecated: true
-            }
-        }
     }
     
     ObjectType{
         name: "QGraphicsSceneHelpEvent"
-        ModifyFunction{
-            signature: "operator=(const QGraphicsSceneHelpEvent &)"
-            Delegate{
-                name: "set"
-                deprecated: true
-            }
-        }
     }
     
     ObjectType{
         name: "QGraphicsSceneHoverEvent"
-        ModifyFunction{
-            signature: "operator=(const QGraphicsSceneHoverEvent &)"
-            Delegate{
-                name: "set"
-                deprecated: true
-            }
-        }
     }
     
     ObjectType{
         name: "QGraphicsSceneMouseEvent"
-        ModifyFunction{
-            signature: "operator=(const QGraphicsSceneMouseEvent &)"
-            Delegate{
-                name: "set"
-                deprecated: true
-            }
-        }
     }
     
     ObjectType{
         name: "QGraphicsSceneWheelEvent"
-        ModifyFunction{
-            signature: "operator=(const QGraphicsSceneWheelEvent &)"
-            Delegate{
-                name: "set"
-                deprecated: true
-            }
-        }
     }
     
     ObjectType{
@@ -5455,23 +5393,12 @@ TypeSystem{
     
     ObjectType{
         name: "QAbstractButton"
-        InjectCode{
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiWidgets.java"
-                quoteAfterLine: "class QAbstractButton___"
-                quoteBeforeLine: "}// class"
-            }
-        }
-        ExtraIncludes{
-            Include{
-                fileName: "io.qt.gui.*"
-                location: Include.Java
-            }
-        }
-        ExtraIncludes{
-            Include{
-                fileName: "io.qt.gui.*"
-                location: Include.Java
+        ModifyFunction{
+            signature: "setShortcut(QKeySequence)"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "io.qt.gui.QKeySequence.@NonNull StandardKey"}
             }
         }
     }
@@ -11996,6 +11923,22 @@ TypeSystem{
                 }
             }
         }
+        ModifyFunction{
+            signature: "setShortcut(QKeySequence)"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "QKeySequence.@NonNull StandardKey"}
+            }
+        }
+        ModifyFunction{
+            signature: "setIcon(QIcon)"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "@NonNull QPixmap"}
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+        }
         ExtraIncludes{
             Include{
                 fileName: "io.qt.gui.*"
@@ -13005,6 +12948,25 @@ TypeSystem{
             ModifyArgument{
                 index: 2
                 invalidateAfterUse: true
+            }
+        }
+        ModifyFunction{
+            signature: "newProxyWidget(const QWidget*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                threadAffinity: true
+            }
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Shell
+                    ownership: Ownership.Cpp
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
             }
         }
         ModifyFunction{

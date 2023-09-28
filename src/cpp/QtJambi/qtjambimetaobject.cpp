@@ -506,7 +506,7 @@ public:
     void setJavaInstance(jweak weak);
     static QtJambiMetaObjectPrivate* get(QtJambiMetaObject* obj);
     static const QtJambiMetaObjectPrivate* get(const QtJambiMetaObject* obj);
-    static const QMetaObject *getQMetaObjectForJavaClass(JNIEnv *env, jclass object_class, const std::function<const QMetaObject *(bool&)>& original_meta_object_provider);
+    static const QMetaObject *getQMetaObjectForJavaClass(JNIEnv *env, jclass object_class, const std::function<const QMetaObject *(bool&, bool&)>& original_meta_object_provider);
     static const QMetaObject *getQMetaObjectForJavaClass(JNIEnv *env, jclass object_class, const std::type_info& typeId);
     static void clearAtShutdown(JNIEnv * env);
 private:
@@ -796,17 +796,10 @@ void QtJambiMetaObjectPrivate::initialize(JNIEnv *env, const QMetaObject *origin
 
     {
         jclass java_super_class = env->GetSuperclass(m_clazz);
-#if QT_VERSION < QT_VERSION_CHECK(5,14,0)
-        if(java_super_class)
-            q->d.superdata = QtJambiMetaObjectPrivate::getQMetaObjectForJavaClass(env, java_super_class, original_meta_object, hasCustomMetaObject);
-        else
-            q->d.superdata = nullptr;
-#else
         if(java_super_class)
             q->d.superdata.direct = CoreAPI::metaObjectForClass(env, java_super_class, original_meta_object, hasCustomMetaObject);
         else
             q->d.superdata.direct = nullptr;
-#endif
     }
 
     jsize intData_len = Java::QtJambi::MetaObjectData$IntArray::size(env, intData);
@@ -2752,7 +2745,7 @@ QSharedPointer<const QtJambiMetaObject> QtJambiMetaObject::dispose(JNIEnv * env)
     return pointer;
 }
 
-const QMetaObject *QtJambiMetaObjectPrivate::getQMetaObjectForJavaClass(JNIEnv *env, jclass object_class, const std::function<const QMetaObject *(bool&)>& original_meta_object_provider)
+const QMetaObject *QtJambiMetaObjectPrivate::getQMetaObjectForJavaClass(JNIEnv *env, jclass object_class, const std::function<const QMetaObject *(bool&,bool&)>& original_meta_object_provider)
 {
     Q_ASSERT(object_class != nullptr);
     Java::QtJambi::QtUtilities::initializePackage(env, object_class);
@@ -2760,89 +2753,87 @@ const QMetaObject *QtJambiMetaObjectPrivate::getQMetaObjectForJavaClass(JNIEnv *
     // If original_meta_object is null then we have to look it up
 
     int classHash = Java::Runtime::Object::hashCode(env,object_class);
-    const QMetaObject *returned = nullptr;
     {
         QReadLocker locker(gMetaObjectsLock());
         Q_UNUSED(locker)
-        returned = gMetaObjects->value(classHash, nullptr);
+        if(gMetaObjects->contains(classHash))
+            return gMetaObjects->value(classHash, nullptr);
     }
+    const QMetaObject *returned = nullptr;
     {
-        if (returned == nullptr) {
-            // Return original meta object for generated classes, and
-            // create a new dynamic meta object for subclasses
-            QtJambiMetaObject* dynamicResult = nullptr;
-            bool basedOnCustomMetaObject = false;
-            if (Java::QtJambi::ClassAnalyzerUtility::isGeneratedClass(env, object_class)) {
-                returned = original_meta_object_provider(basedOnCustomMetaObject);
-                if(!returned && !basedOnCustomMetaObject){
-                    JavaException exceptionHandler;
-                    dynamicResult = new QtJambiMetaObject(env, object_class);
-                    try{
-                        dynamicResult->initialize(env, nullptr, false);
-                    }catch(const JavaException& exn){
-                        (void)dynamicResult->dispose(env);
-                        exn.raise();
-                        throw;
+        // Return original meta object for generated classes, and
+        // create a new dynamic meta object for subclasses
+        QtJambiMetaObject* dynamicResult = nullptr;
+        bool basedOnCustomMetaObject = false;
+        bool isNamespace = false;
+        if (Java::QtJambi::ClassAnalyzerUtility::isGeneratedClass(env, object_class)) {
+            returned = original_meta_object_provider(basedOnCustomMetaObject, isNamespace);
+            if(!returned && !basedOnCustomMetaObject && !isNamespace){
+                JavaException exceptionHandler;
+                dynamicResult = new QtJambiMetaObject(env, object_class);
+                try{
+                    dynamicResult->initialize(env, nullptr, false);
+                }catch(const JavaException& exn){
+                    (void)dynamicResult->dispose(env);
+                    exn.raise();
+                    throw;
+                }
+                returned = dynamicResult;
+            }
+        } else {
+            const QMetaObject *original_meta_object = original_meta_object_provider(basedOnCustomMetaObject, isNamespace);
+            if (isNamespace) {
+                returned = original_meta_object;
+            }else {
+                dynamicResult = new QtJambiMetaObject(env, object_class);
+                try{
+                    dynamicResult->initialize(env, original_meta_object, basedOnCustomMetaObject);
+                }catch(const JavaException& exn){
+                    (void)dynamicResult->dispose(env);
+                    exn.raise();
+                    throw;
+                }
+                if(basedOnCustomMetaObject){
+                    int signal_count = dynamicResult->d_ptr->m_signal_count>0;
+                    (void)dynamicResult->dispose(env);
+                    if(signal_count>0){
+                        QString class_name = QtJambiAPI::getClassName(env, object_class).replace("$", ".");
+                        Java::Runtime::UnsupportedOperationException::throwNew(env, QStringLiteral("Cannot define signals in class %1 because it extends type with dynamic meta object.").arg(class_name) QTJAMBI_STACKTRACEINFO );
                     }
+                    returned = original_meta_object;
+                }else{
                     returned = dynamicResult;
                 }
-            } else {
-                const QMetaObject *original_meta_object = original_meta_object_provider(basedOnCustomMetaObject);
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                if (original_meta_object==qt_getQtMetaObject()) {
-#else
-                if (original_meta_object==&Qt::staticMetaObject) {
-#endif
-                    returned = original_meta_object;
-                }else {
-                    dynamicResult = new QtJambiMetaObject(env, object_class);
-                    try{
-                        dynamicResult->initialize(env, original_meta_object, basedOnCustomMetaObject);
-                    }catch(const JavaException& exn){
-                        (void)dynamicResult->dispose(env);
-                        exn.raise();
-                        throw;
-                    }
-                    if(basedOnCustomMetaObject){
-                        int signal_count = dynamicResult->d_ptr->m_signal_count>0;
-                        (void)dynamicResult->dispose(env);
-                        if(signal_count>0){
-                            QString class_name = QtJambiAPI::getClassName(env, object_class).replace("$", ".");
-                            Java::Runtime::UnsupportedOperationException::throwNew(env, QStringLiteral("Cannot define signals in class %1 because it extends type with dynamic meta object.").arg(class_name) QTJAMBI_STACKTRACEINFO );
-                        }
-                        returned = original_meta_object;
-                    }else{
-                        returned = dynamicResult;
-                    }
-                }
             }
-            QWriteLocker locker(gMetaObjectsLock());
-            Q_UNUSED(locker)
-            // check if someone added a meta object meanwhile
-            if(const QMetaObject *_returned = gMetaObjects->value(classHash, nullptr)){
-                if(dynamicResult && dynamicResult!=_returned){
-                    dynamicResult->dispose(env);
-                }
-                return _returned;
-            }
-            gMetaObjects->insert(classHash, returned);
         }
+        Q_ASSERT(returned || isNamespace);
+        QWriteLocker locker(gMetaObjectsLock());
+        Q_UNUSED(locker)
+        // check if someone added a meta object meanwhile
+        if(gMetaObjects->contains(classHash)){
+            const QMetaObject *_returned = gMetaObjects->value(classHash, nullptr);
+            if(dynamicResult && dynamicResult!=_returned){
+                dynamicResult->dispose(env);
+            }
+            return _returned;
+        }
+        gMetaObjects->insert(classHash, returned);
     }
-    Q_ASSERT(returned);
     return returned;
 }
 
 const QMetaObject *CoreAPI::metaObjectForClass(JNIEnv *env, jclass object_class, const QMetaObject *original_meta_object, bool _hasCustomMetaObject)
 {
     return QtJambiMetaObjectPrivate::getQMetaObjectForJavaClass(env, object_class,
-                                        [env, object_class, original_meta_object, _hasCustomMetaObject](bool& basedOnCustomMetaObject) -> const QMetaObject * {
+                                        [env, object_class, original_meta_object, _hasCustomMetaObject](bool& basedOnCustomMetaObject, bool& isNamespace) -> const QMetaObject * {
                                             if (original_meta_object == nullptr) {
                                                 QString class_name = QtJambiAPI::getClassName(env, object_class).replace(".", "/");
-                                                if (class_name=="io/qt/core/Qt") {
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-                                                    return qt_getQtMetaObject();
+                                                if((isNamespace = isJavaNameNamespace(class_name))){
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+                                                    return registeredNamespaceMetaObject(class_name);
 #else
-                                                    return &Qt::staticMetaObject;
+                                                    if (class_name=="io/qt/core/Qt")
+                                                        return qt_getQtMetaObject();
 #endif
                                                 } else {
                                                     Q_ASSERT(!class_name.isEmpty());
@@ -2868,7 +2859,7 @@ const QMetaObject *CoreAPI::metaObjectForClass(JNIEnv *env, jclass object_class,
 const QMetaObject *QtJambiMetaObjectPrivate::getQMetaObjectForJavaClass(JNIEnv *env, jclass object_class, const std::type_info& typeId)
 {
     return QtJambiMetaObjectPrivate::getQMetaObjectForJavaClass(env, object_class,
-                                        [&typeId](bool& basedOnCustomMetaObject) -> const QMetaObject * {
+                                        [&typeId](bool& basedOnCustomMetaObject, bool&) -> const QMetaObject * {
                                             const QMetaObject* superType = superTypeForCustomMetaObject(typeId);
                                             return (basedOnCustomMetaObject = superType) ? superType : registeredOriginalMetaObject(typeId);
                                         }

@@ -1071,6 +1071,9 @@ bool TypeDatabase::parseFile(const QString &filename, const QStringList &importI
         qWarning() << "Optional file: " << qPrintable(filename) << ": could not be found";
         return true;  // we're still ok
     }
+    if(m_loadedTypesystems.contains(filename))
+        return true;
+    m_loadedTypesystems.insert(filename);
 
     qsizetype count = m_entries.size();
 
@@ -1225,7 +1228,7 @@ bool TypeDatabase::isClassRejected(const QString &class_name) {
     if(!m_rejectedClasses.contains(class_name)){
         m_rejectedClasses[class_name] = false;
         for(const TypeRejection &r : m_rejections){
-            if(r.function_name == "*" && r.field_name == "*" && r.enum_name == "*"){
+            if(r.function_name.isEmpty() && r.field_name.isEmpty() && r.enum_name.isEmpty()){
                 if(r.class_name.contains("*")){
                     QRegularExpression exp(QRegularExpression::wildcardToRegularExpression(r.class_name));
                     if(exp.match(class_name).hasMatch()){
@@ -1243,25 +1246,41 @@ bool TypeDatabase::isClassRejected(const QString &class_name) {
 }
 
 bool TypeDatabase::isEnumRejected(const QString &class_name, const QString &enum_name) {
-    for(const TypeRejection &r : m_rejections) {
-        if(r.function_name == "*" && r.field_name == "*") {
-            if (r.enum_name == enum_name
-                    && (r.class_name == class_name || r.class_name == "*")) {
-                m_rejectedClasses[class_name + "::" + enum_name] = true;
-                return true;
+    if(!m_rejectedClasses.contains(class_name + "::" + enum_name)){
+        m_rejectedClasses[class_name + "::" + enum_name] = false;
+        for(const TypeRejection &r : m_rejections) {
+            if(r.function_name.isEmpty() && r.field_name.isEmpty()) {
+                if(r.class_name == class_name || r.class_name == "*"){
+                    if(r.enum_name.contains("*")){
+                        QRegularExpression exp(QRegularExpression::wildcardToRegularExpression(r.enum_name));
+                        if(exp.match(enum_name).hasMatch()){
+                            m_rejectedClasses[class_name + "::" + enum_name] = true;
+                            break;
+                        }
+                    }else if (r.enum_name == enum_name) {
+                        m_rejectedClasses[class_name + "::" + enum_name] = true;
+                        break;
+                    }
+                }
             }
         }
     }
-    m_rejectedClasses[class_name + "::" + enum_name] = false;
-    return false;
+    return m_rejectedClasses[class_name + "::" + enum_name];
 }
 
 bool TypeDatabase::isFunctionRejected(const QString &class_name, const QString &function_name) {
     for(const TypeRejection &r : m_rejections){
-        if(r.enum_name == "*" && r.field_name == "*"){
-            if (r.function_name == function_name &&
-                (r.class_name == class_name || r.class_name == "*"))
-                return true;
+        if(r.enum_name.isEmpty() && r.field_name.isEmpty()){
+            if(r.class_name == class_name || r.class_name == "*"){
+                if(r.function_name.contains("*")){
+                    QRegularExpression exp(QRegularExpression::wildcardToRegularExpression(r.function_name));
+                    if(exp.match(function_name).hasMatch()){
+                        return true;
+                    }
+                }else if (r.function_name == function_name) {
+                    return true;
+                }
+            }
         }
     }
     return false;
@@ -1270,10 +1289,17 @@ bool TypeDatabase::isFunctionRejected(const QString &class_name, const QString &
 
 bool TypeDatabase::isFieldRejected(const QString &class_name, const QString &field_name) {
     for(const TypeRejection &r : m_rejections){
-        if(r.function_name == "*" && r.enum_name == "*") {
-            if (r.field_name == field_name &&
-                    (r.class_name == class_name || r.class_name == "*"))
-                return true;
+        if(r.function_name.isEmpty() && r.enum_name.isEmpty()) {
+            if(r.class_name == class_name || r.class_name == "*"){
+                if(r.field_name.contains("*")){
+                    QRegularExpression exp(QRegularExpression::wildcardToRegularExpression(r.field_name));
+                    if(exp.match(field_name).hasMatch()){
+                        return true;
+                    }
+                }else if (r.field_name == field_name) {
+                    return true;
+                }
+            }
         }
     }
     return false;

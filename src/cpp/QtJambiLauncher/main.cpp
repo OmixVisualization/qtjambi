@@ -586,11 +586,12 @@ enum Parameters : qint64{
     ModulePath,
     LibraryPath,
     JVMArguments,
-    JNIMinimumVersion
+    JNIMinimumVersion,
+    JVMArgumentFilters
 };
 
 void findJVM(const QDir& directory, QFileInfo& jvmLibraryInfo, const QString& libraryNamePattern){
-    for(const QFileInfo& info : directory.entryInfoList()) {
+    for(const QFileInfo& info : directory.entryInfoList(QDir::NoDotAndDotDot)) {
         if(info.isDir()){
             findJVM(info.absoluteFilePath(), jvmLibraryInfo, libraryNamePattern);
             if(jvmLibraryInfo.isFile())
@@ -611,8 +612,10 @@ int main(int argc, char *argv[])
     QFileInfo programFile = QFileInfo(QLatin1String(argv[0]));
     QDir programDir = programFile.absoluteDir();
     QString programName = programFile.fileName();
+#ifdef Q_OS_WIN
     if(programName.endsWith(".exe"))
         programName.chop(4);
+#endif
     QCoreApplication::setApplicationName(programName);
     //QDir current = QDir::current();
     //const char* __metaData = reinterpret_cast<const char *>(metaData+17);
@@ -634,6 +637,9 @@ int main(int argc, char *argv[])
         value = QCborValue::fromCbor(reader);
         paramsFile.close();
     }
+    programDir.cdUp();
+    programDir.cdUp();
+    programDir.cdUp();
 #endif
     if(error.error!=QCborError::NoError){
         fprintf( stderr, "Error while loading runtime parameters: %s\n", qPrintable(error.errorString()));
@@ -674,46 +680,155 @@ int main(int argc, char *argv[])
                 }
             }
         }
-#elif defined(Q_OS_MAC)
-        bool isArm64 = QSysInfo::currentCpuArchitecture()=="arm64";
-        for(int v=20; v>=minimumJVM; --v){
-            QProcess process;
-            QStringList args;
-            if(isArm64)
-                args = QStringList{"-F", "-v", QString::number(v), "-a", "arm64"};
-            else
-                args = QStringList{"-F", "-v", QString::number(v)};
-            process.start("/usr/libexec/java_home", args);
-            if (process.waitForFinished()){
-                QByteArray data = process.readAll();
-                vmLocation = QString::fromUtf8(data.constData()).trimmed();
-                if(!vmLocation.startsWith("/")){
-                    vmLocation = "";
+        if(!QDir(vmLocation).exists() || !(QFileInfo::exists(QDir(vmLocation).absoluteFilePath("bin/java.exe")) || QFileInfo::exists(QDir(vmLocation).absoluteFilePath("jre/bin/java.exe")))){
+            QStringList envVariables;
+            envVariables << "JAVADIR"  << "JAVAHOME" << "JDK_HOME" << "JAVA_HOME" << "JAVA_DIR";
+
+            QStringList jpaths;
+            for (int i = 0; i < envVariables.size(); ++i) {
+                QByteArray baEnv = qgetenv(envVariables.at(i).toLatin1());
+                if (baEnv.isEmpty())
+                    continue;
+                if(baEnv.endsWith('\\'))
+                    baEnv.chop(1);
+
+                jpaths << QString::fromLatin1("%1\\bin\\java.exe").arg(QString::fromLatin1(baEnv))
+                       << QString::fromLatin1("%1\\jre\\bin\\java.exe").arg(QString::fromLatin1(baEnv));
+            }
+            QByteArrayList pathEnvironment = qgetenv("PATH").split(';');
+            for(const QByteArray& env : pathEnvironment){
+                jpaths << QString::fromLatin1("%1\\java.exe").arg(QString::fromLatin1(env));
+            }
+            jpaths << QString();
+
+            for (int j=0; j<jpaths.size(); ++j) {
+                QFileInfo javaExecutable(jpaths.at(j));
+                QProcess process;
+                process.setProcessChannelMode(QProcess::MergedChannels);
+                if(javaExecutable.exists() && javaExecutable.isFile() && javaExecutable.isExecutable()){
+                    process.start(javaExecutable.absoluteFilePath(), QStringList() << "-XshowSettings:properties" << ".");
+                }else if(jpaths.at(j).isEmpty()){
+                    process.start(QString::fromLatin1("java.exe"), QStringList() << "-XshowSettings:properties" << ".");
+                }else{
+                    continue;
+                }
+                if (process.waitForFinished()){
+                    QByteArray data = process.readAll();
+                    //printf("result of calling %s:\n", qPrintable(process.program()));
+                    //printf("%s\n", data.constData());
+                    QByteArray javaHome;
+                    int javaVersion = -1;
+                    for(QByteArray line : data.split('\n')){
+                        line = line.trimmed();
+                        if(line.startsWith("java.home = ")){
+                            javaHome = line.mid(12);
+                        }else if(line.startsWith("java.specification.version = ")){
+                            QString javaVersionStr = line.mid(29);
+                            if(javaVersionStr.startsWith("1.")){
+                                javaVersionStr = javaVersionStr.mid(2);
+                            }
+                            bool ok = false;
+                            javaVersion = javaVersionStr.toInt(&ok);
+                            if(!ok)
+                                javaVersion = -1;
+                        }
+                    }
+                    if(javaVersion>0 && javaVersion>=minimumJVM){
+                        vmLocation = QString::fromUtf8(javaHome);
+                    }
+                }
+                if(!vmLocation.isEmpty()){
+                    break;
                 }
             }
-            if(QFileInfo(vmLocation).canonicalFilePath().startsWith("/Library/Java/JavaVirtualMachines/1.6.0.jdk")){
-                vmLocation = "";
+        }
+#elif defined(Q_OS_MAC)
+        QStringList jpaths;
+        QStringList envVariables;
+        envVariables << "JAVADIR"  << "JAVAHOME" << "JDK_HOME" << "JAVA_HOME" << "JAVA_DIR";
+        for (int i = 0; i < envVariables.size(); ++i) {
+            QByteArray baEnv = qgetenv(envVariables.at(i).toLatin1());
+            if (baEnv.isEmpty())
+                continue;
+            if(baEnv.endsWith('/'))
+                baEnv.chop(1);
+            jpaths << QString::fromLatin1("%1/bin/java").arg(QString::fromLatin1(baEnv))
+                   << QString::fromLatin1("%1/jre/bin/java").arg(QString::fromLatin1(baEnv));
+        }
+        jpaths << QString::fromLatin1("/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/bin/java");
+        QByteArrayList pathEnvironment = qgetenv("PATH").split(':');
+        for(const QByteArray& env : pathEnvironment){
+            jpaths << QString::fromLatin1("%1/java").arg(QString::fromLatin1(env));
+        }
+        jpaths << QString();
+
+        for (int j=0; j<jpaths.size(); ++j) {
+            QFileInfo javaExecutable(jpaths.at(j));
+            QProcess process;
+            process.setProcessChannelMode(QProcess::MergedChannels);
+            if(javaExecutable.exists() && javaExecutable.isFile() && javaExecutable.isExecutable()){
+                process.start(javaExecutable.absoluteFilePath(), QStringList() << "-XshowSettings:properties" << ".");
+            }else if(jpaths.at(j).isEmpty()){
+                process.start(QString::fromLatin1("java.exe"), QStringList() << "-XshowSettings:properties" << ".");
+            }else{
+                continue;
             }
-            if(!vmLocation.isEmpty()){
-                break;
+            if (process.waitForFinished()){
+                QByteArray data = process.readAll();
+                QByteArray javaHome;
+                int javaVersion = -1;
+                QByteArray cpu;
+                for(QByteArray line : data.split('\n')){
+                    line = line.trimmed();
+                    if(line.startsWith("java.home = ")){
+                        javaHome = line.mid(12);
+                    }
+                    else if(line.startsWith("os.arch = ")){
+                        cpu = line.mid(10);
+                    }
+                    else if(line.startsWith("java.specification.version = ")){
+                        QString javaVersionStr = line.mid(29);
+                        if(javaVersionStr.startsWith("1.")){
+                            javaVersionStr = javaVersionStr.mid(2);
+                        }
+                        bool ok = false;
+                        javaVersion = javaVersionStr.toInt(&ok);
+                        if(!ok)
+                            javaVersion = -1;
+                    }
+                }
+                if(javaVersion>0 && javaVersion>=minimumJVM
+#ifdef Q_PROCESSOR_ARM
+                                                            && (cpu=="aarch64" || cpu=="amd64")){
+#else
+                                                            && (cpu=="amd64" || cpu=="x86_64")){
+#endif
+                    vmLocation = javaHome;
+                }
             }
         }
         if(vmLocation.isEmpty()){
-            QFileInfo appletJava("/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/bin/java");
-            if(appletJava.isFile() && appletJava.isExecutable()){
+            for(int v=minimumJVM; v<minimumJVM+15; ++v){
                 QProcess process;
-                process.start(appletJava.absoluteFilePath(), QStringList{"-Xinternalversion"});
+                QStringList args{"-V", QString::number(v), "-a",
+#ifdef Q_PROCESSOR_ARM
+                                                                       "arm64"};
+#else
+                                                                       "x86_64"};
+#endif
+                process.start("/usr/libexec/java_home", args);
                 if (process.waitForFinished()){
-                    QString data = QString::fromUtf8(process.readAll().constData());
-                    QString pattern = isArm64 ? QLatin1String("-aarch64 JRE (%1") : QLatin1String("-amd64 JRE (%1");
-                    for(int v=20; v>=minimumJVM; --v){
-                        if(data.contains(QString(pattern).arg(v==8 ? QString("1.8") : QString::number(v)))){
-                            QDir dir = appletJava.absoluteDir();
-                            dir.cdUp();
-                            vmLocation = dir.canonicalPath();
-                            break;
-                        }
+                    QByteArray data = process.readAll();
+                    vmLocation = QString::fromUtf8(data.constData()).trimmed();
+                    if(!vmLocation.startsWith("/")){
+                        vmLocation = "";
                     }
+                }
+                if(QFileInfo(vmLocation).canonicalFilePath().startsWith("/Library/Java/JavaVirtualMachines/1.6.0.jdk")){
+                    vmLocation = "";
+                }
+                if(!vmLocation.isEmpty()){
+                    break;
                 }
             }
         }
@@ -741,21 +856,38 @@ int main(int argc, char *argv[])
         if(vmLocation.isEmpty()){
             QStringList binDirectories;
             binDirectories << "/usr/bin/" << "/usr/sbin/" << "/usr/local/bin/" << "/usr/local/bin/" << "/bin/";
+            QByteArrayList pathEnvironment = qgetenv("PATH").split(':');
+            for(const QByteArray& env : pathEnvironment){
+                binDirectories << QString::fromLatin1(env);
+            }
             for (int i = 0; i < binDirectories.size(); ++i) {
-                QFileInfo javaExecutable(binDirectories.at(i)+"java");
+                QFileInfo javaExecutable(QDir(binDirectories.at(i)).absoluteFilePath("java"));
                 if(javaExecutable.exists() && javaExecutable.isFile() && javaExecutable.isExecutable()){
                     QProcess process;
-                    process.start(javaExecutable.absoluteFilePath(), QStringList() << "-version");
+                    process.setProcessChannelMode(QProcess::MergedChannels);
+                    process.start(javaExecutable.absoluteFilePath(), QStringList() << "-XshowSettings:properties" << ".");
                     if (process.waitForFinished()){
-                        QString data = QString::fromUtf8(process.readAll().constData());
-                        for(int v=20; v>=minimumJVM; --v){
-                            if(data.contains(QString("java version \"%1").arg(QString::number(v))) && data.contains("64-Bit")){
-                                QString canonicalFilePath = javaExecutable.canonicalFilePath();
-                                QDir canonicalPath = QFileInfo(canonicalFilePath).dir();
-                                canonicalPath.cdUp();
-                                vmLocation = canonicalPath.canonicalPath();
-                                break;
+                        QByteArray data = process.readAll();
+                        QByteArray javaHome;
+                        int javaVersion = -1;
+                        for(QByteArray line : data.split('\n')){
+                            line = line.trimmed();
+                            if(line.startsWith("java.home = ")){
+                                javaHome = line.mid(12);
                             }
+                            else if(line.startsWith("java.specification.version = ")){
+                                QString javaVersionStr = line.mid(29);
+                                if(javaVersionStr.startsWith("1.")){
+                                    javaVersionStr = javaVersionStr.mid(2);
+                                }
+                                bool ok = false;
+                                javaVersion = javaVersionStr.toInt(&ok);
+                                if(!ok)
+                                    javaVersion = -1;
+                            }
+                        }
+                        if(javaVersion>0 && javaVersion>=minimumJVM){
+                            vmLocation = QString::fromUtf8(javaHome);
                         }
                     }
                 }
@@ -771,14 +903,14 @@ int main(int argc, char *argv[])
 
             QStringList jpaths;
             for (int i = 0; i < envVariables.size(); ++i) {
-
                 QByteArray baEnv = qgetenv(envVariables.at(i).toLatin1());
-                const char *env = baEnv.constData();
-                if (!env || QByteArray(env).isEmpty())
+                if (baEnv.isEmpty())
                     continue;
+                if(baEnv.endsWith('/'))
+                    baEnv.chop(1);
 
-                jpaths << QString::fromLatin1("%1/jre/bin/java").arg(env)
-                       << QString::fromLatin1("%1/bin/java").arg(env);
+                jpaths << QString::fromLatin1("%1/bin/java").arg(QString::fromLatin1(baEnv))
+                       << QString::fromLatin1("%1/jre/bin/java").arg(QString::fromLatin1(baEnv));
             }
 
             QStringList defaultPaths;
@@ -791,26 +923,41 @@ int main(int argc, char *argv[])
                        << QString::fromLatin1("%1/bin/java").arg(subpath);
                 }
             }
+            jpaths << QString();
 
             for (int j=0; j<jpaths.size(); ++j) {
                 QFileInfo javaExecutable(jpaths.at(j));
+                QProcess process;
+                process.setProcessChannelMode(QProcess::MergedChannels);
                 if(javaExecutable.exists() && javaExecutable.isFile() && javaExecutable.isExecutable()){
-                    QProcess process;
-                    process.start(javaExecutable.absoluteFilePath(), QStringList() << "-version");
-                    if (process.waitForFinished()){
-                        QString data = QString::fromUtf8(process.readAll().constData());
-                        for(int v=20; v>=minimumJVM; --v){
-                            if(data.contains(QString("java version \"%1").arg(QString::number(v))) && data.contains("64-Bit")){
-                                QString canonicalFilePath = javaExecutable.canonicalFilePath();
-                                QDir canonicalPath = QFileInfo(canonicalFilePath).dir();
-                                canonicalPath.cdUp();
-                                if(canonicalPath.exists("jre")){
-                                    canonicalPath.cd("jre");
-                                }
-                                vmLocation = canonicalPath.canonicalPath();
-                                break;
-                            }
+                    process.start(javaExecutable.absoluteFilePath(), QStringList() << "-XshowSettings:properties" << ".");
+                }else if(jpaths.at(j).isEmpty()){
+                    process.start(QString::fromLatin1("java.exe"), QStringList() << "-XshowSettings:properties" << ".");
+                }else{
+                    continue;
+                }
+                if (process.waitForFinished()){
+                    QByteArray data = process.readAll();
+                    QByteArray javaHome;
+                    int javaVersion = -1;
+                    for(QByteArray line : data.split('\n')){
+                        line = line.trimmed();
+                        if(line.startsWith("java.home = ")){
+                            javaHome = line.mid(12);
                         }
+                        else if(line.startsWith("java.specification.version = ")){
+                            QString javaVersionStr = line.mid(29);
+                            if(javaVersionStr.startsWith("1.")){
+                                javaVersionStr = javaVersionStr.mid(2);
+                            }
+                            bool ok = false;
+                            javaVersion = javaVersionStr.toInt(&ok);
+                            if(!ok)
+                                javaVersion = -1;
+                        }
+                    }
+                    if(javaVersion>0 && javaVersion>=minimumJVM){
+                        vmLocation = QString::fromUtf8(javaHome);
                     }
                 }
                 if(!vmLocation.isEmpty()){
@@ -903,6 +1050,7 @@ int main(int argc, char *argv[])
                 QCborArray modulePaths = runtimeParameters.value(ModulePath).toArray();
                 QCborArray libraryPaths = runtimeParameters.value(LibraryPath).toArray();
                 QCborArray jvmArguments = runtimeParameters.value(JVMArguments).toArray();
+                QCborArray jvmArgumentFilters = runtimeParameters.value(JVMArgumentFilters).toArray();
                 jint minimumJNIVersion = jint(runtimeParameters.value(JNIMinimumVersion).toInteger(JNI_VERSION_1_8));
                 QList<QByteArray> options;
                 QStringList classPath, modulePath, libraryPath;
@@ -944,6 +1092,23 @@ int main(int argc, char *argv[])
                         if(option.startsWith("--add-modules="))
                             hasAddModules = true;
                     }
+                }
+                QStringList jvmArgumentFilterList;
+                for (int i = 0; i < jvmArgumentFilters.size(); ++i) {
+                    jvmArgumentFilterList << jvmArgumentFilters[i].toString();
+                }
+                QList<const char*> programArguments;
+                for(jsize i=1; i<argc; ++i){
+                    bool filtered = false;
+                    for(const QString& filter : jvmArgumentFilterList){
+                        if(QLatin1String(argv[i]).startsWith(filter)){
+                            filtered = true;
+                            options << QByteArray(argv[i]);
+                            break;
+                        }
+                    }
+                    if(!filtered)
+                        programArguments << argv[i];
                 }
                 if(!modulePath.isEmpty() && !hasAddModules){
                     options << "--add-modules=ALL-MODULE-PATH,ALL-DEFAULT";
@@ -1009,10 +1174,10 @@ int main(int argc, char *argv[])
                     fprintf( stderr, "Class not found: java.lang.String\n");
                     return -1;
                 }
-                jobjectArray mainArgs = env->NewObjectArray(argc-1, stringClass, nullptr);
-                for(jsize i=1; i<argc; ++i){
-                    jstring s = env->NewStringUTF(argv[i]);
-                    env->SetObjectArrayElement(mainArgs, i-1, s);
+                jobjectArray mainArgs = env->NewObjectArray(programArguments.size(), stringClass, nullptr);
+                for(jsize i=0; i<programArguments.size(); ++i){
+                    jstring s = env->NewStringUTF(programArguments[i]);
+                    env->SetObjectArrayElement(mainArgs, i, s);
                 }
                 if(env->ExceptionCheck()){
                     fprintf( stderr, "Exception occurred while creating argument array:\n");

@@ -134,6 +134,8 @@ class MetaAttributes {
 
             Comment                     = 0x00800000,
 
+            Override                    = 0x08000000,
+
             Final                       = FinalInTargetLang | FinalInCpp
         };
 
@@ -607,6 +609,7 @@ class MetaFunction : public MetaAttributes {
     QString modifiedName() const;
 
     QString minimalSignature() const;
+    QString minimalSignatureNoTemplate() const;
     void setOriginalSignature(const QString &signature) { m_original_signature = signature; }
     const QString& originalSignature() const { return m_original_signature; }
 
@@ -744,6 +747,7 @@ class MetaFunction : public MetaAttributes {
     bool isRemovedFrom(const MetaClass *, TS::Language language) const;
 
     ArgumentRemove argumentRemoved(int) const;
+    QStringList impliciteCalls(int) const;
     ThreadAffinity argumentThreadAffinity(int) const;
 
     QList<Delegate> delegates() const;
@@ -824,6 +828,7 @@ private:
     mutable QString m_cached_full_signature;
     mutable QString m_cached_full_signature_no_name;
     mutable QString m_cached_minimal_signature;
+    mutable QString m_cached_minimal_signature_no_template;
     mutable QString m_cached_modified_name;
 
     FunctionType m_function_type;
@@ -1030,12 +1035,14 @@ class MetaClass : public MetaAttributes {
 
         const MetaFunctionList& functions() const;
         const MetaFunctionList& invalidFunctions() const;
+        const MetaFunctionList& deletedFunctions() const;
         void setFunctions(const MetaFunctionList &functions);
         void addFunction(MetaFunction *function);
         bool hasFunction(const MetaFunction *f) const;
         bool hasFunction(const QString &str) const;
         bool hasSignal(const MetaFunction *f) const;
         void addInvalidFunction(MetaFunction *function);
+        void addDeletedFunction(MetaFunction *function);
 
         bool hasConstructors() const;
 
@@ -1323,6 +1330,7 @@ private:
         MetaFunctionList m_functions;
         QMap<QString,MetaFunction*> m_functionsBySignature;
         MetaFunctionList m_invalidfunctions;
+        MetaFunctionList m_deletedFunctions;
         MetaFieldList m_fields;
         MetaEnumList m_enums;
         MetaFunctionalList m_functionals;

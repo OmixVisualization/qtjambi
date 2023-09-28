@@ -39,6 +39,22 @@ import io.qt.gui.*;
 public class TestNonVirtualOverride extends ApplicationInitializer {
 	
 	@Test
+    public void testItemModel() {
+		class ItemModel extends QStandardItemModel{
+			@Override
+			protected void beginInsertColumns(io.qt.core.@NonNull QModelIndex parent, int first, int last){
+				super.beginInsertColumns(parent, first, last);
+			}
+		}
+		try {
+			new ItemModel();
+			fail("QNonVirtualOverridingException expected to be thrown");
+		} catch (QNonVirtualOverridingException e) {
+			assertEquals(String.format("Malformed %1$s subtype: Following method has to be declared final in class %2$s: %3$s", "QStandardItemModel", ItemModel.class.getName(), "protected final void beginInsertColumns(io.qt.core.QModelIndex arg0,int arg1,int arg2)"), e.getMessage());
+		}
+	}
+	
+	@Test
     public void testQRunnable() throws Throwable{
 		class Runnable extends QtObject implements QRunnable{
 			@Override
@@ -54,7 +70,7 @@ public class TestNonVirtualOverride extends ApplicationInitializer {
 			new Runnable();
 			fail("QNonVirtualOverridingException expected to be thrown");
 		} catch (QNonVirtualOverridingException e) {
-			assertEquals(String.format("Cannot convert %1$s to QRunnable because it overrides following final method: public final boolean autoDelete()", Runnable.class.getName()), e.getMessage());
+			assertEquals(String.format("Malformed %1$s subtype: Class %2$s overrides following final method: %3$s", "QRunnable", Runnable.class.getName(), "public final boolean autoDelete()"), e.getMessage());
 		}
 	}
 	
@@ -78,7 +94,7 @@ public class TestNonVirtualOverride extends ApplicationInitializer {
 			new Runnable();
 			fail("QNonVirtualOverridingException expected to be thrown");
 		} catch (QNonVirtualOverridingException e) {
-			assertEquals(String.format("Cannot convert %1$s to QRunnable because it overrides following final method: public final void dispose()", Runnable.class.getName()), e.getMessage());
+			assertEquals(String.format("Malformed %1$s subtype: Class %2$s overrides following final method: %3$s", "QRunnable", Runnable.class.getName(), "public final void dispose()"), e.getMessage());
 		}
 	}
 	
@@ -98,7 +114,7 @@ public class TestNonVirtualOverride extends ApplicationInitializer {
 			new TextCharFormat();
 			fail("QNonVirtualOverridingException expected to be thrown");
 		} catch (QNonVirtualOverridingException e) {
-			assertEquals(String.format("Cannot convert %1$s to QTextCharFormat because it overrides following final method: public final boolean isValid()", TextCharFormat.class.getName()), e.getMessage());
+			assertEquals(String.format("Malformed %1$s subtype: Class %2$s overrides following final method: public final boolean isValid()", "QTextCharFormat", TextCharFormat.class.getName()), e.getMessage());
 		}
 	}
 	

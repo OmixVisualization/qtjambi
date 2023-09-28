@@ -32,15 +32,9 @@ import static org.junit.Assert.*;
 
 import java.util.Arrays;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-
-import io.qt.QtUtilities;
-import io.qt.core.QCoreApplication;
-import io.qt.core.QHash;
-import io.qt.core.QResource;
-import io.qt.core.QThread;
+import org.junit.*;
+import io.qt.*;
+import io.qt.core.*;
 
 public class TestApplicationArgs extends UnitTestInitializer {
 	

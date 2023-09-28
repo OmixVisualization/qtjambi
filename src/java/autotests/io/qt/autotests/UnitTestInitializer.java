@@ -67,10 +67,12 @@ public abstract class UnitTestInitializer {
 				}
 			}
 			if(description.getTestClass().getSimpleName().startsWith("TestInitialization")) {
-				System.clearProperty("io.qt.no-deployment-spec");
-				System.clearProperty("io.qt.library-path-override");
-				System.clearProperty("io.qt.qml-imports");
-				System.clearProperty("io.qt.pluginpath");
+				if(!"debug".equals(System.getProperty("io.qt.debug"))) {
+					System.clearProperty("io.qt.no-deployment-spec");
+					System.clearProperty("io.qt.library-path-override");
+					System.clearProperty("io.qt.qml-imports");
+					System.clearProperty("io.qt.pluginpath");
+				}
 			}
 			return base;
 		}};

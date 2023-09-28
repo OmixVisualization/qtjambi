@@ -325,7 +325,7 @@ void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_
                     fun->setAccessPolicy(CodeModel::Private);
                     fun->setDeleted(true);
                 }else if(init_declarator->initializer->initializer_clause->expression->kind==AST::Kind_DeclDefaultAST){
-                    // do nothing
+                    fun->setDeclDefault(true);
                 }else{
                     fun->setAbstract(true);
                 }

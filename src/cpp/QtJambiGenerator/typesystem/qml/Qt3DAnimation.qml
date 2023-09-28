@@ -556,6 +556,28 @@ TypeSystem{
     ObjectType{
         name: "Qt3DAnimation::QMorphTarget"
         ModifyFunction{
+            signature: "fromGeometry(Qt3DRender::QGeometry*,QStringList)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            until: 5
+        }
+        ModifyFunction{
+            signature: "fromGeometry(Qt3DCore::QGeometry*,QStringList)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            since: 6
+        }
+        ModifyFunction{
             signature: "setAttributes(const QVector<Qt3DRender::QAttribute*>&)"
             InjectCode{
                 position: Position.End

@@ -33,6 +33,8 @@ package io.qt.autotests;
 
 import static org.junit.Assert.assertEquals;
 
+import java.nio.ByteBuffer;
+
 import org.junit.Test;
 
 import io.qt.core.QLineF;
@@ -40,6 +42,40 @@ import io.qt.core.QPointF;
 
 public class TestInjectedCodeQt6 extends ApplicationInitializer {
     
+	@Test
+    public void testByteArrayView() {
+		io.qt.core.QByteArrayView bv = new io.qt.core.QByteArrayView("ByteArrayView");
+		assertEquals(new io.qt.core.QByteArray("ByteArrayView"), bv.toByteArray());
+		assertEquals("ByteArrayView", bv.toString());
+		assertEquals("ByteArrayView", new String(bv.toArray()));
+		bv.dispose();
+		bv = new io.qt.core.QByteArrayView(new io.qt.core.QByteArray("ByteArrayView"));
+		assertEquals(new io.qt.core.QByteArray("ByteArrayView"), bv.toByteArray());
+		assertEquals("ByteArrayView", bv.toString());
+		assertEquals("ByteArrayView", new String(bv.toArray()));
+		bv.dispose();
+		bv = new io.qt.core.QByteArrayView("ByteArrayView".getBytes());
+		assertEquals(new io.qt.core.QByteArray("ByteArrayView"), bv.toByteArray());
+		assertEquals("ByteArrayView", bv.toString());
+		assertEquals("ByteArrayView", new String(bv.toArray()));
+		bv.dispose();
+		bv = new io.qt.core.QByteArrayView(ByteBuffer.wrap("ByteArrayView".getBytes()));
+		assertEquals("ByteArrayView", bv.toByteArray().toString());
+		assertEquals("ByteArrayView", bv.toString());
+		assertEquals("ByteArrayView", new String(bv.toArray()));
+		bv.dispose();
+		bv = new io.qt.core.QByteArrayView("ByteArrayView".getBytes(), 4);
+		assertEquals(new io.qt.core.QByteArray("Byte"), bv.toByteArray());
+		assertEquals("Byte", bv.toString());
+		assertEquals("Byte", new String(bv.toArray()));
+		bv.dispose();
+		bv = new io.qt.core.QByteArrayView(ByteBuffer.wrap("ByteArrayView".getBytes()), 4);
+		assertEquals(new io.qt.core.QByteArray("Byte"), bv.toByteArray());
+		assertEquals("Byte", bv.toString());
+		assertEquals("Byte", new String(bv.toArray()));
+		bv.dispose();
+	}
+	
     @Test
     public void testQLineFintersection() {
         QLineF line1 = new QLineF(10, 0, 10, 20);

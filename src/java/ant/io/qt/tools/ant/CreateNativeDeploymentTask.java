@@ -107,9 +107,9 @@ public class CreateNativeDeploymentTask extends Task {
 			doc.getDocumentElement().setAttribute("system", AntUtil.getPropertyAsString(propertyHelper, Constants.OSNAME));
 			doc.getDocumentElement().setAttribute("version", String.format("%1$s.%2$s.%3$s", qtMajorVersion, qtMinorVersion, qtjambiPatchlevelVersion));
 			doc.getDocumentElement().setAttribute("compiler", AntUtil.getPropertyAsString(propertyHelper, "qtjambi.compiler"));
-			doc.getDocumentElement().setAttribute("configuration", debug ? "debug" : "release");
-			doc.getDocumentElement().setAttribute("date", AntUtil.getPropertyAsString(propertyHelper, "DSTAMP"));
-			doc.getDocumentElement().setAttribute("time", AntUtil.getPropertyAsString(propertyHelper, "TSTAMP"));
+			doc.getDocumentElement().setAttribute("configuration", debug ? "debug" : (forceDebugInfo ? "debuginfo" : "release"));
+//			doc.getDocumentElement().setAttribute("date", AntUtil.getPropertyAsString(propertyHelper, "DSTAMP"));
+//			doc.getDocumentElement().setAttribute("time", AntUtil.getPropertyAsString(propertyHelper, "TSTAMP"));
 			String libdir;
 			java.io.File libc_for_android = null;
 			String abi = null;
@@ -201,12 +201,14 @@ public class CreateNativeDeploymentTask extends Task {
 			switch(OSInfo.crossOS()) {
 			case Android:
 				targetLibDir = new java.io.File(targetLibDir, abi);
-				if(libc_for_android!=null && libc_for_android.exists()) {
-					targetLibDir.mkdirs();
-					Files.copy(libc_for_android.toPath(), new java.io.File(targetLibDir, libc_for_android.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
-					if(!libraryIncludes.isEmpty())
-						libraryIncludes += ",";
-					libraryIncludes += libdir + "/" + targetLibDir.getName() + "/" + libc_for_android.getName();
+				targetLibDir.mkdirs();
+				if(!forceDebugInfo) {
+					if(libc_for_android!=null && libc_for_android.exists()) {
+						Files.copy(libc_for_android.toPath(), new java.io.File(targetLibDir, libc_for_android.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
+						if(!libraryIncludes.isEmpty())
+							libraryIncludes += ",";
+						libraryIncludes += libdir + "/" + targetLibDir.getName() + "/" + libc_for_android.getName();
+					}
 				}
 				break;
 			case MacOS:
@@ -256,11 +258,9 @@ public class CreateNativeDeploymentTask extends Task {
 					for(String f : pluginDir.list()) {
 						switch(OSInfo.crossOS()) {
 						case Windows:
-							if(!debug && f.endsWith(".dll") && !f.endsWith("d.dll")) {
+							if(!debug && !forceDebugInfo && f.endsWith(".dll") && !f.endsWith("d.dll")) {
 								_libraries.add(f);
-							}else if(!debug && forceDebugInfo && f.endsWith(".pdb") && !f.endsWith("d.pdb")) {
-								_libraries.add(f);
-							}else if(debug && (f.endsWith("d.dll") || f.endsWith("d.pdb") || f.endsWith(".dll.debug"))) {
+							}else if(debug && f.endsWith("d.dll")) {
 								_libraries.add(f);
 							}
 							break;
@@ -351,14 +351,12 @@ public class CreateNativeDeploymentTask extends Task {
 					break;
 				default:
 					if(plugin) {
-						if(!"containeraccess".equals(moduleName)) {
-							java.io.File pluginDir = new java.io.File(new java.io.File(directory, "plugins"), name);
-							for(String f : pluginDir.list()) {
-								if(!f.equals(".") && !f.equals("..")) {
-									Element libraryElement = doc.createElement("library");
-									libraryElement.setAttribute("name", "plugins/"+name+"/"+f);
-									doc.getDocumentElement().appendChild(libraryElement);
-								}
+						java.io.File pluginDir = new java.io.File(new java.io.File(directory, "plugins"), name);
+						for(String f : pluginDir.list()) {
+							if(!f.equals(".") && !f.equals("..")) {
+								Element libraryElement = doc.createElement("library");
+								libraryElement.setAttribute("name", "plugins/"+name+"/"+f);
+								doc.getDocumentElement().appendChild(libraryElement);
 							}
 						}
 						continue;
@@ -380,30 +378,43 @@ public class CreateNativeDeploymentTask extends Task {
 					}
 					break;
 				}
-				if(!libraryIncludes.isEmpty())
-					libraryIncludes += ",";
-				libraryIncludes += jarpath + "/" + libName;
-				
+				if(!forceDebugInfo) {
+					if(!libraryIncludes.isEmpty())
+						libraryIncludes += ",";
+					libraryIncludes += jarpath + "/" + libName;
+				}
 				if(debug || forceDebugInfo) {
 					java.io.File libsourcedir = new java.io.File(cppsourcedir, name);
 					java.io.File libsourcetargetdir = new java.io.File(sourcestargetdir, name);
+					List<Map.Entry<String,Boolean>> additionalFiles = new ArrayList<>();
 					if(libsourcedir.isDirectory()) {
 						if(!sourcesPaths.contains(cppsourcedir.getAbsolutePath()))
 							sourcesPaths.add(cppsourcedir.getAbsolutePath());
 						libsourcetargetdir.mkdirs();
-						copySubdirs(sourcestargetdir, libsourcedir, libsourcetargetdir, false, new ArrayList<>(), true);
+						copySubdirs(sourcestargetdir, libsourcedir, libsourcetargetdir, false, additionalFiles, true);
 					}
 					libsourcedir = new java.io.File(cppoutputdir, name);
 					if(libsourcedir.isDirectory()) {
 						if(!sourcesPaths.contains(cppoutputdir.getAbsolutePath()))
 							sourcesPaths.add(cppoutputdir.getAbsolutePath());
 						libsourcetargetdir.mkdirs();
-						copySubdirs(sourcestargetdir, libsourcedir, libsourcetargetdir, false, new ArrayList<>(), true);
+						copySubdirs(sourcestargetdir, libsourcedir, libsourcetargetdir, false, additionalFiles, true);
 					}
 					if(libsourcetargetdir.isDirectory()) {
-						if(!sourcesIncludes.isEmpty())
-							sourcesIncludes += ",";
-						sourcesIncludes += "sources/" + name+"/*";
+						if(forceDebugInfo) {
+							if(!libraryIncludes.isEmpty())
+								libraryIncludes += ",";
+							libraryIncludes += "sources/" + name + "/*";
+							for(Map.Entry<String,Boolean> file : additionalFiles) {
+								Element libraryElement = doc.createElement("file");
+								libraryElement.setAttribute("name", "sources/" + name + "/" + new File(file.getKey()).getName());
+								doc.getDocumentElement().appendChild(libraryElement);
+					        }
+						}else {
+							if(!sourcesIncludes.isEmpty())
+								sourcesIncludes += ",";
+							sourcesIncludes += "sources/" + name+"/*";
+						}
 					}
 				}
 				
@@ -421,6 +432,11 @@ public class CreateNativeDeploymentTask extends Task {
 				if(isMacBundle) {
 					List<Map.Entry<String,Boolean>> additionalFiles = new ArrayList<>();
 					List<Map.Entry<String,String>> symlinks = new ArrayList<>();
+					if(!debug && forceDebugInfo) {
+						libName += ".dSYM";
+						libFile = new java.io.File(new java.io.File(builddir, _libdir), libName);
+						target = new java.io.File(targetLibDir, libName);
+					}
 					if(debug && "QtJambiLauncher".equals(name) && !new java.io.File(builddir, _libdir+"/QtJambiLauncher_debug.app/Contents/Info.plist").exists()) {
 						Files.copy(new java.io.File(builddir, _libdir+"/QtJambiLauncher.app/Contents/Info.plist").toPath(), 
 								new java.io.File(builddir, _libdir+"/QtJambiLauncher_debug.app/Contents/Info.plist").toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
@@ -430,7 +446,9 @@ public class CreateNativeDeploymentTask extends Task {
 					String mainName = "/" + (debug ? name + "_debug" : name);
 					for(Map.Entry<String,Boolean> file : additionalFiles) {
 						Element libraryElement;
-						if("QtJambiLauncher".equals(name)) {
+						if(!debug && forceDebugInfo) {
+							libraryElement = doc.createElement("file");
+						}else if("QtJambiLauncher".equals(name)) {
 							libraryElement = doc.createElement("file");
 							if(Boolean.TRUE.equals(file.getValue())) {
 								libraryElement.setAttribute("executable", "true");
@@ -462,7 +480,7 @@ public class CreateNativeDeploymentTask extends Task {
 				}else {
 //					System.out.println("Copying "+libFile+" to "+target+".");
 					Files.copy(libFile.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
-					if(includeDir.isDirectory()) {
+					if(includeDir.isDirectory() && !forceDebugInfo) {
 						java.io.File incDir = new java.io.File(new java.io.File(directory, "include"), name);
 						incDir.mkdirs();
 						for(File header : includeDir.listFiles()) {
@@ -477,28 +495,32 @@ public class CreateNativeDeploymentTask extends Task {
 					}
 					switch(OSInfo.crossOS()) {
 					case Windows:
-						if(libName.endsWith(".dll")){
-							String pdbName = libName.substring(0, libName.length()-3)+"pdb";
-							java.io.File pdbFile = new java.io.File(new java.io.File(builddir, _libdir), pdbName);
-							if(!pdbFile.exists() && _libdir.equals("bin")) {
-								pdbFile = new java.io.File(new java.io.File(builddir, "lib"), pdbName);
+						if((libName.endsWith(".dll") || libName.endsWith(".exe")) && (debug || forceDebugInfo)){
+							String dbgName = libName.substring(0, libName.length()-3)+"pdb";
+							java.io.File dbgFile = new java.io.File(new java.io.File(builddir, _libdir), dbgName);
+							if(!dbgFile.exists() && _libdir.equals("bin")) {
+								dbgFile = new java.io.File(new java.io.File(builddir, "lib"), dbgName);
 							}
-							if(pdbFile.exists()) {
-								if(debug || forceDebugInfo) {
-									java.io.File pdbTarget = new java.io.File(targetLibDir, pdbName);
-									Files.copy(pdbFile.toPath(), pdbTarget.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
-									if(!libraryIncludes.isEmpty())
-										libraryIncludes += ",";
-									libraryIncludes += jarpath + "/" + pdbName;
-								}
-							}else if(debug){
-								pdbFile = new java.io.File(new java.io.File(builddir, _libdir), libName+".debug");
-								if(pdbFile.exists()) {
+							if(dbgFile.exists()) {
+								java.io.File pdbTarget = new java.io.File(targetLibDir, dbgName);
+								Files.copy(dbgFile.toPath(), pdbTarget.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+								if(!libraryIncludes.isEmpty())
+									libraryIncludes += ",";
+								libraryIncludes += jarpath + "/" + dbgName;
+								Element libraryElement = doc.createElement("file");
+								libraryElement.setAttribute("name", jarpath + "/" + dbgName);
+								doc.getDocumentElement().appendChild(libraryElement);
+							}else{
+								dbgFile = new java.io.File(new java.io.File(builddir, _libdir), libName+".debug");
+								if(dbgFile.exists()) {
 									java.io.File pdbTarget = new java.io.File(targetLibDir, libName+".debug");
-									Files.copy(pdbFile.toPath(), pdbTarget.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+									Files.copy(dbgFile.toPath(), pdbTarget.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
 									if(!libraryIncludes.isEmpty())
 										libraryIncludes += ",";
 									libraryIncludes += jarpath + "/" + libName+".debug";
+									Element libraryElement = doc.createElement("file");
+									libraryElement.setAttribute("name", jarpath + "/" + libName+".debug");
+									doc.getDocumentElement().appendChild(libraryElement);
 								}
 							}
 						}
@@ -516,7 +538,6 @@ public class CreateNativeDeploymentTask extends Task {
 								Element libraryElement = doc.createElement("file");
 								libraryElement.setAttribute("name", "lib/"+qtjambiLibFile.getName());
 								doc.getDocumentElement().appendChild(libraryElement);
-								libraryIncludes += "," + "lib/"+qtjambiLibFile.getName();
 							}
 						}
 							break;
@@ -524,8 +545,63 @@ public class CreateNativeDeploymentTask extends Task {
 								break;
 						}
 						break;
-						default:
-							break;
+					case MacOS:
+						if(debug || forceDebugInfo){
+							String dbgName = libName+".dSYM";
+							java.io.File dbgFile = new java.io.File(new java.io.File(builddir, _libdir), dbgName);
+							if(dbgFile.exists()) {
+								if(dbgFile.isDirectory()) {
+									List<Map.Entry<String,Boolean>> additionalFiles = new ArrayList<>();
+									List<Map.Entry<String,String>> symlinks = new ArrayList<>();
+									java.io.File dbgTarget = new java.io.File(targetLibDir, dbgName);
+									copySubdirs(dbgFile.getParentFile(), dbgFile, dbgTarget, debug, additionalFiles, true);
+									symlinkSubdirs(dbgFile.getParentFile(), dbgFile, dbgTarget, debug, symlinks);
+//									String mainName = "/" + (debug ? name + "_debug" : name);
+									for(Map.Entry<String,Boolean> file : additionalFiles) {
+										Element libraryElement;
+										libraryElement = doc.createElement("file");
+										if(Boolean.TRUE.equals(file.getValue())) {
+											libraryElement.setAttribute("executable", "true");
+										}
+										libraryElement.setAttribute("name", jarpath+"/"+file.getKey());
+										doc.getDocumentElement().appendChild(libraryElement);
+										libraryIncludes += "," + jarpath+"/"+file.getKey();
+							        }
+							        
+							        for(Map.Entry<String,String> unpack : symlinks) {
+										Element libraryElement = doc.createElement("symlink");
+										libraryElement.setAttribute("name", jarpath+"/"+unpack.getKey());
+										libraryElement.setAttribute("target", jarpath+"/"+unpack.getValue());
+										doc.getDocumentElement().appendChild(libraryElement);
+							        }
+								}else {
+									java.io.File dbgTarget = new java.io.File(targetLibDir, dbgName);
+									Files.copy(dbgFile.toPath(), dbgTarget.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+									Element libraryElement = doc.createElement("file");
+									libraryElement.setAttribute("name", "lib/"+dbgTarget.getName());
+									doc.getDocumentElement().appendChild(libraryElement);
+								}
+								if(!libraryIncludes.isEmpty())
+									libraryIncludes += ",";
+								libraryIncludes += jarpath + "/" + dbgName;
+							}
+						}
+						break;
+					default:
+						if(debug || forceDebugInfo) {
+							java.io.File dbgFile = new java.io.File(new java.io.File(builddir, _libdir), libName+".debug");
+							if(dbgFile.exists()) {
+								java.io.File pdbTarget = new java.io.File(targetLibDir, libName+".debug");
+								Files.copy(dbgFile.toPath(), pdbTarget.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+								if(!libraryIncludes.isEmpty())
+									libraryIncludes += ",";
+								libraryIncludes += jarpath + "/" + libName+".debug";
+								Element libraryElement = doc.createElement("file");
+								libraryElement.setAttribute("name", jarpath + "/" + libName+".debug");
+								doc.getDocumentElement().appendChild(libraryElement);
+							}
+						}
+						break;
 					}
 				}
 				switch(OSInfo.crossOS()) {
@@ -698,9 +774,11 @@ public class CreateNativeDeploymentTask extends Task {
 			        	}
 						break;
 		        	}
-					Element libraryElement = doc.createElement("library");
-					libraryElement.setAttribute("name", _libdir+"/"+libName);
-					doc.getDocumentElement().appendChild(libraryElement);
+		        	if(debug || !forceDebugInfo) {
+						Element libraryElement = doc.createElement("library");
+						libraryElement.setAttribute("name", _libdir+"/"+libName);
+						doc.getDocumentElement().appendChild(libraryElement);
+		        	}
 					
 					switch(OSInfo.crossOS()) {
 					case Windows:
@@ -712,26 +790,37 @@ public class CreateNativeDeploymentTask extends Task {
 							}
 							if(pdbFile.exists()) {
 								if(debug || forceDebugInfo) {
-									libraryElement = doc.createElement("file");
+									Element libraryElement = doc.createElement("file");
 									libraryElement.setAttribute("name", _libdir+"/"+pdbName);
 									doc.getDocumentElement().appendChild(libraryElement);
 								}
-							}else if(debug){
+							}else if(debug || forceDebugInfo){
 								pdbFile = new java.io.File(new java.io.File(builddir, _libdir), libName+".debug");
 								if(pdbFile.exists()) {
-									libraryElement = doc.createElement("file");
+									Element libraryElement = doc.createElement("file");
 									libraryElement.setAttribute("name", _libdir+"/"+libName+".debug");
 									doc.getDocumentElement().appendChild(libraryElement);
 								}
 							}
 						}
 						break;
-						default:
+					case MacOS:
+						break;
+					default:
+						if(debug || forceDebugInfo){
+							java.io.File dbgFile = new java.io.File(new java.io.File(builddir, _libdir), libName+".debug");
+							if(dbgFile.exists()) {
+								Element libraryElement = doc.createElement("file");
+								libraryElement.setAttribute("name", _libdir+"/"+libName+".debug");
+								doc.getDocumentElement().appendChild(libraryElement);
+							}
+						}
+						break;
 					}
 					
 					String shortName;
 					Element symlinkElement;
-					if(!noSymlinks) {
+					if(!noSymlinks && (debug || !forceDebugInfo)) {
 						switch(OSInfo.crossOS()) {
 						case Windows:
 						case Android:

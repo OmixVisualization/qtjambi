@@ -55,16 +55,6 @@ TypeSystem{
     }
     
     Rejection{
-        className: "QSslKey"
-        functionName: "backendImplementation"
-    }
-    
-    Rejection{
-        className: "QSslCertificate"
-        functionName: "backendImplementation"
-    }
-    
-    Rejection{
         className: "sockaddr"
     }
     
@@ -74,6 +64,49 @@ TypeSystem{
             fileName: "qssl.h"
             location: Include.Global
         }
+
+        EnumType{
+            name: "SslOption"
+        }
+
+        EnumType{
+            name: "SupportedFeature"
+            since: [6, 1]
+        }
+
+        EnumType{
+            name: "ImplementedClass"
+            since: [6, 1]
+        }
+
+        EnumType{
+            name: "KeyType"
+        }
+
+        EnumType{
+            name: "EncodingFormat"
+        }
+
+        EnumType{
+            name: "KeyAlgorithm"
+        }
+
+        EnumType{
+            name: "SslProtocol"
+        }
+
+        EnumType{
+            name: "AlternativeNameEntryType"
+        }
+
+        EnumType{
+            name: "AlertType"
+        }
+
+        EnumType{
+            name: "AlertLevel"
+        }
+
         InjectCode{
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiNetwork.java"
@@ -81,283 +114,6 @@ TypeSystem{
                 quoteBeforeLine: "}// class"
             }
         }
-    }
-    
-    EnumType{
-        name: "QSsl::SslOption"
-    }
-    
-    EnumType{
-        name: "QSsl::SupportedFeature"
-        since: [6, 1]
-    }
-    
-    EnumType{
-        name: "QSsl::ImplementedClass"
-        since: [6, 1]
-    }
-    
-    EnumType{
-        name: "QNetworkProxy::Capability"
-    }
-    
-    EnumType{
-        name: "QAbstractSocket::NetworkLayerProtocol"
-    }
-    
-    EnumType{
-        name: "QNetworkProxyQuery::QueryType"
-    }
-    
-    EnumType{
-        name: "QAbstractSocket::SocketError"
-    }
-    
-    EnumType{
-        name: "QAbstractSocket::SocketState"
-    }
-    
-    EnumType{
-        name: "QAbstractSocket::SocketType"
-    }
-    
-    EnumType{
-        name: "QAbstractSocket::BindFlag"
-    }
-    
-    EnumType{
-        name: "QAbstractSocket::PauseMode"
-    }
-    
-    EnumType{
-        name: "QAbstractSocket::SocketOption"
-    }
-    
-    
-    EnumType{
-        name: "QHostAddress::SpecialAddress"
-    }
-    
-    
-    EnumType{
-        name: "QHttpMultiPart::ContentType"
-    }
-    
-    
-    EnumType{
-        name: "QNetworkInterface::InterfaceFlag"
-    }
-    
-    EnumType{
-        name: "QNetworkProxy::ProxyType"
-    }
-    
-    
-    EnumType{
-        name: "QHostInfo::HostInfoError"
-    }
-    
-    EnumType{
-        name: "QSsl::KeyType"
-    }
-    
-    EnumType{
-        name: "QSsl::EncodingFormat"
-    }
-    
-    EnumType{
-        name: "QSsl::KeyAlgorithm"
-    }
-    
-    EnumType{
-        name: "QSsl::SslProtocol"
-    }
-    
-    EnumType{
-        name: "QSsl::AlternativeNameEntryType"
-    }
-    
-    EnumType{
-        name: "QSsl::AlertType"
-    }
-    
-    EnumType{
-        name: "QSsl::AlertLevel"
-    }
-    
-    EnumType{
-        name: "QLocalSocket::LocalSocketError"
-    }
-    
-    EnumType{
-        name: "QLocalSocket::LocalSocketState"
-    }
-    
-    EnumType{
-        name: "QLocalSocket::SocketOption"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QLocalServer::SocketOption"
-    }
-    
-    EnumType{
-        name: "QNetworkAccessManager::Operation"
-    }
-    
-    EnumType{
-        name: "QNetworkCookie::RawForm"
-    }
-    
-    EnumType{
-        name: "QNetworkCookie::SameSite"
-        since: [6, 1]
-    }
-    
-    EnumType{
-        name: "QNetworkReply::NetworkError"
-    }
-    
-    EnumType{
-        name: "QNetworkRequest::Attribute"
-        extensible: true
-        RejectEnumValue{
-            name: "HTTP2AllowedAttribute"
-            since: [5, 15]
-        }
-        RejectEnumValue{
-            name: "HTTP2WasUsedAttribute"
-            since: [5, 15]
-        }
-    }
-    
-    EnumType{
-        name: "QNetworkRequest::CacheLoadControl"
-    }
-    
-    EnumType{
-        name: "QNetworkRequest::KnownHeaders"
-    }
-    
-    EnumType{
-        name: "QNetworkAccessManager::NetworkAccessibility"
-    }
-    
-    EnumType{
-        name: "QNetworkRequest::LoadControl"
-    }
-    
-    EnumType{
-        name: "QNetworkRequest::Priority"
-    }
-    
-    EnumType{
-        name: "QNetworkRequest::RedirectPolicy"
-        since: [5, 9]
-    }
-    
-    EnumType{
-        name: "QNetworkRequest::TransferTimeoutConstant"
-        since: [5, 15]
-    }
-    
-    EnumType{
-        name: "QNetworkConfiguration::BearerType"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QNetworkConfiguration::Purpose"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QNetworkConfiguration::StateFlag"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QNetworkConfiguration::Type"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QNetworkConfigurationManager::Capability"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QNetworkSession::SessionError"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QNetworkSession::State"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QNetworkSession::UsagePolicy"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QDnsLookup::Error"
-    }
-    
-    EnumType{
-        name: "QDnsLookup::Type"
-    }
-    
-    EnumType{
-        name: "QNetworkAddressEntry::DnsEligibilityStatus"
-    }
-    
-    EnumType{
-        name: "QNetworkInterface::InterfaceType"
-        RejectEnumValue{
-            name: "Ieee80211"
-        }
-    }
-    
-    EnumType{
-        name: "QHostAddress::ConversionModeFlag"
-        since: [5, 8]
-    }
-    
-    EnumType{
-        name: "QHostAddress::NetworkLayerProtocol"
-        since: 7
-    }
-    
-    Rejection{
-        className: "QHostAddress"
-        fieldName: "IPv4Protocol"
-        since: [6, 2]
-    }
-    
-    Rejection{
-        className: "QHostAddress"
-        fieldName: "IPv6Protocol"
-        since: [6, 2]
-    }
-    
-    Rejection{
-        className: "QHostAddress"
-        fieldName: "AnyIPProtocol"
-        since: [6, 2]
-    }
-    
-    Rejection{
-        className: "QHostAddress"
-        fieldName: "UnknownNetworkLayerProtocol"
-        since: [6, 2]
-    }
-    
-    EnumType{
-        name: "QHstsPolicy::PolicyFlag"
-        since: [5, 9]
     }
     
     EnumType{
@@ -374,24 +130,21 @@ TypeSystem{
         name: "QPasswordDigestor"
     }
     
-    EnumType{
-        name: "QNetworkInformation::Reachability"
-        since: [6, 1]
-    }
-    
-    EnumType{
-        name: "QNetworkInformation::TransportMedium"
-        since: [6, 3]
-    }
-    
-    EnumType{
-        name: "QNetworkInformation::Feature"
-        since: [6, 1]
-    }
-    
     ObjectType{
         name: "QNetworkInformation"
         since: [6, 1]
+
+        EnumType{
+            name: "Reachability"
+        }
+
+        EnumType{
+            name: "TransportMedium"
+        }
+
+        EnumType{
+            name: "Feature"
+        }
     }
     
     ObjectType{
@@ -440,10 +193,43 @@ TypeSystem{
     
     ValueType{
         name: "QNetworkProxyQuery"
+
+        EnumType{
+            name: "QueryType"
+        }
     }
     
     ObjectType{
         name: "QAbstractSocket"
+
+        EnumType{
+            name: "NetworkLayerProtocol"
+        }
+
+        EnumType{
+            name: "SocketError"
+        }
+
+        EnumType{
+            name: "SocketState"
+        }
+
+        EnumType{
+            name: "SocketType"
+        }
+
+        EnumType{
+            name: "BindFlag"
+        }
+
+        EnumType{
+            name: "PauseMode"
+        }
+
+        EnumType{
+            name: "SocketOption"
+        }
+
         ModifyFunction{
             signature: "setSocketOption(QAbstractSocket::SocketOption, const QVariant)"
             remove: RemoveFlag.All
@@ -770,6 +556,10 @@ TypeSystem{
     
     ObjectType{
         name: "QHttpMultiPart"
+
+        EnumType{
+            name: "ContentType"
+        }
     }
     
     
@@ -781,6 +571,9 @@ TypeSystem{
                 fileName: "utils_p.h"
                 location: Include.Local
             }
+        }
+        EnumType{
+            name: "SocketOption"
         }
         ModifyFunction{
             signature: "waitForNewConnection(int,bool*)"
@@ -818,6 +611,19 @@ TypeSystem{
     
     ObjectType{
         name: "QLocalSocket"
+
+        EnumType{
+            name: "LocalSocketError"
+        }
+
+        EnumType{
+            name: "LocalSocketState"
+        }
+
+        EnumType{
+            name: "SocketOption"
+            since: [6, 2]
+        }
     }
     
     ObjectType{
@@ -826,20 +632,18 @@ TypeSystem{
     
     ObjectType{
         name: "QNetworkAccessManager"
+        EnumType{
+            name: "NetworkAccessibility"
+        }
+        EnumType{
+            name: "Operation"
+        }
         ModifyFunction{
             signature: "encrypted(QNetworkReply *)"
             ppCondition: "!defined(QT_NO_SSL)"
         }
         ModifyFunction{
             signature: "sslErrors(QNetworkReply *, const QList<QSslError> &)"
-            ppCondition: "!defined(QT_NO_SSL)"
-        }
-        ModifyFunction{
-            signature: "preSharedKeyAuthenticationRequired(QNetworkReply *,QSslPreSharedKeyAuthenticator*)"
-            ppCondition: "!defined(QT_NO_SSL)"
-        }
-        ModifyFunction{
-            signature: "connectToHostEncrypted(const QString &, quint16, const QSslConfiguration &)"
             ppCondition: "!defined(QT_NO_SSL)"
         }
         ModifyFunction{
@@ -854,8 +658,10 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "setCache(QAbstractNetworkCache*)"
+            threadAffinity: true
             ModifyArgument{
                 index: 1
+                threadAffinity: true
                 ReferenceCount{
                     action: ReferenceCount.Ignore
                 }
@@ -872,7 +678,153 @@ TypeSystem{
             }
         }
         ModifyFunction{
+            signature: "get(QNetworkRequest)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "io.qt.core.@NonNull QUrl"}
+            }
+        }
+        ModifyFunction{
+            signature: "head(QNetworkRequest)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "io.qt.core.@NonNull QUrl"}
+            }
+        }
+        ModifyFunction{
+            signature: "post(QNetworkRequest,QIODevice*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "io.qt.core.@NonNull QUrl"}
+            }
+        }
+        ModifyFunction{
+            signature: "post(QNetworkRequest,QByteArray)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 2
+                AddImpliciteCall{type: "byte @NonNull[]"}
+            }
+        }
+        ModifyFunction{
+            signature: "post(QNetworkRequest,QHttpMultiPart*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "io.qt.core.@NonNull QUrl"}
+            }
+        }
+        ModifyFunction{
+            signature: "put(QNetworkRequest,QByteArray)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "io.qt.core.@NonNull QUrl"}
+            }
+            ModifyArgument{
+                index: 2
+                AddImpliciteCall{type: "byte @NonNull[]"}
+            }
+        }
+        ModifyFunction{
+            signature: "put(QNetworkRequest,QIODevice*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "io.qt.core.@NonNull QUrl"}
+            }
+        }
+        ModifyFunction{
+            signature: "put(QNetworkRequest,QHttpMultiPart*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "io.qt.core.@NonNull QUrl"}
+            }
+        }
+        ModifyFunction{
+            signature: "deleteResource(QNetworkRequest)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "io.qt.core.@NonNull QUrl"}
+            }
+        }
+        ModifyFunction{
+            signature: "connectToHostEncrypted(const QString &, quint16, const QSslConfiguration &)"
+            threadAffinity: true
+            ppCondition: "!defined(QT_NO_SSL)"
+        }
+        ModifyFunction{
+            signature: "connectToHostEncrypted(const QString &, quint16, const QSslConfiguration &, const QString &)"
+            threadAffinity: true
+            ppCondition: "!defined(QT_NO_SSL)"
+        }
+        ModifyFunction{
+            signature: "connectToHost(const QString &, quint16)"
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "sendCustomRequest(const QNetworkRequest &, const QByteArray &, QIODevice*)"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "io.qt.core.@NonNull QUrl"}
+            }
+            ModifyArgument{
+                index: 2
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "sendCustomRequest(const QNetworkRequest &, const QByteArray &, QByteArray)"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "io.qt.core.@NonNull QUrl"}
+            }
+            ModifyArgument{
+                index: 2
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+            ModifyArgument{
+                index: 3
+                AddImpliciteCall{type: "byte @NonNull[]"}
+            }
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "sendCustomRequest(const QNetworkRequest &, const QByteArray &, QHttpMultiPart*)"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "io.qt.core.@NonNull QUrl"}
+            }
+            ModifyArgument{
+                index: 2
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+            threadAffinity: true
+        }
+        ModifyFunction{
+            signature: "cookieJar() const"
+            threadAffinity: true
+        }
+        ModifyFunction{
             signature: "createRequest(QNetworkAccessManager::Operation, const QNetworkRequest&, QIODevice*)"
+            threadAffinity: true
             ModifyArgument{
                 index: "return"
                 DefineOwnership{
@@ -883,6 +835,11 @@ TypeSystem{
                     codeClass: CodeClass.Shell
                     ownership: Ownership.Cpp
                 }
+            }
+            ModifyArgument{
+                index: 2
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImpliciteCall{type: "io.qt.core.@NonNull QUrl"}
             }
         }
         ModifyFunction{
@@ -896,6 +853,7 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "preSharedKeyAuthenticationRequired(QNetworkReply*,QSslPreSharedKeyAuthenticator*)"
+            ppCondition: "!defined(QT_NO_SSL)"
             ModifyArgument{
                 index: 2
                 invalidateAfterUse: true
@@ -935,16 +893,16 @@ TypeSystem{
     
     ObjectType{
         name: "QNetworkReply"
-        ModifyFunction{
-            signature: "encrypted()"
-            ppCondition: "!defined(QT_NO_SSL)"
-        }
         InjectCode{
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiNetwork.java"
                 quoteAfterLine: "class QNetworkReply___"
                 quoteBeforeLine: "}// class"
             }
+        }
+
+        EnumType{
+            name: "NetworkError"
         }
         ModifyFunction{
             signature: "sslConfigurationImplementation(QSslConfiguration&) const"
@@ -966,6 +924,40 @@ TypeSystem{
     
     ValueType{
         name: "QHostAddress"
+
+        EnumType{
+            name: "SpecialAddress"
+        }
+
+        EnumType{
+            name: "ConversionModeFlag"
+            since: [5, 8]
+        }
+
+        EnumType{
+            name: "NetworkLayerProtocol"
+            since: 7
+        }
+
+        Rejection{
+            fieldName: "IPv4Protocol"
+            since: [6, 2]
+        }
+
+        Rejection{
+            fieldName: "IPv6Protocol"
+            since: [6, 2]
+        }
+
+        Rejection{
+            fieldName: "AnyIPProtocol"
+            since: [6, 2]
+        }
+
+        Rejection{
+            fieldName: "UnknownNetworkLayerProtocol"
+            since: [6, 2]
+        }
         ModifyFunction{
             signature: "QHostAddress(quint8*)"
             remove: RemoveFlag.All
@@ -1006,6 +998,11 @@ TypeSystem{
                 quoteBeforeLine: "}// class"
             }
         }
+
+        EnumType{
+            name: "HostInfoError"
+        }
+
         ModifyFunction{
             signature: "lookupHost(QString, QObject*, const char*)"
             InjectCode{
@@ -1033,21 +1030,43 @@ TypeSystem{
         ModifyFunction{
             signature: "lookupHost<Functor>(QString,Functor&&)"
             remove: RemoveFlag.All
+            since: 6.6
         }
     }
-    
-    
-    
+
     ValueType{
         name: "QNetworkAddressEntry"
+        EnumType{
+            name: "DnsEligibilityStatus"
+        }
     }
     
     ValueType{
         name: "QNetworkInterface"
+
+        EnumType{
+            name: "InterfaceFlag"
+        }
+
+        EnumType{
+            name: "InterfaceType"
+            RejectEnumValue{
+                name: "Ieee80211"
+            }
+        }
     }
     
     ValueType{
         name: "QNetworkProxy"
+
+        EnumType{
+            name: "Capability"
+        }
+
+        EnumType{
+            name: "ProxyType"
+        }
+
         ModifyFunction{
             signature: "QNetworkProxy(QNetworkProxy::ProxyType,QString,quint16,QString,QString)"
             access: Modification.Private
@@ -1129,10 +1148,59 @@ TypeSystem{
     
     ValueType{
         name: "QNetworkCookie"
+
+        EnumType{
+            name: "RawForm"
+        }
+
+        EnumType{
+            name: "SameSite"
+            since: [6, 1]
+        }
     }
     
     ValueType{
         name: "QNetworkRequest"
+
+        EnumType{
+            name: "CacheLoadControl"
+        }
+
+        EnumType{
+            name: "KnownHeaders"
+        }
+
+        EnumType{
+            name: "LoadControl"
+        }
+
+        EnumType{
+            name: "Priority"
+        }
+
+        EnumType{
+            name: "RedirectPolicy"
+            since: [5, 9]
+        }
+
+        EnumType{
+            name: "TransferTimeoutConstant"
+            since: [5, 15]
+        }
+
+        EnumType{
+            name: "Attribute"
+            extensible: true
+            RejectEnumValue{
+                name: "HTTP2AllowedAttribute"
+                since: [5, 15]
+            }
+            RejectEnumValue{
+                name: "HTTP2WasUsedAttribute"
+                since: [5, 15]
+            }
+        }
+
         ModifyFunction{
             signature: "setOriginatingObject(QObject*)"
             ModifyArgument{
@@ -1142,34 +1210,13 @@ TypeSystem{
                 }
             }
         }
-    }
-    
-    EnumType{
-        name: "QSslError::SslError"
-    }
-    
-    EnumType{
-        name: "QSslCertificate::SubjectInfo"
-    }
-    
-    EnumType{
-        name: "QSslCertificate::PatternSyntax"
-    }
-    
-    EnumType{
-        name: "QSslSocket::SslMode"
-    }
-    
-    EnumType{
-        name: "QSslSocket::PeerVerifyMode"
-    }
-    
-    EnumType{
-        name: "QSslConfiguration::NextProtocolNegotiationStatus"
-    }
-    
-    EnumType{
-        name: "QSslDiffieHellmanParameters::Error"
+        ModifyFunction{
+            signature: "QNetworkRequest(QUrl)"
+            ModifyArgument{
+                index: 1
+                AddImpliciteCall{type: "java.lang.@NonNull String"}
+            }
+        }
     }
     
     ValueType{
@@ -1198,11 +1245,17 @@ TypeSystem{
     ValueType{
         name: "QSslError"
         ppCondition: "!defined(QT_NO_SSL)"
+        EnumType{
+            name: "SslError"
+        }
     }
     
     ValueType{
         name: "QSslKey"
         ppCondition: "!defined(QT_NO_SSL)"
+        Rejection{
+            functionName: "backendImplementation"
+        }
         ModifyFunction{
             signature: "QSslKey(Qt::HANDLE, QSsl::KeyType)"
             ModifyArgument{
@@ -1218,6 +1271,19 @@ TypeSystem{
     ValueType{
         name: "QSslCertificate"
         ppCondition: "!defined(QT_NO_SSL)"
+
+        Rejection{
+            functionName: "backendImplementation"
+        }
+
+        EnumType{
+            name: "SubjectInfo"
+        }
+
+        EnumType{
+            name: "PatternSyntax"
+        }
+
         ModifyFunction{
             signature: "importPkcs12(QIODevice *, QSslKey *, QSslCertificate *, QList<QSslCertificate > *, const QByteArray &)"
             ModifyArgument{
@@ -1235,6 +1301,10 @@ TypeSystem{
     
     ValueType{
         name: "QSslConfiguration"
+
+        EnumType{
+            name: "NextProtocolNegotiationStatus"
+        }
         ppCondition: "!defined(QT_NO_SSL)"
         ModifyFunction{
             signature: "dtlsCookieVerificationEnabled() const"
@@ -1312,10 +1382,22 @@ TypeSystem{
     ValueType{
         name: "QSslDiffieHellmanParameters"
         ppCondition: "!defined(QT_NO_SSL)"
+
+        EnumType{
+            name: "Error"
+        }
     }
     
     ObjectType{
         name: "QSslSocket"
+
+        EnumType{
+            name: "SslMode"
+        }
+
+        EnumType{
+            name: "PeerVerifyMode"
+        }
         ppCondition: "!defined(QT_NO_SSL)"
         ModifyFunction{
             signature: "preSharedKeyAuthenticationRequired(QSslPreSharedKeyAuthenticator*)"
@@ -1330,16 +1412,44 @@ TypeSystem{
     
     ValueType{
         name: "QNetworkConfiguration"
+
+        EnumType{
+            name: "BearerType"
+        }
+
+        EnumType{
+            name: "Purpose"
+        }
+
+        EnumType{
+            name: "StateFlag"
+        }
+
+        EnumType{
+            name: "Type"
+        }
         until: 5
     }
     
     ObjectType{
         name: "QNetworkConfigurationManager"
+        EnumType{
+            name: "Capability"
+        }
         until: 5
     }
     
     ObjectType{
         name: "QNetworkSession"
+        EnumType{
+            name: "SessionError"
+        }
+        EnumType{
+            name: "State"
+        }
+        EnumType{
+            name: "UsagePolicy"
+        }
         ModifyFunction{
             signature: "interface()const"
             rename: "getInterface"
@@ -1353,6 +1463,15 @@ TypeSystem{
     
     ObjectType{
         name: "QDnsLookup"
+
+        EnumType{
+            name: "Error"
+        }
+
+        EnumType{
+            name: "Type"
+        }
+
         ModifyFunction{
             signature: "QDnsLookup(QDnsLookup::Type, QString const&, QHostAddress const&, QObject*)"
             remove: RemoveFlag.All
@@ -1385,6 +1504,9 @@ TypeSystem{
     
     ValueType{
         name: "QHstsPolicy"
+        EnumType{
+            name: "PolicyFlag"
+        }
         since: [5, 9]
     }
     
@@ -1408,13 +1530,18 @@ TypeSystem{
         since: [5, 12]
     }
     
-    EnumType{
-        name: "QDtls::HandshakeState"
-        since: [5, 12]
-    }
-    
     ObjectType{
         name: "QDtls"
+        EnumType{
+            name: "HandshakeState"
+            since: [5, 12]
+        }
+        ValueType{
+            name: "GeneratorParameters"
+            javaName: "QDtlsClientVerifier.GeneratorParameters"
+            generate: false
+            since: [5, 12]
+        }
         ModifyFunction{
             signature: "handleTimeout(QUdpSocket *)"
             ModifyArgument{
@@ -1472,20 +1599,11 @@ TypeSystem{
         since: [5, 12]
     }
     
-    ValueType{
-        name: "QDtlsClientVerifier::GeneratorParameters"
-        since: [5, 12]
-    }
-    
-    ValueType{
-        name: "QDtls::GeneratorParameters"
-        javaName: "QDtlsClientVerifier.GeneratorParameters"
-        generate: false
-        since: [5, 12]
-    }
-    
     ObjectType{
         name: "QDtlsClientVerifier"
+        ValueType{
+            name: "GeneratorParameters"
+        }
         ModifyFunction{
             signature: "verifyClient(QUdpSocket *, const QByteArray &, const QHostAddress &, quint16)"
             ModifyArgument{

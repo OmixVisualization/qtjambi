@@ -35,6 +35,8 @@ TypeSystem{
     qtLibrary: "QtQuick3D"
     module: "qtjambi.quick3d"
     description: "Provides a high-level API for creating 3D content or UIs based on Qt Quick."
+    LoadTypeSystem{name: "QtQml"}
+
     RequiredLibrary{
         name: "QtQuick3DUtils"
         mode: RequiredLibrary.Optional
@@ -63,6 +65,21 @@ TypeSystem{
     Rejection{
         className: ""
         functionName: "qml_register_types_QtQuick3D"
+    }
+
+    ObjectType{
+        name: "QQuick3DExtensionHelpers"
+        targetType: "final class"
+        ModifyFunction{
+            signature: "QQuick3DExtensionHelpers()"
+            remove: RemoveFlag.All
+        }
+        since: 6.6
+    }
+
+    ObjectType{
+        name: "QQuick3DRenderExtension"
+        since: 6.6
     }
     
     ObjectType{

@@ -215,6 +215,31 @@ public class TestMetaProgrammingQt6 extends ApplicationInitializer {
         List<QMetaProperty> properties = fop.metaObject().properties();
         assertEquals(expectedValues.length, properties.size());
     }
+    
+	@SuppressWarnings("unused")
+    private static class PropertyContainer extends QObject {
+    	private String test;
+
+//		public String test() {
+//			return test;
+//		}
+		
+//		public QBindable<String> bindableTest() {
+//			return new QBindable<>(this, "test", String.class);
+//		}
+
+		public void setTest(String test) {
+			this.test = test;
+		}
+		
+		public final Signal0 testChanged = new Signal0();
+    }
+    
+    @Test
+    public void testProperties() {
+    	QMetaObject metaObject = QMetaObject.forType(PropertyContainer.class);
+    	metaObject.properties().forEach(p->System.out.println(p.typeName()+" "+p.name()+": Readable="+p.isReadable()+", Writable="+p.isWritable()+", Bindable="+p.isBindable()+", Notify="+p.notifySignal()));
+    }
 
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestMetaProgrammingQt6.class.getName());

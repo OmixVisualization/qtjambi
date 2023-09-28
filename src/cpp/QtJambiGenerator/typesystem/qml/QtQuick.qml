@@ -35,6 +35,8 @@ TypeSystem{
     qtLibrary: "QtQuick"
     module: "qtjambi.quick"
     description: "A declarative framework for building highly dynamic applications with custom user interfaces."
+    LoadTypeSystem{name: "QtGuiRhi"; since: 6.6}
+    LoadTypeSystem{name: "QtQml"}
 
     InjectCode{
         position: Position.Position4
@@ -809,6 +811,28 @@ TypeSystem{
             }
         }
         ModifyFunction{
+            signature: "createTextureFromRhiTexture(QRhiTexture*,QQuickWindow::CreateTextureOptions)const"
+            threadAffinity: false
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                ArgumentMap{index: 0; metaName: "%0"}
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "if(%0!=null){\n"+
+                              "    QtJambi_LibraryUtilities.internal.setCppOwnership(%1);\n"+
+                              "    %0.destroyed.connect(()->QtJambi_LibraryUtilities.internal.setDefaultOwnership(%1));\n"+
+                              "}"}
+            }
+            since: 6.6
+        }
+        ModifyFunction{
             signature: "createTextureFromId(uint,QSize,QQuickWindow::CreateTextureOptions)const"
             threadAffinity: false
             ModifyArgument{
@@ -826,13 +850,36 @@ TypeSystem{
                 index: 1
                 NoNullPointer{
                 }
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Cpp
+                }
+                AddImpliciteCall{type: "java.lang.@NonNull Runnable"}
             }
         }
+        ModifyFunction{
+            signature: "setGraphicsDevice(QQuickGraphicsDevice)"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "__rcDevice = %1==null ? null : %1.__rcDeviceContext;"}
+            }
+            since: 6
+        }
+        ModifyFunction{
+            signature: "setRenderTarget(QQuickRenderTarget)"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "__rcRenderTarget = %1==null ? null : %1.__rcRenderTarget;"}
+            }
+            since: 6
+        }
         InjectCode{
-            Text{content: "@QtUninvokable\n"+
-                          "public final void scheduleRenderJob(Runnable job, io.qt.quick.QQuickWindow.RenderStage schedule){\n"+
-                          "    scheduleRenderJob(io.qt.core.QRunnable.of(job), schedule);\n"+
-                          "}"}
+            Text{content: "private Object __rcDevice;\nprivate Object __rcRenderTarget;"}
+            since: 6
         }
     }
     
@@ -1173,8 +1220,9 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Java
                 position: Position.End
-                Text{content: "if (texture != null && ownsTexture()) {\n"+
-                              "    QtJambi_LibraryUtilities.internal.setCppOwnership(texture);\n"+
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "if (%1 != null && ownsTexture()) {\n"+
+                              "    QtJambi_LibraryUtilities.internal.setCppOwnership(%1);\n"+
                               "}"}
             }
         }
@@ -2422,21 +2470,126 @@ TypeSystem{
     
     ValueType{
         name: "QQuickGraphicsDevice"
-        Rejection{
-            functionName: "fromDeviceObjects"
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            since: [6, 4]
+            Text{content: "QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromPhysicalDevice(JNIEnv *, jlong);\n"+
+                          "QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromDeviceObjects(JNIEnv *, jlong, jlong, int, int);"}
         }
-        Rejection{
-            functionName: "fromPhysicalDevice"
+        ModifyFunction{
+            signature: "fromPhysicalDevice(void*)"
+            ppCondition: "QT_CONFIG(vulkan)"
+            proxyCall: "qtjambi_QQuickGraphicsDevice_fromPhysicalDevice"
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "long"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "#ifdef %out\n"+
+                                  "#undef %out\n"+
+                                  "#endif\n"+
+                                  "#define %out %in"}
+                }
+            }
+            since: [6, 2]
         }
-        Rejection{
-            functionName: "fromDeviceAndContext"
-        }
-        Rejection{
-            functionName: "fromDeviceAndCommandQueue"
+        ModifyFunction{
+            signature: "fromDeviceObjects(void*, void*, int, int)"
+            ppCondition: "QT_CONFIG(vulkan)"
+            proxyCall: "qtjambi_QQuickGraphicsDevice_fromDeviceObjects"
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "long"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "#ifdef %out\n"+
+                                  "#undef %out\n"+
+                                  "#endif\n"+
+                                  "#define %out %in"}
+                }
+            }
+            ModifyArgument{
+                index: 2
+                ReplaceType{
+                    modifiedType: "long"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "#ifdef %out\n"+
+                                  "#undef %out\n"+
+                                  "#endif\n"+
+                                  "#define %out %in"}
+                }
+            }
+            since: [6, 2]
         }
         ModifyFunction{
             signature: "fromAdapter(quint32, qint32, int)"
             ppCondition: "defined(Q_OS_WIN)"
+        }
+        ModifyFunction{
+            signature: "fromDeviceAndContext(void *, void *)"
+            ppCondition: "defined(Q_OS_WIN)"
+        }
+        ModifyFunction{
+            signature: "fromDeviceAndCommandQueue(MTLDevice *, MTLCommandQueue *)"
+            ppCondition: "defined(Q_OS_MACOS) || defined(Q_OS_IOS)"
+        }
+        ModifyFunction{
+            signature: "fromOpenGLContext(QOpenGLContext *)"
+            ppCondition: "QT_CONFIG(opengl)"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                ArgumentMap{index: 0; metaName: "%0"}
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "%0.__rcDeviceContext = %1;"}
+            }
+        }
+        ModifyFunction{
+            signature: "fromRhi(QRhi*)"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                ArgumentMap{index: 0; metaName: "%0"}
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "%0.__rcDeviceContext = %1;"}
+            }
+            since: 6.6
+        }
+        ModifyFunction{
+            signature: "QQuickGraphicsDevice(QQuickGraphicsDevice)"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                ArgumentMap{index: 0; metaName: "%0"}
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "__rcDeviceContext = %1.__rcDeviceContext;"}
+            }
+        }
+        ModifyFunction{
+            signature: "operator=(QQuickGraphicsDevice)"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "__rcDeviceContext = %1.__rcDeviceContext;"}
+            }
+        }
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Clone
+            Text{content: "clone.__rcDeviceContext = this.__rcDeviceContext;"}
+        }
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.End
+            Text{content: "\nObject __rcDeviceContext;"}
         }
         since: 6
     }
@@ -2478,6 +2631,11 @@ TypeSystem{
             since: [6, 4]
         }
         ModifyFunction{
+            signature: "fromD3D12Texture(void *, int, uint, QSize, int)"
+            ppCondition: "defined(Q_OS_WIN)"
+            since: 6.6
+        }
+        ModifyFunction{
             signature: "fromMetalTexture(MTLTexture *, QSize, int)"
             ppCondition: "defined(Q_OS_MACOS) || defined(Q_OS_IOS)"
             since: [6, 2]
@@ -2486,6 +2644,27 @@ TypeSystem{
             signature: "fromMetalTexture(MTLTexture *, unsigned int, QSize, int)"
             ppCondition: "defined(Q_OS_MACOS) || defined(Q_OS_IOS)"
             since: [6, 4]
+        }
+        ModifyFunction{
+            signature: "fromPaintDevice(QPaintDevice*)"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                ArgumentMap{index: 0; metaName: "%0"}
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "%0.__rcRenderTarget = %1;"}
+            }
+        }
+        ModifyFunction{
+            signature: "fromRhiRenderTarget(QRhiRenderTarget*)"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                ArgumentMap{index: 0; metaName: "%0"}
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "%0.__rcRenderTarget = %1;"}
+            }
+            since: 6.6
         }
         ModifyFunction{
             signature: "fromVulkanImage(VkImage, VkImageLayout, QSize, int)"
@@ -2563,6 +2742,35 @@ TypeSystem{
                 }
             }
             since: [6, 4]
+        }
+        ModifyFunction{
+            signature: "QQuickRenderTarget(QQuickRenderTarget)"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                ArgumentMap{index: 0; metaName: "%0"}
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "__rcRenderTarget = %1.__rcRenderTarget;"}
+            }
+        }
+        ModifyFunction{
+            signature: "operator=(QQuickRenderTarget)"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "__rcRenderTarget = %1.__rcRenderTarget;"}
+            }
+        }
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Clone
+            Text{content: "clone.__rcRenderTarget = this.__rcRenderTarget;"}
+        }
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.End
+            Text{content: "\nObject __rcRenderTarget;"}
         }
         since: 6
     }
@@ -2702,6 +2910,34 @@ TypeSystem{
             signature: "QSGOpenGLTexture()"
             remove: RemoveFlag.All
         }
+        ModifyFunction{
+            signature: "fromNative(GLuint,QQuickWindow*,QSize,QQuickWindow::CreateTextureOptions)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Shell
+                    ownership: Ownership.Cpp
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "fromNativeExternalOES(GLuint,QQuickWindow*,QSize,QQuickWindow::CreateTextureOptions)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Shell
+                    ownership: Ownership.Cpp
+                }
+            }
+        }
         since: [6, 2]
     }
     
@@ -2719,6 +2955,20 @@ TypeSystem{
             signature: "QSGD3D11Texture()"
             remove: RemoveFlag.All
         }
+        ModifyFunction{
+            signature: "fromNative(void*,QQuickWindow*,QSize,QQuickWindow::CreateTextureOptions)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Shell
+                    ownership: Ownership.Cpp
+                }
+            }
+        }
         since: [6, 2]
     }
 
@@ -2735,6 +2985,20 @@ TypeSystem{
         ModifyFunction{
             signature: "QSGD3D12Texture()"
             remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "fromNative(void*,int,QQuickWindow*,QSize,QQuickWindow::CreateTextureOptions)"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Shell
+                    ownership: Ownership.Cpp
+                }
+            }
         }
         since: [6, 6]
     }
@@ -2830,6 +3094,13 @@ TypeSystem{
             signature: "fromNative(id<MTLTexture>, QQuickWindow *, QSize, QQuickWindow::CreateTextureOptions)"
             proxyCall: "qtjambi_QSGMetalTexture_fromNative"
             ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            ModifyArgument{
                 index: 1
                 replaceType: "io.qt.@Nullable QNativePointer"
                 ConversionRule{
@@ -2864,6 +3135,13 @@ TypeSystem{
         ModifyFunction{
             signature: "fromNative(VkImage, VkImageLayout, QQuickWindow *, QSize, QQuickWindow::CreateTextureOptions)"
             proxyCall: "qtjambi_QSGVulkanTexture_fromNative"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
             ModifyArgument{
                 index: 1
                 ReplaceType{

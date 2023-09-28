@@ -76,17 +76,6 @@ TypeSystem{
                 }
             }
         }
-        ModifyFunction{
-            signature: "setUrlResponseInterceptor(QWebEngineUrlResponseInterceptor*)"
-            ModifyArgument{
-                index: 1
-                ReferenceCount{
-                    variableName: "__rcUrlResponseInterceptor"
-                    action: ReferenceCount.Set
-                }
-            }
-            since: [6, 6]
-        }
         ExtraIncludes{
             Include{
                 fileName: "QtWebEngineCore/QWebEngineDownloadRequest"

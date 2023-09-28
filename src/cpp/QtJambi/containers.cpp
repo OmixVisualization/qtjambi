@@ -1321,8 +1321,8 @@ void CoreAPI::initializeQList(JNIEnv *env, jobject object, jclass elementType, Q
                             isPointer = true;
                         }
                     }
-                    if(const QtJambiTypeInfo* typeInfo = getQTypeInfo(*typeId))
-                        isStaticType = typeInfo->isStatic;
+                    if(OptionalBool op = isRegisteredAsStaticType(*typeId))
+                        isStaticType = op.value();
                     if(!isPointer)
                          align = getValueAlignment(*typeId);
                     if(align==0 && !isPointer)
@@ -1485,8 +1485,8 @@ void CoreAPI::initializeQSet(JNIEnv *env, jobject object, jclass elementType, Qt
                                     isPointer = true;
                                 }
                             }
-                            if(const QtJambiTypeInfo* typeInfo = getQTypeInfo(*typeId))
-                                isStaticType = typeInfo->isStatic;
+                            if(OptionalBool op = isRegisteredAsStaticType(*typeId))
+                                isStaticType = op.value();
                             if(!isPointer)
                                  align = getValueAlignment(*typeId);
                         }
@@ -1648,8 +1648,8 @@ void CoreAPI::initializeQLinkedList(JNIEnv *env, jobject object, jclass elementT
                                     isPointer = true;
                                 }
                             }
-                            if(const QtJambiTypeInfo* typeInfo = getQTypeInfo(*typeId))
-                                isStaticType = typeInfo->isStatic;
+                            if(OptionalBool op = isRegisteredAsStaticType(*typeId))
+                                isStaticType = op.value();
                             if(!isPointer)
                                  align = getValueAlignment(*typeId);
                         }
@@ -1802,8 +1802,8 @@ void CoreAPI::initializeQVector(JNIEnv *env, jobject object, jclass elementType,
                                     isPointer = true;
                                 }
                             }
-                            if(const QtJambiTypeInfo* typeInfo = getQTypeInfo(*typeId))
-                                isStaticType = typeInfo->isStatic;
+                            if(OptionalBool op = isRegisteredAsStaticType(*typeId))
+                                isStaticType = op.value();
                             if(!isPointer)
                                  align = getValueAlignment(*typeId);
                         }

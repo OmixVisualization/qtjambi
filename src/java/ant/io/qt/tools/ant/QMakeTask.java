@@ -52,7 +52,7 @@ import io.qt.tools.ant.OSInfo.OS;
 public class QMakeTask extends Task {
 
     private String msg = "";
-    private String config = "";
+	private String config = "";
     private String dir = ".";
     private String pro = "";
     private boolean isTools;
@@ -139,10 +139,27 @@ public class QMakeTask extends Task {
         List<String> arguments = new ArrayList<String>();
 
         StringTokenizer tokenizer = new StringTokenizer(config, " ");
+        
+        boolean forceDbg = Boolean.parseBoolean(getProject().getProperty(Constants.QTJAMBI_FORCE_DEBUG_INFO));
 
         while(tokenizer.hasMoreTokens()) {
             arguments.add("-config");
-            arguments.add(tokenizer.nextToken());
+            String cf = tokenizer.nextToken();
+            if("debug_and_release".equals(cf)) {
+            	String compiler = (String)PropertyHelper.getProperty(getProject(), isTools ? Constants.TOOLS_COMPILER : Constants.COMPILER);
+            	if(compiler!=null && !compiler.startsWith("msvc") && forceDbg) {
+                	cf = "release";
+            	}else{
+                	arguments.add("build_all");
+            		arguments.add("-config");
+            	}
+            }
+            arguments.add(cf);
+        }
+        
+        if(forceDbg) {
+        	arguments.add("-config");
+        	arguments.add("force_debug_info");
         }
 
         if(recursive)
@@ -186,8 +203,10 @@ public class QMakeTask extends Task {
         if(includepath != null && includepath.length() > 0)
             parameters.add("INCLUDEPATH+=" + includepath);
         
-        if(Boolean.valueOf(getProject().getProperty(Constants.QTJAMBI_FORCE_DEBUG_INFO)))
-        	parameters.add("CONFIG+=force_debug_info");
+//        if(Boolean.parseBoolean(getProject().getProperty(Constants.QTJAMBI_FORCE_DEBUG_INFO)))
+//        	parameters.add("CONFIG+=force_debug_info");
+//        else
+//        	parameters.add("CONFIG-=force_debug_info");
 		
         /*
 		String javaVersion = getProject().getProperty("target.java.version");
@@ -295,7 +314,7 @@ public class QMakeTask extends Task {
         		if(ndkRoot!=null) {
 	            	env = new HashMap<>();
 	            	File nrkRootFile = new File(ndkRoot);
-	            	env.put("ANDROID_NDK_ROOT", nrkRootFile.getAbsolutePath());
+	            	env.put("ANDROID_NDK_ROOT", nrkRootFile.getAbsolutePath().replace('\\', '/'));
 	            	command.add("\"ANDROID_ABIS="+AntUtil.getPropertyAsString(propertyHelper, Constants.QTJAMBI_ABIS)+"\"");
         		}
         	}

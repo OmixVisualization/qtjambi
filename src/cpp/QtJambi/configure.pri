@@ -117,8 +117,17 @@ macx | ios:{
 }
 
 contains(QT_CONFIG, release):contains(QT_CONFIG, debug) {
-    # Qt was configued with both debug and release libs
-    CONFIG += debug_and_release build_all
+    win32-msvc* | !CONFIG(force_debug_info): {
+        # Qt was configued with both debug and release libs
+        CONFIG += debug_and_release build_all
+    }else{
+        # don't compile debug with forced debug info
+        CONFIG += release
+    }
+}
+
+CONFIG(release, debug|release): CONFIG(force_debug_info) {
+    CONFIG += separate_debug_info
 }
 
 # make install related...
@@ -140,12 +149,29 @@ android:{
     QMAKE_LFLAGS += -Wl,--export-dynamic -Wl,--exclude-libs,libgcc_real.a -Wl,--exclude-libs,libunwind.a -Wl,--exclude-libs,libgcc.a -lunwind
 }
 
+GENERATED_SOURCES_BASE = $$clean_path($$PWD/../../../$$VERSION/build/generator/cpp)
+SOURCES_BASE = $$clean_path($$dirname(_PRO_FILE_)/..)
+
 # gcc reports some functions as unused when they are not.
 linux-g++* | freebsd-g++* | win32-g++* {
     QMAKE_CXXFLAGS_WARN_OFF += -Wdollar-in-identifier-extension -Woverloaded-virtual
     QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-function
     QMAKE_LFLAGS_NOUNDEF   += -Wl,--no-undefined
     QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
+
+    PREFIXMAP += -fdebug-prefix-map=$$SOURCES_BASE/=
+    PREFIXMAP += -fdebug-prefix-map=$$QTJAMBI_PLATFORM_BUILDDIR/$$QTJAMBI_PROJECT=../sources/
+    PREFIXMAP += -fdebug-prefix-map=../../../generator/cpp/=
+    QMAKE_CXXFLAGS_DEBUG += $$PREFIXMAP
+    QMAKE_CXXFLAGS_RELEASE_WITH_DEBUGINFO += $$PREFIXMAP
+}
+
+macx{
+    PREFIXMAP += -fdebug-prefix-map=$$SOURCES_BASE/=
+    PREFIXMAP += -fdebug-prefix-map=$$QTJAMBI_PLATFORM_BUILDDIR/$$QTJAMBI_PROJECT=../../../../../sources/
+    PREFIXMAP += -fdebug-prefix-map=../../../generator/cpp/=
+    QMAKE_CXXFLAGS_DEBUG += $$PREFIXMAP
+    QMAKE_CXXFLAGS_RELEASE_WITH_DEBUGINFO += $$PREFIXMAP
 }
 
 linux-g++* : lessThan(QT_MAJOR_VERSION, 6):{
@@ -156,7 +182,7 @@ win32-msvc* {
     CONFIG += embed_manifest_dll force_embed_manifest
 }
 
-GENERATOR_PRI = $$clean_path($$PWD/../../../$$VERSION/build/generator/cpp/$$QTJAMBI_PROJECT/generated.pri)
+GENERATOR_PRI = $$clean_path($$GENERATED_SOURCES_BASE/$$QTJAMBI_PROJECT/generated.pri)
 exists($$GENERATOR_PRI): include($$GENERATOR_PRI)
 
 !equals(QTJAMBI_PROJECT, "QtJambi"):!equals(QTJAMBI_PROJECT, "QtJambiLauncher"){
@@ -178,13 +204,13 @@ exists($$GENERATOR_PRI): include($$GENERATOR_PRI)
             }
     }
 
-    GENERATED = $$clean_path($$PWD/../../../$$VERSION/build/generator/cpp/$$QTJAMBI_PROJECT/$$QTJAMBI_PROJECT)
+    GENERATED = $$clean_path($$GENERATED_SOURCES_BASE/$$QTJAMBI_PROJECT/$$QTJAMBI_PROJECT)
     exists($$GENERATED): INSTALL_HEADERS.files += $$GENERATED
-    GENERATED = $$clean_path($$PWD/../../../$$VERSION/build/generator/cpp/$$QTJAMBI_PROJECT/$$member(QTJAMBI_PROJECT,0)Depends)
+    GENERATED = $$clean_path($$GENERATED_SOURCES_BASE/$$QTJAMBI_PROJECT/$$member(QTJAMBI_PROJECT,0)Depends)
     exists($$GENERATED): INSTALL_HEADERS.files += $$GENERATED
-    GENERATED = $$clean_path($$PWD/../../../$$VERSION/build/generator/cpp/$$QTJAMBI_PROJECT/$$member(QTJAMBI_PROJECT,0)Version)
+    GENERATED = $$clean_path($$GENERATED_SOURCES_BASE/$$QTJAMBI_PROJECT/$$member(QTJAMBI_PROJECT,0)Version)
     exists($$GENERATED): INSTALL_HEADERS.files += $$GENERATED
-    GENERATED = $$clean_path($$PWD/../../../$$VERSION/build/generator/cpp/$$QTJAMBI_PROJECT/version.h)
+    GENERATED = $$clean_path($$GENERATED_SOURCES_BASE/$$QTJAMBI_PROJECT/version.h)
     exists($$GENERATED): INSTALL_HEADERS.files += $$GENERATED
     exists($$dirname(_PRO_FILE_)/hashes.h):INSTALL_HEADERS.files += $$dirname(_PRO_FILE_)/hashes.h
     INSTALL_HEADERS.path = $$QTJAMBI_PLATFORM_BUILDDIR/include/$$QTJAMBI_PROJECT

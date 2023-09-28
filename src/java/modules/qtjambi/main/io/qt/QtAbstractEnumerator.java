@@ -43,11 +43,43 @@ public interface QtAbstractEnumerator {
 	 * @see Enum#name()
 	 * @return the name of this enum constant
 	 */
-	public String name();
+	public @NonNull String name();
 	
 	/**
 	 * @see Enum#getDeclaringClass()
 	 * @return the Class object corresponding to this enum constant's enum type
 	 */
-	public Class<? extends QtAbstractEnumerator> getDeclaringClass();
+	public @NonNull Class<? extends QtAbstractEnumerator> getDeclaringClass();
+	
+    /**
+     * Converts the enumerator e to the equivalent value expressed in its enumeration's underlying type.
+     * <p>See <a href="https://doc.qt.io/qt/qttypetraits-proxy.html#qToUnderlying"><code>qToUnderlying&lt;Enum>(Enum)</code></a></p>
+     */
+	public static int qToUnderlying(@StrictNonNull QtEnumerator e) {
+		return e.value();
+	}
+	
+    /**
+     * Converts the enumerator e to the equivalent value expressed in its enumeration's underlying type.
+     * <p>See <a href="https://doc.qt.io/qt/qttypetraits-proxy.html#qToUnderlying"><code>qToUnderlying&lt;Enum>(Enum)</code></a></p>
+     */
+	public static short qToUnderlying(@StrictNonNull QtShortEnumerator e) {
+		return e.value();
+	}
+	
+    /**
+     * Converts the enumerator e to the equivalent value expressed in its enumeration's underlying type.
+     * <p>See <a href="https://doc.qt.io/qt/qttypetraits-proxy.html#qToUnderlying"><code>qToUnderlying&lt;Enum>(Enum)</code></a></p>
+     */
+	public static byte qToUnderlying(@StrictNonNull QtByteEnumerator e) {
+		return e.value();
+	}
+	
+    /**
+     * Converts the enumerator e to the equivalent value expressed in its enumeration's underlying type.
+     * <p>See <a href="https://doc.qt.io/qt/qttypetraits-proxy.html#qToUnderlying"><code>qToUnderlying&lt;Enum>(Enum)</code></a></p>
+     */
+	public static long qToUnderlying(@StrictNonNull QtLongEnumerator e) {
+		return e.value();
+	}
 }

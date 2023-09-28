@@ -601,6 +601,8 @@ inline bool operator==(const QMetaProperty &value1, const QMetaProperty &value2)
 
 #ifdef QTJAMBI_GENERATOR_RUNNING
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+QDebug operator<<(QDebug out, const QByteArrayView &);
+
 struct QtJambiItemSelection{
     QtJambiItemSelection(std::initializer_list<QItemSelectionRange>);
     QtJambiItemSelection();
@@ -720,18 +722,14 @@ inline bool operator==(const QPermission &v1, const QPermission &v2){
     return false;
 }
 #endif
-#endif
-
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
-inline hash_type qHash(const QNativeIpcKey &value, hash_type seed = 0)
-{
-    if(!value.isValid())
-        return seed;
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, value.nativeKey());
-    seed = hash(seed, value.type());
-    return seed;
+inline bool operator==(const QUuid::Id128Bytes &v1, const QUuid::Id128Bytes &v2){
+    return memcmp(&v1, &v2, sizeof(QUuid::Id128Bytes))==0;
 }
+inline size_t qHash(const QUuid::Id128Bytes &value, size_t seed = 0){
+    return qHashBits(&value, sizeof(QUuid::Id128Bytes), seed);
+}
+#endif
 #endif
 
 #endif // QTJAMBICORE_HASHES_H

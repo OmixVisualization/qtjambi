@@ -28,10 +28,15 @@
 ****************************************************************************/
 
 #include <QtCore/QMutex>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#include <QtMultimedia/QAudioBuffer>
+#endif
 #include "hashes.h"
 #include "utils_p.h"
 #include <QtJambi/QtJambiAPI>
 #include <QtJambi/JavaAPI>
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#endif
 
 namespace Java{
 namespace QtMultimedia{
@@ -53,6 +58,33 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/multimedia,QAbstractVideoBuffer$MapResult,
 }
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+extern "C" Q_DECL_EXPORT jlong JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_multimedia_QAudioFrame_getPositionToIndex)
+    (JNIEnv *env, jclass, jint config)
+{
+    switch(config){
+    case QAudioFormat::ChannelConfigUnknown: return jlong(&QAudioFrame<QAudioFormat::ChannelConfigUnknown, QAudioFormat::Int32>::positionToIndex);
+    case QAudioFormat::ChannelConfigMono: return jlong(&QAudioFrame<QAudioFormat::ChannelConfigMono, QAudioFormat::Int32>::positionToIndex);
+    case QAudioFormat::ChannelConfigStereo: return jlong(&QAudioFrame<QAudioFormat::ChannelConfigStereo, QAudioFormat::Int32>::positionToIndex);
+    case QAudioFormat::ChannelConfig2Dot1: return jlong(&QAudioFrame<QAudioFormat::ChannelConfig2Dot1, QAudioFormat::Int32>::positionToIndex);
+    case QAudioFormat::ChannelConfig3Dot0: return jlong(&QAudioFrame<QAudioFormat::ChannelConfig3Dot0, QAudioFormat::Int32>::positionToIndex);
+    case QAudioFormat::ChannelConfig3Dot1: return jlong(&QAudioFrame<QAudioFormat::ChannelConfig3Dot1, QAudioFormat::Int32>::positionToIndex);
+    case QAudioFormat::ChannelConfigSurround5Dot0: return jlong(&QAudioFrame<QAudioFormat::ChannelConfigSurround5Dot0, QAudioFormat::Int32>::positionToIndex);
+    case QAudioFormat::ChannelConfigSurround5Dot1: return jlong(&QAudioFrame<QAudioFormat::ChannelConfigSurround5Dot1, QAudioFormat::Int32>::positionToIndex);
+    case QAudioFormat::ChannelConfigSurround7Dot0: return jlong(&QAudioFrame<QAudioFormat::ChannelConfigSurround7Dot0, QAudioFormat::Int32>::positionToIndex);
+    case QAudioFormat::ChannelConfigSurround7Dot1: return jlong(&QAudioFrame<QAudioFormat::ChannelConfigSurround7Dot1, QAudioFormat::Int32>::positionToIndex);
+    }
+    env->Throw(Java::Runtime::IllegalArgumentException::newInstance(env, env->NewStringUTF("Unknown channel configuration")));
+    return 0;
+}
+
+extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_multimedia_QAudioFrame_positionToIndex)
+    (JNIEnv *, jclass, jint pos, jlong positionToIndexFunction)
+{
+    typedef int(*PositionToIndex)(QAudioFormat::AudioChannelPosition pos);
+    return reinterpret_cast<PositionToIndex>(positionToIndexFunction)(QAudioFormat::AudioChannelPosition(pos));
+}
+#endif
 
 void initialize_meta_info_QtMultimedia(){
 #if defined(Q_OS_ANDROID)

@@ -251,6 +251,7 @@ protected:
         TS::TypeDatabase* m_database;
         QString m_generateTypeSystemQML;
         QSet<MetaClass*> m_functions_fixed;
+        QList<QPair<MetaClass*,QString>> m_pendingScopedClasses;
 };
 
 struct Operator {

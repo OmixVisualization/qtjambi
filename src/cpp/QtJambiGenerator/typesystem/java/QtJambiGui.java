@@ -438,26 +438,6 @@ class QPainter_redir__ extends QPainter {
 class QPainter___ extends QPainter {
 
     @QtUninvokable
-    public final void setBrush(QColor color) {
-        setBrush(new QBrush(color));
-    }
-
-    @QtUninvokable
-    public final void setBrush(io.qt.core.Qt.GlobalColor color) {
-        setBrush(new QBrush(new QColor(color)));
-    }
-
-    @QtUninvokable
-    public final void setBrush(QGradient gradient) {
-        setBrush(new QBrush(gradient));
-    }
-
-    @QtUninvokable
-    public final void setBrush(QPixmap pm) {
-        setBrush(new QBrush(pm));
-    }
-
-    @QtUninvokable
     private static void beginPaint(QPaintDevice paintedWidget){
         __paintedDevices.put(paintedWidget, java.util.Collections.emptyList());
     }
@@ -528,24 +508,6 @@ class QPaintDevice___{
     }
 }// class
 
-class QPen___ extends QPen {
-        public QPen(QColor color, double width, io.qt.core.Qt.PenStyle s, io.qt.core.Qt.PenCapStyle c, io.qt.core.Qt.PenJoinStyle j) {
-            this(new QBrush(color), width, s, c, j);
-        }
-
-        public QPen(QColor color, double width, io.qt.core.Qt.PenStyle s, io.qt.core.Qt.PenCapStyle c) {
-            this(new QBrush(color), width, s, c);
-        }
-
-        public QPen(QColor color, double width, io.qt.core.Qt.PenStyle s) {
-            this(new QBrush(color), width, s);
-        }
-
-        public QPen(QColor color, double width) {
-            this(new QBrush(color), width);
-        }
-}// class
-
 class QPixmapFilter___ extends QPixmapFilter {
         public final void setConvolutionKernel(double[] kernel, int rows, int columns) {
             int length = rows * columns;
@@ -581,23 +543,23 @@ class QTextBlock___ extends QTextBlock {
 
     @Override
     public java.util.Iterator<QTextFragment> iterator(){
-    return new java.util.Iterator<QTextFragment>() {
-        
-        iterator it = begin();
-        
-        @Override
-        public QTextFragment next() {
-            QTextFragment next = it.fragment();
-            it.next();
-            return next;
-        }
-        
-        @Override
-        public boolean hasNext() {
-            return !it.atEnd();
-        }
-    };
-}
+        return new java.util.Iterator<QTextFragment>() {
+
+            iterator it = begin();
+
+            @Override
+            public QTextFragment next() {
+                QTextFragment next = it.fragment();
+                it.next();
+                return next;
+            }
+
+            @Override
+            public boolean hasNext() {
+                return !it.atEnd();
+            }
+        };
+    }
 
 }// class
 
@@ -658,34 +620,6 @@ class QAccessibleInterface___ extends QAccessibleInterface {
                 public int childIndex;
         }
 
-}// class
-
-class QMatrix___ extends QMatrix {
-        /**
-         * Returns an inverted copy of this matrix.
-         *
-         * @return The inverse of the matrix.
-         * @throws IllegalArgumentException
-         *             If this matrix is not invertible.
-         */
-        public final QMatrix inverted() {
-            QNativePointer ok = new QNativePointer(QNativePointer.Type.Boolean);
-            QMatrix returned = inverted(ok);
-            if (!ok.booleanValue())
-                throw new IllegalArgumentException("Matrix is not invertible");
-            return returned;
-        }
-
-        @QtUninvokable
-        public final QMatrix multiply(QMatrix other) {
-            operator_multiply_assign(other);
-            return this;
-        }
-
-        @QtUninvokable
-        public final QMatrix multiplied(QMatrix other) {
-            return operator_multiply(other);
-        }
 }// class
 
 class QPaintDeviceWindow___ extends QPaintDeviceWindow {
@@ -768,37 +702,6 @@ class QWindow___ extends QWindow {
 class QAction___ extends QAction {
 
     private QActionGroup __rcActionGroup = null;
-
-    /**
-     * Sets the shortcut to the key sequence for the given key string. For
-     * example "Ctrl+O" gives CTRL+'O'. The strings "Ctrl", "Shift", "Alt" and
-     * "Meta" are recognized, as well as their translated equivalents in the
-     * "QShortcut" context (using QObject::tr()). Up to four key codes may be
-     * entered by separating them with commas, e.g. "Alt+X,Ctrl+S,Q".
-     *
-     * @param key
-     *        The description of the key sequence. Typically used with tr()
-     *        so key sequences can be locale aware.
-     */
-    public final void setShortcut(String key) {
-        setShortcut(new QKeySequence(key));
-    }
-
-    /**
-     * Sets the shortcut to the key sequence for the given key. The result will
-     * depend on the currently running platform. The key sequence will be based
-     * on the first element in the list of key bindings for the key.
-     *
-     * @param key
-     *        The key for which to select a key sequence
-     */
-    public final void setShortcut(QKeySequence.StandardKey key) {
-        setShortcut(new QKeySequence(key));
-    }
-
-    public final void setIcon(QPixmap pm) {
-        setIcon(new QIcon(pm));
-    }
     
     /**
      * <p>Type-casting overload of <a href="@docRoot/qobject.html#parent"><code>QObject::parent()const</code></a></p>

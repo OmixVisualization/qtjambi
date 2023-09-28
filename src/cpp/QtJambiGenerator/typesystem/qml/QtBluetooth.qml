@@ -59,6 +59,7 @@ TypeSystem{
     
     NamespaceType{
         name: "QBluetooth"
+        hasMetaObject: true
 
         EnumType{
             name: "AttAccessConstraint"
@@ -254,7 +255,8 @@ TypeSystem{
     
     ValueType{
         name: "QBluetoothUuid"
-
+        Rejection{functionName: "fromCBUUID"}
+        Rejection{functionName: "toCBUUID"}
         EnumType{
             name: "CharacteristicType"
         }
@@ -283,7 +285,7 @@ TypeSystem{
                     codeClass: CodeClass.Native
                     Text{content: "Int8PointerArray %inArray(%env, reinterpret_cast<qint8*>(%in.data), 16);\n"+
                                   "%out = %env->NewByteArray(16);\n"+
-                                  "%env->SetByteArrayRegion(jbyteArray(%out), 0, 16, reinterpret_cast<jbyte *>(%in.data));"}
+                                  "%env->SetByteArrayRegion(jbyteArray(%out), 0, 16, *reinterpret_cast<jbyte **>(&%in));"}
                 }
             }
             until: 6.5
@@ -303,10 +305,31 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "quint128 %out;\n"+
-                                  "%env->GetByteArrayRegion(jbyteArray(%in), 0, 16, reinterpret_cast<jbyte *>(%out.data));"}
+                                  "%env->GetByteArrayRegion(jbyteArray(%in), 0, 16, *reinterpret_cast<jbyte **>(&%out));"}
                 }
             }
             until: 6.5
+        }
+        ModifyFunction{
+            signature: "toUInt128(QSysInfo::Endian) const"
+            remove: RemoveFlag.All
+            since: 6.6
+        }
+        ModifyFunction{
+            signature: "QBluetoothUuid<>(quint128, QSysInfo::Endian)"
+            ModifyArgument{
+                index: 1
+                NoNullPointer{}
+                ReplaceType{
+                    modifiedType: "io.qt.core.QUuid$Id128Bytes"
+                }
+                AddImpliciteCall{type: "byte[]"}
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QUuid::Id128Bytes %out = qtjambi_cast<QUuid::Id128Bytes>(%env, %in);"}
+                }
+            }
+            since: 6.6
         }
         ModifyFunction{
             signature: "toUInt16(bool*) const"

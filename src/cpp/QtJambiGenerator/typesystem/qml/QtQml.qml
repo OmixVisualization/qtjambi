@@ -71,6 +71,9 @@ TypeSystem{
         functionName: "qjsvalue_cast_helper"
     }
     
+    Rejection{
+        className: "QQmlTypeNotAvailable"
+    }
     
     Rejection{
         className: "QQmlInfo"
@@ -392,6 +395,7 @@ TypeSystem{
         ModifyFunction{
             signature: "data()"
             remove: RemoveFlag.All
+            since: 6.6
         }
         ModifyFunction{
             signature: "data()const"

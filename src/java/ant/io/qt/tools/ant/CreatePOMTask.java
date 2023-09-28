@@ -721,6 +721,70 @@ public class CreatePOMTask extends Task {
 							}
 						}
 					}
+					{
+						String prefix = _moduleId + "-debuginfo-";
+						String suffix = "-" + qtjambiVersion + ".jar";
+						String prohibited = "-debug-" + qtjambiVersion + ".jar";
+						for(String file : new java.io.File(directory, "debuginfo").list()) {
+							if(file.startsWith(prefix) && file.endsWith(suffix) && !file.endsWith(prohibited)) {
+								String platform = file.substring(prefix.length(), file.length() - suffix.length());
+								if(platform.equals("macos")) {
+									name.setTextContent(_moduleName+" native debuginfo for macOS");
+									description.setTextContent("Native debuginfo for macOS");									
+								}else if(platform.startsWith("android")) {
+									name.setTextContent(_moduleName+" native debuginfo for Android");
+									description.setTextContent("Native debuginfo for Android");									
+									if(platform.endsWith("-x64")) {
+										name.setTextContent(name.getTextContent()+" x86_64");
+										description.setTextContent(description.getTextContent()+" x86_64");
+									}else if(platform.endsWith("-x86")) {
+										name.setTextContent(name.getTextContent()+" x86");
+										description.setTextContent(description.getTextContent()+" x86");
+									}else if(platform.endsWith("-arm64")) {
+										name.setTextContent(name.getTextContent()+" arm64-v8a");
+										description.setTextContent(description.getTextContent()+" arm64-v8a");
+									}else if(platform.endsWith("-arm")) {
+										name.setTextContent(name.getTextContent()+" armeabi-v7a");
+										description.setTextContent(description.getTextContent()+" armeabi-v7a");
+									}
+								}else if(platform.startsWith("windows")) {
+									name.setTextContent(_moduleName+" native debuginfo for Windows");
+									description.setTextContent("Native debuginfo for Windows");
+									if(platform.endsWith("-x64")) {
+										name.setTextContent(name.getTextContent()+" x64");
+										description.setTextContent(description.getTextContent()+" x64");
+									}else if(platform.endsWith("-x86")) {
+										name.setTextContent(name.getTextContent()+" x86");
+										description.setTextContent(description.getTextContent()+" x86");
+									}else if(platform.endsWith("-arm64")) {
+										name.setTextContent(name.getTextContent()+" arm64");
+										description.setTextContent(description.getTextContent()+" arm64");
+									}
+								}else if(platform.startsWith("linux")) {
+									name.setTextContent(_moduleName+" native debuginfo for Linux");
+									description.setTextContent("Native debuginfo for Linux");
+									if(platform.endsWith("-x64")) {
+										name.setTextContent(name.getTextContent()+" x64");
+										description.setTextContent(description.getTextContent()+" x64");
+									}else if(platform.endsWith("-x86")) {
+										name.setTextContent(name.getTextContent()+" x86");
+										description.setTextContent(description.getTextContent()+" x86");
+									}else if(platform.endsWith("-arm64")) {
+										name.setTextContent(name.getTextContent()+" arm64");
+										description.setTextContent(description.getTextContent()+" arm64");
+									}
+								}else {
+									name.setTextContent(_moduleName+" native debuginfo for "+platform);
+									description.setTextContent("Native debuginfo for "+platform);
+								}
+								artifactId.setTextContent(_moduleId+"-debuginfo-"+platform);
+								try(FileOutputStream fos = new FileOutputStream(new java.io.File(new java.io.File(directory, "debuginfo"), _moduleId+"-debuginfo-"+platform+"-"+qtjambiVersion+".pom"))){
+									StreamResult result = new StreamResult(fos);
+									transformer.transform(new DOMSource(doc), result);
+								}
+							}
+						}
+					}
 				}
 			}
 		}catch(RuntimeException | Error e){

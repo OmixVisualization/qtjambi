@@ -135,9 +135,15 @@ namespace Java{
     namespace Runtime{
         namespace Internal{
             QTJAMBI_REPOSITORY_DECLARE_CLASS(ByteBuffer,
-                                             QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(allocateDirect))
+                                            QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(allocateDirect))
+            QTJAMBI_REPOSITORY_DECLARE_CLASS(Buffer,
+                                            QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(capacity)
+                                            QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(limit)
+                                            QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(position)
+                                            QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(mark)
+                                            QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(hasArray)
+                                            QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(arrayOffset))
         }
-
         QTJAMBI_REPOSITORY_DECLARE_CLASS(ClassLoader,
                                          QTJAMBI_REPOSITORY_DECLARE_CLASS_METHOD(loadClass)
                                          public: static inline jclass tryLoadClass(JNIEnv* env, jobject object, jstring className){

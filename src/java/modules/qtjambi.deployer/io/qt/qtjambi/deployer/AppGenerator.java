@@ -29,10 +29,14 @@
 ****************************************************************************/
 package io.qt.qtjambi.deployer;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,6 +65,7 @@ import io.qt.core.QCommandLineParser;
 import io.qt.core.QDir;
 import io.qt.core.QFile;
 import io.qt.core.QFileDevice;
+import io.qt.core.QFileInfo;
 import io.qt.core.QIODevice;
 import io.qt.core.QStringList;
 import io.qt.qtjambi.deployer.Main.JVMDetectionModes;
@@ -76,10 +81,11 @@ final class AppGenerator {
 	    QCommandLineOption applicationMainClassOption = new QCommandLineOption(QStringList.of("main-class"), "Main class", "class");
 	    QCommandLineOption applicationAutodetectJvmOption = new QCommandLineOption(QStringList.of("autodetect-jvm"), "Autodetect Java Virtual Machine at runtime");
 	    QCommandLineOption applicationJVMMinVersionOption = new QCommandLineOption(QStringList.of("minversion-jvm", "jvm-minimum-version"), "Minimum version for the autodetected Java Virtual Machine", "version");
-	    QCommandLineOption applicationJVMPathOption = new QCommandLineOption(QStringList.of("jvm-path"), "Path to Java Virtual Machine (absolute or relative to app binary)", "version");
+	    QCommandLineOption applicationJVMPathOption = new QCommandLineOption(QStringList.of("jvm-path"), "Path to Java Virtual Machine (absolute or relative to app binary)", "path");
 	    QCommandLineOption applicationExeOption = new QCommandLineOption(QStringList.of("executable"), "Path to executable file.\nExamples:\n--executable=path"+File.separator+"QtJambiLauncher.exe\n--executable=macos"+File.pathSeparator+"path"+File.separator+"QtJambiLauncher.app", "file");
 	    QCommandLineOption applicationExeLocationOption = new QCommandLineOption(QStringList.of("executable-location"), "Directory containing QtJambiLauncher executable", "path");
 	    QCommandLineOption applicationJVMArgOption = new QCommandLineOption(QStringList.of("jvmarg"), "JVM argument", "arg");
+	    QCommandLineOption applicationJVMArgFiltersOption = new QCommandLineOption(QStringList.of("filter", "jvm-argument-filter"), "JVM argument filter", "filter");
 	    parser.addOptions(Arrays.asList(
 	    		platformOption,
 	    		configurationOption,
@@ -95,6 +101,7 @@ final class AppGenerator {
 	    		applicationJVMPathOption,
 	    		applicationExeOption,
 	    		applicationExeLocationOption,
+	    		applicationJVMArgFiltersOption,
 	    		applicationJVMArgOption,
 	    		
 	    		dirOption,
@@ -234,6 +241,10 @@ final class AppGenerator {
 		if(parser.isSet(applicationJVMMinVersionOption))
 			minimumJVMVersion = Integer.parseInt(parser.value(applicationJVMMinVersionOption));
 		
+		List<String> filters = new ArrayList<>();
+		if(parser.isSet(applicationJVMArgFiltersOption))
+			filters.addAll(parser.values(applicationJVMArgFiltersOption));
+		
 		List<String> arguments = new ArrayList<>(additionalArguments);
 		if(parser.isSet(applicationJVMArgOption))
 			arguments.addAll(parser.values(applicationJVMArgOption));
@@ -310,6 +321,8 @@ final class AppGenerator {
 		cborValue.setValue(Parameters.MainClass.value(), new QCborValue(mainClass));
 		QCborArray argumentArray = new QCborArray(arguments.stream().map(QByteArray::new).map(QCborValue::new).toArray(arrayFactory));
 		cborValue.setValue(Parameters.JVMArguments.value(), new QCborValue(argumentArray));
+		QCborArray filtersArray = new QCborArray(filters.stream().map(QByteArray::new).map(QCborValue::new).toArray(arrayFactory));
+		cborValue.setValue(Parameters.JVMArgumentFilters.value(), new QCborValue(filtersArray));
 		QCborArray classPathArray = new QCborArray(classPaths.stream().map(QCborValue::new).toArray(arrayFactory));
 		cborValue.setValue(Parameters.ClassPath.value(), new QCborValue(classPathArray));
 		QCborArray modulePathArray = new QCborArray(modulePaths.stream().map(QCborValue::new).toArray(arrayFactory));
@@ -329,8 +342,10 @@ final class AppGenerator {
 		for(Map.Entry<String,URL> entry : executables) {
 			String os = entry.getKey();
 			if(os!=null && (platform==null || platform.startsWith(os))) {
-                URL file = entry.getValue();
+                URL url = entry.getValue();
 				QFile newFile;
+				URL debuginfoURL = null;
+				QFile debuginfoFile = null;
                 switch(os.toLowerCase()) {
 				case "linux":
 				case "linux32":
@@ -342,6 +357,46 @@ final class AppGenerator {
 				case "linux-x86":
 				case "linux-x64":
 					newFile = new QFile(dir.absoluteFilePath(appName));
+					switch(url.getProtocol()) {
+					case "file":
+						try {
+							File rfile = new File(url.toURI());
+							File dfile = new File(rfile.getAbsolutePath()+".debug");
+							if(dfile.exists()) {
+								debuginfoURL = dfile.toURI().toURL();
+								debuginfoFile = new QFile(dir.absoluteFilePath(appName+".debug"));
+							}
+						} catch (URISyntaxException e1) {
+						}
+						break;
+					case "jar":
+						String path = url.toString();
+						int idx = path.indexOf("!/");
+						if(idx>0) {
+							String jarFileURL = path.substring(4, idx);
+							String filePath = path.substring(idx);
+							try {
+								debuginfoURL = new URL(jarFileURL.replace("-native-", "-debuginfo-"));
+								if(!new File(debuginfoURL.toURI()).exists()) {
+									debuginfoURL = new URL(jarFileURL.replace("-native-", "-debuginfo-").replace("/native/", "/debuginfo/"));
+									if(!new File(debuginfoURL.toURI()).exists()) {
+										debuginfoURL = null;
+									}
+								}
+								if(debuginfoURL!=null) {
+									debuginfoURL = new URL("jar:"+debuginfoURL.toString()+filePath+".debug");
+									try(InputStream s = debuginfoURL.openStream()){
+										debuginfoFile = new QFile(dir.absoluteFilePath(appName+".debug"));
+									} catch (IOException e) {
+										debuginfoURL = null;
+									}
+								}
+							} catch (URISyntaxException e) {
+							}
+						}
+						break;
+					}
+//					debuginfoFile = new QFile(dir.absoluteFilePath(appName+".debug"));
 					break;
 				case "android-arm":
 				case "android-arm32":
@@ -368,13 +423,65 @@ final class AppGenerator {
 				case "windows-x86":
 				case "windows-x64":
 					newFile = new QFile(dir.absoluteFilePath(appName + ".exe"));
+					switch(url.getProtocol()) {
+					case "file":
+						try {
+							File rfile = new File(url.toURI());
+							File dfile = new File(rfile.getParentFile(), rfile.getName().substring(0, rfile.getName().length()-3) + "pdb");
+							if(!dfile.exists()) {
+								dfile = new File(rfile.getAbsolutePath()+".debug");
+							}
+							if(dfile.exists()) {
+								debuginfoURL = dfile.toURI().toURL();
+								debuginfoFile = new QFile(dir.absoluteFilePath(appName + (dfile.getName().endsWith(".pdb") ? ".pdb" : ".exe.debug")));
+							}
+						} catch (URISyntaxException e1) {
+						}
+						break;
+					case "jar":
+						String path = url.toString();
+						int idx = path.indexOf("!/");
+						if(idx>0 && (path.endsWith(".dll") || path.endsWith(".exe"))) {
+							String jarFileURL = path.substring(4, idx);
+							String filePath = path.substring(idx);
+							try {
+								debuginfoURL = new URL(jarFileURL.replace("-native-", "-debuginfo-"));
+								if(!new File(debuginfoURL.toURI()).exists()) {
+									debuginfoURL = new URL(jarFileURL.replace("-native-", "-debuginfo-").replace("/native/", "/debuginfo/"));
+									if(!new File(debuginfoURL.toURI()).exists()) {
+										debuginfoURL = null;
+									}
+								}
+								if(debuginfoURL!=null) {
+									debuginfoURL = new URL("jar:"+debuginfoURL.toString()+filePath.substring(0, filePath.length()-3)+"pdb");
+									try(InputStream s = debuginfoURL.openStream()){
+										debuginfoFile = new QFile(dir.absoluteFilePath(appName+".pdb"));
+									} catch (IOException e) {
+										debuginfoURL = new URL("jar:"+debuginfoURL.toString()+filePath+".debug");
+										try(InputStream s = debuginfoURL.openStream()){
+											debuginfoFile = new QFile(dir.absoluteFilePath(appName+filePath.substring(filePath.length()-4)+".debug"));
+										} catch (IOException e2) {
+											debuginfoURL = null;
+										}
+									}
+								}
+							} catch (URISyntaxException e) {
+							}
+						}
+						break;
+					}
 					System.gc();
 					break;
 				case "macos":
 				case "osx":
-					String fileBase = file.toExternalForm();
+					String fileBase = url.toExternalForm();
 					if(fileBase.endsWith("/"))
 						fileBase = fileBase.substring(0, fileBase.length()-1);
+					{
+						int idx = fileBase.lastIndexOf(".app/");
+						if(idx>0)
+							fileBase = fileBase.substring(0, idx+4);
+					}
 					String baseName = fileBase;
 					{
 						int idx = baseName.lastIndexOf('/');
@@ -426,7 +533,6 @@ final class AppGenerator {
 							pkgInfo.close();
 						}
 					}catch(IOException e) {
-						e.printStackTrace();
 					}
                     try {
 	                    URL emptylprojUrl = new URL(fileBase + "/Contents/Resources/empty.lproj");
@@ -441,7 +547,6 @@ final class AppGenerator {
 							emptylproj.close();
 						}
 					}catch(IOException e) {
-						e.printStackTrace();
 					}
                     try {
 	                    URL executableUrl = new URL(fileBase + "/Contents/MacOS/"+baseName);
@@ -471,15 +576,86 @@ final class AppGenerator {
 						params.write(cborData);
 						params.close();
 					}
+					
+					switch(url.getProtocol()) {
+					case "file":
+						try {
+							File rfile = new File(new URL(fileBase).toURI());
+							File dfile = new File(rfile.getAbsolutePath()+".dSYM/Contents/Resources/DWARF/QtJambiLauncher");
+							if(dfile.exists()) {
+								debuginfoURL = dfile.toURI().toURL();
+								File targetDebuginfoFile = new File(dir.absolutePath(), appName+".app.dSYM/Contents/Resources/DWARF/"+appName);
+								try(InputStream in = debuginfoURL.openStream()){
+		                    		targetDebuginfoFile.getParentFile().mkdirs();
+		                        	Files.copy(in, targetDebuginfoFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		    					}catch(IOException e) {
+		    					}
+							}
+							dfile = new File(rfile.getAbsolutePath()+".dSYM/Contents/Info.plist");
+							if(dfile.exists()) {
+								try {
+									QByteArray data = new QByteArray(Files.readAllBytes(dfile.toPath()));
+									File targetDebuginfoFile = new File(dir.absolutePath(), appName+".app.dSYM/Contents/Info.plist");
+		                    		targetDebuginfoFile.getParentFile().mkdirs();
+		                        	data = data.replace("QtJambiLauncher", appName);
+		                        	Files.copy(new ByteArrayInputStream(data.toArray()), targetDebuginfoFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		    					}catch(IOException e) {
+		    					}
+							}
+						} catch (URISyntaxException e1) {
+						}
+						break;
+					case "jar":
+						int idx = fileBase.indexOf("!/");
+						if(idx>0) {
+							String jarFileURL = fileBase.substring(4, idx);
+							String filePath = fileBase.substring(idx);
+							try {
+								debuginfoURL = new URL(jarFileURL.replace("-native-", "-debuginfo-"));
+								if(!new File(debuginfoURL.toURI()).exists()) {
+									debuginfoURL = new URL(jarFileURL.replace("-native-", "-debuginfo-").replace("/native/", "/debuginfo/"));
+									if(!new File(debuginfoURL.toURI()).exists()) {
+										debuginfoURL = null;
+									}
+								}
+								if(debuginfoURL!=null) {
+									URL debuginfoBaseURL = debuginfoURL;
+									debuginfoURL = new URL("jar:"+debuginfoBaseURL.toString()+filePath+".dSYM/Contents/Resources/DWARF/QtJambiLauncher");
+									try(InputStream s = debuginfoURL.openStream()){
+										File targetDebuginfoFile = new File(dir.absolutePath(), appName+".app.dSYM/Contents/Resources/DWARF/"+appName);
+										targetDebuginfoFile.getParentFile().mkdirs();
+			                        	Files.copy(s, targetDebuginfoFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+									} catch (IOException e) {
+										debuginfoURL = null;
+									}
+									URL debuginfoURL2 = new URL("jar:"+debuginfoBaseURL.toString()+filePath+".dSYM/Contents/Info.plist");
+									try(InputStream s = debuginfoURL2.openStream()){
+										QIODevice device = QIODevice.fromInputStream(s);
+										File targetDebuginfoFile2 = new File(dir.absolutePath(), appName+".app.dSYM/Contents/Info.plist");
+										targetDebuginfoFile2.getParentFile().mkdirs();
+			                        	QByteArray data = device.readAll();
+			                        	data = data.replace("QtJambiLauncher", appName);
+										Files.copy(new ByteArrayInputStream(data.toArray()), targetDebuginfoFile2.toPath(), StandardCopyOption.REPLACE_EXISTING);
+									} catch (IOException e) {
+										debuginfoURL2 = null;
+									}
+								}
+							} catch (URISyntaxException e) {
+							}
+						}
+						break;
+					}
+					
                     continue;
                     default: continue;
 				}
                 try {
-                    QIODevice device = QIODevice.fromInputStream(file.openStream());
+                    QIODevice device = QIODevice.fromInputStream(url.openStream());
                     QByteArray exeData = device.readAll();
                     device.close();
                     int idx = (int)exeData.indexOf(QTJAMBI_LAUNCHER);
                     if(idx>0) {
+                    	new QFileInfo(newFile).absoluteDir().mkpath(".");
                     	newFile.remove();
                         if(newFile.open(QIODevice.OpenModeFlag.WriteOnly)) {
                             try{
@@ -528,11 +704,24 @@ final class AppGenerator {
                             throw new Error("Unable to write file "+newFile.fileName());
                         }
                     }else {
-                        throw new Error("Unable to find \""+QTJAMBI_LAUNCHER+"\" in file "+file.toExternalForm());
+                        throw new Error("Unable to find \""+QTJAMBI_LAUNCHER+"\" in file "+url.toExternalForm());
                     }
 				}catch(IOException e) {
-                    throw new Error("Unable to read file "+file.toExternalForm(), e);
+                    throw new Error("Unable to read file "+url.toExternalForm(), e);
 				}
+                if(debuginfoURL!=null && debuginfoFile!=null) {
+                	try {
+                        QIODevice device = QIODevice.fromInputStream(debuginfoURL.openStream());
+                        QByteArray debugData = device.readAll();
+                        device.close();
+                        debuginfoFile.remove();
+                        new QFileInfo(debuginfoFile).absoluteDir().mkpath(".");
+                        if(debuginfoFile.open(QIODevice.OpenModeFlag.WriteOnly)) {
+                        	debuginfoFile.write(debugData);
+                        	debuginfoFile.close();
+                        }
+                	}catch(IOException e) {}
+                }
 			}
 		}
 	}

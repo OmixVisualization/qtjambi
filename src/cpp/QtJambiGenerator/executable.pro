@@ -9,6 +9,20 @@ SOURCES  = main.cpp
 
 DESTDIR = ../bin
 
+contains(QT_CONFIG, release):contains(QT_CONFIG, debug) {
+    win32-msvc* | !CONFIG(force_debug_info): {
+        # Qt was configued with both debug and release libs
+        CONFIG += debug_and_release build_all
+    }else{
+        # don't compile debug with forced debug info
+        CONFIG += release
+    }
+}
+
+CONFIG(release, debug|release): CONFIG(force_debug_info) {
+    CONFIG += separate_debug_info
+}
+
 CONFIG(debug, debug|release) {
     win32:{
         TARGET = $$member(TARGET, 0)d
@@ -60,9 +74,4 @@ mac:{
     LIBS += -L../lib
     LIBS += -l$$QTJAMBI_LIB_NAME
     linux-g++*: QMAKE_RPATHDIR = $ORIGIN/../lib
-}
-
-contains(QT_CONFIG, release):contains(QT_CONFIG, debug) {
-    # Qt was configued with both debug and release libs
-    CONFIG += debug_and_release build_all
 }

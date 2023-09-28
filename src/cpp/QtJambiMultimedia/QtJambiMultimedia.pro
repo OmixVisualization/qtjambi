@@ -9,7 +9,15 @@ lessThan(QT_MAJOR_VERSION, 6):{
     INCLUDEPATH += $$[QT_INSTALL_HEADERS]/QtMultimediaWidgets
 }else{
     QMAKE_LIBS_WMF = \
+}
 
+equals(QT_MAJOR_VERSION, 6):greaterThan(QT_MINOR_VERSION, 5):{
+    QT += gui-private
+    CONFIG+=no_private_qt_headers_warning
+}
+greaterThan(QT_MAJOR_VERSION, 6):{
+    QT += gui-private
+    CONFIG+=no_private_qt_headers_warning
 }
 
 HEADERS += \

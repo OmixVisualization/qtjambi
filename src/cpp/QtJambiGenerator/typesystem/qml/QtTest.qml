@@ -65,7 +65,7 @@ TypeSystem{
     }
 
     Rejection{
-        enumName: "QEventSizeOfChecker"
+        className: "QEventSizeOfChecker"
         until: [5, 15]
     }
     
@@ -1078,24 +1078,29 @@ TypeSystem{
     
     ObjectType{
         name: "QTestEventLoop"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/CoreAPI"
+                location: Include.Global
+            }
+        }
         ModifyFunction{
             signature: "instance()"
             ModifyArgument{
                 index: 0
-                DefineOwnership{
+                ConversionRule{
                     codeClass: CodeClass.Native
-                    ownership: Ownership.Cpp
+                    Text{content: "%out = CoreAPI::convertQObjectToJavaObjectCppOwnership(%env, &%in);"}
                 }
             }
         }
     }
     
-    EnumType{
-        name: "QAbstractItemModelTester::FailureReportingMode"
-    }
-    
     ObjectType{
         name: "QAbstractItemModelTester"
+        EnumType{
+            name: "FailureReportingMode"
+        }
     }
     
     ObjectType{

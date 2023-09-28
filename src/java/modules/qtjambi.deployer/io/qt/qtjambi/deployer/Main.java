@@ -68,7 +68,8 @@ public class Main {
 	    ModulePath,
 	    LibraryPath,
 	    JVMArguments,
-	    JNIMinimumVersion
+	    JNIMinimumVersion,
+	    JVMArgumentFilters
 	};
 	
     @SuppressWarnings("unused")
