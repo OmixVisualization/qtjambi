@@ -49,6 +49,9 @@ Possible arguments are:
   - `--minversion-jvm=...` required when autodetection of Java is
     enabled
   - `--application=...` name of the generated application
+  - `--filter=...` filters the program arguments. 
+     All program arguments starting with the given filter are treated as JVM argument.
+	 (Can be used multiple times)
   - `--dir=...` target directory to place the prepared binary
   - ...additional Java runtime arguments after `-- `
 

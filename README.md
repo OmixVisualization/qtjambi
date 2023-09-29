@@ -205,4 +205,5 @@ Instead of starting your program with a java command as shown above you can depl
 * [Characteristics of QtJambi](www/Characteristics-of-QtJambi.md)
 * [How to deploy QtJambi applications](www/How-to-deploy-QtJambi-applications.md)
 * [How to bundle Qt](www/How-to-bundle-Qt-libraries.md)
+* [How to debug QtJambi applications](www/How-to-debug.md)
 * [QtJambi API Reference Documentation](https://doc.qtjambi.io/latest)

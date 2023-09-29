@@ -87,13 +87,14 @@ application data path or common directory ([see below](#library-management)).
 
 In general, you can start learning how to use Qt in Java [as it is
 introduced for
-C++](https://doc.qt.io/qt-6/gettingstarted.html#create-your-first-applications).
-There are a couple of specifics for QtJambi that are [introduced
+C++](https://doc.qt.io/qt/gettingstarted.html#create-your-first-applications).
+There are a special characteristics of QtJambi that are [introduced
 here](Characteristics-of-QtJambi.md). Instead of starting your
 program with a java command as shown above you can deploy your
 application as executable [as described
 here](How-to-deploy-QtJambi-applications.md).
 [Read here](www/How-to-bundle-Qt-libraries.md) about creating self-exctracting bundles containing Qt library.
+[Read more about how to debug a QtJambi program](www/How-to-debug.md).
 [Read more about developing applications for Android](Android.md).
 
 See [QtJambi 5.15 API Reference
@@ -118,7 +119,7 @@ You can specify Java system properties as start argument `-Dproperty=value` or i
 
 ### Runtime Diagnostics
 
-* `io.qt.enable-method-logs` - Specify `true` to activate method logging.
+* `io.qt.enable-method-logs` - Specify `true` to activate method logging. *Caution! This highly decreases performance especially in combination with `io.qt.log-messages` or custom message handlers.*
 * `io.qt.enable-dangling-pointer-check` - Specify `true` to activate dangling pointer checks.
 * `io.qt.enable-concurrent-container-modification-check` - Specify `true` to activate concurrent modification checks during container iteration.
 * `io.qt.enable-thread-affinity-check` - Specify `true` to activate thread affinity checks when calling certain thread-affine methods.
@@ -136,7 +137,7 @@ You can specify Java system properties as start argument `-Dproperty=value` or i
 If you don't specify QtJambi's native location in library path QtJambi will extract libraries from native bundles to temporary directory each time at program startup.
 Typically, it is a process specific directory purged at program termination. This behavior can be adapted with following properties:
 
-* `io.qt.deploymentdir` - Specify `user` to let QtJambi extract libraries to user's application data directory. Specify `common` to let them be extracted to common program data directory. Specify a target directory to let them be extracted there.
+* `io.qt.deploymentdir` - Specify `temp` to let QtJambi extract libraries to temporary directory (default), `user` for user's application data directory and `common` for common program data directory. Specify a target directory (`io.qt.sourcesdir=<path>`) to let them be extracted at the specified location.
 * `io.qt.keep-temp-deployment` - Specify `true` to avoid library deletion at program termination. The libraries remain in temporary directory instead.
 * `io.qt.no-native-deployment` - Specify `true` if you want to inhibit the search for native library bundles at all and load QtJambi from library path instead.
 
@@ -152,7 +153,7 @@ The extraction behavior can be adapted by following properties:
 
 Along with debuginfo files, source code files could be extracted. However, this is not done unless you specify a target sources directory:
 
-* `io.qt.sourcesdir` - Specify `user` to let QtJambi extract source code files to user's application data directory. Specify `common` to let them be extracted to common program data directory. Specify a target directory to let them be extracted there.
+* `io.qt.sourcesdir` - Specify `temp` to let QtJambi extract source code files to temporary directory, `user` for user's application data directory and `common` for common program data directory. Specify a target directory (`io.qt.sourcesdir=<path>`) to let them be extracted at the specified location.
 
 ### Development
 
