@@ -489,35 +489,34 @@ jobject AutoVectorAccess::constBegin(JNIEnv * env, QtJambiNativeID ownerId, cons
 
 void AutoVectorAccess::appendVector(JNIEnv * env, void* container, jobject list)
 {
-    if (ContainerAPI::testQVector(env, list, elementMetaType())) {
-        if(void* ptr = QtJambiAPI::convertJavaObjectToNative(env, list)){
-            QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container);
-            QTypedArrayData<char> ** vector2 = reinterpret_cast<QTypedArrayData<char> **>(ptr);
-            QTypedArrayData<char>*& d = *vector;
-            QTypedArrayData<char>*& d2 = *vector2;
-            if (d2->size==0) {
-                if (d == QArrayData::sharedNull()) {
-                    *vector = d2;
-                    d2->ref.ref();
-                } else {
-                    uint newSize = d->size + d2->size;
-                    const bool isTooSmall = newSize > d->alloc;
-                    if (!isDetached(vector) || isTooSmall) {
-                        QArrayData::AllocationOptions opt(isTooSmall ? QArrayData::Grow : QArrayData::Default);
-                        realloc(vector, isTooSmall ? newSize : d->alloc, opt);
-                    }
+    void* ptr{nullptr};
+    if (ContainerAPI::getAsQVector(env, list, elementMetaType(), ptr)) {
+        QTypedArrayData<char> ** vector = reinterpret_cast<QTypedArrayData<char> **>(container);
+        QTypedArrayData<char> ** vector2 = reinterpret_cast<QTypedArrayData<char> **>(ptr);
+        QTypedArrayData<char>*& d = *vector;
+        QTypedArrayData<char>*& d2 = *vector2;
+        if (d2->size==0) {
+            if (d == QArrayData::sharedNull()) {
+                *vector = d2;
+                d2->ref.ref();
+            } else {
+                uint newSize = d->size + d2->size;
+                const bool isTooSmall = newSize > d->alloc;
+                if (!isDetached(vector) || isTooSmall) {
+                    QArrayData::AllocationOptions opt(isTooSmall ? QArrayData::Grow : QArrayData::Default);
+                    realloc(vector, isTooSmall ? newSize : d->alloc, opt);
+                }
 
-                    if (d->alloc) {
-                        char *w = d->data() + newSize * m_offset;
-                        char *i = d2->data() + d->size * m_offset;
-                        char *b = d2->data();
-                        while (i != b) {
-                            i -= m_offset;
-                            w -= m_offset;
-                            m_elementMetaType.construct(w, i);
-                        }
-                        d->size = newSize;
+                if (d->alloc) {
+                    char *w = d->data() + newSize * m_offset;
+                    char *i = d2->data() + d->size * m_offset;
+                    char *b = d2->data();
+                    while (i != b) {
+                        i -= m_offset;
+                        w -= m_offset;
+                        m_elementMetaType.construct(w, i);
                     }
+                    d->size = newSize;
                 }
             }
         }
@@ -797,22 +796,21 @@ jboolean AutoVectorAccess::equal(JNIEnv * env, const void* container, jobject ot
 {
     QTypedArrayData<char> *const* vector = reinterpret_cast<QTypedArrayData<char> *const*>(container);
     QTypedArrayData<char>* d = *vector;
-    if (ContainerAPI::testQVector(env, other, elementMetaType())) {
-        if(void* ptr = QtJambiAPI::convertJavaObjectToNative(env, other)){
-            QTypedArrayData<char> *const* vector2 = reinterpret_cast<QTypedArrayData<char> *const*>(ptr);
-            QTypedArrayData<char>* d2 = *vector2;
-            if(d->size!=d2->size)
-                return false;
-            if(d==d2)
-                return true;
-            for(int i = 0; i<d->size; ++i){
-                void* element1 = d->data() + i * m_offset;
-                void* element2 = d2->data() + i * m_offset;
-                if(!isEquals(m_elementMetaType, element1, element2))
-                    return false;
-            }
+    void* ptr{nullptr};
+    if (ContainerAPI::getAsQVector(env, other, elementMetaType(), ptr)) {
+        QTypedArrayData<char> *const* vector2 = reinterpret_cast<QTypedArrayData<char> *const*>(ptr);
+        QTypedArrayData<char>* d2 = *vector2;
+        if(d->size!=d2->size)
+            return false;
+        if(d==d2)
             return true;
+        for(int i = 0; i<d->size; ++i){
+            void* element1 = d->data() + i * m_offset;
+            void* element2 = d2->data() + i * m_offset;
+            if(!isEquals(m_elementMetaType, element1, element2))
+                return false;
         }
+        return true;
     }else{
         if(d->size!=QtJambiAPI::sizeOfJavaCollection(env, other))
             return false;

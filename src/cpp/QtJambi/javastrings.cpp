@@ -51,6 +51,10 @@ const char* J2CStringBuffer::constData() const {return m_data;}
 
 int J2CStringBuffer::length() const {return m_length;}
 
+QByteArray J2CStringBuffer::toByteArray() const {
+    return QByteArray(constData(), length());
+}
+
 JString2QChars::JString2QChars(JNIEnv* env, jstring strg)
     : m_strg(strg ? jstring(env->NewGlobalRef(strg)) : nullptr),
       m_length(strg ? env->GetStringLength(strg) : 0),
@@ -66,6 +70,12 @@ JString2QChars::~JString2QChars(){
     }
 }
 
+QString JString2QChars::toString() const {
+    return QString(constData(), length());
+}
+
 const QChar* JString2QChars::constData() const {return reinterpret_cast<const QChar*>(m_data);}
+
+JString2QChars::operator const char16_t*() const {return reinterpret_cast<const char16_t*>(m_data);}
 
 int JString2QChars::length() const {return m_length;}

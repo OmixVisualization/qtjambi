@@ -301,12 +301,11 @@ public:
     }
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
-        if (ContainerAPI::testQLinkedList(env, other, elementMetaType())) {
-            if(QLinkedList<T>* ptr = QtJambiAPI::convertJavaObjectToNative<QLinkedList<T>>(env, other)){
-                QTJAMBI_ELEMENT_LOCKER
-                bool equals = *reinterpret_cast<const QLinkedList<T> *>(container)==*ptr;
-                return equals;
-            }
+        void* ptr{nullptr};
+        if (ContainerAPI::getAsQLinkedList(env, other, elementMetaType(), ptr)) {
+            QTJAMBI_ELEMENT_LOCKER
+            bool equals = *reinterpret_cast<const QLinkedList<T> *>(container)==*reinterpret_cast<const QLinkedList<T> *>(ptr);
+            return equals;
         }else{
             QTJAMBI_ELEMENT_LOCKER
             QLinkedList<T> list;

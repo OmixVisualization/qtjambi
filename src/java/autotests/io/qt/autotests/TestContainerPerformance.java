@@ -7,6 +7,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.autotests.generated.Tulip;
+import io.qt.core.QCoreApplication;
 import io.qt.core.QList;
 import io.qt.core.QObject;
 import io.qt.core.QStringList;
@@ -140,7 +141,7 @@ public class TestContainerPerformance extends ApplicationInitializer{
     public void testQObjectListPerformance() {
 		long tdiff1;
 		long tdiffc1;
-		QObject object = new QObject();
+		QObject object = new QObject(QCoreApplication.instance());
 		{
 			QList<QObject> list = new QList<>(QObject.class);
 //			list.resize(CAPACITY);

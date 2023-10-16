@@ -363,12 +363,11 @@ public:
     }
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
-        if (ContainerAPI::testQMultiMap(env, other, keyMetaType(), valueMetaType())) {
-            if(QMultiMap<K,T>* ptr = QtJambiAPI::convertJavaObjectToNative<QMultiMap<K,T>>(env, other)){
-                QTJAMBI_KEY_VALUE_LOCKER
-                bool equals = *reinterpret_cast<const QMultiMap<K,T> *>(container)==*ptr;
-                return equals;
-            }
+        void* ptr{nullptr};
+        if (ContainerAPI::getAsQMultiMap(env, other, keyMetaType(), valueMetaType(), ptr)) {
+            QTJAMBI_KEY_VALUE_LOCKER
+            bool equals = *reinterpret_cast<const QMultiMap<K,T> *>(container)==*reinterpret_cast<const QMultiMap<K,T> *>(ptr);
+            return equals;
         }else{
             QTJAMBI_KEY_VALUE_LOCKER
             QMultiMap<K,T> map;
@@ -821,11 +820,10 @@ public:
     }
 
     void unite(JNIEnv *env, void* container, jobject other) override {
-        if (ContainerAPI::testQMultiMap(env, other, keyMetaType(), valueMetaType())) {
-            if(QMultiMap<K,T>* ptr = QtJambiAPI::convertJavaObjectToNative<QMultiMap<K,T>>(env, other)){
-                QTJAMBI_KEY_VALUE_LOCKER
-                reinterpret_cast<QMultiMap<K,T> *>(container)->unite(*ptr);
-            }
+        void* ptr{nullptr};
+        if (ContainerAPI::getAsQMultiMap(env, other, keyMetaType(), valueMetaType(), ptr)) {
+            QTJAMBI_KEY_VALUE_LOCKER
+                reinterpret_cast<QMultiMap<K,T> *>(container)->unite(*reinterpret_cast<QMultiMap<K,T> *>(ptr));
         }
     }
 

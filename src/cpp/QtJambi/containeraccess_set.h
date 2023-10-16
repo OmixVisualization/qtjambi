@@ -167,11 +167,10 @@ public:
     }
 
     void intersect(JNIEnv * env, void* container, jobject other) override {
-        if (ContainerAPI::testQSet(env, other, elementMetaType())) {
-            if(QSet<T>* ptr = QtJambiAPI::convertJavaObjectToNative<QSet<T>>(env, other)){
-                QTJAMBI_ELEMENT_LOCKER
-                reinterpret_cast<QSet<T> *>(container)->intersect(*ptr);
-            }
+        void* ptr{nullptr};
+        if (ContainerAPI::getAsQSet(env, other, elementMetaType(), ptr)) {
+            QTJAMBI_ELEMENT_LOCKER
+                reinterpret_cast<QSet<T> *>(container)->intersect(*reinterpret_cast<QSet<T> *>(ptr));
         }else{
             QTJAMBI_ELEMENT_LOCKER
             QSet<T> list;
@@ -189,11 +188,10 @@ public:
     }
 
     void unite(JNIEnv * env, void* container, jobject other) override {
-        if (ContainerAPI::testQSet(env, other, elementMetaType())) {
-            if(QSet<T>* ptr = QtJambiAPI::convertJavaObjectToNative<QSet<T>>(env, other)){
-                QTJAMBI_ELEMENT_LOCKER
-                reinterpret_cast<QSet<T> *>(container)->unite(*ptr);
-            }
+        void* ptr{nullptr};
+        if (ContainerAPI::getAsQSet(env, other, elementMetaType(), ptr)) {
+            QTJAMBI_ELEMENT_LOCKER
+                reinterpret_cast<QSet<T> *>(container)->unite(*reinterpret_cast<QSet<T> *>(ptr));
         }else{
             QTJAMBI_ELEMENT_LOCKER
             QSet<T> list;
@@ -211,11 +209,10 @@ public:
     }
 
     void subtract(JNIEnv * env, void* container, jobject other) override {
-        if (ContainerAPI::testQSet(env, other, elementMetaType())) {
-            if(QSet<T>* ptr = QtJambiAPI::convertJavaObjectToNative<QSet<T>>(env, other)){
-                QTJAMBI_ELEMENT_LOCKER
-                reinterpret_cast<QSet<T> *>(container)->subtract(*ptr);
-            }
+        void* ptr{nullptr};
+        if (ContainerAPI::getAsQSet(env, other, elementMetaType(), ptr)) {
+            QTJAMBI_ELEMENT_LOCKER
+            reinterpret_cast<QSet<T> *>(container)->subtract(*reinterpret_cast<QSet<T> *>(ptr));
         }else{
             QTJAMBI_ELEMENT_LOCKER
             QSet<T> list;
@@ -233,12 +230,11 @@ public:
     }
 
     jboolean intersects(JNIEnv * env, const void* container, jobject other) override {
-        if (ContainerAPI::testQSet(env, other, elementMetaType())) {
-            if(QSet<T>* ptr = QtJambiAPI::convertJavaObjectToNative<QSet<T>>(env, other)){
-                QTJAMBI_ELEMENT_LOCKER
-                bool intersects = reinterpret_cast<const QSet<T> *>(container)->intersects(*ptr);
-                return intersects;
-            }
+        void* ptr{nullptr};
+        if (ContainerAPI::getAsQSet(env, other, elementMetaType(), ptr)) {
+            QTJAMBI_ELEMENT_LOCKER
+                bool intersects = reinterpret_cast<const QSet<T> *>(container)->intersects(*reinterpret_cast<const QSet<T> *>(ptr));
+            return intersects;
         }else{
             QTJAMBI_ELEMENT_LOCKER
             QSet<T> list;
@@ -305,12 +301,11 @@ public:
     }
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
-        if (ContainerAPI::testQSet(env, other, elementMetaType())) {
-            if(QSet<T>* ptr = QtJambiAPI::convertJavaObjectToNative<QSet<T>>(env, other)){
-                QTJAMBI_ELEMENT_LOCKER
-                bool equals = *reinterpret_cast<const QSet<T> *>(container)==*ptr;
-                return equals;
-            }
+        void* ptr{nullptr};
+        if (ContainerAPI::getAsQSet(env, other, elementMetaType(), ptr)) {
+            QTJAMBI_ELEMENT_LOCKER
+            bool equals = *reinterpret_cast<const QSet<T> *>(container)==*reinterpret_cast<QSet<T> *>(ptr);
+            return equals;
         }else{
             QTJAMBI_ELEMENT_LOCKER
             QSet<T> list;

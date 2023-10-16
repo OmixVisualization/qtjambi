@@ -11,7 +11,7 @@ QtJambi is available for Qt5 and Qt6. All modules are published as Maven Artifac
   <version>$VERSION</version>
 </dependency>
 ```
-Here, exchange `$VERSION` either by `5.15.17` or by `6.5.3`. Exchange `$MODULE` by *QtJambi* module name as listed below.
+Here, exchange `$VERSION` either by `5.15.17`, by `6.5.3` or by `6.6.0`. Exchange `$MODULE` by *QtJambi* module name as listed below.
 
 Alternatively, you can download corresponding QtJambi modules as JAR file from [Maven Central Repository](https://search.maven.org/search?q=io.qtjambi).
 
@@ -22,6 +22,9 @@ Debug info for native debugging is avaiable for Windows, Linux and macOS.
 Search for qtjambi modules by name in Maven repository. Each java module requires the corresponding platform bundle. Therefore search for either 
 **<module>-native-windows-x64**, **<module>-native-linux-x64**, **<module>-native-macos** or **<module>-native-android**. 
 Info files for native debugging can be found in **<module>-debuginfo-windows-x64**, **<module>-debuginfo-linux-x64** and **<module>-debuginfo-macos**.
+
+QtJambi 6.6.0 requires Qt 6.6.x whereas x can be any patch version (except **qtjambi-activex**).
+This release has been built with Qt 6.6.0.
 
 QtJambi 6.5.3 requires Qt 6.5.x whereas x can be any patch version (except **qtjambi-activex**).
 This release has been built with Qt 6.5.3.

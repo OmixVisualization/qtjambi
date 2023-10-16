@@ -18909,16 +18909,17 @@ if(%1!=null){
         }
     }
     
-    EnumType{
-        name: "QSharedMemory::AccessMode"
-    }
-    
-    EnumType{
-        name: "QSharedMemory::SharedMemoryError"
-    }
-    
     ObjectType{
         name: "QSharedMemory"
+        ppCondition: "(QT_VERSION_MAJOR==5 && !defined(QT_NO_SHAREDMEMORY)) || QT_CONFIG(sharedmemory)"
+
+        EnumType{
+            name: "AccessMode"
+        }
+
+        EnumType{
+            name: "SharedMemoryError"
+        }
         ModifyFunction{
             signature: "data()const"
             remove: RemoveFlag.All
@@ -19004,6 +19005,17 @@ if(%1!=null){
     
     ValueType{
         name: "QCalendar"
+
+        ValueType{
+            name: "YearMonthDay"
+        }
+
+        EnumType{
+            name: "System"
+            RejectEnumValue{
+                name: "Last"
+            }
+        }
         ModifyFunction{
             signature: "QCalendar(QLatin1String)"
             remove: RemoveFlag.All
@@ -19016,19 +19028,6 @@ if(%1!=null){
                 quoteAfterLine: "class QCalendar___"
                 quoteBeforeLine: "}// class"
             }
-        }
-        since: [5, 14]
-    }
-    
-    ValueType{
-        name: "QCalendar::YearMonthDay"
-        since: [5, 14]
-    }
-    
-    EnumType{
-        name: "QCalendar::System"
-        RejectEnumValue{
-            name: "Last"
         }
         since: [5, 14]
     }

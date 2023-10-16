@@ -115,7 +115,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `5.15.17` or by `6.5.3`).
+(exchange `$VERSION` either by `5.15.17`, by `6.5.3` or by `6.6.0`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 

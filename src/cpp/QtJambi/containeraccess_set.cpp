@@ -566,11 +566,9 @@ void AutoSetAccess::insert(JNIEnv * env, void* container, jobject value)
 
 void AutoSetAccess::intersect(JNIEnv * env, void* container, jobject other)
 {
-    void* ptr;
+    void* ptr{nullptr};
     bool deleteSet = false;
-    if (ContainerAPI::testQSet(env, other, elementMetaType())) {
-        ptr = QtJambiAPI::convertJavaObjectToNative(env, other);
-    }else{
+    if (!ContainerAPI::getAsQSet(env, other, elementMetaType(), ptr)) {
         deleteSet = true;
         ptr = m_hashAccess.createContainer();
         jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, other);
@@ -649,11 +647,9 @@ void AutoSetAccess::intersect(JNIEnv * env, void* container, jobject other)
 
 jboolean AutoSetAccess::intersects(JNIEnv * env, const void* container, jobject other)
 {
-    void* ptr;
+    void* ptr{nullptr};
     bool deleteSet = false;
-    if (ContainerAPI::testQSet(env, other, elementMetaType())) {
-        ptr = QtJambiAPI::convertJavaObjectToNative(env, other);
-    }else{
+    if (!ContainerAPI::getAsQSet(env, other, elementMetaType(), ptr)) {
         deleteSet = true;
         ptr = m_hashAccess.createContainer();
         jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, other);
@@ -714,11 +710,9 @@ jboolean AutoSetAccess::intersects(JNIEnv * env, const void* container, jobject 
 
 jboolean AutoSetAccess::equal(JNIEnv * env, const void* container, jobject other)
 {
-    void* ptr;
+    void* ptr{nullptr};
     bool deleteSet = false;
-    if (ContainerAPI::testQSet(env, other, elementMetaType())) {
-        ptr = QtJambiAPI::convertJavaObjectToNative(env, other);
-    }else{
+    if (!ContainerAPI::getAsQSet(env, other, elementMetaType(), ptr)) {
         deleteSet = true;
         ptr = m_hashAccess.createContainer();
         jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, other);
@@ -749,12 +743,9 @@ jint AutoSetAccess::size(JNIEnv * env, const void* container)
 
 void AutoSetAccess::subtract(JNIEnv * env, void* container, jobject other)
 {
-    void* ptr;
+    void* ptr{nullptr};
     bool deleteSet = false;
-    if (ContainerAPI::testQSet(env, other, elementMetaType())) {
-        ptr = QtJambiAPI::convertJavaObjectToNative(env, other);
-
-    }else{
+    if (!ContainerAPI::getAsQSet(env, other, elementMetaType(), ptr)) {
         deleteSet = true;
         ptr = m_hashAccess.createContainer();
         jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, other);
@@ -814,8 +805,8 @@ void AutoSetAccess::subtract(JNIEnv * env, void* container, jobject other)
 
 void AutoSetAccess::unite(JNIEnv * env, void* container, jobject other)
 {
-    if (ContainerAPI::testQSet(env, other, elementMetaType())) {
-        void* ptr = QtJambiAPI::convertJavaObjectToNative(env, other);
+    void* ptr{nullptr};
+    if (ContainerAPI::getAsQSet(env, other, elementMetaType(), ptr)) {
         QHashData ** map = reinterpret_cast<QHashData **>(container);
         m_hashAccess.detach(map);
         QHashData*& d = *map;

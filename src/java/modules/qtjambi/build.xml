@@ -22,8 +22,8 @@
 						<available file="${extjardir}/jsr305.jar" type="file"/>
 					</not>
 					<then>
+						<mkdir dir="${extjardir}"/>
 						<trycatch>
-							<mkdir dir="${extjardir}"/>
 							<try>
 								<get src="${jsr305.url}" dest="${extjardir}/jsr305.jar" verbose="true"/>
 							</try>

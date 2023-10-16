@@ -106,7 +106,7 @@ void AutoMultiMapAccess::insert(JNIEnv *env, void* container, jobject key, jobje
 }
 
 IsBiContainerFunction AutoMultiMapAccess::getIsBiContainerFunction(){
-    return ContainerAPI::testQMultiMap;
+    return ContainerAPI::getAsQMultiMap;
 }
 
 jobject AutoMultiMapAccess::key(JNIEnv *env, const void* container, jobject value, jobject defaultKey) { return AutoMapAccess::key(env, container, value, defaultKey); }
@@ -170,30 +170,29 @@ void AutoMultiMapAccess::unite(JNIEnv *env, void* container, jobject other)
 {
     QMapDataBase ** map = reinterpret_cast<QMapDataBase **>(container);
     QMapDataBase*& d = *map;
-    if (ContainerAPI::testQMultiMap(env, other, keyMetaType(), valueMetaType())
-            || ContainerAPI::testQMap(env, other, keyMetaType(), valueMetaType())) {
-        if(void* ptr = QtJambiAPI::convertJavaObjectToNative(env, other)){
-            QMapDataBase *const* map2 = reinterpret_cast<QMapDataBase *const*>(ptr);
-            Node *firstNode2(beginNode(map2));
-            Node *lastNode2(endNode(map2));
-            while (firstNode2 != lastNode2) {
-                void* key2 = reinterpret_cast<char*>(firstNode2)+m_offset1;
-                void* value2 = reinterpret_cast<char*>(firstNode2)+m_offset2;
+    void* ptr{nullptr};
+    if (ContainerAPI::getAsQMultiMap(env, other, keyMetaType(), valueMetaType(), ptr)
+            || ContainerAPI::getAsQMap(env, other, keyMetaType(), valueMetaType(), ptr)) {
+        QMapDataBase *const* map2 = reinterpret_cast<QMapDataBase *const*>(ptr);
+        Node *firstNode2(beginNode(map2));
+        Node *lastNode2(endNode(map2));
+        while (firstNode2 != lastNode2) {
+            void* key2 = reinterpret_cast<char*>(firstNode2)+m_offset1;
+            void* value2 = reinterpret_cast<char*>(firstNode2)+m_offset2;
 
-                Node *n = rootNode(map);
-                Node *y = endNode(map);
-                bool  left = true;
-                while (n) {
-                    y = n;
-                    left = !qMapLessThanKey(*n, key2);
-                    n = left ? n->left : n->right;
-                }
-                Node* newNode = d->createNode(int(m_size), int(m_align), y, left);
-                char* newNodeData = reinterpret_cast<char*>(newNode);
-                m_keyMetaType.construct(newNodeData + m_offset1, key2);
-                m_valueMetaType.construct(newNodeData + m_offset2, value2);
-                firstNode2 = firstNode2->nextNode();
+            Node *n = rootNode(map);
+            Node *y = endNode(map);
+            bool  left = true;
+            while (n) {
+                y = n;
+                left = !qMapLessThanKey(*n, key2);
+                n = left ? n->left : n->right;
             }
+            Node* newNode = d->createNode(int(m_size), int(m_align), y, left);
+            char* newNodeData = reinterpret_cast<char*>(newNode);
+            m_keyMetaType.construct(newNodeData + m_offset1, key2);
+            m_valueMetaType.construct(newNodeData + m_offset2, value2);
+            firstNode2 = firstNode2->nextNode();
         }
     }else{
         jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, other);

@@ -129,6 +129,32 @@ QTJAMBI_EXPORT bool testQMultiHash(JNIEnv *env, jobject mapObject, const std::ty
 QTJAMBI_EXPORT bool testQMap(JNIEnv *env, jobject mapObject, const std::type_info& expectedKeyType, const QMetaType& expectedKeyMetaType, const std::type_info& expectedValueType, const QMetaType& expectedValueMetaType);
 QTJAMBI_EXPORT bool testQHash(JNIEnv *env, jobject mapObject, const std::type_info& expectedKeyType, const QMetaType& expectedKeyMetaType, const std::type_info& expectedValueType, const QMetaType& expectedValueMetaType);
 
+QTJAMBI_EXPORT bool getAsQStack(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+QTJAMBI_EXPORT bool getAsQVector(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQLinkedList(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer);
+#endif
+QTJAMBI_EXPORT bool getAsQList(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQSet(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQQueue(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQMultiMap(JNIEnv *env, jobject mapObject, const QMetaType& expectedKeyMetaType, const QMetaType& expectedValueMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQMultiHash(JNIEnv *env, jobject mapObject, const QMetaType& expectedKeyMetaType, const QMetaType& expectedValueMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQMap(JNIEnv *env, jobject mapObject, const QMetaType& expectedKeyMetaType, const QMetaType& expectedValueMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQHash(JNIEnv *env, jobject mapObject, const QMetaType& expectedKeyMetaType, const QMetaType& expectedValueMetaType, void* &pointer);
+
+QTJAMBI_EXPORT bool getAsQStack(JNIEnv *env, jobject collection, const std::type_info& expectedElementType, const QMetaType& expectedElementMetaType, void* &pointer);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+QTJAMBI_EXPORT bool getAsQVector(JNIEnv *env, jobject collection, const std::type_info& expectedElementType, const QMetaType& expectedElementMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQLinkedList(JNIEnv *env, jobject collection, const std::type_info& expectedElementType, const QMetaType& expectedElementMetaType, void* &pointer);
+#endif
+QTJAMBI_EXPORT bool getAsQList(JNIEnv *env, jobject collection, const std::type_info& expectedElementType, const QMetaType& expectedElementMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQSet(JNIEnv *env, jobject collection, const std::type_info& expectedElementType, const QMetaType& expectedElementMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQQueue(JNIEnv *env, jobject collection, const std::type_info& expectedElementType, const QMetaType& expectedElementMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQMultiMap(JNIEnv *env, jobject mapObject, const std::type_info& expectedKeyType, const QMetaType& expectedKeyMetaType, const std::type_info& expectedValueType, const QMetaType& expectedValueMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQMultiHash(JNIEnv *env, jobject mapObject, const std::type_info& expectedKeyType, const QMetaType& expectedKeyMetaType, const std::type_info& expectedValueType, const QMetaType& expectedValueMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQMap(JNIEnv *env, jobject mapObject, const std::type_info& expectedKeyType, const QMetaType& expectedKeyMetaType, const std::type_info& expectedValueType, const QMetaType& expectedValueMetaType, void* &pointer);
+QTJAMBI_EXPORT bool getAsQHash(JNIEnv *env, jobject mapObject, const std::type_info& expectedKeyType, const QMetaType& expectedKeyMetaType, const std::type_info& expectedValueType, const QMetaType& expectedValueMetaType, void* &pointer);
+
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 template<typename T>
 bool testQVector(JNIEnv *env, jobject collection){
@@ -138,6 +164,16 @@ bool testQVector(JNIEnv *env, jobject collection){
 template<typename T>
 bool testQLinkedList(JNIEnv *env, jobject collection){
     return testQLinkedList(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T));
+}
+
+template<typename T>
+bool getAsQLinkedList(JNIEnv *env, jobject collection, QLinkedList<T> * &pointer){
+    return testQLinkedList(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
+}
+
+template<typename T>
+bool getAsQVector(JNIEnv *env, jobject collection, QVector<T> * &pointer){
+    return testQVector(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
 }
 #endif
 
@@ -179,6 +215,46 @@ bool testQMap(JNIEnv *env, jobject mapObject){
 template<typename K, typename V>
 bool testQHash(JNIEnv *env, jobject mapObject){
     return testQHash(env, mapObject, QtJambiPrivate::qtjambi_type<K>::id(), QTJAMBI_METATYPE_FROM_TYPE2(K), QtJambiPrivate::qtjambi_type<V>::id(), QTJAMBI_METATYPE_FROM_TYPE2(V));
+}
+
+template<typename T>
+bool getAsQStack(JNIEnv *env, jobject collection, QStack<T> * &pointer){
+    return getAsQStack(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
+}
+
+template<typename T>
+bool getAsQList(JNIEnv *env, jobject collection, QList<T> * &pointer){
+    return getAsQList(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
+}
+
+template<typename T>
+bool getAsQSet(JNIEnv *env, jobject collection, QSet<T> * &pointer){
+    return getAsQSet(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
+}
+
+template<typename T>
+bool getAsQQueue(JNIEnv *env, jobject collection, QQueue<T> * &pointer){
+    return getAsQQueue(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
+}
+
+template<typename K, typename V>
+bool getAsQMultiMap(JNIEnv *env, jobject mapObject, QMultiMap<K,V> * &pointer){
+    return getAsQMultiMap(env, mapObject, QtJambiPrivate::qtjambi_type<K>::id(), QTJAMBI_METATYPE_FROM_TYPE2(K), QtJambiPrivate::qtjambi_type<V>::id(), QTJAMBI_METATYPE_FROM_TYPE2(V), reinterpret_cast<void*&>(pointer));
+}
+
+template<typename K, typename V>
+bool getAsQMultiHash(JNIEnv *env, jobject mapObject, QMultiHash<K,V> * &pointer){
+    return getAsQMultiHash(env, mapObject, QtJambiPrivate::qtjambi_type<K>::id(), QTJAMBI_METATYPE_FROM_TYPE2(K), QtJambiPrivate::qtjambi_type<V>::id(), QTJAMBI_METATYPE_FROM_TYPE2(V), reinterpret_cast<void*&>(pointer));
+}
+
+template<typename K, typename V>
+bool getAsQMap(JNIEnv *env, jobject mapObject, QMap<K,V> * &pointer){
+    return getAsQMap(env, mapObject, QtJambiPrivate::qtjambi_type<K>::id(), QTJAMBI_METATYPE_FROM_TYPE2(K), QtJambiPrivate::qtjambi_type<V>::id(), QTJAMBI_METATYPE_FROM_TYPE2(V), reinterpret_cast<void*&>(pointer));
+}
+
+template<typename K, typename V>
+bool getAsQHash(JNIEnv *env, jobject mapObject, QHash<K,V> * &pointer){
+    return getAsQHash(env, mapObject, QtJambiPrivate::qtjambi_type<K>::id(), QTJAMBI_METATYPE_FROM_TYPE2(K), QtJambiPrivate::qtjambi_type<V>::id(), QTJAMBI_METATYPE_FROM_TYPE2(V), reinterpret_cast<void*&>(pointer));
 }
 
 } // namespace ContainerAPI

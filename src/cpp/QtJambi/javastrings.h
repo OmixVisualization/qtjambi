@@ -38,6 +38,8 @@ public:
     ~J2CStringBuffer();
     const char* constData() const;
     inline operator const char*() const { return constData(); }
+    QByteArray toByteArray() const;
+    inline operator QByteArray() const { return toByteArray(); }
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     inline QByteArrayView toByteArrayView() const { return QByteArrayView(constData(), length()); }
     inline operator QByteArrayView() const { return toByteArrayView(); }
@@ -67,12 +69,19 @@ public:
     inline operator const QChar*() const { return constData(); }
     inline QStringView toStringView() const { return QStringView(constData(), length()); }
     inline operator QStringView() const { return toStringView(); }
+    QString toString() const;
+    inline operator QString() const { return toString(); }
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
     inline QAnyStringView toAnyStringView() const { return QAnyStringView(constData(), length()); }
     inline operator QAnyStringView() const { return toAnyStringView(); }
 #endif
     inline const QChar* data() const { return constData(); }
     inline const QChar* data() { return constData(); }
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
+    inline const char16_t* chars() const { return *this; }
+    inline const char16_t* chars() { return *this; }
+    operator const char16_t*() const;
+#endif
     int length() const;
 private:
     const jstring m_strg;

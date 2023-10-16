@@ -320,19 +320,21 @@ public class FindCompiler {
     		if(task instanceof InitializeBuildTask) {
 	    		if(compiler!=null) {
 	    			((InitializeBuildTask)task).mySetProperty(-1, Constants.TOOLS_COMPILER, " (taken from tools.compiler.path)", compiler.toString(), true);
-	    		}else {
+	    		}else if(crossCompiler!=null){
 	    			((InitializeBuildTask)task).mySetProperty(-1, Constants.TOOLS_COMPILER, " (taken from qtjambi.compiler)", crossCompiler.toString(), true);
 	    		}
     		}
     		compiler = crossCompiler;
         }else if(task instanceof InitializeBuildTask){
-        	((InitializeBuildTask)task).mySetProperty(-1, Constants.TOOLS_COMPILER, " (taken from qtjambi.compiler)", compiler.toString(), true);
+        	if(compiler!=null) {
+        		((InitializeBuildTask)task).mySetProperty(-1, Constants.TOOLS_COMPILER, " (taken from qtjambi.compiler)", compiler.toString(), true);
+        	}
         }
 
         if(availableCompilers == null && compiler != null)
             availableCompilers = compiler.toString();
 
-        if(verbose) System.out.println("qtjambi.compiler: " + compiler.toString());
+        if(verbose) System.out.println("qtjambi.compiler: " + compiler);
         return compiler;
     }
 

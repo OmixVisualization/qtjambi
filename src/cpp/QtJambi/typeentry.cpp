@@ -4123,7 +4123,7 @@ QtJambiTypeEntry::NativeToJavaResult StringTypeEntry::convertToJava(JNIEnv *env,
     return true;
 }
 
-bool StringTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope*) const{
+bool StringTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const{
     QString* value = reinterpret_cast<QString*>(output);
     if(value){
         switch (javaType) {
@@ -4139,18 +4139,27 @@ bool StringTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValueType
                 QtJambiAPI::checkNullPointer(env, strg);
                 *value = *strg;
             }else{
-                jstring in = QtJambiAPI::toJavaString(env, java_value.l);
-                int length = in ? env->GetStringLength(in) : 0;
-                value->resize(length);
-                if(length>0)
-                    env->GetStringRegion(in, 0, length, reinterpret_cast<ushort*>(value->data()));
-                JavaException::check(env QTJAMBI_STACKTRACEINFO );
+                if(scope){
+                    JString2QChars* buffer = new JString2QChars(env, jstring(java_value.l));
+                    scope->addDeletion(buffer);
+                    JavaException::check(env QTJAMBI_STACKTRACEINFO );
+                    *value = buffer->toString();
+                }else{
+                    jstring in = QtJambiAPI::toJavaString(env, java_value.l);
+                    int length = in ? env->GetStringLength(in) : 0;
+                    value->resize(length);
+                    if(length>0)
+                        env->GetStringRegion(in, 0, length, reinterpret_cast<ushort*>(value->data()));
+                    JavaException::check(env QTJAMBI_STACKTRACEINFO );
+                }
             }
             break;
         case jValueType::d:
             *value = QString::number(java_value.d);
+            break;
         case jValueType::f:
             *value = QString::number(java_value.f);
+            break;
         default:
             *value = QString::number(java_value.j);
             break;
@@ -4309,9 +4318,61 @@ QtJambiTypeEntry::NativeToJavaResult StringUtilTypeEntry::convertToJava(JNIEnv *
     return true;
 }
 
-bool StringUtilTypeEntry::convertToNative(JNIEnv *env, jvalue, jValueType, void *, QtJambiScope*) const{
+bool StringUtilTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const{
     if(typeid_equals(type(), typeid(QStringView))){
-        JavaException::raiseError(env, "Cannot convert to QStringView" QTJAMBI_STACKTRACEINFO );
+        if(scope){
+            QStringView* value = reinterpret_cast<QStringView*>(output);
+            if(value){
+                switch (javaType) {
+                case jValueType::z:
+                    *value = java_value.z ? QStringView(u"true") : QStringView(u"false");
+                    break;
+                case jValueType::c:
+                    {
+                        QChar* c = new QChar(java_value.c);
+                        scope->addDeletion(c);
+                        *value = QStringView(c, 1);
+                    }
+                    break;
+                case jValueType::l:
+                    if(Java::QtCore::QString::isInstanceOf(env, java_value.l)){
+                        QString* strg = QtJambiAPI::convertJavaObjectToNative<QString>(env, java_value.l);
+                        QtJambiAPI::checkNullPointer(env, strg);
+                        *value = *strg;
+                    }else{
+                        JString2QChars* buffer = new JString2QChars(env, jstring(java_value.l));
+                        JavaException::check(env QTJAMBI_STACKTRACEINFO );
+                        scope->addDeletion(buffer);
+                        *value = buffer->toStringView();
+                    }
+                    break;
+                case jValueType::d:
+                    {
+                        QString* strg = new QString(QString::number(java_value.d));
+                        scope->addDeletion(strg);
+                        *value = *strg;
+                    }
+                    break;
+                case jValueType::f:
+                    {
+                        QString* strg = new QString(QString::number(java_value.f));
+                        scope->addDeletion(strg);
+                        *value = *strg;
+                    }
+                    break;
+                default:
+                    {
+                        QString* strg = new QString(QString::number(java_value.j));
+                        scope->addDeletion(strg);
+                        *value = *strg;
+                    }
+                    break;
+                }
+            }
+            return true;
+        }else{
+            JavaException::raiseError(env, "Cannot convert to QStringView" QTJAMBI_STACKTRACEINFO );
+        }
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     }else if(typeid_equals(type(), typeid(QStringRef))){
         JavaException::raiseError(env, "Cannot convert to QStringRef" QTJAMBI_STACKTRACEINFO );
@@ -4319,12 +4380,172 @@ bool StringUtilTypeEntry::convertToNative(JNIEnv *env, jvalue, jValueType, void 
         JavaException::raiseError(env, "Cannot convert to QXmlStreamStringRef" QTJAMBI_STACKTRACEINFO );
 #else
     }else if(typeid_equals(type(), typeid(QAnyStringView))){
-        JavaException::raiseError(env, "Cannot convert to QAnyStringView" QTJAMBI_STACKTRACEINFO );
+        if(scope){
+            QAnyStringView* value = reinterpret_cast<QAnyStringView*>(output);
+            if(value){
+                switch (javaType) {
+                case jValueType::z:
+                    *value = java_value.z ? QAnyStringView("true") : QAnyStringView("false");
+                    break;
+                case jValueType::c:
+                {
+                    QChar* c = new QChar(java_value.c);
+                    scope->addDeletion(c);
+                    *value = QAnyStringView(c, 1);
+                }
+                break;
+                case jValueType::l:
+                    if(Java::QtCore::QString::isInstanceOf(env, java_value.l)){
+                        QString* strg = QtJambiAPI::convertJavaObjectToNative<QString>(env, java_value.l);
+                        QtJambiAPI::checkNullPointer(env, strg);
+                        *value = *strg;
+                    }else{
+                        JString2QChars* buffer = new JString2QChars(env, jstring(java_value.l));
+                        JavaException::check(env QTJAMBI_STACKTRACEINFO );
+                        scope->addDeletion(buffer);
+                        *value = buffer->toAnyStringView();
+                    }
+                    break;
+                case jValueType::d:
+                {
+                    QString* strg = new QString(QString::number(java_value.d));
+                    scope->addDeletion(strg);
+                    *value = *strg;
+                }
+                break;
+                case jValueType::f:
+                {
+                    QString* strg = new QString(QString::number(java_value.f));
+                    scope->addDeletion(strg);
+                    *value = *strg;
+                }
+                break;
+                default:
+                {
+                    QString* strg = new QString(QString::number(java_value.j));
+                    scope->addDeletion(strg);
+                    *value = *strg;
+                }
+                break;
+                }
+            }
+            return true;
+        }else{
+            JavaException::raiseError(env, "Cannot convert to QAnyStringView" QTJAMBI_STACKTRACEINFO );
+        }
     }else if(typeid_equals(type(), typeid(QUtf8StringView))){
-        JavaException::raiseError(env, "Cannot convert to QUtf8StringView" QTJAMBI_STACKTRACEINFO );
+        if(scope){
+            QUtf8StringView* value = reinterpret_cast<QUtf8StringView*>(output);
+            if(value){
+                switch (javaType) {
+                case jValueType::z:
+                    *value = java_value.z ? QUtf8StringView("true") : QUtf8StringView("false");
+                    break;
+                case jValueType::c:
+                {
+                    QByteArray* ba = new QByteArray(QStringView(&java_value.c, 1).toUtf8());
+                    scope->addDeletion(ba);
+                    *value = *ba;
+                }
+                break;
+                case jValueType::l:
+                    if(Java::QtCore::QString::isInstanceOf(env, java_value.l)){
+                        QString* strg = QtJambiAPI::convertJavaObjectToNative<QString>(env, java_value.l);
+                        QtJambiAPI::checkNullPointer(env, strg);
+                        QByteArray* ba = new QByteArray(strg->toUtf8());
+                        scope->addDeletion(ba);
+                        *value = *ba;
+                    }else{
+                        J2CStringBuffer* buffer = new J2CStringBuffer(env, jstring(java_value.l));
+                        JavaException::check(env QTJAMBI_STACKTRACEINFO );
+                        scope->addDeletion(buffer);
+                        *value = buffer->toUtf8StringView();
+                    }
+                    break;
+                case jValueType::d:
+                {
+                    QByteArray* ba = new QByteArray(QString::number(java_value.d).toUtf8());
+                    scope->addDeletion(ba);
+                    *value = *ba;
+                }
+                break;
+                case jValueType::f:
+                {
+                    QByteArray* ba = new QByteArray(QString::number(java_value.f).toUtf8());
+                    scope->addDeletion(ba);
+                    *value = *ba;
+                }
+                break;
+                default:
+                {
+                    QByteArray* ba = new QByteArray(QString::number(java_value.j).toUtf8());
+                    scope->addDeletion(ba);
+                    *value = *ba;
+                }
+                break;
+                }
+            }
+            return true;
+        }else{
+            JavaException::raiseError(env, "Cannot convert to QUtf8StringView" QTJAMBI_STACKTRACEINFO );
+        }
 #endif // QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     }else {
-        JavaException::raiseError(env, "Cannot convert to QLatin1String" QTJAMBI_STACKTRACEINFO );
+        if(scope){
+            QLatin1String* value = reinterpret_cast<QLatin1String*>(output);
+            if(value){
+                switch (javaType) {
+                case jValueType::z:
+                        *value = java_value.z ? QLatin1String("true") : QLatin1String("false");
+                        break;
+                case jValueType::c:
+                {
+                        QByteArray* ba = new QByteArray(QStringView(&java_value.c, 1).toUtf8());
+                        scope->addDeletion(ba);
+                        *value = QLatin1String(*ba);
+                }
+                break;
+                case jValueType::l:
+                        if(Java::QtCore::QString::isInstanceOf(env, java_value.l)){
+                        QString* strg = QtJambiAPI::convertJavaObjectToNative<QString>(env, java_value.l);
+                        QtJambiAPI::checkNullPointer(env, strg);
+                        QByteArray* ba = new QByteArray(strg->toUtf8());
+                        scope->addDeletion(ba);
+                        *value = QLatin1String(*ba);
+                        }else{
+                        J2CStringBuffer* buffer = new J2CStringBuffer(env, jstring(java_value.l));
+                        JavaException::check(env QTJAMBI_STACKTRACEINFO );
+                        scope->addDeletion(buffer);
+                        *value = buffer->toLatin1String();
+                        }
+                        break;
+                case jValueType::d:
+                {
+                        QByteArray* ba = new QByteArray(QString::number(java_value.d).toUtf8());
+                        scope->addDeletion(ba);
+                        *value = QLatin1String(*ba);
+                }
+                break;
+                case jValueType::f:
+                {
+                        QByteArray* ba = new QByteArray(QString::number(java_value.f).toUtf8());
+                        scope->addDeletion(ba);
+                        *value = QLatin1String(*ba);
+                }
+                break;
+                default:
+                {
+                        QByteArray* ba = new QByteArray(QString::number(java_value.j).toUtf8());
+                        scope->addDeletion(ba);
+                        *value = QLatin1String(*ba);
+                }
+                break;
+                }
+            }
+            return true;
+        }else{
+            JavaException::raiseError(env, "Cannot convert to QLatin1String" QTJAMBI_STACKTRACEINFO );
+        }
     }
     return false;
 }

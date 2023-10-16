@@ -106,6 +106,10 @@ public:
     static void run(QRunnable* runnable);
 
     static void run(QThread* runnable);
+
+    static void terminate();
+
+    static void abort();
 };
 
 class FunctionalTest{

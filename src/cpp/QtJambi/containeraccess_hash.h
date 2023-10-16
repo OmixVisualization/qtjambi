@@ -394,12 +394,11 @@ public:
     }
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
-        if (ContainerAPI::testQHash(env, other, keyMetaType(), valueMetaType())) {
-            if(QHash<K,T>* ptr = QtJambiAPI::convertJavaObjectToNative<QHash<K,T>>(env, other)){
-                QTJAMBI_KEY_VALUE_LOCKER
-                bool equals = *reinterpret_cast<const QHash<K,T> *>(container)==*ptr;
-                return equals;
-            }
+        void* ptr{nullptr};
+        if (ContainerAPI::getAsQHash(env, other, keyMetaType(), valueMetaType(), ptr)) {
+            QTJAMBI_KEY_VALUE_LOCKER
+            bool equals = *reinterpret_cast<const QHash<K,T> *>(container)==*reinterpret_cast<const QHash<K,T> *>(ptr);
+            return equals;
         }else{
             QTJAMBI_KEY_VALUE_LOCKER
             QHash<K,T> map;

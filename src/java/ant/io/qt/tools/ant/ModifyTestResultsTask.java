@@ -113,8 +113,6 @@ public class ModifyTestResultsTask extends Task {
 	}
 
 	public void setJdk(String jdk) {
-		if("8".equals(jdk))
-			jdk = "JRE8";
 		this.jdk = jdk;
 	}
 

@@ -7501,7 +7501,7 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
             s << ' ' << qt_name << " = ";
         }
         s << "qtjambi_cast<";
-        writeTypeInfo(s, java_type, java_type->indirections().isEmpty() && (java_type->isConstant() || java_type->getReferenceType()!=MetaType::Reference) ? ForceValueType : NoOption);
+        writeTypeInfo(s, java_type, java_type->indirections().isEmpty() && (java_type->isConstant() || java_type->getReferenceType()!=MetaType::Reference) ? Option(ForceValueType | SkipName) : SkipName);
         s << ">(" << __jni_env << ", ";
         if(java_type->isConstant() && !java_type->indirections().isEmpty())
             s << qtjambi_scope << ", ";
@@ -9332,7 +9332,10 @@ void CppImplGenerator::writeJavaToQtContainer(QTextStream &s,
                         || type->type() == ContainerTypeEntry::StringListContainer
                         || type->type() == ContainerTypeEntry::SetContainer
                         || type->type() == ContainerTypeEntry::QueueContainer){
-                    s << INDENT << "if (ContainerAPI::testQ";
+                    s << INDENT;
+                    writeTypeInfo(s, container_type, ForceValueType);
+                    s << "* __tmp_pointer_" << qt_name << "{nullptr};" << Qt::endl
+                      << INDENT << "if (ContainerAPI::getAsQ";
                     switch(type->type()){
                     case ContainerTypeEntry::VectorContainer:
                         if(database()->qtVersion() < QVersionNumber(6,0,0)){
@@ -9351,7 +9354,7 @@ void CppImplGenerator::writeJavaToQtContainer(QTextStream &s,
                     }
                     s << "<";
                     writeTypeInfo(s, targ, Option(ForceValueType | SkipName));
-                    s << ">(" << __jni_env << ", " << java_name << ")) {" << Qt::endl;
+                    s << ">(" << __jni_env << ", " << java_name << ", __tmp_pointer_" << qt_name << ")) {" << Qt::endl;
                     {
                         INDENTATION(INDENT)
                         s << INDENT << "if(" << qt_name << "){" << Qt::endl;
@@ -9359,16 +9362,12 @@ void CppImplGenerator::writeJavaToQtContainer(QTextStream &s,
                             INDENTATION(INDENT)
                             s << INDENT << "*reinterpret_cast<";
                             writeTypeInfo(s, container_type, ForceValueType);
-                            s << "*>(" << qt_name << ") = qtjambi_cast<";
-                            writeTypeInfo(s, container_type, ForceValueType);
-                            s << ">(" << __jni_env << ", " << java_name << ");" << Qt::endl;
+                            s << "*>(" << qt_name << ") = *__tmp_pointer_" << qt_name << ";" << Qt::endl;
                         }
                         s << INDENT << "}else{" << Qt::endl;
                         {
                             INDENTATION(INDENT)
-                            s << INDENT << qt_name << " = " << "qtjambi_cast<";
-                            writeTypeInfo(s, container_type, ForceValueType);
-                            s << "*>(" << __jni_env << ", " << java_name << ");" << Qt::endl;
+                            s << INDENT << qt_name << " = " << "__tmp_pointer_" << qt_name << ";" << Qt::endl;
                         }
                         s << INDENT << "}" << Qt::endl;
                     }
@@ -9576,7 +9575,10 @@ void CppImplGenerator::writeJavaToQtContainer(QTextStream &s,
         {
             INDENTATION(INDENT)
 
-            s << INDENT << "if (ContainerAPI::testQ";
+            s << INDENT;
+            writeTypeInfo(s, container_type, ForceValueType);
+            s << "* __tmp_pointer_" << qt_name << "{nullptr};" << Qt::endl
+              << INDENT << "if (ContainerAPI::getAsQ";
             switch(type->type()){
             case ContainerTypeEntry::MapContainer: s << "Map"; break;
             case ContainerTypeEntry::MultiMapContainer: s << "MultiMap"; break;
@@ -9587,7 +9589,7 @@ void CppImplGenerator::writeJavaToQtContainer(QTextStream &s,
             writeTypeInfo(s, targ_key, Option(ForceValueType | SkipName));
             s << ",";
             writeTypeInfo(s, targ_val, Option(ForceValueType | SkipName));
-            s << ">(" << __jni_env << ", " << java_name << ")) {" << Qt::endl;
+            s << ">(" << __jni_env << ", " << java_name << ", __tmp_pointer_" << qt_name << ")) {" << Qt::endl;
             if((option & OptionalScope) == OptionalScope){
                 INDENTATION(INDENT)
                 s << INDENT << "if(" << qt_name << "){" << Qt::endl;
@@ -9595,16 +9597,12 @@ void CppImplGenerator::writeJavaToQtContainer(QTextStream &s,
                     INDENTATION(INDENT)
                     s << INDENT << "*reinterpret_cast<";
                     writeTypeInfo(s, container_type, ForceValueType);
-                    s << "*>(" << qt_name << ") = qtjambi_cast<";
-                    writeTypeInfo(s, container_type, ForceValueType);
-                    s << ">(" << __jni_env << ", " << java_name << ");" << Qt::endl;
+                    s << "*>(" << qt_name << ") = *__tmp_pointer_" << qt_name << ";" << Qt::endl;
                 }
                 s << INDENT << "}else{" << Qt::endl;
                 {
                     INDENTATION(INDENT)
-                    s << INDENT << qt_name << " = " << "qtjambi_cast<";
-                    writeTypeInfo(s, container_type, ForceValueType);
-                    s << "*>(" << __jni_env << ", " << java_name << ");" << Qt::endl;
+                    s << INDENT << qt_name << " = __tmp_pointer_" << qt_name << ";" << Qt::endl;
                 }
                 s << INDENT << "}" << Qt::endl;
             }else{

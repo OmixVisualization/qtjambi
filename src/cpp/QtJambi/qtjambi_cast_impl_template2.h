@@ -419,9 +419,9 @@ struct qtjambi_jnitype_template2_cast<false, has_scope,
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
           std::unique_ptr<NativeType> map;
           if(in){
-              if (ContainerAPI::testQMap<K,T>(env, in)) {
-                  return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
-                              env, scope, QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in));
+              NativeType* pointer{nullptr};
+              if (ContainerAPI::getAsQMap<K,T>(env, in, pointer)) {
+                  return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
               } else {
                   map.reset(new NativeType());
                   jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);
@@ -457,9 +457,9 @@ struct qtjambi_jnitype_template2_cast<false, has_scope,
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
           std::unique_ptr<NativeType> map;
           if(in){
-              if (ContainerAPI::testQMap<K,T>(env, in)) {
-                  return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
-                              env, scope, QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in));
+              NativeType* pointer{nullptr};
+              if (ContainerAPI::getAsQMap<K,T>(env, in, pointer)) {
+                  return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
               } else {
                   map.reset(new NativeType());
                   jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);
@@ -494,9 +494,7 @@ struct qtjambi_jnitype_template2_cast<false, true,
              JavaException::raiseError(env, "Cannot cast to QMap<K,T>& without scope." QTJAMBI_STACKTRACEINFO );
          NativeType *map = nullptr;
          if (in) {
-             if (ContainerAPI::testQMap<K,T>(env, in)) {
-                 map = QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in);
-             } else {
+             if (!ContainerAPI::getAsQMap<K,T>(env, in, map)) {
                  if(is_const){
                      map = new NativeType();
                      scope->addDeletion(map);
@@ -557,9 +555,9 @@ struct qtjambi_jnitype_template2_cast<false, has_scope,
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
         std::unique_ptr<NativeType> map;
         if(in){
-            if (ContainerAPI::testQMultiMap<K,T>(env, in)) {
-                return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
-                            env, scope, QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in));
+            NativeType* pointer{nullptr};
+            if (ContainerAPI::getAsQMultiMap<K,T>(env, in, pointer)) {
+                return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
             } else {
                 map.reset(new NativeType());
                 jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);
@@ -595,9 +593,9 @@ struct qtjambi_jnitype_template2_cast<false, has_scope,
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
         std::unique_ptr<NativeType> map;
         if(in){
-            if (ContainerAPI::testQMultiMap<K,T>(env, in)) {
-                return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
-                            env, scope, QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in));
+            NativeType* pointer{nullptr};
+            if (ContainerAPI::getAsQMultiMap<K,T>(env, in, pointer)) {
+                return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
             } else {
                 map.reset(new NativeType());
                 jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);
@@ -632,9 +630,7 @@ struct qtjambi_jnitype_template2_cast<false, true,
             JavaException::raiseError(env, "Cannot cast to QMultiMap<K,T>& without scope." QTJAMBI_STACKTRACEINFO );
         NativeType *map = nullptr;
         if (in) {
-            if (ContainerAPI::testQMultiMap<K,T>(env, in)) {
-                map = QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in);
-            } else {
+            if (!ContainerAPI::getAsQMultiMap<K,T>(env, in, map)) {
                 if(is_const){
                     map = new NativeType();
                     scope->addDeletion(map);
@@ -694,9 +690,9 @@ struct qtjambi_jnitype_template2_cast<false, has_scope,
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
           std::unique_ptr<NativeType> map;
           if(in){
-              if (ContainerAPI::testQHash<K,T>(env, in)) {
-                  return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
-                              env, scope, QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in));
+              NativeType* pointer{nullptr};
+              if (ContainerAPI::getAsQHash<K,T>(env, in, pointer)) {
+                  return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
               } else {
                   map.reset(new NativeType());
                   jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);
@@ -730,9 +726,9 @@ struct qtjambi_jnitype_template2_cast<false, has_scope,
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
           std::unique_ptr<NativeType> map;
           if(in){
-              if (ContainerAPI::testQHash<K,T>(env, in)) {
-                  return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
-                              env, scope, QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in));
+              NativeType* pointer{nullptr};
+              if (ContainerAPI::getAsQHash<K,T>(env, in, pointer)) {
+                  return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
               } else {
                   map.reset(new NativeType());
                   jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);
@@ -765,9 +761,7 @@ struct qtjambi_jnitype_template2_cast<false, true,
              JavaException::raiseError(env, "Cannot cast to QHash<K,T>& without scope." QTJAMBI_STACKTRACEINFO );
          NativeType *map = nullptr;
          if (in) {
-            if (ContainerAPI::testQHash<K,T>(env, in)) {
-                map = QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in);
-            } else {
+            if (!ContainerAPI::getAsQHash<K,T>(env, in, map)) {
                 if(is_const){
                     map = new NativeType();
                     scope->addDeletion(map);
@@ -826,9 +820,9 @@ struct qtjambi_jnitype_template2_cast<false, has_scope,
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
         std::unique_ptr<NativeType> map;
         if(in){
-            if (ContainerAPI::testQMultiHash<K,T>(env, in)) {
-                return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
-                            env, scope, QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in));
+            NativeType* pointer{nullptr};
+            if (ContainerAPI::getAsQMultiHash<K,T>(env, in, pointer)) {
+                return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
             } else {
                 map.reset(new NativeType());
                 jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);
@@ -869,9 +863,9 @@ struct qtjambi_jnitype_template2_cast<false, has_scope,
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
         std::unique_ptr<NativeType> map;
         if(in){
-            if (ContainerAPI::testQMultiHash<K,T>(env, in)) {
-                return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
-                            env, scope, QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in));
+            NativeType* pointer{nullptr};
+            if (ContainerAPI::getAsQMultiHash<K,T>(env, in, pointer)) {
+                return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
             } else {
                 map.reset(new NativeType());
                 jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);
@@ -904,9 +898,7 @@ struct qtjambi_jnitype_template2_cast<false, true,
             JavaException::raiseError(env, "Cannot cast to QMultiHash<K,T>& without scope." QTJAMBI_STACKTRACEINFO );
         NativeType *map = nullptr;
         if (in) {
-           if (ContainerAPI::testQMultiHash<K,T>(env, in)) {
-               map = QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in);
-           } else {
+           if (!ContainerAPI::getAsQMultiHash<K,T>(env, in, map)) {
                if(is_const){
                    map = new NativeType();
                    scope->addDeletion(map);

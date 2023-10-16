@@ -1471,6 +1471,11 @@ class QSignalSpy__{
     public final void removeLast() {
         list().removeLast();
     }
+
+    public final QList<java.util.List<java.lang.Object>> reversed(){
+        return list().reversed();
+    }
+
 }// class
 
 class QSignalSpy_5_{

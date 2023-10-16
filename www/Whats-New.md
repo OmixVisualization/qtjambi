@@ -1,17 +1,12 @@
-# What's new in QtJambi 6.5.3
+# What's new in QtJambi 6.6.0
 
 ## Bugfixes
 
 Solved issues:
-* [Issue 166](../../../issues/166): QByteArrayView(byte[]) not working correctly
+* [Issue 168](../../../issues/168): QtJambi does not build from sources using JDK 21
 
 ## Further Changes
 
-* QtJambi now includes `QStringDecoder` and `QStringEncoder`
-* `QCollator` now derives `Comparator<String>` and provides comparison of char arrays.
-* New QtGraphs API available as QtJambi module
-* QtEndian now available as QtJambi class
-* Debug info is now available for Windows, Linux and macOS
-* QNetworkAccessManager is now thread-affine
+* Improved Qt container access
 
-This version of QtJambi is source compatible with its predecessor versions.
+This version of QtJambi is source and binary compatible with its predecessor versions.

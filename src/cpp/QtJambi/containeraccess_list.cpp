@@ -1024,40 +1024,39 @@ jobject AutoListAccess::constBegin(JNIEnv * env, QtJambiNativeID ownerId, const 
 
 void AutoListAccess::appendList(JNIEnv * env, void* container, jobject list)
 {
-    if (ContainerAPI::testQList(env, list, elementMetaType())) {
-        if(void* ptr = QtJambiAPI::convertJavaObjectToNative(env, list)){
+    void* ptr{nullptr};
+    if (ContainerAPI::getAsQList(env, list, elementMetaType(), ptr)) {
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            QListData* p = reinterpret_cast<QListData*>(container);
-            QListData* p2 = reinterpret_cast<QListData*>(ptr);
-            if (!p2->isEmpty()) {
-                if (p->d == &QListData::shared_null) {
-                    p->d = p2->d;
-                    p->d->ref.ref();
-                } else {
-                    Node *n = (p->d->ref.isShared())
-                              ? detach_helper_grow(p, INT_MAX, p2->size())
-                              : reinterpret_cast<Node *>(p->append(*p2));
-                    QT_TRY {
-                        node_copy(n, reinterpret_cast<Node *>(p->end()),
-                                  reinterpret_cast<Node *>(p2->begin()));
-                    } QT_CATCH(...) {
-                        // restore the old end
-                        p->d->end -= int(reinterpret_cast<Node *>(p->end()) - n);
-                        QT_RETHROW;
-                    }
+        QListData* p = reinterpret_cast<QListData*>(container);
+        QListData* p2 = reinterpret_cast<QListData*>(ptr);
+        if (!p2->isEmpty()) {
+            if (p->d == &QListData::shared_null) {
+                p->d = p2->d;
+                p->d->ref.ref();
+            } else {
+                Node *n = (p->d->ref.isShared())
+                          ? detach_helper_grow(p, INT_MAX, p2->size())
+                          : reinterpret_cast<Node *>(p->append(*p2));
+                QT_TRY {
+                    node_copy(n, reinterpret_cast<Node *>(p->end()),
+                              reinterpret_cast<Node *>(p2->begin()));
+                } QT_CATCH(...) {
+                    // restore the old end
+                    p->d->end -= int(reinterpret_cast<Node *>(p->end()) - n);
+                    QT_RETHROW;
                 }
             }
-#else
-            QArrayDataPointer<char>* p = reinterpret_cast<QArrayDataPointer<char>*>(container);
-            QArrayDataPointer<char>* p2 = reinterpret_cast<QArrayDataPointer<char>*>(ptr);
-            detachAndGrow(p, QArrayData::GrowsAtEnd, p2->size, nullptr, nullptr);
-            Q_ASSERT(freeSpaceAtEnd(p) >= p2->size);
-            void *where = createHole(p, QArrayData::GrowsAtEnd, p->size, p2->size-1);
-            for(size_t i=0; i<size_t(p2->size); ++i){
-                m_elementMetaType.construct(reinterpret_cast<char*>(where) + i * m_offset, p2->ptr + i * m_offset);
-            }
-#endif
         }
+#else
+        QArrayDataPointer<char>* p = reinterpret_cast<QArrayDataPointer<char>*>(container);
+        QArrayDataPointer<char>* p2 = reinterpret_cast<QArrayDataPointer<char>*>(ptr);
+        detachAndGrow(p, QArrayData::GrowsAtEnd, p2->size, nullptr, nullptr);
+        Q_ASSERT(freeSpaceAtEnd(p) >= p2->size);
+        void *where = createHole(p, QArrayData::GrowsAtEnd, p->size, p2->size-1);
+        for(size_t i=0; i<size_t(p2->size); ++i){
+            m_elementMetaType.construct(reinterpret_cast<char*>(where) + i * m_offset, p2->ptr + i * m_offset);
+        }
+#endif
     }else{
         jobject iter = QtJambiAPI::iteratorOfJavaCollection(env, list);
         jint idx = size(env, container);
@@ -1401,42 +1400,41 @@ jint AutoListAccess::removeAll(JNIEnv * env, void* container, jobject value)
 
 jboolean AutoListAccess::equal(JNIEnv * env, const void* container, jobject other)
 {
-    if (ContainerAPI::testQList(env, other, elementMetaType())) {
-        if(void* ptr = QtJambiAPI::convertJavaObjectToNative(env, other)){
+    void* ptr{nullptr};
+    if (ContainerAPI::getAsQList(env, other, elementMetaType(), ptr)) {
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            const QListData* p = reinterpret_cast<const QListData*>(container);
-            const QListData* p2 = reinterpret_cast<const QListData*>(ptr);
-            if(p->size()!=p2->size())
-                return false;
-            if(p->d==p2->d)
-                return true;
-            for(int i = 0; i<p->size(); ++i){
-                void* element1 = p->at(i);
-                void* element2 = p2->at(i);
-                if (m_isLargeOrStaticType) {
-                    element1 = reinterpret_cast<Node *>(element1)->v;
-                    element2 = reinterpret_cast<Node *>(element2)->v;
-                }
-                if(!isEquals(m_elementMetaType, element1, element2))
-                    return false;
-            }
+        const QListData* p = reinterpret_cast<const QListData*>(container);
+        const QListData* p2 = reinterpret_cast<const QListData*>(ptr);
+        if(p->size()!=p2->size())
+            return false;
+        if(p->d==p2->d)
             return true;
-#else
-            const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
-            const QArrayDataPointer<char>* p2 = reinterpret_cast<const QArrayDataPointer<char>*>(ptr);
-            if(p->size!=p2->size)
-                return false;
-            if(p->ptr==p2->ptr)
-                return true;
-            for(qsizetype i = 0; i<p->size; ++i){
-                void* element1 = p->ptr + i * m_offset;
-                void* element2 = p2->ptr + i * m_offset;
-                if(!m_elementMetaType.equals(element1, element2))
-                    return false;
+        for(int i = 0; i<p->size(); ++i){
+            void* element1 = p->at(i);
+            void* element2 = p2->at(i);
+            if (m_isLargeOrStaticType) {
+                element1 = reinterpret_cast<Node *>(element1)->v;
+                element2 = reinterpret_cast<Node *>(element2)->v;
             }
-            return true;
-#endif
+            if(!isEquals(m_elementMetaType, element1, element2))
+                return false;
         }
+        return true;
+#else
+        const QArrayDataPointer<char>* p = reinterpret_cast<const QArrayDataPointer<char>*>(container);
+        const QArrayDataPointer<char>* p2 = reinterpret_cast<const QArrayDataPointer<char>*>(ptr);
+        if(p->size!=p2->size)
+            return false;
+        if(p->ptr==p2->ptr)
+            return true;
+        for(qsizetype i = 0; i<p->size; ++i){
+            void* element1 = p->ptr + i * m_offset;
+            void* element2 = p2->ptr + i * m_offset;
+            if(!m_elementMetaType.equals(element1, element2))
+                return false;
+        }
+        return true;
+#endif
     }else{
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
         const QListData* p = reinterpret_cast<const QListData*>(container);

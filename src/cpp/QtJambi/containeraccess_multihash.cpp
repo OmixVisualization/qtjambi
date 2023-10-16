@@ -162,7 +162,7 @@ void AutoMultiHashAccess::insert(JNIEnv *env, void* container, jobject key, jobj
 }
 
 IsBiContainerFunction AutoMultiHashAccess::getIsBiContainerFunction(){
-    return ContainerAPI::testQMultiHash;
+    return ContainerAPI::getAsQMultiHash;
 }
 
 size_t AutoMultiHashAccess::sizeOf() {
@@ -284,36 +284,35 @@ void AutoMultiHashAccess::unite(JNIEnv *env, void* container, jobject other)
 {
     QHashData ** map = reinterpret_cast<QHashData **>(container);
     QHashData*& d = *map;
-    if (ContainerAPI::testQMultiHash(env, other, keyMetaType(), valueMetaType())
-            || ContainerAPI::testQHash(env, other, keyMetaType(), valueMetaType())) {
-        if(void* ptr = QtJambiAPI::convertJavaObjectToNative(env, other)){
-            QHashData *const* map2 = reinterpret_cast<QHashData *const*>(ptr);
-            QHashData* d2 = *map2;
+    void* ptr{nullptr};
+    if (ContainerAPI::getAsQMultiHash(env, other, keyMetaType(), valueMetaType(), ptr)
+            || ContainerAPI::getAsQHash(env, other, keyMetaType(), valueMetaType(), ptr)) {
+        QHashData *const* map2 = reinterpret_cast<QHashData *const*>(ptr);
+        QHashData* d2 = *map2;
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            if (d == &QHashData::shared_null && d2->ref.ref()) {
-                d = d2;
-            } else {
-                detach(map);
-                Node *firstNode2(reinterpret_cast<Node*>(d2));
-                Node *lastNode2(d2->firstNode());
-                while (firstNode2 != lastNode2) {
-                    firstNode2 = QHashData::previousNode(firstNode2);
-                    void* key2 = reinterpret_cast<char*>(firstNode2)+m_offset1;
-                    void* value2 = reinterpret_cast<char*>(firstNode2)+m_offset2;
+        if (d == &QHashData::shared_null && d2->ref.ref()) {
+            d = d2;
+        } else {
+            detach(map);
+            Node *firstNode2(reinterpret_cast<Node*>(d2));
+            Node *lastNode2(d2->firstNode());
+            while (firstNode2 != lastNode2) {
+                firstNode2 = QHashData::previousNode(firstNode2);
+                void* key2 = reinterpret_cast<char*>(firstNode2)+m_offset1;
+                void* value2 = reinterpret_cast<char*>(firstNode2)+m_offset2;
 
-                    uint h;
-                    Node **nextNode = findNode(map, key2, &h);
-                    createNode(d, h, key2, value2, nextNode);
-                }
+                uint h;
+                Node **nextNode = findNode(map, key2, &h);
+                createNode(d, h, key2, value2, nextNode);
             }
-#else
-            if(!d && d2 && d2->ref.ref()){
-                d = d2;
-            }else{
-                detach(map);
-            }
-#endif
         }
+#else
+        if(!d && d2 && d2->ref.ref()){
+            d = d2;
+        }else{
+            detach(map);
+        }
+#endif
     }else{
         jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, other);
         while(QtJambiAPI::hasJavaIteratorNext(env, iterator)){

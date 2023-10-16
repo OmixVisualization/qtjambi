@@ -1330,7 +1330,7 @@ private:
 #endif
 };
 
-typedef bool (*IsBiContainerFunction)(JNIEnv *, jobject, const QMetaType&, const QMetaType&);
+typedef bool (*IsBiContainerFunction)(JNIEnv *, jobject, const QMetaType&, const QMetaType&, void*& ptr);
 
 class AutoMapAccess : public AbstractMapAccess{
     QMetaType m_keyMetaType;

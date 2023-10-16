@@ -107,6 +107,14 @@ void General::run(QRunnable* runnable){
     if(runnable)runnable->run();
 }
 
+void General::terminate(){
+    std::terminate();
+}
+
+void General::abort(){
+    std::abort();
+}
+
 void General::qtjambi_jni_test(jobject object){
     if(JniEnvironment env{128}){
         jclass cls = env->FindClass("Ljava/lang/String;");

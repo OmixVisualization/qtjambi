@@ -295,11 +295,10 @@ public:
     }
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
-        if (ContainerAPI::testQMultiHash(env, other, keyMetaType(), valueMetaType())) {
-            if(QMultiHash<K,T>* ptr = QtJambiAPI::convertJavaObjectToNative<QMultiHash<K,T>>(env, other)){
-                QTJAMBI_KEY_VALUE_LOCKER
-                return *reinterpret_cast<const QMultiHash<K,T> *>(container)==*ptr;
-            }
+        void* ptr{nullptr};
+        if (ContainerAPI::getAsQMultiHash(env, other, keyMetaType(), valueMetaType(), ptr)) {
+            QTJAMBI_KEY_VALUE_LOCKER
+            return *reinterpret_cast<const QMultiHash<K,T> *>(container)==*reinterpret_cast<const QMultiHash<K,T> *>(ptr);
         }else{
             QTJAMBI_KEY_VALUE_LOCKER
             QMultiHash<K,T> map;
@@ -741,11 +740,10 @@ public:
     }
 
     void unite(JNIEnv *env, void* container, jobject other) override {
-        if (ContainerAPI::testQMultiHash(env, other, keyMetaType(), valueMetaType())) {
-            if(QMultiHash<K,T>* ptr = QtJambiAPI::convertJavaObjectToNative<QMultiHash<K,T>>(env, other)){
-                QTJAMBI_KEY_VALUE_LOCKER
-                reinterpret_cast<QMultiHash<K,T> *>(container)->unite(*ptr);
-            }
+        void* ptr{nullptr};
+        if (ContainerAPI::getAsQMultiHash(env, other, keyMetaType(), valueMetaType(), ptr)) {
+            QTJAMBI_KEY_VALUE_LOCKER
+            reinterpret_cast<QMultiHash<K,T> *>(container)->unite(*reinterpret_cast<QMultiHash<K,T> *>(ptr));
         }
     }
 };

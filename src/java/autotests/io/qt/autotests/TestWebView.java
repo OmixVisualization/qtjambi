@@ -34,14 +34,12 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.QNativePointer;
 import io.qt.QtEnumerator;
+import io.qt.autotests.generated.General;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QLibraryInfo;
 import io.qt.core.QMetaObject;
-import io.qt.core.QMutex;
 import io.qt.core.QObject;
-import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QTimer;
 import io.qt.core.QUrl;
 import io.qt.core.Qt;
@@ -56,16 +54,16 @@ import io.qt.widgets.QApplication;
 public class TestWebView extends ApplicationInitializer {
     @BeforeClass
     public static void testInitialize() throws Exception {
-    	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS))
-    		QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
+		QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_UseSoftwareOpenGL);
+    	General.canVulkan();// making sure it initializes
 		QtWebView.initialize();
 		Thread timeoutThread = new Thread(()->{
 			try {
 				synchronized(TestWebView.class) {
 					TestWebView.class.wait(5000);
 				}
-				System.err.println("TestWebView does not initialize. Doing a forced crash...");
-				QNativePointer.fromNative(1).object(QMutex.class).lock();
+				System.err.println("TestWebView does not initialize. Forced termination...");
+				General.terminate();
 			} catch (InterruptedException e) {
 			}
 		});
@@ -113,7 +111,7 @@ public class TestWebView extends ApplicationInitializer {
 		    });
 		    QTimer.singleShot(30000, QApplication::exit);
 		    QApplication.exec();
-		    Assert.assertTrue(status[0]==null ? "null" : status[0].getClass().getName(), status[0] instanceof String);
+		    Assert.assertTrue(status[0]==null ? "no website loaded" : status[0].getClass().getName(), status[0] instanceof String);
 		    if(QLibraryInfo.version().majorVersion()>=6) {
 		    	Assert.assertTrue(status[1]==null ? "null" : status[1].getClass().getName(), status[1] instanceof QtEnumerator);
 		    }else {

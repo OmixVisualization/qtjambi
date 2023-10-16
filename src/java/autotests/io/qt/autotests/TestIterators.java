@@ -44,6 +44,7 @@ import io.qt.core.QDir;
 import io.qt.core.QDirIterator;
 import io.qt.core.QRegularExpression;
 import io.qt.core.QRegularExpressionMatch;
+import io.qt.internal.TestUtility;
 import io.qt.widgets.QTreeWidget;
 import io.qt.widgets.QTreeWidgetItem;
 import io.qt.widgets.QTreeWidgetItemIterator;
@@ -114,10 +115,11 @@ public class TestIterators extends ApplicationInitializer {
     
     @Test
     public void test_QDirIterator_correct_iteration() {
+    	String uniqueDirectory = "QtJambi_QDirTest_"+TestUtility.processName();
     	try {
 	    	QDir temp = QDir.temp();
-	    	Assert.assertTrue(temp.mkdir("QtJambi_QDirTest"));
-	    	Assert.assertTrue(temp.cd("QtJambi_QDirTest"));
+	    	Assert.assertTrue(temp.mkdir(uniqueDirectory));
+	    	Assert.assertTrue(temp.cd(uniqueDirectory));
 	    	Assert.assertTrue(temp.mkdir("A"));
 	    	Assert.assertTrue(temp.mkdir("B"));
 	    	Assert.assertTrue(temp.mkdir("C"));
@@ -131,13 +133,13 @@ public class TestIterators extends ApplicationInitializer {
 	    	Assert.assertEquals(new HashSet<>(Arrays.asList(".", "..", "A", "B", "C", "D", "E")), subDirs);
     	}finally {
     		QDir temp = QDir.temp();
-    		if(temp.exists("QtJambi_QDirTest")) {
+    		if(temp.exists(uniqueDirectory)) {
         		temp.cd("QtJambi_QDirTest");
         		for(String s : temp.entryList()) {
         			temp.rmdir(s);
         		}
         		temp.cdUp();
-        		temp.rmdir("QtJambi_QDirTest");
+        		temp.rmdir(uniqueDirectory);
         	}
 		}
     }

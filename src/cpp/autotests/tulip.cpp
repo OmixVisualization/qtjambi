@@ -79,10 +79,10 @@ void Tulip::testStdFunctions(const QList<Tulip::TestStdFunction>& functions){
     }
 }
 
-void Tulip::consumeIntList(const QList<int>& list){for (int i = 0; i < list.size(); i++) {list.at(i);}}
-void Tulip::consumeStringList(const QList<QString>& list){for (int i = 0; i < list.size(); i++) {list.at(i);}}
-void Tulip::consumeColorList(const QList<QColor>& list){for (int i = 0; i < list.size(); i++) {list.at(i);}}
-void Tulip::consumeQObjectList(const QList<QObject*>& list){for (int i = 0; i < list.size(); i++) {list.at(i);}}
+void Tulip::consumeIntList(const QList<int>& list){list.size();};//for (int i = 0; i < list.size(); i++) {list.at(i);}}
+void Tulip::consumeStringList(const QList<QString>& list){list.size();};//for (int i = 0; i < list.size(); i++) {list.at(i);}}
+void Tulip::consumeColorList(const QList<QColor>& list){list.size();};//for (int i = 0; i < list.size(); i++) {list.at(i);}}
+void Tulip::consumeQObjectList(const QList<QObject*>& list){list.size();};//for (int i = 0; i < list.size(); i++) {list.at(i);}}
 
 QSet<QRunnable*> Tulip::createSetOfRunnables() {return {};}
 QHash<QString,QRunnable*> Tulip::createStringHashOfRunnables() {return {};}

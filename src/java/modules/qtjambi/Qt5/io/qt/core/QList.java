@@ -599,6 +599,14 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
 		set.unite(this);
         return set;
     }
+	
+	public QList<T> reversed(){
+		QList<T> result = new QList<>(elementMetaType());
+		for(T t : this) {
+			result.add(0, t);
+		}
+    	return result;
+    }
     
     /**
      * <p>See <code>operator&lt;&lt;(QDataStream&amp;,<wbr>QList&lt;T>)</code></p>

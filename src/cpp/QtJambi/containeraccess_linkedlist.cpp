@@ -688,25 +688,24 @@ jboolean AutoLinkedListAccess::equal(JNIEnv * env, const void* container, jobjec
     QLinkedListData*const* linkedList = reinterpret_cast<QLinkedListData*const*>(container);
     QLinkedListData* d = *linkedList;
     Node* e = reinterpret_cast<Node*>(d);
-    if (ContainerAPI::testQLinkedList(env, other, elementMetaType())) {
-        if(void* ptr = QtJambiAPI::convertJavaObjectToNative(env, other)){
-            QLinkedListData*const* linkedList2 = reinterpret_cast<QLinkedListData*const*>(ptr);
-            QLinkedListData* d2 = *linkedList2;
-            Node* e2 = reinterpret_cast<Node*>(d2);
-            if (d->size != d2->size)
-                return false;
-            if (e == e2)
-                return true;
-            Node *i = e->n;
-            Node *il = e2->n;
-            while (i != e) {
-                if (! (isEquals(m_elementMetaType, &i->t, &il->t)))
-                    return false;
-                i = i->n;
-                il = il->n;
-            }
+    void* ptr{nullptr};
+    if (ContainerAPI::getAsQLinkedList(env, other, elementMetaType(), ptr)) {
+        QLinkedListData*const* linkedList2 = reinterpret_cast<QLinkedListData*const*>(ptr);
+        QLinkedListData* d2 = *linkedList2;
+        Node* e2 = reinterpret_cast<Node*>(d2);
+        if (d->size != d2->size)
+            return false;
+        if (e == e2)
             return true;
+        Node *i = e->n;
+        Node *il = e2->n;
+        while (i != e) {
+            if (! (isEquals(m_elementMetaType, &i->t, &il->t)))
+                return false;
+            i = i->n;
+            il = il->n;
         }
+        return true;
     }else{
         if(d->size!=QtJambiAPI::sizeOfJavaCollection(env, other))
             return false;

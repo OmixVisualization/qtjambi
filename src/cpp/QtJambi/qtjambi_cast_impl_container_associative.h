@@ -70,7 +70,7 @@ struct IntermediateAssociativeContainer : Container<K,T>{
     jobject m_object;
 };
 
-typedef bool (*IsAssociativeContainerFunction)(JNIEnv *, jobject, const std::type_info&, const QMetaType&, const std::type_info&, const QMetaType&);
+typedef bool (*IsAssociativeContainerFunction)(JNIEnv *, jobject, const std::type_info&, const QMetaType&, const std::type_info&, const QMetaType&, void*& pointer);
 
 template<typename Iterator>
 class QAssociativeConstIteratorAccess : public AbstractConstIteratorAccess<Iterator,AbstractAssociativeConstIteratorAccess>{
@@ -516,9 +516,7 @@ struct AssociativeContainerEquals<Container, K, T, isContainer, true>{
         std::unique_ptr<Container<K,T> > __qt_scoped_pointer;
         Container<K,T> *__qt_other_pointer = nullptr;
         if (other!= nullptr) {
-            if (isContainer(env, other, qtjambi_type<K>::id(), QTJAMBI_METATYPE_FROM_TYPE2(K), qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T))) {
-                __qt_other_pointer = QtJambiAPI::convertJavaObjectToNative<Container<K,T>>(env, other);
-            } else {
+            if (!isContainer(env, other, qtjambi_type<K>::id(), QTJAMBI_METATYPE_FROM_TYPE2(K), qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(__qt_other_pointer))) {
                 __qt_scoped_pointer.reset(new Container<K,T>());
                 __qt_other_pointer = __qt_scoped_pointer.get();
                 jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, other);
@@ -710,9 +708,7 @@ struct AssociativeContainerUnite<Container, K, T, isContainer, true>{
         std::unique_ptr<Container<K,T> > __qt_scoped_pointer;
         Container<K,T> *__qt_other_pointer = nullptr;
         if (other!= nullptr) {
-            if (isContainer(env, other, qtjambi_type<K>::id(), QTJAMBI_METATYPE_FROM_TYPE2(K), qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T))) {
-                __qt_other_pointer = QtJambiAPI::convertJavaObjectToNative<Container<K,T>>(env, other);
-            } else {
+            if (!isContainer(env, other, qtjambi_type<K>::id(), QTJAMBI_METATYPE_FROM_TYPE2(K), qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(__qt_other_pointer))) {
                 __qt_scoped_pointer.reset(new Container<K,T> ());
                 __qt_other_pointer = __qt_scoped_pointer.get();
                 jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, other);
@@ -964,7 +960,7 @@ public:
     }
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
-         return AssociativeContainerEquals<QMap, K, T, ContainerAPI::testQMap>::function(env, container, other);
+         return AssociativeContainerEquals<QMap, K, T, ContainerAPI::getAsQMap>::function(env, container, other);
     }
 
     jint remove(JNIEnv * env,void*,jobject) override {
@@ -1180,7 +1176,7 @@ public:
     }
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
-        return AssociativeContainerEquals<QMultiMap, K, T, ContainerAPI::testQMultiMap>::function(env, container, other);
+        return AssociativeContainerEquals<QMultiMap, K, T, ContainerAPI::getAsQMultiMap>::function(env, container, other);
     }
 
     jint remove(JNIEnv * env,void*,jobject) override {
@@ -1312,7 +1308,7 @@ public:
     }
 
     void unite(JNIEnv *env, void* container, jobject other) override {
-         AssociativeContainerUnite<QMultiMap, K, T, ContainerAPI::testQMultiMap>::function(env, container, other);
+         AssociativeContainerUnite<QMultiMap, K, T, ContainerAPI::getAsQMultiMap>::function(env, container, other);
     }
 };
 
@@ -1418,7 +1414,7 @@ public:
      }
 
      jboolean equal(JNIEnv * env, const void* container, jobject other) override {
-          return AssociativeContainerEquals<QHash, K, T, ContainerAPI::testQHash>::function(env, container, other);
+          return AssociativeContainerEquals<QHash, K, T, ContainerAPI::getAsQHash>::function(env, container, other);
      }
 
      jint remove(JNIEnv * env,void*,jobject) override {
@@ -1616,7 +1612,7 @@ public:
      }
 
      jboolean equal(JNIEnv * env, const void* container, jobject other) override {
-         return AssociativeContainerEquals<QMultiHash, K, T, ContainerAPI::testQMultiHash>::function(env, container, other);
+         return AssociativeContainerEquals<QMultiHash, K, T, ContainerAPI::getAsQMultiHash>::function(env, container, other);
      }
 
      jint remove(JNIEnv * env,void*,jobject) override {
@@ -1741,7 +1737,7 @@ public:
      }
 
      void unite(JNIEnv *env, void* container, jobject other) override {
-          AssociativeContainerUnite<QMultiHash, K, T, ContainerAPI::testQMultiHash>::function(env, container, other);
+          AssociativeContainerUnite<QMultiHash, K, T, ContainerAPI::getAsQMultiHash>::function(env, container, other);
      }
  };
 

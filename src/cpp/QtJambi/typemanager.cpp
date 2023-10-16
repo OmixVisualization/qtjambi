@@ -5726,7 +5726,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
 
             if(!clazz.isEmpty()){
                 jclass elementClass = JavaAPI::resolveClass(_env, clazz);
-                typedef bool (*IsContainerFunction)(JNIEnv *, jobject, const QMetaType&);
+                typedef bool (*IsContainerFunction)(JNIEnv *, jobject, const QMetaType&, void*& pointer);
                 typedef void (*ContainerAppendFunction)(AbstractContainerAccess*, JNIEnv *, void*, jobject);
 
                 IsContainerFunction isContainerFunction = nullptr;
@@ -5734,7 +5734,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
 
                 switch(containerType){
                 case SequentialContainerType::QSet:
-                    isContainerFunction = ContainerAPI::testQSet;
+                    isContainerFunction = ContainerAPI::getAsQSet;
                     containerAppendFunction = [](AbstractContainerAccess* access, JNIEnv * env, void* container, jobject value){
                         if(AbstractSetAccess* _access = dynamic_cast<AbstractSetAccess*>(access))
                             _access->insert(env, container, value);
@@ -5743,14 +5743,14 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 case SequentialContainerType::QStack:
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                 case SequentialContainerType::QVector:
-                    isContainerFunction = ContainerAPI::testQVector;
+                    isContainerFunction = ContainerAPI::getAsQVector;
                     containerAppendFunction = [](AbstractContainerAccess* access, JNIEnv * env, void* container, jobject value){
                         if(AbstractVectorAccess* _access = dynamic_cast<AbstractVectorAccess*>(access))
                             _access->insert(env, container, _access->size(env, container), 1, value);
                     };
                     break;
                 case SequentialContainerType::QLinkedList:
-                    isContainerFunction = ContainerAPI::testQLinkedList;
+                    isContainerFunction = ContainerAPI::getAsQLinkedList;
                     containerAppendFunction = [](AbstractContainerAccess* access, JNIEnv * env, void* container, jobject value){
                         if(AbstractLinkedListAccess* _access = dynamic_cast<AbstractLinkedListAccess*>(access))
                             _access->append(env, container, value);
@@ -5759,7 +5759,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
 #endif
                 case SequentialContainerType::QQueue:
                 case SequentialContainerType::QList:
-                    isContainerFunction = ContainerAPI::testQList;
+                    isContainerFunction = ContainerAPI::getAsQList;
                     containerAppendFunction = [](AbstractContainerAccess* access, JNIEnv * env, void* container, jobject value){
                         if(AbstractListAccess* _access = dynamic_cast<AbstractListAccess*>(access))
                             _access->insert(env, container, _access->size(env, container), 1, value);
@@ -5856,6 +5856,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                             bool deleteAccess = true;
                             Q_ASSERT(env->GetObjectRefType(elementClass)==JNIGlobalRefType);
                             AbstractContainerAccess* access = sharedAccess->clone();
+                            void* pointer{nullptr};
                             if(!in.l){
                                 if(!out){
                                     if(scope){
@@ -5868,24 +5869,20 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                     }
                                 }
                                 response = true;
-                            }else if(isContainerFunction(env, in.l, memberMetaType)){
-                                if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, in.l)){
-                                    if(out){
-                                        access->assign(out, link->pointer());
-                                    }else if(scope){
-                                        out = access->createContainer(reinterpret_cast<const void*>(link->pointer()));
-                                        scope->addFinalAction([access,out](){
-                                            access->deleteContainer(out);
-                                            access->dispose();
-                                        });
-                                        deleteAccess = false;
-                                    }else{
-                                        out = link->pointer();
-                                    }
-                                    response = true;
+                            }else if(isContainerFunction(env, in.l, memberMetaType, pointer)){
+                                if(out){
+                                    access->assign(out, pointer);
+                                }else if(scope){
+                                    out = access->createContainer(reinterpret_cast<const void*>(pointer));
+                                    scope->addFinalAction([access,out](){
+                                        access->deleteContainer(out);
+                                        access->dispose();
+                                    });
+                                    deleteAccess = false;
                                 }else{
-                                    Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, in.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                                    out = pointer;
                                 }
+                                response = true;
                             }else{
                                 if(!out){
                                     if(scope){
@@ -6315,10 +6312,10 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                 return response;
                             };
                         }else{
-                            typedef bool (*IsBiContainerFunction)(JNIEnv *, jobject, const QMetaType&, const QMetaType&);
+                            typedef bool (*IsBiContainerFunction)(JNIEnv *, jobject, const QMetaType&, const QMetaType&, void*& pointer);
                             typedef void (*ContainerInsertFunction)(AbstractContainerAccess*, JNIEnv *, void*, jobject, jobject);
 
-                            IsBiContainerFunction isContainerFunction = ContainerAPI::testQMap;
+                            IsBiContainerFunction isContainerFunction = ContainerAPI::getAsQMap;
                             ContainerInsertFunction containerInsertFunction = [](AbstractContainerAccess* access, JNIEnv * env, void* container, jobject key, jobject value){
                                 if(AbstractMapAccess* _access = dynamic_cast<AbstractMapAccess*>(access))
                                     _access->insert(env, container, key, value);
@@ -6326,7 +6323,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
 
                             switch(mapType){
                             case AssociativeContainerType::QMultiMap:
-                                isContainerFunction = ContainerAPI::testQMultiMap;
+                                isContainerFunction = ContainerAPI::getAsQMultiMap;
                                 containerInsertFunction = [](AbstractContainerAccess* access, JNIEnv * env, void* container, jobject key, jobject value){
                                     jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, value);
                                     QList<jobject> values;
@@ -6340,7 +6337,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                 };
                                 break;
                             case AssociativeContainerType::QMultiHash:
-                                isContainerFunction = ContainerAPI::testQMultiHash;
+                                isContainerFunction = ContainerAPI::getAsQMultiHash;
                                 containerInsertFunction = [](AbstractContainerAccess* access, JNIEnv * env, void* container, jobject key, jobject value){
                                     jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, value);
                                     QList<jobject> values;
@@ -6354,7 +6351,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                 };
                                 break;
                             case AssociativeContainerType::QHash:
-                                isContainerFunction = ContainerAPI::testQHash;
+                                isContainerFunction = ContainerAPI::getAsQHash;
                                 containerInsertFunction = [](AbstractContainerAccess* access, JNIEnv * env, void* container, jobject key, jobject value){
                                     if(AbstractHashAccess* _access = dynamic_cast<AbstractHashAccess*>(access))
                                         _access->insert(env, container, key, value);
@@ -6372,6 +6369,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                     memberMetaType2,
                                     isContainerFunction](JNIEnv* env, QtJambiScope* scope, jvalue in, void* &out, jValueType valueType) -> bool{
                                 bool response = false;
+                                void* pointer{nullptr};
                                 if(valueType==jValueType::l){
                                     if(in.l && !env->IsInstanceOf(in.l, Java::Runtime::Map::getClass(env)))
                                         Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, in.l).replace("$", ".")).arg(QtJambiAPI::getClassName(env, Java::Runtime::Map::getClass(env)).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
@@ -6391,24 +6389,20 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                                             }
                                         }
                                         response = true;
-                                    }else if(isContainerFunction(env, in.l, memberMetaType1, memberMetaType2)){
-                                        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, in.l)){
-                                            if(out){
-                                                access->assign(out, link->pointer());
-                                            }else if(scope){
-                                                out = access->createContainer(reinterpret_cast<const void*>(link->pointer()));
-                                                scope->addFinalAction([access,out](){
-                                                    access->deleteContainer(out);
-                                                    access->dispose();
-                                                });
-                                                deleteAccess = false;
-                                            }else{
-                                                out = link->pointer();
-                                            }
-                                            response = true;
+                                    }else if(isContainerFunction(env, in.l, memberMetaType1, memberMetaType2, pointer)){
+                                        if(out){
+                                            access->assign(out, pointer);
+                                        }else if(scope){
+                                            out = access->createContainer(reinterpret_cast<const void*>(pointer));
+                                            scope->addFinalAction([access,out](){
+                                                access->deleteContainer(out);
+                                                access->dispose();
+                                            });
+                                            deleteAccess = false;
                                         }else{
-                                            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, in.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
+                                            out = pointer;
                                         }
+                                        response = true;
                                     }else{
                                         if(!out){
                                             if(scope){

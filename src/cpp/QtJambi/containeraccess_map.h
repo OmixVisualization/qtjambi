@@ -480,12 +480,11 @@ public:
     }
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
-        if (ContainerAPI::testQMap(env, other, keyMetaType(), valueMetaType())) {
-            if(QMap<K,T>* ptr = QtJambiAPI::convertJavaObjectToNative<QMap<K,T>>(env, other)){
-                QTJAMBI_KEY_VALUE_LOCKER
-                bool equals = *reinterpret_cast<const QMap<K,T> *>(container)==*ptr;
-                return equals;
-            }
+        void* ptr{nullptr};
+        if (ContainerAPI::getAsQMap(env, other, keyMetaType(), valueMetaType(), ptr)) {
+            QTJAMBI_KEY_VALUE_LOCKER
+            bool equals = *reinterpret_cast<const QMap<K,T> *>(container)==*reinterpret_cast<const QMap<K,T> *>(ptr);
+            return equals;
         }else{
             QTJAMBI_KEY_VALUE_LOCKER
             QMap<K,T> map;

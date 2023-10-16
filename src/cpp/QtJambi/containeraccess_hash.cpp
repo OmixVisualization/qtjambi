@@ -1511,7 +1511,7 @@ void AutoHashAccess::analyzeEntries(const void* container, EntryAnalyzer analyze
 }
 
 IsBiContainerFunction AutoHashAccess::getIsBiContainerFunction(){
-    return ContainerAPI::testQHash;
+    return ContainerAPI::getAsQHash;
 }
 
 size_t AutoHashAccess::sizeOf(){
@@ -1573,11 +1573,9 @@ bool AutoHashAccess::equal(const void* a, const void* b){
 
 jboolean AutoHashAccess::equal(JNIEnv *env, const void* container, jobject other)
 {
-    void* ptr;
+    void* ptr{nullptr};
     bool deleteSet = false;
-    if ((*getIsBiContainerFunction())(env, other, keyMetaType(), valueMetaType())) {
-        ptr = QtJambiAPI::convertJavaObjectToNative(env, other);
-    }else{
+    if (!(*getIsBiContainerFunction())(env, other, keyMetaType(), valueMetaType(), ptr)) {
         deleteSet = true;
         ptr = operator new(sizeOf());
         constructContainer(ptr);

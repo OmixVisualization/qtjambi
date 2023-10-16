@@ -68,7 +68,7 @@ struct IntermediateSequentialContainer : Container<T>{
     jobject m_object;
 };
 
-typedef bool (*IsContainerFunction)(JNIEnv *, jobject, const std::type_info&, const QMetaType&);
+typedef bool (*IsContainerFunction)(JNIEnv *, jobject, const std::type_info&, const QMetaType&, void*& pointer);
 
 template<typename Iterator>
 class QSequentialConstIteratorAccess : public AbstractConstIteratorAccess<Iterator>{
@@ -260,9 +260,7 @@ struct ContainerIntersects{
         std::unique_ptr<Container<T> > __qt_scoped_pointer;
         Container<T> *__qt_other_pointer = nullptr;
         if (other!= nullptr) {
-            if (isContainer(env, other, qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T))) {
-                __qt_other_pointer = QtJambiAPI::convertJavaObjectToNative<Container<T>>(env, other);
-            } else {
+            if (!isContainer(env, other, qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(__qt_other_pointer))) {
                 __qt_scoped_pointer.reset(new Container<T> ());
                 __qt_other_pointer = __qt_scoped_pointer.get();
                 jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, other);
@@ -286,9 +284,7 @@ struct ContainerIntersect{
         std::unique_ptr<Container<T> > __qt_scoped_pointer;
         Container<T> *__qt_other_pointer = nullptr;
         if (other!= nullptr) {
-            if (isContainer(env, other, qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T))) {
-                __qt_other_pointer = QtJambiAPI::convertJavaObjectToNative<Container<T>>(env, other);
-            } else {
+            if (!isContainer(env, other, qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(__qt_other_pointer))) {
                 __qt_scoped_pointer.reset(new Container<T> ());
                 __qt_other_pointer = __qt_scoped_pointer.get();
                 jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, other);
@@ -312,9 +308,7 @@ struct ContainerUnite{
         std::unique_ptr<Container<T> > __qt_scoped_pointer;
         Container<T> *__qt_other_pointer = nullptr;
         if (other!= nullptr) {
-            if (isContainer(env, other, qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T))) {
-                __qt_other_pointer = QtJambiAPI::convertJavaObjectToNative<Container<T>>(env, other);
-            } else {
+            if (!isContainer(env, other, qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(__qt_other_pointer))) {
                 __qt_scoped_pointer.reset(new Container<T> ());
                 __qt_other_pointer = __qt_scoped_pointer.get();
                 jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, other);
@@ -338,9 +332,7 @@ struct ContainerSubtract{
         std::unique_ptr<Container<T> > __qt_scoped_pointer;
         Container<T> *__qt_other_pointer = nullptr;
         if (other!= nullptr) {
-            if (isContainer(env, other, qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T))) {
-                __qt_other_pointer = QtJambiAPI::convertJavaObjectToNative<Container<T>>(env, other);
-            } else {
+            if (!isContainer(env, other, qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(__qt_other_pointer))) {
                 __qt_scoped_pointer.reset(new Container<T> ());
                 __qt_other_pointer = __qt_scoped_pointer.get();
                 jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, other);
@@ -484,9 +476,7 @@ struct ContainerEquals<Container, T, is_Container1_fct, true>{
         std::unique_ptr<Container<T> > __qt_scoped_pointer;
         Container<T> *__qt_other_pointer = nullptr;
         if (other!= nullptr) {
-            if (is_Container1_fct(env, other, qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T))) {
-                __qt_other_pointer = QtJambiAPI::convertJavaObjectToNative<Container<T>>(env, other);
-            } else {
+            if (!is_Container1_fct(env, other, qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(__qt_other_pointer))) {
                 __qt_scoped_pointer.reset(new Container<T> ());
                 __qt_other_pointer = __qt_scoped_pointer.get();
                 jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, other);
@@ -605,9 +595,7 @@ struct ContainerAppendList<T, true>{
         std::unique_ptr<QList<T> > __qt_scoped_pointer;
         QList<T> *__qt_object_pointer = nullptr;
         if (object!= nullptr) {
-            if (ContainerAPI::testQList<T>(env, object)) {
-                __qt_object_pointer = QtJambiAPI::convertJavaObjectToNative<QList<T>>(env, object);
-            } else {
+            if (!ContainerAPI::getAsQList<T>(env, object, __qt_object_pointer)) {
                 __qt_scoped_pointer.reset(new QList<T>());
                 __qt_object_pointer = __qt_scoped_pointer.get();
                 jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, object);
@@ -639,9 +627,7 @@ struct ContainerAppendVector<T, true>{
         std::unique_ptr<QVector<T> > __qt_scoped_pointer;
         QVector<T> *__qt_object_pointer = nullptr;
         if (object!= nullptr) {
-            if (ContainerAPI::testQVector(env, object, qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T))) {
-                __qt_object_pointer = QtJambiAPI::convertJavaObjectToNative<QVector<T>>(env, object);
-            } else {
+            if (!ContainerAPI::getAsQVector(env, object, qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(__qt_object_pointer))) {
                 __qt_scoped_pointer.reset(new QVector<T>());
                 __qt_object_pointer = __qt_scoped_pointer.get();
                 jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, object);
@@ -1034,7 +1020,7 @@ public:
     }
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
-        return ContainerEquals<QList, T, ContainerAPI::testQList>::function(env, container, other);
+        return ContainerEquals<QList, T, ContainerAPI::getAsQList>::function(env, container, other);
     }
 
     void move(JNIEnv * env, void*, jint, jint) override {
@@ -1284,7 +1270,7 @@ public:
     }
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
-        return ContainerEquals<QVector, T, ContainerAPI::testQVector>::function(env, container, other);
+        return ContainerEquals<QVector, T, ContainerAPI::getAsQVector>::function(env, container, other);
     }
 
     void move(JNIEnv * env, void*, jint, jint) override {
@@ -1528,7 +1514,7 @@ public:
     }
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
-        return ContainerEquals<QLinkedList, T, ContainerAPI::testQLinkedList>::function(env, container, other);
+        return ContainerEquals<QLinkedList, T, ContainerAPI::getAsQLinkedList>::function(env, container, other);
     }
 
     void prepend(JNIEnv * env, void*, jobject) override {
@@ -1714,11 +1700,11 @@ public:
     }
 
     jboolean intersects(JNIEnv * env, const void* container, jobject other) override {
-        return ContainerIntersects<QSet, T, ContainerAPI::testQSet>::function(env, container, other);
+        return ContainerIntersects<QSet, T, ContainerAPI::getAsQSet>::function(env, container, other);
     }
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
-        return ContainerEquals<QSet, T, ContainerAPI::testQSet>::function(env, container, other);
+        return ContainerEquals<QSet, T, ContainerAPI::getAsQSet>::function(env, container, other);
     }
 
     jboolean remove(JNIEnv * env, void*, jobject) override {
@@ -1778,7 +1764,7 @@ public:
         ContainerInsert<QSet, T>::function(env, container, value);
     }
     void intersect(JNIEnv * env, void* container, jobject other) override {
-        ContainerIntersect<QSet, T, ContainerAPI::testQSet>::function(env, container, other);
+        ContainerIntersect<QSet, T, ContainerAPI::getAsQSet>::function(env, container, other);
     }
     jboolean remove(JNIEnv * env, void* container, jobject value) override {
         return ContainerRemove<QSet, T>::function(env, container, value);
@@ -1787,10 +1773,10 @@ public:
         ContainerReserve<QSet, T>::function(env, container, newSize);
     }
     void subtract(JNIEnv * env, void* container, jobject other) override {
-        ContainerSubtract<QSet, T, ContainerAPI::testQSet>::function(env, container, other);
+        ContainerSubtract<QSet, T, ContainerAPI::getAsQSet>::function(env, container, other);
     }
     void unite(JNIEnv * env, void* container, jobject other) override {
-        ContainerUnite<QSet, T, ContainerAPI::testQSet>::function(env, container, other);
+        ContainerUnite<QSet, T, ContainerAPI::getAsQSet>::function(env, container, other);
     }
 };
 

@@ -2608,8 +2608,83 @@ bool ContainerAPI::testQ##NAME(JNIEnv *env, jobject mapObject, const std::type_i
     return ContainerAPI::testQ##NAME(env, mapObject, expectedKeyMetaType, expectedValueMetaType);\
 }
 
+#define GET_AS_COLLECTION1(NAME) \
+bool ContainerAPI::getAsQ##NAME(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer) {\
+    if(collection && expectedElementMetaType.isValid()){\
+        if(Java::QtCore::Q##NAME::isInstanceOf(env,collection)){\
+            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, collection)){\
+                if(Abstract##NAME##Access* containerAccess = dynamic_cast<Abstract##NAME##Access*>(link->containerAccess())){\
+                    if(containerAccess->elementMetaType()==expectedElementMetaType){\
+                        pointer = link->pointer();\
+                        return true;\
+                    }\
+                }\
+            }else\
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, collection).replace("$", ".")) QTJAMBI_STACKTRACEINFO );\
+        }else if(!env->IsInstanceOf(collection, Java::Runtime::Collection::getClass(env)))\
+            Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, collection).replace("$", "."), QtJambiAPI::getClassName(env, Java::Runtime::Collection::getClass(env)).replace("$", ".")) QTJAMBI_STACKTRACEINFO );\
+    }\
+    return false;\
+}
+
+#define GET_AS_COLLECTION2(NAME) \
+bool ContainerAPI::getAsQ##NAME(JNIEnv *env, jobject collection, const std::type_info&, const QMetaType& expectedElementMetaType, void* &pointer) {\
+        return ContainerAPI::getAsQ##NAME(env, collection, expectedElementMetaType, pointer);\
+}
+
+#define GET_AS_MAP1(NAME) \
+bool ContainerAPI::getAsQ##NAME(JNIEnv *env, jobject mapObject, const QMetaType& expectedKeyMetaType, const QMetaType& expectedValueMetaType, void* &pointer) {\
+    if(mapObject && expectedKeyMetaType.isValid() && expectedValueMetaType.isValid()){\
+        if(Java::QtCore::Q##NAME::isInstanceOf(env, mapObject)){\
+            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, mapObject)){\
+                if(Abstract##NAME##Access* containerAccess = dynamic_cast<Abstract##NAME##Access*>(link->containerAccess())){\
+                    if(containerAccess->keyMetaType()==expectedKeyMetaType && containerAccess->valueMetaType()==expectedValueMetaType){\
+                       pointer = link->pointer();\
+                       return true;\
+                    }\
+                }\
+            }else\
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, mapObject).replace("$", ".")) QTJAMBI_STACKTRACEINFO );\
+        }else if(!env->IsInstanceOf(mapObject, Java::Runtime::Map::getClass(env)))\
+            Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, mapObject).replace("$", "."), QtJambiAPI::getClassName(env, Java::Runtime::Map::getClass(env)).replace("$", ".")) QTJAMBI_STACKTRACEINFO );\
+    }\
+    return false;\
+}
+
+#define GET_AS_MAP2(NAME) \
+bool ContainerAPI::getAsQ##NAME(JNIEnv *env, jobject mapObject, const std::type_info&, const QMetaType& expectedKeyMetaType, const std::type_info&, const QMetaType& expectedValueMetaType, void* &pointer) {\
+        return ContainerAPI::getAsQ##NAME(env, mapObject, expectedKeyMetaType, expectedValueMetaType, pointer);\
+}
+
+#define GET_AS_MULTIMAP1(NAME) \
+bool ContainerAPI::getAsQ##NAME(JNIEnv *env, jobject mapObject, const QMetaType& expectedKeyMetaType, const QMetaType& expectedValueMetaType, void* &pointer) {\
+    if(mapObject && expectedKeyMetaType.isValid() && expectedValueMetaType.isValid()){\
+        if(Java::QtCore::Q##NAME::isInstanceOf(env, mapObject)){\
+            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, mapObject)){\
+                if(Abstract##NAME##Access* containerAccess = dynamic_cast<Abstract##NAME##Access*>(link->containerAccess())){\
+                    if(containerAccess->keyMetaType()==expectedKeyMetaType && containerAccess->valueMetaType()==expectedValueMetaType){\
+                        pointer = link->pointer();\
+                        return true;\
+                    }\
+                }\
+            }else\
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, mapObject).replace("$", ".")) QTJAMBI_STACKTRACEINFO );\
+        }else if(!env->IsInstanceOf(mapObject, Java::Runtime::Map::getClass(env)))\
+            Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, mapObject).replace("$", "."), QtJambiAPI::getClassName(env, Java::Runtime::Map::getClass(env)).replace("$", ".")) QTJAMBI_STACKTRACEINFO );\
+    }\
+    return false;\
+}
+
+#define GET_AS_MULTIMAP2(NAME) \
+bool ContainerAPI::getAsQ##NAME(JNIEnv *env, jobject mapObject, const std::type_info&, const QMetaType& expectedKeyMetaType, const std::type_info&, const QMetaType& expectedValueMetaType, void* &pointer) {\
+        return ContainerAPI::getAsQ##NAME(env, mapObject, expectedKeyMetaType, expectedValueMetaType, pointer);\
+}
+
 bool ContainerAPI::testQQueue(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType) {
     return ContainerAPI::testQList(env, collection, expectedElementMetaType);
+}
+bool ContainerAPI::getAsQQueue(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer) {
+    return ContainerAPI::getAsQList(env, collection, expectedElementMetaType, pointer);
 }
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 TEST_COLLECTION1(Vector)
@@ -2619,9 +2694,20 @@ TEST_COLLECTION2(LinkedList)
 bool ContainerAPI::testQStack(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType) {
     return ContainerAPI::testQVector(env, collection, expectedElementMetaType);
 }
+
+GET_AS_COLLECTION1(Vector)
+GET_AS_COLLECTION1(LinkedList)
+GET_AS_COLLECTION2(Vector)
+GET_AS_COLLECTION2(LinkedList)
+bool ContainerAPI::getAsQStack(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer) {
+    return ContainerAPI::getAsQVector(env, collection, expectedElementMetaType, pointer);
+}
 #else
 bool ContainerAPI::testQStack(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType) {
     return ContainerAPI::testQList(env, collection, expectedElementMetaType);
+}
+bool ContainerAPI::getAsQStack(JNIEnv *env, jobject collection, const QMetaType& expectedElementMetaType, void* &pointer) {
+    return ContainerAPI::getAsQList(env, collection, expectedElementMetaType,pointer);
 }
 #endif // QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 TEST_COLLECTION1(List)
@@ -2639,6 +2725,17 @@ TEST_MULTIMAP2(MultiHash)
 TEST_MAP2(Map)
 TEST_MAP2(Hash)
 
-#undef TEST_MAP
-
-#undef TEST_COLLECTION
+GET_AS_COLLECTION1(List)
+GET_AS_COLLECTION1(Set)
+GET_AS_MULTIMAP1(MultiMap)
+GET_AS_MULTIMAP1(MultiHash)
+GET_AS_MAP1(Map)
+GET_AS_MAP1(Hash)
+GET_AS_COLLECTION2(List)
+GET_AS_COLLECTION2(Set)
+GET_AS_COLLECTION2(Queue)
+GET_AS_COLLECTION2(Stack)
+GET_AS_MULTIMAP2(MultiMap)
+GET_AS_MULTIMAP2(MultiHash)
+GET_AS_MAP2(Map)
+GET_AS_MAP2(Hash)

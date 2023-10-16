@@ -201,9 +201,9 @@ struct qtjambi_jnitype_template1_cast<false, has_scope,
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
          std::unique_ptr<NativeType> list;
          if(in){
-             if (ContainerAPI::testQList<T>(env, in)) {
-                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
-                             env, scope, QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in));
+             NativeType* pointer{nullptr};
+             if (ContainerAPI::getAsQList<T>(env, in, pointer)) {
+                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
              }else{
                  list.reset(new NativeType());
                  jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
@@ -235,9 +235,9 @@ struct qtjambi_jnitype_template1_cast<false, has_scope,
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
          std::unique_ptr<NativeType> list;
          if(in){
-             if (ContainerAPI::testQList<T>(env, in)) {
-                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
-                             env, scope, QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in));
+             NativeType* pointer{nullptr};
+             if (ContainerAPI::getAsQList<T>(env, in, pointer)) {
+                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
              }else{
                  list.reset(new NativeType());
                  jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
@@ -268,9 +268,7 @@ struct qtjambi_jnitype_template1_cast<false, true,
             JavaException::raiseError(env, "Cannot cast to const QList<T>& without scope." QTJAMBI_STACKTRACEINFO );
         NativeType *list = nullptr;
         if (in) {
-            if (ContainerAPI::testQList<T>(env, in)) {
-                list = QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in);
-            } else {
+            if (!ContainerAPI::getAsQList<T>(env, in, list)) {
                 if(is_const){
                     list = new NativeType();
                     scope->addDeletion(list);
@@ -327,9 +325,9 @@ struct qtjambi_jnitype_template1_cast<false, has_scope,
      static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
          std::unique_ptr<NativeType> list;
          if(in){
-             if (ContainerAPI::testQSet<T>(env, in)) {
-                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
-                             env, scope, QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in));
+             NativeType* pointer{nullptr};
+             if (ContainerAPI::getAsQSet<T>(env, in, pointer)) {
+                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
              }else{
                  list.reset(new NativeType());
                  jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
@@ -361,9 +359,9 @@ struct qtjambi_jnitype_template1_cast<false, has_scope,
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
          std::unique_ptr<NativeType> list;
          if(in){
-             if (ContainerAPI::testQSet<T>(env, in)) {
-                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
-                             env, scope, QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in));
+             NativeType* pointer{nullptr};
+             if (ContainerAPI::getAsQSet<T>(env, in, pointer)) {
+                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
              }else{
                  list.reset(new NativeType());
                  jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
@@ -394,9 +392,7 @@ struct qtjambi_jnitype_template1_cast<false, true,
              JavaException::raiseError(env, "Cannot cast to const QSet<T>& without scope." QTJAMBI_STACKTRACEINFO );
          NativeType *list = nullptr;
          if (in) {
-             if (ContainerAPI::testQSet<T>(env, in)) {
-                 list = QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in);
-             } else {
+             if (!ContainerAPI::getAsQSet<T>(env, in, list)) {
                  if(is_const){
                      list = new NativeType();
                      scope->addDeletion(list);
@@ -455,9 +451,9 @@ struct qtjambi_jnitype_template1_cast<false, has_scope,
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
          std::unique_ptr<NativeType> list;
          if(in){
-             if (ContainerAPI::testQLinkedList<T>(env, in)) {
-                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
-                             env, scope, QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in));
+             NativeType* pointer{nullptr};
+             if (ContainerAPI::getAsQLinkedList<T>(env, in, pointer)) {
+                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
              }else{
                  list.reset(new NativeType());
                  jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
@@ -489,9 +485,9 @@ struct qtjambi_jnitype_template1_cast<false, has_scope,
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
          std::unique_ptr<NativeType> list;
          if(in){
-             if (ContainerAPI::testQLinkedList<T>(env, in)) {
-                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
-                             env, scope, QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in));
+             NativeType* pointer{nullptr};
+             if (ContainerAPI::getAsQLinkedList<T>(env, in, pointer)) {
+                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
              }else{
                  list.reset(new NativeType());
                  jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
@@ -522,9 +518,7 @@ struct qtjambi_jnitype_template1_cast<false, true,
              JavaException::raiseError(env, "Cannot cast to const QLinkedList<T>& without scope." QTJAMBI_STACKTRACEINFO );
          NativeType *list = nullptr;
          if (in) {
-             if (ContainerAPI::testQLinkedList<T>(env, in)) {
-                 list = QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in);
-             } else {
+             if (!ContainerAPI::getAsQLinkedList<T>(env, in, list)) {
                  if(is_const){
                      list = new NativeType();
                      scope->addDeletion(list);
@@ -586,9 +580,9 @@ struct qtjambi_jnitype_template1_cast<false, has_scope,
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
          std::unique_ptr<NativeType> list;
          if(in){
-             if (ContainerAPI::testQVector<T>(env, in)) {
-                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
-                             env, scope, QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in));
+             NativeType* pointer{nullptr};
+             if (ContainerAPI::getAsQVector<T>(env, in, pointer)) {
+                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
              }else{
                  list.reset(new NativeType());
                  jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
@@ -622,9 +616,9 @@ struct qtjambi_jnitype_template1_cast<false, has_scope,
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
          std::unique_ptr<NativeType> list;
          if(in){
-             if (ContainerAPI::testQVector<T>(env, in)) {
-                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
-                             env, scope, QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in));
+             NativeType* pointer{nullptr};
+             if (ContainerAPI::getAsQVector<T>(env, in, pointer)) {
+                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
              }else{
                  list.reset(new NativeType());
                  jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
@@ -657,9 +651,7 @@ struct qtjambi_jnitype_template1_cast<false, true,
              JavaException::raiseError(env, "Cannot cast to const QVector<T>& without scope." QTJAMBI_STACKTRACEINFO );
          NativeType *list = nullptr;
          if (in) {
-             if (ContainerAPI::testQVector<T>(env, in)) {
-                 list = QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in);
-             } else {
+             if (!ContainerAPI::getAsQVector<T>(env, in, list)) {
                  if(is_const){
                      list = new NativeType();
                      scope->addDeletion(list);
@@ -732,9 +724,9 @@ struct qtjambi_jnitype_template1_cast<false, has_scope,
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
          std::unique_ptr<NativeType> list;
          if(in){
-             if (ContainerAPI::testQStack<T>(env, in)) {
-                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
-                             env, scope, QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in));
+             NativeType* pointer{nullptr};
+             if (ContainerAPI::getAsQStack<T>(env, in, pointer)) {
+                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
              }else{
                  list.reset(new NativeType());
                  jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
@@ -768,9 +760,9 @@ struct qtjambi_jnitype_template1_cast<false, has_scope,
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
          std::unique_ptr<NativeType> list;
          if(in){
-             if (ContainerAPI::testQStack<T>(env, in)) {
-                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
-                             env, scope, QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in));
+             NativeType* pointer{nullptr};
+             if (ContainerAPI::getAsQStack<T>(env, in, pointer)) {
+                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
              }else{
                  list.reset(new NativeType());
                  jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
@@ -803,9 +795,7 @@ struct qtjambi_jnitype_template1_cast<false, true,
             JavaException::raiseError(env, "Cannot cast to const QStack<T>& without scope." QTJAMBI_STACKTRACEINFO );
         QStack<T> *list = nullptr;
         if (in) {
-            if (ContainerAPI::testQStack<T>(env, in)) {
-                list = QtJambiAPI::convertJavaObjectToNative<QStack<T>>(env, in);
-            } else {
+            if (!ContainerAPI::getAsQStack<T>(env, in, list)) {
                 if(is_const){
                     list = new QStack<T>();
                     scope->addDeletion(list);
@@ -864,9 +854,9 @@ struct qtjambi_jnitype_template1_cast<false, has_scope,
      static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
          std::unique_ptr<NativeType> list;
          if(in){
-             if (ContainerAPI::testQQueue<T>(env, in)) {
-                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
-                             env, scope, QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in));
+             NativeType* pointer{nullptr};
+             if (ContainerAPI::getAsQQueue<T>(env, in, pointer)) {
+                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
              }else{
                  list.reset(new NativeType());
                  jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
@@ -898,9 +888,9 @@ struct qtjambi_jnitype_template1_cast<false, has_scope,
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
          std::unique_ptr<NativeType> list;
          if(in){
-             if (ContainerAPI::testQQueue<T>(env, in)) {
-                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(
-                             env, scope, QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in));
+             NativeType* pointer{nullptr};
+             if (ContainerAPI::getAsQQueue<T>(env, in, pointer)) {
+                 return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
              }else{
                  list.reset(new NativeType());
                  jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
@@ -931,9 +921,7 @@ struct qtjambi_jnitype_template1_cast<false, true,
              JavaException::raiseError(env, "Cannot cast to const QQueue<T>& without scope." QTJAMBI_STACKTRACEINFO );
          NativeType *list = nullptr;
          if (in) {
-             if (ContainerAPI::testQQueue<T>(env, in)) {
-                 list = QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in);
-             } else {
+             if (!ContainerAPI::getAsQQueue<T>(env, in, list)) {
                  if(is_const){
                      list = new NativeType();
                      scope->addDeletion(list);

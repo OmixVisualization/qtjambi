@@ -34,6 +34,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.core.QObject;
+import io.qt.core.QTimer;
+import io.qt.widgets.QDialog;
 import io.qt.widgets.QWidget;
 
 public class TestWidgets extends ApplicationInitializer {
@@ -50,5 +52,16 @@ public class TestWidgets extends ApplicationInitializer {
     	widgetAsObject.setParent(parentWidget);
     	Assert.assertEquals(parentWidget, widget.parent());
     	Assert.assertEquals(parentWidget, widget.parentWidget());
+    }
+    
+    static class Dialog extends QDialog{
+    }
+    
+    @Test
+    public void testWIdgetStyleSheet() {
+    	Dialog dialog = new Dialog();
+    	dialog.setStyleSheet(Dialog.class.getName().replaceAll("\\.|\\$", "--")+" { background-color: red }");
+    	QTimer.singleShot(500, dialog::accept);
+    	dialog.exec();
     }
 }

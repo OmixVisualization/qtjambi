@@ -589,7 +589,7 @@ void AutoMapAccess::analyzeEntries(const void* container, EntryAnalyzer analyzer
 }
 
 IsBiContainerFunction AutoMapAccess::getIsBiContainerFunction(){
-    return ContainerAPI::testQMap;
+    return ContainerAPI::getAsQMap;
 }
 
 bool AutoMapAccess::equal(const void* a, const void* b){
@@ -626,11 +626,9 @@ bool AutoMapAccess::equal(const void* a, const void* b){
 jboolean AutoMapAccess::equal(JNIEnv *env, const void* container, jobject other)
 {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    if ((*getIsBiContainerFunction())(env, other, keyMetaType(), valueMetaType())) {
-        if(void* ptr = QtJambiAPI::convertJavaObjectToNative(env, other)){
-            return equal(container, ptr);
-        }
-        return false;
+    void* ptr{nullptr};
+    if ((*getIsBiContainerFunction())(env, other, keyMetaType(), valueMetaType(), ptr)) {
+        return equal(container, ptr);
     }else{
         QMapDataBase *const* map = reinterpret_cast<QMapDataBase *const*>(container);
         QMapDataBase* d = *map;

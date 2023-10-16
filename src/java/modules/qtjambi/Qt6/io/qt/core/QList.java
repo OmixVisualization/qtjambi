@@ -1110,4 +1110,13 @@ public class QList<T> extends AbstractList<T> implements Cloneable
         QMetaType metaType = QMetaType.fromType(objClass);
         return metaType;
     }
+	
+	public QList<T> reversed(){
+		QList<T> result = new QList<>(elementMetaType());
+		result.reserve(size());
+		for(T t : this) {
+			result.add(0, t);
+		}
+    	return result;
+    }
 }

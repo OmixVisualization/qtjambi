@@ -205,6 +205,15 @@ public class QStack<T> extends QVector<T> implements Deque<T>
         return last();
     }
     
+    public final QStack<T> reversed(){
+    	QStack<T> result = new QStack<>(elementMetaType());
+    	result.reserve(size());
+		for(T t : this) {
+			result.add(0, t);
+		}
+    	return result;
+    }
+    
     /**
      * Returns a QStack containing given elements.
      *

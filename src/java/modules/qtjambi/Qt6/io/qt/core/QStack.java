@@ -314,6 +314,15 @@ public class QStack<T> extends QList<T> implements Deque<T>
         return takeLast();
     }
     
+    public final QStack<T> reversed(){
+    	QStack<T> result = new QStack<>(elementMetaType());
+    	result.reserve(size());
+		for(T t : this) {
+			result.add(0, t);
+		}
+    	return result;
+    }
+    
     /**
      * Returns a QStack containing given elements.
      *

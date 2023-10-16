@@ -166,11 +166,10 @@ public:
     }
 
     void appendList(JNIEnv * env, void* container, jobject list) override {
-        if (ContainerAPI::testQList(env, list, elementMetaType())) {
-            if(QList<T>* ptr = QtJambiAPI::convertJavaObjectToNative<QList<T>>(env, list)){
-                QTJAMBI_ELEMENT_LOCKER
-                reinterpret_cast<QList<T> *>(container)->append(*ptr);
-            }
+        void* ptr{nullptr};
+        if (ContainerAPI::getAsQList(env, list, elementMetaType(), ptr)) {
+            QTJAMBI_ELEMENT_LOCKER
+            reinterpret_cast<QList<T> *>(container)->append(*reinterpret_cast<QList<T> *>(ptr));
         }else{
             jint idx = size(env, container);
             jobject iter = QtJambiAPI::iteratorOfJavaCollection(env, list);
@@ -313,11 +312,10 @@ public:
     }
 
     jboolean equal(JNIEnv * env, const void* container, jobject other) override {
-        if (ContainerAPI::testQList(env, other, elementMetaType())) {
-            if(QList<T>* ptr = QtJambiAPI::convertJavaObjectToNative<QList<T>>(env, other)){
-                QTJAMBI_ELEMENT_LOCKER
-                return *reinterpret_cast<const QList<T> *>(container)==*ptr;
-            }
+        void* ptr{nullptr};
+        if (ContainerAPI::getAsQList(env, other, elementMetaType(), ptr)) {
+            QTJAMBI_ELEMENT_LOCKER
+            return *reinterpret_cast<const QList<T> *>(container)==*reinterpret_cast<const QList<T> *>(ptr);
         }else{
             QTJAMBI_ELEMENT_LOCKER
             QList<T> list;

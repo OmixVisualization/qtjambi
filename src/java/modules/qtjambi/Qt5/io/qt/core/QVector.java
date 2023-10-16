@@ -560,7 +560,15 @@ public class QVector<T> extends AbstractList<T> implements java.util.List<T>, Cl
         }
         return false;
     }
-
+	
+	public QVector<T> reversed(){
+		QVector<T> result = new QVector<>(elementMetaType());
+		result.reserve(size());
+		for(T t : this) {
+			result.add(0, t);
+		}
+    	return result;
+    }
 
     /**
      * Returns the objects's hash code computed by <code>qHash(QVector&lt;T>)</code>.
