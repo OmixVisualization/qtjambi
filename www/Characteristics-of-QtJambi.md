@@ -260,7 +260,7 @@ garbage collection cares for it.
 
 `QObject` parenthood avoids the garbage collection to delete the child
 objects of a parent even if no more references to a child exist in Java.
-*You need to manage the life cycle of parented `QObject` instances manually wherever the parent outlasts the child's life time.*
+**You need to manage the life cycle of parented `QObject` instances manually wherever the parent outlasts the child's life time.**
 Therfore, use `dispose()` or `disposeLater()`. This is especially required
 for `QDialog` because dialogs are usually created with the main window as parent
 which avoids deletion even when Java has no more reference.
