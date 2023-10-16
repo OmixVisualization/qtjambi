@@ -790,7 +790,7 @@
                             <then>
                                 <antcall target="run.test">
                                     <param name="jdk-exec-version" value="arm64"/>
-                                    <param name="jdk-exec-os" value="mac-arm64"/>
+                                    <param name="jdk-exec-os" value="${qtjambi.osname}-arm64"/>
                                     <param name="kind"          value="release"/>
                                     <param name="dbgsuffix"          value=""/>
                                 </antcall>
@@ -801,7 +801,7 @@
                             <then>
                                 <antcall target="run.test">
                                     <param name="jdk-exec-version" value="x64"/>
-                                    <param name="jdk-exec-os" value="mac-x64"/>
+                                    <param name="jdk-exec-os" value="${qtjambi.osname}-x64"/>
                                     <param name="kind"          value="release"/>
                                     <param name="dbgsuffix"          value=""/>
                                 </antcall>
@@ -836,7 +836,7 @@
                             <then>
                                 <antcall target="run.test">
                                     <param name="jdk-exec-version" value="arm64"/>
-									<param name="jdk-exec-os" value="mac-arm64"/>
+									<param name="jdk-exec-os" value="${qtjambi.osname}-arm64"/>
                                     <param name="kind"          value="debug"/>
                                     <param name="dbgsuffix"          value="_debug"/>
                                 </antcall>
@@ -847,7 +847,7 @@
                             <then>
                                 <antcall target="run.test">
                                     <param name="jdk-exec-version" value="x64"/>
-                                    <param name="jdk-exec-os" value="mac-x64"/>
+                                    <param name="jdk-exec-os" value="${qtjambi.osname}-x64"/>
                                     <param name="kind"          value="debug"/>
                                     <param name="dbgsuffix"          value="_debug"/>
                                 </antcall>
