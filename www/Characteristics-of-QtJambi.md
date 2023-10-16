@@ -265,7 +265,7 @@ Therfore, use `dispose()` or `disposeLater()`. This is especially required
 for `QDialog` because dialogs are usually created with the main window as parent
 which avoids deletion even when Java has no more reference.
 
-### Intelligent Pointer Types
+### Smart Pointers
 
   - `QPointer` is a strong reference to any Qt object whereas
     `QPointer.get()` returns `null` as soon as the referenced object is
