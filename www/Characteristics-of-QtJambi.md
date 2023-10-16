@@ -249,7 +249,7 @@ object. The native C++ object is created immediately when the Java
 object is created. The C++ object exists as long as the Java object
 exists unless it is deleted by Qt internal mechanisms.
 
-If the C++ object is deleted proir to the Java object, the Java object
+If the C++ object is deleted prior to the Java object, the Java object
 is *disposed*, i.e. it does no longer provide a native resource. Calling
 any method on the object will throw a `QNoNativeResourcesException`. You
 can check if an object is disposed by `isDisposed()`.
@@ -258,8 +258,12 @@ You can actively delete the native C++ object by calling `dispose()`.
 Usually, you don't have to care about object deletion because the Java
 garbage collection cares for it.
 
-QObject parenthood avoids the garbage collection to delete the child
+`QObject` parenthood avoids the garbage collection to delete the child
 objects of a parent even if no more references to a child exist in Java.
+*You need to manage the life cycle of parented `QObject` instances manually wherever the parent outlasts the child's life time.*
+Therfore, use `dispose()` or `disposeLater()`. This is especially required
+for `QDialog` because dialogs are usually created with the main window as parent
+which avoids deletion even when Java has no more reference.
 
 ### Intelligent Pointer Types
 
