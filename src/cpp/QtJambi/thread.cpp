@@ -63,6 +63,10 @@ QT_WARNING_DISABLE_DEPRECATED
 #include <stdio.h>
 #include <string.h>
 
+#if defined(Q_OS_LINUX)
+#include <sys/syscall.h>
+#endif
+
 #include "qtjambi_cast.h"
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -83,7 +87,7 @@ QThreadUserData::QThreadUserData(QThread* thread):
 {
     if(QCoreApplicationPrivate::theMainThread.loadRelaxed() == thread){
 #if defined(Q_OS_LINUX)
-        m_threadType = quintptr(gettid()) == quintptr(getpid()) ? ProcessMainThread : VirtualMainThread;
+        m_threadType = quintptr(syscall(SYS_gettid)) == quintptr(getpid()) ? ProcessMainThread : VirtualMainThread;
 #elif defined(Q_OS_MACOS)
         m_threadType = pthread_main_np() ? ProcessMainThread : VirtualMainThread;
 #elif defined(Q_OS_WIN)
