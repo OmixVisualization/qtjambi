@@ -168,12 +168,12 @@ bool testQLinkedList(JNIEnv *env, jobject collection){
 
 template<typename T>
 bool getAsQLinkedList(JNIEnv *env, jobject collection, QLinkedList<T> * &pointer){
-    return testQLinkedList(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
+    return getAsQLinkedList(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
 }
 
 template<typename T>
 bool getAsQVector(JNIEnv *env, jobject collection, QVector<T> * &pointer){
-    return testQVector(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
+    return getAsQVector(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
 }
 #endif
 
@@ -222,10 +222,32 @@ bool getAsQStack(JNIEnv *env, jobject collection, QStack<T> * &pointer){
     return getAsQStack(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+template<typename T>
+struct AsList{
+    typedef QList<T> Type1;
+};
+
+template<>
+struct AsList<QString>{
+    typedef QStringList Type1;
+    typedef QList<QString> Type2;
+};
+
+template<typename T>
+bool getAsQList(JNIEnv *env, jobject collection, typename AsList<T>::Type1 * &pointer){
+    return getAsQList(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
+}
+template<typename T>
+bool getAsQList(JNIEnv *env, jobject collection, typename AsList<T>::Type2 * &pointer){
+    return getAsQList(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
+}
+#else
 template<typename T>
 bool getAsQList(JNIEnv *env, jobject collection, QList<T> * &pointer){
     return getAsQList(env, collection, QtJambiPrivate::qtjambi_type<T>::id(), QTJAMBI_METATYPE_FROM_TYPE2(T), reinterpret_cast<void*&>(pointer));
 }
+#endif
 
 template<typename T>
 bool getAsQSet(JNIEnv *env, jobject collection, QSet<T> * &pointer){
