@@ -1755,7 +1755,28 @@ class ComplexTypeEntry : public TypeEntry {
         void setHasPureVirtualFunctions(bool nonPrivate = true){
             m_functionAttributes.setFlag(nonPrivate ? HasPureVirtuals : HasPrivatePureVirtuals);
         }
-protected:
+
+        const QStringList& implicitCasts() const {
+            return m_implicitCasts;
+        }
+
+        void addImplicitCast(const QString& cast){
+            m_implicitCasts.append(cast);
+        }
+
+        template<typename Type>
+        const QList<Type*>& declImplicitCasts() const {
+            return *reinterpret_cast<const QList<Type*>*>(&m_declImplicitCasts);
+        }
+
+        template<typename Type>
+        void addDeclImplicitCast(Type* cast){
+            m_declImplicitCasts.append(cast);
+        }
+        bool getNoImplicitConstructors() const;
+        void setNoImplicitConstructors(bool newNoImplicitConstructors);
+
+    protected:
         enum ComplexAttributeFlag{
             IsQObject = 0x01,
             IsQWidget = 0x02,
@@ -1835,6 +1856,9 @@ private:
         QMap<QString,QString> m_delegatedBaseClasses;
         QMap<QStringList,const ComplexTypeEntry*> m_instantiations;
         QString m_extendType;
+        QList<void*> m_declImplicitCasts;
+        QStringList m_implicitCasts;
+        bool noImplicitConstructors = false;
         friend GeneratorApplication;
         friend class FunctionalTypeEntry;
 };
@@ -2123,7 +2147,6 @@ class ContainerTypeEntry : public ComplexTypeEntry {
     public:
         enum Type {
             NoContainer,
-            InitializerListContainer,
             ListContainer,
             StringListContainer,
             ByteArrayListContainer,
@@ -2150,7 +2173,9 @@ class ContainerTypeEntry : public ComplexTypeEntry {
             QPropertyBindingContainer,
             std_atomic,
             std_optional,
-            std_vector
+            std_vector,
+            std_chrono,
+            std_chrono_template
         };
 
         ContainerTypeEntry(const QString &name, Type type);

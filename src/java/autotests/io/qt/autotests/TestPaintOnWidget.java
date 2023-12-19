@@ -67,6 +67,7 @@ public class TestPaintOnWidget extends ApplicationInitializer{
     		assertFalse(painter2.begin(device));
     	}finally {
     		painter.end();
+    		device.dispose();
     	}
     }
 	
@@ -132,12 +133,15 @@ public class TestPaintOnWidget extends ApplicationInitializer{
     	    	t.start();
     	    	t.join();
     	    	loop.quit();
+    	    	t.dispose();
     		}
     	};
     	widget.setVisible(true);
-    	QTimer.singleShot(5000, loop::quit);
+    	QTimer.singleShot(15000, loop::quit);
     	loop.exec();
     	widget.setVisible(false);
+    	widget.dispose();
+    	loop.dispose();
     	if(exn[0]!=null)
     		throw exn[0];
     }
@@ -145,27 +149,32 @@ public class TestPaintOnWidget extends ApplicationInitializer{
     @Test(expected=QThreadAffinityException.class)
     public void testPaintingInThreadViaBegin() {
     	QThreadAffinityException[] exn = {null};
-    	QEventLoop loop = new QEventLoop();
-    	QWidget widget = new QWidget() {
-    		@Override
-			protected void paintEvent(QPaintEvent event) {
-    	    	QThread t = QThread.create(()->{
-    	    		QPainter painter = new QPainter();
-    	    		try {
-    	    			painter.begin(this);
-    				} catch (QThreadAffinityException e) {
-    					exn[0] = e;
-    				}
-    	    	});
-    	    	t.start();
-    	    	t.join();
-    	    	loop.quit();
-    		}
-    	};
-    	widget.setVisible(true);
-    	QTimer.singleShot(5000, loop::quit);
-    	loop.exec();
-    	widget.setVisible(false);
+    	{
+	    	QEventLoop loop = new QEventLoop();
+	    	QWidget widget = new QWidget() {
+	    		@Override
+				protected void paintEvent(QPaintEvent event) {
+	    	    	QThread t = QThread.create(()->{
+	    	    		QPainter painter = new QPainter();
+	    	    		try {
+	    	    			painter.begin(this);
+	    				} catch (QThreadAffinityException e) {
+	    					exn[0] = e;
+	    				}
+	    	    	});
+	    	    	t.start();
+	    	    	t.join();
+	    	    	loop.quit();
+	    	    	t.dispose();
+	    		}
+	    	};
+	    	widget.setVisible(true);
+	    	QTimer.singleShot(15000, loop::quit);
+	    	loop.exec();
+	    	widget.setVisible(false);
+	    	widget.dispose();
+	    	loop.dispose();
+	    }
     	ApplicationInitializer.runGC();
     	if(exn[0]!=null)
     		throw exn[0];
@@ -183,9 +192,11 @@ public class TestPaintOnWidget extends ApplicationInitializer{
     		}
     	};
     	widget.setVisible(true);
-    	QTimer.singleShot(5000, loop::quit);
+    	QTimer.singleShot(15000, loop::quit);
     	loop.exec();
-    }
+    	widget.dispose();
+    	loop.dispose();
+	}
     
     @Test
     public void testPaintingInsideViaConstructor() {
@@ -202,12 +213,17 @@ public class TestPaintOnWidget extends ApplicationInitializer{
 			}
     	};
     	widget.setVisible(true);
-    	QTimer.singleShot(5000, loop::quit);
+    	QTimer.singleShot(15000, loop::quit);
     	loop.exec();
     	widget.setVisible(false);
-    	assertTrue(activePainter[0]!=null);
-    	assertTrue(activePainter[0].isDisposed());
-    }
+    	try {
+	    	assertTrue(activePainter[0]!=null);
+	    	assertTrue(activePainter[0].isDisposed());
+    	}finally {
+	    	widget.dispose();
+	    	loop.dispose();
+    	}
+	}
     
     @Test
     public void testPaintingInsideViaBegin() {
@@ -225,12 +241,17 @@ public class TestPaintOnWidget extends ApplicationInitializer{
 			}
     	};
     	widget.setVisible(true);
-    	QTimer.singleShot(5000, loop::quit);
+    	QTimer.singleShot(15000, loop::quit);
     	loop.exec();
     	widget.setVisible(false);
-    	assertTrue(activePainter[0]!=null);
-    	assertTrue(activePainter[0].isDisposed());
-    }
+    	try {
+	    	assertTrue(activePainter[0]!=null);
+	    	assertTrue(activePainter[0].isDisposed());
+    	}finally {
+	    	widget.dispose();
+	    	loop.dispose();
+    	}
+	}
     
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestPaintOnWidget.class.getName());

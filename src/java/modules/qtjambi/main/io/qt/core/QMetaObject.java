@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -6505,17 +6506,23 @@ public final class QMetaObject {
      */
     public static abstract class AbstractSignal extends CoreUtility.AbstractSignal implements Signal {
         
-        AbstractSignal(){}
+    	AbstractSignal(){
+        	super();
+        }
+        
+        AbstractSignal(Consumer<Object[]> argumentTest){
+			super(argumentTest);
+		}
     
-        AbstractSignal(Class<?>[] types) {
-            super(types);
+        AbstractSignal(Class<?> declaringClass) {
+            super(declaringClass);
         }
         
         AbstractSignal(Class<?> declaringClass, boolean isDisposedSignal) {
             super(declaringClass, isDisposedSignal);
         }
         
-        AbstractSignal(@StrictNonNull String signalName, Class<?>[] types) {
+        AbstractSignal(@StrictNonNull String signalName, Class<?>... types) {
             super(signalName, types);
         }
         
@@ -6534,12 +6541,12 @@ public final class QMetaObject {
          * @throws java.lang.RuntimeException Raised if the signal object could not be successfully introspected or if the
          *                                    signatures of the signal and slot are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Object receiver, @StrictNonNull String method, Qt.@NonNull ConnectionType @NonNull... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Object receiver, @StrictNonNull String method, Qt.@NonNull ConnectionType @NonNull... connectionType) {
             if (receiver == null)
                 throw new NullPointerException("Receiver must be non-null");
             if (method == null)
                 throw new NullPointerException("Slot must be non-null");
-            return addConnection(receiver, method, type);
+            return addConnection(receiver, method, connectionType);
         }
     
         /**
@@ -7118,21 +7125,125 @@ public final class QMetaObject {
     }
 
     /**
+     * An interface for testing signal emits with one argument.
+     * @param <A> The type of the first argument.
+     */
+    public static interface ArgChecker1<A>{
+        public void check(A a);
+    }
+
+    /**
+     * An interface for testing signal emits with two arguments.
+     * @param <A> The type of the first argument.
+     * @param <B> The type of the second argument.
+     */
+    public static interface ArgChecker2<A,B>{
+        public void check(A a, B b);
+    }
+    
+    /**
+     * An interface for testing signal emits with three arguments.
+     * @param <A> The type of the first argument.
+     * @param <B> The type of the second argument.
+     * @param <C> The type of the third argument.
+     */
+    public static interface ArgChecker3<A,B,C>{
+        public void check(A a, B b, C c);
+    }
+    
+    /**
+     * An interface for testing signal emits with four arguments.
+     * @param <A> The type of the first argument.
+     * @param <B> The type of the second argument.
+     * @param <C> The type of the third argument.
+     * @param <D> The type of the fourth argument.
+     */
+    public static interface ArgChecker4<A,B,C,D>{
+        public void check(A a, B b, C c, D d);
+    }
+    
+    /**
+     * An interface for testing signal emits with five arguments.
+     * @param <A> The type of the first argument.
+     * @param <B> The type of the second argument.
+     * @param <C> The type of the third argument.
+     * @param <D> The type of the fourth argument.
+     * @param <E> The type of the fifth argument.
+     */
+    public static interface ArgChecker5<A,B,C,D,E>{
+        public void check(A a, B b, C c, D d, E e);
+    }
+    
+    /**
+     * An interface for testing signal emits with six arguments.
+     * @param <A> The type of the first argument.
+     * @param <B> The type of the second argument.
+     * @param <C> The type of the third argument.
+     * @param <D> The type of the fourth argument.
+     * @param <E> The type of the fifth argument.
+     * @param <F> The type of the sixth argument.
+     */
+    public static interface ArgChecker6<A,B,C,D,E,F>{
+        public void check(A a, B b, C c, D d, E e, F f);
+    }
+    
+    /**
+     * An interface for testing signal emits with seven arguments.
+     * @param <A> The type of the first argument.
+     * @param <B> The type of the second argument.
+     * @param <C> The type of the third argument.
+     * @param <D> The type of the fourth argument.
+     * @param <E> The type of the fifth argument.
+     * @param <F> The type of the sixth argument.
+     * @param <G> The type of the seventh argument.
+     */
+    public static interface ArgChecker7<A,B,C,D,E,F,G>{
+        public void check(A a, B b, C c, D d, E e, F f, G g);
+    }
+    
+    /**
+     * An interface for testing signal emits with eight arguments.
+     * @param <A> The type of the first argument.
+     * @param <B> The type of the second argument.
+     * @param <C> The type of the third argument.
+     * @param <D> The type of the fourth argument.
+     * @param <E> The type of the fifth argument.
+     * @param <F> The type of the sixth argument.
+     * @param <G> The type of the seventh argument.
+     * @param <H> The type of the eighth argument.
+     */
+    public static interface ArgChecker8<A,B,C,D,E,F,G,H>{
+        public void check(A a, B b, C c, D d, E e, F f, G g, H h);
+    }
+    
+    /**
+     * An interface for testing signal emits with nine arguments.
+     * @param <A> The type of the first argument.
+     * @param <B> The type of the second argument.
+     * @param <C> The type of the third argument.
+     * @param <D> The type of the fourth argument.
+     * @param <E> The type of the fifth argument.
+     * @param <F> The type of the sixth argument.
+     * @param <G> The type of the seventh argument.
+     * @param <H> The type of the eighth argument.
+     * @param <I> The type of the ninth argument.
+     */
+    public static interface ArgChecker9<A,B,C,D,E,F,G,H,I>{
+        public void check(A a, B b, C c, D d, E e, F f, G g, H h, I i);
+    }
+
+    /**
      * Supertype for parameterless signals.
      */
     public static abstract class AbstractPrivateSignal0 extends AbstractSignal {
         AbstractPrivateSignal0(){super();}
         
         AbstractPrivateSignal0(Class<?> declaringClass) {
-            super(declaringClass, false);
+            super(declaringClass);
         }
         
-        AbstractPrivateSignal0(Class<?>... types) {
-            super(types);
-        }
-        
-        AbstractPrivateSignal0(@StrictNonNull String signalName, Class<?>... types) {
-            super(signalName, types);
+        AbstractPrivateSignal0(@StrictNonNull String signalName) {
+            super(signalName, new Class<?>[0]);
         }
     
         /**
@@ -7143,8 +7254,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -7165,8 +7276,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable0 signal, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSignalObject((AbstractSignal)signal, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable0 signal, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSignalObject((AbstractSignal)signal, connectionType);
         }
     
         /**
@@ -7186,18 +7297,21 @@ public final class QMetaObject {
      */
     public static abstract class AbstractPrivateSignal1<A> extends AbstractSignal {
         
-        AbstractPrivateSignal1(){super();}
+        AbstractPrivateSignal1(){
+        	super();
+    	}
+        
+        @SuppressWarnings("unchecked")
+		AbstractPrivateSignal1(@StrictNonNull ArgChecker1<A> argumentTest){
+        	super((array)->argumentTest.check((A)array[0]));
+    	}
         
         AbstractPrivateSignal1(Class<?> declaringClass) {
-            super(declaringClass, false);
+            super(declaringClass);
         }
         
-        AbstractPrivateSignal1(Class<?>... types) {
-            super(types);
-        }
-        
-        AbstractPrivateSignal1(@StrictNonNull String signalName, Class<?>... types) {
-            super(signalName, types);
+        AbstractPrivateSignal1(@StrictNonNull String signalName, Class<A> typeA) {
+            super(signalName, typeA);
         }
     
         /**
@@ -7208,8 +7322,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -7220,8 +7334,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
         
         /**
@@ -7252,8 +7366,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable1<? super A> signal, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSignalObject((AbstractSignal)signal, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable1<? super A> signal, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSignalObject((AbstractSignal)signal, connectionType);
         }
         
         /**
@@ -7275,17 +7389,18 @@ public final class QMetaObject {
     public static abstract class AbstractPrivateSignal2<A, B> extends AbstractSignal {
         
         AbstractPrivateSignal2(){super();}
+        
+        @SuppressWarnings("unchecked")
+		AbstractPrivateSignal2(@StrictNonNull ArgChecker2<A,B> argumentTest){
+        	super((array)->argumentTest.check((A)array[0], (B)array[1]));
+    	}
     
         AbstractPrivateSignal2(Class<?> declaringClass) {
-            super(declaringClass, false);
+            super(declaringClass);
         }
         
-        AbstractPrivateSignal2(Class<?>... types) {
-            super(types);
-        }
-        
-        AbstractPrivateSignal2(@StrictNonNull String signalName, Class<?>... types) {
-            super(signalName, types);
+        AbstractPrivateSignal2(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB) {
+            super(signalName, typeA, typeB);
         }
     
         /**
@@ -7296,8 +7411,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -7308,8 +7423,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -7320,8 +7435,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot2<? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot2<? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
         
         /**
@@ -7362,8 +7477,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable2<? super A,? super B> signal, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSignalObject((AbstractSignal)signal, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable2<? super A,? super B> signal, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSignalObject((AbstractSignal)signal, connectionType);
         }
         
         /**
@@ -7388,16 +7503,17 @@ public final class QMetaObject {
 
         AbstractPrivateSignal3(){super();}
         
+        @SuppressWarnings("unchecked")
+		AbstractPrivateSignal3(@StrictNonNull ArgChecker3<A,B,C> argumentTest){
+        	super((array)->argumentTest.check((A)array[0], (B)array[1], (C)array[2]));
+    	}
+        
         AbstractPrivateSignal3(Class<?> declaringClass) {
-            super(declaringClass, false);
+            super(declaringClass);
         }
         
-        AbstractPrivateSignal3(Class<?>... types) {
-            super(types);
-        }
-        
-        AbstractPrivateSignal3(@StrictNonNull String signalName, Class<?>... types) {
-            super(signalName, types);
+        AbstractPrivateSignal3(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC) {
+            super(signalName, typeA, typeB, typeC);
         }
     
         /**
@@ -7408,8 +7524,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -7420,8 +7536,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -7432,8 +7548,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot2<? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot2<? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -7444,8 +7560,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
         
         /**
@@ -7496,8 +7612,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable3<? super A,? super B,? super C> signal, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSignalObject((AbstractSignal)signal, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable3<? super A,? super B,? super C> signal, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSignalObject((AbstractSignal)signal, connectionType);
         }
         
         /**
@@ -7523,16 +7639,17 @@ public final class QMetaObject {
         
         AbstractPrivateSignal4(){super();}
         
+        @SuppressWarnings("unchecked")
+		AbstractPrivateSignal4(@StrictNonNull ArgChecker4<A,B,C,D> argumentTest){
+        	super((array)->argumentTest.check((A)array[0], (B)array[1], (C)array[2], (D)array[3]));
+    	}
+        
         AbstractPrivateSignal4(Class<?> declaringClass) {
-            super(declaringClass, false);
+            super(declaringClass);
         }
         
-        AbstractPrivateSignal4(Class<?>... types) {
-            super(types);
-        }
-        
-        AbstractPrivateSignal4(@StrictNonNull String signalName, Class<?>... types) {
-            super(signalName, types);
+        AbstractPrivateSignal4(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD) {
+            super(signalName, typeA, typeB, typeC, typeD);
         }
     
         /**
@@ -7543,8 +7660,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -7555,8 +7672,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -7567,8 +7684,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot2<? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot2<? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -7579,8 +7696,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -7591,8 +7708,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
         
         /**
@@ -7653,8 +7770,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable4<? super A,? super B,? super C,? super D> signal, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSignalObject((AbstractSignal)signal, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable4<? super A,? super B,? super C,? super D> signal, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSignalObject((AbstractSignal)signal, connectionType);
         }
         
         /**
@@ -7680,16 +7797,17 @@ public final class QMetaObject {
         
         AbstractPrivateSignal5(){super();}
         
+        @SuppressWarnings("unchecked")
+		AbstractPrivateSignal5(@StrictNonNull ArgChecker5<A,B,C,D,E> argumentTest){
+        	super((array)->argumentTest.check((A)array[0], (B)array[1], (C)array[2], (D)array[3], (E)array[4]));
+    	}
+        
         AbstractPrivateSignal5(Class<?> declaringClass) {
-            super(declaringClass, false);
+            super(declaringClass);
         }
         
-        AbstractPrivateSignal5(Class<?>... types) {
-            super(types);
-        }
-        
-        AbstractPrivateSignal5(@StrictNonNull String signalName, Class<?>... types) {
-            super(signalName, types);
+        AbstractPrivateSignal5(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE);
         }
     
         /**
@@ -7700,8 +7818,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -7712,8 +7830,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -7724,8 +7842,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot2<? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot2<? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -7736,8 +7854,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -7748,8 +7866,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -7760,8 +7878,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
         
         /**
@@ -7827,13 +7945,13 @@ public final class QMetaObject {
         /**
          * Initializes a connection to the <i>slot</i>.
          * 
-         * @param slot the slot to be connected
+         * @param signal the signal to be connected
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable5<? super A,? super B,? super C,? super D,? super E> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSignalObject((AbstractSignal)slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable5<? super A,? super B,? super C,? super D,? super E> signal, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSignalObject((AbstractSignal)signal, connectionType);
         }
         
         /**
@@ -7861,16 +7979,17 @@ public final class QMetaObject {
         
         AbstractPrivateSignal6(){super();}
         
+        @SuppressWarnings("unchecked")
+		AbstractPrivateSignal6(@StrictNonNull ArgChecker6<A,B,C,D,E,F> argumentTest){
+        	super((array)->argumentTest.check((A)array[0], (B)array[1], (C)array[2], (D)array[3], (E)array[4], (F)array[5]));
+    	}
+        
         AbstractPrivateSignal6(Class<?> declaringClass) {
-            super(declaringClass, false);
+            super(declaringClass);
         }
         
-        AbstractPrivateSignal6(Class<?>... types) {
-            super(types);
-        }
-        
-        AbstractPrivateSignal6(@StrictNonNull String signalName, Class<?>... types) {
-            super(signalName, types);
+        AbstractPrivateSignal6(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF);
         }
     
         /**
@@ -7881,8 +8000,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -7893,8 +8012,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -7905,8 +8024,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot2<? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot2<? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -7917,8 +8036,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -7929,8 +8048,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -7941,8 +8060,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -7953,8 +8072,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
         
         /**
@@ -8030,13 +8149,13 @@ public final class QMetaObject {
         /**
          * Initializes a connection to the <i>slot</i>.
          * 
-         * @param slot the slot to be connected
+         * @param signal the signal to be connected
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSignalObject((AbstractSignal)slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable6<? super A,? super B,? super C,? super D,? super E,? super F> signal, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSignalObject((AbstractSignal)signal, connectionType);
         }
         
         /**
@@ -8065,16 +8184,18 @@ public final class QMetaObject {
         
         AbstractPrivateSignal7(){super();}
         
+        @SuppressWarnings("unchecked")
+		AbstractPrivateSignal7(@StrictNonNull ArgChecker7<A,B,C,D,E,F,G> argumentTest){
+        	super((array)->argumentTest.check((A)array[0], (B)array[1], (C)array[2], (D)array[3], (E)array[4],
+        			(F)array[5], (G)array[6]));
+    	}
+        
         AbstractPrivateSignal7(Class<?> declaringClass) {
-            super(declaringClass, false);
+            super(declaringClass);
         }
         
-        AbstractPrivateSignal7(Class<?>... types) {
-            super(types);
-        }
-        
-        AbstractPrivateSignal7(@StrictNonNull String signalName, Class<?>... types) {
-            super(signalName, types);
+        AbstractPrivateSignal7(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG);
         }
     
         /**
@@ -8085,8 +8206,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -8097,8 +8218,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -8109,8 +8230,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot2<? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot2<? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -8121,8 +8242,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -8133,8 +8254,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -8145,8 +8266,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -8157,8 +8278,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -8169,8 +8290,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
         
         /**
@@ -8256,13 +8377,13 @@ public final class QMetaObject {
         /**
          * Initializes a connection to the <i>slot</i>.
          * 
-         * @param slot the slot to be connected
+         * @param signal the signal to be connected
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSignalObject((AbstractSignal)slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> signal, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSignalObject((AbstractSignal)signal, connectionType);
         }
         
         /**
@@ -8291,16 +8412,18 @@ public final class QMetaObject {
         
         AbstractPrivateSignal8(){super();}
         
+        @SuppressWarnings("unchecked")
+		AbstractPrivateSignal8(@StrictNonNull ArgChecker8<A,B,C,D,E,F,G,H> argumentTest){
+        	super((array)->argumentTest.check((A)array[0], (B)array[1], (C)array[2], (D)array[3], (E)array[4],
+        			(F)array[5], (G)array[6], (H)array[7]));
+    	}
+        
         AbstractPrivateSignal8(Class<?> declaringClass) {
-            super(declaringClass, false);
+            super(declaringClass);
         }
         
-        AbstractPrivateSignal8(Class<?>... types) {
-            super(types);
-        }
-        
-        AbstractPrivateSignal8(@StrictNonNull String signalName, Class<?>... types) {
-            super(signalName, types);
+        AbstractPrivateSignal8(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, @StrictNonNull Class<H> typeH) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, typeH);
         }
     
         /**
@@ -8311,8 +8434,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -8323,8 +8446,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -8335,8 +8458,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot2<? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot2<? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -8347,8 +8470,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -8359,8 +8482,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -8371,8 +8494,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -8383,8 +8506,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -8395,8 +8518,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -8407,8 +8530,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
         
         /**
@@ -8504,13 +8627,13 @@ public final class QMetaObject {
         /**
          * Initializes a connection to the <i>slot</i>.
          * 
-         * @param slot the slot to be connected
+         * @param signal the signal to be connected
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSignalObject((AbstractSignal)slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> signal, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSignalObject((AbstractSignal)signal, connectionType);
         }
         
         /**
@@ -8540,16 +8663,18 @@ public final class QMetaObject {
         
         AbstractPrivateSignal9(){super();}
         
+        @SuppressWarnings("unchecked")
+		AbstractPrivateSignal9(@StrictNonNull ArgChecker9<A,B,C,D,E,F,G,H,I> argumentTest){
+        	super((array)->argumentTest.check((A)array[0], (B)array[1], (C)array[2], (D)array[3], (E)array[4],
+        			(F)array[5], (G)array[6], (H)array[7], (I)array[8]));
+    	}
+        
         AbstractPrivateSignal9(Class<?> declaringClass) {
-            super(declaringClass, false);
+            super(declaringClass);
         }
         
-        AbstractPrivateSignal9(Class<?>... types) {
-            super(types);
-        }
-        
-        AbstractPrivateSignal9(@StrictNonNull String signalName, Class<?>... types) {
-            super(signalName, types);
+        AbstractPrivateSignal9(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, @StrictNonNull Class<H> typeH, @StrictNonNull Class<I> typeI) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, typeH, typeI);
         }
     
         /**
@@ -8560,8 +8685,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -8572,8 +8697,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot1<? super A> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -8584,8 +8709,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot2<? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot2<? super A,? super B> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -8596,8 +8721,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot3<? super A,? super B,? super C> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -8608,8 +8733,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot4<? super A,? super B,? super C,? super D> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -8620,8 +8745,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot5<? super A,? super B,? super C,? super D,? super E> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -8632,8 +8757,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot6<? super A,? super B,? super C,? super D,? super E,? super F> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -8644,8 +8769,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot7<? super A,? super B,? super C,? super D,? super E,? super F,? super G> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -8656,8 +8781,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot8<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
     
         /**
@@ -8668,8 +8793,8 @@ public final class QMetaObject {
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSlotObject(slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Slot9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSlotObject(slot, connectionType);
         }
         
         /**
@@ -8775,13 +8900,13 @@ public final class QMetaObject {
         /**
          * Initializes a connection to the <i>slot</i>.
          * 
-         * @param slot the slot to be connected
+         * @param signal the signal to be connected
          * @param connectionType type of connection
          * @return connection if successful or <code>null</code> otherwise
          * @throws io.qt.QMisfittingSignatureException Raised if their signatures are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> slot, Qt.@NonNull ConnectionType @NonNull... type) {
-            return addConnectionToSignalObject((AbstractSignal)slot, type);
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Connectable9<? super A,? super B,? super C,? super D,? super E,? super F,? super G,? super H,? super I> signal, Qt.@NonNull ConnectionType @NonNull... connectionType) {
+            return addConnectionToSignalObject((AbstractSignal)signal, connectionType);
         }
         
         /**
@@ -8817,12 +8942,8 @@ public final class QMetaObject {
             super(declaringClass);
         }
         
-        AbstractPublicSignal0(Class<?>... types) {
-            super(types);
-        }
-        
-        AbstractPublicSignal0(@StrictNonNull String signalName, Class<?>... types) {
-            super(signalName, types);
+        AbstractPublicSignal0(@StrictNonNull String signalName) {
+            super(signalName);
         }
         
         /**
@@ -8850,18 +8971,20 @@ public final class QMetaObject {
 																										Connectable9<A,Object,Object,Object,Object,Object,Object,Object,Object>,
 																										GenericConnectable
     {
-		AbstractPublicSignal1(){}
+		AbstractPublicSignal1(){
+			super();
+		}
         
-        AbstractPublicSignal1(Class<?> declaringClass) {
+        AbstractPublicSignal1(@StrictNonNull ArgChecker1<A> argumentTest) {
+			super(argumentTest);
+		}
+
+		AbstractPublicSignal1(Class<?> declaringClass) {
             super(declaringClass);
         }
         
-        AbstractPublicSignal1(Class<?>... types) {
-            super(types);
-        }
-        
-        AbstractPublicSignal1(@StrictNonNull String signalName, Class<?>... types) {
-            super(signalName, types);
+        AbstractPublicSignal1(@StrictNonNull String signalName, Class<A> typeA) {
+            super(signalName, typeA);
         }
         
         /**
@@ -8892,16 +9015,16 @@ public final class QMetaObject {
     {
 		AbstractPublicSignal2(){super();}
         
-        AbstractPublicSignal2(Class<?> declaringClass) {
+        AbstractPublicSignal2(@StrictNonNull ArgChecker2<A, B> argumentTest) {
+			super(argumentTest);
+		}
+
+		AbstractPublicSignal2(Class<?> declaringClass) {
             super(declaringClass);
         }
         
-        AbstractPublicSignal2(Class<?>... types) {
-            super(types);
-        }
-        
-        AbstractPublicSignal2(@StrictNonNull String signalName, Class<?>... types) {
-            super(signalName, types);
+        AbstractPublicSignal2(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB) {
+            super(signalName, typeA, typeB);
         }
         
         /**
@@ -8933,16 +9056,16 @@ public final class QMetaObject {
     {
 		AbstractPublicSignal3(){super();}
         
-        AbstractPublicSignal3(Class<?> declaringClass) {
+        AbstractPublicSignal3(@StrictNonNull ArgChecker3<A, B, C> argumentTest) {
+			super(argumentTest);
+		}
+
+		AbstractPublicSignal3(Class<?> declaringClass) {
             super(declaringClass);
         }
         
-        AbstractPublicSignal3(Class<?>... types) {
-            super(types);
-        }
-        
-        AbstractPublicSignal3(@StrictNonNull String signalName, Class<?>... types) {
-            super(signalName, types);
+        AbstractPublicSignal3(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC) {
+            super(signalName, typeA, typeB, typeC);
         }
         
         /**
@@ -8975,16 +9098,16 @@ public final class QMetaObject {
     {
 		AbstractPublicSignal4(){super();}
         
-        AbstractPublicSignal4(Class<?> declaringClass) {
+        AbstractPublicSignal4(@StrictNonNull ArgChecker4<A, B, C, D> argumentTest) {
+			super(argumentTest);
+		}
+
+		AbstractPublicSignal4(Class<?> declaringClass) {
             super(declaringClass);
         }
         
-        AbstractPublicSignal4(Class<?>... types) {
-            super(types);
-        }
-        
-        AbstractPublicSignal4(@StrictNonNull String signalName, Class<?>... types) {
-            super(signalName, types);
+        AbstractPublicSignal4(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD) {
+            super(signalName, typeA, typeB, typeC, typeD);
         }
         
         /**
@@ -9018,16 +9141,16 @@ public final class QMetaObject {
     {
 		AbstractPublicSignal5(){super();}
         
-        AbstractPublicSignal5(Class<?> declaringClass) {
+        AbstractPublicSignal5(@StrictNonNull ArgChecker5<A, B, C, D, E> argumentTest) {
+			super(argumentTest);
+		}
+
+		AbstractPublicSignal5(Class<?> declaringClass) {
             super(declaringClass);
         }
         
-        AbstractPublicSignal5(Class<?>... types) {
-            super(types);
-        }
-        
-        AbstractPublicSignal5(@StrictNonNull String signalName, Class<?>... types) {
-            super(signalName, types);
+        AbstractPublicSignal5(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE);
         }
         
         /**
@@ -9062,16 +9185,16 @@ public final class QMetaObject {
 	{
 		AbstractPublicSignal6(){super();}
         
-        AbstractPublicSignal6(Class<?> declaringClass) {
+        AbstractPublicSignal6(@StrictNonNull ArgChecker6<A, B, C, D, E, F> argumentTest) {
+			super(argumentTest);
+		}
+
+		AbstractPublicSignal6(Class<?> declaringClass) {
             super(declaringClass);
         }
         
-        AbstractPublicSignal6(Class<?>... types) {
-            super(types);
-        }
-        
-        AbstractPublicSignal6(@StrictNonNull String signalName, Class<?>... types) {
-            super(signalName, types);
+        AbstractPublicSignal6(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF);
         }
         
         /**
@@ -9107,16 +9230,16 @@ public final class QMetaObject {
     {
 		AbstractPublicSignal7(){super();}
         
-        AbstractPublicSignal7(Class<?> declaringClass) {
+        AbstractPublicSignal7(@StrictNonNull ArgChecker7<A, B, C, D, E, F, G> argumentTest) {
+			super(argumentTest);
+		}
+
+		AbstractPublicSignal7(Class<?> declaringClass) {
             super(declaringClass);
         }
         
-        AbstractPublicSignal7(Class<?>... types) {
-            super(types);
-        }
-        
-        AbstractPublicSignal7(@StrictNonNull String signalName, Class<?>... types) {
-            super(signalName, types);
+        AbstractPublicSignal7(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG);
         }
         
         /**
@@ -9153,16 +9276,16 @@ public final class QMetaObject {
 	{
 		AbstractPublicSignal8(){super();}
         
-        AbstractPublicSignal8(Class<?> declaringClass) {
+        AbstractPublicSignal8(@StrictNonNull ArgChecker8<A, B, C, D, E, F, G, H> argumentTest) {
+			super(argumentTest);
+		}
+
+		AbstractPublicSignal8(Class<?> declaringClass) {
             super(declaringClass);
         }
         
-        AbstractPublicSignal8(Class<?>... types) {
-            super(types);
-        }
-        
-        AbstractPublicSignal8(@StrictNonNull String signalName, Class<?>... types) {
-            super(signalName, types);
+        AbstractPublicSignal8(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, @StrictNonNull Class<H> typeH) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, typeH);
         }
         
         /**
@@ -9200,16 +9323,16 @@ public final class QMetaObject {
     {
 		AbstractPublicSignal9(){super();}
         
-        AbstractPublicSignal9(Class<?> declaringClass) {
+        AbstractPublicSignal9(@StrictNonNull ArgChecker9<A, B, C, D, E, F, G, H, I> argumentTest) {
+			super(argumentTest);
+		}
+
+		AbstractPublicSignal9(Class<?> declaringClass) {
             super(declaringClass);
         }
         
-        AbstractPublicSignal9(Class<?>... types) {
-            super(types);
-        }
-        
-        AbstractPublicSignal9(@StrictNonNull String signalName, Class<?>... types) {
-            super(signalName, types);
+        AbstractPublicSignal9(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, @StrictNonNull Class<H> typeH, @StrictNonNull Class<I> typeI) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, typeH, typeI);
         }
         
         /**
@@ -9246,6 +9369,14 @@ public final class QMetaObject {
                 throw new QNoDefaultValueException(1);
             }
         }
+		
+		AbstractSignal1Default1(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull ArgChecker1<A> argumentTest){
+            super(argumentTest);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
         
         AbstractSignal1Default1(@StrictNonNull Supplier<? extends A> arg1Default, Class<?> declaringClass){
             super(declaringClass);
@@ -9255,16 +9386,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal1Default1(@StrictNonNull Supplier<? extends A> arg1Default, Class<?>... types) {
-            super(types);
-            this.arg1Default = arg1Default;
-            if(this.arg1Default==null){
-                throw new QNoDefaultValueException(1);
-            }
-        }
-        
-        AbstractSignal1Default1(@StrictNonNull String signalName, @StrictNonNull Supplier<? extends A> arg1Default, Class<?>... types) {
-            super(signalName, types);
+        AbstractSignal1Default1(@StrictNonNull String signalName, Class<A> typeA, @StrictNonNull Supplier<? extends A> arg1Default) {
+            super(signalName, typeA);
             this.arg1Default = arg1Default;
             if(this.arg1Default==null){
                 throw new QNoDefaultValueException(1);
@@ -9292,15 +9415,6 @@ public final class QMetaObject {
     		this.arg2Default = null;
     	}
     	
-    	AbstractSignal2Default1(Supplier<? extends B> arg2Default, Class<?> declaringClass){
-            super(declaringClass);
-            if(arg2Default!=null){
-                this.arg2Default = arg2Default;
-            }else{
-                throw new QNoDefaultValueException(2);
-            }
-        }
-        
         AbstractSignal2Default1(Supplier<? extends B> arg2Default){
             super();
             if(arg2Default!=null){
@@ -9310,8 +9424,17 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal2Default1(Supplier<? extends B> arg2Default, Class<?>... types) {
-            super(types);
+        AbstractSignal2Default1(Supplier<? extends B> arg2Default, @StrictNonNull ArgChecker2<A, B> argumentTest){
+            super(argumentTest);
+            if(arg2Default!=null){
+                this.arg2Default = arg2Default;
+            }else{
+                throw new QNoDefaultValueException(2);
+            }
+        }
+
+		AbstractSignal2Default1(Supplier<? extends B> arg2Default, Class<?> declaringClass){
+            super(declaringClass);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
             }else{
@@ -9319,17 +9442,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal2Default1(@StrictNonNull String signalName, Supplier<? extends B> arg2Default){
-            super(signalName);
-            if(arg2Default!=null){
-                this.arg2Default = arg2Default;
-            }else{
-                throw new QNoDefaultValueException(2);
-            }
-        }
-        
-        AbstractSignal2Default1(@StrictNonNull String signalName, Supplier<? extends B> arg2Default, Class<?>... types) {
-            super(signalName, types);
+        AbstractSignal2Default1(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, Supplier<? extends B> arg2Default) {
+            super(signalName, typeA, typeB);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
             }else{
@@ -9371,6 +9485,14 @@ public final class QMetaObject {
                 throw new QNoDefaultValueException(1);
             }
         }
+    	
+		AbstractSignal2Default2(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, @StrictNonNull ArgChecker2<A, B> argumentTest){
+            super(arg2Default, argumentTest);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
         
         AbstractSignal2Default2(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Class<?> declaringClass){
             super(arg2Default, declaringClass);
@@ -9380,16 +9502,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal2Default2(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Class<?>... types) {
-            super(arg2Default, types);
-            this.arg1Default = arg1Default;
-            if(this.arg1Default==null){
-                throw new QNoDefaultValueException(1);
-            }
-        }
-        
-        AbstractSignal2Default2(@StrictNonNull String signalName, @StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Class<?>... types) {
-            super(signalName, arg2Default, types);
+        AbstractSignal2Default2(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default) {
+            super(signalName, typeA, typeB, arg2Default);
             this.arg1Default = arg1Default;
             if(this.arg1Default==null){
                 throw new QNoDefaultValueException(1);
@@ -9418,15 +9532,6 @@ public final class QMetaObject {
     		this.arg3Default = null;
     	}
     	
-    	AbstractSignal3Default1(Supplier<? extends C> arg3Default, Class<?> declaringClass){
-            super(declaringClass);
-            if(arg3Default!=null){
-                this.arg3Default = arg3Default;
-            }else{
-                throw new QNoDefaultValueException(3);
-            }
-        }
-        
         AbstractSignal3Default1(Supplier<? extends C> arg3Default){
             super();
             if(arg3Default!=null){
@@ -9436,8 +9541,17 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal3Default1(Supplier<? extends C> arg3Default, Class<?>... types) {
-            super(types);
+        AbstractSignal3Default1(Supplier<? extends C> arg3Default, @StrictNonNull ArgChecker3<A, B, C> argumentTest){
+            super(argumentTest);
+            if(arg3Default!=null){
+                this.arg3Default = arg3Default;
+            }else{
+                throw new QNoDefaultValueException(3);
+            }
+        }
+
+		AbstractSignal3Default1(Supplier<? extends C> arg3Default, Class<?> declaringClass){
+            super(declaringClass);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
             }else{
@@ -9445,8 +9559,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal3Default1(@StrictNonNull String signalName, Supplier<? extends C> arg3Default, Class<?>... types) {
-            super(signalName, types);
+        AbstractSignal3Default1(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, Supplier<? extends C> arg3Default) {
+            super(signalName, typeA, typeB, typeC);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
             }else{
@@ -9489,15 +9603,6 @@ public final class QMetaObject {
     		this.arg2Default = null;
     	}
     	
-    	AbstractSignal3Default2(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Class<?> declaringClass){
-            super(arg3Default, declaringClass);
-            if(arg2Default!=null){
-                this.arg2Default = arg2Default;
-            }else{
-                throw new QNoDefaultValueException(2);
-            }
-        }
-        
         AbstractSignal3Default2(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default){
             super(arg3Default);
             if(arg2Default!=null){
@@ -9507,8 +9612,17 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal3Default2(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Class<?>... types) {
-            super(arg3Default, types);
+        AbstractSignal3Default2(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, @StrictNonNull ArgChecker3<A, B, C> argumentTest){
+            super(arg3Default, argumentTest);
+            if(arg2Default!=null){
+                this.arg2Default = arg2Default;
+            }else{
+                throw new QNoDefaultValueException(2);
+            }
+        }
+    	
+    	AbstractSignal3Default2(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Class<?> declaringClass){
+            super(arg3Default, declaringClass);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
             }else{
@@ -9516,8 +9630,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal3Default2(@StrictNonNull String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Class<?>... types) {
-            super(signalName, arg3Default, types);
+        AbstractSignal3Default2(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default) {
+            super(signalName, typeA, typeB, typeC, arg3Default);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
             }else{
@@ -9560,8 +9674,16 @@ public final class QMetaObject {
                 throw new QNoDefaultValueException(1);
             }
         }
-        
-        AbstractSignal3Default3(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Class<?> declaringClass){
+		
+		AbstractSignal3Default3(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, @StrictNonNull ArgChecker3<A, B, C> argumentTest){
+            super(arg2Default, arg3Default, argumentTest);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+		
+		AbstractSignal3Default3(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Class<?> declaringClass){
             super(arg2Default, arg3Default, declaringClass);
             this.arg1Default = arg1Default;
             if(this.arg1Default==null){
@@ -9569,16 +9691,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal3Default3(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Class<?>... types) {
-            super(arg2Default, arg3Default, types);
-            this.arg1Default = arg1Default;
-            if(this.arg1Default==null){
-                throw new QNoDefaultValueException(1);
-            }
-        }
-        
-        AbstractSignal3Default3(@StrictNonNull String signalName, @StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Class<?>... types) {
-            super(signalName, arg2Default, arg3Default, types);
+        AbstractSignal3Default3(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default) {
+            super(signalName, typeA, typeB, typeC, arg2Default, arg3Default);
             this.arg1Default = arg1Default;
             if(this.arg1Default==null){
                 throw new QNoDefaultValueException(1);
@@ -9607,15 +9721,6 @@ public final class QMetaObject {
     	AbstractSignal4Default1() {
     		this.arg4Default = null;
     	}
-    	
-    	AbstractSignal4Default1(Supplier<? extends D> arg4Default, Class<?> declaringClass){
-            super(declaringClass);
-            if(arg4Default!=null){
-                this.arg4Default = arg4Default;
-            }else{
-                throw new QNoDefaultValueException(4);
-            }
-        }
         
         AbstractSignal4Default1(Supplier<? extends D> arg4Default){
             super();
@@ -9626,8 +9731,17 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal4Default1(Supplier<? extends D> arg4Default, Class<?>... types) {
-            super(types);
+        AbstractSignal4Default1(Supplier<? extends D> arg4Default, @StrictNonNull ArgChecker4<A, B, C, D> argumentTest){
+            super(argumentTest);
+            if(arg4Default!=null){
+                this.arg4Default = arg4Default;
+            }else{
+                throw new QNoDefaultValueException(4);
+            }
+        }
+
+		AbstractSignal4Default1(Supplier<? extends D> arg4Default, Class<?> declaringClass){
+            super(declaringClass);
             if(arg4Default!=null){
                 this.arg4Default = arg4Default;
             }else{
@@ -9635,8 +9749,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal4Default1(@StrictNonNull String signalName, Supplier<? extends D> arg4Default, Class<?>... types) {
-            super(signalName, types);
+        AbstractSignal4Default1(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, Supplier<? extends D> arg4Default) {
+            super(signalName, typeA, typeB, typeC, typeD);
             if(arg4Default!=null){
                 this.arg4Default = arg4Default;
             }else{
@@ -9686,15 +9800,6 @@ public final class QMetaObject {
     		this.arg3Default = null;
     	}
     	
-    	AbstractSignal4Default2(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Class<?> declaringClass){
-            super(arg4Default, declaringClass);
-            if(arg3Default!=null){
-                this.arg3Default = arg3Default;
-            }else{
-                throw new QNoDefaultValueException(3);
-            }
-        }
-        
         AbstractSignal4Default2(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default){
             super(arg4Default);
             if(arg3Default!=null){
@@ -9704,8 +9809,17 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal4Default2(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Class<?>... types) {
-            super(arg4Default, types);
+        AbstractSignal4Default2(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, @StrictNonNull ArgChecker4<A, B, C, D> argumentTest){
+            super(arg4Default, argumentTest);
+            if(arg3Default!=null){
+                this.arg3Default = arg3Default;
+            }else{
+                throw new QNoDefaultValueException(3);
+            }
+        }
+    	
+    	AbstractSignal4Default2(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Class<?> declaringClass){
+            super(arg4Default, declaringClass);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
             }else{
@@ -9713,8 +9827,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal4Default2(@StrictNonNull String signalName, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Class<?>... types) {
-            super(signalName, arg4Default, types);
+        AbstractSignal4Default2(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default) {
+            super(signalName, typeA, typeB, typeC, typeD, arg4Default);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
             }else{
@@ -9758,15 +9872,6 @@ public final class QMetaObject {
     		this.arg2Default = null;
     	}
     	
-		AbstractSignal4Default3(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Class<?> declaringClass){
-            super(arg3Default, arg4Default, declaringClass);
-            if(arg2Default!=null){
-                this.arg2Default = arg2Default;
-            }else{
-                throw new QNoDefaultValueException(2);
-            }
-        }
-        
         AbstractSignal4Default3(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default){
             super(arg3Default, arg4Default);
             if(arg2Default!=null){
@@ -9776,17 +9881,26 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal4Default3(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Class<?>... types) {
-            super(arg3Default, arg4Default, types);
-            if(arg3Default!=null){
+        AbstractSignal4Default3(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, @StrictNonNull ArgChecker4<A, B, C, D> argumentTest){
+            super(arg3Default, arg4Default, argumentTest);
+            if(arg2Default!=null){
+                this.arg2Default = arg2Default;
+            }else{
+                throw new QNoDefaultValueException(2);
+            }
+        }
+    	
+		AbstractSignal4Default3(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Class<?> declaringClass){
+            super(arg3Default, arg4Default, declaringClass);
+            if(arg2Default!=null){
                 this.arg2Default = arg2Default;
             }else{
                 throw new QNoDefaultValueException(2);
             }
         }
         
-        AbstractSignal4Default3(@StrictNonNull String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Class<?>... types) {
-            super(signalName, arg3Default, arg4Default, types);
+        AbstractSignal4Default3(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default) {
+            super(signalName, typeA, typeB, typeC, typeD, arg3Default, arg4Default);
             if(arg3Default!=null){
                 this.arg2Default = arg2Default;
             }else{
@@ -9823,6 +9937,14 @@ public final class QMetaObject {
     		this.arg1Default = null;
     	}
     	
+		AbstractSignal4Default4(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, @StrictNonNull ArgChecker4<A, B, C, D> argumentTest){
+            super(arg2Default, arg3Default, arg4Default, argumentTest);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
+    	
 		AbstractSignal4Default4(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default){
             super(arg2Default, arg3Default, arg4Default);
             this.arg1Default = arg1Default;
@@ -9839,16 +9961,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal4Default4(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Class<?>... types) {
-            super(arg2Default, arg3Default, arg4Default, types);
-            this.arg1Default = arg1Default;
-            if(this.arg1Default==null){
-                throw new QNoDefaultValueException(1);
-            }
-        }
-        
-        AbstractSignal4Default4(@StrictNonNull String signalName, @StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Class<?>... types) {
-            super(signalName, arg2Default, arg3Default, arg4Default, types);
+        AbstractSignal4Default4(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default) {
+            super(signalName, typeA, typeB, typeC, typeD, arg2Default, arg3Default, arg4Default);
             this.arg1Default = arg1Default;
             if(this.arg1Default==null){
                 throw new QNoDefaultValueException(1);
@@ -9879,15 +9993,6 @@ public final class QMetaObject {
     		this.arg5Default = null;
     	}
     	
-		AbstractSignal5Default1(Supplier<? extends E> arg5Default, Class<?> declaringClass){
-            super(declaringClass);
-            if(arg5Default!=null){
-                this.arg5Default = arg5Default;
-            }else{
-                throw new QNoDefaultValueException(5);
-            }
-        }
-        
         AbstractSignal5Default1(Supplier<? extends E> arg5Default){
             super();
             if(arg5Default!=null){
@@ -9897,8 +10002,17 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default1(Supplier<? extends E> arg5Default, Class<?>... types) {
-            super(types);
+        AbstractSignal5Default1(Supplier<? extends E> arg5Default, @StrictNonNull ArgChecker5<A, B, C, D, E> argumentTest){
+            super(argumentTest);
+            if(arg5Default!=null){
+                this.arg5Default = arg5Default;
+            }else{
+                throw new QNoDefaultValueException(5);
+            }
+        }
+
+		AbstractSignal5Default1(Supplier<? extends E> arg5Default, Class<?> declaringClass){
+            super(declaringClass);
             if(arg5Default!=null){
                 this.arg5Default = arg5Default;
             }else{
@@ -9906,8 +10020,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default1(@StrictNonNull String signalName, Supplier<? extends E> arg5Default, Class<?>... types) {
-            super(signalName, types);
+        AbstractSignal5Default1(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, Supplier<? extends E> arg5Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE);
             if(arg5Default!=null){
                 this.arg5Default = arg5Default;
             }else{
@@ -9964,15 +10078,6 @@ public final class QMetaObject {
     		this.arg4Default = null;
     	}
     	
-		AbstractSignal5Default2(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?> declaringClass){
-            super(arg5Default, declaringClass);
-            if(arg4Default!=null){
-                this.arg4Default = arg4Default;
-            }else{
-                throw new QNoDefaultValueException(4);
-            }
-        }
-        
         AbstractSignal5Default2(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default){
             super(arg5Default);
             if(arg4Default!=null){
@@ -9982,8 +10087,17 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default2(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?>... types) {
-            super(arg5Default, types);
+        AbstractSignal5Default2(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, @StrictNonNull ArgChecker5<A, B, C, D, E> argumentTest){
+            super(arg5Default, argumentTest);
+            if(arg4Default!=null){
+                this.arg4Default = arg4Default;
+            }else{
+                throw new QNoDefaultValueException(4);
+            }
+        }
+    	
+		AbstractSignal5Default2(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?> declaringClass){
+            super(arg5Default, declaringClass);
             if(arg4Default!=null){
                 this.arg4Default = arg4Default;
             }else{
@@ -9991,8 +10105,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default2(@StrictNonNull String signalName, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?>... types) {
-            super(signalName, arg5Default, types);
+        AbstractSignal5Default2(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, arg5Default);
             if(arg4Default!=null){
                 this.arg4Default = arg4Default;
             }else{
@@ -10043,15 +10157,6 @@ public final class QMetaObject {
     		this.arg3Default = null;
     	}
     	
-		AbstractSignal5Default3(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?> declaringClass){
-            super(arg4Default, arg5Default, declaringClass);
-            if(arg3Default!=null){
-                this.arg3Default = arg3Default;
-            }else{
-                throw new QNoDefaultValueException(3);
-            }
-        }
-        
         AbstractSignal5Default3(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default){
             super(arg4Default, arg5Default);
             if(arg3Default!=null){
@@ -10061,8 +10166,17 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default3(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?>... types) {
-            super(arg4Default, arg5Default, types);
+        AbstractSignal5Default3(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, @StrictNonNull ArgChecker5<A, B, C, D, E> argumentTest){
+            super(arg4Default, arg5Default, argumentTest);
+            if(arg3Default!=null){
+                this.arg3Default = arg3Default;
+            }else{
+                throw new QNoDefaultValueException(3);
+            }
+        }
+    	
+		AbstractSignal5Default3(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?> declaringClass){
+            super(arg4Default, arg5Default, declaringClass);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
             }else{
@@ -10070,8 +10184,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default3(@StrictNonNull String signalName, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?>... types) {
-            super(signalName, arg4Default, arg5Default, types);
+        AbstractSignal5Default3(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, arg4Default, arg5Default);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
             }else{
@@ -10116,15 +10230,6 @@ public final class QMetaObject {
     		this.arg2Default = null;
     	}
     	
-		AbstractSignal5Default4(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?> declaringClass){
-            super(arg3Default, arg4Default, arg5Default, declaringClass);
-            if(arg2Default!=null){
-                this.arg2Default = arg2Default;
-            }else{
-                throw new QNoDefaultValueException(2);
-            }
-        }
-        
         AbstractSignal5Default4(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default){
             super(arg3Default, arg4Default, arg5Default);
             if(arg2Default!=null){
@@ -10134,8 +10239,17 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default4(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?>... types) {
-            super(arg3Default, arg4Default, arg5Default, types);
+        AbstractSignal5Default4(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, @StrictNonNull ArgChecker5<A, B, C, D, E> argumentTest){
+            super(arg3Default, arg4Default, arg5Default, argumentTest);
+            if(arg2Default!=null){
+                this.arg2Default = arg2Default;
+            }else{
+                throw new QNoDefaultValueException(2);
+            }
+        }
+    	
+		AbstractSignal5Default4(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?> declaringClass){
+            super(arg3Default, arg4Default, arg5Default, declaringClass);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
             }else{
@@ -10143,8 +10257,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default4(@StrictNonNull String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?>... types) {
-            super(signalName, arg3Default, arg4Default, arg5Default, types);
+        AbstractSignal5Default4(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, arg3Default, arg4Default, arg5Default);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
             }else{
@@ -10189,6 +10303,14 @@ public final class QMetaObject {
                 throw new QNoDefaultValueException(1);
             }
         }
+		
+		AbstractSignal5Default5(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, @StrictNonNull ArgChecker5<A, B, C, D, E> argumentTest){
+            super(arg2Default, arg3Default, arg4Default, arg5Default, argumentTest);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
         
         AbstractSignal5Default5(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?> declaringClass){
             super(arg2Default, arg3Default, arg4Default, arg5Default, declaringClass);
@@ -10198,16 +10320,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal5Default5(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?>... types) {
-            super(arg2Default, arg3Default, arg4Default, arg5Default, types);
-            this.arg1Default = arg1Default;
-            if(this.arg1Default==null){
-                throw new QNoDefaultValueException(1);
-            }
-        }
-        
-        AbstractSignal5Default5(@StrictNonNull String signalName, @StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Class<?>... types) {
-            super(signalName, arg2Default, arg3Default, arg4Default, arg5Default, types);
+        AbstractSignal5Default5(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, arg2Default, arg3Default, arg4Default, arg5Default);
             this.arg1Default = arg1Default;
             if(this.arg1Default==null){
                 throw new QNoDefaultValueException(1);
@@ -10239,15 +10353,6 @@ public final class QMetaObject {
     		this.arg6Default = null;
     	}
 
-		AbstractSignal6Default1(Supplier<? extends F> arg6Default, Class<?> declaringClass){
-            super(declaringClass);
-            if(arg6Default!=null){
-                this.arg6Default = arg6Default;
-            }else{
-                throw new QNoDefaultValueException(6);
-            }
-        }
-        
         AbstractSignal6Default1(Supplier<? extends F> arg6Default){
             super();
             if(arg6Default!=null){
@@ -10257,8 +10362,17 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default1(Supplier<? extends F> arg6Default, Class<?>... types) {
-            super(types);
+        AbstractSignal6Default1(Supplier<? extends F> arg6Default, @StrictNonNull ArgChecker6<A, B, C, D, E, F> argumentTest){
+            super(argumentTest);
+            if(arg6Default!=null){
+                this.arg6Default = arg6Default;
+            }else{
+                throw new QNoDefaultValueException(6);
+            }
+        }
+
+		AbstractSignal6Default1(Supplier<? extends F> arg6Default, Class<?> declaringClass){
+            super(declaringClass);
             if(arg6Default!=null){
                 this.arg6Default = arg6Default;
             }else{
@@ -10266,8 +10380,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default1(@StrictNonNull String signalName, Supplier<? extends F> arg6Default, Class<?>... types) {
-            super(signalName, types);
+        AbstractSignal6Default1(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, Supplier<? extends F> arg6Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF);
             if(arg6Default!=null){
                 this.arg6Default = arg6Default;
             }else{
@@ -10331,15 +10445,6 @@ public final class QMetaObject {
     		this.arg5Default = null;
     	}
     	
-		AbstractSignal6Default2(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?> declaringClass){
-            super(arg6Default, declaringClass);
-            if(arg5Default!=null){
-                this.arg5Default = arg5Default;
-            }else{
-                throw new QNoDefaultValueException(5);
-            }
-        }
-        
         AbstractSignal6Default2(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default){
             super(arg6Default);
             if(arg5Default!=null){
@@ -10349,8 +10454,17 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default2(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
-            super(arg6Default, types);
+        AbstractSignal6Default2(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, @StrictNonNull ArgChecker6<A, B, C, D, E, F> argumentTest){
+            super(arg6Default, argumentTest);
+            if(arg5Default!=null){
+                this.arg5Default = arg5Default;
+            }else{
+                throw new QNoDefaultValueException(5);
+            }
+        }
+    	
+		AbstractSignal6Default2(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?> declaringClass){
+            super(arg6Default, declaringClass);
             if(arg5Default!=null){
                 this.arg5Default = arg5Default;
             }else{
@@ -10358,8 +10472,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default2(@StrictNonNull String signalName, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
-            super(signalName, arg6Default, types);
+        AbstractSignal6Default2(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, arg6Default);
             if(arg5Default!=null){
                 this.arg5Default = arg5Default;
             }else{
@@ -10417,15 +10531,6 @@ public final class QMetaObject {
     		this.arg4Default = null;
     	}
     	
-		AbstractSignal6Default3(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?> declaringClass){
-            super(arg5Default, arg6Default, declaringClass);
-            if(arg4Default!=null){
-                this.arg4Default = arg4Default;
-            }else{
-                throw new QNoDefaultValueException(4);
-            }
-        }
-        
         AbstractSignal6Default3(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default){
             super(arg5Default, arg6Default);
             if(arg4Default!=null){
@@ -10435,8 +10540,17 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default3(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
-            super(arg5Default, arg6Default, types);
+        AbstractSignal6Default3(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, @StrictNonNull ArgChecker6<A, B, C, D, E, F> argumentTest){
+            super(arg5Default, arg6Default, argumentTest);
+            if(arg4Default!=null){
+                this.arg4Default = arg4Default;
+            }else{
+                throw new QNoDefaultValueException(4);
+            }
+        }
+    	
+		AbstractSignal6Default3(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?> declaringClass){
+            super(arg5Default, arg6Default, declaringClass);
             if(arg4Default!=null){
                 this.arg4Default = arg4Default;
             }else{
@@ -10444,8 +10558,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default3(@StrictNonNull String signalName, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
-            super(signalName, arg5Default, arg6Default, types);
+        AbstractSignal6Default3(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, arg5Default, arg6Default);
             if(arg4Default!=null){
                 this.arg4Default = arg4Default;
             }else{
@@ -10497,15 +10611,6 @@ public final class QMetaObject {
     		this.arg3Default = null;
     	}
     	
-		AbstractSignal6Default4(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?> declaringClass){
-            super(arg4Default, arg5Default, arg6Default, declaringClass);
-            if(arg3Default!=null){
-                this.arg3Default = arg3Default;
-            }else{
-                throw new QNoDefaultValueException(3);
-            }
-        }
-        
         AbstractSignal6Default4(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default){
             super(arg4Default, arg5Default, arg6Default);
             if(arg3Default!=null){
@@ -10515,8 +10620,17 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default4(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
-            super(arg4Default, arg5Default, arg6Default, types);
+        AbstractSignal6Default4(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, @StrictNonNull ArgChecker6<A, B, C, D, E, F> argumentTest){
+            super(arg4Default, arg5Default, arg6Default, argumentTest);
+            if(arg3Default!=null){
+                this.arg3Default = arg3Default;
+            }else{
+                throw new QNoDefaultValueException(3);
+            }
+        }
+    	
+		AbstractSignal6Default4(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?> declaringClass){
+            super(arg4Default, arg5Default, arg6Default, declaringClass);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
             }else{
@@ -10524,8 +10638,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default4(@StrictNonNull String signalName, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
-            super(signalName, arg4Default, arg5Default, arg6Default, types);
+        AbstractSignal6Default4(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, arg4Default, arg5Default, arg6Default);
             if(arg3Default!=null){
                 this.arg3Default = arg3Default;
             }else{
@@ -10571,15 +10685,6 @@ public final class QMetaObject {
     		this.arg2Default = null;
     	}
     	
-		AbstractSignal6Default5(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?> declaringClass){
-            super(arg3Default, arg4Default, arg5Default, arg6Default, declaringClass);
-            if(arg2Default!=null){
-                this.arg2Default = arg2Default;
-            }else{
-                throw new QNoDefaultValueException(2);
-            }
-        }
-        
         AbstractSignal6Default5(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default){
             super(arg3Default, arg4Default, arg5Default, arg6Default);
             if(arg2Default!=null){
@@ -10589,8 +10694,17 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default5(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
-            super(arg3Default, arg4Default, arg5Default, arg6Default, types);
+        AbstractSignal6Default5(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, @StrictNonNull ArgChecker6<A, B, C, D, E, F> argumentTest){
+            super(arg3Default, arg4Default, arg5Default, arg6Default, argumentTest);
+            if(arg2Default!=null){
+                this.arg2Default = arg2Default;
+            }else{
+                throw new QNoDefaultValueException(2);
+            }
+        }
+    	
+		AbstractSignal6Default5(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?> declaringClass){
+            super(arg3Default, arg4Default, arg5Default, arg6Default, declaringClass);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
             }else{
@@ -10598,8 +10712,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default5(@StrictNonNull String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
-            super(signalName, arg3Default, arg4Default, arg5Default, arg6Default, types);
+        AbstractSignal6Default5(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, arg3Default, arg4Default, arg5Default, arg6Default);
             if(arg2Default!=null){
                 this.arg2Default = arg2Default;
             }else{
@@ -10645,6 +10759,14 @@ public final class QMetaObject {
                 throw new QNoDefaultValueException(1);
             }
         }
+    	
+		AbstractSignal6Default6(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, @StrictNonNull ArgChecker6<A, B, C, D, E, F> argumentTest){
+            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, argumentTest);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
         
         AbstractSignal6Default6(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?> declaringClass){
             super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, declaringClass);
@@ -10654,16 +10776,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal6Default6(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
-            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, types);
-            this.arg1Default = arg1Default;
-            if(this.arg1Default==null){
-                throw new QNoDefaultValueException(1);
-            }
-        }
-        
-        AbstractSignal6Default6(@StrictNonNull String signalName, @StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Class<?>... types) {
-            super(signalName, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, types);
+        AbstractSignal6Default6(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default);
             this.arg1Default = arg1Default;
             if(this.arg1Default==null){
                 throw new QNoDefaultValueException(1);
@@ -10696,15 +10810,6 @@ public final class QMetaObject {
     		this.arg7Default = null;
     	}
 
-		AbstractSignal7Default1(Supplier<? extends G> arg7Default, Class<?> declaringClass){
-            super(declaringClass);
-            if(arg7Default!=null){
-                this.arg7Default = arg7Default;
-            }else{
-                throw new QNoDefaultValueException(7);
-            }
-        }
-        
         AbstractSignal7Default1(Supplier<? extends G> arg7Default){
             super();
             if(arg7Default!=null){
@@ -10714,8 +10819,17 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default1(Supplier<? extends G> arg7Default, Class<?>... types) {
-            super(types);
+        AbstractSignal7Default1(Supplier<? extends G> arg7Default, @StrictNonNull ArgChecker7<A, B, C, D, E, F, G> argumentTest){
+            super(argumentTest);
+            if(arg7Default!=null){
+                this.arg7Default = arg7Default;
+            }else{
+                throw new QNoDefaultValueException(7);
+            }
+        }
+
+		AbstractSignal7Default1(Supplier<? extends G> arg7Default, Class<?> declaringClass){
+            super(declaringClass);
             if(arg7Default!=null){
                 this.arg7Default = arg7Default;
             }else{
@@ -10723,8 +10837,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default1(@StrictNonNull String signalName, Supplier<? extends G> arg7Default, Class<?>... types) {
-            super(signalName, types);
+        AbstractSignal7Default1(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, Supplier<? extends G> arg7Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG);
             if(arg7Default!=null){
                 this.arg7Default = arg7Default;
             }else{
@@ -10801,14 +10915,6 @@ public final class QMetaObject {
     		this.arg6Default = null;
     	}
 
-		AbstractSignal7Default2(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?> declaringClass){
-            super(arg7Default, declaringClass);
-            this.arg6Default = arg6Default;
-            if(this.arg6Default==null){
-                throw new QNoDefaultValueException(6);
-            }
-        }
-        
         AbstractSignal7Default2(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default){
             super(arg7Default);
             this.arg6Default = arg6Default;
@@ -10817,16 +10923,24 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default2(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
-            super(arg7Default, types);
+        AbstractSignal7Default2(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, @StrictNonNull ArgChecker7<A, B, C, D, E, F, G> argumentTest){
+            super(arg7Default, argumentTest);
+            this.arg6Default = arg6Default;
+            if(this.arg6Default==null){
+                throw new QNoDefaultValueException(6);
+            }
+        }
+
+		AbstractSignal7Default2(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?> declaringClass){
+            super(arg7Default, declaringClass);
             this.arg6Default = arg6Default;
             if(this.arg6Default==null){
                 throw new QNoDefaultValueException(6);
             }
         }
         
-        AbstractSignal7Default2(@StrictNonNull String signalName, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
-            super(signalName, arg7Default, types);
+        AbstractSignal7Default2(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, arg7Default);
             this.arg6Default = arg6Default;
             if(this.arg6Default==null){
                 throw new QNoDefaultValueException(6);
@@ -10889,6 +11003,22 @@ public final class QMetaObject {
     	AbstractSignal7Default3() {
     		this.arg5Default = null;
     	}
+
+        AbstractSignal7Default3(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default){
+            super(arg6Default, arg7Default);
+            this.arg5Default = arg5Default;
+            if(this.arg5Default==null){
+                throw new QNoDefaultValueException(5);
+            }
+        }
+        
+        AbstractSignal7Default3(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, @StrictNonNull ArgChecker7<A, B, C, D, E, F, G> argumentTest){
+            super(arg6Default, arg7Default, argumentTest);
+            this.arg5Default = arg5Default;
+            if(this.arg5Default==null){
+                throw new QNoDefaultValueException(5);
+            }
+        }
     	
 		AbstractSignal7Default3(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?> declaringClass){
             super(arg6Default, arg7Default, declaringClass);
@@ -10898,24 +11028,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default3(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default){
-            super(arg6Default, arg7Default);
-            this.arg5Default = arg5Default;
-            if(this.arg5Default==null){
-                throw new QNoDefaultValueException(5);
-            }
-        }
-        
-        AbstractSignal7Default3(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
-            super(arg6Default, arg7Default, types);
-            this.arg5Default = arg5Default;
-            if(this.arg5Default==null){
-                throw new QNoDefaultValueException(5);
-            }
-        }
-        
-        AbstractSignal7Default3(@StrictNonNull String signalName, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
-            super(signalName, arg6Default, arg7Default, types);
+        AbstractSignal7Default3(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, arg6Default, arg7Default);
             this.arg5Default = arg5Default;
             if(this.arg5Default==null){
                 throw new QNoDefaultValueException(5);
@@ -10972,6 +11086,22 @@ public final class QMetaObject {
     	AbstractSignal7Default4() {
     		this.arg4Default = null;
     	}
+
+        AbstractSignal7Default4(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default){
+            super(arg5Default, arg6Default, arg7Default);
+            this.arg4Default = arg4Default;
+            if(this.arg4Default==null){
+                throw new QNoDefaultValueException(4);
+            }
+        }
+        
+        AbstractSignal7Default4(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, @StrictNonNull ArgChecker7<A, B, C, D, E, F, G> argumentTest){
+            super(arg5Default, arg6Default, arg7Default, argumentTest);
+            this.arg4Default = arg4Default;
+            if(this.arg4Default==null){
+                throw new QNoDefaultValueException(4);
+            }
+        }
     	
 		AbstractSignal7Default4(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?> declaringClass){
             super(arg5Default, arg6Default, arg7Default, declaringClass);
@@ -10981,24 +11111,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default4(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default){
-            super(arg5Default, arg6Default, arg7Default);
-            this.arg4Default = arg4Default;
-            if(this.arg4Default==null){
-                throw new QNoDefaultValueException(4);
-            }
-        }
-        
-        AbstractSignal7Default4(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
-            super(arg5Default, arg6Default, arg7Default, types);
-            this.arg4Default = arg4Default;
-            if(this.arg4Default==null){
-                throw new QNoDefaultValueException(4);
-            }
-        }
-        
-        AbstractSignal7Default4(@StrictNonNull String signalName, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
-            super(signalName, arg5Default, arg6Default, arg7Default, types);
+        AbstractSignal7Default4(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, arg5Default, arg6Default, arg7Default);
             this.arg4Default = arg4Default;
             if(this.arg4Default==null){
                 throw new QNoDefaultValueException(4);
@@ -11050,14 +11164,6 @@ public final class QMetaObject {
     		this.arg3Default = null;
     	}
     	
-		AbstractSignal7Default5(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?> declaringClass){
-            super(arg4Default, arg5Default, arg6Default, arg7Default, declaringClass);
-            this.arg3Default = arg3Default;
-            if(this.arg3Default==null){
-                throw new QNoDefaultValueException(3);
-            }
-        }
-        
         AbstractSignal7Default5(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default){
             super(arg4Default, arg5Default, arg6Default, arg7Default);
             this.arg3Default = arg3Default;
@@ -11066,16 +11172,24 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default5(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
-            super(arg4Default, arg5Default, arg6Default, arg7Default, types);
+        AbstractSignal7Default5(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, @StrictNonNull ArgChecker7<A, B, C, D, E, F, G> argumentTest){
+            super(arg4Default, arg5Default, arg6Default, arg7Default, argumentTest);
+            this.arg3Default = arg3Default;
+            if(this.arg3Default==null){
+                throw new QNoDefaultValueException(3);
+            }
+        }
+    	
+		AbstractSignal7Default5(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?> declaringClass){
+            super(arg4Default, arg5Default, arg6Default, arg7Default, declaringClass);
             this.arg3Default = arg3Default;
             if(this.arg3Default==null){
                 throw new QNoDefaultValueException(3);
             }
         }
         
-        AbstractSignal7Default5(@StrictNonNull String signalName, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
-            super(signalName, arg4Default, arg5Default, arg6Default, arg7Default, types);
+        AbstractSignal7Default5(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, arg4Default, arg5Default, arg6Default, arg7Default);
             this.arg3Default = arg3Default;
             if(this.arg3Default==null){
                 throw new QNoDefaultValueException(3);
@@ -11121,14 +11235,6 @@ public final class QMetaObject {
     		this.arg2Default = null;
     	}
     	
-		AbstractSignal7Default6(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?> declaringClass){
-            super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, declaringClass);
-            this.arg2Default = arg2Default;
-            if(this.arg2Default==null){
-                throw new QNoDefaultValueException(2);
-            }
-        }
-        
         AbstractSignal7Default6(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default){
             super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default);
             this.arg2Default = arg2Default;
@@ -11137,16 +11243,24 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default6(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
-            super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, types);
+        AbstractSignal7Default6(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, @StrictNonNull ArgChecker7<A, B, C, D, E, F, G> argumentTest){
+            super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, argumentTest);
+            this.arg2Default = arg2Default;
+            if(this.arg2Default==null){
+                throw new QNoDefaultValueException(2);
+            }
+        }
+    	
+		AbstractSignal7Default6(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?> declaringClass){
+            super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, declaringClass);
             this.arg2Default = arg2Default;
             if(this.arg2Default==null){
                 throw new QNoDefaultValueException(2);
             }
         }
         
-        AbstractSignal7Default6(@StrictNonNull String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
-            super(signalName, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, types);
+        AbstractSignal7Default6(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default);
             this.arg2Default = arg2Default;
             if(this.arg2Default==null){
                 throw new QNoDefaultValueException(2);
@@ -11192,6 +11306,14 @@ public final class QMetaObject {
                 throw new QNoDefaultValueException(1);
             }
         }
+    	
+		AbstractSignal7Default7(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, @StrictNonNull ArgChecker7<A, B, C, D, E, F, G> argumentTest){
+            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, argumentTest);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
         
         AbstractSignal7Default7(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?> declaringClass){
             super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, declaringClass);
@@ -11201,16 +11323,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal7Default7(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
-            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, types);
-            this.arg1Default = arg1Default;
-            if(this.arg1Default==null){
-                throw new QNoDefaultValueException(1);
-            }
-        }
-        
-        AbstractSignal7Default7(@StrictNonNull String signalName, @StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Class<?>... types) {
-            super(signalName, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, types);
+        AbstractSignal7Default7(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, @StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default);
             this.arg1Default = arg1Default;
             if(this.arg1Default==null){
                 throw new QNoDefaultValueException(1);
@@ -11244,14 +11358,6 @@ public final class QMetaObject {
     		this.arg8Default = null;
     	}
         
-		AbstractSignal8Default1(Supplier<? extends H> arg8Default, Class<?> declaringClass){
-            super(declaringClass);
-            this.arg8Default = arg8Default;
-            if(this.arg8Default==null){
-                throw new QNoDefaultValueException(8);
-            }
-        }
-        
         AbstractSignal8Default1(Supplier<? extends H> arg8Default){
             super();
             this.arg8Default = arg8Default;
@@ -11260,16 +11366,24 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default1(Supplier<? extends H> arg8Default, Class<?>... types) {
-            super(types);
+        AbstractSignal8Default1(Supplier<? extends H> arg8Default, @StrictNonNull ArgChecker8<A, B, C, D, E, F, G, H> argumentTest){
+            super(argumentTest);
+            this.arg8Default = arg8Default;
+            if(this.arg8Default==null){
+                throw new QNoDefaultValueException(8);
+            }
+        }
+
+		AbstractSignal8Default1(Supplier<? extends H> arg8Default, Class<?> declaringClass){
+            super(declaringClass);
             this.arg8Default = arg8Default;
             if(this.arg8Default==null){
                 throw new QNoDefaultValueException(8);
             }
         }
         
-        AbstractSignal8Default1(@StrictNonNull String signalName, Supplier<? extends H> arg8Default, Class<?>... types) {
-            super(signalName, types);
+        AbstractSignal8Default1(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, @StrictNonNull Class<H> typeH, Supplier<? extends H> arg8Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, typeH);
             this.arg8Default = arg8Default;
             if(this.arg8Default==null){
                 throw new QNoDefaultValueException(8);
@@ -11351,14 +11465,6 @@ public final class QMetaObject {
     	AbstractSignal8Default2() {
     		this.arg7Default = null;
     	}
-
-		AbstractSignal8Default2(Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?> declaringClass){
-            super(arg8Default, declaringClass);
-            this.arg7Default = arg7Default;
-            if(this.arg7Default==null){
-                throw new QNoDefaultValueException(7);
-            }
-        }
         
         AbstractSignal8Default2(Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default){
             super(arg8Default);
@@ -11368,16 +11474,24 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default2(Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
-            super(arg8Default, types);
+        AbstractSignal8Default2(Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, @StrictNonNull ArgChecker8<A, B, C, D, E, F, G, H> argumentTest){
+            super(arg8Default, argumentTest);
+            this.arg7Default = arg7Default;
+            if(this.arg7Default==null){
+                throw new QNoDefaultValueException(7);
+            }
+        }
+
+		AbstractSignal8Default2(Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?> declaringClass){
+            super(arg8Default, declaringClass);
             this.arg7Default = arg7Default;
             if(this.arg7Default==null){
                 throw new QNoDefaultValueException(7);
             }
         }
         
-        AbstractSignal8Default2(@StrictNonNull String signalName, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
-            super(signalName, arg8Default, types);
+        AbstractSignal8Default2(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, @StrictNonNull Class<H> typeH, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, typeH, arg8Default);
             this.arg7Default = arg7Default;
             if(this.arg7Default==null){
                 throw new QNoDefaultValueException(7);
@@ -11454,14 +11568,6 @@ public final class QMetaObject {
     		this.arg6Default = null;
     	}
     	
-		AbstractSignal8Default3(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?> declaringClass){
-            super(arg7Default, arg8Default, declaringClass);
-            this.arg6Default = arg6Default;
-            if(this.arg6Default==null){
-                throw new QNoDefaultValueException(6);
-            }
-        }
-        
         AbstractSignal8Default3(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default){
             super(arg7Default, arg8Default);
             this.arg6Default = arg6Default;
@@ -11470,16 +11576,24 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default3(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
-            super(arg7Default, arg8Default, types);
+        AbstractSignal8Default3(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, @StrictNonNull ArgChecker8<A, B, C, D, E, F, G, H> argumentTest){
+            super(arg7Default, arg8Default, argumentTest);
+            this.arg6Default = arg6Default;
+            if(this.arg6Default==null){
+                throw new QNoDefaultValueException(6);
+            }
+        }
+    	
+		AbstractSignal8Default3(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?> declaringClass){
+            super(arg7Default, arg8Default, declaringClass);
             this.arg6Default = arg6Default;
             if(this.arg6Default==null){
                 throw new QNoDefaultValueException(6);
             }
         }
         
-        AbstractSignal8Default3(@StrictNonNull String signalName, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
-            super(signalName, arg7Default, arg8Default, types);
+        AbstractSignal8Default3(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, @StrictNonNull Class<H> typeH, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, typeH, arg7Default, arg8Default);
             this.arg6Default = arg6Default;
             if(this.arg6Default==null){
                 throw new QNoDefaultValueException(6);
@@ -11551,6 +11665,14 @@ public final class QMetaObject {
                 throw new QNoDefaultValueException(5);
             }
         }
+		
+		AbstractSignal8Default4(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, @StrictNonNull ArgChecker8<A, B, C, D, E, F, G, H> argumentTest){
+            super(arg6Default, arg7Default, arg8Default, argumentTest);
+            this.arg5Default = arg5Default;
+            if(this.arg5Default==null){
+                throw new QNoDefaultValueException(5);
+            }
+        }
         
         AbstractSignal8Default4(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?> declaringClass){
             super(arg6Default, arg7Default, arg8Default, declaringClass);
@@ -11560,16 +11682,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default4(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
-            super(arg6Default, arg7Default, arg8Default, types);
-            this.arg5Default = arg5Default;
-            if(this.arg5Default==null){
-                throw new QNoDefaultValueException(5);
-            }
-        }
-        
-        AbstractSignal8Default4(@StrictNonNull String signalName, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
-            super(signalName, arg6Default, arg7Default, arg8Default, types);
+        AbstractSignal8Default4(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, @StrictNonNull Class<H> typeH, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, typeH, arg6Default, arg7Default, arg8Default);
             this.arg5Default = arg5Default;
             if(this.arg5Default==null){
                 throw new QNoDefaultValueException(5);
@@ -11628,14 +11742,6 @@ public final class QMetaObject {
     		this.arg4Default = null;
     	}
     	
-		AbstractSignal8Default5(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?> declaringClass){
-            super(arg5Default, arg6Default, arg7Default, arg8Default, declaringClass);
-            this.arg4Default = arg4Default;
-            if(this.arg4Default==null){
-                throw new QNoDefaultValueException(4);
-            }
-        }
-        
         AbstractSignal8Default5(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default){
             super(arg5Default, arg6Default, arg7Default, arg8Default);
             this.arg4Default = arg4Default;
@@ -11644,16 +11750,24 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default5(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
-            super(arg5Default, arg6Default, arg7Default, arg8Default, types);
+        AbstractSignal8Default5(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, @StrictNonNull ArgChecker8<A, B, C, D, E, F, G, H> argumentTest){
+            super(arg5Default, arg6Default, arg7Default, arg8Default, argumentTest);
+            this.arg4Default = arg4Default;
+            if(this.arg4Default==null){
+                throw new QNoDefaultValueException(4);
+            }
+        }
+    	
+		AbstractSignal8Default5(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?> declaringClass){
+            super(arg5Default, arg6Default, arg7Default, arg8Default, declaringClass);
             this.arg4Default = arg4Default;
             if(this.arg4Default==null){
                 throw new QNoDefaultValueException(4);
             }
         }
         
-        AbstractSignal8Default5(@StrictNonNull String signalName, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
-            super(signalName, arg5Default, arg6Default, arg7Default, arg8Default, types);
+        AbstractSignal8Default5(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, @StrictNonNull Class<H> typeH, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, typeH, arg5Default, arg6Default, arg7Default, arg8Default);
             this.arg4Default = arg4Default;
             if(this.arg4Default==null){
                 throw new QNoDefaultValueException(4);
@@ -11706,14 +11820,6 @@ public final class QMetaObject {
     		this.arg3Default = null;
     	}
     	
-		AbstractSignal8Default6(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?> declaringClass){
-            super(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, declaringClass);
-            this.arg3Default = arg3Default;
-            if(this.arg3Default==null){
-                throw new QNoDefaultValueException(3);
-            }
-        }
-        
         AbstractSignal8Default6(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default){
             super(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
             this.arg3Default = arg3Default;
@@ -11722,16 +11828,24 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default6(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
-            super(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, types);
+        AbstractSignal8Default6(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, @StrictNonNull ArgChecker8<A, B, C, D, E, F, G, H> argumentTest){
+            super(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, argumentTest);
+            this.arg3Default = arg3Default;
+            if(this.arg3Default==null){
+                throw new QNoDefaultValueException(3);
+            }
+        }
+    	
+		AbstractSignal8Default6(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?> declaringClass){
+            super(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, declaringClass);
             this.arg3Default = arg3Default;
             if(this.arg3Default==null){
                 throw new QNoDefaultValueException(3);
             }
         }
         
-        AbstractSignal8Default6(@StrictNonNull String signalName, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
-            super(signalName, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, types);
+        AbstractSignal8Default6(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, @StrictNonNull Class<H> typeH, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, typeH, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
             this.arg3Default = arg3Default;
             if(this.arg3Default==null){
                 throw new QNoDefaultValueException(3);
@@ -11785,6 +11899,14 @@ public final class QMetaObject {
                 throw new QNoDefaultValueException(2);
             }
         }
+    	
+		AbstractSignal8Default7(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, @StrictNonNull ArgChecker8<A, B, C, D, E, F, G, H> argumentTest){
+            super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, argumentTest);
+            this.arg2Default = arg2Default;
+            if(this.arg2Default==null){
+                throw new QNoDefaultValueException(2);
+            }
+        }
         
         AbstractSignal8Default7(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?> declaringClass){
             super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, declaringClass);
@@ -11794,16 +11916,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default7(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
-            super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, types);
-            this.arg2Default = arg2Default;
-            if(this.arg2Default==null){
-                throw new QNoDefaultValueException(2);
-            }
-        }
-        
-        AbstractSignal8Default7(@StrictNonNull String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
-            super(signalName, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, types);
+        AbstractSignal8Default7(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, @StrictNonNull Class<H> typeH, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, typeH, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
             this.arg2Default = arg2Default;
             if(this.arg2Default==null){
                 throw new QNoDefaultValueException(2);
@@ -11845,6 +11959,14 @@ public final class QMetaObject {
                 throw new QNoDefaultValueException(1);
             }
         }
+    	
+		AbstractSignal8Default8(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, @StrictNonNull ArgChecker8<A, B, C, D, E, F, G, H> argumentTest){
+            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, argumentTest);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
         
         AbstractSignal8Default8(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?> declaringClass){
             super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, declaringClass);
@@ -11854,16 +11976,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal8Default8(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
-            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, types);
-            this.arg1Default = arg1Default;
-            if(this.arg1Default==null){
-                throw new QNoDefaultValueException(1);
-            }
-        }
-        
-        AbstractSignal8Default8(@StrictNonNull String signalName, @StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Class<?>... types) {
-            super(signalName, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, types);
+        AbstractSignal8Default8(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, @StrictNonNull Class<H> typeH, @StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, typeH, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
             this.arg1Default = arg1Default;
             if(this.arg1Default==null){
                 throw new QNoDefaultValueException(1);
@@ -11906,6 +12020,14 @@ public final class QMetaObject {
             }
         }
         
+		AbstractSignal9Default1(Supplier<? extends I> arg9Default, @StrictNonNull ArgChecker9<A, B, C, D, E, F, G, H, I> argumentTest){
+            super(argumentTest);
+            this.arg9Default = arg9Default;
+            if(this.arg9Default==null){
+                throw new QNoDefaultValueException(9);
+            }
+        }
+        
         AbstractSignal9Default1(Supplier<? extends I> arg9Default, Class<?> declaringClass){
             super(declaringClass);
             this.arg9Default = arg9Default;
@@ -11914,16 +12036,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default1(Supplier<? extends I> arg9Default, Class<?>... types) {
-            super(types);
-            this.arg9Default = arg9Default;
-            if(this.arg9Default==null){
-                throw new QNoDefaultValueException(9);
-            }
-        }
-        
-        AbstractSignal9Default1(@StrictNonNull String signalName, Supplier<? extends I> arg9Default, Class<?>... types) {
-            super(signalName, types);
+        AbstractSignal9Default1(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, @StrictNonNull Class<H> typeH, @StrictNonNull Class<I> typeI, Supplier<? extends I> arg9Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, typeH, typeI);
             this.arg9Default = arg9Default;
             if(this.arg9Default==null){
                 throw new QNoDefaultValueException(9);
@@ -12018,9 +12132,17 @@ public final class QMetaObject {
     	AbstractSignal9Default2() {
     		this.arg8Default = null;
     	}
-
+    	
 		AbstractSignal9Default2(Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default){
             super(arg9Default);
+            this.arg8Default = arg8Default;
+            if(this.arg8Default==null){
+                throw new QNoDefaultValueException(8);
+            }
+        }
+
+		AbstractSignal9Default2(Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, @StrictNonNull ArgChecker9<A, B, C, D, E, F, G, H, I> argumentTest){
+            super(arg9Default, argumentTest);
             this.arg8Default = arg8Default;
             if(this.arg8Default==null){
                 throw new QNoDefaultValueException(8);
@@ -12035,16 +12157,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default2(Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
-            super(arg9Default, types);
-            this.arg8Default = arg8Default;
-            if(this.arg8Default==null){
-                throw new QNoDefaultValueException(8);
-            }
-        }
-        
-        AbstractSignal9Default2(@StrictNonNull String signalName, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
-            super(signalName, arg9Default, types);
+        AbstractSignal9Default2(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, @StrictNonNull Class<H> typeH, @StrictNonNull Class<I> typeI, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, typeH, typeI, arg9Default);
             this.arg8Default = arg8Default;
             if(this.arg8Default==null){
                 throw new QNoDefaultValueException(8);
@@ -12127,9 +12241,17 @@ public final class QMetaObject {
     	AbstractSignal9Default3() {
     		this.arg7Default = null;
     	}
-
+    	
 		AbstractSignal9Default3(Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default){
             super(arg8Default, arg9Default);
+            this.arg7Default = arg7Default;
+            if(this.arg7Default==null){
+                throw new QNoDefaultValueException(7);
+            }
+        }
+		
+		AbstractSignal9Default3(Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, @StrictNonNull ArgChecker9<A, B, C, D, E, F, G, H, I> argumentTest){
+            super(arg8Default, arg9Default, argumentTest);
             this.arg7Default = arg7Default;
             if(this.arg7Default==null){
                 throw new QNoDefaultValueException(7);
@@ -12144,16 +12266,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default3(Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
-            super(arg8Default, arg9Default, types);
-            this.arg7Default = arg7Default;
-            if(this.arg7Default==null){
-                throw new QNoDefaultValueException(7);
-            }
-        }
-        
-        AbstractSignal9Default3(@StrictNonNull String signalName, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
-            super(signalName, arg8Default, arg9Default, types);
+        AbstractSignal9Default3(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, @StrictNonNull Class<H> typeH, @StrictNonNull Class<I> typeI, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, typeH, typeI, arg8Default, arg9Default);
             this.arg7Default = arg7Default;
             if(this.arg7Default==null){
                 throw new QNoDefaultValueException(7);
@@ -12238,6 +12352,14 @@ public final class QMetaObject {
                 throw new QNoDefaultValueException(6);
             }
         }
+    	
+		AbstractSignal9Default4(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, @StrictNonNull ArgChecker9<A, B, C, D, E, F, G, H, I> argumentTest){
+            super(arg7Default, arg8Default, arg9Default, argumentTest);
+            this.arg6Default = arg6Default;
+            if(this.arg6Default==null){
+                throw new QNoDefaultValueException(6);
+            }
+        }
         
         AbstractSignal9Default4(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?> declaringClass){
             super(arg7Default, arg8Default, arg9Default, declaringClass);
@@ -12247,16 +12369,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default4(Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
-            super(arg7Default, arg8Default, arg9Default, types);
-            this.arg6Default = arg6Default;
-            if(this.arg6Default==null){
-                throw new QNoDefaultValueException(6);
-            }
-        }
-        
-        AbstractSignal9Default4(@StrictNonNull String signalName, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
-            super(signalName, arg7Default, arg8Default, arg9Default, types);
+        AbstractSignal9Default4(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, @StrictNonNull Class<H> typeH, @StrictNonNull Class<I> typeI, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, typeH, typeI, arg7Default, arg8Default, arg9Default);
             this.arg6Default = arg6Default;
             if(this.arg6Default==null){
                 throw new QNoDefaultValueException(6);
@@ -12329,6 +12443,14 @@ public final class QMetaObject {
                 throw new QNoDefaultValueException(5);
             }
         }
+		
+		AbstractSignal9Default5(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, @StrictNonNull ArgChecker9<A, B, C, D, E, F, G, H, I> argumentTest){
+            super(arg6Default, arg7Default, arg8Default, arg9Default, argumentTest);
+            this.arg5Default = arg5Default;
+            if(this.arg5Default==null){
+                throw new QNoDefaultValueException(5);
+            }
+        }
         
         AbstractSignal9Default5(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?> declaringClass){
             super(arg6Default, arg7Default, arg8Default, arg9Default, declaringClass);
@@ -12338,16 +12460,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default5(Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
-            super(arg6Default, arg7Default, arg8Default, arg9Default, types);
-            this.arg5Default = arg5Default;
-            if(this.arg5Default==null){
-                throw new QNoDefaultValueException(5);
-            }
-        }
-        
-        AbstractSignal9Default5(@StrictNonNull String signalName, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
-            super(signalName, arg6Default, arg7Default, arg8Default, arg9Default, types);
+        AbstractSignal9Default5(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, @StrictNonNull Class<H> typeH, @StrictNonNull Class<I> typeI, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, typeH, typeI, arg6Default, arg7Default, arg8Default, arg9Default);
             this.arg5Default = arg5Default;
             if(this.arg5Default==null){
                 throw new QNoDefaultValueException(5);
@@ -12406,6 +12520,14 @@ public final class QMetaObject {
     	AbstractSignal9Default6() {
     		this.arg4Default = null;
     	}
+    	
+    	AbstractSignal9Default6(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, @StrictNonNull ArgChecker9<A, B, C, D, E, F, G, H, I> argumentTest){
+            super(arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, argumentTest);
+            this.arg4Default = arg4Default;
+            if(this.arg4Default==null){
+                throw new QNoDefaultValueException(4);
+            }
+        }
         
 		AbstractSignal9Default6(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default){
             super(arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
@@ -12423,16 +12545,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default6(Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
-            super(arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, types);
-            this.arg4Default = arg4Default;
-            if(this.arg4Default==null){
-                throw new QNoDefaultValueException(4);
-            }
-        }
-        
-        AbstractSignal9Default6(@StrictNonNull String signalName, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
-            super(signalName, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, types);
+        AbstractSignal9Default6(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, @StrictNonNull Class<H> typeH, @StrictNonNull Class<I> typeI, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, typeH, typeI, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
             this.arg4Default = arg4Default;
             if(this.arg4Default==null){
                 throw new QNoDefaultValueException(4);
@@ -12486,8 +12600,16 @@ public final class QMetaObject {
     		this.arg3Default = null;
     	}
     	
-		AbstractSignal9Default7(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default){
+    	AbstractSignal9Default7(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default){
             super(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
+            this.arg3Default = arg3Default;
+            if(this.arg3Default==null){
+                throw new QNoDefaultValueException(3);
+            }
+        }
+    	
+    	AbstractSignal9Default7(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, @StrictNonNull ArgChecker9<A, B, C, D, E, F, G, H, I> argumentTest){
+            super(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, argumentTest);
             this.arg3Default = arg3Default;
             if(this.arg3Default==null){
                 throw new QNoDefaultValueException(3);
@@ -12502,16 +12624,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default7(Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
-            super(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, types);
-            this.arg3Default = arg3Default;
-            if(this.arg3Default==null){
-                throw new QNoDefaultValueException(3);
-            }
-        }
-        
-        AbstractSignal9Default7(@StrictNonNull String signalName, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
-            super(signalName, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, types);
+        AbstractSignal9Default7(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, @StrictNonNull Class<H> typeH, @StrictNonNull Class<I> typeI, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, typeH, typeI, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
             this.arg3Default = arg3Default;
             if(this.arg3Default==null){
                 throw new QNoDefaultValueException(3);
@@ -12566,6 +12680,14 @@ public final class QMetaObject {
                 throw new QNoDefaultValueException(2);
             }
         }
+		
+		AbstractSignal9Default8(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, @StrictNonNull ArgChecker9<A, B, C, D, E, F, G, H, I> argumentTest){
+            super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, argumentTest);
+            this.arg2Default = arg2Default;
+            if(this.arg2Default==null){
+                throw new QNoDefaultValueException(2);
+            }
+        }
         
         AbstractSignal9Default8(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?> declaringClass){
             super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, declaringClass);
@@ -12575,16 +12697,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default8(Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
-            super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, types);
-            this.arg2Default = arg2Default;
-            if(this.arg2Default==null){
-                throw new QNoDefaultValueException(2);
-            }
-        }
-        
-        AbstractSignal9Default8(@StrictNonNull String signalName, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
-            super(signalName, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, types);
+        AbstractSignal9Default8(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, @StrictNonNull Class<H> typeH, @StrictNonNull Class<I> typeI, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, typeH, typeI, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
             this.arg2Default = arg2Default;
             if(this.arg2Default==null){
                 throw new QNoDefaultValueException(2);
@@ -12632,6 +12746,14 @@ public final class QMetaObject {
                 throw new QNoDefaultValueException(1);
             }
         }
+    	
+		AbstractSignal9Default9(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, @StrictNonNull ArgChecker9<A, B, C, D, E, F, G, H, I> argumentTest){
+            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, argumentTest);
+            this.arg1Default = arg1Default;
+            if(this.arg1Default==null){
+                throw new QNoDefaultValueException(1);
+            }
+        }
         
         AbstractSignal9Default9(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?> declaringClass){
             super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, declaringClass);
@@ -12641,16 +12763,8 @@ public final class QMetaObject {
             }
         }
         
-        AbstractSignal9Default9(@StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
-            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, types);
-            this.arg1Default = arg1Default;
-            if(this.arg1Default==null){
-                throw new QNoDefaultValueException(1);
-            }
-        }
-        
-        AbstractSignal9Default9(@StrictNonNull String signalName, @StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default, Class<?>... types) {
-            super(signalName, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, types);
+        AbstractSignal9Default9(@StrictNonNull String signalName, @StrictNonNull Class<A> typeA, @StrictNonNull Class<B> typeB, @StrictNonNull Class<C> typeC, @StrictNonNull Class<D> typeD, @StrictNonNull Class<E> typeE, @StrictNonNull Class<F> typeF, @StrictNonNull Class<G> typeG, @StrictNonNull Class<H> typeH, @StrictNonNull Class<I> typeI, @StrictNonNull Supplier<? extends A> arg1Default, Supplier<? extends B> arg2Default, Supplier<? extends C> arg3Default, Supplier<? extends D> arg4Default, Supplier<? extends E> arg5Default, Supplier<? extends F> arg6Default, Supplier<? extends G> arg7Default, Supplier<? extends H> arg8Default, Supplier<? extends I> arg9Default) {
+            super(signalName, typeA, typeB, typeC, typeD, typeE, typeF, typeG, typeH, typeI, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
             this.arg1Default = arg1Default;
             if(this.arg1Default==null){
                 throw new QNoDefaultValueException(1);
@@ -12954,14 +13068,20 @@ public final class QMetaObject {
 			QtJambi_LibraryUtilities.initialize();
 		}
 		protected static abstract class AbstractSignal extends io.qt.internal.CoreUtility.AbstractSignal {
-	        AbstractSignal(){}
-	    
-	        AbstractSignal(Class<?>[] types) {
-	            super(types);
+	        AbstractSignal(){
+	        	super();
 	        }
 	        
-	        AbstractSignal(Class<?> declaringClass, boolean isStatic) {
-	            super(declaringClass, isStatic);
+	        AbstractSignal(Consumer<Object[]> argumentTest){
+				super(argumentTest);
+			}
+	    
+	        AbstractSignal(Class<?> declaringClass) {
+	            super(declaringClass);
+	        }
+	        
+	        AbstractSignal(Class<?> declaringClass, boolean isDisposed) {
+	            super(declaringClass, isDisposed);
 	        }
 	        
 	        AbstractSignal(@StrictNonNull String signalName, Class<?>[] types) {

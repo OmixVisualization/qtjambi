@@ -1680,6 +1680,7 @@ TypeSystem{
     
     ValueType{
         name: "QDBusError"
+        noImplicitConstructors: true
         EnumType{
             name: "ErrorType"
             RejectEnumValue{
@@ -1834,21 +1835,12 @@ TypeSystem{
             signature: "setMetaTypes(int, const int *)"
             access: Modification.Private
             ModifyArgument{
-                index: 1
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "int __qt_%in(0);\n"+
-                                  "int& %in = __qt_%in;"}
-                }
-            }
-            ModifyArgument{
                 index: 2
                 NoNullPointer{
                 }
-                ArrayType{
+                AsArray{
                     lengthParameter: 1
+                    noOffset: true
                 }
             }
         }
@@ -1876,21 +1868,12 @@ TypeSystem{
             signature: "setMetaTypes(int, const QMetaType *)"
             access: Modification.Friendly
             ModifyArgument{
-                index: 1
-                RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "int __qt_%in(0);\n"+
-                                  "int& %in = __qt_%in;"}
-                }
-            }
-            ModifyArgument{
                 index: 2
                 NoNullPointer{
                 }
-                ArrayType{
+                AsArray{
                     lengthParameter: 1
+                    noOffset: true
                 }
             }
         }

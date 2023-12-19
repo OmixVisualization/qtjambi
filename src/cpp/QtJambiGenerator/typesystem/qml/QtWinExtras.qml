@@ -35,6 +35,7 @@ TypeSystem{
     qtLibrary: "QtWinExtras"
     module: "qtjambi.winextras"
     description: "Provides platform-specific APIs for Windows."
+    defaultPPCondition: "defined(Q_OS_WIN)"
 
     RequiredLibrary{
         name: "QtWidgets"
@@ -229,7 +230,6 @@ TypeSystem{
     
     ObjectType{
         name: "QWinJumpListItem"
-
         EnumType{name: "Type"}
     }
     

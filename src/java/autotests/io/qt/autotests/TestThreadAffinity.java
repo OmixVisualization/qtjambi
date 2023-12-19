@@ -30,8 +30,10 @@ package io.qt.autotests;
 
 import static org.junit.Assert.fail;
 
+import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -598,6 +600,34 @@ public class TestThreadAffinity extends ApplicationInitializer{
 		loop.exec();
 		if(throwable!=null)
 			throw throwable;
+	}
+	
+	public void testFunctionCall() throws InterruptedException{
+		AtomicReference<QObject> object = new AtomicReference<>();
+		QThread jthread = QThread.create(()->{
+			object.set(new QObject());
+			try {
+				synchronized(TestQThread.class) {
+					TestQThread.class.wait();
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		});
+		try {
+			jthread.start();
+			while(object.get()==null) {
+				Thread.sleep(50);
+			}
+			object.get().startTimer(90);
+			fail("QThreadAffinityException expected to be thrown.");
+		}catch(QThreadAffinityException e) {
+		}finally {
+			synchronized(TestQThread.class) {
+				TestQThread.class.notifyAll();
+			}
+			instances.add(new WeakReference<>(jthread));
+		}
 	}
 
     public static void main(String args[]) {

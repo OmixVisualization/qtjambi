@@ -50,6 +50,9 @@ import io.qt.uic.ui4.DomSlots;
 import io.qt.uic.ui4.DomUI;
 import io.qt.uic.ui4.DomWidget;
 
+/**
+ * @hidden
+ */
 public class WriteClass extends TreeWalker {
 	
 	public WriteClass(Uic uic, String className) {

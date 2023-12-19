@@ -9,6 +9,9 @@
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 bool isEquals(const QMetaType& keyMetaType, const void * ptr, const void* ptr2);
+#else
+QT_WARNING_DISABLE_GCC("-Wstrict-aliasing")
+QT_WARNING_DISABLE_CLANG("-Wstrict-aliasing")
 #endif
 
 bool AutoMultiHashAccess::isConstant() {return false;}

@@ -187,45 +187,50 @@ int QtJambiShell::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
         if (QSharedPointer<QtJambiLink> __link = static_cast<const QtJambiShellImpl*>(this)->m_link) {
             if(JniEnvironment __jni_env{1024}){
                   jobject __obj = __link->getJavaObjectLocalRef(__jni_env);
-                  switch (_c) {
-                  case QMetaObject::CreateInstance:
-                      _id = dynamic_meta_object->invokeConstructor(__jni_env, _id, _a); break;
-                  case QMetaObject::InvokeMetaMethod:
-                      _id = dynamic_meta_object->invokeSignalOrSlot(__jni_env, __obj, _id, _a); break;
-                  case QMetaObject::ReadProperty:
-                      _id = dynamic_meta_object->readProperty(__jni_env, __obj, _id, _a); break;
-                  case QMetaObject::WriteProperty:
-                      _id = dynamic_meta_object->writeProperty(__jni_env, __obj, _id, _a); break;
-                  case QMetaObject::ResetProperty:
-                      _id = dynamic_meta_object->resetProperty(__jni_env, __obj, _id, _a); break;
+                  if(!__jni_env->IsSameObject(__obj, nullptr)){
+                      switch (_c) {
+                      case QMetaObject::CreateInstance:
+                          _id = dynamic_meta_object->invokeConstructor(__jni_env, _id, _a); break;
+                      case QMetaObject::InvokeMetaMethod:
+                          _id = dynamic_meta_object->invokeSignalOrSlot(__jni_env, __obj, _id, _a); break;
+                      case QMetaObject::ReadProperty:
+                          _id = dynamic_meta_object->readProperty(__jni_env, __obj, _id, _a); break;
+                      case QMetaObject::WriteProperty:
+                          _id = dynamic_meta_object->writeProperty(__jni_env, __obj, _id, _a); break;
+                      case QMetaObject::ResetProperty:
+                          _id = dynamic_meta_object->resetProperty(__jni_env, __obj, _id, _a); break;
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-                  case QMetaObject::QueryPropertyDesignable:
-                      _id = dynamic_meta_object->queryPropertyDesignable(__jni_env, __obj, _id, _a); break;
-                  case QMetaObject::QueryPropertyScriptable:
-                      _id = dynamic_meta_object->queryPropertyScriptable(__jni_env, __obj, _id, _a); break;
-                  case QMetaObject::QueryPropertyUser:
-                      _id = dynamic_meta_object->queryPropertyUser(__jni_env, __obj, _id, _a); break;
-                  case QMetaObject::QueryPropertyStored:
-                      _id = dynamic_meta_object->queryPropertyStored(__jni_env, __obj, _id, _a); break;
-                  case QMetaObject::QueryPropertyEditable:
-                      _id = dynamic_meta_object->queryPropertyEditable(__jni_env, __obj, _id, _a); break;
+                      case QMetaObject::QueryPropertyDesignable:
+                          _id = dynamic_meta_object->queryPropertyDesignable(__jni_env, __obj, _id, _a); break;
+                      case QMetaObject::QueryPropertyScriptable:
+                          _id = dynamic_meta_object->queryPropertyScriptable(__jni_env, __obj, _id, _a); break;
+                      case QMetaObject::QueryPropertyUser:
+                          _id = dynamic_meta_object->queryPropertyUser(__jni_env, __obj, _id, _a); break;
+                      case QMetaObject::QueryPropertyStored:
+                          _id = dynamic_meta_object->queryPropertyStored(__jni_env, __obj, _id, _a); break;
+                      case QMetaObject::QueryPropertyEditable:
+                          _id = dynamic_meta_object->queryPropertyEditable(__jni_env, __obj, _id, _a); break;
 #else
-                  case QMetaObject::BindableProperty:
-                      _id = dynamic_meta_object->bindableProperty(__jni_env, __obj, _id, _a); break;
+                      case QMetaObject::BindableProperty:
+                          _id = dynamic_meta_object->bindableProperty(__jni_env, __obj, _id, _a); break;
 #endif
 #if 0
-                  case QMetaObject::IndexOfMethod:
-                      printf("QMetaObject::IndexOfMethod\n");
-                      break;
-                  case QMetaObject::RegisterPropertyMetaType:
-                      printf("QMetaObject::RegisterPropertyMetaType\n");
-                      break;
-                  case QMetaObject::RegisterMethodArgumentMetaType:
-                      printf("QMetaObject::RegisterMethodArgumentMetaType\n");
-                      break;
+                      case QMetaObject::IndexOfMethod:
+                          printf("QMetaObject::IndexOfMethod\n");
+                          break;
+                      case QMetaObject::RegisterPropertyMetaType:
+                          printf("QMetaObject::RegisterPropertyMetaType\n");
+                          break;
+                      case QMetaObject::RegisterMethodArgumentMetaType:
+                          printf("QMetaObject::RegisterMethodArgumentMetaType\n");
+                          break;
 #endif
-                  default:
-                      break;
+                      default:
+                          break;
+                      }
+                  }else if(__link->pointer() && !__link->isDeleteLater()){
+                      qCWarning(DebugAPI::internalCategory, "QtJambiMetaObject::metaCall: metaCall on incomplete object ot type %s",
+                                dynamic_meta_object->className());
                   }
              }
         }

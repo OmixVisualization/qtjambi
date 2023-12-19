@@ -19,13 +19,13 @@
 			<then>
 				<if>
 					<not>
-						<available file="${extjardir}/jsr305.jar" type="file"/>
+						<available file="${resourcesdir}/jsr305.jar" type="file"/>
 					</not>
 					<then>
-						<mkdir dir="${extjardir}"/>
+						<mkdir dir="${resourcesdir}"/>
 						<trycatch>
 							<try>
-								<get src="${jsr305.url}" dest="${extjardir}/jsr305.jar" verbose="true"/>
+								<get src="${jsr305.url}" dest="${resourcesdir}/jsr305.jar" verbose="true"/>
 							</try>
 							<catch>
 								<echo>Unable to download ${jsr305.url}. Defaulting to no-jsr305.</echo>
@@ -37,19 +37,19 @@
 				<if>
 					<not>
 						<or>
-							<available file="${extjardir}/kotlin-annotations-jvm.jar" type="file"/>
+							<available file="${resourcesdir}/kotlin-annotations-jvm.jar" type="file"/>
 							<istrue value="${qtjambi.no.jsr305}"/>
 						</or>
 					</not>
 					<then>
-					    <mkdir dir="${extjardir}"/>
-						<get src="${kotlin-annotations-jvm.url}" dest="${extjardir}/kotlin-annotations-jvm.jar" verbose="true"/>
+					    <mkdir dir="${resourcesdir}"/>
+						<get src="${kotlin-annotations-jvm.url}" dest="${resourcesdir}/kotlin-annotations-jvm.jar" verbose="true"/>
 					</then>
 				</if>
 			</then>
 		</if>
         <delete dir="${java.outdir}/${module}" failonerror="no"/>
-        <condition property="qtjambi-retro" value="Retro" else="RetroJDK8">
+        <condition property="retroversion" value="11" else="8">
             <istrue value="${java.module.based}"/>
         </condition>
         <condition property="jsr305-dir" value="non-jsr305" else="jsr305">
@@ -57,6 +57,9 @@
         </condition>
         <property name="destdir" value="${deploymentdir}"/>
         <mkdir dir="${destdir}"/>
+		<condition property="qstackversion" value="8" else="21">
+			<less arg1="${target.java.version}" arg2="21"/>
+		</condition>
 		<if>
 			<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
 			<then>
@@ -69,8 +72,9 @@
 				<path id="sourcedirs">
 					<pathelement location="${generator.outputdir}/java/${module}"/>
 					<pathelement location="${antfile.dir}/main"/>
-					<pathelement location="${antfile.dir}/${qtjambi-retro}"/>
+					<pathelement location="${antfile.dir}/Retro-JDK${retroversion}"/>
 					<pathelement location="${antfile.dir}/Qt${qtjambi.soname.version.major}"/>
+					<pathelement location="${antfile.dir}/Qt${qtjambi.soname.version.major}-JDK${qstackversion}"/>
 					<pathelement location="${antfile.dir}/Qt${qtjambi.soname.version.major}.${subversion}"/>
 					<pathelement location="${antfile.dir}/${jsr305-dir}"/>
 				</path>
@@ -79,7 +83,8 @@
 				<path id="sourcedirs">
 					<pathelement location="${generator.outputdir}/java/${module}"/>
 					<pathelement location="${antfile.dir}/main"/>
-					<pathelement location="${antfile.dir}/${qtjambi-retro}"/>
+					<pathelement location="${antfile.dir}/Retro-JDK${retroversion}"/>
+					<pathelement location="${antfile.dir}/Qt${qtjambi.soname.version.major}-JDK${qstackversion}"/>
 					<pathelement location="${antfile.dir}/Qt${qtjambi.soname.version.major}"/>
 					<pathelement location="${antfile.dir}/${jsr305-dir}"/>
 				</path>

@@ -48,7 +48,7 @@ public final class QIntPropertyBinding extends QUntypedPropertyBinding {
 
 	/**
 	 * Creates a new <code>QIntPropertyBinding</code> with the given functor <code>f</code>.
-	 * @param t
+	 * @param f
 	 */
 	public QIntPropertyBinding(@StrictNonNull IntSupplier f) {
 		super(f);
@@ -120,8 +120,6 @@ public final class QIntPropertyBinding extends QUntypedPropertyBinding {
 
 	/**
 	 * Creates a <code>null</code>-<code>QIntPropertyBinding</code>.
-	 * @param binding
-	 * @return binding copy
 	 * @see QUntypedPropertyBinding#isNull()
 	 */
 	public QIntPropertyBinding() {

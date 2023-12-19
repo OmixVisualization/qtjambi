@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -70,12 +71,17 @@ public class CreateNativeDeploymentTask extends Task {
 	}
 
     private String msg = "";
+    boolean skipNativeJar = true;
     
 	@Override
     public void execute() throws BuildException {
         getProject().log(this, msg, Project.MSG_INFO);
         PropertyHelper propertyHelper = PropertyHelper.getPropertyHelper(getProject());
         boolean useFrameworks = Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_GENERATE_FRAMEWORKS));
+        skipNativeJar = true;
+        if(jarFile==null || jarFile.isEmpty() || !new File(jarFile).exists() || plugin) {
+        	skipNativeJar = false;
+        }
     	String libraryIncludes = "";
     	String sourcesIncludes = "";
     	List<String> sourcesPaths = new ArrayList<>();
@@ -142,50 +148,32 @@ public class CreateNativeDeploymentTask extends Task {
 							libcdir = new java.io.File(libcdir, "libs");
 							libcdir = new java.io.File(libcdir, abi);
 							libc_for_android = new java.io.File(libcdir, "libc++_shared.so");
+							if(!libc_for_android.exists()) {
+								libcdir = new java.io.File(ndkdir, "toolchains");
+								libcdir = new java.io.File(libcdir, "llvm");
+								libcdir = new java.io.File(libcdir, "prebuilt");
+								libcdir = new java.io.File(libcdir, "windows-x86_64");
+								libcdir = new java.io.File(libcdir, "sysroot");
+								libcdir = new java.io.File(libcdir, "usr");
+								libcdir = new java.io.File(libcdir, "lib");
+								switch(OSInfo.crossOSArchName()) {
+					        	case OSInfo.K_ANDROID_ARM32:
+					        		libcdir = new java.io.File(libcdir, "arm-linux-androideabi");
+					        		break;
+					        	case OSInfo.K_ANDROID_ARM64:
+					        		libcdir = new java.io.File(libcdir, "aarch64-linux-android");
+					        		break;
+					        	case OSInfo.K_ANDROID_X86:
+					        		libcdir = new java.io.File(libcdir, "i686-linux-android");
+					        		break;
+					        	default: //case OSInfo.K_ANDROID_X64:
+					        		libcdir = new java.io.File(libcdir, "x86_64-linux-android");
+					        		break;
+					        	}
+								libc_for_android = new java.io.File(libcdir, "libc++_shared.so");
+							}
 						}
 					}
-					/*
-					Document resources = builder.getDOMImplementation().createDocument(
-							null,
-							"resources",
-							null
-						);
-					Element arrayElement = resources.createElement("array");
-					arrayElement.setAttribute("name", "bundled_libs");
-					resources.getDocumentElement().appendChild(arrayElement);
-					arrayElement = resources.createElement("array");
-					arrayElement.setAttribute("name", "qt_libs");
-					Element itemElement = resources.createElement("item");
-					itemElement.setTextContent(abi+";QtJambi_"+abi);
-					arrayElement.appendChild(itemElement);
-					resources.getDocumentElement().appendChild(arrayElement);
-					arrayElement = resources.createElement("array");
-					arrayElement.setAttribute("name", "load_local_libs");
-					resources.getDocumentElement().appendChild(arrayElement);
-					arrayElement = resources.createElement("string");
-					arrayElement.setAttribute("name", "static_init_classes");
-					resources.getDocumentElement().appendChild(arrayElement);
-					arrayElement = resources.createElement("string");
-					arrayElement.setAttribute("name", "use_local_qt_libs");
-					arrayElement.setTextContent("1");
-					resources.getDocumentElement().appendChild(arrayElement);
-					arrayElement = resources.createElement("string");
-					arrayElement.setAttribute("name", "bundle_local_qt_libs");
-					arrayElement.setTextContent("1");
-					resources.getDocumentElement().appendChild(arrayElement);
-					java.io.File resourcesFile = directory;
-					resourcesFile = new java.io.File(resourcesFile, "res");
-					resourcesFile = new java.io.File(resourcesFile, "values");
-					resourcesFile.mkdirs();
-					resourcesFile = new java.io.File(resourcesFile, abi+".xml");
-					try(FileOutputStream fos = new FileOutputStream(resourcesFile)){
-						StreamResult result = new StreamResult(fos);
-						transformer.transform(new DOMSource(resources), result);
-					}
-					if(!libraryIncludes.isEmpty())
-						libraryIncludes += ",";
-					libraryIncludes += resourcesFile.getParentFile().getParentFile().getName()+"/"+resourcesFile.getParentFile().getName()+"/"+resourcesFile.getName();
-					*/
 					break;
 				}
 				libdir = "lib";
@@ -203,8 +191,8 @@ public class CreateNativeDeploymentTask extends Task {
 				targetLibDir = new java.io.File(targetLibDir, abi);
 				targetLibDir.mkdirs();
 				if(!forceDebugInfo) {
-					if(libc_for_android!=null && libc_for_android.exists()) {
-						Files.copy(libc_for_android.toPath(), new java.io.File(targetLibDir, libc_for_android.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
+					if(libc_for_android!=null) {
+						copyFiles(libc_for_android, new java.io.File(targetLibDir, libc_for_android.getName()));
 						if(!libraryIncludes.isEmpty())
 							libraryIncludes += ",";
 						libraryIncludes += libdir + "/" + targetLibDir.getName() + "/" + libc_for_android.getName();
@@ -228,12 +216,6 @@ public class CreateNativeDeploymentTask extends Task {
 				break;
 				default: break;
 			}
-//			String debugLib1 = debug ? "_debug" : "";
-//			String debugQtLib = debugLib1;
-//	        if(qtMajorVersion==5 && qtMinorVersion>=14){
-//	        	debugQtLib = "";
-//	        }
-//	        String qtlibdir = (String)PropertyHelper.getProperty(getProject(), "qtjambi.qt.libdir");
 	        
         	switch(moduleName) {
 			case "qtjambi.deployer":
@@ -418,14 +400,6 @@ public class CreateNativeDeploymentTask extends Task {
 					}
 				}
 				
-//				if(isMacBundle && "QtJambiLauncher".equals(name)) {
-//					libraryIncludes += "/Contents/MacOS/QtJambiLauncher";
-//					if(debug)
-//						libraryIncludes += "_debug";
-//					libraryIncludes += "," + jarpath + "/" + libName + "/Contents/Resources/empty.lproj";
-//					libraryIncludes += "," + jarpath + "/" + libName + "/Contents/Info.plist";
-//					libraryIncludes += "," + jarpath + "/" + libName + "/Contents/PkgInfo";
-//				}
 				java.io.File libFile = new java.io.File(new java.io.File(builddir, _libdir), libName);
 				java.io.File includeDir = new java.io.File(new java.io.File(builddir, "include"), name);
 				java.io.File target = new java.io.File(targetLibDir, libName);
@@ -479,13 +453,13 @@ public class CreateNativeDeploymentTask extends Task {
 					continue;
 				}else {
 //					System.out.println("Copying "+libFile+" to "+target+".");
-					Files.copy(libFile.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+					copyFiles(libFile, target);
 					if(includeDir.isDirectory() && !forceDebugInfo) {
 						java.io.File incDir = new java.io.File(new java.io.File(directory, "include"), name);
 						incDir.mkdirs();
 						for(File header : includeDir.listFiles()) {
 							if(!Files.isSymbolicLink(header.toPath())){
-								Files.copy(header.toPath(), new java.io.File(incDir, header.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+								copyFiles(header, new java.io.File(incDir, header.getName()));
 								Element libraryElement = doc.createElement("file");
 								libraryElement.setAttribute("name", "include/"+name+"/"+header.getName());
 								doc.getDocumentElement().appendChild(libraryElement);
@@ -502,8 +476,7 @@ public class CreateNativeDeploymentTask extends Task {
 								dbgFile = new java.io.File(new java.io.File(builddir, "lib"), dbgName);
 							}
 							if(dbgFile.exists()) {
-								java.io.File pdbTarget = new java.io.File(targetLibDir, dbgName);
-								Files.copy(dbgFile.toPath(), pdbTarget.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+								copyFiles(dbgFile, new java.io.File(targetLibDir, dbgName));
 								if(!libraryIncludes.isEmpty())
 									libraryIncludes += ",";
 								libraryIncludes += jarpath + "/" + dbgName;
@@ -513,8 +486,7 @@ public class CreateNativeDeploymentTask extends Task {
 							}else{
 								dbgFile = new java.io.File(new java.io.File(builddir, _libdir), libName+".debug");
 								if(dbgFile.exists()) {
-									java.io.File pdbTarget = new java.io.File(targetLibDir, libName+".debug");
-									Files.copy(dbgFile.toPath(), pdbTarget.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+									copyFiles(dbgFile, new java.io.File(targetLibDir, libName+".debug"));
 									if(!libraryIncludes.isEmpty())
 										libraryIncludes += ",";
 									libraryIncludes += jarpath + "/" + libName+".debug";
@@ -531,7 +503,7 @@ public class CreateNativeDeploymentTask extends Task {
 							if(qtjambiLibFile.exists()) {
 								java.io.File targetLibdir = new java.io.File(directory, "lib");
 								targetLibdir.mkdirs();
-								Files.copy(qtjambiLibFile.toPath(), new java.io.File(targetLibdir, qtjambiLibFile.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+								copyFiles(qtjambiLibFile, new java.io.File(targetLibdir, qtjambiLibFile.getName()));
 								if(!libraryIncludes.isEmpty())
 									libraryIncludes += ",";
 								libraryIncludes += "lib/" + qtjambiLibFile.getName();
@@ -576,7 +548,7 @@ public class CreateNativeDeploymentTask extends Task {
 							        }
 								}else {
 									java.io.File dbgTarget = new java.io.File(targetLibDir, dbgName);
-									Files.copy(dbgFile.toPath(), dbgTarget.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+									copyFiles(dbgFile, dbgTarget);
 									Element libraryElement = doc.createElement("file");
 									libraryElement.setAttribute("name", "lib/"+dbgTarget.getName());
 									doc.getDocumentElement().appendChild(libraryElement);
@@ -591,8 +563,7 @@ public class CreateNativeDeploymentTask extends Task {
 						if(debug || forceDebugInfo) {
 							java.io.File dbgFile = new java.io.File(new java.io.File(builddir, _libdir), libName+".debug");
 							if(dbgFile.exists()) {
-								java.io.File pdbTarget = new java.io.File(targetLibDir, libName+".debug");
-								Files.copy(dbgFile.toPath(), pdbTarget.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+								copyFiles(dbgFile, new java.io.File(targetLibDir, libName+".debug"));
 								if(!libraryIncludes.isEmpty())
 									libraryIncludes += ",";
 								libraryIncludes += jarpath + "/" + libName+".debug";
@@ -603,152 +574,6 @@ public class CreateNativeDeploymentTask extends Task {
 						}
 						break;
 					}
-				}
-				switch(OSInfo.crossOS()) {
-				case Linux:/*
-					switch_moduleName:{
-						switch(moduleName) {
-						case "qtjambi.deployer":
-							switch(name) {
-							case "QtJambiLauncher":
-								try{
-									Exec.exec (this, new String[]{"chrpath", "--replace", "$ORIGIN/lib:$ORIGIN/../lib", target.getAbsolutePath()}, targetLibDir, getProject(), true );
-								}catch(Exception e){
-								}
-								break switch_moduleName;
-							case "QtJambiPlugin":
-								try{
-									Exec.exec (this, new String[]{"chrpath", "--replace", "$ORIGIN/../../lib", target.getAbsolutePath()}, targetLibDir, getProject(), true );
-								}catch(Exception e){
-								}
-								break switch_moduleName;
-							case "jarimport":
-								try{
-									Exec.exec (this, new String[]{"chrpath", "--replace", "$ORIGIN/../lib"
-																						+ ":$ORIGIN/../../lib"
-																						+ ":$ORIGIN/../../../lib"
-																						+ ":$ORIGIN/../../../../lib"
-																						+ ":$ORIGIN/../../../../../lib"
-																						+ ":$ORIGIN/../../../../../../lib", target.getAbsolutePath()}, targetLibDir, getProject(), true );
-								}catch(Exception e){
-								}
-								break switch_moduleName;
-								default:
-							}
-						default:
-							try{
-								Exec.exec (this, new String[]{"chrpath", "--replace", "$ORIGIN/.", target.getAbsolutePath()}, targetLibDir, getProject(), true );
-							}catch(Exception e){
-							}
-						}
-					}*/
-					break;
-				case MacOS:/*
-					switch(moduleName) {
-					case "containeraccess": break;
-					default:
-						{
-							String libInfix = (String)PropertyHelper.getProperty(getProject(), "qtjambi.qt.libinfix");
-							if(isMacExecutable) {
-								libName += "/Contents/MacOS/"+name;
-								if(debug)
-									libName += "_debug";
-							}
-							OToolOut otoolOut = no_otool ? null : getOtoolOut(this, libName, targetLibDir);
-					        if(otoolOut==null && !no_otool) {
-					        	getProject().log(this, "otool does not provide info for " + libName, Project.MSG_INFO);
-					        }
-					        final List<String> command =  new ArrayList<String>();
-					        command.add("install_name_tool");
-					        command.add("-change");
-					        command.add("");
-					        command.add("@rpath/");
-					        command.add(libName);
-					        if(!name.equals("QtJambi")) {
-						        for (String library : new String[]{
-						            "libQtJambi"+debugLib1+"."+qtMajorVersion+".jnilib"
-						        }) {
-						            command.set(2, library);
-						            command.set(3, "@rpath/"+library);
-						            Exec.execute(this, command, targetLibDir, getProject());
-						        }
-					        }
-					        
-					        boolean useFrameworks = Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_USE_FRAMEWORK));
-					        boolean convertQtFrameworks = Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_CONVERT_QT_FRAMEWORK));
-					        String[] libraries = {};
-					        if(convertQtFrameworks){
-					        	if(qtMajorVersion<6) {
-						            for (String library : libraries) {
-						                command.set(2, "@rpath/Qt"+library+".framework/Versions/"+qtMajorVersion+"/Qt"+library);
-						                command.set(3, "@rpath/libQt"+qtMajorVersion+library+libInfix+debugQtLib+"."+qtMajorVersion+".dylib");
-						                Exec.execute(this, command, targetLibDir, getProject());
-						            }
-					        	}else {
-					        		for (String library : libraries) {
-						                command.set(2, "@rpath/Qt"+library+".framework/Versions/A/Qt"+library);
-						                command.set(3, "@rpath/libQt"+qtMajorVersion+library+libInfix+debugQtLib+"."+qtMajorVersion+".dylib");
-						                Exec.execute(this, command, targetLibDir, getProject());
-						            }
-					        	}
-					        }else {
-					        	if(!useFrameworks) {
-						        	for (String library : libraries) {
-						                command.set(2, "libQt"+qtMajorVersion+library+libInfix+debugLib1+"."+qtMajorVersion+".dylib");
-						                command.set(3, "@rpath/libQt"+qtMajorVersion+library+libInfix+debugQtLib+"."+qtMajorVersion+".dylib");
-						                Exec.execute(this, command, targetLibDir, getProject());
-						            }
-					        	}
-					            if(qtlibdir!=null){
-					                for (String library : new String[]{
-					                    "libQtJambi"+debugLib1+"."+qtMajorVersion+".jnilib"
-					                }) {
-					                    command.set(2, qtlibdir+"/"+library);
-					                    command.set(3, "@rpath/"+library);
-					                    Exec.execute(this, command, targetLibDir, getProject());
-					                }
-					                for (String library : libraries) {
-					                    command.set(2, qtlibdir+"/libQt"+qtMajorVersion+library+libInfix+debugLib1+"."+qtMajorVersion+".dylib");
-					                    command.set(3, "@rpath/libQt"+qtMajorVersion+library+libInfix+debugLib1+"."+qtMajorVersion+".dylib");
-					                    Exec.execute(this, command, targetLibDir, getProject());
-					                }
-					            }
-					        }
-					        Set<String> deleteCommands = new TreeSet<>();
-					        String path = "@executable_path/../Frameworks";
-					        if(otoolOut==null || otoolOut.rpaths.contains(path)) {
-					        	deleteCommands.add(path);
-					        }
-					        path = "@loader_path/Frameworks";
-					        if(otoolOut==null || otoolOut.rpaths.contains(path)) {
-					        	deleteCommands.add(path);
-					        }
-					        path = AntUtil.getPropertyAsString(propertyHelper, Constants.LIBDIR);
-							if(otoolOut==null || otoolOut.rpaths.contains(path)) {
-								deleteCommands.add(path);
-							}
-							List<String> deletes = new ArrayList<>(deleteCommands);
-							while(!deletes.isEmpty()) {
-					    		List<String> commands = new ArrayList<>();
-								commands.add("install_name_tool");
-					    		for (int i = 0; i < 10 && i < deletes.size(); i++) 
-					    		{
-					                commands.add("-delete_rpath");
-									commands.add(deletes.remove(0));
-								}
-								commands.add(libName);
-								try{
-									Exec.exec(this, commands.toArray(new String[commands.size()]), targetLibDir, getProject(), false);
-								} catch ( BuildException e )
-						        {
-						        	getProject().log(this, " - " + (e.getMessage()!=null && !e.getMessage().isEmpty() ? e.getMessage() : e), e, Project.MSG_INFO);
-						        }
-					    	}
-						}
-					}*/
-					break;
-				default:
-					break;
 				}
 				if(!isMacBundle) {
 					_libdir = libdir;
@@ -828,11 +653,6 @@ public class CreateNativeDeploymentTask extends Task {
 							break;
 						case MacOS:
 							if(useFrameworks) {
-//								if(debug)
-//									libraryIncludes += "_debug";
-//								libraryIncludes += "," + jarpath + "/" + libName + "/Contents/Resources/empty.lproj";
-//								libraryIncludes += "," + jarpath + "/" + libName + "/Contents/Info.plist";
-//								libraryIncludes += "," + jarpath + "/" + libName + "/Contents/PkgInfo";
 								break;
 							}
 							//fallthrough:
@@ -842,49 +662,99 @@ public class CreateNativeDeploymentTask extends Task {
 							symlinkElement.setAttribute("name", _libdir+"/"+shortName);
 							symlinkElement.setAttribute("target", _libdir+"/"+libName);
 							doc.getDocumentElement().appendChild(symlinkElement);
-							try{
-								getProject().log(this, "create symbolic link " + new java.io.File(target.getParentFile(), shortName) + " -> " + libName, Project.MSG_INFO);
-								Files.createSymbolicLink(new java.io.File(target.getParentFile(), shortName).toPath(), Path.of(target.getName()));
-							}catch(java.nio.file.FileAlreadyExistsException ex) {
-							} catch (Exception ex) {
-								ex.printStackTrace();
+							Path link = new java.io.File(target.getParentFile(), shortName).toPath();
+							boolean create = true;
+							if(Files.exists(link)) {
+								create = false;
+								if(!Files.isSymbolicLink(link)){
+		    						create = true;
+		    					}else {
+		    						Path targetPath = Files.readSymbolicLink(link);
+		    						if(!Path.of(target.getName()).equals(targetPath)) {
+		    							create = true;
+		    						}
+		    					}
 							}
+							if(create) {
+								try{
+									Files.deleteIfExists(link);
+									getProject().log(this, "create symbolic link " + link + " -> " + libName, Project.MSG_INFO);
+									Files.createSymbolicLink(link, Path.of(target.getName()));
+								}catch(java.nio.file.FileAlreadyExistsException ex) {
+								} catch (Exception ex) {
+									ex.printStackTrace();
+								}
+	    					}
 							symlinkElement = doc.createElement("symlink");
 							shortName = formatQtJambiName(name, debug, qtMajorVersion, -1, -1);
 							symlinkElement.setAttribute("name", _libdir+"/"+shortName);
 							symlinkElement.setAttribute("target", _libdir+"/"+libName);
 							doc.getDocumentElement().appendChild(symlinkElement);
-							try{
-								getProject().log(this, "create symbolic link " + new java.io.File(target.getParentFile(), shortName) + " -> " + libName, Project.MSG_INFO);
-								Files.createSymbolicLink(new java.io.File(target.getParentFile(), shortName).toPath(), Path.of(target.getName()));
-							}catch(java.nio.file.FileAlreadyExistsException ex) {
-							} catch (Exception ex) {
-								ex.printStackTrace();
+							link = new java.io.File(target.getParentFile(), shortName).toPath();
+							create = true;
+							if(Files.exists(link)) {
+								create = false;
+								if(!Files.isSymbolicLink(link)){
+		    						create = true;
+		    					}else {
+		    						Path targetPath = Files.readSymbolicLink(link);
+		    						if(!Path.of(target.getName()).equals(targetPath)) {
+		    							create = true;
+		    						}
+		    					}
 							}
+							if(create) {
+								try{
+									Files.deleteIfExists(link);
+									getProject().log(this, "create symbolic link " + link + " -> " + libName, Project.MSG_INFO);
+									Files.createSymbolicLink(link, Path.of(target.getName()));
+								}catch(java.nio.file.FileAlreadyExistsException ex) {
+								} catch (Exception ex) {
+									ex.printStackTrace();
+								}
+	    					}
 							symlinkElement = doc.createElement("symlink");
 							shortName = formatQtJambiName(name, debug, qtMajorVersion, qtMinorVersion, -1);
 							symlinkElement.setAttribute("name", _libdir+"/"+shortName);
 							symlinkElement.setAttribute("target", _libdir+"/"+libName);
 							doc.getDocumentElement().appendChild(symlinkElement);
-							try{
-								getProject().log(this, "create symbolic link " + new java.io.File(target.getParentFile(), shortName) + " -> " + libName, Project.MSG_INFO);
-								Files.createSymbolicLink(new java.io.File(target.getParentFile(), shortName).toPath(), Path.of(target.getName()));
-							}catch(java.nio.file.FileAlreadyExistsException ex) {
-							} catch (Exception ex) {
-								ex.printStackTrace();
+							link = new java.io.File(target.getParentFile(), shortName).toPath();
+							create = true;
+							if(Files.exists(link)) {
+								create = false;
+								if(!Files.isSymbolicLink(link)){
+		    						create = true;
+		    					}else {
+		    						Path targetPath = Files.readSymbolicLink(link);
+		    						if(!Path.of(target.getName()).equals(targetPath)) {
+		    							create = true;
+		    						}
+		    					}
 							}
+							if(create) {
+								try{
+									Files.deleteIfExists(link);
+									getProject().log(this, "create symbolic link " + link + " -> " + libName, Project.MSG_INFO);
+									Files.createSymbolicLink(link, Path.of(target.getName()));
+								}catch(java.nio.file.FileAlreadyExistsException ex) {
+								} catch (Exception ex) {
+									ex.printStackTrace();
+								}
+	    					}
 							break;
 						}
 					}
 				}
 			}
 			
-			java.io.File deploymentFile = new java.io.File(directory, "qtjambi-deployment.xml");
+			java.io.File metainfFile = new java.io.File(directory, "META-INF");
+			metainfFile.mkdirs();
+			java.io.File deploymentFile = new java.io.File(metainfFile, "qtjambi-deployment.xml");
         	deploymentFile.delete();
 			boolean isUtilities = false;
 			switch(moduleName) {
 			case "qtjambi.deployer":
-				deploymentFile = new java.io.File(directory, "qtjambi-utilities.xml");
+				deploymentFile = new java.io.File(metainfFile, "qtjambi-utilities.xml");
 				deploymentFile.delete();
 				isUtilities = true;
 				switch(OSInfo.crossOS()) {
@@ -899,18 +769,24 @@ public class CreateNativeDeploymentTask extends Task {
 				default:
 					if(doc.getDocumentElement().hasChildNodes()) {
 						if(!AntUtil.getPropertyAsString(propertyHelper, Constants.OSNAME).startsWith("android") || isUtilities) {
-							libraryIncludes += "," + deploymentFile.getName();
+							libraryIncludes += ",META-INF/" + deploymentFile.getName();
 							try(FileOutputStream fos = new FileOutputStream(deploymentFile)){
 								StreamResult result = new StreamResult(fos);
 								transformer.transform(new DOMSource(doc), result);
 							}
 						}else if(!isUtilities){
-							System.out.println("Skipping qtjambi-deployment.xml for android bundle.");
+							System.out.println("Skipping META-INF/qtjambi-deployment.xml for android bundle.");
 						}
 					}else {
-						System.out.println("Skipping qtjambi-deployment.xml: no entries.");
+						System.out.println("Skipping META-INF/qtjambi-deployment.xml: no entries.");
 					}
         	}
+			if(!"true".equalsIgnoreCase(getProject().getProperty("qtjambi.force.native-jar-creation"))) {
+				if(skipNativeJar) {
+					libraryIncludes = sourcesIncludes = "";
+					sourcesPaths.clear();
+				}
+			}
 		}catch(RuntimeException | Error e){
 			throw e;
 		}catch(Exception e){
@@ -926,11 +802,24 @@ public class CreateNativeDeploymentTask extends Task {
 	private String libraries;
 	private String moduleName;
 	private String outputDirectory;
+	private String jarFile;
 	private boolean debug = false;
 	private boolean forceDebugInfo = false;
 	private boolean plugin = false;
+	
+	private void copyFiles(java.io.File sourceFile, java.io.File targetFile) throws IOException {
+		Path sourceFilePath = sourceFile.toPath();
+		Path targetFilePath = targetFile.toPath();
+		if(Files.notExists(targetFilePath)
+				|| Files.getLastModifiedTime(targetFilePath).to(TimeUnit.SECONDS)!=Files.getLastModifiedTime(sourceFilePath).to(TimeUnit.SECONDS)
+				|| Files.size(targetFilePath)!=Files.size(sourceFilePath)) {
+			skipNativeJar = false;
+			targetFile.getParentFile().mkdirs();
+			Files.copy(sourceFilePath, targetFilePath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.COPY_ATTRIBUTES);
+		}
+	}
     
-    static void copySubdirs(File root, File srcDir, File destDir, boolean debug, List<Map.Entry<String,Boolean>> additionalFiles, boolean allowHeaders) throws IOException {
+    private void copySubdirs(File root, File srcDir, File destDir, boolean debug, List<Map.Entry<String,Boolean>> additionalFiles, boolean allowHeaders) throws IOException {
     	if(srcDir.isDirectory()) {
 	    	for(File content : srcDir.listFiles()) {
 	    		if((debug || (!content.getName().endsWith(".prl") && !content.getName().endsWith(".dSYM")))
@@ -942,9 +831,7 @@ public class CreateNativeDeploymentTask extends Task {
 	        			}else {
 		    				File destFile = new File(destDir, content.getName());
 		    				destDir.mkdirs();
-		    				Util.copy(content, destFile);
-		    				if(content.canExecute())
-			                	destFile.setExecutable(true);
+		    				copyFiles(content, destFile);
 		    				additionalFiles.add(new SimpleEntry<>(root.toPath().relativize(content.toPath()).toString(), content.canExecute()));
 	        			}
 	    			}
@@ -955,7 +842,7 @@ public class CreateNativeDeploymentTask extends Task {
     	}
     }
     
-    static void symlinkSubdirs(File root, File srcDir, File destDir, boolean debug, List<Map.Entry<String,String>> symlinks) throws IOException {
+    private void symlinkSubdirs(File root, File srcDir, File destDir, boolean debug, List<Map.Entry<String,String>> symlinks) throws IOException {
     	if(srcDir.isDirectory()) {
 	    	for(File content : srcDir.listFiles()) {
 	    		if((debug || (!content.getName().endsWith(".prl") && !content.getName().endsWith(".dSYM")))
@@ -970,11 +857,13 @@ public class CreateNativeDeploymentTask extends Task {
 	    						target = srcDir.toPath().relativize(target);
 	    					if(!Files.exists(destFile.toPath())) {
 	    						try{
+	    							getProject().log(this, "create symbolic link " + destFile + " -> " + content, Project.MSG_INFO);
 	    							Files.createSymbolicLink(destFile.toPath(), target);
 	    						}catch(java.nio.file.FileAlreadyExistsException e) {}
 	    					}else if(!Files.isSymbolicLink(destFile.toPath())){
 	    						destFile.delete();
 	    						try{
+	    							getProject().log(this, "create symbolic link " + destFile + " -> " + content, Project.MSG_INFO);
 		    						Files.createSymbolicLink(destFile.toPath(), target);
 								}catch(java.nio.file.FileAlreadyExistsException e) {}
 	    					}
@@ -1531,5 +1420,11 @@ public class CreateNativeDeploymentTask extends Task {
 	}
 	public void setForceDebugInfo(boolean forceDebugInfo) {
 		this.forceDebugInfo = forceDebugInfo;
+	}
+	public String getJarFile() {
+		return jarFile;
+	}
+	public void setJarFile(String jarFile) {
+		this.jarFile = jarFile;
 	}
 }

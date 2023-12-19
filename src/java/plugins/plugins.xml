@@ -310,8 +310,14 @@
 												<property name="jar-includes" value="lib/x86/libplugins_${plugin-subdir}_${module}_x86.so"/>
 											</then>
 											<else>
-												<property name="jar-includes" value="plugins/${plugin-subdir}/*,qtjambi-deployment.xml"/>
-												<create-native-deployment outputDirectory="${plugindestdir}" debug="${isdebug}" module="${moduledot}" libraries="${plugin-subdir}" plugin="true" forcedebuginfo="${qtjambi.force.debug.info}"/>
+												<property name="jar-includes" value="plugins/${plugin-subdir}/*,META-INF/qtjambi-deployment.xml"/>
+												<create-native-deployment outputDirectory="${plugindestdir}" 
+																			debug="${isdebug}" 
+																			module="${moduledot}" 
+																			libraries="${plugin-subdir}" 
+																			plugin="true" 
+																			jarFile=""
+																			forcedebuginfo="${qtjambi.force.debug.info}"/>
 											</else>
 										</if>
 									</else>
@@ -321,12 +327,16 @@
 					</else>
 				</if>
 				<if>
-					<or>
-						<isfalse value="${platformjar.debug}"/>
-						<istrue value="${qtjambi.debug.bundles}"/>
-					</or>
+					<and>
+						<or>
+							<isfalse value="${platformjar.debug}"/>
+							<istrue value="${qtjambi.debug.bundles}"/>
+						</or>
+						<not>
+							<equals arg1="${jar-includes}" arg2=""/>
+						</not>
+					</and>
 					<then>
-						<echo>jar-includes=${jar-includes}</echo>
 						<condition property="plugintargetdir" value="${outputDir}/${targetdirname}/tests" else="${deploymentdir}/native">
 							<istrue value="${qtjambi.testbuild}"/>
 						</condition>
@@ -343,7 +353,7 @@
 						</jar>
 					</then>
 				</if>
-				<delete file="${plugindestdir}/qtjambi-deployment.xml"/>
+				<delete file="${plugindestdir}/META-INF/qtjambi-deployment.xml"/>
 			</then>
 		</if>
     </target>
@@ -399,7 +409,8 @@
             <istrue value="${java.module.based}"/>
             <then>
                 <javac source="8" target="8" debug="true" deprecation="true"
-                        fork="true" memorymaximumsize="1024m" verbose="false"
+                        executable="${tools.javac}" fork="true" 
+						memorymaximumsize="1024m" verbose="false"
                         includeantruntime="false"
                         excludes="${module.excludes},module-info.java"
                         srcdir="${sourcedirs2}"
@@ -412,7 +423,8 @@
                     </classpath>
                 </javac>
                 <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
-                        fork="true" memorymaximumsize="1024m" verbose="false"
+                        executable="${tools.javac}" fork="true" 
+						memorymaximumsize="1024m" verbose="false"
                         includeantruntime="false"
                         includes="module-info.java"
                         srcdir="${sourcedirs2}"
@@ -427,7 +439,8 @@
             </then>
             <else>
                 <javac source="${source.java.version}" target="${minimum.java.version}" debug="true" deprecation="true"
-                        fork="true" memorymaximumsize="1024m" verbose="false"
+                        executable="${tools.javac}" fork="true" 
+						memorymaximumsize="1024m" verbose="false"
                         includeantruntime="false"
                         srcdir="${sourcedirs2}"
                         excludes="${module.excludes},module-info.java"

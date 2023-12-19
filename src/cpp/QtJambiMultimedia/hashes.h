@@ -36,6 +36,11 @@
 #include <QtJambiGui/hashes.h>
 #include <QtJambiNetwork/hashes.h>
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
+QT_WARNING_DISABLE_DEPRECATED
+#endif
+
 hash_type qHash(const QAudioFormat& value, hash_type seed = 0);
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)

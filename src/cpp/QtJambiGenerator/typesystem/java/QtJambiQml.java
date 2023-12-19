@@ -30,24 +30,13 @@
 ****************************************************************************/
 
 class __QQmlComponent extends QQmlComponent{
-
     @QtUninvokable
-    public final void setData(String data, io.qt.core.QUrl baseUrl){
-        setData(new io.qt.core.QByteArray(data), baseUrl);
-    }
-
-    @QtUninvokable
-    public final void setData(byte[] data, io.qt.core.QUrl baseUrl){
-        setData(new io.qt.core.QByteArray(data), baseUrl);
-    }
-    
-    @QtUninvokable
-    public <T extends io.qt.core.QObject> T create(Class<T> type){
+    public <T extends io.qt.core.@Nullable QObject> T create(@NonNull Class<T> type){
         return create(type, (io.qt.qml.QQmlContext)null);
     }
 
     @QtUninvokable
-    public <T extends io.qt.core.QObject> T create(Class<T> type, io.qt.qml.QQmlContext context){
+    public <T extends io.qt.core.@Nullable QObject> T create(@NonNull Class<T> type, io.qt.qml.@Nullable QQmlContext context){
         String packageName = type.getName();
         int idx = packageName.lastIndexOf('.');
         if(idx>0){
@@ -60,109 +49,58 @@ class __QQmlComponent extends QQmlComponent{
 
 class __QJSValue extends QJSValue{
 
-    @QtUninvokable
-    public final void setProperty(java.lang.String name, String value){
-        setProperty(name, new QJSValue(value));
-    }
-    
-    @QtUninvokable
-    public final void setProperty(java.lang.String name, boolean value){
-        setProperty(name, new QJSValue(value));
-    }
-    
-    @QtUninvokable
-    public final void setProperty(java.lang.String name, double value){
-        setProperty(name, new QJSValue(value));
-    }
-    
-    @QtUninvokable
-    public final void setProperty(java.lang.String name, int value){
-        setProperty(name, new QJSValue(value));
-    }
-    
-    @QtUninvokable
-    public final void setProperty(java.lang.String name, QJSValue.SpecialValue value){
-        setProperty(name, new QJSValue(value));
-    }
-    
-    @QtUninvokable
-    public final void setProperty(int arrayIndex, String value){
-        setProperty(arrayIndex, new QJSValue(value));
-    }
-    
-    @QtUninvokable
-    public final void setProperty(int arrayIndex, boolean value){
-        setProperty(arrayIndex, new QJSValue(value));
-    }
-    
-    @QtUninvokable
-    public final void setProperty(int arrayIndex, double value){
-        setProperty(arrayIndex, new QJSValue(value));
-    }
-    
-    @QtUninvokable
-    public final void setProperty(int arrayIndex, int value){
-        setProperty(arrayIndex, new QJSValue(value));
-    }
-    
-    @QtUninvokable
-    public final void setProperty(int arrayIndex, QJSValue.SpecialValue value){
-        setProperty(arrayIndex, new QJSValue(value));
-    }
-
 }// class
 
 class __QtQml__ extends QtQml{
-    
+
     private static final int QQmlModuleImportLatest = -1;
-    
-    /**
-     * @deprecated Use {@link #qmlRegisterSingletonInstance(String, int, int, String, QObject)} instead.
-     */
-    @Deprecated
-    public static int qmlRegisterSingletonInstance(QObject instance, String uri, int versionMajor, int versionMinor, String qmlName){
-        java.util.Objects.requireNonNull(instance);
-        return qmlRegisterSingletonType(QtJambi_LibraryUtilities.internal.getClass(instance), uri, versionMajor, versionMinor, qmlName, (e,v)->instance);
-    }
-    
-    /**
-     * <p>See <a href="https://doc.qt.io/qt/qqmlengine.html#qmlRegisterSingletonInstance"><code>qmlRegisterSingletonInstance(const char*,int,int,const char*,QObject*)</code></a></p>
-     */
-    public static int qmlRegisterSingletonInstance(String uri, int versionMajor, int versionMinor, String qmlName, QObject instance){
-        java.util.Objects.requireNonNull(instance);
-        return qmlRegisterSingletonType(QtJambi_LibraryUtilities.internal.getClass(instance), uri, versionMajor, versionMinor, qmlName, (e,v)->instance);
-    }
 
     /**
      * @deprecated Use {@link #qmlRegisterUncreatableType(Class, int, String, int, int, String, String)} instead.
      */
     @Deprecated
-    public static int qmlRegisterUncreatableClass(java.lang.Class<? extends io.qt.core.QObject> type, int metaObjectRevision, java.lang.String uri, int versionMajor, int versionMinor, java.lang.String qmlName, java.lang.String reason) {
+    public static int qmlRegisterUncreatableClass(java.lang.@NonNull Class<? extends io.qt.core.@Nullable QObject> type, int metaObjectRevision, java.lang.@NonNull String uri, int versionMajor, int versionMinor, java.lang.@NonNull String qmlName, java.lang.@NonNull String reason) {
         return qmlRegisterUncreatableType(type, metaObjectRevision, uri, versionMajor, versionMinor, qmlName, reason);
     }
     /**
      * @deprecated Use {@link #qmlRegisterUncreatableType(Class, String, int, int, String, String)} instead.
      */
     @Deprecated
-    public static int qmlRegisterUncreatableClass(java.lang.Class<? extends io.qt.core.QObject> type, java.lang.String uri, int versionMajor, int versionMinor, java.lang.String qmlName, java.lang.String reason) {
+    public static int qmlRegisterUncreatableClass(java.lang.@NonNull Class<? extends io.qt.core.@Nullable QObject> type, java.lang.@NonNull String uri, int versionMajor, int versionMinor, java.lang.@NonNull String qmlName, java.lang.@NonNull String reason) {
         return qmlRegisterUncreatableType(type, uri, versionMajor, versionMinor, qmlName, reason);
+    }
+
+    /**
+     * @deprecated Use {@link #qmlRegisterSingletonInstance(String, int, int, String, QObject)} instead.
+     */
+    @Deprecated
+    public static int qmlRegisterSingletonInstance(io.qt.core.@NonNull QObject instance, @NonNull String uri, int versionMajor, int versionMinor, @NonNull String qmlName){
+        return qmlRegisterSingletonInstance(uri, versionMajor, versionMinor, qmlName, instance);
+    }
+
+    /**
+     * <p>See <code><a href="@docRoot/qqmlengine.html#qmlRegisterSingletonInstance">qmlRegisterSingletonInstance&lt;T>(const char*,<wbr/>int,<wbr/>int,<wbr/>const char*,<wbr/>T*)</a></code></p>
+     */
+    public static <T extends io.qt.core.QObject> int qmlRegisterSingletonInstance(java.lang.@NonNull String uri, int versionMajor, int versionMinor, java.lang.@NonNull String typeName, @StrictNonNull T singleton){
+        java.util.Objects.requireNonNull(singleton, "Argument 'singleton': null not expected.");
+        return qmlRegisterSingletonType(QtJambi_LibraryUtilities.internal.getClass(singleton), uri, versionMajor, versionMinor, typeName, (e,j)->singleton);
     }
 }// class
 
 class QQmlProperty__{
     
     @QtUninvokable
-    public final boolean connectNotifySignal(io.qt.core.QMetaObject.Slot0 slot){
+    public final boolean connectNotifySignal(io.qt.core.QMetaObject.@StrictNonNull Slot0 slot){
         return connectNotifySignal(slot, io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot)));
     }
     
     @QtUninvokable
-    public final boolean connectNotifySignal(io.qt.core.QMetaObject.Slot1<?> slot){
+    public final boolean connectNotifySignal(io.qt.core.QMetaObject.@StrictNonNull Slot1<?> slot){
         return connectNotifySignal(slot, io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot)));
     }
     
     @QtUninvokable
-    private final boolean connectNotifySignal(io.qt.core.QMetaObject.AbstractSlot slot, io.qt.core.QMetaMethod metaMethod){
+    private final boolean connectNotifySignal(io.qt.core.QMetaObject.@StrictNonNull AbstractSlot slot, io.qt.core.@NonNull QMetaMethod metaMethod){
         if(metaMethod!=null && metaMethod.isValid()) {
             io.qt.core.QObject qobject = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
             if(qobject!=null)
@@ -176,28 +114,28 @@ class QQmlProperty__{
 class QJSEngine__{
 
     @QtUninvokable
-    public final QJSValue newQMetaObject(Class<?> type) {
+    public final @NonNull QJSValue newQMetaObject(@NonNull Class<?> type) {
         return newQMetaObject(io.qt.core.QMetaObject.forType(type));
     }
 }// class
 
 class QJSEngine_6_{
     @QtUninvokable
-    public final <T> T fromScriptValue(QJSValue value, Class<T> type, io.qt.core.QMetaType...instantiations) {
+    public final <T> T fromScriptValue(@NonNull QJSValue value, @NonNull Class<T> type, io.qt.core.@NonNull QMetaType @NonNull...instantiations) {
         return fromScriptValue(value, io.qt.core.QMetaType.fromType(type, instantiations));
     }
 }// class
 
 class QJSEngine_61_{
     @QtUninvokable
-    public final <T> T fromManagedValue(QJSManagedValue value, Class<T> type, io.qt.core.QMetaType...instantiations) {
+    public final <T> T fromManagedValue(@NonNull QJSManagedValue value, @NonNull Class<T> type, io.qt.core.@NonNull QMetaType @NonNull...instantiations) {
         return fromManagedValue(value, io.qt.core.QMetaType.fromType(type, instantiations));
     }
 }// class
 
 class QJSEngine_63_{
     @QtUninvokable
-    public final <T> T fromVariant(Object variant, Class<T> type, io.qt.core.QMetaType...instantiations) {
+    public final <T> T fromVariant(Object variant, @NonNull Class<T> type, io.qt.core.@NonNull QMetaType @NonNull...instantiations) {
         return fromVariant(variant, io.qt.core.QMetaType.fromType(type, instantiations));
     }
 }// class
@@ -205,10 +143,10 @@ class QJSEngine_63_{
 class QQmlEngine__{
     
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qqmlengine.html#singletonInstance"><code>QQmlEngine::singletonInstance(int)</code></a></p>
+     * <p>See <a href="@docRoot/qqmlengine.html#singletonInstance"><code>QQmlEngine::singletonInstance(int)</code></a></p>
      */
     @QtUninvokable
-    public final <T extends QtObjectInterface> T singletonInstance(Class<T> type, int qmlTypeId) {
+    public final <T extends QtObjectInterface> T singletonInstance(@NonNull Class<T> type, int qmlTypeId) {
         io.qt.core.QObject object = singletonInstance(qmlTypeId).toQObject();
         if(object!=null)
             return object.qt_metacast(type);
@@ -220,10 +158,10 @@ class QQmlEngine__{
 class QQmlEngine_65_{
 
     /**
-     * <p>See <a href="https://doc.qt.io/qt/qqmlengine.html#singletonInstance-1"><code>QQmlEngine::singletonInstance(QAnyStringView,QAnyStringView)</code></a></p>
+     * <p>See <a href="@docRoot/qqmlengine.html#singletonInstance-1"><code>QQmlEngine::singletonInstance(QAnyStringView,QAnyStringView)</code></a></p>
      */
     @QtUninvokable
-    public final <T extends QtObjectInterface> T singletonInstance(Class<T> type, java.lang.@NonNull String moduleName, java.lang.@NonNull String typeName) {
+    public final <T extends QtObjectInterface> T singletonInstance(@NonNull Class<T> type, java.lang.@NonNull String moduleName, java.lang.@NonNull String typeName) {
         io.qt.core.QObject object = singletonInstance(moduleName, typeName).toQObject();
         if(object!=null)
             return object.qt_metacast(type);

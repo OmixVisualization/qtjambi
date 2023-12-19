@@ -39,7 +39,6 @@ import io.qt.NativeAccess;
  * <p>Use {@link #asRef()} to call values and objects by reference type (e.g. <code>QColor&amp;</code>, <code>QObject&amp;</code>).</p>
  * <p>Use {@link #asConstRef()} to call values and objects by const reference (e.g. <code>const QColor&amp;</code>).</p>
  * <p>Use {@link #asPointer()} to call values by pointers (e.g. <code>QColor*</code>).</p>
- * @param <T>
  */
 public final class QGenericArgument extends QGenericArgumentType<Object>{
 	QGenericArgument(Class<?> classType, QMetaType metaType, int pointerOrReference, Object value) {
@@ -88,6 +87,7 @@ public final class QGenericArgument extends QGenericArgumentType<Object>{
 	
 	/**
 	 * Call java object as specified type.
+	 * @param <T>
 	 * @param classType
 	 * @param instantiations
 	 * @return new instance
@@ -101,8 +101,7 @@ public final class QGenericArgument extends QGenericArgumentType<Object>{
 	
 	/**
 	 * Call java object as specified type.
-	 * @param classType
-	 * @param instantiations
+	 * @param metaType
 	 * @return new instance
 	 */
 	public QGenericArgument as(QMetaType metaType){
@@ -114,8 +113,7 @@ public final class QGenericArgument extends QGenericArgumentType<Object>{
 	
 	/**
 	 * Call java object as specified type.
-	 * @param classType
-	 * @param instantiations
+	 * @param type
 	 * @return new instance
 	 */
 	public QGenericArgument as(QMetaType.Type type){
@@ -189,6 +187,7 @@ public final class QGenericArgument extends QGenericArgumentType<Object>{
 	
 	/**
 	 * Create generic return type from class type.
+	 * @param <T>
 	 * @param classType
 	 * @param instantiations only useful to specify template types like QList&lt;T&gt;.
 	 * @return new instance
@@ -199,6 +198,7 @@ public final class QGenericArgument extends QGenericArgumentType<Object>{
 	
 	/**
 	 * Create generic return type from meta type.
+	 * @param <T>
 	 * @param metaType
 	 * @return new instance
 	 */
@@ -208,7 +208,8 @@ public final class QGenericArgument extends QGenericArgumentType<Object>{
 	
 	/**
 	 * Create generic return type from meta type.
-	 * @param metaType
+	 * @param <T>
+	 * @param type
 	 * @return new instance
 	 */
 	public static <T> QGenericReturnType<T> returning(QMetaType.Type type){

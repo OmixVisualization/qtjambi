@@ -223,7 +223,7 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 	
 	/**
 	 * Creates a new <code>QPropertyBinding</code> with the given functor <code>f</code>.
-	 * @param t
+	 * @param f
 	 */
 	public QPropertyBinding(QtUtilities.@StrictNonNull Supplier<? extends T> f) {
 		super(f);
@@ -264,7 +264,7 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 	
 	/**
 	 * Creates a new generic <code>QPropertyBinding</code> as copy of the given binding.
-	 * @param binding
+	 * @param other
 	 */
 	public QPropertyBinding(@StrictNonNull QPropertyBinding<T> other) {
 		super(other);
@@ -272,8 +272,6 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 
 	/**
 	 * Creates a <code>null</code>-<code>QPropertyBinding</code>.
-	 * @param binding
-	 * @return binding copy
 	 * @see QUntypedPropertyBinding#isNull()
 	 */
 	public QPropertyBinding() {

@@ -32,7 +32,7 @@ package io.qt;
 /**
  * The interface of all signal blocking types in Qt Jambi.
  */
-public interface QtSignalBlockerInterface extends QtObjectInterface {
+public interface QtSignalBlockerInterface {
 	/**
      * Returns true if this Object blocks signals. If it is
      * blocked, no signals will be emitted.

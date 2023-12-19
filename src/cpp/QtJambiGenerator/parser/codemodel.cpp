@@ -794,6 +794,11 @@ void _EnumModelItem::removeEnumerator(EnumeratorModelItem item) {
     _M_enumerators.removeAt(_M_enumerators.indexOf(item));
 }
 
+void _EnumModelItem::setDeclDeprecatedComment(const QString& s) {
+    _M_declDeprecatedComment = s;
+    reduceStringLiteral(_M_declDeprecatedComment);
+}
+
 // ---------------------------------------------------------------------------
 const QString& _EnumeratorModelItem::value() const {
     return _M_value;

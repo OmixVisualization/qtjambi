@@ -190,7 +190,7 @@ TypeSystem{
             signature: "createPromotionDialog(QDesignerFormEditorInterface*,QString,QString*,QWidget*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -372,6 +372,7 @@ TypeSystem{
 
         ValueType{
             name: "Category"
+            noImplicitConstructors: true
             EnumType{
                 name: "Type"
             }
@@ -379,6 +380,7 @@ TypeSystem{
 
         ValueType{
             name: "Widget"
+            noImplicitConstructors: true
             EnumType{
                 name: "Type"
             }
@@ -738,7 +740,7 @@ TypeSystem{
             }
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -757,13 +759,13 @@ TypeSystem{
             signature: "layoutDefault(int*,int*)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -772,13 +774,13 @@ TypeSystem{
             signature: "layoutFunction(QString*,QString*)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -787,13 +789,13 @@ TypeSystem{
             signature: "activateResourceFilePaths(QStringList,int*,QString*)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
             ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1223,7 +1225,7 @@ TypeSystem{
             signature: "addPromotedClass(QString,QString,QString,QString*)"
             ModifyArgument{
                 index: 4
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1232,7 +1234,7 @@ TypeSystem{
             signature: "changePromotedClassName(QString,QString,QString*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1241,7 +1243,7 @@ TypeSystem{
             signature: "setPromotedClassIncludeFile(QString,QString,QString*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1250,7 +1252,7 @@ TypeSystem{
             signature: "removePromotedClass(QString,QString*)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1316,7 +1318,7 @@ TypeSystem{
             signature: "currentTemplate(QString*)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }

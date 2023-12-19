@@ -146,7 +146,7 @@ void ObjectDataContainer::setUserData(const std::type_info& id, QtJambiObjectDat
 
 QtJambiObjectData* ObjectDataContainer::userData(const std::type_info& id) const{
     auto idx = p->indexes.indexOf(unique_id(id));
-    return idx>=0 && idx<p->data.size() ? p->data.at(idx) : nullptr;
+    return idx>=0 && idx<p->data.size() ? p->data.value(idx) : nullptr;
 }
 
 bool ObjectDataContainer::useHiddenObjectData(){
@@ -172,14 +172,14 @@ QtJambiObjectData* QtJambiObjectData::userData(const QObject* object, const std:
 {
     using namespace QtJambiPrivate;
     const QObjectPrivate* p = object ? QObjectPrivate::get(object) : nullptr;
-    if(p && (id!=typeid(ValueOwnerUserData) || !p->wasDeleted) && p->extraData){
+    if(p && p->extraData && (!p->wasDeleted || typeid_not_equals(id, typeid(ValueOwnerUserData)))){
         if(ObjectDataContainer::useHiddenObjectData()){
             const auto i = p->extraData->propertyNames.size();
-            if(i<p->extraData->propertyValues.size()){
-                const QVariant& variant = p->extraData->propertyValues[i];
+            if(i>=0 && i<p->extraData->propertyValues.size()){
+                const QVariant& variant = p->extraData->propertyValues.at(i);
                 if(variant.metaType()==QMetaType::fromType<ObjectDataContainer>()){
-                    const ObjectDataContainer* container = reinterpret_cast<const ObjectDataContainer*>(variant.data());
-                    return container->userData(id);
+                    if(const ObjectDataContainer* container = reinterpret_cast<const ObjectDataContainer*>(variant.data()))
+                        return container->userData(id);
                 }
             }
         }else{
@@ -187,11 +187,11 @@ QtJambiObjectData* QtJambiObjectData::userData(const QObject* object, const std:
             memcpy(name, &p->extraData, sizeof(void*));
             name[sizeof(void*)] = '\0';
             const auto i = p->extraData->propertyNames.indexOf(name);
-            if(i>=0){
-                const QVariant& variant = p->extraData->propertyValues[i];
+            if(i>=0 && i<p->extraData->propertyValues.size()-1){
+                const QVariant& variant = p->extraData->propertyValues.at(i);
                 if(variant.metaType()==QMetaType::fromType<ObjectDataContainer>()){
-                    const ObjectDataContainer* container = reinterpret_cast<const ObjectDataContainer*>(variant.data());
-                    return container->userData(id);
+                    if(const ObjectDataContainer* container = reinterpret_cast<const ObjectDataContainer*>(variant.data()))
+                        return container->userData(id);
                 }
             }
         }
@@ -217,8 +217,8 @@ void QtJambiObjectData::setUserData(QObject* object, const std::type_info& id, Q
             const auto i = p->extraData->propertyNames.size();
             if(i<p->extraData->propertyValues.size()
                     && p->extraData->propertyValues[i].metaType()==QMetaType::fromType<ObjectDataContainer>()){
-                ObjectDataContainer* container = reinterpret_cast<ObjectDataContainer*>(p->extraData->propertyValues[i].data());
-                container->setUserData(id, data);
+                if(ObjectDataContainer* container = reinterpret_cast<ObjectDataContainer*>(p->extraData->propertyValues[i].data()))
+                    container->setUserData(id, data);
             }else{
                 if(i<p->extraData->propertyValues.size()){
                     p->extraData->propertyValues.replace(i, QVariant::fromValue<ObjectDataContainer>({id, data}));
@@ -232,8 +232,8 @@ void QtJambiObjectData::setUserData(QObject* object, const std::type_info& id, Q
             name[sizeof(void*)] = '\0';
             const auto i = p->extraData->propertyNames.indexOf(name);
             if(i>=0 && p->extraData->propertyValues[i].metaType()==QMetaType::fromType<ObjectDataContainer>()){
-                ObjectDataContainer* container = reinterpret_cast<ObjectDataContainer*>(p->extraData->propertyValues[i].data());
-                container->setUserData(id, data);
+                if(ObjectDataContainer* container = reinterpret_cast<ObjectDataContainer*>(p->extraData->propertyValues[i].data()))
+                    container->setUserData(id, data);
             }else{
                 if(i<0){
                     p->extraData->propertyNames.append(name);

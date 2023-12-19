@@ -667,17 +667,19 @@ public class QList<T> extends AbstractList<T> implements Cloneable
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#operator-eq-eq">QList::<wbr>operator==(QList&lt;T>)const</a></code></p>
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     @QtUninvokable
     public boolean equals(Object other) {
-        if (other instanceof java.util.Collection && checkContainerType(this.elementMetaType(), (java.util.Collection<?>) other)) {
-            return operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), (java.util.Collection) other);
+    	if(other instanceof StackDeque<?>) {
+			other = ((StackDeque<?>)other).stack;
+		}
+    	if (other instanceof java.util.Collection && checkContainerType(this.elementMetaType(), (java.util.Collection<?>) other)) {
+            return operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), (java.util.Collection<?>) other);
         }
         return false;
     }
     @QtUninvokable
-    private static native <T> boolean operator_equal(long __this__nativeId, java.util.Collection<T> l);
+    private static native boolean operator_equal(long __this__nativeId, java.util.Collection<?> l);
 
     /**
      * Returns the objects's hash code computed by <code>qHash(QList&lt;T>)</code>.
@@ -1109,14 +1111,5 @@ public class QList<T> extends AbstractList<T> implements Cloneable
         }
         QMetaType metaType = QMetaType.fromType(objClass);
         return metaType;
-    }
-	
-	public QList<T> reversed(){
-		QList<T> result = new QList<>(elementMetaType());
-		result.reserve(size());
-		for(T t : this) {
-			result.add(0, t);
-		}
-    	return result;
     }
 }

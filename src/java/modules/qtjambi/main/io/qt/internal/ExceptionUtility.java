@@ -30,11 +30,17 @@
 
 package io.qt.internal;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.logging.LogRecord;
 
 import io.qt.NativeAccess;
 
+/**
+ * @hidden
+ */
 abstract class ExceptionUtility {
 	
 	private ExceptionUtility() {
@@ -44,10 +50,40 @@ abstract class ExceptionUtility {
 	static {
 		QtJambi_LibraryUtilities.initialize();
 	}
+	
+	private static class StaticContainer{
+		private static final Class<?> ThreadDeathClass;
+		static {
+			Class<?> threadDeathClass = null;
+			try {
+				threadDeathClass = Class.forName("java.lang.ThreadDeath");
+			}catch(Throwable t) {}
+			ThreadDeathClass = threadDeathClass;
+		}
+	}
+	
+	@NativeAccess
+	private static byte[] printException(Throwable e) throws IOException {
+		try(ByteArrayOutputStream s = new ByteArrayOutputStream();
+			PrintStream p = new PrintStream(s)){
+			e.printStackTrace(p);
+			return s.toByteArray();
+		}
+	}
+	
+//	@NativeAccess
+//	private static byte[] printStackTrace() throws IOException {
+//		try(ByteArrayOutputStream s = new ByteArrayOutputStream();
+//			PrintStream p = new PrintStream(s)){
+//			e.printStackTrace(p);
+//			return s.toByteArray();
+//		}
+//	}
 
 	@NativeAccess
 	private static void reportException(String methodName, Throwable e) {
-		if(!(e instanceof ThreadDeath)) try {
+		if(StaticContainer.ThreadDeathClass==null || !StaticContainer.ThreadDeathClass.isInstance(e))
+		try {
 			UncaughtExceptionHandler handler = Thread.currentThread().getUncaughtExceptionHandler();
 			while(handler != null && (Object)ClassAnalyzerUtility.getClass(handler)==ThreadGroup.class) {
 				try {

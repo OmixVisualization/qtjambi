@@ -39,6 +39,9 @@ import io.qt.uic.ui4.DomProperty;
 import io.qt.uic.ui4.DomUI;
 import io.qt.uic.ui4.DomWidget;
 
+/**
+ * @hidden
+ */
 public class DatabaseInfo extends TreeWalker{
 	
 	@Override

@@ -327,7 +327,8 @@ void static_metacall_QObject(const QtJambiMetaObject* q, QObject * o, QMetaObjec
 void static_metacall_QtSubType(const QtJambiMetaObject* q, QObject * o, QMetaObject::Call cl, int idx, void ** argv)
 {
     if(JniEnvironment env{200}){
-        if(jobject object = o ? QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, o, q->javaClass()) : nullptr){
+        jobject object = o ? QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, o, q->javaClass()) : nullptr;
+        if(!env->IsSameObject(object, nullptr)){
             switch(cl){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             case QMetaObject::QueryPropertyUser:
@@ -376,6 +377,13 @@ void static_metacall_QtSubType(const QtJambiMetaObject* q, QObject * o, QMetaObj
             default:
                 break;
             }
+        }else if(o){
+            const QList<QSharedPointer<QtJambiLink>> linksForPointer = QtJambiLink::findLinksForPointer(o);
+            for(const QSharedPointer<QtJambiLink>& link : linksForPointer){
+                if(link->isDeleteLater())
+                    return;
+            }
+            qCWarning(DebugAPI::internalCategory, "QtJambiMetaObject::metaCall: metaCall on incomplete object ot type %s", q->className());
         }else{
             switch(cl){
             case QMetaObject::InvokeMetaMethod:
@@ -1194,14 +1202,16 @@ void QtJambiMetaObjectPrivate::invokeMethod(JNIEnv *env, jobject object, const J
                 }
             }else{
                 if(env->IsSameObject(object, nullptr)){
-                    qCWarning(DebugAPI::internalCategory, "QtJambiMetaObject::invokeMethod: Object is null");
+                    qCWarning(DebugAPI::internalCategory, "QtJambiMetaObject::invokeMethod: Cannot call %s on null",
+                              J2CStringBuffer(env, Java::Runtime::Object::toString(env, env->ToReflectedMethod(methodInfo.declaringClass, methodInfo.methodId, methodInfo.isStatic))).constData());
                     return;
                 }
                 jmethodID methodId = methodInfo.methodId;
                 if(!env->IsInstanceOf(object, methodInfo.declaringClass)){
                     bool found = false;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-                    for(jclass cls : m_qmlExtensions.keys()){
+                    const QList<jclass> classes = m_qmlExtensions.keys();
+                    for(jclass cls : classes){
                         if(env->IsInstanceOf(object, cls)){
                             const QmlExtensionData& data = m_qmlExtensions[cls];
                             found = true;
@@ -2063,7 +2073,8 @@ int QtJambiMetaObject::metaCall(QObject * o, QMetaObject::Call cl, int idx, void
         default:
             break;
         }
-        if(jobject object = o ? QtJambiAPI::convertQObjectToJavaObject(env, o) : nullptr){
+        jobject object = o ? QtJambiAPI::convertQObjectToJavaObject(env, o) : nullptr;
+        if(!env->IsSameObject(object, nullptr)){
             switch(cl){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             case QMetaObject::QueryPropertyUser:
@@ -2112,6 +2123,13 @@ int QtJambiMetaObject::metaCall(QObject * o, QMetaObject::Call cl, int idx, void
             default:
                 break;
             }
+        }else if(o){
+            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(o)){
+                if(link->isDeleteLater())
+                    return idx;
+            }
+            qCWarning(DebugAPI::internalCategory, "QtJambiMetaObject::metaCall: metaCall on incomplete object ot type %s",
+                      o->metaObject()->className());
         }
     }
     return idx;
@@ -2258,7 +2276,8 @@ int QtJambiMetaObject::readProperty(JNIEnv *env, jobject object, int _id, void *
                     if(!env->IsInstanceOf(object, d->m_clazz)){
                         bool found = false;
     #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-                        for(jclass cls : d->m_qmlExtensions.keys()){
+                        const QList<jclass> classes = d->m_qmlExtensions.keys();
+                        for(jclass cls : classes){
                             if(env->IsInstanceOf(object, cls)){
                                 const QmlExtensionData& data = d->m_qmlExtensions[cls];
                                 found = true;
@@ -2413,7 +2432,8 @@ int QtJambiMetaObject::writeProperty(JNIEnv *env, jobject object, int _id, void 
                     if(!env->IsInstanceOf(object, d->m_clazz)){
                         bool found = false;
     #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-                        for(jclass cls : d->m_qmlExtensions.keys()){
+                        const QList<jclass> classes = d->m_qmlExtensions.keys();
+                        for(jclass cls : classes){
                             if(env->IsInstanceOf(object, cls)){
                                 const QmlExtensionData& data = d->m_qmlExtensions[cls];
                                 found = true;

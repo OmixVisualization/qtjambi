@@ -76,6 +76,7 @@ public class TestCharts extends ApplicationInitializer {
     	assertEquals(0, series.attachedAxes().size());
     	series.dispose();
     	assertTrue(_set.isDisposed());
+    	chart.dispose();
     }
     
     @Test
@@ -99,6 +100,8 @@ public class TestCharts extends ApplicationInitializer {
     	assertEquals(series, set.parent());
     	series.dispose();
     	assertTrue(set.isDisposed());
+    	initialParent.dispose();
+    	series.dispose();
     }
     
     @Test
@@ -123,6 +126,8 @@ public class TestCharts extends ApplicationInitializer {
     	series.dispose();
     	assertFalse(_set.isDisposed());
     	assertFalse(set.isDisposed());
+    	initialParent.dispose();
+    	series.dispose();
     }
     
     @Test
@@ -146,6 +151,8 @@ public class TestCharts extends ApplicationInitializer {
     	assertEquals(initialParent, set.parent());
     	series.dispose();
     	assertTrue(set.isDisposed());
+    	initialParent.dispose();
+    	series.dispose();
     }
     
     @Test

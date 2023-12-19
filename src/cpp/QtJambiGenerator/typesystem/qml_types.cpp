@@ -513,6 +513,19 @@ void ComplexType::setNoMetaType(bool newNoMetaType)
     emit noMetaTypeChanged();
 }
 
+bool ComplexType::getNoImplicitConstructors() const
+{
+    return noImplicitConstructors;
+}
+
+void ComplexType::setNoImplicitConstructors(bool newNoImplicitConstructors)
+{
+    if (noImplicitConstructors == newNoImplicitConstructors)
+        return;
+    noImplicitConstructors = newNoImplicitConstructors;
+    emit noImplicitConstructorsChanged();
+}
+
 bool ValueType::getIsPolymorphicBase() const
 {
     return isPolymorphicBase;

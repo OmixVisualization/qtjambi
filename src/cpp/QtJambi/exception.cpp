@@ -336,6 +336,20 @@ void JavaException::raiseUnsupportedOperationException(JNIEnv* env, QString&& me
     raiseThrowable( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
 }
 
+void JavaException::raiseIndexOutOfBoundsException(JNIEnv* env, QString&& message QTJAMBI_STACKTRACEINFO_DECL ){
+    jstring jmessage = qtjambi_cast<jstring>(env, message);
+    check(env);
+    jthrowable t = Java::Runtime::IndexOutOfBoundsException::newInstance(env,jmessage);
+    raiseThrowable( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
+}
+
+void JavaException::raiseIndexOutOfBoundsException(JNIEnv* env, const char *message QTJAMBI_STACKTRACEINFO_DECL ){
+    jstring jmessage = qtjambi_cast<jstring>(env, message);
+    check(env);
+    jthrowable t = Java::Runtime::IndexOutOfBoundsException::newInstance(env,jmessage);
+    raiseThrowable( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
+}
+
 void JavaException::raiseQThreadAffinityException(JNIEnv* env, QString&& message QTJAMBI_STACKTRACEINFO_DECL , jobject t1, QThread* t2, QThread* t3){
     jstring jmessage = qtjambi_cast<jstring>(env, message);
     JavaException::check(env);
@@ -385,6 +399,13 @@ void JavaException::raiseUnsupportedOperationException(JNIEnv* env, QAnyStringVi
     jstring jmessage = qtjambi_cast<jstring>(env, message);
     check(env);
     jthrowable t = Java::Runtime::UnsupportedOperationException::newInstance(env,jmessage);
+    raiseThrowable( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
+}
+
+void JavaException::raiseIndexOutOfBoundsException(JNIEnv* env, QAnyStringView message QTJAMBI_STACKTRACEINFO_DECL ){
+    jstring jmessage = qtjambi_cast<jstring>(env, message);
+    check(env);
+    jthrowable t = Java::Runtime::IndexOutOfBoundsException::newInstance(env,jmessage);
     raiseThrowable( QTJAMBI_STACKTRACEINFO_DECL_USE(env, t) );
 }
 

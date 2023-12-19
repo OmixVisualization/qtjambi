@@ -711,6 +711,7 @@ TypeSystem{
     
     ValueType{
         name: "QtDataVisualization::QBarDataItem"
+        noImplicitConstructors: true
     }
     
     ObjectType{
@@ -852,6 +853,7 @@ TypeSystem{
     
     ObjectType{
         name: "QtDataVisualization::QCustom3DItem"
+        noImplicitConstructors: true
     }
     
     ObjectType{
@@ -864,9 +866,7 @@ TypeSystem{
             signature: "setSubTextureData(Qt::Axis,int,const uchar*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
@@ -1002,6 +1002,7 @@ TypeSystem{
     
     ValueType{
         name: "QtDataVisualization::QScatterDataItem"
+        noImplicitConstructors: true
     }
     
     ObjectType{
@@ -1091,6 +1092,7 @@ TypeSystem{
     
     ValueType{
         name: "QtDataVisualization::QSurfaceDataItem"
+        noImplicitConstructors: true
     }
     
     ObjectType{

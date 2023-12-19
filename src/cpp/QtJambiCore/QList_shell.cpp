@@ -105,7 +105,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         QTJAMBI_CONTAINER_CAST(AbstractListAccess, containerAccess, container.second);
         jint size = containerAccess->size(__jni_env, container.first);
         if (i0 >= size || i0 < 0) {
-            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size %1 at %2").arg(size).arg(i0) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIndexOutOfBoundsException(__jni_env, QString("Accessing container of size %1 at %2").arg(size).arg(i0) QTJAMBI_STACKTRACEINFO );
         }
         result = containerAccess->at(__jni_env, container.first, i0);
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -128,7 +128,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         QTJAMBI_CONTAINER_CAST(AbstractListAccess, containerAccess, container.second);
         jint size = containerAccess->size(__jni_env, container.first);
         if (size == 0) {
-            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size 0 at 0") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIndexOutOfBoundsException(__jni_env, QString("Accessing container of size 0 at 0") QTJAMBI_STACKTRACEINFO );
         }
         result = containerAccess->at(__jni_env, container.first, size-1);
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -367,10 +367,10 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
         QTJAMBI_CONTAINER_CAST(AbstractListAccess, containerAccess, container.second);
         jint size = containerAccess->size(__jni_env, container.first);
         if (pos0 >= size || pos0 < 0) {
-            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size %1 at %2").arg(size).arg(pos0) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIndexOutOfBoundsException(__jni_env, QString("Accessing container of size %1 at %2").arg(size).arg(pos0) QTJAMBI_STACKTRACEINFO );
         }
         if (length1>=0 && pos0+length1 > size) {
-            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size %1 at %2 to %3").arg(size).arg(pos0).arg(pos0+length1) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIndexOutOfBoundsException(__jni_env, QString("Accessing container of size %1 at %2 to %3").arg(size).arg(pos0).arg(pos0+length1) QTJAMBI_STACKTRACEINFO );
         }
         result = containerAccess->mid(__jni_env, container.first, pos0, length1);
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -394,10 +394,10 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QL
         QTJAMBI_CONTAINER_CAST(AbstractListAccess, containerAccess, container.second);
         jint size = containerAccess->size(__jni_env, container.first);
         if (from0 >= size || from0 < 0) {
-            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size %1 at %2").arg(size).arg(from0) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIndexOutOfBoundsException(__jni_env, QString("Accessing container of size %1 at %2").arg(size).arg(from0) QTJAMBI_STACKTRACEINFO );
         }
         if (to1 >= size && to1 < 0) {
-            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size %1 at %2").arg(size).arg(to1) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIndexOutOfBoundsException(__jni_env, QString("Accessing container of size %1 at %2").arg(size).arg(to1) QTJAMBI_STACKTRACEINFO );
         }
         containerAccess->move(__jni_env, container.first, from0, to1);
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -462,7 +462,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QL
 
         jint size = containerAccess->size(__jni_env, container.first);
         if (i0 >= size || i0 < 0) {
-            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size %1 at %2").arg(size).arg(i0) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIndexOutOfBoundsException(__jni_env, QString("Accessing container of size %1 at %2").arg(size).arg(i0) QTJAMBI_STACKTRACEINFO );
         }
         containerAccess->replace(__jni_env, container.first, i0, t1);
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -509,7 +509,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 
         jint size = containerAccess->size(__jni_env, container.first);
         if (i0 >= size || i0 < 0) {
-            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size %1 at %2").arg(size).arg(i0) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIndexOutOfBoundsException(__jni_env, QString("Accessing container of size %1 at %2").arg(size).arg(i0) QTJAMBI_STACKTRACEINFO );
         }
         result = containerAccess->at(__jni_env, container.first, i0);
         containerAccess->remove(__jni_env, container.first, i0, 1);
@@ -534,7 +534,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 
         jint size = containerAccess->size(__jni_env, container.first);
         if (size == 0) {
-            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size 0 at 0") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIndexOutOfBoundsException(__jni_env, QString("Accessing container of size 0 at 0") QTJAMBI_STACKTRACEINFO );
         }
         result = containerAccess->at(__jni_env, container.first, size-1);
         containerAccess->remove(__jni_env, container.first, size-1, 1);
@@ -620,10 +620,10 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QL
 
         jint size = containerAccess->size(__jni_env, container.first);
         if (i0 >= size || i0 < 0) {
-            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size %1 at %2").arg(size).arg(i0) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIndexOutOfBoundsException(__jni_env, QString("Accessing container of size %1 at %2").arg(size).arg(i0) QTJAMBI_STACKTRACEINFO );
         }
         if (j1 >= size || j1 < 0) {
-            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size %1 at %2").arg(size).arg(j1) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIndexOutOfBoundsException(__jni_env, QString("Accessing container of size %1 at %2").arg(size).arg(j1) QTJAMBI_STACKTRACEINFO );
         }
         containerAccess->swapItemsAt(__jni_env, container.first, i0, j1);
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -822,7 +822,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QL
 
         jint size = containerAccess->size(__jni_env, container.first);
         if (i0+count1 > size || i0 < 0) {
-            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size %1 at %2").arg(size).arg(i0 < 0 ? i0 : i0+count1) QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIndexOutOfBoundsException(__jni_env, QString("Accessing container of size %1 at %2").arg(size).arg(i0 < 0 ? i0 : i0+count1) QTJAMBI_STACKTRACEINFO );
         }
         containerAccess->remove(__jni_env, container.first, i0, count1);
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -846,8 +846,8 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QL
         QTJAMBI_CONTAINER_CAST(AbstractListAccess, containerAccess, container.second);
 
         jint size = containerAccess->size(__jni_env, container.first);
-        if (i0 >= size || i0 < 0) {
-            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size %1 at %2").arg(size).arg(i0) QTJAMBI_STACKTRACEINFO );
+        if (i0 > size || i0 < 0) {
+            JavaException::raiseIndexOutOfBoundsException(__jni_env, QString("Accessing container of size %1 at %2").arg(size).arg(i0) QTJAMBI_STACKTRACEINFO );
         }
         containerAccess->insert(__jni_env, container.first, i0, count1, t2);
     }QTJAMBI_CATCH(const JavaException& exn){

@@ -83,8 +83,8 @@ public final class QIntProperty extends QIntPropertyData {
      * <p>Constructs an <code>int</code>-typed property bound to the provided <code>functor</code>.</p>
      * @param functor
      */
-	public QIntProperty(java.util.function.@StrictNonNull IntSupplier binding) {
-		this(new QIntPropertyBinding(binding));
+	public QIntProperty(java.util.function.@StrictNonNull IntSupplier functor) {
+		this(new QIntPropertyBinding(functor));
 	}
 	
 	/**

@@ -103,7 +103,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 
         jint size = containerAccess->size(__jni_env, container.first);
         if (size == 0) {
-            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size 0 at 0") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIndexOutOfBoundsException(__jni_env, QString("Accessing container of size 0 at 0") QTJAMBI_STACKTRACEINFO );
         }
         result = containerAccess->first(__jni_env, container.first);
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -127,7 +127,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 
         jint size = containerAccess->size(__jni_env, container.first);
         if (size == 0) {
-            Java::Runtime::IndexOutOfBoundsException::throwNew(__jni_env, QString("Accessing container of size 0 at 0") QTJAMBI_STACKTRACEINFO );
+            JavaException::raiseIndexOutOfBoundsException(__jni_env, QString("Accessing container of size 0 at 0") QTJAMBI_STACKTRACEINFO );
         }
         result = containerAccess->last(__jni_env, container.first);
     }QTJAMBI_CATCH(const JavaException& exn){

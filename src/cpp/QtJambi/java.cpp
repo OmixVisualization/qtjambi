@@ -30,6 +30,7 @@
 ****************************************************************************/
 
 #include "qtjambiapi.h"
+
 #include "java_p.h"
 #include "registryutil_p.h"
 #include <QtCore/QMutex>
@@ -424,42 +425,49 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,ByteBuffer,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(asShortBuffer,()Ljava/nio/ShortBuffer;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(asReadOnlyBuffer,()Ljava/nio/ByteBuffer;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(get,(I)B)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(order,()Ljava/nio/ByteOrder;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(put,(IB)Ljava/nio/ByteBuffer;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,IntBuffer,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(asReadOnlyBuffer,()Ljava/nio/IntBuffer;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(get,(I)I)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(order,()Ljava/nio/ByteOrder;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(put,(II)Ljava/nio/IntBuffer;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,LongBuffer,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(asReadOnlyBuffer,()Ljava/nio/LongBuffer;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(get,(I)J)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(order,()Ljava/nio/ByteOrder;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(put,(IJ)Ljava/nio/LongBuffer;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,ShortBuffer,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(asReadOnlyBuffer,()Ljava/nio/ShortBuffer;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(get,(I)S)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(order,()Ljava/nio/ByteOrder;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(put,(IS)Ljava/nio/ShortBuffer;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,FloatBuffer,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(asReadOnlyBuffer,()Ljava/nio/FloatBuffer;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(get,(I)F)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(order,()Ljava/nio/ByteOrder;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(put,(IF)Ljava/nio/FloatBuffer;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,DoubleBuffer,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(asReadOnlyBuffer,()Ljava/nio/DoubleBuffer;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(get,(I)D)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(order,()Ljava/nio/ByteOrder;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(put,(ID)Ljava/nio/DoubleBuffer;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,CharBuffer,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(asReadOnlyBuffer,()Ljava/nio/CharBuffer;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(get,(I)C)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(order,()Ljava/nio/ByteOrder;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(put,(IC)Ljava/nio/CharBuffer;)
 )
 
@@ -833,18 +841,26 @@ namespace Runtime {
 
 namespace Internal{
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,ByteBuffer,
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(allocateDirect,(I)Ljava/nio/ByteBuffer;)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(order,(Ljava/nio/ByteOrder;)Ljava/nio/ByteBuffer;)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(allocateDirect,(I)Ljava/nio/ByteBuffer;)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,Buffer,
                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(capacity,()I)
                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(limit,()I)
+                                QTJAMBI_REPOSITORY_DEFINE_RENAMED_METHOD(setLimit,limit,(I)Ljava/nio/Buffer;)
                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(position,()I)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(clear,()Ljava/nio/Buffer;)
                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(mark,()Ljava/nio/Buffer;)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(array,()Ljava/lang/Object;)
                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(hasArray,()Z)
                                 QTJAMBI_REPOSITORY_DEFINE_METHOD(arrayOffset,()I)
                                 )
 }
+
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,ByteOrder,
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(nativeOrder,()Ljava/nio/ByteOrder;)
+                                )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS_SC(java/util,HashSet)
 QTJAMBI_REPOSITORY_DEFINE_CLASS_SC(java/util,ArrayList)
@@ -1123,6 +1139,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,Thread,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(isDaemon,()Z)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getName,()Ljava/lang/String;)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(getId,()J)
+    QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(dumpStack,()V)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,ThreadGroup,
@@ -1139,6 +1156,23 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang,Enum,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(ordinal,()I)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(name,()Ljava/lang/String;)
 )
+
+namespace Time{
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/time,Duration,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(getSeconds,()J)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(getNano,()I)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(from,(Ljava/time/temporal/TemporalAmount;)Ljava/time/Duration;)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(ofMillis,(J)Ljava/time/Duration;)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(ofSeconds,(JJ)Ljava/time/Duration;)
+)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/time,Instant,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(getEpochSecond,()J)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(getNano,()I)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(from,(Ljava/time/temporal/TemporalAccessor;)Ljava/time/Instant;)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(ofEpochMilli,(J)Ljava/time/Instant;)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(ofEpochSecond,(JJ)Ljava/time/Instant;)
+)
+}
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(java/lang/reflect,AccessibleObject,
     QTJAMBI_REPOSITORY_DEFINE_METHOD(isAnnotationPresent,(Ljava/lang/Class;)Z)
@@ -1194,6 +1228,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,AbstractMultiAssociativeContainer
 )
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,ExceptionUtility,
                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(reportException,(Ljava/lang/String;Ljava/lang/Throwable;)V)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(printException,(Ljava/lang/Throwable;)[B)
                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(extendStackTrace,(Ljava/lang/Throwable;Ljava/lang/String;Ljava/lang/String;I)V)
 )
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,AccessUtility,
@@ -1226,7 +1261,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,ResourceUtility,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,ResourceUtility$JarResource,
         QTJAMBI_REPOSITORY_DEFINE_METHOD(getJarEntry,(Ljava/lang/String;)Ljava/util/jar/JarEntry;)
         QTJAMBI_REPOSITORY_DEFINE_METHOD(getInputStream,(Ljava/util/zip/ZipEntry;)Ljava/io/InputStream;)
-        QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(fileTime,(Ljava/util/zip/ZipEntry;)Lio/qt/core/QDateTime;)
+        QTJAMBI_REPOSITORY_DEFINE_METHOD(fileTime,(Ljava/util/zip/ZipEntry;I)Lio/qt/core/QDateTime;)
         QTJAMBI_REPOSITORY_DEFINE_METHOD(getName,()Ljava/lang/String;)
         QTJAMBI_REPOSITORY_DEFINE_METHOD(getOrReopen,()I)
         QTJAMBI_REPOSITORY_DEFINE_METHOD(put,()V)
@@ -1402,7 +1437,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QtArgument$Stream$Arg,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QNativePointer,
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(fromNative,(JIJIZ)Lio/qt/QNativePointer;)
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(IJIZ)
-    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR2(Ljava/nio/Buffer;J)
+    QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR2(Ljava/nio/Buffer;JJ)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(indirections,()I)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(byteSize,()J)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(setVerificationEnabled,(Z)V)

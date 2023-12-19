@@ -61,6 +61,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -85,9 +86,14 @@ import io.qt.internal.LibraryBundle.Symlink;
 import io.qt.internal.LibraryBundle.WrongBuildException;
 import io.qt.internal.LibraryBundle.WrongConfigurationException;
 
+/**
+ * @hidden
+ */
 final class LibraryUtility {
 	
 	private LibraryUtility() { throw new RuntimeException();}
+	
+	private static final String DEPLOY_XML = "!/META-INF/qtjambi-deployment.xml";
 	
 	public static final String ICU_VERSION;
     public static final String LIBINFIX;
@@ -123,7 +129,7 @@ final class LibraryUtility {
     private static final File jambiSourcesDir;
     private static final File jambiHeadersDir;
     private static final File jambiJarDir;
-    private static final boolean isMavenRepo, isNativeSubdir, isDebuginfoSubdir;
+    private static final boolean isMavenRepo, isGradleCache, isNativeSubdir, isDebuginfoSubdir;
     private static final List<Library> pluginLibraries = Collections.synchronizedList(new ArrayList<>());
 
     private static final boolean deleteTmpDeployment;
@@ -770,6 +776,7 @@ final class LibraryUtility {
 	        	}
 		    	
 	    		boolean maybeMavenRepo = false;
+	    		boolean maybeGradleCache = false;
 		    	{
 		    		File _jambiJarDir = null;
 		        	URL _classURL = LibraryUtility.class.getResource(LibraryUtility.class.getSimpleName()+".class");
@@ -780,7 +787,7 @@ final class LibraryUtility {
 				    	if(classURL.startsWith("jar:file:") && (index = classURL.indexOf("!/"))>0) {
 				    		String jarFileURL = classURL.substring(4, index);
 				    		try {
-								jarFile = new File(new URL(jarFileURL).toURI());
+								jarFile = new File(CoreUtility.createURL(jarFileURL).toURI());
 							} catch (URISyntaxException | MalformedURLException e) {
 							}
 				    	}else {
@@ -794,11 +801,23 @@ final class LibraryUtility {
 				    	}
 				    	if(jarFile!=null && jarFile.exists()) {
 			    			_jambiJarDir = jarFile.getParentFile();
-			    			if(_jambiJarDir.getName().equals(QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch)
-			    					&& _jambiJarDir.getParentFile().getName().equals("qtjambi")) {
-			    				maybeMavenRepo = true;
+			    			try {
+				    			if(_jambiJarDir.getName().equals(QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch)
+				    					&& _jambiJarDir.getParentFile().getName().equals("qtjambi")) {
+				    				maybeMavenRepo = true;
+				    			}
+			    			} catch (Throwable e) {
+							}
+			    			if(!maybeMavenRepo) {
+			    				try {
+					    			if(_jambiJarDir.getParentFile().getName().equals(QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch)
+					    					&& _jambiJarDir.getParentFile().getParentFile().getName().equals("qtjambi")) {
+					    				maybeGradleCache = true;
+					    			}
+				    			} catch (Throwable e) {
+								}
 			    			}
-			    		}
+		    			}
 		        	}
 			    	jambiJarDir = _jambiJarDir;
 		    	}
@@ -807,22 +826,41 @@ final class LibraryUtility {
 	    		ClassLoader loader = classLoader();
 	            Enumeration<URL> specsFound = Collections.emptyEnumeration();
 	            try {
-					specsFound = loader.getResources("qtjambi-deployment.xml");
+					specsFound = loader.getResources("META-INF/qtjambi-deployment.xml");
 				} catch (IOException e) {
 					Logger.getLogger("io.qt.internal").log(Level.WARNING, "", e);
 				}
 	            dontSearchDeploymentSpec = specsFound.hasMoreElements();
             	Map<URL,URL> debuginfosByURL = Collections.emptyMap();
-	            if(!dontSearchDeploymentSpec && !"debug".equals(System.getProperty("io.qt.debug")) && debugInfoDeployment) {
+	            if(dontSearchDeploymentSpec && !"debug".equals(System.getProperty("io.qt.debug")) && debugInfoDeployment) {
+	            	debuginfosByURL = new HashMap<>();
 	            	List<URL> foundURLs = new ArrayList<>();
+	            	Map<String,QPair<URL,URL>> urlsByFileName = new TreeMap<>();
 		            while (specsFound.hasMoreElements()) {
 		            	URL _url = specsFound.nextElement();
 		            	String url = _url.toString();
-		            	if(url.startsWith("jar:file:") && url.endsWith("!/qtjambi-deployment.xml")) {
-		            		url = url.substring(4, url.length()-24);
+		            	if(url.startsWith("jar:file:") && url.endsWith(DEPLOY_XML)) {
+		            		url = url.substring(4, url.length()-DEPLOY_XML.length());
 		            		File jar = new File(url);
+		            		Function<String,QPair<URL,URL>> pairFactory = n->new QPair<>(null, null);
 		            		if(jar.getName().contains("-native-")) {
+		            			QPair<URL,URL> pair = urlsByFileName.computeIfAbsent(jar.getName(), pairFactory);
+		            			pair.first = _url;
 		            			foundURLs.add(_url);
+		            		}else if(jar.getName().contains("-debuginfo-")) {
+		            			QPair<URL,URL> pair = urlsByFileName.computeIfAbsent(jar.getName().replace("-debuginfo-", "-native-"), pairFactory);
+		            			pair.second = _url;
+		            		}
+		            	}
+		            }
+		            for(QPair<URL,URL> pair : urlsByFileName.values()) {
+		            	if(pair.first!=null) {
+		            		if(pair.second!=null) {
+		            			debuginfosByURL.put(pair.first, pair.second);
+		            		}else {
+		            			String url = pair.first.toString();
+		            			url = url.substring(4, url.length()-DEPLOY_XML.length());
+			            		File jar = new File(url);
 		            			File debuginfo = new File(jar.getParentFile(), jar.getName().replace("-native-", "-debuginfo-"));
 			            		if(!debuginfo.exists()) {
 			            			debuginfo = new File(jar.getParent().replace("-native-", "-debuginfo-"), jar.getName().replace("-native-", "-debuginfo-"));
@@ -831,7 +869,7 @@ final class LibraryUtility {
 			            			debuginfo = new File(jar.getParent().replace(File.separator+"native"+File.separator, File.separator+"debuginfo"+File.separator), jar.getName().replace("-native-", "-debuginfo-"));
 			            		}
 			            		if(debuginfo.exists()) {
-			            			debuginfosByURL.put(_url, new URL("jar:"+debuginfo.toURI()+"!/qtjambi-deployment.xml"));
+			            			debuginfosByURL.put(pair.first, CoreUtility.createURL("jar:"+debuginfo.toURI()+DEPLOY_XML));
 			            		}
 		            		}
 		            	}
@@ -843,6 +881,7 @@ final class LibraryUtility {
 		            boolean _isNativeSubdir = false;
 		            boolean _isDebuginfoSubdir = false;
 		            boolean _isMavenRepo = false;
+		            boolean _isGradleCache = false;
 	            	List<URL> foundURLs = new ArrayList<>();
 	            	boolean isDebug = false;
 	            	debuginfosByURL = new HashMap<>();
@@ -851,51 +890,103 @@ final class LibraryUtility {
 	            		String nativeModule = String.format("qtjambi-native-%1$s", osArchName);
 	            		String debuginfoModule = String.format("qtjambi-debuginfo-%1$s", osArchName);
 		            	if("debug".equals(System.getProperty("io.qt.debug"))) {
-			    			File nativeFile = new File(jambiJarDir, String.format("%1$s-debug-%2$s.jar", nativeModule, version));
-			    			if(!nativeFile.exists()) {
-			    				nativeFile = new File(new File(jambiJarDir, "native"), String.format("%1$s-debug-%2$s.jar", nativeModule, version));
-			    				_isNativeSubdir = nativeFile.exists();
+			    			File nativeFile = null;
+			    			if(maybeMavenRepo) {
+			    				try {
+				    				File jarDir = new File(new File(jambiJarDir.getParentFile().getParentFile(), String.format("%1$s-debug", nativeModule)), version);
+				    				nativeFile = new File(jarDir, String.format("%1$s-debug-%2$s.jar", nativeModule, version));
+				    				_isMavenRepo = nativeFile.exists();
+			    				} catch (Throwable e) {}
 			    			}
-			    			if(!nativeFile.exists() && maybeMavenRepo) {
-			    				File jarDir = new File(new File(jambiJarDir.getParentFile().getParentFile(), String.format("%1$s-debug", nativeModule)), version);
-			    				nativeFile = new File(jarDir, String.format("%1$s-debug-%2$s.jar", nativeModule, version));
-			    				_isMavenRepo = nativeFile.exists();
+			    			if(maybeGradleCache) {
+			    				try {
+				    				File jarDir = new File(new File(jambiJarDir.getParentFile().getParentFile().getParentFile(), String.format("%1$s-debug", nativeModule)), version);
+				    				for(File subdir : jarDir.listFiles()) {
+		        						if(subdir.isDirectory()) {
+		        							nativeFile = new File(subdir, String.format("%1$s-debug-%2$s.jar", nativeModule, version));
+		        							if(nativeFile.exists())
+		        								break;
+		        						}
+				    				}
+				    				_isGradleCache = nativeFile.exists();
+			    				} catch (Throwable e) {}
+			    			}
+			    			if(nativeFile==null || !nativeFile.exists()) {
+			    				nativeFile = new File(jambiJarDir, String.format("%1$s-debug-%2$s.jar", nativeModule, version));
+			    				if(!nativeFile.exists()) {
+				    				nativeFile = new File(new File(jambiJarDir, "native"), String.format("%1$s-debug-%2$s.jar", nativeModule, version));
+				    				_isNativeSubdir = nativeFile.exists();
+				    			}
 			    			}
 			    			if(nativeFile.exists()) {
 			    				isDebug = true;
 			    				try {
-			    					foundURLs.add(new URL("jar:"+nativeFile.toURI()+"!/qtjambi-deployment.xml"));
+			    					foundURLs.add(CoreUtility.createURL("jar:"+nativeFile.toURI()+DEPLOY_XML));
 								} catch (IOException e) {
 								}
 			    			}
 		            	}else {
-		            		File nativeFile = new File(jambiJarDir, String.format("%1$s-%2$s.jar", nativeModule, version));
-		            		if(!nativeFile.exists()) {
-			    				nativeFile = new File(new File(jambiJarDir, "native"), String.format("%1$s-%2$s.jar", nativeModule, version));
-			    				_isNativeSubdir = nativeFile.exists();
+		            		File nativeFile = null;
+		            		if(maybeMavenRepo) {
+			    				try {
+				    				File jarDir = new File(new File(jambiJarDir.getParentFile().getParentFile(), nativeModule), version);
+				    				nativeFile = new File(jarDir, String.format("%1$s-%2$s.jar", nativeModule, version));
+				    				_isMavenRepo = nativeFile.exists();
+			    				} catch (Throwable e) {}
 			    			}
-			    			if(!nativeFile.exists() && maybeMavenRepo) {
-			    				File jarDir = new File(new File(jambiJarDir.getParentFile().getParentFile(), nativeModule), version);
-			    				nativeFile = new File(jarDir, String.format("%1$s-%2$s.jar", nativeModule, version));
-			    				_isMavenRepo = nativeFile.exists();
+		            		if(maybeGradleCache) {
+			    				try {
+				    				File jarDir = new File(new File(jambiJarDir.getParentFile().getParentFile().getParentFile(), nativeModule), version);
+				    				for(File subdir : jarDir.listFiles()) {
+		        						if(subdir.isDirectory()) {
+		        							nativeFile = new File(subdir, String.format("%1$s-%2$s.jar", nativeModule, version));
+		        							if(nativeFile.exists())
+		        								break;
+		        						}
+				    				}
+				    				_isGradleCache = nativeFile.exists();
+			    				} catch (Throwable e) {}
 			    			}
+		            		if(nativeFile==null || !nativeFile.exists()) {
+		            			nativeFile = new File(jambiJarDir, String.format("%1$s-%2$s.jar", nativeModule, version));
+		            			if(!nativeFile.exists()) {
+				    				nativeFile = new File(new File(jambiJarDir, "native"), String.format("%1$s-%2$s.jar", nativeModule, version));
+				    				_isNativeSubdir = nativeFile.exists();
+				    			}
+		            		}
 			    			if(nativeFile.exists()) {
 			    				try {
-			    					URL url = new URL("jar:"+nativeFile.toURI()+"!/qtjambi-deployment.xml");
+			    					URL url = CoreUtility.createURL("jar:"+nativeFile.toURI()+DEPLOY_XML);
 			    					foundURLs.add(url);
 			    					if(debugInfoDeployment) {
-					            		File debuginfoFile = new File(jambiJarDir, String.format("%1$s-%2$s.jar", debuginfoModule, version));
-					            		if(!debuginfoFile.exists()) {
-					            			debuginfoFile = new File(new File(jambiJarDir, "debuginfo"), String.format("%1$s-%2$s.jar", debuginfoModule, version));
-						    				_isDebuginfoSubdir = debuginfoFile.exists();
-					            		}
-					            		if(!debuginfoFile.exists() && _isMavenRepo) {
-						    				File jarDir = new File(new File(jambiJarDir.getParentFile().getParentFile(), debuginfoModule), version);
-						    				debuginfoFile = new File(jarDir, String.format("%1$s-%2$s.jar", debuginfoModule, version));
+					            		File debuginfoFile = null;
+					            		if(_isMavenRepo) {
+						    				try {
+							    				File jarDir = new File(new File(jambiJarDir.getParentFile().getParentFile(), debuginfoModule), version);
+							    				debuginfoFile = new File(jarDir, String.format("%1$s-%2$s.jar", debuginfoModule, version));
+						    				} catch (Throwable e) {}
+						    			} else if(_isGradleCache) {
+						    				try {
+							    				File jarDir = new File(new File(jambiJarDir.getParentFile().getParentFile().getParentFile(), debuginfoModule), version);
+							    				for(File subdir : jarDir.listFiles()) {
+					        						if(subdir.isDirectory()) {
+					        							debuginfoFile = new File(subdir, String.format("%1$s-%2$s.jar", debuginfoModule, version));
+					        							if(debuginfoFile.exists())
+					        								break;
+					        						}
+							    				}
+						    				} catch (Throwable e) {}
 						    			}
+					            		if(debuginfoFile==null || !debuginfoFile.exists()) {
+					            			debuginfoFile = new File(jambiJarDir, String.format("%1$s-%2$s.jar", debuginfoModule, version));
+						            		if(!debuginfoFile.exists()) {
+						            			debuginfoFile = new File(new File(jambiJarDir, "debuginfo"), String.format("%1$s-%2$s.jar", debuginfoModule, version));
+							    				_isDebuginfoSubdir = debuginfoFile.exists();
+						            		}
+					            		}
 					            		if(debuginfoFile.exists()) {
 					            			try {
-					            				debuginfosByURL.put(url, new URL("jar:"+debuginfoFile.toURI()+"!/qtjambi-deployment.xml"));
+					            				debuginfosByURL.put(url, CoreUtility.createURL("jar:"+debuginfoFile.toURI()+DEPLOY_XML));
 											} catch (IOException e) {
 											}
 					            		}
@@ -903,76 +994,122 @@ final class LibraryUtility {
 								} catch (IOException e) {
 								}
 			    			}else if(!"release".equals(System.getProperty("io.qt.debug"))){
-			    				nativeFile = new File(jambiJarDir, String.format("%1$s-debug-%2$s.jar", nativeModule, version));
-			    				if(!nativeFile.exists()) {
-				    				nativeFile = new File(new File(jambiJarDir, "native"), String.format("%1$s-debug-%2$s.jar", nativeModule, version));
-				    				_isNativeSubdir = nativeFile.exists();
-				    			}
-				    			if(!nativeFile.exists() && maybeMavenRepo) {
-				    				File jarDir = new File(new File(jambiJarDir.getParentFile().getParentFile(), String.format("%1$s-debug", nativeModule)), version);
-				    				nativeFile = new File(jarDir, String.format("%1$s-debug-%2$s.jar", nativeModule, version));
-				    				_isMavenRepo = nativeFile.exists();
-				    			}
+			    				nativeFile = null;
+			    				if(maybeMavenRepo) {
+			    					try {
+					    				File jarDir = new File(new File(jambiJarDir.getParentFile().getParentFile(), String.format("%1$s-debug", nativeModule)), version);
+					    				nativeFile = new File(jarDir, String.format("%1$s-debug-%2$s.jar", nativeModule, version));
+					    				_isMavenRepo = nativeFile.exists();
+				    				} catch (Throwable e) {}
+			    				}
+			    				if(maybeGradleCache) {
+			    					try {
+					    				File jarDir = new File(new File(jambiJarDir.getParentFile().getParentFile().getParentFile(), String.format("%1$s-debug", nativeModule)), version);
+					    				for(File subdir : jarDir.listFiles()) {
+			        						if(subdir.isDirectory()) {
+			        							nativeFile = new File(subdir, String.format("%1$s-debug-%2$s.jar", nativeModule, version));
+			        							if(nativeFile.exists())
+			        								break;
+			        						}
+					    				}
+					    				_isGradleCache = nativeFile.exists();
+				    				} catch (Throwable e) {}
+			    				}
+			    				if(nativeFile==null || !nativeFile.exists()) {
+			    					nativeFile = new File(jambiJarDir, String.format("%1$s-debug-%2$s.jar", nativeModule, version));
+				    				if(!nativeFile.exists()) {
+					    				nativeFile = new File(new File(jambiJarDir, "native"), String.format("%1$s-debug-%2$s.jar", nativeModule, version));
+					    				_isNativeSubdir = nativeFile.exists();
+					    			}
+			    				}
 				    			if(nativeFile.exists()) {
 				    				isDebug = true;
 				    				try {
-				    					foundURLs.add(new URL("jar:"+nativeFile.toURI()+"!/qtjambi-deployment.xml"));
+				    					foundURLs.add(CoreUtility.createURL("jar:"+nativeFile.toURI()+DEPLOY_XML));
 									} catch (IOException e) {
 									}
 				    			}
 			    			}
 		            	}
-		            	String infix;
-		        		if(isDebug) {
-		        			infix = String.format("-native-%1$s-debug-%2$s.%3$s.", osArchName, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
+		        		final String suffix;
+	        			if(isDebug) {
+	        				suffix = String.format("-native-%1$s-debug", osArchName);
 		        		}else {
-		        			infix = String.format("-native-%1$s-%2$s.%3$s.", osArchName, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
+		        			suffix = String.format("-native-%1$s", osArchName);
 		        		}
+		            	final String versionedSuffix = String.format("%1$s-%2$s.%3$s.", suffix, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
 		        		if(_isMavenRepo) {
-		        			String suffix;
-		        			if(isDebug) {
-		        				suffix = String.format("-native-%1$s-debug", osArchName);
-			        		}else {
-			        			suffix = String.format("-native-%1$s", osArchName);
-			        		}
-		        			for(File dir : jambiJarDir.getParentFile().getParentFile().listFiles()) {
-		        				if(dir.isDirectory() && dir.getName().startsWith("qtjambi-plugin-") && dir.getName().endsWith(suffix)) {
-		        					dir = new File(dir, version);
-		        					for(File f : dir.listFiles()) {
-										if(f.getName().startsWith("qtjambi-plugin-") && f.getName().contains(infix)) {
-											try {
-												URL url = new URL("jar:"+f.toURI()+"!/qtjambi-deployment.xml");
-												foundURLs.add(url);
-												if(!isDebug && debugInfoDeployment) {
-													String name = f.getName().replace("-native-", "-debuginfo-");
-													File debuginfoFile = new File(f.getParentFile(), name);
-													if(debuginfoFile.exists()) {
-														debuginfosByURL.put(url, new URL("jar:"+debuginfoFile.toURI()+"!/qtjambi-deployment.xml"));
+		        			try {
+			        			for(File dir : jambiJarDir.getParentFile().getParentFile().listFiles()) {
+			        				if(dir.isDirectory() && dir.getName().startsWith("qtjambi-plugin-") && dir.getName().endsWith(suffix)) {
+			        					dir = new File(dir, version);
+			        					for(File f : dir.listFiles()) {
+											if(f.getName().startsWith("qtjambi-plugin-") && f.getName().contains(versionedSuffix)) {
+												try {
+													URL url = CoreUtility.createURL("jar:"+f.toURI()+DEPLOY_XML);
+													foundURLs.add(url);
+													if(!isDebug && debugInfoDeployment) {
+														String name = f.getName().replace("-native-", "-debuginfo-");
+														File debuginfoFile = new File(f.getParentFile(), name);
+														if(debuginfoFile.exists()) {
+															debuginfosByURL.put(url, CoreUtility.createURL("jar:"+debuginfoFile.toURI()+DEPLOY_XML));
+														}
 													}
+												} catch (IOException e) {
 												}
-											} catch (IOException e) {
 											}
 										}
-									}
-		        				}
-		        			}
+			        				}
+			        			}
+		    				} catch (Throwable e) {}
 		        		}
-		        		for(File f : (_isNativeSubdir ? new File(jambiJarDir, "native") : jambiJarDir).listFiles()) {
-							if(f.getName().startsWith("qtjambi-plugin-") && f.getName().contains(infix)) {
-								try {
-									URL url = new URL("jar:"+f.toURI()+"!/qtjambi-deployment.xml");
-									foundURLs.add(url);
-									if(!isDebug && debugInfoDeployment) {
-										String name = f.getName().replace("-native-", "-debuginfo-");
-										File debuginfoFile = new File((_isNativeSubdir ? new File(jambiJarDir, "debuginfo") : jambiJarDir), name);
-										if(debuginfoFile.exists()) {
-											debuginfosByURL.put(url, new URL("jar:"+debuginfoFile.toURI()+"!/qtjambi-deployment.xml"));
+		        		if(_isGradleCache) {
+		        			try {
+			        			for(File dir : jambiJarDir.getParentFile().getParentFile().getParentFile().getParentFile().listFiles()) {
+			        				if(dir.isDirectory() && dir.getName().startsWith("qtjambi-plugin-") && dir.getName().endsWith(suffix)) {
+			        					dir = new File(dir, version);
+			        					for(File subdir : dir.listFiles()) {
+			        						if(subdir.isDirectory()) {
+					        					for(File f : subdir.listFiles()) {
+													if(f.getName().startsWith("qtjambi-plugin-") && f.getName().contains(versionedSuffix)) {
+														try {
+															URL url = CoreUtility.createURL("jar:"+f.toURI()+DEPLOY_XML);
+															foundURLs.add(url);
+															if(!isDebug && debugInfoDeployment) {
+																String name = f.getName().replace("-native-", "-debuginfo-");
+																File debuginfoFile = new File(f.getParentFile(), name);
+																if(debuginfoFile.exists()) {
+																	debuginfosByURL.put(url, CoreUtility.createURL("jar:"+debuginfoFile.toURI()+DEPLOY_XML));
+																}
+															}
+														} catch (IOException e) {
+														}
+													}
+												}
+			        						}
+			        					}
+			        				}
+			        			}
+		    				} catch (Throwable e) {}
+		        		}
+		        		try {
+			        		for(File f : (_isNativeSubdir ? new File(jambiJarDir, "native") : jambiJarDir).listFiles()) {
+								if(f.getName().startsWith("qtjambi-plugin-") && f.getName().contains(versionedSuffix)) {
+									try {
+										URL url = CoreUtility.createURL("jar:"+f.toURI()+DEPLOY_XML);
+										foundURLs.add(url);
+										if(!isDebug && debugInfoDeployment) {
+											String name = f.getName().replace("-native-", "-debuginfo-");
+											File debuginfoFile = new File((_isNativeSubdir ? new File(jambiJarDir, "debuginfo") : jambiJarDir), name);
+											if(debuginfoFile.exists()) {
+												debuginfosByURL.put(url, CoreUtility.createURL("jar:"+debuginfoFile.toURI()+DEPLOY_XML));
+											}
 										}
+									} catch (IOException e) {
 									}
-								} catch (IOException e) {
 								}
 							}
-						}
+	    				} catch (Throwable e) {}
 	            	}
 	            	if(!loadQtFromLibraryPath) {
 	            		int qtPatchVersion = -1;
@@ -990,13 +1127,13 @@ final class LibraryUtility {
 	            			for(File lib : (_isNativeSubdir ? new File(jambiJarDir, "native") : jambiJarDir).listFiles()) {
 	            				if(lib.isFile() && lib.getName().startsWith("qt-") && lib.getName().endsWith(libSuffix)) {
 	            					try {
-	            						URL url = new URL("jar:"+lib.toURI()+"!/qtjambi-deployment.xml");
+	            						URL url = CoreUtility.createURL("jar:"+lib.toURI()+DEPLOY_XML);
 				    					foundURLs.add(url);
 				    					if(!isDebug && debugInfoDeployment) {
 											String name = lib.getName().replace("-native-", "-debuginfo-");
 											File debuginfoFile = new File((_isNativeSubdir ? new File(jambiJarDir, "debuginfo") : jambiJarDir), name);
 											if(debuginfoFile.exists()) {
-												debuginfosByURL.put(url, new URL("jar:"+debuginfoFile.toURI()+"!/qtjambi-deployment.xml"));
+												debuginfosByURL.put(url, CoreUtility.createURL("jar:"+debuginfoFile.toURI()+DEPLOY_XML));
 											}
 										}
 									} catch (IOException e) {
@@ -1008,10 +1145,12 @@ final class LibraryUtility {
 	            	if(!foundURLs.isEmpty())
 	            		specsFound = Collections.enumeration(foundURLs);
 			    	isMavenRepo = _isMavenRepo;
+			    	isGradleCache = _isGradleCache;
 			    	isNativeSubdir = _isNativeSubdir;
 			    	isDebuginfoSubdir = _isDebuginfoSubdir;
 	            }else {
 	            	isMavenRepo = false;
+			    	isGradleCache = false;
 	            	isNativeSubdir = false;
 	            	isDebuginfoSubdir = false;
 	            }
@@ -1023,7 +1162,7 @@ final class LibraryUtility {
 	                	continue;
 	                loadedNativeDeploymentUrls.add(url);
 	
-	                Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format("Found %1$s", url.getFile().replace("!/qtjambi-deployment.xml", "")));
+	                Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format("Found %1$s", url.getFile().replace(DEPLOY_XML, "")));
 	
 	                LibraryBundle spec = null;
 	                String protocol = url.getProtocol();
@@ -1038,11 +1177,11 @@ final class LibraryUtility {
 	                    // eform has the "jar:url!/entry" format
 	                    if (end != -1) {
 		                        try {
-									URL jarUrl = new URL(eform.substring(start, end));
+									URL jarUrl = CoreUtility.createURL(eform.substring(start, end));
 									String jarName = new File(jarUrl.getFile()).getName();
 									try {
 										URL debuginfoURL = debuginfosByURL.get(url);
-										Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->debuginfoURL==null ? String.format("Extracting libraries from %1$s", url.getFile().replace("!/qtjambi-deployment.xml", "")) : String.format("Extracting libraries from %1$s and %2$s", url.getFile().replace("!/qtjambi-deployment.xml", ""), debuginfoURL.getFile().replace("!/qtjambi-deployment.xml", "")));
+										Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->debuginfoURL==null ? String.format("Extracting libraries from %1$s", url.getFile().replace(DEPLOY_XML, "")) : String.format("Extracting libraries from %1$s and %2$s", url.getFile().replace(DEPLOY_XML, ""), debuginfoURL.getFile().replace(DEPLOY_XML, "")));
 									    spec = prepareNativeDeployment(url, debuginfoURL, jarName, null);
 									} catch (ParserConfigurationException | SAXException | ZipException e) {
 										Logger.getLogger("io.qt.internal").log(Level.WARNING, String.format("Unable to load native libraries from %1$s: %2$s", (jarName==null ? jarUrl : jarName), e.getMessage()), e);
@@ -1056,7 +1195,7 @@ final class LibraryUtility {
 	                    // No unpack since we presume we are already unpacked
 	                    try {
 	                    	URL debuginfoURL = debuginfosByURL.get(url);
-	                    	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->debuginfoURL==null ? String.format("Extracting libraries from %1$s", url.getFile().replace("!/qtjambi-deployment.xml", "")) : String.format("Extracting libraries from %1$s and %2$s", url.getFile().replace("!/qtjambi-deployment.xml", ""), debuginfoURL.getFile().replace("!/qtjambi-deployment.xml", "")));
+	                    	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->debuginfoURL==null ? String.format("Extracting libraries from %1$s", url.getFile().replace(DEPLOY_XML, "")) : String.format("Extracting libraries from %1$s and %2$s", url.getFile().replace(DEPLOY_XML, ""), debuginfoURL.getFile().replace(DEPLOY_XML, "")));
 							spec = prepareNativeDeployment(url, debuginfoURL, null, Boolean.FALSE);
 						} catch (ParserConfigurationException | SAXException | ZipException e) {
 							Logger.getLogger("io.qt.internal").log(Level.WARNING, String.format("Unable to load native libraries from %1$s: %2$s", url, e.getMessage()), e);
@@ -1107,6 +1246,7 @@ final class LibraryUtility {
 	    		jambiHeadersDir = null;
 	    		jambiJarDir = null;
 	    		isMavenRepo = false;
+		    	isGradleCache = false;
             	isNativeSubdir = false;
             	isDebuginfoSubdir = false;
 	    	}
@@ -1646,7 +1786,7 @@ final class LibraryUtility {
 		    	if(classURL.startsWith("jar:file:") && (index = classURL.indexOf("!/"))>0) {
 		    		String jarFileURL = classURL.substring(4, index);
 		    		try {
-						jarFile = new File(new URL(jarFileURL).toURI());
+						jarFile = new File(CoreUtility.createURL(jarFileURL).toURI());
 					} catch (URISyntaxException | MalformedURLException e) {
 					}
 		    	}else {
@@ -1682,9 +1822,32 @@ final class LibraryUtility {
 		    				infix += "-debug";
 		    			final File _directory;
 		    			final File _debuginfoDirectory;
-		    			if(isMavenRepo) {
+		    			if(isGradleCache) {
+		    				File __directory = directory;
+		    				File dir = new File(new File(directory.getParentFile().getParentFile().getParentFile(), moduleName + infix), String.format("%1$s.%2$s.%3$s", versionArray[0], versionArray[1], versionArray[2]));
+		    				if(dir.isDirectory()) {
+		    					for(File subdir : dir.listFiles()) {
+		    						if(subdir.isDirectory() && new File(subdir, moduleName + infix + qtjambiVersion+".jar").exists()) {
+		    							__directory = subdir;
+		    							break;
+		    						}
+		    					}
+		    				}
+		    				File __debuginfoDirectory = directory;
+		    				dir = new File(new File(directory.getParentFile().getParentFile().getParentFile(), moduleName + dinfix), String.format("%1$s.%2$s.%3$s", versionArray[0], versionArray[1], versionArray[2]));
+		    				if(dir.isDirectory()) {
+		    					for(File subdir : dir.listFiles()) {
+		    						if(subdir.isDirectory() && new File(subdir, moduleName + dinfix + qtjambiVersion+".jar").exists()) {
+		    							__debuginfoDirectory = subdir;
+		    							break;
+		    						}
+		    					}
+		    				}
+		    				_directory = __directory;
+		    				_debuginfoDirectory = __debuginfoDirectory;
+		    			}else if(isMavenRepo) {
 		    				_directory = new File(new File(directory.getParentFile().getParentFile(), moduleName + infix), String.format("%1$s.%2$s.%3$s", versionArray[0], versionArray[1], versionArray[2]));
-		    				_debuginfoDirectory = _directory;
+		    				_debuginfoDirectory = new File(new File(directory.getParentFile().getParentFile(), moduleName + dinfix), String.format("%1$s.%2$s.%3$s", versionArray[0], versionArray[1], versionArray[2]));
 		    			}else {
 		    				_directory = directory;
 		    				_debuginfoDirectory = debuginfoDirectory;
@@ -1692,7 +1855,7 @@ final class LibraryUtility {
 		    			final File nativeFile = new File(_directory, moduleName + infix + qtjambiVersion+".jar");
 		    			if(nativeFile.exists()) {
 		    				try {
-								URL nativeFileURL = new URL("jar:"+nativeFile.toURI()+"!/qtjambi-deployment.xml");
+								URL nativeFileURL = CoreUtility.createURL("jar:"+nativeFile.toURI()+DEPLOY_XML);
 								LibraryBundle deployment = null;
 								synchronized(loadedNativeDeploymentUrls) {
 									if(!loadedNativeDeploymentUrls.contains(nativeFileURL)) {
@@ -1702,7 +1865,7 @@ final class LibraryUtility {
 										if(debugInfoDeployment && configuration!=LibraryBundle.Configuration.Debug) {
 											debuginfoFile = new File(_debuginfoDirectory, moduleName + dinfix + qtjambiVersion+".jar");
 											if(debuginfoFile.exists()) {
-												debuginfoFileURL = new URL("jar:"+debuginfoFile.toURI()+"!/qtjambi-deployment.xml");
+												debuginfoFileURL = CoreUtility.createURL("jar:"+debuginfoFile.toURI()+DEPLOY_XML);
 											}else {
 												debuginfoFile = null;
 											}
@@ -1767,8 +1930,10 @@ final class LibraryUtility {
 			availability.extractLibrary();
 			return;
 		case Optional:
-			if(!availability.isAvailable())
+			if(!availability.isAvailable()) {
+				Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format("Library unavailable: %1$s", library));
 				return;
+			}
 			break;
 		default:
 			break;
@@ -1784,6 +1949,7 @@ final class LibraryUtility {
 		} catch (RuntimeException | Error e) {
 			switch(libraryRequirementMode) {
 			case Optional:
+	        	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->e.getMessage());
 				return;
 			default:
 				break;
@@ -1841,7 +2007,7 @@ final class LibraryUtility {
 			    	if(classURL.startsWith("jar:file:") && (index = classURL.indexOf("!/"))>0) {
 			    		String jarFileURL = classURL.substring(4, index);
 			    		try {
-							jarFile = new File(new URL(jarFileURL).toURI());
+							jarFile = new File(CoreUtility.createURL(jarFileURL).toURI());
 						} catch (URISyntaxException | MalformedURLException e) {
 						}
 			    	}else {
@@ -2326,7 +2492,7 @@ final class LibraryUtility {
 		List<Dependency> dependencies = qtLibName==null ? Collections.emptyList() : QtJambi_LibraryUtilities.dependencies.getOrDefault("Qt"+qtLibName, Collections.emptyList());
 		
     	return ()->{
-	    	URL entryURL = new URL(urlBase+libName);
+	    	URL entryURL = CoreUtility.createURL(urlBase+libName);
 	        try(InputStream in = entryURL.openStream()){
 	        	File outFileDir = outFile.getParentFile();
 	        	Logger.getLogger("io.qt.internal").log(Level.FINEST, ()->String.format(" - copying '%1$s' to %2$s", libName, outFile.getAbsolutePath()));
@@ -2825,7 +2991,7 @@ final class LibraryUtility {
             if(debuginfoSpec!=null) {
         		debuginfoSpec.setExtractionDir(new File(path));
 	        }
-//            spec.setExtractionUrl(new URL(deploymentSpec, path));
+//            spec.setExtractionUrl(CoreUtility.createURL(deploymentSpec, path));
         }
 
         return spec;

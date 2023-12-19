@@ -59,7 +59,10 @@ import org.xml.sax.SAXException;
 import io.qt.QLibraryNotLoadedError;
 import io.qt.core.QPair;
 
-public final class LibraryBundle {
+/**
+ * @hidden
+ */
+final class LibraryBundle {
     private static final Map<String, Library> libraryMap = Collections.synchronizedMap(new HashMap<String, Library>());
     
     private LibraryBundle(){}
@@ -248,7 +251,7 @@ public final class LibraryBundle {
         this.extractionDir = extractionDir;
     }
 
-    public List<Library> libraries() {
+    List<Library> libraries() {
         return libraries == null ? Collections.emptyList() : Collections.unmodifiableList(libraries);
     }
 
@@ -264,7 +267,7 @@ public final class LibraryBundle {
 		return compiler;
 	}
 
-	public Configuration configuration() {
+	Configuration configuration() {
 		return configuration;
 	}
 
@@ -288,7 +291,7 @@ public final class LibraryBundle {
 		return hasTrPaths;
 	}
 	
-	public static class Library {
+	static class Library {
 	    private final String name;
 	    private final LibraryBundle depl;
 
@@ -407,7 +410,7 @@ public final class LibraryBundle {
 		}
 	}
 	
-	public static class Symlink extends Library {
+	static class Symlink extends Library {
 		Symlink(String name, String target, LibraryBundle depl) {
 			super(name, depl);
 			this.target = target;
@@ -423,7 +426,7 @@ public final class LibraryBundle {
 	/** 
 	 * Enum for defining whether Qt is build in Release or Debug. 
 	 */
-	public enum Configuration {
+	enum Configuration {
 	    Release,
 	    Debug
 	}

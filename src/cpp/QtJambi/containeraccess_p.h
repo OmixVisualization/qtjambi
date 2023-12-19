@@ -35,6 +35,8 @@
 #include <QtCore/QThreadStorage>
 
 QT_WARNING_DISABLE_DEPRECATED
+QT_WARNING_DISABLE_GCC("-Wextra")
+QT_WARNING_DISABLE_CLANG("-Wextra")
 
 #include "containeraccess.h"
 #include "jobjectwrapper.h"
@@ -1123,7 +1125,7 @@ private:
     friend class AutoAssociativeIteratorAccess;
 };
 
-class AutoSequentialIteratorAccess : public virtual AbstractSequentialIteratorAccess, public virtual AutoSequentialConstIteratorAccess{
+class AutoSequentialIteratorAccess : public virtual AbstractSequentialIteratorAccess, public AutoSequentialConstIteratorAccess{
 public:
     typedef std::function<void*(void*)> SetValueFn;
     ~AutoSequentialIteratorAccess() override;
@@ -1151,7 +1153,7 @@ private:
     SetValueFn m_setValue;
 };
 
-class AutoAssociativeConstIteratorAccess : public virtual AbstractAssociativeConstIteratorAccess, public virtual AutoSequentialConstIteratorAccess{
+class AutoAssociativeConstIteratorAccess : public virtual AbstractAssociativeConstIteratorAccess, public AutoSequentialConstIteratorAccess{
 public:
     typedef std::function<const void*(const void*)> KeyFn;
 private:
@@ -1182,8 +1184,7 @@ private:
     friend class AutoAssociativeIteratorAccess;
 };
 
-class AutoAssociativeIteratorAccess : public virtual AbstractAssociativeIteratorAccess,
-        public virtual AutoAssociativeConstIteratorAccess{
+class AutoAssociativeIteratorAccess : public virtual AbstractAssociativeIteratorAccess, public AutoAssociativeConstIteratorAccess{
     typedef std::function<void*(void*)> SetValueFn;
 public:
     ~AutoAssociativeIteratorAccess() override;

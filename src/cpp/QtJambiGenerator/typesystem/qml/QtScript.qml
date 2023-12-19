@@ -240,6 +240,7 @@ TypeSystem{
     
     ValueType{
         name: "QScriptProgram"
+        noImplicitConstructors: true
     }
     
     InterfaceType{
@@ -258,6 +259,7 @@ TypeSystem{
     
     ValueType{
         name: "QScriptValue"
+        noImplicitConstructors: true
         ModifyFunction{
             signature: "QScriptValue(uint)"
             remove: RemoveFlag.All

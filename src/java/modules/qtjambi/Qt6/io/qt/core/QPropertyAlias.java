@@ -371,10 +371,14 @@ public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided alias.
 	 * @param other
 	 */
-	public QPropertyAlias(@StrictNonNull QPropertyAlias<T> alias) {
-		super(alias);
+	public QPropertyAlias(@StrictNonNull QPropertyAlias<T> other) {
+		super(other);
 	}
 	
+	/**
+	 * Creates a new alias to the provided binding's underlying property.
+	 * @param bindable
+	 */
 	public QPropertyAlias(@StrictNonNull QBindable<T> bindable) {
 		super(bindable.data(), bindable.iface());
 	}

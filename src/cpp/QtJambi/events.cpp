@@ -538,6 +538,25 @@ void QtJambiAPI::checkThreadConstructingApplication(JNIEnv *env, const std::type
             JavaException::raiseQThreadAffinityException(env, QStringLiteral("%1 created outside main thread").arg(getQtName(constructedType)) QTJAMBI_STACKTRACEINFO, nullptr,
                                                         currentThread, mainThread );
         }
+#ifdef Q_OS_ANDROID
+        if(UIInitialCheck::uiThreadCheck == UIInitialCheck::UseCheck(&UIInitialCheck::trivial)){
+            enableThreadAffinity(true);
+            if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-event-thread-affinity-check"))){
+                QInternal::registerCallback(QInternal::EventNotifyCallback, &threadAffineEventNotify);
+            }else{
+                QInternal::registerCallback(QInternal::EventNotifyCallback, &simpleEventNotify);
+            }
+        }
+    }else{
+        if(UIInitialCheck::uiThreadCheck != UIInitialCheck::UseCheck(&UIInitialCheck::trivial)){
+            enableThreadAffinity(false);
+            if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-event-thread-affinity-check"))){
+                QInternal::registerCallback(QInternal::EventNotifyCallback, &threadAffineEventNotify);
+            }else{
+                QInternal::registerCallback(QInternal::EventNotifyCallback, &simpleEventNotify);
+            }
+        }
+#endif
     }
 }
 
@@ -677,12 +696,25 @@ bool threadAffineEventNotify(void **data)
                     if(JniEnvironment env{200}){
                         QtJambiExceptionHandler __exceptionHandler;
                         try{
-                            if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(receiver)) {
+                            qCWarning(DebugAPI::internalCategory, "Cannot send events to objects owned by a different thread (event type: %ls). "
+                                                                  "Current thread 0x%p. Receiver '%ls' (of type '%s') was created in thread 0x%p",
+                                      qUtf16Printable(eventDescr),
+                                      currentThread, qUtf16Printable(receiver->objectName()),
+                                      receiver->metaObject()->className(), thr);
+                            if(QtJambiShellInterface* shellInterface = dynamic_cast<QtJambiShellInterface*>(receiver)){
                                 JavaException::raiseQThreadAffinityException(env, QString::asprintf("Cannot send events to objects owned by a different thread (event type: %ls). "
                                                                                                                "Current thread 0x%p. Receiver '%ls' (of type '%s') was created in thread 0x%p",
                                                                                                                qUtf16Printable(eventDescr),
                                                                                                                currentThread, qUtf16Printable(receiver->objectName()),
                                                                                                                receiver->metaObject()->className(), thr) QTJAMBI_STACKTRACEINFO ,
+                                                                             QtJambiShellInterface::getJavaObjectLocalRef(env, shellInterface),
+                                                                             nullptr, nullptr);
+                            }else if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(receiver)) {
+                                JavaException::raiseQThreadAffinityException(env, QString::asprintf("Cannot send events to objects owned by a different thread (event type: %ls). "
+                                                                                                    "Current thread 0x%p. Receiver '%ls' (of type '%s') was created in thread 0x%p",
+                                                                                                    qUtf16Printable(eventDescr),
+                                                                                                    currentThread, qUtf16Printable(receiver->objectName()),
+                                                                                                    receiver->metaObject()->className(), thr) QTJAMBI_STACKTRACEINFO ,
                                                                              link->getJavaObjectLocalRef(env),
                                                                              nullptr, nullptr);
                             }else{

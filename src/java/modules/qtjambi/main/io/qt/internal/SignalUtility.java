@@ -59,6 +59,7 @@ import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -79,6 +80,7 @@ import io.qt.QtSignalBlockerInterface;
 import io.qt.QtSignalEmitterInterface;
 import io.qt.QtThreadAffineInterface;
 import io.qt.QtUninvokable;
+import io.qt.QtUtilities;
 import io.qt.core.QByteArray;
 import io.qt.core.QDeclarableSignals;
 import io.qt.core.QHash;
@@ -108,6 +110,9 @@ import io.qt.core.QThread;
 import io.qt.core.Qt;
 import io.qt.core.Qt.ConnectionType;
 
+/**
+ * @hidden
+ */
 abstract class SignalUtility {
 	static {
 		QtJambi_LibraryUtilities.initialize();
@@ -301,6 +306,13 @@ abstract class SignalUtility {
 		final String toString(AbstractSignal signal) {
 			signal.resolveSignal();
 			return signal.core.toString(signal); 
+		}
+	}
+	
+	private static class AnalyzingCheckingSignalCore extends AnalyzingSignalCore{
+		private final Consumer<Object[]> argumentTest;
+		AnalyzingCheckingSignalCore(Consumer<Object[]> argumentTest) {
+			this.argumentTest = argumentTest;
 		}
 	}
 	
@@ -750,7 +762,7 @@ abstract class SignalUtility {
 		}
 	}
 	
-	private static final class QObjectsSignalCore extends QObjectsPrivateSignalCore {
+	private static class QObjectsSignalCore extends QObjectsPrivateSignalCore {
 		public QObjectsSignalCore(Class<?> declaringClass, boolean isNativeSignal, List<SignalParameterType> signalParameterTypes, int methodIndex, long metaObjectId) {
 			super(signalParameterTypes, methodIndex, metaObjectId);
 			this.isNativeSignal = isNativeSignal;
@@ -765,7 +777,7 @@ abstract class SignalUtility {
 		}
 
 		@Override
-		final void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
+		void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
 			QObject senderObject = (QObject)signal.containingObject();
 			logger.finest(()->String.format("Emit native signal %1$s(%2$s)", signal.fullName(), signal.signalParameters()));
         	if(this.methodIndex>=0) {
@@ -787,6 +799,32 @@ abstract class SignalUtility {
         	}else {
         		throw new RuntimeException("QObject signal without method index"); 
         	}
+		}
+	}
+	
+	private static class QObjectsCheckingSignalCore extends QObjectsSignalCore {
+		private final Consumer<Object[]> argumentTest;
+		
+		public QObjectsCheckingSignalCore(Class<?> declaringClass, boolean isNativeSignal,
+				List<SignalParameterType> signalParameterTypes, int methodIndex, long metaObjectId, Consumer<Object[]> argumentTest) {
+			super(declaringClass, isNativeSignal, signalParameterTypes, methodIndex, metaObjectId);
+			this.argumentTest = argumentTest;
+		}
+		
+		@Override
+		final void emitSignal(AbstractSignal signal, final Object[] args, Supplier<?>... suppliers) {
+			if(suppliers.length>0) {
+				int offset = args.length;
+				Object[] args2 = Arrays.copyOf(args, args.length+suppliers.length);
+        		for (int i = 0; i < suppliers.length; i++) {
+        			Supplier<?> supplier = suppliers[i];
+        			args2[offset+i] = supplier==null ? null : supplier.get();
+				}
+        		argumentTest.accept(args2);
+			}else {
+				argumentTest.accept(args);
+			}
+			super.emitSignal(signal, args, suppliers);
 		}
 	}
 	
@@ -953,7 +991,7 @@ abstract class SignalUtility {
 		}
 		
 		@Override
-		final void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
+		void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
 			QtSignalEmitterInterface senderObject = signal.containingObject();
             Object currentThread = null;
             boolean senderWithAffinity = senderObject instanceof QtThreadAffineInterface 
@@ -1450,6 +1488,30 @@ abstract class SignalUtility {
 		}
 	}
 	
+	private static class JavaCheckingSignalCore extends JavaSignalCore {
+		private final Consumer<Object[]> argumentTest;
+		
+		public JavaCheckingSignalCore(Class<?> declaringClass, String name, List<SignalParameterType> signalParameterTypes, Consumer<Object[]> argumentTest) {
+			super(declaringClass, name, signalParameterTypes);
+			this.argumentTest = argumentTest;
+		}
+		
+		@Override
+		final void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
+			if(suppliers.length>0) {
+				int offset = args.length;
+				args = Arrays.copyOf(args, args.length+suppliers.length);
+        		for (int i = 0; i < suppliers.length; i++) {
+        			Supplier<?> supplier = suppliers[i];
+        			args[offset+i] = supplier==null ? null : supplier.get();
+				}
+        		suppliers = new Supplier[0];
+			}
+			argumentTest.accept(args);
+			super.emitSignal(signal, args, suppliers);
+		}
+	}
+	
 	private static class JavaStaticSignalCore extends JavaSignalCore {
 		private JavaStaticSignalCore(String name, List<SignalParameterType> signalParameterTypes, Class<?> declaringClass) {
 			super(declaringClass, name, signalParameterTypes);
@@ -1459,35 +1521,45 @@ abstract class SignalUtility {
     protected static abstract class AbstractSignal implements QMetaObject.Signal{
     	private AbstractSignalCore core;
 
+    	/**
+    	 * Instance member signal constructor
+    	 * @see QObject
+    	 * @see QInstanceMemberSignals
+    	 */
 		protected AbstractSignal() {
 			this.core = AnalyzingSignalCore.instance;
         }
 		
 		/**
-		 * Static member signal constructor
-		 */
-		protected AbstractSignal(Class<?> declaringClass, boolean isDisposed) {
-			if(isDisposed) {
-				this.core = new JavaStaticSignalCore("disposed", Collections.emptyList(), declaringClass);
-			}else {
-				this.core = new AnalyzingStaticSignalCore(declaringClass);
-			}
+    	 * Instance member signal constructor
+    	 * @see QObject
+    	 * @see QInstanceMemberSignals
+    	 */
+		protected AbstractSignal(Consumer<Object[]> argumentTest) {
+			Objects.requireNonNull(argumentTest);
+			this.core = new AnalyzingCheckingSignalCore(argumentTest);
         }
 		
-		protected AbstractSignal(Class<?>[] types) {
-			this("anonymous_signal", types);
-		}
-
-        @io.qt.QtUninvokable
-		public final int methodIndex() {
-			return core.methodIndex(this);
-		}
-
-        @io.qt.QtUninvokable
-        protected final Class<?> getDeclaringClass() {
-			return core.getDeclaringClass(this);
-		}
+		/**
+		 * Static member signal constructor
+		 * @see QStaticMemberSignals
+		 */
+		protected AbstractSignal(Class<?> declaringClass) {
+			this.core = new AnalyzingStaticSignalCore(declaringClass);
+        }
+		
+		/**
+		 * Disposed signal constructor
+		 * @see QtUtilities#getSignalOnDispose(QtObjectInterface)
+		 */
+		protected AbstractSignal(Class<?> declaringClass, boolean isDisposed) {
+			this.core = new JavaStaticSignalCore("disposed", Collections.emptyList(), declaringClass);
+        }
         
+		/**
+		 * Declarable signal constructor
+		 * @see QDeclarableSignals
+		 */
         protected AbstractSignal(String name, Class<?>[] types) {
         	name = Objects.requireNonNull(name);
         	List<SignalParameterType> typeList = Collections.emptyList();
@@ -1506,6 +1578,16 @@ abstract class SignalUtility {
 			}
         	this.core = new JavaSignalCore(null, name, types.length>1 ? Collections.unmodifiableList(typeList) : typeList);
         }
+		
+        @io.qt.QtUninvokable
+		public final int methodIndex() {
+			return core.methodIndex(this);
+		}
+
+        @io.qt.QtUninvokable
+        protected final Class<?> getDeclaringClass() {
+			return core.getDeclaringClass(this);
+		}
 
         @io.qt.QtUninvokable
         final List<SignalParameterType> signalTypes() {
@@ -1723,7 +1805,12 @@ abstract class SignalUtility {
         @io.qt.QtUninvokable
         private synchronized void initializeSignal(Class<?> declaringClass, List<SignalParameterType> signalTypes, final int methodIndex, final long metaObjectId) {
         	if(methodIndex>=0 && core instanceof AnalyzingSignalCoreInterface) {
-	        	this.core = new QObjectsSignalCore(declaringClass, true, signalTypes, methodIndex, metaObjectId);
+        		if(core instanceof AnalyzingCheckingSignalCore) {
+    				Consumer<Object[]> argumentTest = ((AnalyzingCheckingSignalCore)core).argumentTest;
+    				this.core = new QObjectsCheckingSignalCore(declaringClass, true, signalTypes, methodIndex, metaObjectId, argumentTest);
+        		}else {
+        			this.core = new QObjectsSignalCore(declaringClass, true, signalTypes, methodIndex, metaObjectId);
+        		}
         	}
 		}
         
@@ -1740,17 +1827,32 @@ abstract class SignalUtility {
             		SignalInfo signalInfo = SignalUtility.signalInfo(containingObject(), metaObject, field, null);
             		if(signalInfo.methodIndex>=0 && signalInfo.enclosingMetaObject!=0) {
             			boolean isGenerated = ClassAnalyzerUtility.isGeneratedClass(declaringClass);
-            			if(signalInfo.signalTypes!=null) {
-            				this.core = new QObjectsSignalCore(declaringClass, isGenerated, signalInfo.signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject);
+            			if(core instanceof AnalyzingCheckingSignalCore) {
+            				Consumer<Object[]> argumentTest = ((AnalyzingCheckingSignalCore)core).argumentTest;
+            				if(signalInfo.signalTypes!=null) {
+                				this.core = new QObjectsCheckingSignalCore(declaringClass, isGenerated, signalInfo.signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject, argumentTest);
+                			}else {
+                				signalTypes = signalTypesByField.computeIfAbsent(field, SignalUtility::resolveSignal);
+                				this.core = new QObjectsCheckingSignalCore(declaringClass, isGenerated, signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject, argumentTest);
+                			}
             			}else {
-            				signalTypes = signalTypesByField.computeIfAbsent(field, SignalUtility::resolveSignal);
-            				this.core = new QObjectsSignalCore(declaringClass, isGenerated, signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject);
+            				if(signalInfo.signalTypes!=null) {
+                				this.core = new QObjectsSignalCore(declaringClass, isGenerated, signalInfo.signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject);
+                			}else {
+                				signalTypes = signalTypesByField.computeIfAbsent(field, SignalUtility::resolveSignal);
+                				this.core = new QObjectsSignalCore(declaringClass, isGenerated, signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject);
+                			}
             			}
             			return;
             		}
             	}
             	signalTypes = signalTypesByField.computeIfAbsent(field, SignalUtility::resolveSignal);
-        		core = new JavaSignalCore(declaringClass, name, signalTypes);
+            	if(core instanceof AnalyzingCheckingSignalCore) {
+    				Consumer<Object[]> argumentTest = ((AnalyzingCheckingSignalCore)core).argumentTest;
+    				core = new JavaCheckingSignalCore(declaringClass, name, signalTypes, argumentTest);
+            	}else {
+            		core = new JavaSignalCore(declaringClass, name, signalTypes);
+            	}
         	}
 		}
         
@@ -1759,11 +1861,20 @@ abstract class SignalUtility {
         	if(core instanceof AnalyzingSignalCoreInterface) {
                 final boolean isQObjectSignal = QObject.class.isAssignableFrom(declaringClass);
                 final boolean isNativeSignal = ClassAnalyzerUtility.isGeneratedClass(declaringClass);
-	        	if(methodIndex>=0 && signalTypes!=null && isQObjectSignal) {
-	        		core = new QObjectsSignalCore(declaringClass, isNativeSignal, signalTypes, methodIndex, metaObjectId);
-	        	}else {
-	        		core = new JavaSignalCore(declaringClass, name, signalTypes);
-	        	}
+                if(core instanceof AnalyzingCheckingSignalCore) {
+    				Consumer<Object[]> argumentTest = ((AnalyzingCheckingSignalCore)core).argumentTest;
+    				if(methodIndex>=0 && signalTypes!=null && isQObjectSignal) {
+    	        		core = new QObjectsCheckingSignalCore(declaringClass, isNativeSignal, signalTypes, methodIndex, metaObjectId, argumentTest);
+    	        	}else {
+    	        		core = new JavaCheckingSignalCore(declaringClass, name, signalTypes, argumentTest);
+    	        	}
+                }else {
+                	if(methodIndex>=0 && signalTypes!=null && isQObjectSignal) {
+    	        		core = new QObjectsSignalCore(declaringClass, isNativeSignal, signalTypes, methodIndex, metaObjectId);
+    	        	}else {
+    	        		core = new JavaSignalCore(declaringClass, name, signalTypes);
+    	        	}
+                }
         	}
         }
 
@@ -2939,7 +3050,7 @@ abstract class SignalUtility {
         }
 
         @io.qt.QtUninvokable
-		protected boolean removeConnectionToSlotObject(Serializable slotObject) {
+		protected final boolean removeConnectionToSlotObject(Serializable slotObject) {
         	if(slotObject instanceof AbstractSignal) {
         		return removeConnectionToSignalObject((AbstractSignal)slotObject);
         	}
@@ -3698,7 +3809,6 @@ abstract class SignalUtility {
         	}
         }
         
-        @SuppressWarnings("unlikely-arg-type")
 		@io.qt.QtUninvokable
         protected QMetaObject.Connection connect(Object receiver, String method, Qt.ConnectionType... connectionType) {
         	QMetaObject metaObject = receiver instanceof QObject ? ((QObject)receiver).metaObject() : QMetaObject.forType(ClassAnalyzerUtility.getClass(receiver));

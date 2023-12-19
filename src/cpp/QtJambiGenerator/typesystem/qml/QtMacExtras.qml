@@ -35,6 +35,7 @@ TypeSystem{
     qtLibrary: "QtMacExtras"
     module: "qtjambi.macextras"
     description: "Provides platform-specific APIs for macOS."
+    defaultPPCondition: "defined(Q_OS_MACOS)"
 
     InjectCode{
         Text{content: "QtUtilities.initializePackage(\"io.qt.widgets\");"}
@@ -48,20 +49,22 @@ TypeSystem{
         name: "QtMac"
     }
     
-    EnumType{
-        name: "QMacToolBarItem::StandardItem"
-    }
-    
-    EnumType{
-        name: "QMacPasteboardMime::QMacPasteboardMimeType"
-    }
-    
     ObjectType{
         name: "QMacPasteboardMime"
+        EnumType{
+            name: "QMacPasteboardMimeType"
+        }
     }
     
     ObjectType{
         name: "QMacToolBar"
+        ExtraIncludes{
+            Include{
+                fileName: "QtMacExtras/qmactoolbaritem.h"
+                location: Include.Global
+                ckeckAvailability: true
+            }
+        }
         ModifyFunction{
             signature: "nativeToolbar() const"
             remove: RemoveFlag.All
@@ -70,6 +73,9 @@ TypeSystem{
     
     ObjectType{
         name: "QMacToolBarItem"
+        EnumType{
+            name: "StandardItem"
+        }
         ModifyFunction{
             signature: "nativeToolbarItem() const"
             remove: RemoveFlag.All

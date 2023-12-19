@@ -70,7 +70,7 @@ public class TestPaintOnWidgetQt6 extends ApplicationInitializer {
     	QTimer.singleShot(5000, loop::quit);
     	loop.exec();
     	widget.setVisible(false);
-    	assertTrue(activePainter[0]!=null);
+    	assertTrue("paintGL() not called", activePainter[0]!=null);
     	assertTrue(activePainter[0].isDisposed());
     }
     
@@ -94,7 +94,7 @@ public class TestPaintOnWidgetQt6 extends ApplicationInitializer {
     	QTimer.singleShot(5000, loop::quit);
     	loop.exec();
     	widget.setVisible(false);
-    	assertTrue(activePainter[0]!=null);
+    	assertTrue("paintGL() not called", activePainter[0]!=null);
     	assertTrue(activePainter[0].isDisposed());
     }
     
@@ -119,7 +119,7 @@ public class TestPaintOnWidgetQt6 extends ApplicationInitializer {
     	QTimer.singleShot(5000, loop::quit);
     	loop.exec();
     	widget.setVisible(false);
-    	assertTrue(activePainter[0]!=null);
+    	assertTrue("paintGL() not called", activePainter[0]!=null);
     	assertTrue(activePainter[0].isDisposed());
     }
     
@@ -143,7 +143,7 @@ public class TestPaintOnWidgetQt6 extends ApplicationInitializer {
     	QTimer.singleShot(5000, loop::quit);
     	loop.exec();
     	widget.setVisible(false);
-    	assertTrue(activePainter[0]!=null);
+    	assertTrue("paintGL() not called", activePainter[0]!=null);
     	assertTrue(activePainter[0].isDisposed());
     }
     

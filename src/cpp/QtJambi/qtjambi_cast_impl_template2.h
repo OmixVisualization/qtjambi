@@ -32,6 +32,7 @@
 
 #include "qtjambi_cast_impl_util.h"
 #include "qtjambi_cast_impl_container_associative.h"
+#include "qtjambi_cast_impl_time.h"
 
 namespace QtJambiPrivate {
 
@@ -972,6 +973,25 @@ struct qtjambi_jnitype_template2_cast<false, has_scope,
     }
 };
 #endif // defined(_MEMORY_)
+
+template<bool forward, bool has_scope,
+         bool is_pointer, bool is_const, bool is_reference,
+         typename K, typename T>
+struct qtjambi_jnitype_template2_cast<forward, has_scope,
+                                      jobject,
+                                      std::chrono::duration, is_pointer, is_const, is_reference,
+                                      K, T> : qtjambi_jnitype_crono_duration_cast<forward, has_scope, is_pointer, is_const, is_reference, std::chrono::duration<K,T>>{
+};
+
+
+template<bool forward, bool has_scope,
+         bool is_pointer, bool is_const, bool is_reference,
+         typename K, typename T>
+struct qtjambi_jnitype_template2_cast<forward, has_scope,
+                                      jobject,
+                                      std::chrono::time_point, is_pointer, is_const, is_reference,
+                                      K, T> : qtjambi_jnitype_crono_time_point_cast<forward, has_scope, is_pointer, is_const, is_reference, std::chrono::time_point<K,T>>{
+};
 
 } // namespace QtJambiPrivate
 

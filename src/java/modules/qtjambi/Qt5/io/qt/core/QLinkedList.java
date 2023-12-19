@@ -561,7 +561,7 @@ public class QLinkedList<T> extends AbstractSequentialContainer<T> implements De
     /**
      * Returns a QLinkedList containing given elements.
      *
-     * @param <E> the {@code QLinkedList}'s element type
+     * @param <T> the {@code QLinkedList}'s element type
      * @param element0 the first element
      * @param elements subsequent elements
      * @return a {@code QLinkedList} containing the specified element

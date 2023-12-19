@@ -155,7 +155,7 @@ protected:
 
         QString returned;
         for (int i=0; i<size; ++i)
-            returned += (data[i] == 'a' ? QLatin1Char('b') : QLatin1Char('a'));
+            returned += (data[i]-3);
 
         return returned;
     }
@@ -165,7 +165,7 @@ protected:
 
         QByteArray returned;
         for (int i=0; i<size; ++i)
-            returned += (data[i] == 's' ? 'a' : 's');
+            returned += QChar(data[i].unicode()+3);
 
         return returned;
     }

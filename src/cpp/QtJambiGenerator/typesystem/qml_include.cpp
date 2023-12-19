@@ -83,6 +83,19 @@ void Include::setRequiredFeatures(const QStringList &newRequiredFeatures)
     emit requiredFeaturesChanged();
 }
 
+bool Include::getCkeckAvailability() const
+{
+    return ckeckAvailability;
+}
+
+void Include::setCkeckAvailability(bool newCkeckAvailability)
+{
+    if (ckeckAvailability == newCkeckAvailability)
+        return;
+    ckeckAvailability = newCkeckAvailability;
+    emit ckeckAvailabilityChanged();
+}
+
 ExtraIncludes::ExtraIncludes(QObject *parent)
     : AbstractObject{parent}
 {

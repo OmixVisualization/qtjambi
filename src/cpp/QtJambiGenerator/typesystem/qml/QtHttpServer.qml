@@ -69,12 +69,6 @@ TypeSystem{
         ModifyFunction{
             signature: "listen(QHostAddress,quint16)"
             ModifyArgument{
-                index: 1
-                ReplaceDefaultExpression{
-                    expression: "new io.qt.network.QHostAddress(io.qt.network.QHostAddress.SpecialAddress.Any)"
-                }
-            }
-            ModifyArgument{
                 index: 2
                 ReplaceType{
                     modifiedType: "int"
@@ -109,14 +103,6 @@ TypeSystem{
                                   "}\n"+
                                   "%out = qtjambi_cast<jobject>(%env, tmp);"}
                 }
-            }
-        }
-        InjectCode{
-            target: CodeClass.Java
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiHttpServer.java"
-                quoteAfterLine: "class QAbstractHttpServer___"
-                quoteBeforeLine: "}// class"
             }
         }
         ModifyFunction{
@@ -242,104 +228,42 @@ TypeSystem{
         EnumType{
             name: "StatusCode"
         }
-
-        ValueType{
-            name: "HeaderList"
-            generate: false
-        }
         ModifyFunction{
             signature: "writeBody(const char*, qint64)"
             ModifyArgument{
                 index: 1
-                ArrayType{
-                    asBuffer: true
+                AsBuffer{
                     lengthParameter: 2
                 }
             }
         }
         ModifyFunction{
-            signature: "writeHeaders(QHttpServerResponder::HeaderList)"
+            signature: "write(QIODevice*,QByteArray,QHttpServerResponder::StatusCode)"
+            ModifyArgument{
+                index: 2
+                AddImplicitCall{type: "java.lang.@NonNull String"}
+            }
+        }
+        ModifyFunction{
+            signature: "write(QByteArray,QByteArray,QHttpServerResponder::StatusCode)"
             ModifyArgument{
                 index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.core.@NonNull QPair<io.qt.core.@NonNull QByteArray,io.qt.core.@NonNull QByteArray>@NonNull..."
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QHttpServerResponder::HeaderList %out = qtjambi_cast<QHttpServerResponder::HeaderList>(%env, %scope, %in);"}
-                }
+                AddImplicitCall{type: "java.lang.@NonNull String"}
+            }
+            ModifyArgument{
+                index: 2
+                AddImplicitCall{type: "java.lang.@NonNull String"}
             }
         }
         ModifyFunction{
-            signature: "write(QHttpServerResponder::HeaderList,QHttpServerResponder::StatusCode)"
+            signature: "writeHeader(QByteArray,QByteArray)"
             ModifyArgument{
                 index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.core.@NonNull QPair<io.qt.core.@NonNull QByteArray,io.qt.core.@NonNull QByteArray>@NonNull[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QHttpServerResponder::HeaderList %out = qtjambi_cast<QHttpServerResponder::HeaderList>(%env, %scope, %in);"}
-                }
+                AddImplicitCall{type: "java.lang.@NonNull String"}
             }
             ModifyArgument{
                 index: 2
-                RemoveDefaultExpression{
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "write(QByteArray,QHttpServerResponder::HeaderList,QHttpServerResponder::StatusCode)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "io.qt.core.@NonNull QPair<io.qt.core.@NonNull QByteArray,io.qt.core.@NonNull QByteArray>@NonNull[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QHttpServerResponder::HeaderList %out = qtjambi_cast<QHttpServerResponder::HeaderList>(%env, %scope, %in);"}
-                }
-            }
-            ModifyArgument{
-                index: 3
-                RemoveDefaultExpression{
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "write(QJsonDocument,QHttpServerResponder::HeaderList,QHttpServerResponder::StatusCode)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "io.qt.core.@NonNull QPair<io.qt.core.@NonNull QByteArray,io.qt.core.@NonNull QByteArray>@NonNull[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QHttpServerResponder::HeaderList %out = qtjambi_cast<QHttpServerResponder::HeaderList>(%env, %scope, %in);"}
-                }
-            }
-            ModifyArgument{
-                index: 3
-                RemoveDefaultExpression{
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "write(QIODevice *,QHttpServerResponder::HeaderList,QHttpServerResponder::StatusCode)"
-            ModifyArgument{
-                index: 2
-                ReplaceType{
-                    modifiedType: "io.qt.core.@NonNull QPair<io.qt.core.@NonNull QByteArray,io.qt.core.@NonNull QByteArray>@NonNull[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QHttpServerResponder::HeaderList %out = qtjambi_cast<QHttpServerResponder::HeaderList>(%env, %scope, %in);"}
-                }
-            }
-            ModifyArgument{
-                index: 3
-                RemoveDefaultExpression{
-                }
+                AddImplicitCall{type: "java.lang.@NonNull String"}
             }
         }
         InjectCode{
@@ -382,13 +306,11 @@ TypeSystem{
                 name: "CONNECT"
             }
         }
-
-        InjectCode{
-            target: CodeClass.Java
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiHttpServer.java"
-                quoteAfterLine: "class QHttpServerRequest___"
-                quoteBeforeLine: "}// class"
+        ModifyFunction{
+            signature: "value(QByteArray)const"
+            ModifyArgument{
+                index: 1
+                AddImplicitCall{type: "java.lang.@NonNull String"}
             }
         }
     }
@@ -403,32 +325,6 @@ TypeSystem{
         ModifyFunction{
             signature: "addHeaders<Container>(Container)"
             remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "addHeaders(QHttpServerResponder::HeaderList)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.core.@NonNull QPair<io.qt.core.@NonNull QByteArray,io.qt.core.@NonNull QByteArray>@NonNull..."
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QHttpServerResponder::HeaderList %out = qtjambi_cast<QHttpServerResponder::HeaderList>(%env, %scope, %in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "setHeaders(QHttpServerResponder::HeaderList)"
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "io.qt.core.@NonNull QPair<io.qt.core.@NonNull QByteArray,io.qt.core.@NonNull QByteArray>@NonNull..."
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QHttpServerResponder::HeaderList %out = qtjambi_cast<QHttpServerResponder::HeaderList>(%env, %scope, %in);"}
-                }
-            }
         }
         ModifyFunction{
             signature: "QHttpServerResponse(QJsonArray, QHttpServerResponder::StatusCode)"
@@ -469,18 +365,61 @@ TypeSystem{
         ModifyFunction{
             signature: "QHttpServerResponse(QByteArray, QByteArray, QHttpServerResponder::StatusCode)"
             ModifyArgument{
+                index: 1
+                AddImplicitCall{type: "java.lang.@NonNull String"}
+            }
+            ModifyArgument{
+                index: 2
+                AddImplicitCall{type: "java.lang.@NonNull String"}
+            }
+            ModifyArgument{
                 index: 3
                 ReplaceDefaultExpression{
                     expression: "QHttpServerResponder.StatusCode.Ok"
                 }
             }
         }
-        InjectCode{
-            target: CodeClass.Java
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiHttpServer.java"
-                quoteAfterLine: "class QHttpServerResponse___"
-                quoteBeforeLine: "}// class"
+        ModifyFunction{
+            signature: "addHeader(QByteArray,QByteArray)"
+            ModifyArgument{
+                index: 1
+                AddImplicitCall{type: "java.lang.@NonNull String"}
+            }
+            ModifyArgument{
+                index: 2
+                AddImplicitCall{type: "java.lang.@NonNull String"}
+            }
+        }
+        ModifyFunction{
+            signature: "clearHeader(QByteArray)"
+            ModifyArgument{
+                index: 1
+                AddImplicitCall{type: "java.lang.@NonNull String"}
+            }
+        }
+        ModifyFunction{
+            signature: "hasHeader(QByteArray)const"
+            ModifyArgument{
+                index: 1
+                AddImplicitCall{type: "java.lang.@NonNull String"}
+            }
+        }
+        ModifyFunction{
+            signature: "headers(QByteArray)const"
+            ModifyArgument{
+                index: 1
+                AddImplicitCall{type: "java.lang.@NonNull String"}
+            }
+        }
+        ModifyFunction{
+            signature: "hasHeader(QByteArray,QByteArray)const"
+            ModifyArgument{
+                index: 1
+                AddImplicitCall{type: "java.lang.@NonNull String"}
+            }
+            ModifyArgument{
+                index: 2
+                AddImplicitCall{type: "java.lang.@NonNull String"}
             }
         }
     }

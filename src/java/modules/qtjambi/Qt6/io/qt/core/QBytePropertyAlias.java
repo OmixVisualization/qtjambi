@@ -110,13 +110,13 @@ public final class QBytePropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided alias.
 	 * @param other
 	 */
-	public QBytePropertyAlias(@StrictNonNull QBytePropertyAlias alias) {
-		super(alias);
+	public QBytePropertyAlias(@StrictNonNull QBytePropertyAlias other) {
+		super(other);
 	}
 	
 	/**
 	 * Creates a new alias to the provided binding's underlying property.
-	 * @param other
+	 * @param bindable
 	 */
 	public QBytePropertyAlias(@StrictNonNull QByteBindable bindable) {
 		super(bindable.data(), bindable.iface());
@@ -124,7 +124,7 @@ public final class QBytePropertyAlias extends QAbstractPropertyAlias {
 	
 	/**
 	 * Creates a new alias to the provided binding's underlying property.
-	 * @param other
+	 * @param bindable
 	 */
 	public QBytePropertyAlias(@StrictNonNull QBindable<@NonNull@QtPrimitiveType Byte> bindable) {
 		super(bindable.data(), bindable.iface());

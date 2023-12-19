@@ -35,10 +35,15 @@ TypeSystem{
     qtLibrary: "QtX11Extras"
     module: "qtjambi.x11extras"
     description: "Provides platform-specific APIs for X11."
-    
+    defaultPPCondition: "defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)"
+
+    RequiredLibrary{
+        name: "QtGui"
+        mode: "Mandatory"
+    }
+
     ObjectType{
         name: "QX11Info"
-
         Rejection{className: "PeekerCallback"}
 
         EnumType{

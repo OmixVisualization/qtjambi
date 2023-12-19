@@ -1204,24 +1204,27 @@ void Binder::visitEnumerator(EnumeratorAST *node) {
         node->isDeprecated = isDeprecated(node->annotationExpression, node->deprecationComment);
     e->setDeprecated(node->isDeprecated);
     if(node->deprecationComment){
+        QString comment;
         if(node->deprecationComment->literals){
-            QString comment;
             const ListNode<std::size_t>* front = node->deprecationComment->literals->toFront();
             const ListNode<std::size_t>* iter = front;
             do{
                 const Token &tk = tokenStream()->token(iter->element);
                 const Token &end_tk = tokenStream()->token(iter->element+1);
-                QString cmm = QString::fromLatin1(tk.text + int(tk.position), int(end_tk.position - tk.position));
+                QString cmm = QString::fromLatin1(tk.text + int(tk.position), int(end_tk.position - tk.position)).trimmed();
                 if(cmm.startsWith("\"") && cmm.endsWith("\"")){
                     cmm = cmm.chopped(1).mid(1);
                 }
                 comment += cmm;
                 iter = iter->next;
             }while(iter && iter!=front);
-            e->setDeprecatedComment(comment);
         }else{
-            e->setDeprecatedComment(node->deprecationComment->toString(tokenStream()));
+            comment = node->deprecationComment->toString(tokenStream()).trimmed();
+            if(comment.startsWith("\"") && comment.endsWith("\"")){
+                comment = comment.chopped(1).mid(1);
+            }
         }
+        e->setDeprecatedComment(comment);
     }
 
     if (ExpressionAST *expr = node->expression) {

@@ -33,6 +33,9 @@
 
 #include <QtCore/QLoggingCategory>
 
+QT_WARNING_DISABLE_GCC("-Wformat-security")
+QT_WARNING_DISABLE_CLANG("-Wformat-security")
+
 #ifndef QTJAMBI_NO_METHOD_TRACE
 
 const char * adaptFile(const char *file){
@@ -111,9 +114,9 @@ public:
             switch(callType){
             case MethodPrint::JavaToNativeCall:
                 if(isEnter){
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIJavaOverloadsCategory) << "ENTER: Java calling native method " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPINativeCallsCategory) << "ENTER: Java calling native method " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }else{
-                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPIJavaOverloadsCategory) << "LEAVE: Java calling native method " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
+                    QTJAMBI_DEBUG_MESSAGE_LOGGER(debugAPINativeCallsCategory) << "LEAVE: Java calling native method " << method << " on object " << pointer << " in thread tid=" << quintptr(QThread::currentThreadId());
                 }
                 break;
             case MethodPrint::NativeToJavaCall:

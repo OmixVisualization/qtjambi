@@ -38,6 +38,9 @@ import java.util.function.BiConsumer;
 import io.qt.NativeAccess;
 import io.qt.core.QThread;
 
+/**
+ * @hidden
+ */
 abstract class ThreadUtility {
     
 	private ThreadUtility() {

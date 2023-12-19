@@ -46,15 +46,22 @@ enum class AsArrayType{
     Yes = 0x001,
     Deref = 0x002,
     VarArgs = 0x004,
-    Buffer = 0x008
+    NoOffset = 0x008,
+    AddPlainDelegate = 0x010
+};
+enum class AsBufferType{
+    No = 0,
+    Yes = 0x001,
+    Deref = 0x002,
 };
 typedef QFlags<AsArrayType> AsArrayTypes;
+typedef QFlags<AsBufferType> AsBufferTypes;
 
 enum class ThreadAffinity : uint{
-    None = 0,
-    Yes = 0x00080000,
-    UI = 0x00800000,
-    Pixmap = 0x08000000
+    None =   0x00000000,
+    Yes =    0x00000100,
+    UI =     0x00000200,
+    Pixmap = 0x00000400
 };
 
 struct ArgumentModification {
@@ -70,6 +77,7 @@ struct ArgumentModification {
             no_null_pointers(false),
             reset_after_use(false),
             value_as_pointer(false),
+            no_implicit_calls(false),
             type(_type),
             thread_affine(ThreadAffinity::None),
             index(std::numeric_limits<int>::max()),
@@ -84,6 +92,7 @@ struct ArgumentModification {
             no_null_pointers(false),
             reset_after_use(false),
             value_as_pointer(false),
+            no_implicit_calls(false),
             type(_type),
             thread_affine(ThreadAffinity::None),
             index(idx),
@@ -99,6 +108,7 @@ struct ArgumentModification {
     uint no_null_pointers : 1;
     uint reset_after_use : 1;
     uint value_as_pointer : 1;
+    uint no_implicit_calls : 1;
     Type type;
     ThreadAffinity thread_affine;
 
@@ -131,43 +141,51 @@ struct ArgumentModification {
     CodeSnipList conversion_rules;
 
     AsArrayTypes useAsArrayType;
+    AsBufferTypes useAsBufferType;
     int arrayLengthParameter;
     int minArrayLength;
     int maxArrayLength;
-    QStringList impliciteCalls;
+    QString arrayLengthExpression;
+    QStringList implicitCalls;
+    QStringList inhibitedImplicitCalls;
 };
 
 struct Modification {
     enum Modifiers {
         Private =               0x00000001,
         Protected =             0x00000002,
-        Public =                0x00000003,
-        Friendly =              0x00000004,
+        Public =                0x00000004,
+        Friendly =              0x00000008,
         AccessModifierMask =    0x0000000f,
 
         Final =                 0x00000010,
         NonFinal =              0x00000020,
-        NativeDeclFinal =       0x00100000,
-        FinalMask =             Final | NonFinal | NativeDeclFinal,
+        NativeDeclFinal =       0x00000040,
+        FinalMask =             0x000000f0,
 
-        Readable =              0x00000100,
-        Writable =              0x00000200,
-
-        CodeInjection =         0x00001000,
-        Rename =                0x00002000,
-        Deprecated =            0x00004000,
-        ReplaceExpression =     0x00008000,
-        VirtualSlot =           0x00010000 | NonFinal,
-        AllowAsSlot =           0x00020000,
-        PrivateSignal =         0x00040000,
         ThreadAffine =          uint(ThreadAffinity::Yes),
         UIThreadAffine =        uint(ThreadAffinity::UI),
         PixmapThreadAffine =    uint(ThreadAffinity::Pixmap),
-        NoExcept =              0x02000000,
-        BlockExcept =           0x10000000,
-        RethrowExcept =         0x20000000,
-        IsPaintMethod =         0x40000000,
-        NoKotlinGetter =        0x80000000
+        AffinityMask =          0x00000f00,
+
+        Readable =              0x00001000,
+        Writable =              0x00002000,
+
+        CodeInjection =         0x00004000,
+        Rename =                0x00008000,
+        Deprecated =            0x00010000,
+        ReplaceExpression =     0x00020000,
+        VirtualSlot =           0x00040000 | NonFinal,
+        AllowAsSlot =           0x00080000,
+        PrivateSignal =         0x00100000,
+        NoExcept =              0x00200000,
+        BlockExcept =           0x00400000,
+        RethrowExcept =         0x00800000,
+        IsPaintMethod =         0x01000000,
+        NoKotlinGetter =        0x02000000,
+        ForcedExplicit =        0x04000000,
+        ForcedImplicit =        0x08000000,
+        NoImplicitArguments =   0x10000000
     };
 
     Modification() : modifiers(0) { }
@@ -189,6 +207,9 @@ struct Modification {
     bool isAllowedAsSlot() const { return (modifiers & AllowAsSlot) == AllowAsSlot; }
     bool isPaintMethod() const { return (modifiers & IsPaintMethod) == IsPaintMethod; }
     bool isPrivateSignal() const { return (modifiers & PrivateSignal) == PrivateSignal; }
+    bool isForcedExplicit() const { return (modifiers & ForcedExplicit) == ForcedExplicit; }
+    bool isForcedImplicit() const { return (modifiers & ForcedImplicit) == ForcedImplicit; }
+    bool isNoImplicitArguments() const { return (modifiers & NoImplicitArguments) == NoImplicitArguments; }
     QString accessModifierString() const;
 
     bool isDeprecated() const { return modifiers & Deprecated; }

@@ -40,6 +40,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.URLConnection;
+import java.nio.file.Files;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -66,7 +68,11 @@ import io.qt.core.QDateTime;
 import io.qt.core.QDir;
 import io.qt.core.QLocale;
 import io.qt.core.QTime;
+import io.qt.core.internal.QAbstractFileEngine;
 
+/**
+ * @hidden
+ */
 final class ResourceUtility {
 	
 	static {
@@ -185,9 +191,9 @@ final class ResourceUtility {
 							}
 							if(urlPath.endsWith(end)) {
 								urlPath = urlPath.substring(0, urlPath.length() - end.length());
-								URL fileUrl = new URL(urlPath);
+								URL fileUrl = CoreUtility.createURL(urlPath);
 								if(!"jar".equals(url.getProtocol()) && fileUrl.getPath().isEmpty()) {
-									fileUrl = new URL(urlPath+"/");
+									fileUrl = CoreUtility.createURL(urlPath+"/");
 								}
 								if(!cpUrls.contains(fileUrl)) {
 									cache.addPath(fileUrl);
@@ -294,7 +300,7 @@ final class ResourceUtility {
 			}
 			if(result==null) {
 				try {
-					result = new URL(path);
+					result = CoreUtility.createURL(path);
 				} catch (Exception e) {
 				}
 			}
@@ -356,7 +362,7 @@ final class ResourceUtility {
 						if(colon>0) {
 							String protocol = path.substring(0, colon);
 							try {
-								new URL(protocol+"://");
+								CoreUtility.createURL(protocol+"://");
 								prefix = false;
 							} catch (MalformedURLException e) {
 							}
@@ -387,7 +393,7 @@ final class ResourceUtility {
 							newTmpPath += path.replace('\\', '/'); // windows
 						else
 							newTmpPath += path;
-						result = new URL(newTmpPath);
+						result = CoreUtility.createURL(newTmpPath);
 					} catch (Exception e) {
 					}
 				}
@@ -522,7 +528,7 @@ final class ResourceUtility {
         	String path = url.getPath();
             if(path.endsWith("!/")) {
                 try {
-                    url = new URL(path.substring(0, path.length() - 2));
+                    url = CoreUtility.createURL(path.substring(0, path.length() - 2));
                     return checkURL(url);
                 } catch(MalformedURLException eat) {
                     url = null;
@@ -735,21 +741,57 @@ final class ResourceUtility {
         }
         
         @NativeAccess
-        private static QDateTime fileTime(ZipEntry ze) {
-        	long tm = ze.getTime();
-            if (tm == -1)
-                return new QDateTime();  // the current time
-
-            Calendar calendar = new GregorianCalendar();
-            calendar.setTime(new Date(tm));
-
-            return new QDateTime(new QDate(calendar.get(Calendar.YEAR),
-                                           calendar.get(Calendar.MONTH) + 1,
-                                           calendar.get(Calendar.DAY_OF_MONTH)),
-                                 new QTime(calendar.get(Calendar.HOUR_OF_DAY),
-                                           calendar.get(Calendar.MINUTE),
-                                           calendar.get(Calendar.SECOND),
-                                           calendar.get(Calendar.MILLISECOND)));
+        private QDateTime fileTime(ZipEntry ze, int f) throws IOException {
+        	FileTime fileTime = null;
+        	if(ze!=null) {
+	        	switch(QAbstractFileEngine.FileTime.resolve(f)){
+				case AccessTime:
+					fileTime = ze.getLastAccessTime();
+					break;
+				case MetadataChangeTime:
+				case ModificationTime:
+					fileTime = ze.getLastModifiedTime();
+					break;
+				default:
+					fileTime = ze.getCreationTime();
+					break;
+	        	}
+        	}else if(fileToJarFile!=null){
+        		switch(QAbstractFileEngine.FileTime.resolve(f)){
+				case AccessTime:
+					fileTime = Files.getLastModifiedTime(fileToJarFile.toPath());
+					break;
+				case MetadataChangeTime:
+				case ModificationTime:
+					fileTime = Files.getLastModifiedTime(fileToJarFile.toPath());
+					break;
+				default:
+					break;
+	        	}
+        	}
+        	if(fileTime!=null) {
+        		return QDateTime.fromMSecsSinceEpoch(fileTime.toMillis());
+        	}else {
+            	long tm = -1;
+        		if(ze!=null){
+            		tm = ze.getTime();
+            	}else if(fileToJarFile!=null){
+            		tm = fileToJarFile.lastModified();
+            	}
+        		if (tm != -1) {
+		            Calendar calendar = new GregorianCalendar();
+		            calendar.setTime(new Date(tm));
+		
+		            return new QDateTime(new QDate(calendar.get(Calendar.YEAR),
+		                                           calendar.get(Calendar.MONTH) + 1,
+		                                           calendar.get(Calendar.DAY_OF_MONTH)),
+		                                 new QTime(calendar.get(Calendar.HOUR_OF_DAY),
+		                                           calendar.get(Calendar.MINUTE),
+		                                           calendar.get(Calendar.SECOND),
+		                                           calendar.get(Calendar.MILLISECOND)));
+	            }
+        	}
+            return new QDateTime();  // the current time
         }
     }
     

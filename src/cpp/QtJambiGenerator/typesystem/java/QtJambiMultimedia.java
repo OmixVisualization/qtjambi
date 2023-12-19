@@ -31,14 +31,14 @@
 
 class QVideoEncoderSettingsControl__{
     @QtUninvokable
-    public final ContinuousList<Double> supportedFrameRates(io.qt.multimedia.QVideoEncoderSettings settings) {
+    public final @NonNull ContinuousList<@NonNull Double> supportedFrameRates(io.qt.multimedia.@NonNull QVideoEncoderSettings settings) {
         QNativePointer continuous = new QNativePointer(QNativePointer.Type.Boolean);
         java.util.List<Double> supportedFrameRates = supportedFrameRates(settings, continuous);
         return new ContinuousList<Double>(supportedFrameRates, continuous.booleanValue());
     }
 
     @QtUninvokable
-    public final ContinuousList<io.qt.core.QSize> supportedResolutions(io.qt.multimedia.QVideoEncoderSettings settings) {
+    public final @NonNull ContinuousList<io.qt.core.@NonNull QSize> supportedResolutions(io.qt.multimedia.@NonNull QVideoEncoderSettings settings) {
         QNativePointer continuous = new QNativePointer(QNativePointer.Type.Boolean);
         java.util.List<io.qt.core.QSize> supportedResolutions = supportedResolutions(settings, continuous);
         return new ContinuousList<io.qt.core.QSize>(supportedResolutions, continuous.booleanValue());
@@ -47,7 +47,7 @@ class QVideoEncoderSettingsControl__{
 
 class QImageEncoderControl__{
     @QtUninvokable
-    public final ContinuousList<io.qt.core.QSize> supportedResolutions(io.qt.multimedia.QImageEncoderSettings settings) {
+    public final ContinuousList<io.qt.core.QSize> supportedResolutions(io.qt.multimedia.@NonNull QImageEncoderSettings settings) {
         QNativePointer continuous = new QNativePointer(QNativePointer.Type.Boolean);
         java.util.List<io.qt.core.QSize> supportedResolutions = supportedResolutions(settings, continuous);
         return new ContinuousList<io.qt.core.QSize>(supportedResolutions, continuous.booleanValue());
@@ -56,36 +56,36 @@ class QImageEncoderControl__{
 
 class QMediaRecorder__{
     @QtUninvokable
-    public final ContinuousList<Double> supportedFrameRates() {
+    public final @NonNull ContinuousList<@NonNull Double> supportedFrameRates() {
         return supportedFrameRates(new io.qt.multimedia.QVideoEncoderSettings());
     }
 
     @QtUninvokable
-    public final ContinuousList<Double> supportedFrameRates(io.qt.multimedia.QVideoEncoderSettings settings) {
+    public final @NonNull ContinuousList<@NonNull Double> supportedFrameRates(io.qt.multimedia.@NonNull QVideoEncoderSettings settings) {
         QNativePointer continuous = new QNativePointer(QNativePointer.Type.Boolean);
         java.util.List<Double> supportedFrameRates = supportedFrameRates(settings, continuous);
         return new ContinuousList<Double>(supportedFrameRates, continuous.booleanValue());
     }
 
     @QtUninvokable
-    public final ContinuousList<io.qt.core.QSize> supportedResolutions() {
+    public final @NonNull ContinuousList<io.qt.core.@NonNull QSize> supportedResolutions() {
         return supportedResolutions(new io.qt.multimedia.QVideoEncoderSettings());
     }
 
     @QtUninvokable
-    public final ContinuousList<io.qt.core.QSize> supportedResolutions(io.qt.multimedia.QVideoEncoderSettings settings) {
+    public final @NonNull ContinuousList<io.qt.core.@NonNull QSize> supportedResolutions(io.qt.multimedia.@NonNull QVideoEncoderSettings settings) {
         QNativePointer continuous = new QNativePointer(QNativePointer.Type.Boolean);
         java.util.List<io.qt.core.QSize> supportedResolutions = supportedResolutions(settings, continuous);
         return new ContinuousList<io.qt.core.QSize>(supportedResolutions, continuous.booleanValue());
     }
 
     @QtUninvokable
-    public final ContinuousList<Integer> supportedAudioSampleRates() {
+    public final @NonNull ContinuousList<@NonNull Integer> supportedAudioSampleRates() {
         return supportedAudioSampleRates(new io.qt.multimedia.QAudioEncoderSettings());
     }
     
     @QtUninvokable
-    public final ContinuousList<Integer> supportedAudioSampleRates(io.qt.multimedia.QAudioEncoderSettings settings)    {
+    public final @NonNull ContinuousList<@NonNull Integer> supportedAudioSampleRates(io.qt.multimedia.@NonNull QAudioEncoderSettings settings)    {
         QNativePointer continuous = new QNativePointer(QNativePointer.Type.Boolean);
         java.util.List<Integer> supportedAudioSampleRates = supportedAudioSampleRates(settings, continuous);
         return new ContinuousList<Integer>(supportedAudioSampleRates, continuous.booleanValue());
@@ -94,12 +94,12 @@ class QMediaRecorder__{
 
 class QCameraImageCapture__{
     @QtUninvokable
-    public final ContinuousList<io.qt.core.QSize> supportedResolutions() {
+    public final @NonNull ContinuousList<io.qt.core.@NonNull QSize> supportedResolutions() {
         return supportedResolutions(new io.qt.multimedia.QImageEncoderSettings());
     }
 
     @QtUninvokable
-    public final ContinuousList<io.qt.core.QSize> supportedResolutions(io.qt.multimedia.QImageEncoderSettings settings) {
+    public final @NonNull ContinuousList<io.qt.core.@NonNull QSize> supportedResolutions(io.qt.multimedia.@NonNull QImageEncoderSettings settings) {
         QNativePointer continuous = new QNativePointer(QNativePointer.Type.Boolean);
         java.util.List<io.qt.core.QSize> supportedResolutions = supportedResolutions(settings, continuous);
         return new ContinuousList<io.qt.core.QSize>(supportedResolutions, continuous.booleanValue());
@@ -108,7 +108,7 @@ class QCameraImageCapture__{
 
 class QCameraExposureControl__{
     @QtUninvokable
-    public final ContinuousList<Object> supportedParameterRange(ExposureParameter settings) {
+    public final @NonNull ContinuousList<Object> supportedParameterRange(ExposureParameter settings) {
         QNativePointer continuous = new QNativePointer(QNativePointer.Type.Boolean);
         java.util.List<Object> supportedParameterRange = supportedParameterRange(settings, continuous);
         return new ContinuousList<Object>(supportedParameterRange, continuous.booleanValue());
@@ -117,21 +117,21 @@ class QCameraExposureControl__{
 
 class QCameraExposure__{
     @QtUninvokable
-    public final ContinuousList<Integer> supportedIsoSensitivities()    {
+    public final @NonNull ContinuousList<@NonNull Integer> supportedIsoSensitivities()    {
         QNativePointer continuous = new QNativePointer(QNativePointer.Type.Boolean);
         java.util.List<Integer> supportedIsoSensitivities = supportedIsoSensitivities(continuous);
         return new ContinuousList<Integer>(supportedIsoSensitivities, continuous.booleanValue());
     }
     
     @QtUninvokable
-    public final ContinuousList<Double> supportedApertures()    {
+    public final @NonNull ContinuousList<@NonNull Double> supportedApertures()    {
         QNativePointer continuous = new QNativePointer(QNativePointer.Type.Boolean);
         java.util.List<Double> supportedApertures = supportedApertures(continuous);
         return new ContinuousList<Double>(supportedApertures, continuous.booleanValue());
     }
     
     @QtUninvokable
-    public final ContinuousList<Double> supportedShutterSpeeds()    {
+    public final @NonNull ContinuousList<@NonNull Double> supportedShutterSpeeds()    {
         QNativePointer continuous = new QNativePointer(QNativePointer.Type.Boolean);
         java.util.List<Double> supportedShutterSpeeds = supportedShutterSpeeds(continuous);
         return new ContinuousList<Double>(supportedShutterSpeeds, continuous.booleanValue());
@@ -140,12 +140,12 @@ class QCameraExposure__{
 
 class QAudioEncoderSettingsControl__{
     @QtUninvokable
-    public final ContinuousList<Integer> supportedSampleRates() {
+    public final @NonNull ContinuousList<@NonNull Integer> supportedSampleRates() {
         return supportedSampleRates(new io.qt.multimedia.QAudioEncoderSettings());
     }
 
     @QtUninvokable
-    public final ContinuousList<Integer> supportedSampleRates(io.qt.multimedia.QAudioEncoderSettings settings) {
+    public final @NonNull ContinuousList<@NonNull Integer> supportedSampleRates(io.qt.multimedia.QAudioEncoderSettings settings) {
         QNativePointer continuous = new QNativePointer(QNativePointer.Type.Boolean);
         java.util.List<Integer> supportedSampleRates = supportedSampleRates(settings, continuous);
         return new ContinuousList<Integer>(supportedSampleRates, continuous.booleanValue());
@@ -154,7 +154,7 @@ class QAudioEncoderSettingsControl__{
 
 class QAbstractVideoBuffer__{
     public static final class MapResult{
-        public MapResult(java.nio.ByteBuffer data, int bytesPerLine){
+        public MapResult(java.nio.@NonNull ByteBuffer data, int bytesPerLine){
             if(!data.isDirect()){
                 throw new IllegalArgumentException("Direct buffer expected but given buffer is indirect.");
             }
@@ -183,7 +183,7 @@ class QMediaServiceProviderFactoryInterface_java__{
      *                     Required: QVideoOutputControl
      *                     Optional: QVideoWindowControl, QVideoRendererControl, QVideoWidgetControl
      */
-    public static String Q_MEDIASERVICE_MEDIAPLAYER = "org.qt-project.qt.mediaplayer";
+    public static @NonNull String Q_MEDIASERVICE_MEDIAPLAYER = "org.qt-project.qt.mediaplayer";
 
     /**
      * Service with support for recording from audio sources
@@ -193,7 +193,7 @@ class QMediaServiceProviderFactoryInterface_java__{
      *                      Recommended: QAudioEncoderSettingsControl
      *                      Optional: QMediaContainerControl
      */
-    public static String Q_MEDIASERVICE_AUDIOSOURCE = "org.qt-project.qt.audiosource";
+    public static @NonNull String Q_MEDIASERVICE_AUDIOSOURCE = "org.qt-project.qt.audiosource";
 
     /**
      * Service with support for camera use.
@@ -207,7 +207,7 @@ class QMediaServiceProviderFactoryInterface_java__{
      *                      Required: QVideoOutputControl
      *                      Optional: QVideoWindowControl, QVideoRendererControl, QVideoWidgetControl
      */
-    public static String Q_MEDIASERVICE_CAMERA = "org.qt-project.qt.camera";
+    public static @NonNull String Q_MEDIASERVICE_CAMERA = "org.qt-project.qt.camera";
 
     /**
      * Service with support for radio tuning.
@@ -217,14 +217,14 @@ class QMediaServiceProviderFactoryInterface_java__{
      *                      Recommended: QAudioEncoderSettingsControl
      *                      Optional: QMediaContainerControl
      */
-    public static String Q_MEDIASERVICE_RADIO = "org.qt-project.qt.radio";
+    public static @NonNull String Q_MEDIASERVICE_RADIO = "org.qt-project.qt.radio";
 
     /**
      * Service with support for decoding audio.
      * Required Controls: QAudioDecoderControl
      * Optional: that streams control
      */
-    public static String Q_MEDIASERVICE_AUDIODECODER = "org.qt-project.qt.audiodecode";
+    public static @NonNull String Q_MEDIASERVICE_AUDIODECODER = "org.qt-project.qt.audiodecode";
     
 }// class
 
@@ -264,35 +264,35 @@ class QAudioFormat__{
 
 class QAudioBuffer__6_{
 
-    public final QAudioFrame.AsByte dataAsU8M(){
+    public final @NonNull QAudioFrame.AsByte dataAsU8M(){
         return QAudioFrame.dataAsAudioFrame(dataAsBuffer(), QAudioFormat.ChannelConfig.ChannelConfigMono);
     }
 
-    public final QAudioFrame.AsShort dataAsS16M(){
+    public final @NonNull QAudioFrame.AsShort dataAsS16M(){
         return QAudioFrame.dataAsAudioFrame(dataAsBuffer().asShortBuffer(), QAudioFormat.ChannelConfig.ChannelConfigMono);
     }
 
-    public final QAudioFrame.AsInt dataAsS32M(){
+    public final @NonNull QAudioFrame.AsInt dataAsS32M(){
         return QAudioFrame.dataAsAudioFrame(dataAsBuffer().asIntBuffer(), QAudioFormat.ChannelConfig.ChannelConfigMono);
     }
 
-    public final QAudioFrame.AsFloat dataAsF32M(){
+    public final @NonNull QAudioFrame.AsFloat dataAsF32M(){
         return QAudioFrame.dataAsAudioFrame(dataAsBuffer().asFloatBuffer(), QAudioFormat.ChannelConfig.ChannelConfigMono);
     }
 
-    public final QAudioFrame.AsByte dataAsU8S(){
+    public final @NonNull QAudioFrame.AsByte dataAsU8S(){
         return QAudioFrame.dataAsAudioFrame(dataAsBuffer(), QAudioFormat.ChannelConfig.ChannelConfigStereo);
     }
 
-    public final QAudioFrame.AsShort dataAsS16S(){
+    public final @NonNull QAudioFrame.AsShort dataAsS16S(){
         return QAudioFrame.dataAsAudioFrame(dataAsBuffer().asShortBuffer(), QAudioFormat.ChannelConfig.ChannelConfigStereo);
     }
 
-    public final QAudioFrame.AsInt dataAsS32S(){
+    public final @NonNull QAudioFrame.AsInt dataAsS32S(){
         return QAudioFrame.dataAsAudioFrame(dataAsBuffer().asIntBuffer(), QAudioFormat.ChannelConfig.ChannelConfigStereo);
     }
 
-    public final QAudioFrame.AsFloat dataAsF32S(){
+    public final @NonNull QAudioFrame.AsFloat dataAsF32S(){
         return QAudioFrame.dataAsAudioFrame(dataAsBuffer().asFloatBuffer(), QAudioFormat.ChannelConfig.ChannelConfigStereo);
     }
 }// class

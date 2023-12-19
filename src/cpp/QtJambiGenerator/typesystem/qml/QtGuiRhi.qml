@@ -85,7 +85,7 @@ TypeSystem{
             signature: "beginOffscreenFrame(QRhiCommandBuffer **, QRhi::BeginFrameFlags)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
                 NoNullPointer{}
@@ -319,24 +319,21 @@ TypeSystem{
         ModifyFunction{
             signature: "textures(int,QRhiShaderResourceBinding::StageFlags,int,QRhiTexture**)"
             ModifyArgument{
-                index: 3
-                RemoveArgument{}
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %in = 0;\njsize& %out = %in;"}
-                }
-            }
-            ModifyArgument{
                 index: 4
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
                 NoNullPointer{}
             }
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "if(__qt_count2 == 0 || __qt_count2 > QRhiShaderResourceBinding::Data::MAX_TEX_SAMPLER_ARRAY_SIZE){\n"+
+                ArgumentMap{
+                    metaName: "%3"
+                    index: 3
+                }
+                Text{content: "if(%3 == 0 || %3 > QRhiShaderResourceBinding::Data::MAX_TEX_SAMPLER_ARRAY_SIZE){\n"+
                               "    Java::Runtime::IllegalArgumentException::throwNew(%env, \"Array size must not be 0 or greater 16.\" QTJAMBI_STACKTRACEINFO );\n"+
                               "}"}
             }
@@ -392,36 +389,19 @@ const QRhiShaderResourceBinding * %out = array.pointer();
                 ModifyArgument{
                     index: 3
                     NoNullPointer{}
-                    ArrayType{
-                        asBuffer: true
-                    }
-                    AddImpliciteCall{type: "int @NonNull[]"}
+                    AsBuffer{}
+                    AddImplicitCall{type: "int @NonNull[]"}
                     ConversionRule{
                         codeClass: CodeClass.Native
                         Text{content: String.raw`
 JBufferData %out_buffer(__jni_env, %in);
-quint32* %out = reinterpret_cast<quint32* >(%out_buffer.data());
+quint32* %out = %out_buffer.data<quint32>();
 if(%out_buffer.size()<array.size()*4)
     Java::Runtime::IllegalArgumentException::throwNew(%env, \"Buffer size must be greater binding count * 4.\" QTJAMBI_STACKTRACEINFO );\n"+
 `}
                     }
                 }
             }
-            /*
-            Instantiation{
-                Argument{
-                    type: "qint32*"
-                    isImplicit: true
-                }
-                ModifyArgument{
-                    index: 3
-                    NoNullPointer{}
-                    ArrayType{
-                        asBuffer: false
-                        minLength: 4
-                    }
-                }
-            }*/
         }
         Rejection{fieldName:"*"}
     }
@@ -495,6 +475,15 @@ if(%out_buffer.size()<array.size()*4)
     }
     ObjectType{
         name: "QRhiTextureSubresourceUploadDescription"
+        ModifyFunction{
+            signature: "QRhiTextureSubresourceUploadDescription(const void*,quint32)"
+            ModifyArgument{
+                index: 1
+                AsBuffer{
+                    lengthParameter:  2
+                }
+            }
+        }
     }
     ObjectType{
         name: "QRhiTextureUploadEntry"
@@ -531,9 +520,6 @@ if(%out_buffer.size()<array.size()*4)
         EnumType{
             name: "DeviceType"
         }
-    }
-    ObjectType{
-        name: "QRhiResourceUpdateBatch"
     }
     ObjectType{
         name: "QRhiReadbackResult"
@@ -612,6 +598,16 @@ if(%out_buffer.size()<array.size()*4)
         Rejection{fieldName: "m_rhi"}
         Rejection{fieldName: "m_id"}
         Rejection{fieldName: "m_objectName"}
+        ModifyFunction{
+            signature: "deleteLater()"
+            Rename{
+                to: "disposeLater"
+            }
+            /*InjectCode{
+                target: CodeClass.Java
+                Text{content: ""}
+            }*/
+        }
     }
     ObjectType{
         name: "QRhiBuffer"
@@ -640,7 +636,7 @@ if(%out_buffer.size()<array.size()*4)
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = %env->NewDirectByteBuffer(%in, this->size());"}
+                    Text{content: "jobject %out = DataJBuffer(%env, %in, this->size()).take();"}
                 }
             }
             InjectCode{
@@ -683,17 +679,10 @@ if(%out_buffer.size()<array.size()*4)
         ModifyFunction{
             signature: "setVertexInput(int,int,const std::pair<QRhiBuffer*,quint32>*,QRhiBuffer*,quint32,QRhiCommandBuffer::IndexFormat)"
             ModifyArgument{
-                index: 2
-                RemoveArgument{}
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %in = 0;\njsize& %out = %in;"}
-                }
-            }
-            ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     lengthParameter: 2
+                    noOffset: true
                 }
                 NoNullPointer{}
             }
@@ -713,18 +702,11 @@ if(%out_buffer.size()<array.size()*4)
                 }
             }
             ModifyArgument{
-                index: 2
-                RemoveArgument{}
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %in = 0;\njsize& %out = %in;"}
-                }
-            }
-            ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     varargs: true
                     lengthParameter: 2
+                    noOffset: true
                 }
                 NoNullPointer{}
                 ReplaceDefaultExpression{expression: "noDynamicOffsets"}
@@ -1092,6 +1074,8 @@ if(%out_buffer.size()<array.size()*4)
     ObjectType{
         name: "QRhiMetalNativeHandles"
         ppCondition: "defined(Q_OS_MACOS)"
+        Rejection{fieldName: "dev"}
+        Rejection{fieldName: "cmdQueue"}
     }
     ObjectType{
         name: "QRhiReadbackDescription"
@@ -1111,6 +1095,32 @@ if(%out_buffer.size()<array.size()*4)
     }
     ObjectType{
         name: "QRhiResourceUpdateBatch"
+        ModifyFunction{
+            signature: "updateDynamicBuffer(QRhiBuffer*,quint32,quint32,const void*)"
+            ModifyArgument{
+                index: 4
+                AsBuffer{
+                    lengthParameter: 3
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "uploadStaticBuffer(QRhiBuffer*,quint32,quint32,const void*)"
+            ModifyArgument{
+                index: 4
+                AsBuffer{
+                    lengthParameter: 3
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "uploadStaticBuffer(QRhiBuffer*,const void*)"
+            ModifyArgument{
+                index: 2
+                AsBuffer{
+                }
+            }
+        }
     }
     ObjectType{
         name: "QRhiStats"

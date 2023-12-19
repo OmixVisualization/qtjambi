@@ -34,6 +34,9 @@ import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaProperty;
 import io.qt.core.QMetaType;
 
+/**
+ * @hidden
+ */
 public class PropertyInfo {
 	PropertyInfo(Field reflectedField, QMetaType metaType) {
 		super();

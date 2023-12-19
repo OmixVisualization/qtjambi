@@ -244,8 +244,8 @@ public final class QBooleanBindable extends QUntypedBindable {
     }
     
 	/**
-	 * <p>Assigns newValue to the underlying property and removes the property's associated binding, if present.</p>
-	 * @param newValue
+	 * <p>Assigns value to the underlying property and removes the property's associated binding, if present.</p>
+	 * @param value
 	 */
     @io.qt.QtUninvokable
     public final void setValue(boolean value) {

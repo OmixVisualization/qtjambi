@@ -588,7 +588,7 @@ class MetaFunction : public MetaAttributes {
             m_operatorType(OperatorType::None),
             m_constant(false),
             m_variadics(false),
-            m_explicit(false),
+        m_declExplicit(false),
             m_template(false),
             m_invalid(false),
             m_actualMinimumArgumentCount(-1),
@@ -732,13 +732,16 @@ class MetaFunction : public MetaAttributes {
     bool isUIThreadAffine() const;
     bool isPixmapThreadAffine() const;
 
-    int argumentTypeArrayLengthIndex(int argument_index) const;
-    int argumentTypeArrayLengthMinValue(int argument_index) const;
-    int argumentTypeArrayLengthMaxValue(int argument_index) const;
-    bool argumentTypeArrayDeref(int key) const;
-    bool argumentTypeArray(int key) const;
-    bool argumentTypeBuffer(int key) const;
-    bool argumentTypeArrayVarArgs(int key) const;
+    int arrayOrBufferLengthIndex(int argument_index) const;
+    QString arrayOrBufferLengthExpression(int key) const;
+    int arrayOrBufferLengthMinValue(int argument_index) const;
+    int arrayOrBufferLengthMaxValue(int argument_index) const;
+    bool useArgumentAsDerefPointer(int key) const;
+    bool useArgumentAsArray(int key) const;
+    bool useArgumentAsBuffer(int key) const;
+    bool useArgumentAsVarArgs(int key) const;
+    bool insertArrayOffsetArgument(int key) const;
+    bool implementPlainArrayDelegate(int key) const;
     bool isNoExcept() const;
     bool isBlockExceptions() const;
     bool isRethrowExceptions() const;
@@ -747,7 +750,12 @@ class MetaFunction : public MetaAttributes {
     bool isRemovedFrom(const MetaClass *, TS::Language language) const;
 
     ArgumentRemove argumentRemoved(int) const;
-    QStringList impliciteCalls(int) const;
+    QStringList implicitCalls(int) const;
+    QStringList inhibitedImplicitCalls(int) const;
+    bool isNoImplicitCalls(int) const;
+    bool isForcedExplicit() const;
+    bool isForcedImplicit() const;
+    bool isNoImplicitArguments() const;
     ThreadAffinity argumentThreadAffinity(int) const;
 
     QList<Delegate> delegates() const;
@@ -796,8 +804,8 @@ class MetaFunction : public MetaAttributes {
 
     bool isVariadics() const { return m_variadics; }
     void setVariadics(bool isVariadics) { m_variadics = isVariadics; }
-    bool isExplicit() const { return m_explicit; }
-    void setExplicit(bool isExplicit) { m_explicit = isExplicit; }
+    bool isDeclExplicit() const { return m_declExplicit; }
+    void setDeclExplicit(bool isExplicit) { m_declExplicit = isExplicit; }
 
     MetaType::ReferenceType functionReferenceType() const{
         return m_functionReferenceType;
@@ -843,7 +851,7 @@ private:
     OperatorType m_operatorType;
     uint m_constant          : 1;
     uint m_variadics         : 1;
-    uint m_explicit          : 1;
+    uint m_declExplicit      : 1;
     uint m_template          : 1;
     uint m_invalid           : 1;
     mutable int m_actualMinimumArgumentCount;
@@ -958,13 +966,16 @@ class MetaFunctional : public MetaAttributes {
         const QList<MetaArgument *>& arguments() const { return m_arguments; }
         void addArgument(MetaArgument * type) { m_arguments << type; }
         ArgumentRemove argumentRemoved(int) const;
-        int argumentTypeArrayLengthIndex(int key) const;
-        int argumentTypeArrayLengthMinValue(int argument_index) const;
-        int argumentTypeArrayLengthMaxValue(int argument_index) const;
-        bool argumentTypeArrayDeref(int key) const;
-        bool argumentTypeArray(int key) const;
-        bool argumentTypeBuffer(int key) const;
-        bool argumentTypeArrayVarArgs(int key) const;
+        int arrayOrBufferLengthIndex(int key) const;
+        QString arrayOrBufferLengthExpression(int key) const;
+        int arrayOrBufferLengthMinValue(int argument_index) const;
+        int arrayOrBufferLengthMaxValue(int argument_index) const;
+        bool useArgumentAsDerefPointer(int key) const;
+        bool useArgumentAsArray(int key) const;
+        bool useArgumentAsBuffer(int key) const;
+        bool useArgumentAsVarArgs(int key) const;
+        bool insertArrayOffsetArgument(int key) const;
+        bool implementPlainArrayDelegate(int key) const;
         QString typeReplaced(int argument_index, QString* jniType = nullptr) const;
         QString conversionRule(TS::Language language, int idx) const;
         bool hasConversionRule(TS::Language language, int idx) const;
@@ -1206,6 +1217,7 @@ class MetaClass : public MetaAttributes {
         const QList<QPropertySpec *>& propertySpecs() const { return m_property_specs; }
 
         QPropertySpec *propertySpecForRead(const QString &name) const;
+        QPropertySpec *propertySpecForMember(const QString &name) const;
         QPropertySpec *propertySpecForWrite(const QString &name) const;
         QPropertySpec *propertySpecForReset(const QString &name) const;
         QPropertySpec *propertySpecForNotify(const QString &name) const;
@@ -1422,6 +1434,9 @@ class QPropertySpec {
         bool final() const { return m_final; }
         void setFinal(bool final) { m_final = final; }
 
+        QString member() const { return m_member; }
+        void setMember(const QString& member) { m_member = member; }
+
         int index() const { return m_index; }
         void setIndex(int index) { m_index = index; }
 
@@ -1437,6 +1452,7 @@ class QPropertySpec {
         QString m_stored;
         QString m_revision;
         QString m_user;
+        QString m_member;
         bool m_required;
         bool m_constant;
         bool m_final;

@@ -45,7 +45,6 @@ import io.qt.InternalAccess;
 import io.qt.InternalAccess.Cleanable;
 import io.qt.NativeAccess;
 import io.qt.QNoNativeResourcesException;
-import io.qt.QtByteEnumerator;
 import io.qt.QtObject;
 import io.qt.QtObjectInterface;
 import io.qt.QtUninvokable;
@@ -54,6 +53,9 @@ import io.qt.QtUtilities.LibraryRequirementMode;
 import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 
+/**
+ * @hidden
+ */
 public abstract class NativeUtility {
 	private static Function<java.lang.Object, QMetaObject.DisposedSignal> disposedSignalFactory;
 	private static final Map<Integer, InterfaceNativeLink> interfaceLinks;
@@ -208,10 +210,7 @@ public abstract class NativeUtility {
 
 		@Override
 		public synchronized int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + (int) (native__id ^ (native__id >>> 32));
-			return result;
+			return Long.hashCode(native__id);
 		}
 
 		@Override
@@ -429,6 +428,9 @@ public abstract class NativeUtility {
 		initializeNativeObject(cls, object, link, Collections.emptyMap());
 	}
 	
+	/**
+	 * @hidden
+	 */
 	protected static abstract class Object implements QtObjectInterface
 	{
 	    static {
@@ -656,38 +658,6 @@ public abstract class NativeUtility {
 		return QtJambi_LibraryUtilities.qtJambiPatch;
 	}
 
-	public enum Ownership implements QtByteEnumerator {
-		Invalid(0), 
-		Java(0x001), // Weak ref to java object, deleteNativeObject deletes c++ object
-		Cpp(0x002), // Strong ref to java object until c++ object is deleted, deleteNativeObject
-					// does *not* delete c++ obj.
-		Split(0x004); // Weak ref to java object, deleteNativeObject does *not* delete c++ object.
-						// Only for objects not created by Java.
-		private Ownership(int value) {
-			this.value = (byte) value;
-		}
-
-		private final byte value;
-
-		@Override
-		public byte value() {
-			return value;
-		}
-
-		public static Ownership resolve(byte value) {
-			switch (value) {
-			case 0x001:
-				return Java;
-			case 0x002:
-				return Cpp;
-			case 0x004:
-				return Split;
-			default:
-				return Invalid;
-			}
-		}
-	};
-	
 	static boolean isSplitOwnership(Object object) {
 		return isSplitOwnership(nativeId(object));
 	}
@@ -811,6 +781,12 @@ public abstract class NativeUtility {
 		}
 		return nid;
 	}
+	
+	static java.nio.ByteBuffer mutableData(io.qt.core.QByteArray byteArray){
+		return mutableData(checkedNativeId(byteArray));
+	}
+	
+	private native static java.nio.ByteBuffer mutableData(long nid);
 
 	static void registerDependentObject(QtObjectInterface dependentObject, QtObjectInterface owner) {
 		registerDependentObject(nativeId(dependentObject), nativeId(owner));

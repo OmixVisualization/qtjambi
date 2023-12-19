@@ -216,6 +216,7 @@ void MetaInfoGenerator::writeContainerAccess(){
                 f << "#include <QtCore/QtGlobal>" << Qt::endl;
                 f << "#include <QtCore/qcompilerdetection.h>" << Qt::endl
                          << "QT_WARNING_DISABLE_DEPRECATED" << Qt::endl
+                         << "QT_WARNING_DISABLE_GCC(\"-Wdeprecated-declarations\")" << Qt::endl
                          << "#include <QtJambi/containeraccess_" << flatTypeName << ".h>" << Qt::endl << Qt::endl
                          << "void register_" << flatTypeName << "_access_" << key.first << "_" << key.second << "(){" << Qt::endl;
                 for(QPair<uint,uint> mapped : sizeAligns){
@@ -524,7 +525,10 @@ void MetaInfoGenerator::writeLibraryInitializers() {
             if(!imports.isEmpty()){
                 s << Qt::endl;
             }
-            s << INDENT << "final class QtJambi_LibraryUtilities {" << Qt::endl << Qt::endl;
+            s << INDENT << "/**" << Qt::endl
+              << INDENT << " * @hidden" << Qt::endl
+              << INDENT << " */" << Qt::endl
+              << INDENT << "final class QtJambi_LibraryUtilities {" << Qt::endl << Qt::endl;
             {
                 INDENTATION(INDENT)
                 s << INDENT << "final static int qtMajorVersion = " << m_qtVersionMajor << ";" << Qt::endl << Qt::endl
@@ -610,6 +614,17 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                                                 if(dep.entry==ts->qtLibrary()){
                                                     if(mode==Dependency::Mandatory){
                                                         dep.mode = Dependency::Mandatory;
+                                                    }
+                                                    if(!dep.platforms.isEmpty()){
+                                                        if(platforms.isEmpty())
+                                                            dep.platforms.clear();
+                                                        else{
+                                                            QStringList _platforms;
+                                                            _platforms << platforms << dep.platforms;
+                                                            if(!_platforms.isEmpty())
+                                                                _platforms.removeDuplicates();
+                                                            dep.platforms = _platforms;
+                                                        }
                                                     }
                                                     found = true;
                                                     break;
@@ -956,7 +971,11 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                 QString description;
                 QStringList moduleExcludes;
                 BufferedOutputStream stream(QFileInfo(javaOutputDirectory() + "/" + moduleName + "/module-info.java"));
-                for(const TypeSystemTypeEntry* typeSystem : qAsConst(allTypeSystems[moduleName])){
+                QList<const TypeSystemTypeEntry*> sortedTypeSystems;
+                for(const TypeSystemTypeEntry* typeSystem : qAsConst(allTypeSystems[moduleName]))
+                    sortedTypeSystems << typeSystem;
+                std::sort(sortedTypeSystems.begin(), sortedTypeSystems.end(), [](const TypeSystemTypeEntry*a, const TypeSystemTypeEntry*b)->bool{return a->name()<b->name();});
+                for(const TypeSystemTypeEntry* typeSystem : qAsConst(sortedTypeSystems)){
                     for(const QString& forwardDeclaration : typeSystem->forwardDeclarations()){
                         auto idx = forwardDeclaration.lastIndexOf('/');
                         QString pkg;
@@ -977,17 +996,18 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                     }
                 }
                 Indentor INDENT;
-                for(const TypeSystemTypeEntry* typeSystem : qAsConst(allTypeSystems[moduleName])){
+                for(const TypeSystemTypeEntry* typeSystem : qAsConst(sortedTypeSystems)){
                     generateInitializer(stream, typeSystem, {}, TS::ModuleInfo, CodeSnip::Position1, INDENT);
                 }
                 stream << "module " << moduleName << " {" << Qt::endl;
                 {
                     INDENTATION(INDENT)
-                    for(const TypeSystemTypeEntry* typeSystem : qAsConst(allTypeSystems[moduleName])){
+                    for(const TypeSystemTypeEntry* typeSystem : qAsConst(sortedTypeSystems)){
                         generateInitializer(stream, typeSystem, {}, TS::ModuleInfo, CodeSnip::Beginning, INDENT);
                     }
                     stream << "    requires java.base;" << Qt::endl;
-                    for(const TypeSystemTypeEntry* typeSystem : qAsConst(allTypeSystems[moduleName])){
+                    QStringList myExports;
+                    for(const TypeSystemTypeEntry* typeSystem : qAsConst(sortedTypeSystems)){
                         QList<QString>& entries = requiredTypeSystems[typeSystem];
                         entries.removeDuplicates();
                         generateInitializer(stream, typeSystem, {}, TS::ModuleInfo, CodeSnip::Position2, INDENT);
@@ -1001,12 +1021,14 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                         generateInitializer(stream, typeSystem, {}, TS::ModuleInfo, CodeSnip::Position3, INDENT);
                         generateInitializer(stream, typeSystem, {}, TS::ModuleInfo, CodeSnip::End, INDENT);
                         if(!typeSystem->isNoExports())
-                            for(const QString& e : qAsConst(exports[typeSystem]))
-                                stream << "    exports " << e << ";" << Qt::endl;
+                            myExports << exports[typeSystem];
                     }
+                    std::sort(myExports.begin(), myExports.end());
+                    for(const QString& e : qAsConst(myExports))
+                        stream << "    exports " << e << ";" << Qt::endl;
                 }
                 stream << "}" << Qt::endl;
-                for(const TypeSystemTypeEntry* typeSystem : qAsConst(allTypeSystems[moduleName])){
+                for(const TypeSystemTypeEntry* typeSystem : qAsConst(sortedTypeSystems)){
                     generateInitializer(stream, typeSystem, {}, TS::ModuleInfo, CodeSnip::Position4, INDENT);
                     if(!nativeLibs[typeSystem].isEmpty()){
                         QSet<QString> libraries;

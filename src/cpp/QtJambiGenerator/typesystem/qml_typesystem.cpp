@@ -97,6 +97,19 @@ void TypeSystem::setTargetName(const QString &newTargetName)
     emit targetNameChanged();
 }
 
+QString TypeSystem::getDefaultPPCondition() const
+{
+    return defaultPPCondition;
+}
+
+void TypeSystem::setDefaultPPCondition(const QString &newDefaultPPCondition)
+{
+    if (defaultPPCondition == newDefaultPPCondition)
+        return;
+    defaultPPCondition = newDefaultPPCondition;
+    emit defaultPPConditionChanged();
+}
+
 Module::Module(QObject *parent)
     : AbstractObject{parent}
 {

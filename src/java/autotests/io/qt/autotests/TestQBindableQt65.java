@@ -28,12 +28,13 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import org.junit.Test;
 
 import io.qt.core.QBindable;
 import io.qt.core.QObject;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.Qt;
 import io.qt.gui.QColor;
 
@@ -64,7 +65,14 @@ public class TestQBindableQt65 extends ApplicationInitializer {
     	Receiver receiver = new Receiver();
     	@SuppressWarnings("unchecked")
 		QBindable<QColor> receivedValueBindable = (QBindable<QColor>)receiver.metaObject().property("receivedValue").bindable(receiver);
-    	QBindable<QColor> legacyPropertyBindable = QBindable.fromProperty(sender::getLegacyProperty);
+    	QBindable<QColor> legacyPropertyBindable;
+    	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+    		legacyPropertyBindable = new QBindable<>(sender, "legacyProperty", QColor.class);
+    	}else {
+    		legacyPropertyBindable = QBindable.fromProperty(sender::getLegacyProperty);
+    	}
+    	assertTrue(receivedValueBindable!=null);
+    	assertTrue(legacyPropertyBindable!=null);
     	assertEquals(new QColor(), receivedValueBindable.value());
     	receivedValueBindable.setBinding(legacyPropertyBindable.makeBinding());
     	assertEquals(new QColor(Qt.GlobalColor.black), legacyPropertyBindable.value());

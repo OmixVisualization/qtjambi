@@ -9,6 +9,11 @@
 #include "registryutil_p.h"
 #include "coreapi.h"
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+QT_WARNING_DISABLE_GCC("-Wstrict-aliasing")
+QT_WARNING_DISABLE_CLANG("-Wstrict-aliasing")
+#endif
+
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
 void registerAccess(int newMetaType, const QSharedPointer<class AutoHashAccess>& access);
 QSharedPointer<class AutoHashAccess> getHashAccess(const QtPrivate::QMetaTypeInterface *iface);
@@ -223,10 +228,10 @@ int AutoSetAccess::registerContainer(const QByteArray& typeName)
                       _equalIter([](void * const *p, void * const *other)->bool{ return *p==*other; }),
                       _copyIter(nullptr)
                 {
-                    IteratorCapabilities& capabilities = reinterpret_cast<IteratorCapabilities&>(_iteratorCapabilities);
-                    capabilities._revision = 1;
-                    capabilities._iteratorCapabilities = QtMetaTypePrivate::BiDirectionalCapability;
-                    capabilities._containerCapabilities = 0;
+                    IteratorCapabilities* capabilities = reinterpret_cast<IteratorCapabilities*>(&_iteratorCapabilities);
+                    capabilities->_revision = 1;
+                    capabilities->_iteratorCapabilities = QtMetaTypePrivate::BiDirectionalCapability;
+                    capabilities->_containerCapabilities = 0;
                 }
 
                 static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){

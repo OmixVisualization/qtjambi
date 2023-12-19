@@ -33,6 +33,9 @@ import java.util.Map;
 
 import io.qt.core.QPair;
 
+/**
+ * @hidden
+ */
 public abstract class DeployerUtility {
 
 	private DeployerUtility() {

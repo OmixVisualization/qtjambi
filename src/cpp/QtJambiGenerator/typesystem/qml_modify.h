@@ -3,23 +3,58 @@
 
 #include "qml_abstractobject.h"
 
-class AddImpliciteCall : public AbstractObject
+class AddImplicitCall : public AbstractObject
 {
     Q_OBJECT
     QML_ELEMENT
     Q_CLASSINFO("DefaultProperty", "type")
 public:
-    explicit AddImpliciteCall(QObject *parent = nullptr);
+    explicit AddImplicitCall(QObject *parent = nullptr);
     QString getType() const;
     void setType(const QString &newType);
-
 signals:
     void typeChanged();
 
 private:
     QString type;
     Q_PROPERTY(QString type READ getType WRITE setType NOTIFY typeChanged REQUIRED)
-    Q_DISABLE_COPY(AddImpliciteCall)
+    Q_DISABLE_COPY(AddImplicitCall)
+};
+
+class InhibitImplicitCall : public AbstractObject
+{
+    Q_OBJECT
+    QML_ELEMENT
+    Q_CLASSINFO("DefaultProperty", "type")
+public:
+    explicit InhibitImplicitCall(QObject *parent = nullptr);
+    QString getType() const;
+    void setType(const QString &newType);
+signals:
+    void typeChanged();
+
+private:
+    QString type;
+    Q_PROPERTY(QString type READ getType WRITE setType NOTIFY typeChanged REQUIRED)
+    Q_DISABLE_COPY(InhibitImplicitCall)
+};
+
+class ImplicitCast : public AbstractObject
+{
+    Q_OBJECT
+    QML_ELEMENT
+    Q_CLASSINFO("DefaultProperty", "type")
+public:
+    explicit ImplicitCast(QObject *parent = nullptr);
+    QString getType() const;
+    void setType(const QString &newType);
+signals:
+    void typeChanged();
+
+private:
+    QString type;
+    Q_PROPERTY(QString from READ getType WRITE setType NOTIFY typeChanged REQUIRED)
+    Q_DISABLE_COPY(ImplicitCast)
 };
 
 class ModifyArgument : public AbstractObject
@@ -50,6 +85,9 @@ public:
     bool getValueAsPointer() const;
     void setValueAsPointer(bool newValueAsPointer);
 
+    bool getNoImplicitCalls() const;
+    void setNoImplicitCalls(bool newNoImplicitCalls);
+
 signals:
     void indexChanged();
 
@@ -65,6 +103,8 @@ signals:
 
     void valueAsPointerChanged();
 
+    void noImplicitCallsChanged();
+
 private:
     QVariant index;
     QString replaceValue;
@@ -73,6 +113,7 @@ private:
     QString replaceType;
     bool invalidateAfterUse = false;
     bool valueAsPointer = false;
+    bool noImplicitCalls = false;
     Q_PROPERTY(QVariant index READ getIndex WRITE setIndex NOTIFY indexChanged)
     Q_PROPERTY(QString replaceValue READ getReplaceValue WRITE setReplaceValue NOTIFY replaceValueChanged)
     Q_PROPERTY(QVariant threadAffinity READ getThreadAffinity WRITE setThreadAffinity NOTIFY threadAffinityChanged)
@@ -80,6 +121,7 @@ private:
     Q_PROPERTY(QString replaceType READ getReplaceType WRITE setReplaceType NOTIFY replaceTypeChanged)
     Q_PROPERTY(bool invalidateAfterUse READ getInvalidateAfterUse WRITE setInvalidateAfterUse NOTIFY invalidateAfterUseChanged)
     Q_PROPERTY(bool valueAsPointer READ getValueAsPointer WRITE setValueAsPointer NOTIFY valueAsPointerChanged)
+    Q_PROPERTY(bool noImplicitCalls READ getNoImplicitCalls WRITE setNoImplicitCalls NOTIFY noImplicitCallsChanged FINAL)
 };
 
 class RemoveDefaultExpression : public AbstractObject
@@ -183,21 +225,14 @@ private:
     Q_PROPERTY(AccessModifications access READ getAccess WRITE setAccess NOTIFY accessChanged)
 };
 
-
-class ArrayType : public AbstractObject
+class AsBuffer : public AbstractObject
 {
     Q_OBJECT
     QML_ELEMENT
 public:
-    explicit ArrayType(QObject *parent = nullptr):AbstractObject{parent}{}
+    explicit AsBuffer(QObject *parent = nullptr):AbstractObject{parent}{}
     bool getDeref() const;
     void setDeref(bool newDeref);
-
-    bool getVarargs() const;
-    void setVarargs(bool newVarargs);
-
-    bool getAsBuffer() const;
-    void setAsBuffer(bool newAsBuffer);
 
     int getLengthParameter() const;
     void setLengthParameter(int newLengthParameter);
@@ -208,12 +243,11 @@ public:
     int getMaxLength() const;
     void setMaxLength(int newMaxLength);
 
+    QString getLengthExpression() const;
+    void setLengthExpression(const QString &newLengthExpression);
+
 signals:
     void derefChanged();
-
-    void varargsChanged();
-
-    void asBufferChanged();
 
     void lengthParameterChanged();
 
@@ -221,19 +255,86 @@ signals:
 
     void maxLengthChanged();
 
+    void lengthExpressionChanged();
+
 private:
     bool deref = false;
-    bool varargs = false;
-    bool asBuffer = false;
     int lengthParameter = 0;
     int minLength = -1;
     int maxLength = -1;
+    QString lengthExpression;
+    Q_PROPERTY(bool deref READ getDeref WRITE setDeref NOTIFY derefChanged FINAL)
+    Q_PROPERTY(int lengthParameter READ getLengthParameter WRITE setLengthParameter NOTIFY lengthParameterChanged FINAL)
+    Q_PROPERTY(int minLength READ getMinLength WRITE setMinLength NOTIFY minLengthChanged FINAL)
+    Q_PROPERTY(int maxLength READ getMaxLength WRITE setMaxLength NOTIFY maxLengthChanged FINAL)
+    Q_PROPERTY(QString lengthExpression READ getLengthExpression WRITE setLengthExpression NOTIFY lengthExpressionChanged FINAL)
+};
+
+
+class AsArray : public AbstractObject
+{
+    Q_OBJECT
+    QML_ELEMENT
+public:
+    explicit AsArray(QObject *parent = nullptr):AbstractObject{parent}{}
+    bool getDeref() const;
+    void setDeref(bool newDeref);
+
+    bool getVarargs() const;
+    void setVarargs(bool newVarargs);
+
+    int getLengthParameter() const;
+    void setLengthParameter(int newLengthParameter);
+
+    int getMinLength() const;
+    void setMinLength(int newMinLength);
+
+    int getMaxLength() const;
+    void setMaxLength(int newMaxLength);
+
+    bool getNoOffset() const;
+    void setNoOffset(bool newNoOffset);
+
+    bool getAddPlainDelegate() const;
+    void setAddPlainDelegate(bool newAddPlainDelegate);
+
+    QString getLengthExpression() const;
+    void setLengthExpression(const QString &newLengthExpression);
+
+signals:
+    void derefChanged();
+
+    void varargsChanged();
+
+    void lengthParameterChanged();
+
+    void minLengthChanged();
+
+    void maxLengthChanged();
+
+    void noOffsetChanged();
+
+    void addPlainDelegateChanged();
+
+    void lengthExpressionChanged();
+
+private:
+    bool deref = false;
+    bool varargs = false;
+    int lengthParameter = 0;
+    int minLength = -1;
+    int maxLength = -1;
+    bool noOffset = false;
+    bool addPlainDelegate = true;
+    QString lengthExpression;
     Q_PROPERTY(bool deref READ getDeref WRITE setDeref NOTIFY derefChanged)
     Q_PROPERTY(bool varargs READ getVarargs WRITE setVarargs NOTIFY varargsChanged)
-    Q_PROPERTY(bool asBuffer READ getAsBuffer WRITE setAsBuffer NOTIFY asBufferChanged)
     Q_PROPERTY(int lengthParameter READ getLengthParameter WRITE setLengthParameter NOTIFY lengthParameterChanged)
     Q_PROPERTY(int minLength READ getMinLength WRITE setMinLength NOTIFY minLengthChanged)
     Q_PROPERTY(int maxLength READ getMaxLength WRITE setMaxLength NOTIFY maxLengthChanged)
+    Q_PROPERTY(bool noOffset READ getNoOffset WRITE setNoOffset NOTIFY noOffsetChanged FINAL)
+    Q_PROPERTY(bool addPlainDelegate READ getAddPlainDelegate WRITE setAddPlainDelegate NOTIFY addPlainDelegateChanged FINAL)
+    Q_PROPERTY(QString lengthExpression READ getLengthExpression WRITE setLengthExpression NOTIFY lengthExpressionChanged FINAL)
 };
 
 class ReplaceType : public AbstractObject
@@ -715,6 +816,15 @@ public:
     bool noKotlinGetter() const;
     void setNoKotlinGetter(bool newNoKotlinGetter);
 
+    bool getIsForcedExplicit() const;
+    void setIsForcedExplicit(bool newIsForcedExplicit);
+
+    bool getIsForcedImplicit() const;
+    void setIsForcedImplicit(bool newIsForcedImplicit);
+
+    bool getNoImplicitArguments() const;
+    void setNoImplicitArguments(bool newNoImplicitArguments);
+
 signals:
     void signatureChanged();
 
@@ -754,6 +864,12 @@ signals:
 
     void noKotlinGetterChanged();
 
+    void isForcedExplicitChanged();
+
+    void isForcedImplicitChanged();
+
+    void noImplicitArgumentsChanged();
+
 private:
     QString signature;
     AccessModifications access;
@@ -774,6 +890,9 @@ private:
     QString targetType;
     bool isPaintMethod = false;
     bool m_noKotlinGetter = false;
+    bool isForcedExplicit = false;
+    bool isForcedImplicit = false;
+    bool noImplicitArguments = false;
     Q_PROPERTY(QString signature READ getSignature WRITE setSignature NOTIFY signatureChanged)
     Q_PROPERTY(AccessModifications access READ getAccess WRITE setAccess NOTIFY accessChanged)
     Q_PROPERTY(bool noExcept READ getNoExcept WRITE setNoExcept NOTIFY noExceptChanged)
@@ -793,6 +912,9 @@ private:
     Q_PROPERTY(QString targetType READ getTargetType WRITE setTargetType NOTIFY targetTypeChanged)
     Q_PROPERTY(bool isPaintMethod READ getIsPaintMethod WRITE setIsPaintMethod NOTIFY isPaintMethodChanged)
     Q_PROPERTY(bool noKotlinGetter READ noKotlinGetter WRITE setNoKotlinGetter NOTIFY noKotlinGetterChanged)
+    Q_PROPERTY(bool isForcedExplicit READ getIsForcedExplicit WRITE setIsForcedExplicit NOTIFY isForcedExplicitChanged FINAL)
+    Q_PROPERTY(bool isForcedImplicit READ getIsForcedImplicit WRITE setIsForcedImplicit NOTIFY isForcedImplicitChanged FINAL)
+    Q_PROPERTY(bool noImplicitArguments READ getNoImplicitArguments WRITE setNoImplicitArguments NOTIFY noImplicitArgumentsChanged FINAL)
 };
 
 class GlobalFunction : public ModifyFunction
@@ -1054,7 +1176,8 @@ QML_DECLARE_TYPE(AbstractStructor)
 QML_DECLARE_TYPE(AddArgument)
 QML_DECLARE_TYPE(AddTypeParameter)
 QML_DECLARE_TYPE(Argument)
-QML_DECLARE_TYPE(ArrayType)
+QML_DECLARE_TYPE(AsArray)
+QML_DECLARE_TYPE(AsBuffer)
 QML_DECLARE_TYPE(ConversionRule)
 QML_DECLARE_TYPE(CustomConstructor)
 QML_DECLARE_TYPE(CustomDestructor)

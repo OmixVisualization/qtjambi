@@ -55,6 +55,9 @@ import io.qt.core.QMetaObject.Method3;
 import io.qt.core.QMetaObject.Method4;
 import io.qt.core.QMetaObject.Method5;
 
+/**
+ * @hidden
+ */
 abstract class ReflectionUtility {
 	private ReflectionUtility() {
 		throw new RuntimeException();

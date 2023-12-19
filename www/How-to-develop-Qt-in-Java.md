@@ -13,7 +13,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `5.15.17` or by `6.5.3`).
+(exchange `$VERSION` either by `5.15.18`, by `6.5.4` or by `6.6.1`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 Find the [list of all available QtJambi modules](www/Modules.md).
@@ -36,7 +36,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.5.3.jar Test.java
+javac -cp qtjambi-6.5.4.jar Test.java
 ```
 
 ## Executing Example
@@ -57,27 +57,30 @@ macOS) or the Java runtime property **java.library.path**.
 The example program can be executed this way on Windows:
 
 ``` powershell
-java -cp qtjambi-6.5.3.jar;qtjambi-native-windows-x64-6.5.3.jar;. -Djava.library.path=C:\Qt\6.5.3\msvc2019_64\bin Test
+java -cp qtjambi-6.5.4.jar;qtjambi-native-windows-x64-6.5.4.jar;. -Djava.library.path=C:\Qt\6.5.3\msvc2019_64\bin Test
 ```
 
 On Linux it looks this way:
 
 ``` bash
-java -cp qtjambi-6.5.3.jar:qtjambi-native-linux-x64-6.5.3.jar:. -Djava.library.path=<path to>/Qt/6.5.3/gcc_64/lib Test
+java -cp qtjambi-6.5.4.jar:qtjambi-native-linux-x64-6.5.4.jar:. -Djava.library.path=<path to>/Qt/6.5.3/gcc_64/lib Test
 ```
 
 On macOS you additionally need to use the start parameter -XstartOnFirstThread:
 
 ``` bash
-java -cp qtjambi-6.5.3.jar:qtjambi-native-macos-6.5.3.jar:. -Djava.library.path=<path to>/Qt/6.5.3/macos/lib -XstartOnFirstThread Test
+java -cp qtjambi-6.5.4.jar:qtjambi-native-macos-6.5.4.jar:. -Djava.library.path=<path to>/Qt/6.5.3/macos/lib -XstartOnFirstThread Test
 ```
+
+If the example fails with a `UnsatisfiedLinkError` QtJambi libraries and Qt libraries seem to be incompatible.
+[Read here about library requirements and compatibility.](www/Modules.md)
 
 ### Native Components
 
 QtJambi automatically detects the required native component jars if they are located next to their Java counterparts or in a subfolder `native`.
 You can simply skip `qtjambi-native-OS-VERSION.jar` in your classpath (`-cp`).
 
-If you intend to use automatic module loading (`java -p <dir>`) you strictly need to place native components in `native` subfolder next to `qtjambi-6.5.3.jar`.
+If you intend to use automatic module loading (`java -p <dir>`) you strictly need to place native components in `native` subfolder next to `qtjambi-6.5.4.jar`.
 
 Native bundles are extracted every time at program startup. By default, this is a process specific temporal directory purged after program shutdown.
 Alternatively, you can use Java system property `io.qt.deploymentdir` to let libraries to be exctacted and persist in user 
@@ -98,9 +101,9 @@ here](How-to-deploy-QtJambi-applications.md).
 [Read more about developing applications for Android](Android.md).
 
 See [QtJambi 5.15 API Reference
-Documentation](https://doc.qtjambi.io/5.15.17/),
+Documentation](https://doc.qtjambi.io/5.15.18/),
 and [QtJambi 6.5 API Reference
-Documentation](https://doc.qtjambi.io/6.5.3/)
+Documentation](https://doc.qtjambi.io/6.5.4/)
 
 ## Useful Java System Properties for QtJambi
 
@@ -124,8 +127,8 @@ You can specify Java system properties as start argument `-Dproperty=value` or i
 * `io.qt.enable-concurrent-container-modification-check` - Specify `true` to activate concurrent modification checks during container iteration.
 * `io.qt.enable-thread-affinity-check` - Specify `true` to activate thread affinity checks when calling certain thread-affine methods.
 * `io.qt.enable-event-thread-affinity-check` - ...the same applying to access checks during event handling.
-* ~~`io.qt.disable-thread-affinity-check`~~ - _check is disabled by default since QtJambi 6.5.3._
-* ~~`io.qt.disable-event-thread-affinity-check`~~ - _check is disabled by default since QtJambi 6.5.3._
+* ~~`io.qt.disable-thread-affinity-check`~~ - _check is disabled by default since QtJambi 6.5.1._
+* ~~`io.qt.disable-event-thread-affinity-check`~~ - _check is disabled by default since QtJambi 6.5.1._
 
 ### Library Management
 

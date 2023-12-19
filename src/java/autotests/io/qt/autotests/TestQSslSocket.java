@@ -53,8 +53,13 @@ public class TestQSslSocket extends ApplicationInitializer {
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {
-        assumeTrue("Qt does not support SSL", QSslSocket.supportsSsl());
         ApplicationInitializer.testInitialize();
+        try {
+        	assumeTrue("Qt does not support SSL", QSslSocket.supportsSsl());
+        }catch(Exception e) {
+        	ApplicationInitializer.testDispose();
+        	throw e;
+        }
     }
 
 	private QSslSocket socket;

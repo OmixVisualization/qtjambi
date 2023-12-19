@@ -75,7 +75,7 @@ enum class QtJambiNativeID : jlong { Invalid = 0 };
 #define InvalidNativeID QtJambiNativeID::Invalid
 
 QTJAMBI_EXPORT bool operator !(QtJambiNativeID nativeId);
-typedef const std::type_info& (*TypeInfoSupplier)(const void *object);
+typedef const std::type_info* (*TypeInfoSupplier)(const void *object);
 
 namespace QtJambiAPI{
 void QTJAMBI_EXPORT checkNullPointer(JNIEnv *env, const void* ptr, const std::type_info& typeId);
@@ -86,9 +86,15 @@ void QTJAMBI_EXPORT checkDanglingPointer(JNIEnv *env, const void* ptr, const std
 namespace QtJambiPrivate{
 template<typename T, bool = std::is_polymorphic<T>::value>
 struct CheckPointer{
-    static const std::type_info& supplyType(const void *ptr) {
+    static const std::type_info* supplyType(const void *ptr) {
         const T* object = reinterpret_cast<const T*>(ptr);
-        return typeid(*object);
+        try{
+            return &typeid(*object);
+        }catch(const std::bad_typeid&){
+            return nullptr;
+        }catch(...){
+            return nullptr;
+        }
     };
     static void checkNullPointer(JNIEnv *env, const T* ptr){
         QtJambiAPI::checkNullPointer(env, ptr, typeid(T), supplyType);
@@ -457,6 +463,20 @@ QTJAMBI_EXPORT jobject toJavaShortObject(JNIEnv *env, jshort short_value);
 QTJAMBI_EXPORT jobject toJavaFloatObject(JNIEnv *env, jfloat float_value);
 QTJAMBI_EXPORT jobject toJavaByteObject(JNIEnv *env, jbyte byte_value);
 QTJAMBI_EXPORT jobject toJavaCharacterObject(JNIEnv *env, jchar char_value);
+QTJAMBI_EXPORT jobject convertDuration(JNIEnv *env, std::chrono::nanoseconds t);
+QTJAMBI_EXPORT jobject convertDuration(JNIEnv *env, std::chrono::seconds t);
+QTJAMBI_EXPORT jobject convertDuration(JNIEnv *env, std::chrono::milliseconds t);
+QTJAMBI_EXPORT std::chrono::nanoseconds convertDuration(JNIEnv *env, jobject t, std::chrono::nanoseconds defaultValue = std::chrono::nanoseconds::zero());
+QTJAMBI_EXPORT std::chrono::seconds convertDuration(JNIEnv *env, jobject t, std::chrono::seconds defaultValue = std::chrono::seconds::zero());
+QTJAMBI_EXPORT std::chrono::milliseconds convertDuration(JNIEnv *env, jobject t, std::chrono::milliseconds defaultValue = std::chrono::milliseconds::zero());
+QTJAMBI_EXPORT jobject convertTimePointFromEpoch(JNIEnv *env, std::chrono::seconds t);
+QTJAMBI_EXPORT jobject convertTimePointFromEpoch(JNIEnv *env, std::chrono::nanoseconds t);
+QTJAMBI_EXPORT jobject convertTimePointFromEpoch(JNIEnv *env, std::chrono::milliseconds t);
+QTJAMBI_EXPORT std::chrono::nanoseconds convertTimePointFromEpoch(JNIEnv *env, jobject t, std::chrono::nanoseconds defaultValue = std::chrono::nanoseconds::zero());
+QTJAMBI_EXPORT std::chrono::seconds convertTimePointFromEpoch(JNIEnv *env, jobject t, std::chrono::seconds defaultValue = std::chrono::seconds::zero());
+QTJAMBI_EXPORT std::chrono::milliseconds convertTimePointFromEpoch(JNIEnv *env, jobject t, std::chrono::milliseconds defaultValue = std::chrono::milliseconds::zero());
+QTJAMBI_EXPORT QPair<std::chrono::seconds, std::chrono::nanoseconds> readDuration(JNIEnv *env, jobject t);
+QTJAMBI_EXPORT QPair<std::chrono::seconds, std::chrono::nanoseconds> readTimePoint(JNIEnv *env, jobject t);
 
 QTJAMBI_EXPORT jdouble fromJavaDoubleObject(JNIEnv *env, jobject double_object);
 QTJAMBI_EXPORT jint fromJavaIntegerObject(JNIEnv *env, jobject int_object);

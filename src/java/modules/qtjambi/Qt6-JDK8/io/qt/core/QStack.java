@@ -29,19 +29,15 @@
 ****************************************************************************/
 package io.qt.core;
 
-import java.util.Collection;
-import java.util.Deque;
-import java.util.NoSuchElementException;
-
-import io.qt.NativeAccess;
-import io.qt.NonNull;
-import io.qt.QtUninvokable;
-import io.qt.StrictNonNull;
+import java.util.*;
+import io.qt.*;
 
 /**
  * <p>Java wrapper for Qt class <code><a href="https://doc.qt.io/qt/qstack.html">QStack</a></code></p>
+ * <p>QStack will no longer implement Deque interface if compiled with Java 21.
+ * Instead call {@link asDeque()} to get a Deque wrapper for the stack.</p>
  */
-public class QStack<T> extends QList<T> implements Deque<T>
+public class QStack<T> extends QList<T> implements Queue<T>, Deque<T>
 {
     /**
      * Creating a container with given element type and size.
@@ -113,7 +109,7 @@ public class QStack<T> extends QList<T> implements Deque<T>
     /**
      * @see Deque#remove()
      */
-    @Override
+	@Override
     @QtUninvokable
     public final T remove() {
         return takeFirst();
@@ -122,7 +118,7 @@ public class QStack<T> extends QList<T> implements Deque<T>
     /**
      * @see Deque#addFirst(Object)
      */
-    @Override
+	@Override
     @QtUninvokable
     public final void addFirst(T e) {
         push(e);
@@ -131,7 +127,7 @@ public class QStack<T> extends QList<T> implements Deque<T>
     /**
      * @see Deque#addLast(Object)
      */
-    @Override
+	@Override
     @QtUninvokable
     public final void addLast(T e) {
         add(e);
@@ -140,7 +136,7 @@ public class QStack<T> extends QList<T> implements Deque<T>
     /**
      * @see Deque#offerFirst(Object)
      */
-    @Override
+	@Override
     @QtUninvokable
     public final boolean offerFirst(T e) {
         push(e);
@@ -150,7 +146,7 @@ public class QStack<T> extends QList<T> implements Deque<T>
     /**
      * @see Deque#offerLast(Object)
      */
-    @Override
+	@Override
     @QtUninvokable
     public final boolean offerLast(T e) {
         add(e);
@@ -160,7 +156,7 @@ public class QStack<T> extends QList<T> implements Deque<T>
     /**
      * @see Deque#pollFirst()
      */
-    @Override
+	@Override
     @QtUninvokable
     public final T pollFirst() {
         if(size()==0)
@@ -171,7 +167,7 @@ public class QStack<T> extends QList<T> implements Deque<T>
     /**
      * @see Deque#pollLast()
      */
-    @Override
+	@Override
     @QtUninvokable
     public final T pollLast() {
         if(size()==0)
@@ -183,7 +179,7 @@ public class QStack<T> extends QList<T> implements Deque<T>
     /**
      * @see Deque#getFirst()
      */
-    @Override
+	@Override
     @QtUninvokable
     public final T getFirst() {
         if(size()==0)
@@ -194,7 +190,7 @@ public class QStack<T> extends QList<T> implements Deque<T>
     /**
      * @see Deque#getLast()
      */
-    @Override
+	@Override
     @QtUninvokable
     public final T getLast() {
         if(size()==0)
@@ -205,7 +201,7 @@ public class QStack<T> extends QList<T> implements Deque<T>
     /**
      * @see Deque#poll()
      */
-    @Override
+	@Override
     @QtUninvokable
     public final T poll() {
         return pollFirst();
@@ -214,7 +210,7 @@ public class QStack<T> extends QList<T> implements Deque<T>
     /**
      * @see Deque#element()
      */
-    @Override
+	@Override
     @QtUninvokable
     public final T element() {
         return getFirst();
@@ -223,7 +219,7 @@ public class QStack<T> extends QList<T> implements Deque<T>
     /**
      * @see Deque#peek()
      */
-    @Override
+	@Override
     @QtUninvokable
     public final T peek() {
         return peekFirst();
@@ -232,7 +228,7 @@ public class QStack<T> extends QList<T> implements Deque<T>
     /**
      * @see Deque#offer(Object)
      */
-    @Override
+	@Override
     @QtUninvokable
     public final boolean offer(T e) {
         return offerLast(e);
@@ -241,7 +237,7 @@ public class QStack<T> extends QList<T> implements Deque<T>
     /**
      * @see Deque#removeFirstOccurrence(Object)
      */
-    @Override
+	@Override
     @QtUninvokable
     public final boolean removeFirstOccurrence(Object o) {
         int idx = indexOf(o);
@@ -251,7 +247,7 @@ public class QStack<T> extends QList<T> implements Deque<T>
     /**
      * @see Deque#removeLastOccurrence(Object)
      */
-    @Override
+	@Override
     @QtUninvokable
     public final boolean removeLastOccurrence(Object o) {
         int idx = lastIndexOf(o);
@@ -261,7 +257,7 @@ public class QStack<T> extends QList<T> implements Deque<T>
     /**
      * @see Deque#descendingIterator()
      */
-    @Override
+	@Override
     @QtUninvokable
     public final java.util.Iterator<T> descendingIterator() {
     	return constEnd().toJavaDescendingIterator();
@@ -270,7 +266,7 @@ public class QStack<T> extends QList<T> implements Deque<T>
     /**
      * @see Deque#peekFirst()
      */
-    @Override
+	@Override
     @QtUninvokable
     public final T peekFirst() {
         return first();
@@ -288,7 +284,7 @@ public class QStack<T> extends QList<T> implements Deque<T>
     /**
      * @see Deque#peekLast()
      */
-    @Override
+	@Override
     @QtUninvokable
     public final T peekLast() {
         return last();
@@ -298,7 +294,7 @@ public class QStack<T> extends QList<T> implements Deque<T>
      * <p>See <code><a href="https://doc.qt.io/qt/qstack.html#push">QStack::<wbr>push(T)</a></code></p>
      * @see Deque#push(Object)
      */
-    @Override
+	@Override
     @QtUninvokable
     public final void push(T e) {
         add(e);
@@ -308,21 +304,23 @@ public class QStack<T> extends QList<T> implements Deque<T>
      * <p>See <code><a href="https://doc.qt.io/qt/qstack.html#pop">QStack::<wbr>pop()</a></code></p>
      * @see Deque#pop()
      */
-    @Override
+	@Override
     @QtUninvokable
     public final T pop() {
         return takeLast();
     }
-    
-    public final QStack<T> reversed(){
-    	QStack<T> result = new QStack<>(elementMetaType());
-    	result.reserve(size());
-		for(T t : this) {
-			result.add(0, t);
-		}
-    	return result;
+	
+	/**
+     * Due to changes in Java 21 QStack does no longer implement Deque interface.
+     * Instead call {@link asDeque()} to get a Deque wrapper for the stack.
+     * @return Deque wrapper
+     * @since 6.6.1
+     */
+    @QtUninvokable
+    public final @NonNull Deque<T> asDeque(){
+    	return new StackDeque<>(this);
     }
-    
+
     /**
      * Returns a QStack containing given elements.
      *

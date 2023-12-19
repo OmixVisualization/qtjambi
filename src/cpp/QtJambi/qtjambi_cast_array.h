@@ -60,4 +60,32 @@ O qtjambi_array_cast(JNIEnv *env, QtJambiScope& scope, T in, I&& size){
         >::cast(env, in, size, nullptr, &scope);
 }
 
+template<class O, class T, class I>
+O qtjambi_array_cast(JNIEnv *env, T in, I&& size, const char* nativeTypeName){
+    typedef typename std::remove_reference<I>::type I_noref;
+    Q_STATIC_ASSERT_X(!std::is_pointer<I_noref>::value, "Integer type variable required as size.");
+    Q_STATIC_ASSERT_X(std::is_integral<I_noref>::value, "Integer type variable required as size.");
+    Q_STATIC_ASSERT_X(!QtJambiPrivate::is_jni_array_type<T>::value || !std::is_const<typename std::remove_reference<I_noref>::type>::value, "Cannot cast native array from java array without non-const size argument.");
+    return QtJambiPrivate::qtjambi_array_cast_decider<
+        false,
+        O, QtJambiPrivate::is_jni_array_type<O>::value,
+        T, QtJambiPrivate::is_jni_array_type<T>::value,
+        I_noref
+        >::cast(env, in, size, nativeTypeName, nullptr);
+}
+
+template<class O, class T, class I>
+O qtjambi_array_cast(JNIEnv *env, T in, I&& size){
+    typedef typename std::remove_reference<I>::type I_noref;
+    Q_STATIC_ASSERT_X(!std::is_pointer<I_noref>::value, "Integer type variable required as size.");
+    Q_STATIC_ASSERT_X(std::is_integral<I_noref>::value, "Integer type variable required as size.");
+    Q_STATIC_ASSERT_X(!QtJambiPrivate::is_jni_array_type<T>::value || !std::is_const<typename std::remove_reference<I_noref>::type>::value, "Cannot cast native array from java array without non-const size argument.");
+    return QtJambiPrivate::qtjambi_array_cast_decider<
+        false,
+        O, QtJambiPrivate::is_jni_array_type<O>::value,
+        T, QtJambiPrivate::is_jni_array_type<T>::value,
+        I_noref
+        >::cast(env, in, size, nullptr, nullptr);
+}
+
 #endif // QTJAMBI_CAST_ARRAY_H

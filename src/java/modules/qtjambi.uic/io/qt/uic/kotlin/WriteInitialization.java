@@ -114,6 +114,9 @@ import io.qt.uic.ui4.DomUrl;
 import io.qt.uic.ui4.DomWidget;
 import io.qt.widgets.QSizePolicy;
 
+/**
+ * @hidden
+ */
 public class WriteInitialization extends TreeWalker {
 
 	public static void formatMemberFnPtrConnection(QTextStream str, SignalSlot signal, SignalSlot slot) {

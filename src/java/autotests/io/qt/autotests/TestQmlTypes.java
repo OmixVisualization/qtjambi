@@ -41,6 +41,7 @@ import io.qt.core.QList;
 import io.qt.core.QMetaObject;
 import io.qt.core.QMetaProperty;
 import io.qt.core.QObject;
+import io.qt.core.QUrl;
 import io.qt.qml.QQmlComponent;
 import io.qt.qml.QQmlEngine;
 import io.qt.qml.QQmlError;
@@ -64,7 +65,7 @@ public class TestQmlTypes extends ApplicationInitializer{
 		QByteArray data = new QByteArray("import io.qt.autotests.qmltypes 5.0; Car {}");
 		QQmlEngine qmlengine = new QQmlEngine();
 		QQmlComponent component = new QQmlComponent(qmlengine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		QObject car = component.create();
 		Assert.assertFalse(component.errorString(), component.isError());
 		Assert.assertTrue("car is null", car!=null);
@@ -115,7 +116,7 @@ public class TestQmlTypes extends ApplicationInitializer{
 		});
 		
 		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		QObject root = component.create();

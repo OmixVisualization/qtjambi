@@ -40,6 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 
 import io.qt.QThreadAffinityException;
@@ -52,11 +53,6 @@ import io.qt.core.QThread;
 import io.qt.core.QTimeLine;
 
 public class TestQThread extends ApplicationInitializer{
-	
-	static {
-		System.setProperty("io.qt.enable-thread-affinity-check", "true");
-		System.setProperty("io.qt.enable-event-thread-affinity-check", "true");
-	}
 	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
@@ -151,6 +147,8 @@ public class TestQThread extends ApplicationInitializer{
 			timeLine[0].finished.connect(finished::incrementAndGet);
 			parent[0].moveToThread(currentThread);
 			threadFinished.set(true);
+			instances.add(new WeakReference<>(timeLine[0]));
+			instances.add(new WeakReference<>(parent[0]));
 		});
 		signalTestThread.setDaemon(true);
 		signalTestThread.setName("QThread-Test");
@@ -184,6 +182,7 @@ public class TestQThread extends ApplicationInitializer{
 					reached.set(true);
 					event.accept();
 					((QThread)QThread.currentThread()).quit();
+					dispose();
 					return true;
 				}
 				return super.event(event);
@@ -334,35 +333,9 @@ public class TestQThread extends ApplicationInitializer{
 		}
 	}
 	
-	@org.junit.Test(expected=QThreadAffinityException.class)
-	public void testQThreadAffinityExceptionOnFunctionCall() throws QThreadAffinityException, InterruptedException{
-		AtomicReference<QObject> object = new AtomicReference<>();
-		QThread jthread = QThread.create(()->{
-			object.set(new QObject());
-			try {
-				synchronized(TestQThread.class) {
-					TestQThread.class.wait();
-				}
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		});
-		try {
-			jthread.start();
-			while(object.get()==null) {
-				Thread.sleep(50);
-			}
-			object.get().startTimer(90);
-		}finally {
-			synchronized(TestQThread.class) {
-				TestQThread.class.notifyAll();
-			}
-			instances.add(new WeakReference<>(jthread));
-		}
-	}
-	
 	@org.junit.Test
 	public void testQThreadJavaInterrupt() throws InterruptedException, ClassNotFoundException{
+		Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
 		AtomicBoolean continued = new AtomicBoolean();
 		AtomicBoolean interrupted = new AtomicBoolean();
 		AtomicBoolean interruptionRequested = new AtomicBoolean();

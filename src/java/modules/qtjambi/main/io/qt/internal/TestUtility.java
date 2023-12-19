@@ -36,6 +36,9 @@ import io.qt.core.QMetaObject;
 import io.qt.internal.NativeUtility.NativeLink;
 import io.qt.internal.SignalUtility.NativeConnection;
 
+/**
+ * @hidden
+ */
 public abstract class TestUtility {
 	static {
 		QtJambi_LibraryUtilities.initialize();

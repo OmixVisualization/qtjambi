@@ -161,6 +161,7 @@ TypeSystem{
     
     ValueType{
         name: "QXmlItem"
+        noImplicitConstructors: true
     }
     
     ValueType{
@@ -409,6 +410,24 @@ TypeSystem{
                 index: 1
                 NoNullPointer{
                 }
+            }
+        }
+        ModifyFunction{
+            signature: "setQuery(QUrl,QUrl)"
+            ModifyArgument{
+                index: 1
+                noImplicitCalls: true
+            }
+            ModifyArgument{
+                index: 2
+                noImplicitCalls: true
+            }
+        }
+        ModifyFunction{
+            signature: "setQuery(QString,QUrl)"
+            ModifyArgument{
+                index: 2
+                noImplicitCalls: true
             }
         }
     }

@@ -44,10 +44,10 @@ import java.util.List;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 
-public class File extends Task implements Dirent {
+public class FileDirent extends Task implements Dirent {
     private String name;
 
-    public File(String name) {
+    public FileDirent(String name) {
         setName(name);
     }
 

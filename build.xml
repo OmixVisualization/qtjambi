@@ -31,8 +31,7 @@
     <!-- These properties used to be at the top of build.properties
          but no one is expected to change them.
          -->
-    <property name="antjardir"                   location="antjar"/>
-    <property name="extjardir"                   location="extjars"/>
+    <property name="resourcesdir"                   location="resources"/>
     <property name="java.srcdir"                   location="src/java"/>
     <property name="native.srcdir"                   location="src/cpp"/>
     <!--
@@ -54,17 +53,17 @@
     </target>
 
     <target name="init.taskdef" depends="log">
-        <mkdir dir="${antjardir}/ant-qtjambi"/>
+        <mkdir dir="${resourcesdir}/ant"/>
         <javac debug="true" deprecation="true" source="1.8" target="1.8"
-                fork="true" memorymaximumsize="1024m" verbose="false"
+                memorymaximumsize="1024m" verbose="false"
                 includeantruntime="true"
-                destdir="${antjardir}/ant-qtjambi">
+                destdir="${resourcesdir}/ant">
             <compilerarg value="-Xlint:deprecation" />
             <compilerarg value="-Xlint:unchecked" />
             <compilerarg value="-Xlint:-module,-options" />
             <src path="${java.srcdir}/ant"/>
         </javac>
-        <copy todir="${antjardir}/ant-qtjambi" includeemptydirs="false">
+        <copy todir="${resourcesdir}/ant" includeemptydirs="false">
             <fileset dir="${java.srcdir}/ant">
                 <include name="**/*"/>
                 <exclude name="**/.*"/>
@@ -73,7 +72,7 @@
         </copy>
         <taskdef resource="io/qt/tools/ant/ant-qtjambi.xml">
             <classpath>
-                <pathelement path="${antjardir}/ant-qtjambi"/>
+                <pathelement path="${resourcesdir}/ant"/>
             </classpath>
         </taskdef>
     </target>
@@ -84,6 +83,108 @@
 
     <target name="init.build">
         <qtjambi-initialize-build verbose="true"/>
+		<if>
+			<and>
+				<or>
+					<equals arg1="${qtjambi.osname}" arg2="android"/>
+					<equals arg1="${qtjambi.osname}" arg2="android-x86"/>
+					<equals arg1="${qtjambi.osname}" arg2="android-x64"/>
+					<equals arg1="${qtjambi.osname}" arg2="android-arm"/>
+					<equals arg1="${qtjambi.osname}" arg2="android-arm64"/>
+				</or>
+				<not>
+					<and>
+						<isset property="qtjambi.android.ndk"/>
+						<available file="${qtjambi.android.ndk}" type="dir"/>
+					</and>
+				</not>
+			</and>
+			<then>
+				<if>
+					<os family="windows"/>
+					<then>
+						<if>
+							<not>
+								<available file="${resourcesdir}/android/windows/android-ndk-${android.ndk.version}" type="dir"/>
+							</not>
+							<then>
+								<mkdir dir="${resourcesdir}/android"/>
+								<mkdir dir="${resourcesdir}/android/windows"/>
+								<get src="${android.repository}/android-ndk-${android.ndk.version}-windows.zip" dest="${resourcesdir}/android/android-ndk-${android.ndk.version}-windows.zip" verbose="true"/>
+								<unzip src="${resourcesdir}/android/android-ndk-${android.ndk.version}-windows.zip" dest="${resourcesdir}/android/windows"/>
+								<delete file="${resourcesdir}/android/android-ndk-${android.ndk.version}-windows.zip"/>
+							</then>
+						</if>
+						<property name="qtjambi.android.ndk" location="${resourcesdir}/android/windows/android-ndk-${android.ndk.version}"/>
+					</then>
+				</if>
+				<if>
+					<and>
+						<os family="unix"/>
+					</and>
+					<then>
+						<if>
+							<os family="mac"/>
+							<then>
+								<if>
+									<not>
+										<available file="${resourcesdir}/android/mac/android-ndk-${android.ndk.version}" type="dir"/>
+									</not>
+									<then>
+										<mkdir dir="${resourcesdir}/android"/>
+										<mkdir dir="${resourcesdir}/android/mac"/>
+										<get src="${android.repository}/android-ndk-${android.ndk.version}-darwin.dmg" dest="${resourcesdir}/android/android-ndk-${android.ndk.version}-darwin.dmg" verbose="true"/>
+										<exec executable="hdiutil">
+											<arg value="attach"/>
+											<arg value="-mountpoint"/>
+											<arg value="${resourcesdir}/android/mac/Android NDK ${android.ndk.version}"/>
+											<arg value="${resourcesdir}/android/android-ndk-${android.ndk.version}-darwin.dmg"/>
+										</exec>
+										<mkdir dir="${resourcesdir}/android/mac/android-ndk-${android.ndk.version}"/>
+										<path id="AndroidNDKdirset">
+											<dirset dir="${resourcesdir}/android/mac/Android NDK ${android.ndk.version}">
+												<include name="AndroidNDK*.app"/>
+											</dirset>
+										</path>
+										<pathconvert pathsep=","
+											property="AndroidNDKapp">
+											<path refid="AndroidNDKdirset"/>
+										</pathconvert>
+										<mkdir dir="${resourcesdir}/android/mac/android-ndk-${android.ndk.version}"/>
+										<copy todir="${resourcesdir}/android/mac/android-ndk-${android.ndk.version}">
+										  <fileset dir="${AndroidNDKapp}/Contents/NDK">
+											<include name="**"/>
+										  </fileset>
+										</copy>
+										<exec executable="hdiutil">
+											<arg value="detach"/>
+											<arg value="${resourcesdir}/android/mac/Android NDK ${android.ndk.version}"/>
+										</exec>
+										<delete file="${resourcesdir}/android/android-ndk-${android.ndk.version}-darwin.dmg"/>
+									</then>
+								</if>
+								<property name="qtjambi.android.ndk" location="${resourcesdir}/android/mac/android-ndk-${android.ndk.version}"/>
+							</then>
+							<else>
+								<if>
+									<not>
+										<available file="${resourcesdir}/android/linux/android-ndk-${android.ndk.version}" type="dir"/>
+									</not>
+									<then>
+										<mkdir dir="${resourcesdir}/android"/>
+										<mkdir dir="${resourcesdir}/android/linux"/>
+										<get src="${android.repository}/android-ndk-${android.ndk.version}-linux.zip" dest="${resourcesdir}/android/android-ndk-${android.ndk.version}-linux.zip" verbose="true"/>
+										<unzip src="${resourcesdir}/android/android-ndk-${android.ndk.version}-linux.zip" dest="${resourcesdir}/android/linux"/>
+										<delete file="${resourcesdir}/android/android-ndk-${android.ndk.version}-linux.zip"/>
+									</then>
+								</if>
+								<property name="qtjambi.android.ndk" location="${resourcesdir}/android/linux/android-ndk-${android.ndk.version}"/>
+							</else>
+						</if>
+					</then>
+				</if>
+			</then>
+		</if>
     </target>
 
     <!--

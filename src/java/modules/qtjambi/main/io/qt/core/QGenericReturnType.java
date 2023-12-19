@@ -84,6 +84,7 @@ public final class QGenericReturnType<T> extends QGenericArgumentType<T>{
 	
 	/**
 	 * Create generic return type from class type.
+	 * @param <T>
 	 * @param classType
 	 * @param instantiations only useful to specify template types like QList&lt;T&gt;.
 	 * @return new instance
@@ -97,6 +98,7 @@ public final class QGenericReturnType<T> extends QGenericArgumentType<T>{
 	
 	/**
 	 * Create generic return type from meta type.
+	 * @param <T>
 	 * @param metaType
 	 * @return new instance
 	 */
@@ -108,7 +110,8 @@ public final class QGenericReturnType<T> extends QGenericArgumentType<T>{
 	
 	/**
 	 * Create generic return type from meta type.
-	 * @param metaType
+	 * @param <T>
+	 * @param type
 	 * @return new instance
 	 */
 	public static <T> QGenericReturnType<T> of(QMetaType.Type type){

@@ -773,7 +773,7 @@ struct JavaSequence{
 
     class const_iterator{
     public:
-        typedef std::forward_iterator_tag iterator_category;
+        typedef std::bidirectional_iterator_tag iterator_category;
         typedef qptrdiff difference_type;
         typedef QVariant value_type;
         typedef const QVariant *pointer;

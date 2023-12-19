@@ -29,16 +29,16 @@
 ****************************************************************************/
 package io.qt.core;
 
-import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
+import java.util.logging.Logger;
 
-import io.qt.QtUninvokable;
 import io.qt.InternalAccess.Cleanable;
 import io.qt.QtObjectInterface;
+import io.qt.QtUninvokable;
 
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qscopedpointer.html">QScopedPointer</a>
@@ -59,80 +59,94 @@ import io.qt.QtObjectInterface;
  */
 public final class QScopedPointer<O> implements AutoCloseable {
 	
-	private static class Data<O>{
-		private O data;
-		private Consumer<O> cleanup;
-		private Cleanable cleanable;
-		
-	    @QtUninvokable
-		void close(){
-			if(cleanup!=null) {
-				try{
-					if(data!=null)
-						cleanup.accept(data);
-				}finally{
-					cleanup = null;
-				}
+	static final Logger logger = Logger.getLogger("io.qt.core");
+	
+	static class Data<O>{
+		QScope.AbstractEntry<O> entry;
+		Cleanable cleanable;
+		void cleanup() {
+			if(entry!=null) {
+				entry.cleanup();
+				entry = null;
 			}
-			data = null;
 		}
 	}
 
 	private final Data<O> data = new Data<>();
 	
 	private QScopedPointer(O data, Consumer<O> cleanup) {
-		this.data.data = data;
-		this.data.cleanup = Objects.requireNonNull(cleanup);
-		this.data.cleanable = QtJambi_LibraryUtilities.internal.registerCleaner(this, this.data::close);
+		this(new QScope.CleanupEntry<>(data, cleanup));
 	}
-
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private QScopedPointer(QtObjectInterface data) {
+		this((QScope.AbstractEntry)new QScope.DisposingEntry(data));
+	}
+	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	private QScopedPointer(QObject data) {
+		this((QScope.AbstractEntry)new QScope.DisposingLaterEntry(data));
+	}
+	
+	private QScopedPointer(QScope.AbstractEntry<O> entry) {
+		this.data.entry = entry;
+		this.data.cleanable = QtJambi_LibraryUtilities.internal.registerCleaner(this, this.data::cleanup);
+	}
+	
     @QtUninvokable
 	public O data() {
-		return data.data;
+		return data.entry.data;
 	}
 
     @QtUninvokable
 	public O get() {
-		return data.data;
+		return data.entry.data;
 	}
 
     @QtUninvokable
 	public O take() {
-		O oldData = data.data;
-		data.data = null;
+		O oldData = data.entry.data;
+		data.entry.data = null;
 		return oldData;
 	}
 
-    @QtUninvokable
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	@QtUninvokable
 	public void reset(O other) {
-		if(data.cleanup!=null) {
-			O oldData = data.data;
-			data.data = other;
-			data.cleanup.accept(oldData);
+		if(data.entry!=null) {
+			QScope.AbstractEntry<O> oldEntry = data.entry;
+			if(oldEntry instanceof QScope.DisposingEntry) {
+				this.data.entry = (QScope.AbstractEntry)new QScope.DisposingEntry((QtObjectInterface)other);
+			}else if(oldEntry instanceof QScope.RunningEntry) {
+				this.data.entry = (QScope.AbstractEntry)new QScope.RunningEntry((Runnable)other);
+			}else if(oldEntry instanceof QScope.CleanupEntry) {
+				this.data.entry = (QScope.AbstractEntry)new QScope.CleanupEntry(other, ((QScope.CleanupEntry)oldEntry).getCleanup());
+			}else {
+				throw new IllegalStateException("Unable to reset scoped pointer.");
+			}
+			oldEntry.cleanup();
 		}
 	}
 	
     @QtUninvokable
 	public boolean isNull(){
-		return data.data==null;
+		return data.entry==null || data.entry.data==null;
 	}
 	
     @QtUninvokable
 	public void swap(QScopedPointer<O> other){
-		O oldData = data.data;
-		Consumer<O> oldCleanup = data.cleanup;
-		this.data.data = other.data.data;
-		this.data.cleanup = other.data.cleanup;
-		other.data.data = oldData;
-		other.data.cleanup = oldCleanup;
+    	QScope.AbstractEntry<O> oldEntry = data.entry;
+		this.data.entry = other.data.entry;
+		other.data.entry = oldEntry;
 	}
 
 	@Override
     @QtUninvokable
 	public void close(){
-		data.close();
-		if(this.data.cleanable!=null)
+		if(this.data.cleanable!=null) {
 			this.data.cleanable.clean();
+			this.data.cleanable = null;
+		}
 	}
 	
     @QtUninvokable
@@ -149,12 +163,12 @@ public final class QScopedPointer<O> implements AutoCloseable {
 	
     @QtUninvokable
 	public static <O extends QtObjectInterface> QScopedPointer<O> disposing(O data){
-		return new QScopedPointer<>(data, QScopedPointer::dispose);
+		return new QScopedPointer<>(data);
 	}
 	
     @QtUninvokable
 	public static <O extends QObject> QScopedPointer<O> disposingLater(O data){
-		return new QScopedPointer<>(data, QScopedPointer::disposeLater);
+		return new QScopedPointer<>(data);
 	}
 	
     @QtUninvokable

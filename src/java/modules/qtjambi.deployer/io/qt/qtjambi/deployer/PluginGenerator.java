@@ -327,7 +327,7 @@ final class PluginGenerator {
 		                        		Element element = (Element)child;
 		                        		String library = element.getAttribute("name");
 		                        		if(library.contains("QtJambiPlugin")) {
-		                        			URL libraryURL = new URL(eform.substring(0, end+2)+library);
+		                        			URL libraryURL = Main.createURL(eform.substring(0, end+2)+library);
 		                        			libraries.add(new SimpleEntry<>(system, libraryURL));
 		                        		}
 		                        	}
@@ -399,7 +399,7 @@ final class PluginGenerator {
 					if(path.startsWith("jar:file:") && (idx = path.indexOf("!/")) >= 0) {
 						path = path.substring(4, idx);
 						try {
-							jarFile = new File(new URL(path).toURI());
+							jarFile = new File(Main.createURL(path).toURI());
 						} catch (Exception e1) {
 							throw new Error("Unable to find class: "+className, e1);
 						}
@@ -644,7 +644,7 @@ final class PluginGenerator {
 						 .append("#include <QtCore/QPluginLoader>").endl().endl()
 						 .append("#define CBOR_DATA \\").endl()
 						 .append("    ");
-						byte[] data = cborData.toByteArray();
+						byte[] data = cborData.toArray();
 						for (int i = 0, j = 0; i < data.length; ++i, ++j) {
 							byte b = data[i];
 							if(Character.isAlphabetic(b)) {

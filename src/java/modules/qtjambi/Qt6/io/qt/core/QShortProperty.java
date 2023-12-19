@@ -84,9 +84,9 @@ public final class QShortProperty extends QShortPropertyData {
      * <p>Constructs a <code>short</code>-typed property bound to the provided <code>functor</code>.</p>
      * @param functor
      */
-	public QShortProperty(@StrictNonNull ShortSupplier binding) {
+	public QShortProperty(@StrictNonNull ShortSupplier functor) {
 		super();
-		setBinding(binding);
+		setBinding(functor);
 	}
 	
 	/**

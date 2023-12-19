@@ -331,17 +331,9 @@ QString QJarEntryEngine::fileName(FileName file) const{
     return s;
 }
 
-QDateTime QJarEntryEngine::fileTime(FileTime) const{
+QDateTime QJarEntryEngine::fileTime(FileTime t) const{
     if(JniEnvironment env{600}){
-        if (!m_entry) {
-            QFileInfo info;
-                info = QFileInfo(qtjambi_cast<QString>(env, Java::QtJambi::ResourceUtility$JarResource::getName(env, m_myJarFile.object())));
-
-            if (info.exists())
-                return info.lastModified();
-        }else{
-            return qtjambi_cast<QDateTime>(env, Java::QtJambi::ResourceUtility$JarResource::fileTime(env, m_entry.object()));
-        }
+        return qtjambi_cast<QDateTime>(env, Java::QtJambi::ResourceUtility$JarResource::fileTime(env, m_myJarFile.object(), m_entry.object(), jint(t)));
     }
     return QDateTime();
 }

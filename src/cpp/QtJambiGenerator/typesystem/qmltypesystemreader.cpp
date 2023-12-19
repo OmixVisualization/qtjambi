@@ -131,6 +131,7 @@ class QmlTypeSystemReaderPrivate {
     TypeDatabase *m_database;
     QVersionNumber m_qtVersion;
     QString m_defaultPackage;
+    QString m_defaultPPCondition;
     QString m_defaultSuperclass;
     QStringList m_importInputDirectoryList;
     QStringList m_typesystemDirectoryList;
@@ -212,6 +213,7 @@ void QmlTypeSystemReaderPrivate::parseTypeSystem(TypeSystem* typeSystem, const Q
             m_namespacePrefixes.clear();
             m_defaultPackage = typeSystem->getPackageName();
             m_defaultSuperclass = typeSystem->getDefaultSuperClass();
+            m_defaultPPCondition = typeSystem->getDefaultPPCondition();
             bool noExports = typeSystem->getNoExports();
             QString moduleName = typeSystem->getModule();
             QString description = typeSystem->getDescription();
@@ -376,10 +378,10 @@ TS::Include QmlTypeSystemReaderPrivate::parseInclude(Include* element){
         QString ppCondition = element->getPpCondition();
         incl.inherited = element->getInherited();
         incl.suppressed = element->getSuppressed();
-        QMap<QString,QString> requiredFeatures;
+        incl.ckeckAvailability = element->getCkeckAvailability();
         for(const QString& feature : element->getRequiredFeatures()){
             if(!feature.isEmpty())
-                requiredFeatures[feature] = "";
+                incl.requiredFeatures[feature] = "";
         }
 
         static const QHash<Include::IncludeType, TS::Include::IncludeType> locationNames{
@@ -793,6 +795,7 @@ void QmlTypeSystemReaderPrivate::parsePrimitiveType(const QString& nameSpace, Pr
 
 void QmlTypeSystemReaderPrivate::parseAttributesOfComplexType(ComplexType* element, ComplexTypeEntry* ctype){
     QString package = element->getPackageName().isEmpty() ? m_defaultPackage : element->getPackageName();
+    QString ppCondition = element->getPpCondition().isEmpty() ? m_defaultPPCondition : element->getPpCondition();
     QString implements = element->getImplementing();
     QString _using = element->getUsing();
     QString javaName = element->getJavaName();
@@ -801,7 +804,16 @@ void QmlTypeSystemReaderPrivate::parseAttributesOfComplexType(ComplexType* eleme
 
     if(defaultSuperclass.isEmpty())
         defaultSuperclass = m_defaultSuperclass;
-    ctype->setPPCondition(element->getPpCondition());
+    ctype->setPPCondition(ppCondition);
+    if(!ppCondition.isEmpty()){
+        TS::Include incl = ctype->include();
+        if(incl.isValid()){
+            incl.ckeckAvailability = true;
+            ctype->setInclude(incl);
+            if(ctype->designatedInterface())
+                ctype->designatedInterface()->setInclude(incl);
+        }
+    }
     QString targetType = element->getTargetType();
     if (!targetType.isEmpty()){
         ctype->setTargetType(targetType);
@@ -815,6 +827,7 @@ void QmlTypeSystemReaderPrivate::parseAttributesOfComplexType(ComplexType* eleme
         ctype->setForceFriendly();
     if (element->getDeprecated())
         ctype->setDeprecated();
+    ctype->setNoImplicitConstructors(element->getNoImplicitConstructors());
     if(!ctype->isNamespace() && !ctype->isIterator()){
         QString threadAffine = element->getThreadAffinity();
         if (!threadAffine.trimmed().isEmpty()){
@@ -961,6 +974,9 @@ void QmlTypeSystemReaderPrivate::parseObjectType(const QString& nameSpace, Objec
 QList<AbstractObject*> QmlTypeSystemReaderPrivate::parseChildrenOfComplexType(const QString& nameSpace, ComplexType* element, ComplexTypeEntry* entry){
     QList<AbstractObject*> unhandledElements;
     const QList<AbstractObject*>& childrenList = element->childrenList();
+    QString tmpDefaultPackage = entry->javaPackage();
+    m_defaultPackage.swap(tmpDefaultPackage);
+    auto s = qScopeGuard([&](){m_defaultPackage.swap(tmpDefaultPackage);});
     for(int i=0; i<childrenList.size(); ++i){
         AbstractObject* item = childrenList[i];
         if(NamespacePrefix* namespacePrefix = qobject_cast<NamespacePrefix*>(item)){
@@ -1005,6 +1021,8 @@ QList<AbstractObject*> QmlTypeSystemReaderPrivate::parseChildrenOfComplexType(co
         }else if(Include* childElement = qobject_cast<Include*>(item)){
             TS::Include incl = parseInclude(childElement);
             if(incl.isValid()){
+                if(!entry->ppCondition().isEmpty())
+                    incl.ckeckAvailability = true;
                 entry->setInclude(incl);
                 if(entry->designatedInterface())
                     entry->designatedInterface()->setInclude(incl);
@@ -1137,6 +1155,13 @@ QList<AbstractObject*> QmlTypeSystemReaderPrivate::parseChildrenOfComplexType(co
             if(!nameSpace.isEmpty())
                 name = nameSpace+"::"+name;
             parseEnumType(name, childElement);
+        }else if(ImplicitCast* childElement = qobject_cast<ImplicitCast*>(item)){
+            if (checkQtVersion(childElement)){
+                entry->addImplicitCast(childElement->getType());
+                for(AbstractObject* item2 : childElement->childrenList()){
+                    TypesystemException::raise(QStringLiteral("Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), childElement->metaObject()->className()));
+                }
+            }
         }else if(Rejection* rejection = qobject_cast<Rejection*>(item)){
             if (checkQtVersion(element)){
                 QString cls = rejection->getClassName();
@@ -1150,8 +1175,8 @@ QList<AbstractObject*> QmlTypeSystemReaderPrivate::parseChildrenOfComplexType(co
                 if(!nameSpace.isEmpty())
                     cls = nameSpace+"::"+cls;
                 m_database->addRejection(cls, function, field, enum_);
-                for(AbstractObject* item2 : item->childrenList()){
-                    TypesystemException::raise(QStringLiteral("Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), element->metaObject()->className()));
+                for(AbstractObject* item2 : rejection->childrenList()){
+                    TypesystemException::raise(QStringLiteral("Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), childElement->metaObject()->className()));
                 }
             }
         }else{
@@ -1224,6 +1249,8 @@ void QmlTypeSystemReaderPrivate::parseTemplateType(const QString& nameSpace, Tem
                 }else if(Include* childElement = qobject_cast<Include*>(item)){
                     TS::Include incl = parseInclude(childElement);
                     if(incl.isValid()){
+                        if(!entry->ppCondition().isEmpty())
+                            incl.ckeckAvailability = true;
                         entry->setInclude(incl);
                         if(entry->designatedInterface())
                             entry->designatedInterface()->setInclude(incl);
@@ -1433,6 +1460,7 @@ void QmlTypeSystemReaderPrivate::parseModifyArgument(ModifyArgument* element, Ab
             argumentModification.modified_type = element->getReplaceType();
             argumentModification.reset_after_use = element->getInvalidateAfterUse();
             argumentModification.value_as_pointer = element->getValueAsPointer();
+            argumentModification.no_implicit_calls = element->getNoImplicitCalls();
 
             const QList<AbstractObject*>& childrenList = element->childrenList();
             for(int i=0; i<childrenList.size(); ++i){
@@ -1491,19 +1519,25 @@ void QmlTypeSystemReaderPrivate::parseModifyArgument(ModifyArgument* element, Ab
                             rc.access = TS::ReferenceCount::Private;
                         argumentModification.referenceCounts.append(rc);
                     }
-                }else if(ArrayType* childElement = qobject_cast<ArrayType*>(item)){
+                }else if(AsBuffer* childElement = qobject_cast<AsBuffer*>(item)){
                     if (checkQtVersion(childElement)){
+                        AsArray* asArray{nullptr};
                         for(AbstractObject* item2 : item->childrenList()){
-                            TypesystemException::raise(QStringLiteral("Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), item->metaObject()->className()));
+                            if(AsArray* childElement2 = qobject_cast<AsArray*>(item2)){
+                                if (checkQtVersion(childElement2)){
+                                    asArray = childElement2;
+                                    for(AbstractObject* item3 : asArray->childrenList()){
+                                        TypesystemException::raise(QStringLiteral("Unexpected element %1 as child of %2").arg(item3->metaObject()->className(), asArray->metaObject()->className()));
+                                    }
+                                }
+                            }else{
+                                TypesystemException::raise(QStringLiteral("Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), item->metaObject()->className()));
+                            }
                         }
-                        TS::AsArrayTypes asArrayType = TS::AsArrayType::Yes;
+                        TS::AsBufferTypes asBufferType = TS::AsBufferType::Yes;
                         if(childElement->getDeref())
-                            asArrayType |= TS::AsArrayType::Deref;
-                        if(childElement->getVarargs())
-                            asArrayType |= TS::AsArrayType::VarArgs;
-                        if(childElement->getAsBuffer())
-                            asArrayType |= TS::AsArrayType::Buffer;
-                        argumentModification.useAsArrayType = asArrayType;
+                            asBufferType |= TS::AsBufferType::Deref;
+                        argumentModification.useAsBufferType = asBufferType;
                         if (childElement->getLengthParameter()>0) {
                             argumentModification.arrayLengthParameter = childElement->getLengthParameter();
                         }else{
@@ -1518,14 +1552,60 @@ void QmlTypeSystemReaderPrivate::parseModifyArgument(ModifyArgument* element, Ab
                             }else{
                                 argumentModification.minArrayLength = -1;
                                 argumentModification.maxArrayLength = -1;
+                                argumentModification.arrayLengthExpression = childElement->getLengthExpression();
                             }
                         }
-
-                        if( (asArrayType & TS::AsArrayType::Buffer) == 0 ){
-                            if(argumentModification.arrayLengthParameter<1
-                                    && argumentModification.minArrayLength<1){
-                                TypesystemException::raise(QString("Both, ArrayType.lengthParameter and ArrayType.minLength must not be < 1"));
+                        TS::AsArrayTypes asArrayType = TS::AsArrayType::No;
+                        if(asArray){
+                            asArrayType = TS::AsArrayType::Yes;
+                            if(childElement->getDeref())
+                                asArrayType |= TS::AsArrayType::Deref;
+                            if(asArray->getVarargs()){
+                                asArrayType |= TS::AsArrayType::VarArgs;
+                                asArrayType |= TS::AsArrayType::NoOffset;
                             }
+                        }
+                        argumentModification.useAsArrayType = asArrayType;
+                    }
+                }else if(AsArray* childElement = qobject_cast<AsArray*>(item)){
+                    if (checkQtVersion(childElement)){
+                        for(AbstractObject* item2 : item->childrenList()){
+                            TypesystemException::raise(QStringLiteral("Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), item->metaObject()->className()));
+                        }
+                        TS::AsArrayTypes asArrayType = TS::AsArrayType::Yes;
+                        if(childElement->getDeref())
+                            asArrayType |= TS::AsArrayType::Deref;
+                        if(childElement->getVarargs()){
+                            asArrayType |= TS::AsArrayType::VarArgs;
+                            asArrayType |= TS::AsArrayType::NoOffset;
+                        }
+                        if(childElement->getNoOffset())
+                            asArrayType |= TS::AsArrayType::NoOffset;
+                        if(childElement->getAddPlainDelegate())
+                            asArrayType |= TS::AsArrayType::AddPlainDelegate;
+                        argumentModification.useAsArrayType = asArrayType;
+                        argumentModification.useAsBufferType = TS::AsBufferType::No;
+                        if (childElement->getLengthParameter()>0) {
+                            argumentModification.arrayLengthParameter = childElement->getLengthParameter();
+                        }else{
+                            argumentModification.arrayLengthParameter = 0;
+                            if (childElement->getMinLength()>=0) {
+                                argumentModification.minArrayLength = childElement->getMinLength();
+                                if (childElement->getMaxLength()>=0) {
+                                    argumentModification.maxArrayLength = childElement->getMaxLength();
+                                }else{
+                                    argumentModification.maxArrayLength = -1;
+                                }
+                            }else{
+                                argumentModification.minArrayLength = -1;
+                                argumentModification.maxArrayLength = -1;
+                                argumentModification.arrayLengthExpression = childElement->getLengthExpression();
+                            }
+                        }
+                        if(argumentModification.arrayLengthParameter<1
+                            && argumentModification.minArrayLength<0
+                            && argumentModification.arrayLengthExpression.isEmpty()){
+                            TypesystemException::raise(QStringLiteral("%1 requires to specify either lengthParameter, lengthExpression or minLength").arg(item->metaObject()->className()));
                         }
                     }
                 }else if(ReplaceType* childElement = qobject_cast<ReplaceType*>(item)){
@@ -1598,9 +1678,13 @@ void QmlTypeSystemReaderPrivate::parseModifyArgument(ModifyArgument* element, Ab
                         }
                         argumentModification.removed = true;
                     }
-                }else if(AddImpliciteCall* childElement = qobject_cast<AddImpliciteCall*>(item)){
+                }else if(AddImplicitCall* childElement = qobject_cast<AddImplicitCall*>(item)){
                     if (checkQtVersion(childElement)){
-                        argumentModification.impliciteCalls << childElement->getType();
+                        argumentModification.implicitCalls << childElement->getType();
+                    }
+                }else if(InhibitImplicitCall* childElement = qobject_cast<InhibitImplicitCall*>(item)){
+                    if (checkQtVersion(childElement)){
+                        argumentModification.inhibitedImplicitCalls << childElement->getType();
                     }
                 }else{
                     TypesystemException::raise(QString("Unexpected child element %1 in %2.").arg(item->metaObject()->className(), element->metaObject()->className()));
@@ -1862,6 +1946,15 @@ void QmlTypeSystemReaderPrivate::parseModifyFunction(ModifyFunction* element, Ty
             }
             if (element->getNoExcept()) {
                 mod.modifiers |= TS::Modification::NoExcept;
+            }
+            if (element->getIsForcedExplicit()) {
+                mod.modifiers |= TS::Modification::ForcedExplicit;
+            }
+            if (element->getIsForcedImplicit()) {
+                mod.modifiers |= TS::Modification::ForcedImplicit;
+            }
+            if (element->getNoImplicitArguments()) {
+                mod.modifiers |= TS::Modification::NoImplicitArguments;
             }
             if (element->getBlockExceptions()) {
                 mod.modifiers |= TS::Modification::BlockExcept;

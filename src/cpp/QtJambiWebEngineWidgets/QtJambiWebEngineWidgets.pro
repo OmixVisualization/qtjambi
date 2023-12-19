@@ -7,3 +7,6 @@ HEADERS += \
 
 SOURCES +=
 
+lessThan(QT_MAJOR_VERSION, 6) : linux-g++* : {
+    CONFIG+=use_gold_linker
+}

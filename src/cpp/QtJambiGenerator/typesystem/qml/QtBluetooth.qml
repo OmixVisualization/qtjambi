@@ -46,10 +46,23 @@ TypeSystem{
         target: CodeClass.MetaInfo
         Text{content: "initialize_meta_info_QtBluetooth();"}
     }
+
+    RequiredLibrary{
+        name: "QtDBus"
+        mode: RequiredLibrary.Mandatory
+        platforms: ["linux"]
+        since: 6
+    }
     
     RequiredLibrary{
         name: "QtConcurrent"
-        mode: RequiredLibrary.Optional
+        mode: RequiredLibrary.Mandatory
+        until: 5
+    }
+
+    RequiredLibrary{
+        name: "QtNetwork"
+        mode: RequiredLibrary.Mandatory
         until: 5
     }
     
@@ -316,6 +329,22 @@ TypeSystem{
             since: 6.6
         }
         ModifyFunction{
+            signature: "operator==(QBluetoothUuid)const"
+            ModifyArgument{
+                index: 1
+                InhibitImplicitCall{type: "QUuid"}
+            }
+            until: 5
+        }
+        ModifyFunction{
+            signature: "operator==(QBluetoothUuid,QBluetoothUuid)"
+            ModifyArgument{
+                index: 2
+                InhibitImplicitCall{type: "QUuid"}
+            }
+            since: 6
+        }
+        ModifyFunction{
             signature: "QBluetoothUuid<>(quint128, QSysInfo::Endian)"
             ModifyArgument{
                 index: 1
@@ -323,7 +352,7 @@ TypeSystem{
                 ReplaceType{
                     modifiedType: "io.qt.core.QUuid$Id128Bytes"
                 }
-                AddImpliciteCall{type: "byte[]"}
+                AddImplicitCall{type: "byte @NonNull[]"}
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "QUuid::Id128Bytes %out = qtjambi_cast<QUuid::Id128Bytes>(%env, %in);"}
@@ -509,6 +538,22 @@ TypeSystem{
         ModifyFunction{
             signature: "errorString() const"
             rename: "socketErrorString"
+        }
+        ModifyFunction{
+            signature: "connectToService(QBluetoothAddress,QBluetoothUuid,QIODevice::OpenMode)"
+            ModifyArgument{
+                index: 2
+                noImplicitCalls: true
+            }
+            until: 5
+        }
+        ModifyFunction{
+            signature: "connectToService(QBluetoothAddress,QBluetoothUuid,QIODeviceBase::OpenMode)"
+            ModifyArgument{
+                index: 2
+                noImplicitCalls: true
+            }
+            since: 6
         }
     }
     

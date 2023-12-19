@@ -1455,27 +1455,22 @@ class QSignalSpy__{
     public final Stream<java.util.List<java.lang.Object>> parallelStream() {
         return list().parallelStream();
     }
-    
+
     /**
      * @see io.qt.core.QList#removeFirst()
      */
     @QtUninvokable
-    public final void removeFirst() {
-        list().removeFirst();
+    public final java.util.List<java.lang.Object> removeFirst() {
+        return list().removeFirst();
     }
 
     /**
      * @see io.qt.core.QList#removeLast()
      */
     @QtUninvokable
-    public final void removeLast() {
-        list().removeLast();
+    public final java.util.List<java.lang.Object> removeLast() {
+        return list().removeLast();
     }
-
-    public final QList<java.util.List<java.lang.Object>> reversed(){
-        return list().reversed();
-    }
-
 }// class
 
 class QSignalSpy_5_{

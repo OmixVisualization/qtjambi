@@ -34,7 +34,7 @@
 #include <QtCore/QDeadlineTimer>
 #include <QtJambi/Global>
 
-size_t qHash(const QHttpPart &value, size_t seed = 0);
+hash_type qHash(const QHttpPart &value, hash_type seed = 0);
 
 inline hash_type qHash(const QHstsPolicy& p, hash_type seed = 0){
     QtPrivate::QHashCombine hash;

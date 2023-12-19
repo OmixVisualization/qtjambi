@@ -110,13 +110,13 @@ public final class QDoublePropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided alias.
 	 * @param other
 	 */
-	public QDoublePropertyAlias(@StrictNonNull QDoublePropertyAlias alias) {
-		super(alias);
+	public QDoublePropertyAlias(@StrictNonNull QDoublePropertyAlias other) {
+		super(other);
 	}
 	
 	/**
 	 * Creates a new alias to the provided binding's underlying property.
-	 * @param other
+	 * @param bindable
 	 */
 	public QDoublePropertyAlias(@StrictNonNull QDoubleBindable bindable) {
 		super(bindable.data(), bindable.iface());
@@ -124,7 +124,7 @@ public final class QDoublePropertyAlias extends QAbstractPropertyAlias {
 	
 	/**
 	 * Creates a new alias to the provided binding's underlying property.
-	 * @param other
+	 * @param bindable
 	 */
 	public QDoublePropertyAlias(@StrictNonNull QBindable<@NonNull@QtPrimitiveType Double> bindable) {
 		super(bindable.data(), bindable.iface());

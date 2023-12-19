@@ -75,4 +75,14 @@ namespace QtQml {
 #endif
 }
 
+#if defined(QTJAMBI_GENERATOR_RUNNING) && QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+template <typename T>
+int qmlRegisterSingletonType(
+    const char *uri, int versionMajor, int versionMinor,  const char *typeName,
+    QObject*(*callback)(QQmlEngine*,QJSEngine*));
+int qmlRegisterSingletonType(
+    const char *uri, int versionMajor, int versionMinor, const char *typeName,
+    QJSValue(*callback)(QQmlEngine *, QJSEngine *))
+#endif
+
 #endif // QTJAMBIQML_HASHES_H

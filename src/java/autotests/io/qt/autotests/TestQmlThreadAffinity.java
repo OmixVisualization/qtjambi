@@ -42,6 +42,7 @@ import io.qt.core.QEvent;
 import io.qt.core.QEventLoop;
 import io.qt.core.QObject;
 import io.qt.core.QThread;
+import io.qt.core.QUrl;
 import io.qt.qml.QQmlComponent;
 import io.qt.qml.QQmlContext;
 import io.qt.qml.QQmlEngine;
@@ -80,7 +81,7 @@ public class TestQmlThreadAffinity extends ApplicationInitializer{
 		QQmlComponent component = new QQmlComponent(engine);
 		QQmlComponent component2 = new QQmlComponent(engine);
 		QQmlContext context = new QQmlContext(engine);
-		component2.setData(new QByteArray("import QtQuick 2.0\n QtObject {}"), null);
+		component2.setData(new QByteArray("import QtQuick 2.0\n QtObject {}"), (QUrl)null);
 		QQmlIncubator incubator = new QQmlIncubator(QQmlIncubator.IncubationMode.Asynchronous);
 		
 		QEventLoop loop = new QEventLoop();
@@ -90,7 +91,7 @@ public class TestQmlThreadAffinity extends ApplicationInitializer{
 				new QQmlContext(engine);
 				fail("QThreadAffinityException expected to be thrown.");
 			}catch(QThreadAffinityException e) {}
-			component.setData(new QByteArray("import QtQuick 2.0\n Item {}"), null);
+			component.setData(new QByteArray("import QtQuick 2.0\n Item {}"), (QUrl)null);
 //			try{
 			objects[0] = component2.create();
 //				fail("QThreadAffinityException expected to be thrown.");
@@ -135,6 +136,7 @@ public class TestQmlThreadAffinity extends ApplicationInitializer{
 			QCoreApplication.sendEvent(objects[1], new QEvent(QEvent.Type.AcceptDropsChange));
 			fail("QThreadAffinityException expected to be thrown.");
 		}catch(QThreadAffinityException e) {}
+		thread.dispose();
 	}
 	
     public static void main(String args[]) {

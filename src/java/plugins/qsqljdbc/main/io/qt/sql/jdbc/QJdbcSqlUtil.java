@@ -31,6 +31,8 @@
 package io.qt.sql.jdbc;
 
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -162,8 +164,8 @@ class QJdbcSqlUtil
 
             QUrl url = (QUrl) input;
             try {
-                return new URL(url.toString());
-            } catch (MalformedURLException e) {
+            	return new URI(url.scheme(), url.userInfo(), url.host(), url.port(), url.path(), url.query(), url.fragment()).toURL();
+            } catch (MalformedURLException | URISyntaxException e) {
                 java.util.logging.Logger.getLogger("io.qt.sql").log(java.util.logging.Level.SEVERE, "", e);
                 return input;
             }

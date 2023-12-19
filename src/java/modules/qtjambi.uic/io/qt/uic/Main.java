@@ -38,6 +38,9 @@ import io.qt.core.QList;
 import io.qt.core.QScopeGuard;
 import io.qt.core.Qt;
 
+/**
+ * @hidden
+ */
 public class Main {
 
 	public static void main(String[] args) {

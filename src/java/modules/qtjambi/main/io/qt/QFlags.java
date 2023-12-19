@@ -82,7 +82,7 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	}
 
 	/**
-	 * See <a href="https://doc.qt.io/qt/qflags.html#operator-and-eq-3">QFlags::operator&=(Enum)</a>
+	 * See <a href="https://doc.qt.io/qt/qflags.html#operator-and-eq-3">QFlags::operator&amp;=(Enum)</a>
 	 * and <a href="https://doc.qt.io/qt/qflags.html#operator-7e">QFlags::operator~()</a>
 	 */
 	public @StrictNonNull QFlags<T> cleared(@Nullable T flag) {
@@ -147,7 +147,7 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	}
 	
 	/**
-	 * See <a href="https://doc.qt.io/qt/qflags.html#operator-and-eq-3">QFlags::operator&=(Enum)</a>
+	 * See <a href="https://doc.qt.io/qt/qflags.html#operator-and-eq-3">QFlags::operator&amp;=(Enum)</a>
 	 * and <a href="https://doc.qt.io/qt/qflags.html#operator-7e">QFlags::operator~()</a>
 	 */
 	@SafeVarargs
@@ -237,7 +237,7 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 
 	/**
 	 * Clears the flag <code>other</code>.
-	 * See <a href="https://doc.qt.io/qt/qflags.html#operator-and-eq-2">QFlags::operator&=(QFlags&lt;T>)</a>
+	 * See <a href="https://doc.qt.io/qt/qflags.html#operator-and-eq-2">QFlags::operator&amp;=(QFlags&lt;T>)</a>
 	 * and <a href="https://doc.qt.io/qt/qflags.html#operator-7e">QFlags::operator~()</a>
 	 */
 	public final void clear(@StrictNonNull QFlags<T> other) {
@@ -247,7 +247,7 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 
 	/**
 	 * Clears all flags in <code>ts</code>.
-	 * See <a href="https://doc.qt.io/qt/qflags.html#operator-and-eq-3">QFlags::operator&=(Enum)</a>
+	 * See <a href="https://doc.qt.io/qt/qflags.html#operator-and-eq-3">QFlags::operator&amp;=(Enum)</a>
 	 * and <a href="https://doc.qt.io/qt/qflags.html#operator-7e">QFlags::operator~()</a>
 	 */
 	@SafeVarargs

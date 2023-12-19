@@ -1660,14 +1660,16 @@ void XmlTypeSystemReaderPrivate::parseModifyArgument(const QDomElement &element,
                     QDomNamedNodeMap attributes = childElement.attributes();
                     if (checkQtVersion(attributes)){
                         AsArrayTypes asArrayType = AsArrayType::Yes;
+                        AsBufferTypes asBufferType = AsBufferType::No;
 
                         if(convertBoolean(attributeValue(attributes.removeNamedItem("deref"), "no"), "deref", false))
                             asArrayType |= AsArrayType::Deref;
                         if(convertBoolean(attributeValue(attributes.removeNamedItem("varargs"), "no"), "varargs", false))
                             asArrayType |= AsArrayType::VarArgs;
                         if(convertBoolean(attributeValue(attributes.removeNamedItem("as-buffer"), "no"), "as-buffer", false))
-                            asArrayType |= AsArrayType::Buffer;
+                            asBufferType |= AsBufferType::Yes;
                         argumentModification.useAsArrayType = asArrayType;
+                        argumentModification.useAsBufferType = asBufferType;
                         QString lengthParameter = attributeValue(attributes.removeNamedItem("length-parameter"));
                         if (!lengthParameter.isEmpty()) {
                             bool ok = false;
@@ -1700,7 +1702,7 @@ void XmlTypeSystemReaderPrivate::parseModifyArgument(const QDomElement &element,
                             }
                         }
 
-                        if( (asArrayType & AsArrayType::Buffer) == 0 ){
+                        {
                             if(argumentModification.arrayLengthParameter<1
                                     && argumentModification.minArrayLength<1){
                                 TypesystemException::raise(QString("Both, length-parameter and min-length must not be < 1 in tag <%1> in line %2").arg(childElement.localName()).arg(childElement.lineNumber()));

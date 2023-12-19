@@ -132,7 +132,7 @@ public class TestSharedMemory extends ApplicationInitializer {
     	try(QSharedMemory.DataAccess access = memory.access()){
     		ByteBuffer np = access.data();
     		assertFalse("buffer.isReadOnly", np.isReadOnly());
-    		QIODevice device = QIODevice.fromDirectBuffer(np);
+    		QIODevice device = QIODevice.fromBuffer(np);
     		if(device.open(QIODevice.OpenModeFlag.ReadWrite)) {
     			device.write(new byte[]{1,2,3,4,5,6,7,8,9,10});
     			device.write(new byte[]{31,32,33,34,35,36,37,38,39,40});
@@ -148,7 +148,7 @@ public class TestSharedMemory extends ApplicationInitializer {
 				memory2.attach(QSharedMemory.AccessMode.ReadOnly);
 				try(QSharedMemory.DataAccess access = memory2.access()){
 					ByteBuffer np = access.data();
-					QIODevice device = QIODevice.fromDirectBuffer(np);
+					QIODevice device = QIODevice.fromBuffer(np);
 					if(device.open(QIODevice.OpenModeFlag.ReadOnly)) {
 						device.read(value);
 			    		device.close();

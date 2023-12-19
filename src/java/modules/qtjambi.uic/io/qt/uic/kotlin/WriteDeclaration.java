@@ -33,6 +33,9 @@ import io.qt.core.*;
 import io.qt.uic.*;
 import io.qt.uic.ui4.*;
 
+/**
+ * @hidden
+ */
 public class WriteDeclaration extends TreeWalker {
 	
 	public WriteDeclaration(Uic uic){

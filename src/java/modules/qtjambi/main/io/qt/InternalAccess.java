@@ -89,6 +89,8 @@ public interface InternalAccess {
     long checkedNativeId(io.qt.QtObject object);
     
     long checkedNativeId(io.qt.QtObjectInterface object);
+    
+    java.nio.ByteBuffer mutableData(io.qt.core.QByteArray byteArray);
 
     void removeFromMapReferenceCount(io.qt.QtObjectInterface owner, Class<? extends io.qt.QtObjectInterface> declaringClass, String fieldName, boolean isStatic, Object value);
 

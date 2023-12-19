@@ -159,7 +159,8 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaFunctional *java_class,
     }
     if(hasDeprecation){
         writeInclude(s, Include(Include::IncludePath, "QtCore/qcompilerdetection.h"), included);
-        s << Qt::endl << "QT_WARNING_DISABLE_DEPRECATED" << Qt::endl << Qt::endl;
+        s << Qt::endl << "QT_WARNING_DISABLE_DEPRECATED" << Qt::endl
+          << "QT_WARNING_DISABLE_GCC(\"-Wdeprecated-declarations\")" << Qt::endl << Qt::endl;
     }
     writeInjectedCode(s, java_class, {CodeSnip::Position1});
     if(java_class->enclosingClass()){
@@ -312,7 +313,8 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
     }
     if(hasDeprecation){
         writeInclude(s, Include(Include::IncludePath, "QtCore/qcompilerdetection.h"), included);
-        s << Qt::endl << "QT_WARNING_DISABLE_DEPRECATED" << Qt::endl << Qt::endl;
+        s << Qt::endl << "QT_WARNING_DISABLE_DEPRECATED" << Qt::endl
+          << "QT_WARNING_DISABLE_GCC(\"-Wdeprecated-declarations\")" << Qt::endl << Qt::endl;
     }
     writeInjectedCode(s, java_class, {CodeSnip::Position1});
 
@@ -320,17 +322,8 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
         writeInclude(s, java_class->enclosingClass()->typeEntry()->include(), included);
     }
 
-    bool requiresEndif = false;
-    if(!java_class->typeEntry()->ppCondition().isEmpty()){
-        if(java_class->typeEntry()->include().requiredFeatures.isEmpty() && java_class->typeEntry()->include().type==Include::IncludePath){
-            s << "#if __has_include(<" << java_class->typeEntry()->include().name << ">)" << Qt::endl;
-            requiresEndif = true;
-        }
-    }
     writeInclude(s, java_class->typeEntry()->include(), included);
-    if(requiresEndif){
-        s << "#endif" << Qt::endl;
-    }
+
     writeInclude(s, Include(Include::IncludePath, "QtJambi/QtJambiAPI"), included);
 
     IncludeList list = java_class->typeEntry()->extraIncludes();

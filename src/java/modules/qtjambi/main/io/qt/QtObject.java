@@ -56,6 +56,7 @@ public abstract class QtObject extends Utility.Object implements QtObjectInterfa
     
     /**
      * This type is used as solo argument for internal constructors.
+     * @hidden
      */
     protected static final class QPrivateConstructor { private QPrivateConstructor() {} }
 
@@ -69,6 +70,7 @@ public abstract class QtObject extends Utility.Object implements QtObjectInterfa
     /**
      * Constructor for internal use only.
      * @param p expected to be <code>null</code>.
+     * @hidden
      */
 	protected QtObject(QPrivateConstructor p) {
 		super(p);

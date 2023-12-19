@@ -789,6 +789,18 @@ TypeSystem{
             }
         }
         ModifyFunction{
+            signature: "createTextNode()const"
+            threadAffinity: false
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            since: 6.7
+        }
+        ModifyFunction{
             signature: "createTextureFromImage(QImage)const"
             threadAffinity: false
             ModifyArgument{
@@ -854,7 +866,7 @@ TypeSystem{
                     codeClass: CodeClass.Native
                     ownership: Ownership.Cpp
                 }
-                AddImpliciteCall{type: "java.lang.@NonNull Runnable"}
+                AddImplicitCall{type: "java.lang.@NonNull Runnable"}
             }
         }
         ModifyFunction{
@@ -1245,6 +1257,11 @@ TypeSystem{
     ObjectType{
         name: "QSGTransformNode"
     }
+
+    ObjectType{
+        name: "QSGTextNode"
+        since: 6.7
+    }
     
     ObjectType{
         name: "QSGRenderNode"
@@ -1259,32 +1276,31 @@ TypeSystem{
                 invalidateAfterUse: true
             }
         }
-    }
-    
-    ObjectType{
-        name: "QSGRenderNode::RenderState"
-        ModifyFunction{
-            signature: "get(const char *) const"
-            remove: RemoveFlag.JavaAndNative
+
+        ObjectType{
+            name: "RenderState"
+            ModifyFunction{
+                signature: "get(const char *) const"
+                remove: RemoveFlag.JavaAndNative
+            }
         }
-    }
-    
-    EnumType{
-        name: "QSGRenderNode::StateFlag"
-        since: [5, 8]
-    }
-    
-    EnumType{
-        name: "QSGRenderNode::RenderingFlag"
-        since: [5, 8]
+
+        EnumType{
+            name: "StateFlag"
+            since: [5, 8]
+        }
+
+        EnumType{
+            name: "RenderingFlag"
+            since: [5, 8]
+        }
     }
     
     ObjectType{
         name: "QSGRootNode"
-    }
-    
-    ObjectType{
-        name: "QSGRootNode::RenderState"
+        ObjectType{
+            name: "RenderState"
+        }
     }
     
     ObjectType{
@@ -1523,17 +1539,20 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = %env->NewDirectByteBuffer(%in, __qt_this->sizeOfIndex()*__qt_this->indexCount());\n"+
-                                  "switch(__qt_this->sizeOfIndex()){\n"+
+                    Text{content: "switch(__qt_this->sizeOfIndex()){\n"+
                                   "case 4:\n"+
-                                  "    %out = Java::Runtime::ByteBuffer::asIntBuffer(%env,%out);\n"+
+                                  "    %out = DataJBuffer(%env, reinterpret_cast<qint32*>(%in), __qt_this->indexCount()).take();\n"+
                                   "    break;\n"+
                                   "case 2:\n"+
-                                  "    %out = Java::Runtime::ByteBuffer::asShortBuffer(%env,%out);\n"+
+                                  "    %out = DataJBuffer(%env, reinterpret_cast<qint16*>(%in), __qt_this->indexCount()).take();\n"+
                                   "    break;\n"+
                                   "default:\n"+
                                   "    break;\n"+
                                   "}"}
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Dependent
                 }
             }
         }
@@ -1914,7 +1933,7 @@ TypeSystem{
             ModifyArgument{
                 index: 3
                 invalidateAfterUse: true
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -2608,6 +2627,14 @@ TypeSystem{
     
     ValueType{
         name: "QQuickRenderTarget"
+        ExtraIncludes{
+            Include{
+                fileName: "QtGui/qvulkaninstance.h"
+                location: Include.Global
+                ckeckAvailability: true
+            }
+        }
+
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
@@ -2863,7 +2890,7 @@ TypeSystem{
                 invalidateAfterUse: true
                 NoNullPointer{
                 }
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -3121,6 +3148,13 @@ TypeSystem{
         generate: "no-shell"
         Rejection{
             className: "TypeInfo"
+        }
+        ExtraIncludes{
+            Include{
+                fileName: "QtGui/qvulkaninstance.h"
+                location: Include.Global
+                ckeckAvailability: true
+            }
         }
 
         ModifyFunction{

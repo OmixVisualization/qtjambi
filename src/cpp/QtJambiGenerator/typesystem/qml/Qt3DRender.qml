@@ -2225,6 +2225,10 @@ TypeSystem{
                 location: Include.Global
             }
         }
+        InjectCode{
+            target: CodeClass.Native
+            Text{content: "QT_WARNING_DISABLE_DEPRECATED\nQT_WARNING_DISABLE_GCC(\"-Wdeprecated-declarations\")"}
+        }
         ModifyFunction{
             signature: "operator==(const Qt3DRender::QTextureGenerator &) const"
             rename: "equals"
@@ -2256,6 +2260,10 @@ TypeSystem{
                 location: Include.Global
                 until: 5
             }
+        }
+        InjectCode{
+            target: CodeClass.Native
+            Text{content: "QT_WARNING_DISABLE_DEPRECATED\nQT_WARNING_DISABLE_GCC(\"-Wdeprecated-declarations\")"}
         }
         ModifyFunction{
             signature: "operator==(const Qt3DRender::QTextureImageDataGenerator &) const"
@@ -2459,6 +2467,12 @@ TypeSystem{
     
     ValueType{
         name: "Qt3DRender::QTextureImageData"
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: "QT_WARNING_DISABLE_CLANG(\"-Wdeprecated-copy\")\n"+
+                          "QT_WARNING_DISABLE_GCC(\"-Wdeprecated-copy\")"}
+        }
 
         FunctionalType{
             name: "DataConverter"

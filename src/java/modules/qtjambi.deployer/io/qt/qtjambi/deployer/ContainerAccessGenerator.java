@@ -420,7 +420,7 @@ final class ContainerAccessGenerator {
 		       		metaData.insert("Keys", new QJsonValue(targetArray));
 		       		cborValue.setValue(/*QtPluginMetaDataKeys::MetaData*/ 4, new QCborValue(QCborMap.fromJsonObject(metaData)));
 		       		QByteArray cborData = cborValue.toCborValue().toCbor();
-		       		byte[] data = cborData.toByteArray();
+		       		byte[] data = cborData.toArray();
 		       		for (int i = 0, j = 0; i < data.length; ++i, ++j) {
 		       			byte b = data[i];
 		       			if(Character.isAlphabetic(b)) {

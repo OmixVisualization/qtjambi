@@ -3323,12 +3323,16 @@ int QmlAPI::registerMetaType(JNIEnv *env, SequentialContainerType containerType,
         switch(containerType){
         case SequentialContainerType::QSet:
             containerName = QStringLiteral("QSet");
+            break;
         case SequentialContainerType::QQueue:
             containerName = QStringLiteral("QQueue");
+            break;
         case SequentialContainerType::QStack:
             containerName = QStringLiteral("QStack");
+            break;
         default:
             containerName = QStringLiteral("QList");
+            break;
         }
 
         result = listAccess->registerContainer(QStringLiteral("%1<%2>").arg(containerName, QLatin1String(elementType.name())).toUtf8());
@@ -3555,6 +3559,7 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                 switch(entryType){
                 case EntryTypes::QObjectTypeInfo:
                     isQObject = true;
+                    Q_FALLTHROUGH();
                 case EntryTypes::ObjectTypeInfo:
                 case EntryTypes::InterfaceTypeInfo:
                 case EntryTypes::FunctionalTypeInfo: {

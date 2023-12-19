@@ -49,7 +49,6 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 
-import io.qt.QNativePointer;
 import io.qt.QNoNativeResourcesException;
 import io.qt.QtObjectInterface;
 import io.qt.QtUtilities;
@@ -57,7 +56,6 @@ import io.qt.autotests.generated.General;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QIODevice;
-import io.qt.core.QMutex;
 import io.qt.core.QObject;
 import io.qt.core.QProcess;
 import io.qt.core.QProcessEnvironment;
@@ -110,6 +108,7 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 					QApplication.initialize(new String[0]);
 					break;
 				}
+				/*
 				Thread mainThread = Thread.currentThread();
 				Runtime.getRuntime().addShutdownHook(new Thread(()->{
 					Thread timeoutThread = new Thread(()->{
@@ -138,7 +137,7 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 					});
 					timeoutThread.setDaemon(true);
 					timeoutThread.start();
-				});
+				});*/
 		        QThread.currentThread().setObjectName("main");
 			    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.INFO, "testInitialize: DONE");
 			}

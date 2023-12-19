@@ -49,6 +49,16 @@ QT_WARNING_DISABLE_DEPRECATED
 
 #include "qtjambi_cast.h"
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
+QT_WARNING_DISABLE_DEPRECATED
+
+template<>
+inline bool qMapLessThanKey<QVariant>(const QVariant& v1, const QVariant& v2){
+    return v1 < v2;
+}
+#endif
+
 #ifdef Q_OS_IOS
 #ifdef QT_NO_DEBUG
 #define JNI_OnLoad JNI_OnLoad_QtJambi

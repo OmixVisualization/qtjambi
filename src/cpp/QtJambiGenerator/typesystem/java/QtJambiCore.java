@@ -41,6 +41,7 @@ class QObject___ extends QObject {
     /**
      * Parameter type for declarative constructors, i.e. constructors being
      * called by QML only.
+     * @hidden
      */
     protected static final class QDeclarativeConstructor { 
         private QDeclarativeConstructor(Class<?> cls, long placement) { this.placement = placement; this.cls = cls; }
@@ -121,7 +122,13 @@ class QObject___ extends QObject {
      * parameters.
      */
     public final class Signal0 extends QMetaObject.AbstractPublicSignal0 {
-        
+        /**
+         * Default constructor
+         */
+        public Signal0() {
+            super();
+        }
+
         /**
          * Returns the object containing this signal.
          * @return the signal containing object
@@ -140,6 +147,19 @@ class QObject___ extends QObject {
      * @param <A> The type of the single parameter of the signal.
      */
     public final class Signal1<A> extends QMetaObject.AbstractPublicSignal1<A> {
+        /**
+         * Default constructor
+         */
+        public Signal1() {
+            super();
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal1(QMetaObject.@StrictNonNull ArgChecker1<A> argumentTest) {
+            super(argumentTest);
+        }
         
         /**
          * Returns the object containing this signal.
@@ -160,7 +180,20 @@ class QObject___ extends QObject {
      * @param <B> The type of the second parameter of the signal.
      */
     public final class Signal2<A, B> extends QMetaObject.AbstractPublicSignal2<A, B> {
-        
+        /**
+         * Default constructor
+         */
+        public Signal2() {
+            super();
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal2(QMetaObject.@StrictNonNull ArgChecker2<A, B> argumentTest) {
+            super(argumentTest);
+        }
+
         /**
          * Returns the object containing this signal.
          * @return the signal containing object
@@ -181,7 +214,20 @@ class QObject___ extends QObject {
      * @param <C> The type of the third parameter of the signal.
      */
     public final class Signal3<A, B, C> extends QMetaObject.AbstractPublicSignal3<A, B, C> {
-        
+        /**
+         * Default constructor
+         */
+        public Signal3() {
+            super();
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal3(QMetaObject.@StrictNonNull ArgChecker3<A, B, C> argumentTest) {
+            super(argumentTest);
+        }
+
         /**
          * Returns the object containing this signal.
          * @return the signal containing object
@@ -204,7 +250,20 @@ class QObject___ extends QObject {
      */
     
     public final class Signal4<A, B, C, D> extends QMetaObject.AbstractPublicSignal4<A, B, C, D> {
-        
+        /**
+         * Default constructor
+         */
+        public Signal4() {
+            super();
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal4(QMetaObject.@StrictNonNull ArgChecker4<A, B, C, D> argumentTest) {
+            super(argumentTest);
+        }
+
         /**
          * Returns the object containing this signal.
          * @return the signal containing object
@@ -227,7 +286,20 @@ class QObject___ extends QObject {
      * @param <E> The type of the fifth parameter of the signal.
      */
     public final class Signal5<A, B, C, D, E> extends QMetaObject.AbstractPublicSignal5<A, B, C, D, E> {
-        
+        /**
+         * Default constructor
+         */
+        public Signal5() {
+            super();
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal5(QMetaObject.@StrictNonNull ArgChecker5<A, B, C, D, E> argumentTest) {
+            super(argumentTest);
+        }
+
         /**
          * Returns the object containing this signal.
          * @return the signal containing object
@@ -251,7 +323,20 @@ class QObject___ extends QObject {
      * @param <F> The type of the sixth parameter of the signal.
      */
     public final class Signal6<A, B, C, D, E, F> extends QMetaObject.AbstractPublicSignal6<A, B, C, D, E, F> {
-        
+        /**
+         * Default constructor
+         */
+        public Signal6() {
+            super();
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal6(QMetaObject.@StrictNonNull ArgChecker6<A, B, C, D, E, F> argumentTest) {
+            super(argumentTest);
+        }
+
         /**
          * Returns the object containing this signal.
          * @return the signal containing object
@@ -276,7 +361,20 @@ class QObject___ extends QObject {
      * @param <G> The type of the seventh parameter of the signal.
      */
     public final class Signal7<A, B, C, D, E, F, G> extends QMetaObject.AbstractPublicSignal7<A, B, C, D, E, F, G> {
-        
+        /**
+         * Default constructor
+         */
+        public Signal7() {
+            super();
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal7(QMetaObject.@StrictNonNull ArgChecker7<A, B, C, D, E, F, G> argumentTest) {
+            super(argumentTest);
+        }
+
         /**
          * Returns the object containing this signal.
          * @return the signal containing object
@@ -302,7 +400,20 @@ class QObject___ extends QObject {
      * @param <H> The type of the eighth parameter of the signal.
      */
     public final class Signal8<A, B, C, D, E, F, G, H> extends QMetaObject.AbstractPublicSignal8<A, B, C, D, E, F, G, H> {
-        
+        /**
+         * Default constructor
+         */
+        public Signal8() {
+            super();
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal8(QMetaObject.@StrictNonNull ArgChecker8<A, B, C, D, E, F, G, H> argumentTest) {
+            super(argumentTest);
+        }
+
         /**
          * Returns the object containing this signal.
          * @return the signal containing object
@@ -329,7 +440,20 @@ class QObject___ extends QObject {
      * @param <I> The type of the ninth parameter of the signal.
      */
     public final class Signal9<A, B, C, D, E, F, G, H, I> extends QMetaObject.AbstractPublicSignal9<A, B, C, D, E, F, G, H, I>{
-        
+        /**
+         * Default constructor
+         */
+        public Signal9() {
+            super();
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal9(QMetaObject.@StrictNonNull ArgChecker9<A, B, C, D, E, F, G, H, I> argumentTest) {
+            super(argumentTest);
+        }
+
         /**
          * Returns the object containing this signal.
          * @return the signal containing object
@@ -356,7 +480,11 @@ class QObject___ extends QObject {
         public Signal1Default1(@StrictNonNull Supplier<? extends A> arg1Default){
             super(arg1Default);
         }
-                
+
+        public Signal1Default1(@StrictNonNull Supplier<? extends A> arg1Default, QMetaObject.@StrictNonNull ArgChecker1<A> argumentTest){
+            super(arg1Default, argumentTest);
+        }
+
         /**
          * Returns the object containing this signal.
          * @return the signal containing object
@@ -384,6 +512,13 @@ class QObject___ extends QObject {
 
         public Signal2Default1(@StrictNonNull Supplier<? extends B> arg2Default) {
             super(arg2Default);
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal2Default1(@StrictNonNull Supplier<? extends B> arg2Default, QMetaObject.@StrictNonNull ArgChecker2<A, B> argumentTest) {
+            super(arg2Default, argumentTest);
         }
         
         /**
@@ -415,6 +550,13 @@ class QObject___ extends QObject {
          }
 
          /**
+          * Constructor with argument checker
+          */
+         public Signal2Default2(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, QMetaObject.@StrictNonNull ArgChecker2<A, B> argumentTest){
+             super(arg1Default, arg2Default, argumentTest);
+         }
+
+         /**
           * Returns the object containing this signal.
           * @return the signal containing object
           */
@@ -441,6 +583,10 @@ class QObject___ extends QObject {
         
         public Signal3Default1(@StrictNonNull Supplier<? extends C> arg3Default) {
             super(arg3Default);
+        }
+
+        public Signal3Default1(@StrictNonNull Supplier<? extends C> arg3Default, QMetaObject.@StrictNonNull ArgChecker3<A, B, C> argumentTest) {
+            super(arg3Default, argumentTest);
         }
         
         /**
@@ -470,6 +616,13 @@ class QObject___ extends QObject {
         
         public Signal3Default2(@StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default){
             super(arg2Default, arg3Default);
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal3Default2(@StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, QMetaObject.@StrictNonNull ArgChecker3<A, B, C> argumentTest) {
+            super(arg2Default, arg3Default, argumentTest);
         }
         
         /**
@@ -502,6 +655,13 @@ class QObject___ extends QObject {
          }
 
          /**
+          * Constructor with argument checker
+          */
+         public Signal3Default3(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, QMetaObject.@StrictNonNull ArgChecker3<A, B, C> argumentTest) {
+             super(arg1Default, arg2Default, arg3Default, argumentTest);
+         }
+
+         /**
           * Returns the object containing this signal.
           * @return the signal containing object
           */
@@ -530,6 +690,13 @@ class QObject___ extends QObject {
         public Signal4Default1(@StrictNonNull Supplier<? extends D> arg4Default){
             super(arg4Default);
         }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal4Default1(@StrictNonNull Supplier<? extends D> arg4Default, QMetaObject.@StrictNonNull ArgChecker4<A, B, C, D> argumentTest) {
+            super(arg4Default, argumentTest);
+        }
         
         @Override
         public final @NonNull QObject containingObject() {
@@ -555,6 +722,13 @@ class QObject___ extends QObject {
         
         public Signal4Default2(@StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default){
             super(arg3Default, arg4Default);
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal4Default2(@StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, QMetaObject.@StrictNonNull ArgChecker4<A, B, C, D> argumentTest) {
+            super(arg3Default, arg4Default, argumentTest);
         }
         
         /**
@@ -585,6 +759,13 @@ class QObject___ extends QObject {
         
         public Signal4Default3(@StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default){
             super(arg2Default, arg3Default, arg4Default);
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal4Default3(@StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, QMetaObject.@StrictNonNull ArgChecker4<A, B, C, D> argumentTest) {
+            super(arg2Default, arg3Default, arg4Default, argumentTest);
         }
         
         /**
@@ -619,6 +800,14 @@ class QObject___ extends QObject {
          }
 
          /**
+          * Constructor with argument checker
+          */
+         public Signal4Default4(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default,
+                 Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, QMetaObject.@StrictNonNull ArgChecker4<A, B, C, D> argumentTest) {
+             super(arg1Default, arg2Default, arg3Default, arg4Default, argumentTest);
+         }
+
+         /**
           * Returns the object containing this signal.
           * @return the signal containing object
           */
@@ -647,6 +836,13 @@ class QObject___ extends QObject {
         
         public Signal5Default1(@StrictNonNull Supplier<? extends E> arg5Default){
             super(arg5Default);
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal5Default1(@StrictNonNull Supplier<? extends E> arg5Default, QMetaObject.@StrictNonNull ArgChecker5<A, B, C, D, E> argumentTest) {
+            super(arg5Default, argumentTest);
         }
         
         /**
@@ -679,6 +875,13 @@ class QObject___ extends QObject {
         public Signal5Default2(@StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default){
             super(arg4Default, arg5Default);
         }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal5Default2(@StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, QMetaObject.@StrictNonNull ArgChecker5<A, B, C, D, E> argumentTest) {
+            super(arg4Default, arg5Default, argumentTest);
+        }
         
         /**
          * Returns the object containing this signal.
@@ -710,6 +913,13 @@ class QObject___ extends QObject {
         public Signal5Default3(@StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default){
             super(arg3Default, arg4Default, arg5Default);
         }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal5Default3(@StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, QMetaObject.@StrictNonNull ArgChecker5<A, B, C, D, E> argumentTest) {
+            super(arg3Default, arg4Default, arg5Default, argumentTest);
+        }
         
         /**
          * Returns the object containing this signal.
@@ -740,6 +950,13 @@ class QObject___ extends QObject {
         
         public Signal5Default4(@StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default){
             super(arg2Default, arg3Default, arg4Default, arg5Default);
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal5Default4(@StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, QMetaObject.@StrictNonNull ArgChecker5<A, B, C, D, E> argumentTest) {
+            super(arg2Default, arg3Default, arg4Default, arg5Default, argumentTest);
         }
         
         /**
@@ -774,6 +991,13 @@ class QObject___ extends QObject {
          }
 
          /**
+          * Constructor with argument checker
+          */
+         public Signal5Default5(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, QMetaObject.@StrictNonNull ArgChecker5<A, B, C, D, E> argumentTest) {
+             super(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, argumentTest);
+         }
+
+         /**
           * Returns the object containing this signal.
           * @return the signal containing object
           */
@@ -803,6 +1027,13 @@ class QObject___ extends QObject {
         
         public Signal6Default1(@StrictNonNull Supplier<? extends F> arg6Default){
             super(arg6Default);
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal6Default1(@StrictNonNull Supplier<? extends F> arg6Default, QMetaObject.@StrictNonNull ArgChecker6<A, B, C, D, E, F> argumentTest) {
+            super(arg6Default, argumentTest);
         }
         
         /**
@@ -836,6 +1067,13 @@ class QObject___ extends QObject {
         public Signal6Default2(@StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default){
             super(arg5Default, arg6Default);
         }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal6Default2(@StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, QMetaObject.@StrictNonNull ArgChecker6<A, B, C, D, E, F> argumentTest) {
+            super(arg5Default, arg6Default, argumentTest);
+        }
         
         /**
          * Returns the object containing this signal.
@@ -867,6 +1105,13 @@ class QObject___ extends QObject {
         
         public Signal6Default3(@StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default){
             super(arg4Default, arg5Default, arg6Default);
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal6Default3(@StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, QMetaObject.@StrictNonNull ArgChecker6<A, B, C, D, E, F> argumentTest) {
+            super(arg4Default, arg5Default, arg6Default, argumentTest);
         }
         
         /**
@@ -900,6 +1145,13 @@ class QObject___ extends QObject {
         public Signal6Default4(@StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default){
             super(arg3Default, arg4Default, arg5Default, arg6Default);
         }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal6Default4(@StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, QMetaObject.@StrictNonNull ArgChecker6<A, B, C, D, E, F> argumentTest) {
+            super(arg3Default, arg4Default, arg5Default, arg6Default, argumentTest);
+        }
         
         /**
          * Returns the object containing this signal.
@@ -932,6 +1184,13 @@ class QObject___ extends QObject {
         public Signal6Default5(@StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default){
             super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default);
         }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal6Default5(@StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, QMetaObject.@StrictNonNull ArgChecker6<A, B, C, D, E, F> argumentTest) {
+            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, argumentTest);
+        }
         
         /**
          * Returns the object containing this signal.
@@ -955,25 +1214,32 @@ class QObject___ extends QObject {
      * @param <E> The type of the fifth parameter of the signal.
      * @param <F> The type of the sixth parameter of the signal.
      */
-     public final class Signal6Default6<A, B, C, D, E, F> extends QMetaObject.AbstractSignal6Default6<A, B, C, D, E, F>{
+    public final class Signal6Default6<A, B, C, D, E, F> extends QMetaObject.AbstractSignal6Default6<A, B, C, D, E, F>{
 
-         @SuppressWarnings("unused")
-         private Signal6Default6() {
-         }
+        @SuppressWarnings("unused")
+        private Signal6Default6() {
+        }
 
-         public Signal6Default6(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default){
-             super(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default);
-         }
+        public Signal6Default6(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default){
+            super(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default);
+        }
 
-         /**
-          * Returns the object containing this signal.
-          * @return the signal containing object
-          */
-         @Override
-         public final @NonNull QObject containingObject() {
-             return QObject.this;
-         }
-     }
+        /**
+         * Constructor with argument checker
+         */
+        public Signal6Default6(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, QMetaObject.@StrictNonNull ArgChecker6<A, B, C, D, E, F> argumentTest) {
+            super(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, argumentTest);
+        }
+
+        /**
+         * Returns the object containing this signal.
+         * @return the signal containing object
+         */
+        @Override
+        public final @NonNull QObject containingObject() {
+            return QObject.this;
+        }
+    }
     
     /**
      * Declare and instantiate a field of this class in your
@@ -996,6 +1262,13 @@ class QObject___ extends QObject {
         
         public Signal7Default1(@StrictNonNull Supplier<? extends G> arg7Default){
             super(arg7Default);
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal7Default1(@StrictNonNull Supplier<? extends G> arg7Default, QMetaObject.@StrictNonNull ArgChecker7<A, B, C, D, E, F, G> argumentTest) {
+            super(arg7Default, argumentTest);
         }
         
         /**
@@ -1030,6 +1303,13 @@ class QObject___ extends QObject {
         public Signal7Default2(@StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default){
             super(arg6Default, arg7Default);
         }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal7Default2(@StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, QMetaObject.@StrictNonNull ArgChecker7<A, B, C, D, E, F, G> argumentTest) {
+            super(arg6Default, arg7Default, argumentTest);
+        }
         
         /**
          * Returns the object containing this signal.
@@ -1062,6 +1342,13 @@ class QObject___ extends QObject {
         
         public Signal7Default3(@StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default){
             super(arg5Default, arg6Default, arg7Default);
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal7Default3(@StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, QMetaObject.@StrictNonNull ArgChecker7<A, B, C, D, E, F, G> argumentTest) {
+            super(arg5Default, arg6Default, arg7Default, argumentTest);
         }
         
         /**
@@ -1096,6 +1383,13 @@ class QObject___ extends QObject {
         public Signal7Default4(@StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default){
             super(arg4Default, arg5Default, arg6Default, arg7Default);
         }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal7Default4(@StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, QMetaObject.@StrictNonNull ArgChecker7<A, B, C, D, E, F, G> argumentTest) {
+            super(arg4Default, arg5Default, arg6Default, arg7Default, argumentTest);
+        }
         
         /**
          * Returns the object containing this signal.
@@ -1128,6 +1422,13 @@ class QObject___ extends QObject {
         
         public Signal7Default5(@StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default){
             super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default);
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal7Default5(@StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, QMetaObject.@StrictNonNull ArgChecker7<A, B, C, D, E, F, G> argumentTest) {
+            super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, argumentTest);
         }
         
         /**
@@ -1162,6 +1463,13 @@ class QObject___ extends QObject {
         public Signal7Default6(@StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default){
             super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default);
         }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal7Default6(@StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, QMetaObject.@StrictNonNull ArgChecker7<A, B, C, D, E, F, G> argumentTest) {
+            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, argumentTest);
+        }
         
         /**
          * Returns the object containing this signal.
@@ -1186,25 +1494,32 @@ class QObject___ extends QObject {
      * @param <F> The type of the sixth parameter of the signal.
      * @param <G> The type of the seventh parameter of the signal.
      */
-     public final class Signal7Default7<A, B, C, D, E, F, G> extends QMetaObject.AbstractSignal7Default7<A, B, C, D, E, F, G>{
+    public final class Signal7Default7<A, B, C, D, E, F, G> extends QMetaObject.AbstractSignal7Default7<A, B, C, D, E, F, G>{
 
-         @SuppressWarnings("unused")
-         private Signal7Default7() {
-         }
+        @SuppressWarnings("unused")
+        private Signal7Default7() {
+        }
 
-         public Signal7Default7(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default){
-             super(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default);
-         }
+        public Signal7Default7(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default){
+            super(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default);
+        }
 
-         /**
-          * Returns the object containing this signal.
-          * @return the signal containing object
-          */
-         @Override
-         public final @NonNull QObject containingObject() {
-             return QObject.this;
-         }
-     }
+        /**
+         * Constructor with argument checker
+         */
+        public Signal7Default7(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, QMetaObject.@StrictNonNull ArgChecker7<A, B, C, D, E, F, G> argumentTest) {
+            super(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, argumentTest);
+        }
+
+        /**
+         * Returns the object containing this signal.
+         * @return the signal containing object
+         */
+        @Override
+        public final @NonNull QObject containingObject() {
+            return QObject.this;
+        }
+    }
     
     /**
      * Declare and instantiate a field of this class in your
@@ -1228,6 +1543,13 @@ class QObject___ extends QObject {
         
         public Signal8Default1(@StrictNonNull Supplier<? extends H> arg8Default){
             super(arg8Default);
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal8Default1(@StrictNonNull Supplier<? extends H> arg8Default, QMetaObject.@StrictNonNull ArgChecker8<A, B, C, D, E, F, G, H> argumentTest) {
+            super(arg8Default, argumentTest);
         }
         
         /**
@@ -1263,6 +1585,13 @@ class QObject___ extends QObject {
         public Signal8Default2(@StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default){
             super(arg7Default, arg8Default);
         }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal8Default2(@StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, QMetaObject.@StrictNonNull ArgChecker8<A, B, C, D, E, F, G, H> argumentTest) {
+            super(arg7Default, arg8Default, argumentTest);
+        }
         
         /**
          * Returns the object containing this signal.
@@ -1296,6 +1625,13 @@ class QObject___ extends QObject {
         
         public Signal8Default3(@StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default){
             super(arg6Default, arg7Default, arg8Default);
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal8Default3(@StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, QMetaObject.@StrictNonNull ArgChecker8<A, B, C, D, E, F, G, H> argumentTest) {
+            super(arg6Default, arg7Default, arg8Default, argumentTest);
         }
         
         /**
@@ -1331,6 +1667,13 @@ class QObject___ extends QObject {
         public Signal8Default4(@StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default){
             super(arg5Default, arg6Default, arg7Default, arg8Default);
         }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal8Default4(@StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, QMetaObject.@StrictNonNull ArgChecker8<A, B, C, D, E, F, G, H> argumentTest) {
+            super(arg5Default, arg6Default, arg7Default, arg8Default, argumentTest);
+        }
         
         /**
          * Returns the object containing this signal.
@@ -1364,6 +1707,13 @@ class QObject___ extends QObject {
         
         public Signal8Default5(@StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default){
             super(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal8Default5(@StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, QMetaObject.@StrictNonNull ArgChecker8<A, B, C, D, E, F, G, H> argumentTest) {
+            super(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, argumentTest);
         }
         
         /**
@@ -1399,6 +1749,13 @@ class QObject___ extends QObject {
         public Signal8Default6(@StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default){
             super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
         }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal8Default6(@StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, QMetaObject.@StrictNonNull ArgChecker8<A, B, C, D, E, F, G, H> argumentTest) {
+            super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, argumentTest);
+        }
         
         /**
          * Returns the object containing this signal.
@@ -1433,6 +1790,13 @@ class QObject___ extends QObject {
         public Signal8Default7(@StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default){
             super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
         }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal8Default7(@StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, QMetaObject.@StrictNonNull ArgChecker8<A, B, C, D, E, F, G, H> argumentTest) {
+            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, argumentTest);
+        }
         
         /**
          * Returns the object containing this signal.
@@ -1458,25 +1822,32 @@ class QObject___ extends QObject {
      * @param <G> The type of the seventh parameter of the signal.
      * @param <H> The type of the eighth parameter of the signal.
      */
-     public final class Signal8Default8<A, B, C, D, E, F, G, H> extends QMetaObject.AbstractSignal8Default8<A, B, C, D, E, F, G, H>{
+    public final class Signal8Default8<A, B, C, D, E, F, G, H> extends QMetaObject.AbstractSignal8Default8<A, B, C, D, E, F, G, H>{
 
-         @SuppressWarnings("unused")
-         private Signal8Default8() {
-         }
+        @SuppressWarnings("unused")
+        private Signal8Default8() {
+        }
 
-         public Signal8Default8(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default){
-             super(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
-         }
+        public Signal8Default8(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default){
+            super(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default);
+        }
 
-         /**
-          * Returns the object containing this signal.
-          * @return the signal containing object
-          */
-         @Override
-         public final @NonNull QObject containingObject() {
-             return QObject.this;
-         }
-     }
+        /**
+         * Constructor with argument checker
+         */
+        public Signal8Default8(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, QMetaObject.@StrictNonNull ArgChecker8<A, B, C, D, E, F, G, H> argumentTest) {
+            super(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, argumentTest);
+        }
+
+        /**
+         * Returns the object containing this signal.
+         * @return the signal containing object
+         */
+        @Override
+        public final @NonNull QObject containingObject() {
+            return QObject.this;
+        }
+    }
     
     /**
      * Declare and instantiate a field of this class in your
@@ -1501,6 +1872,13 @@ class QObject___ extends QObject {
         
         public Signal9Default1(@StrictNonNull Supplier<? extends I> arg9Default){
             super(arg9Default);
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal9Default1(@StrictNonNull Supplier<? extends I> arg9Default, QMetaObject.@StrictNonNull ArgChecker9<A, B, C, D, E, F, G, H, I> argumentTest) {
+            super(arg9Default, argumentTest);
         }
         
         /**
@@ -1537,6 +1915,13 @@ class QObject___ extends QObject {
         public Signal9Default2(@StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default){
             super(arg8Default, arg9Default);
         }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal9Default2(@StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default, QMetaObject.@StrictNonNull ArgChecker9<A, B, C, D, E, F, G, H, I> argumentTest) {
+            super(arg8Default, arg9Default, argumentTest);
+        }
         
         /**
          * Returns the object containing this signal.
@@ -1571,6 +1956,13 @@ class QObject___ extends QObject {
         
         public Signal9Default3(@StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default){
             super(arg7Default, arg8Default, arg9Default);
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal9Default3(@StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default, QMetaObject.@StrictNonNull ArgChecker9<A, B, C, D, E, F, G, H, I> argumentTest) {
+            super(arg7Default, arg8Default, arg9Default, argumentTest);
         }
         
         /**
@@ -1607,6 +1999,13 @@ class QObject___ extends QObject {
         public Signal9Default4(@StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default){
             super(arg6Default, arg7Default, arg8Default, arg9Default);
         }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal9Default4(@StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default, QMetaObject.@StrictNonNull ArgChecker9<A, B, C, D, E, F, G, H, I> argumentTest) {
+            super(arg6Default, arg7Default, arg8Default, arg9Default, argumentTest);
+        }
         
         /**
          * Returns the object containing this signal.
@@ -1641,6 +2040,13 @@ class QObject___ extends QObject {
         
         public Signal9Default5(@StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default){
             super(arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal9Default5(@StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default, QMetaObject.@StrictNonNull ArgChecker9<A, B, C, D, E, F, G, H, I> argumentTest) {
+            super(arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, argumentTest);
         }
         
         /**
@@ -1677,6 +2083,13 @@ class QObject___ extends QObject {
         public Signal9Default6(@StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default){
             super(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
         }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal9Default6(@StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default, QMetaObject.@StrictNonNull ArgChecker9<A, B, C, D, E, F, G, H, I> argumentTest) {
+            super(arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, argumentTest);
+        }
         
         /**
          * Returns the object containing this signal.
@@ -1712,6 +2125,13 @@ class QObject___ extends QObject {
         public Signal9Default7(@StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default){
             super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
         }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal9Default7(@StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default, QMetaObject.@StrictNonNull ArgChecker9<A, B, C, D, E, F, G, H, I> argumentTest) {
+            super(arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, argumentTest);
+        }
         
         /**
          * Returns the object containing this signal.
@@ -1746,6 +2166,13 @@ class QObject___ extends QObject {
         
         public Signal9Default8(@StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default){
             super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default);
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public Signal9Default8(@StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default, QMetaObject.@StrictNonNull ArgChecker9<A, B, C, D, E, F, G, H, I> argumentTest) {
+            super(arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, argumentTest);
         }
         
         /**
@@ -1783,6 +2210,13 @@ class QObject___ extends QObject {
          }
 
          /**
+          * Constructor with argument checker
+          */
+         public Signal9Default9(@StrictNonNull Supplier<? extends A> arg1Default, @StrictNonNull Supplier<? extends B> arg2Default, @StrictNonNull Supplier<? extends C> arg3Default, @StrictNonNull Supplier<? extends D> arg4Default, @StrictNonNull Supplier<? extends E> arg5Default, @StrictNonNull Supplier<? extends F> arg6Default, @StrictNonNull Supplier<? extends G> arg7Default, @StrictNonNull Supplier<? extends H> arg8Default, @StrictNonNull Supplier<? extends I> arg9Default, QMetaObject.@StrictNonNull ArgChecker9<A, B, C, D, E, F, G, H, I> argumentTest) {
+             super(arg1Default, arg2Default, arg3Default, arg4Default, arg5Default, arg6Default, arg7Default, arg8Default, arg9Default, argumentTest);
+         }
+
+         /**
           * Returns the object containing this signal.
           * @return the signal containing object
           */
@@ -1801,7 +2235,9 @@ class QObject___ extends QObject {
      * emitted from inside the declaring class.
      */
     public final class PrivateSignal0 extends QMetaObject.AbstractPrivateSignal0 {
-                
+        /**
+         * Default constructor
+         */
         public PrivateSignal0() {
             super();
         }
@@ -1835,9 +2271,18 @@ class QObject___ extends QObject {
      * @param <A> The type of the single parameter of the signal.
      */
     public final class PrivateSignal1<A> extends QMetaObject.AbstractPrivateSignal1<A> {
-                
+        /**
+         * Default constructor
+         */
         public PrivateSignal1() {
             super();
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public PrivateSignal1(QMetaObject.@StrictNonNull ArgChecker1<A> argumentTest) {
+            super(argumentTest);
         }
         
         /**
@@ -1870,9 +2315,18 @@ class QObject___ extends QObject {
      * @param <B> The type of the second parameter of the signal.
      */
     public final class PrivateSignal2<A, B> extends QMetaObject.AbstractPrivateSignal2<A, B> {
-                
+        /**
+         * Default constructor
+         */
         public PrivateSignal2() {
             super();
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public PrivateSignal2(QMetaObject.@StrictNonNull ArgChecker2<A, B> argumentTest) {
+            super(argumentTest);
         }
         
         /**
@@ -1906,9 +2360,18 @@ class QObject___ extends QObject {
      * @param <C> The type of the third parameter of the signal.
      */
     public final class PrivateSignal3<A, B, C> extends QMetaObject.AbstractPrivateSignal3<A, B, C> {
-                
+        /**
+         * Default constructor
+         */
         public PrivateSignal3() {
             super();
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public PrivateSignal3(QMetaObject.@StrictNonNull ArgChecker3<A, B, C> argumentTest) {
+            super(argumentTest);
         }
         
         /**
@@ -1944,9 +2407,18 @@ class QObject___ extends QObject {
      */
     
     public final class PrivateSignal4<A, B, C, D> extends QMetaObject.AbstractPrivateSignal4<A, B, C, D> {
-                
+        /**
+         * Default constructor
+         */
         public PrivateSignal4() {
             super();
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public PrivateSignal4(QMetaObject.@StrictNonNull ArgChecker4<A, B, C, D> argumentTest) {
+            super(argumentTest);
         }
         
         /**
@@ -1982,9 +2454,18 @@ class QObject___ extends QObject {
      * @param <E> The type of the fifth parameter of the signal.
      */
     public final class PrivateSignal5<A, B, C, D, E> extends QMetaObject.AbstractPrivateSignal5<A,B,C,D,E> {
-                
+        /**
+         * Default constructor
+         */
         public PrivateSignal5() {
             super();
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public PrivateSignal5(QMetaObject.@StrictNonNull ArgChecker5<A,B,C,D,E> argumentTest) {
+            super(argumentTest);
         }
         
         /**
@@ -2021,9 +2502,18 @@ class QObject___ extends QObject {
      * @param <F> The type of the sixth parameter of the signal.
      */
     public final class PrivateSignal6<A, B, C, D, E, F> extends QMetaObject.AbstractPrivateSignal6<A, B, C, D, E, F> {
-                
+        /**
+         * Default constructor
+         */
         public PrivateSignal6() {
             super();
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public PrivateSignal6(QMetaObject.@StrictNonNull ArgChecker6<A, B, C, D, E, F> argumentTest) {
+            super(argumentTest);
         }
         
         /**
@@ -2061,9 +2551,18 @@ class QObject___ extends QObject {
      * @param <G> The type of the seventh parameter of the signal.
      */
     public final class PrivateSignal7<A, B, C, D, E, F, G> extends QMetaObject.AbstractPrivateSignal7<A, B, C, D, E, F, G> {
-                
+        /**
+         * Default constructor
+         */
         public PrivateSignal7() {
             super();
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public PrivateSignal7(QMetaObject.@StrictNonNull ArgChecker7<A, B, C, D, E, F, G> argumentTest) {
+            super(argumentTest);
         }
         
         /**
@@ -2102,11 +2601,20 @@ class QObject___ extends QObject {
      * @param <H> The type of the eighth parameter of the signal.
      */
     public final class PrivateSignal8<A, B, C, D, E, F, G, H> extends QMetaObject.AbstractPrivateSignal8<A, B, C, D, E, F, G, H> {
-                
+        /**
+         * Default constructor
+         */
         public PrivateSignal8() {
             super();
         }
-        
+
+        /**
+         * Constructor with argument checker
+         */
+        public PrivateSignal8(QMetaObject.@StrictNonNull ArgChecker8<A, B, C, D, E, F, G, H> argumentTest) {
+            super(argumentTest);
+        }
+
         /**
          * Emits the signal.
          */
@@ -2145,9 +2653,18 @@ class QObject___ extends QObject {
      * @param <I> The type of the ninth parameter of the signal.
      */
     public final class PrivateSignal9<A, B, C, D, E, F, G, H, I> extends QMetaObject.AbstractPrivateSignal9<A, B, C, D, E, F, G, H, I> {
-                
+        /**
+         * Default constructor
+         */
         public PrivateSignal9() {
             super();
+        }
+
+        /**
+         * Constructor with argument checker
+         */
+        public PrivateSignal9(QMetaObject.@StrictNonNull ArgChecker9<A, B, C, D, E, F, G, H, I> argumentTest) {
+            super(argumentTest);
         }
         
         /**
@@ -2467,12 +2984,12 @@ class QObject___ extends QObject {
          * @throws java.lang.RuntimeException Raised if the signal object could not be successfully introspected or if the
          *                                    signatures of the signal and slot are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Object receiver, @StrictNonNull String method, Qt.@NonNull ConnectionType @NonNull... type) {
+        public final QMetaObject.@NonNull Connection connect(@StrictNonNull Object receiver, @StrictNonNull String method, Qt.@NonNull ConnectionType @NonNull... connectionType) {
             if (receiver == null)
                 throw new NullPointerException("Receiver must be non-null");
             if (method == null)
                 throw new NullPointerException("Slot must be non-null");
-            return super.connect(receiver, method, type);
+            return super.connect(receiver, method, connectionType);
         }
         
         /**
@@ -5341,10 +5858,10 @@ class QObject___ extends QObject {
      * You can check {@link QMetaObject.Connection#isConnected()} on the returned connection object.</p>
      *
      * <p>This function works in the same way as
-     * {@link #connect(QObject, String, QObject, String, Qt.@StrictNonNull ConnectionType @StrictNonNull...)}
+     * {@link #connect(QObject, String, QObject, String, Qt.ConnectionType...)}
      * but it uses QMetaMethod to specify signal and method.</p>
      *
-     * @see #connect(QObject, String, QObject, String, Qt.@StrictNonNull ConnectionType @StrictNonNull...)
+     * @see #connect(QObject, String, QObject, String, Qt.ConnectionType...)
      */
     public static QMetaObject.@NonNull Connection connect(@StrictNonNull QObject sender, @StrictNonNull QMetaMethod signal, QObject receiver, @StrictNonNull QMetaMethod slot, Qt.@StrictNonNull ConnectionType @StrictNonNull... connectionType) {
         java.util.Objects.requireNonNull(signal);
@@ -5551,7 +6068,7 @@ class QObject___ extends QObject {
     @QtUninvokable
     protected final int receivers(QMetaObject.@StrictNonNull AbstractSignal signalObject){
         if(signalObject.methodIndex()>=0 && signalObject.containingObject()==this) {
-            QMetaMethod method = metaObject().methods().get(signalObject.methodIndex());
+            QMetaMethod method = metaObject().method(signalObject.methodIndex());
             return receivers("2" + method.cppMethodSignature());
         }
         return 0;
@@ -6913,7 +7430,7 @@ class QObject_6__ extends QObject {
          * <p>Associates the value of this property with the provided <code>newBinding</code> expression and returns the previously associated binding.</p>
          * <p>The first time the property value is read, the binding is evaluated.
          * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of this property is read.</p>
-         * @param newBinding
+         * @param functor
          * @return oldBinding
          */
         @QtUninvokable
@@ -9477,15 +9994,54 @@ abstract class QAbstractItemModel___ extends QAbstractItemModel {
     }
 }// class
 
+class QMutex___ extends QMutex {
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qmutex.html#try_lock_for">QMutex::<wbr/>try_lock_for(std::chrono::duration)</a></code></p>
+     */
+    @QtUninvokable
+    public final boolean tryLockFor(java.time.temporal.@NonNull TemporalAmount duration){
+        return tryLock(new QDeadlineTimer(duration));
+    }
+
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qmutex.html#try_lock_until">QMutex::<wbr/>try_lock_until(std::chrono::time_point)</a></code></p>
+     */
+    @QtUninvokable
+    public final boolean tryLockUntil(java.time.temporal.@NonNull Temporal timePoint){
+        return tryLock(new QDeadlineTimer(timePoint));
+    }
+}// class
+
 class QTimer___ extends QTimer {
+
+    /**
+     * <p>See <a href="@docRoot/qtimer.html#callOnTimeout"><code>QTimer::callOnTimeout(Args&amp;&amp;...)</code></a></p>
+     */
+    public final QMetaObject.@NonNull Connection callOnTimeout(QMetaObject.@NonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type){
+        return timeout.connect(slot, type);
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qtimer.html#callOnTimeout"><code>QTimer::callOnTimeout(Args&amp;&amp;...)</code></a></p>
+     */
+    public final QMetaObject.@NonNull Connection callOnTimeout(QMetaObject.@NonNull Connectable0 connectable, Qt.@NonNull ConnectionType @NonNull... type){
+        return timeout.connect(connectable, type);
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qtimer.html#callOnTimeout"><code>QTimer::callOnTimeout(Args&amp;&amp;...)</code></a></p>
+     */
+    public final QMetaObject.@NonNull Connection callOnTimeout(@Nullable QObject receiver, @NonNull String method, Qt.@NonNull ConnectionType @NonNull... type){
+        return timeout.connect(receiver, method, type);
+    }
     
     private static class QSingleShotTimer extends QObject {
-        private int timerId;
+        int timerId;
         public final Signal0 timeout = new Signal0();
         private final QObject receiver;
         private final QMetaObject.Slot0 slot;
 
-        private QSingleShotTimer(int msec, Qt.TimerType timeType, QObject obj, String method) {
+        QSingleShotTimer(QObject obj, String method) {
             super(QAbstractEventDispatcher.instance());
             this.slot = null;
             this.receiver = null;
@@ -9495,10 +10051,9 @@ class QTimer___ extends QTimer {
             }
             QtJambi_LibraryUtilities.internal.setCppOwnership(this);
             timeout.connect(obj, method);
-            timerId = startTimer(msec, timeType);
         }
 
-        private QSingleShotTimer(int msec, Qt.TimerType timeType, QObject obj, QMetaObject.Slot0 slot) {
+        QSingleShotTimer(QObject obj, QMetaObject.Slot0 slot) {
             super(QAbstractEventDispatcher.instance());
             QMetaObject.Connection connection = timeout.connect(slot);
             if(!connection.isConnected() || (obj!=null && connection.receiver()!=obj)) {
@@ -9517,9 +10072,21 @@ class QTimer___ extends QTimer {
                 return;
             }
             QtJambi_LibraryUtilities.internal.setCppOwnership(this);
-            timerId = startTimer(msec, timeType);
         }
-    
+
+        QSingleShotTimer(int msec, Qt.TimerType timeType, QObject obj, String method) {
+            this(obj, method);
+            if(!isDisposed())
+                timerId = startTimer(msec, timeType);
+        }
+
+        QSingleShotTimer(int msec, Qt.TimerType timeType, QObject obj, QMetaObject.Slot0 slot) {
+            this(obj, slot);
+            if(!isDisposed())
+                timerId = startTimer(msec, timeType);
+        }
+
+        @Override
         protected void timerEvent(QTimerEvent e) {
             if (timerId > 0)
                 killTimer(timerId);
@@ -9548,7 +10115,7 @@ class QTimer___ extends QTimer {
      * time interval is msec milliseconds.
      * 
      * @see #start()
-     * @see <a href="@docRoot/qtimer.html#singleShot"><code>QTimer::singleShot(int,const QObject*,const char *)</code></a>
+     * @see <a href="@docRoot/qtimer.html#singleShot"><code>QTimer::singleShot(Duration,const QObject*,const char *)</code></a>
      */
      public static void singleShot(int msec, @Nullable QObject obj, @NonNull String method) {
         singleShot(msec, defaultTypeFor(msec), obj, method);
@@ -9568,7 +10135,7 @@ class QTimer___ extends QTimer {
      * 
      * @see #start()
      * @since 5.4
-     * @see <a href="@docRoot/qtimer.html#singleShot-6"><code>QTimer::singleShot(int,const QObject*,Functor)</code></a>
+     * @see <a href="@docRoot/qtimer.html#singleShot-6"><code>QTimer::singleShot(Duration,const QObject*,Functor)</code></a>
      */    
     public static void singleShot(int msec, @Nullable QObject context, QMetaObject.@NonNull Slot0 slot) {
         singleShot(msec, defaultTypeFor(msec), context, slot);
@@ -9585,7 +10152,7 @@ class QTimer___ extends QTimer {
      * accuracy of the timer.
      * 
      * @see #start()
-     * @see <a href="@docRoot/qtimer.html#singleShot-1"><code>QTimer::singleShot(int,Qt::TimerType,const QObject*,const char *)</code></a>
+     * @see <a href="@docRoot/qtimer.html#singleShot-1"><code>QTimer::singleShot(Duration,Qt::TimerType,const QObject*,const char *)</code></a>
      */
     public static void singleShot(int msec, Qt.@NonNull TimerType timeType, @Nullable QObject obj, @NonNull String method) {
         new QSingleShotTimer(msec, timeType, obj, method);
@@ -9602,7 +10169,7 @@ class QTimer___ extends QTimer {
      * 
      * @see #start()
      * @since 5.4
-     * @see <a href="@docRoot/qtimer.html#singleShot-2"><code>QTimer::singleShot(int,Qt::TimerType,PointerToMemberFunction)</code></a>
+     * @see <a href="@docRoot/qtimer.html#singleShot-2"><code>QTimer::singleShot(Duration,Qt::TimerType,PointerToMemberFunction)</code></a>
      */
     public static void singleShot(int msec, QMetaObject.@NonNull Slot0 slot) {
         singleShot(msec, defaultTypeFor(msec), null, slot);
@@ -9620,7 +10187,7 @@ class QTimer___ extends QTimer {
      * 
      * @see #start()
      * @since 5.4
-     * @see <a href="@docRoot/qtimer.html#singleShot-3"><code>QTimer::singleShot(int,Qt::TimerType,PointerToMemberFunction)</code></a>
+     * @see <a href="@docRoot/qtimer.html#singleShot-3"><code>QTimer::singleShot(Duration,Qt::TimerType,PointerToMemberFunction)</code></a>
      */
     public static void singleShot(int msec, Qt.@NonNull TimerType timeType, QMetaObject.@NonNull Slot0 slot) {
         singleShot(msec, timeType, null, slot);
@@ -9642,35 +10209,140 @@ class QTimer___ extends QTimer {
      * 
      * @see #start()
      * @since 5.4
-     * @see <a href="@docRoot/qtimer.html#singleShot-7"><code>QTimer::singleShot(int,Qt::TimerType,const QObject*,Functor)</code></a>
+     * @see <a href="@docRoot/qtimer.html#singleShot-7"><code>QTimer::singleShot(Duration,Qt::TimerType,const QObject*,Functor)</code></a>
      */
     public static void singleShot(int msec, Qt.@NonNull TimerType timeType, @Nullable QObject context, QMetaObject.@NonNull Slot0 slot) {
         new QSingleShotTimer(msec, timeType, context, slot);
     }
-    
-    private static Qt.TimerType defaultTypeFor(int msecs){ 
-        return msecs >= 2000 ? Qt.TimerType.CoarseTimer : Qt.TimerType.PreciseTimer; 
+
+    private static Qt.TimerType defaultTypeFor(int msecs){
+        return msecs >= 2000 ? Qt.TimerType.CoarseTimer : Qt.TimerType.PreciseTimer;
+    }
+
+}// class
+
+class QTimer_6__ extends QTimer {
+
+    private static class QSingleShotChronoTimer extends QSingleShotTimer {
+        QSingleShotChronoTimer(java.time.temporal.TemporalAmount time, Qt.TimerType timeType, QObject obj, String method) {
+            super(obj, method);
+            if(!isDisposed())
+                timerId = startTimer(time, timeType);
+        }
+
+        QSingleShotChronoTimer(java.time.temporal.TemporalAmount time, Qt.TimerType timeType, QObject obj, QMetaObject.Slot0 slot) {
+            super(obj, slot);
+            if(!isDisposed())
+                timerId = startTimer(time, timeType);
+        }
     }
 
     /**
-     * <p>See <a href="@docRoot/qtimer.html#callOnTimeout"><code>QObject::callOnTimeout(Args&amp;&amp;...)</code></a></p>
+     * This static function calls a slot after a given time interval.
+     *
+     * It is very convenient to use this function because you do not need
+     * to bother with a timerEvent or create a local QTimer object.
+     *
+     * The receiver is the receiving object and the member is the slot.
+     *
+     * @see #start()
+     * @see <a href="@docRoot/qtimer.html#singleShot"><code>QTimer::singleShot(Duration,const QObject*,const char *)</code></a>
      */
-    public final QMetaObject.@NonNull Connection callOnTimeout(QMetaObject.@NonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type){
-        return timeout.connect(slot, type);
+     public static void singleShot(java.time.temporal.@NonNull TemporalAmount time, @Nullable QObject obj, @NonNull String method) {
+        singleShot(time, defaultTypeFor(time), obj, method);
     }
 
     /**
-     * <p>See <a href="@docRoot/qtimer.html#callOnTimeout"><code>QObject::callOnTimeout(Args&amp;&amp;...)</code></a></p>
+     * This static function calls slot after a given time interval.
+     *
+     * It is very convenient to use this function because you do not need
+     * to bother with a timerEvent or create a local QTimer object.
+     *
+     * If context is destroyed before the interval occurs, the method will not be called.
+     * The function will be run in the thread of context. The context's thread must have
+     * a running Qt event loop.
+     *
+     * @see #start()
+     * @since 5.4
+     * @see <a href="@docRoot/qtimer.html#singleShot-6"><code>QTimer::singleShot(Duration,const QObject*,Functor)</code></a>
      */
-    public final QMetaObject.@NonNull Connection callOnTimeout(QMetaObject.@NonNull Connectable0 connectable, Qt.@NonNull ConnectionType @NonNull... type){
-        return timeout.connect(connectable, type);
+    public static void singleShot(java.time.temporal.@NonNull TemporalAmount time, @Nullable QObject context, QMetaObject.@NonNull Slot0 slot) {
+        singleShot(time, defaultTypeFor(time), context, slot);
     }
 
     /**
-     * <p>See <a href="@docRoot/qtimer.html#callOnTimeout"><code>QObject::callOnTimeout(Args&amp;&amp;...)</code></a></p>
+     * This static function calls a slot after a given time interval.
+     *
+     * It is very convenient to use this function because you do not need
+     * to bother with a timerEvent or create a local QTimer object.
+     *
+     * The receiver is the receiving object and the member is the slot.
+     * The timerType affects the accuracy of the timer.
+     *
+     * @see #start()
+     * @see <a href="@docRoot/qtimer.html#singleShot-1"><code>QTimer::singleShot(Duration,Qt::TimerType,const QObject*,const char *)</code></a>
      */
-    public final QMetaObject.@NonNull Connection callOnTimeout(@Nullable QObject receiver, @NonNull String method, Qt.@NonNull ConnectionType @NonNull... type){
-        return timeout.connect(receiver, method, type);
+    public static void singleShot(java.time.temporal.@NonNull TemporalAmount time, Qt.@NonNull TimerType timeType, @Nullable QObject obj, @NonNull String method) {
+        new QSingleShotChronoTimer(time, timeType, obj, method);
+    }
+
+    /**
+     * This static function calls slot after a given time interval.
+     *
+     * It is very convenient to use this function because you do not need
+     * to bother with a timerEvent or
+     * create a local QTimer object.
+     *
+     * @see #start()
+     * @since 5.4
+     * @see <a href="@docRoot/qtimer.html#singleShot-2"><code>QTimer::singleShot(Duration,Qt::TimerType,PointerToMemberFunction)</code></a>
+     */
+    public static void singleShot(java.time.temporal.@NonNull TemporalAmount time, QMetaObject.@NonNull Slot0 slot) {
+        singleShot(time, defaultTypeFor(time), null, slot);
+    }
+
+    /**
+     * This static function calls slot after a given time interval.
+     *
+     * It is very convenient to use this function because you do not need
+     * to bother with a timerEvent or
+     * create a local QTimer object.
+     *
+     * The timerType affects the
+     * accuracy of the timer.
+     *
+     * @see #start()
+     * @since 5.4
+     * @see <a href="@docRoot/qtimer.html#singleShot-3"><code>QTimer::singleShot(Duration,Qt::TimerType,PointerToMemberFunction)</code></a>
+     */
+    public static void singleShot(java.time.temporal.@NonNull TemporalAmount time, Qt.@NonNull TimerType timeType, QMetaObject.@NonNull Slot0 slot) {
+        singleShot(time, timeType, null, slot);
+    }
+
+    /**
+     * This static function calls slot after a given time interval.
+     *
+     * It is very convenient to use this function because you do not need
+     * to bother with a timerEvent or
+     * create a local QTimer object.
+     *
+     * The timerType affects the
+     * accuracy of the timer.
+     *
+     * If context is destroyed before the interval occurs, the method will not be called.
+     * The function will be run in the thread of context. The context's thread must have
+     * a running Qt event loop.
+     *
+     * @see #start()
+     * @since 5.4
+     * @see <a href="@docRoot/qtimer.html#singleShot-7"><code>QTimer::singleShot(Duration,Qt::TimerType,const QObject*,Functor)</code></a>
+     */
+    public static void singleShot(java.time.temporal.@NonNull TemporalAmount time, Qt.@NonNull TimerType timeType, @Nullable QObject context, QMetaObject.@NonNull Slot0 slot) {
+        new QSingleShotChronoTimer(time, timeType, context, slot);
+    }
+
+    private static Qt.TimerType defaultTypeFor(java.time.temporal.@NonNull TemporalAmount time){
+        return (time instanceof java.time.Duration ? (java.time.Duration)time : java.time.Duration.from(time)).toMillis() >= 2000 ? Qt.TimerType.CoarseTimer : Qt.TimerType.PreciseTimer;
     }
     
 }// class
@@ -10566,7 +11238,7 @@ class QTextStream___ extends QTextStream {
         StringDevice(String string, QIODevice.OpenModeFlag... openMode) {
             this(string, QIODevice.OpenModeFlag.flags(openMode));
         }
-        
+
         StringDevice(String string, QIODevice.OpenMode openMode) {
             super();
             this.string = string;
@@ -10575,40 +11247,44 @@ class QTextStream___ extends QTextStream {
         }
 
         private final String string;
+        private final java.nio.charset.CharsetEncoder encoder = java.nio.charset.Charset.defaultCharset().newEncoder();
+        private final java.nio.charset.CharsetDecoder decoder = java.nio.charset.Charset.defaultCharset().newDecoder();
         private int cursor;
 
         @Override
-        protected int readData(byte[] data) {
-            int i = -1;
-            if(data!=null && openMode().testFlag(QIODevice.OpenModeFlag.ReadOnly) && data.length>0){
-                i = 0;
-                while(i < data.length && cursor<string.length()) {
-                    char c = string.charAt(cursor++);
-                    byte[] _data = java.lang.String.valueOf(c).getBytes();
-                    if(_data.length < i+data.length) {
-                        System.arraycopy(_data, 0, data, i, _data.length);
-                        ++i;
-                    }else {
-                        --cursor;
-                        break;
+        protected int readData(java.nio.ByteBuffer data) {
+            if(data!=null && openMode().testFlag(QIODevice.OpenModeFlag.ReadOnly) && data.limit()-data.position()>0){
+                int initialPos = data.position();
+                java.nio.charset.CoderResult result = encoder.encode(java.nio.CharBuffer.wrap(string, cursor, string.length()), data, false);
+                if(result.isError() || result.isOverflow()) {
+                    try {
+                        result.throwException();
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
+                cursor += data.position()-initialPos;
+                return data.position()-initialPos;
             }
-            return i;
+            return -1;
         }
 
         @Override
-        protected int writeData(byte[] data) {
-            if(data!=null && openMode().testFlag(QIODevice.OpenModeFlag.WriteOnly) && data.length>0){
-                java.lang.String strg = new java.lang.String(data);
+        protected int writeData(java.nio.ByteBuffer data) {
+            if(data!=null && openMode().testFlag(QIODevice.OpenModeFlag.WriteOnly) && data.limit()-data.position()>0){
+                int initialPos = data.position();
+                int n = (int)Math.max(data.remaining(), (data.remaining() / decoder.averageCharsPerByte())+1);
+                java.nio.CharBuffer out = java.nio.CharBuffer.allocate(n);
+                decoder.decode(data, out, false);
+                ((java.nio.Buffer)out).flip();
                 try {
-                    string.append(strg);
-                    cursor = string.length();
-                    return data.length;
-                } catch (java.io.IOException e) {
-                    throw new RuntimeException(e);
+                    string.append(out);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            }else return -1;
+                return data.position()-initialPos;
+            }
+            return -1;
         }
 
         @Override
@@ -10618,11 +11294,20 @@ class QTextStream___ extends QTextStream {
 
         @Override
         public boolean seek(long pos) {
-            if(pos==0) {
+            if(pos<cursor) {
                 setOpenMode(QIODevice.OpenModeFlag.ReadOnly, QIODevice.OpenModeFlag.Text);
-                cursor = 0;
             }
-            return super.seek(pos);
+            if(pos>=0 && pos<encoder.averageBytesPerChar()*string.length()) {
+                    cursor = (int)pos;
+                    return true;
+            }else {
+                return false;
+            }
+        }
+
+        @Override
+        public long pos() {
+                return cursor;
         }
     }
     
@@ -11055,10 +11740,6 @@ class QBitArray___ extends QBitArray {
         }
         return array;
     }
-    
-    public static QBitArray fromBits(byte[] data){
-        return fromBits(java.nio.ByteBuffer.wrap(data), data.length*8);
-    }
 }// class
 
 // hfr
@@ -11143,28 +11824,35 @@ class QByteArrayView___ extends QByteArray {
     }
 
     /**
+     * <p>See <a href="@docRoot/qbytearrayview.html#fromArray"><code>QByteArrayView::fromArray&lt;Byte,Size>(const Byte(&amp;)[Size])</code></a></p>
+     */
+    public static @NonNull QByteArrayView fromArray(byte @NonNull[] data, int offset, int length){
+        return new QByteArrayView(data, offset, length);
+    }
+
+    /**
      * <p>See <a href="@docRoot/qbytearrayview.html#QByteArrayView"><code>QByteArrayView::QByteArrayView(const char*)</code></a></p>
      */
     public QByteArrayView(byte @NonNull[] data){
-        this(data, data.length);
+        this(data, 0, -1);
     }
 
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#QByteArrayView"><code>QByteArrayView::QByteArrayView(const char*, qsizetype)</code></a></p>
      */
-    public QByteArrayView(byte @NonNull[] data, int size){
+    public QByteArrayView(byte @NonNull[] data, int offset, int length){
         super((QPrivateConstructor)null);
         Long[] pointerOut = {null};
-        if(size<0 || size>data.length)
-            size = data.length;
-        initialize_native(this, data, size, pointerOut);
+        if(offset+length>data.length)
+            length = data.length-offset;
+        initialize_native(this, data, offset, length, pointerOut);
         if(pointerOut[0]!=null) {
             long pointer = pointerOut[0];
             purgeTask = ()->purgeBytes(pointer);
             QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);                
         }
     }
-    private native static void initialize_native(QByteArrayView instance, byte[] data, int size, Long[] pointerOut);
+    private native static void initialize_native(QByteArrayView instance, byte[] data, int offset, int length, Long[] pointerOut);
     private native static void purgeBytes(long pointer);
     
     /**
@@ -11182,26 +11870,19 @@ class QByteArrayView___ extends QByteArray {
     }
     private native static void initialize_native(QByteArrayView instance, String data, Long[] pointerOut);
     private native static void purgeString(long pointer);
-
-    /**
-     * <p>See <a href="@docRoot/qbytearrayview.html#QByteArrayView"><code>QByteArrayView::QByteArrayView(const char*)</code></a></p>
-     */
-    public QByteArrayView(java.nio.@NonNull ByteBuffer data){
-        this(data, data.capacity());
-    }
     
     /**
      * <p>See <a href="@docRoot/qbytearrayview.html#QByteArrayView"><code>QByteArrayView::QByteArrayView(const char*, qsizetype)</code></a></p>
      */
-    public QByteArrayView(java.nio.@NonNull ByteBuffer data, long size){
+    public QByteArrayView(java.nio.@NonNull ByteBuffer data){
         super((QPrivateConstructor)null);
         if(data.isDirect()) {
-            initialize_native(this, data, size);
+            initialize_native(this, data, data.position(), data.limit()-data.position());
             purgeTask = data::hashCode;
             QtUtilities.getSignalOnDispose(this).connect(purgeTask::run);
         }else {
             Long[] pointerOut = {null};
-            initialize_native(this, data, size, pointerOut);
+            initialize_native(this, data, pointerOut);
             if(pointerOut[0]!=null) {
                 long pointer = pointerOut[0];
                 purgeTask = ()->purgeBuffer(pointer);
@@ -11209,8 +11890,8 @@ class QByteArrayView___ extends QByteArray {
             }
         }
     }
-    private native static void initialize_native(QByteArrayView instance, java.nio.ByteBuffer data, long size);
-    private native static void initialize_native(QByteArrayView instance, java.nio.ByteBuffer data, long size, Long[] pointerOut);
+    private native static void initialize_native(QByteArrayView instance, java.nio.ByteBuffer data, int offset, int length);
+    private native static void initialize_native(QByteArrayView instance, java.nio.ByteBuffer data, Long[] pointerOut);
     private native static void purgeBuffer(long pointer);
     
     /**
@@ -11231,13 +11912,177 @@ class QByteArrayView___ extends QByteArray {
     private Runnable purgeTask;
 }// class
 
-class QIODevice_prefix__ extends QIODevice {
+class QIODevice_template__ extends QIODevice {
+        /**
+         * @deprecated use {@link #fromBuffer(java.nio.Buffer)} instead.
+         */
+        @Deprecated
+        public static @NonNull QIODevice fromDirectBuffer(java.nio.@NonNull Buffer buffer){
+            return fromBuffer(buffer);
+        }
+
         /**
          * Creates QIODevice from direct buffer. The new I/O device is not open.
          * @param buffer
          * @return new new QIODevice or null if no direct buffer
          */
-        public native static @NonNull QIODevice fromDirectBuffer(java.nio.@NonNull Buffer buffer);
+        public native static @NonNull QIODevice fromBuffer(java.nio.@NonNull Buffer buffer);
+
+        /**
+         * Creates a new InputStream for reading from given QIODevice.
+         * If the given device is open for reading it remains open after closing the InputStream.
+         * If the give device is still not open the InputStream opens it for reading and closes it finally.
+         * If the device cannot be opened for reading {@code null} is returned.
+         *
+         * @param device
+         * @return new InputStream
+         */
+        public static java.io.@Nullable InputStream toInputStream(@StrictNonNull QIODevice device) {
+            boolean closeFinally;
+            if((closeFinally = !device.isOpen()))
+                device.open(OpenModeFlag.ReadOnly);
+            if(device.isOpen() && device.isReadable()) {
+                return new java.io.InputStream(){
+                    private final byte[] buffer1 = {0};
+                    @Override
+                    public int read() throws java.io.IOException {
+                        device.read(buffer1);
+                        return buffer1[0];
+                    }
+                    @Override
+                    public int read(byte[] b) throws java.io.IOException {
+                        return device.read(b);
+                    }
+                    @Override
+                    public int read(byte b[], int off, int len) throws java.io.IOException {
+                        return device.read(b, off, len);
+                    }
+                    @Override
+                    public void close() throws java.io.IOException {
+                        if(closeFinally)
+                            device.close();
+                    }
+
+                    @Override
+                    public int available() throws java.io.IOException {
+                        return (int)device.bytesAvailable();
+                    }
+                };
+            }
+            return null;
+        }
+
+        /**
+         * Creates a new OutputStream for writing to given QIODevice.
+         * If the given device is open for writing it remains open after closing the OutputStream.
+         * If the give device is still not open the OutputStream opens it for writing and closes it finally.
+         * If the device cannot be opened for writing {@code null} is returned.
+         *
+         * @param device
+         * @return new OutputStream
+         */
+        public static java.io.@Nullable OutputStream toOutputStream(@StrictNonNull QIODevice device) {
+            boolean closeFinally;
+            if((closeFinally = !device.isOpen()))
+                device.open(OpenModeFlag.WriteOnly);
+            if(device.isOpen() && device.isWritable()) {
+                return new java.io.OutputStream(){
+                    private final byte[] buffer1 = {0};
+                    @Override
+                    public void write(int b) throws java.io.IOException {
+                        buffer1[0] = (byte)b;
+                        device.write(buffer1);
+                    }
+
+                    @Override
+                    public void write(byte[] b) throws java.io.IOException {
+                        device.write(b);
+                    }
+
+                    @Override
+                    public void write(byte[] b, int off, int len) throws java.io.IOException {
+                        device.write(b, off, len);
+                    }
+
+                    @Override
+                    public void close() throws java.io.IOException {
+                        if(closeFinally)
+                            device.close();
+                    }
+                };
+            }
+            return null;
+        }
+
+        /**
+         * Creates a new WritableByteChannel for writing to given QIODevice.
+         * If the given device is open for writing it remains open after closing the Channel.
+         * If the give device is still not open the Channel opens it for writing and closes it finally.
+         * If the device cannot be opened for writing {@code null} is returned.
+         *
+         * @param device
+         * @return new WritableByteChannel
+         */
+        public static java.nio.channels.@Nullable WritableByteChannel toWritableByteChannel(@StrictNonNull QIODevice device) {
+            boolean closeFinally;
+            if((closeFinally = !device.isOpen()))
+                device.open(OpenModeFlag.WriteOnly);
+            if(device.isOpen() && device.isWritable()) {
+                return new java.nio.channels.WritableByteChannel(){
+                    @Override
+                    public void close() throws java.io.IOException {
+                        if(closeFinally)
+                            device.close();
+                    }
+
+                    @Override
+                    public boolean isOpen() {
+                        return device.isOpen();
+                    }
+
+                    @Override
+                    public int write(java.nio.ByteBuffer src) {
+                        return device.write(src);
+                    }
+                };
+            }
+            return null;
+        }
+
+        /**
+         * Creates a new ReadableByteChannel for reading from given QIODevice.
+         * If the given device is open for reading it remains open after closing the Channel.
+         * If the give device is still not open the Channel opens it for reading and closes it finally.
+         * If the device cannot be opened for reading {@code null} is returned.
+         *
+         * @param device
+         * @return new ReadableByteChannel
+         */
+        public static java.nio.channels.@Nullable ReadableByteChannel toReadableByteChannel(@StrictNonNull QIODevice device) {
+            boolean closeFinally;
+            if((closeFinally = !device.isOpen()))
+                device.open(OpenModeFlag.ReadOnly);
+            if(device.isOpen() && device.isReadable()) {
+                return new java.nio.channels.ReadableByteChannel(){
+                    @Override
+                    public void close() throws java.io.IOException {
+                        if(closeFinally)
+                            device.close();
+                    }
+
+                    @Override
+                    public boolean isOpen() {
+                        return device.isOpen();
+                    }
+
+                    @Override
+                    public int read(java.nio.ByteBuffer src) {
+                        return device.read(src);
+                    }
+                };
+            }
+            return null;
+        }
         
         /**
          * Creates a new open QIODevice for reading from given InputStream
@@ -11245,14 +12090,10 @@ class QIODevice_prefix__ extends QIODevice {
          * @return new open read-only QIODevice
          */
         public static @NonNull QIODevice fromInputStream(java.io.@StrictNonNull InputStream stream) {
+            java.util.Objects.requireNonNull(stream);
             return new QIODevice() {
                 {
                     setOpenMode(QIODevice.OpenModeFlag.ReadOnly);
-                }
-                
-                @Override
-                public boolean atEnd() {
-                    return super.atEnd();
                 }
 
                 @Override
@@ -11262,11 +12103,6 @@ class QIODevice_prefix__ extends QIODevice {
                     } catch (java.io.IOException e) {
                         return 0;
                     }
-                }
-
-                @Override
-                public long bytesToWrite() {
-                    return 0;
                 }
 
                 @Override
@@ -11301,7 +12137,7 @@ class QIODevice_prefix__ extends QIODevice {
                 }
 
                 @Override
-                protected int readLineData(byte[] data) {
+                protected int readLineData(java.nio.ByteBuffer data) {
                     return 0;
                 }
 
@@ -11321,39 +12157,33 @@ class QIODevice_prefix__ extends QIODevice {
                 }
 
                 @Override
-                public long size() {
-                    return super.size();
-                }
-}// QIODevice_prefix__
-
-class QIODevice_6_1__ {
-
-                @Override
-                protected long skipData(long maxSize) {
-                    try {
-                        stream.skip(maxSize);
-                    } catch (java.io.IOException e) {
-                        return 0;
-                    }
-                    return super.skipData(maxSize);
-                }
-}// QIODevice_6_1__
-
-class QIODevice_infix__ {
-
-                @Override
-                protected int writeData(byte[] data) {
+                protected int writeData(java.nio.ByteBuffer data) {
                     return 0;
                 }
                 
                 @Override
-                protected int readData(byte[] data) {
-                    try {
-                        return stream.read(data);
-                    } catch (java.io.IOException e) {
+                protected int readData(java.nio.ByteBuffer data) {
+                    if(data==null)
                         return 0;
+                    try {
+                        if(data.hasArray()) {
+                            return stream.read(data.array(), data.position(), data.limit()-data.position());
+                        }else if(data.capacity()>data.position()){
+                            int initialPos = data.position();
+                            int nextByte = stream.read();
+                            while(nextByte>=0) {
+                                data.put((byte)nextByte);
+                                if(data.capacity()==data.position())
+                                    break;
+                                nextByte = stream.read();
+                            }
+                            return data.position()-initialPos;
+                        }
+                    } catch (java.io.IOException e) {
                     }
+                    return -1;
                 }
+%SKIP1
             };
         }
         
@@ -11363,23 +12193,14 @@ class QIODevice_infix__ {
          * @return new open write-only QIODevice
          */
         public static @NonNull QIODevice fromOutputStream(java.io.@StrictNonNull OutputStream stream) {
+            java.util.Objects.requireNonNull(stream);
             return new QIODevice() {
                 {
                     setOpenMode(QIODevice.OpenModeFlag.WriteOnly);
                 }
-                
-                @Override
-                public boolean atEnd() {
-                    return super.atEnd();
-                }
 
                 @Override
                 public long bytesAvailable() {
-                    return 0;
-                }
-
-                @Override
-                public long bytesToWrite() {
                     return 0;
                 }
 
@@ -11410,12 +12231,7 @@ class QIODevice_infix__ {
                 }
 
                 @Override
-                public long pos() {
-                    return super.pos();
-                }
-
-                @Override
-                protected int readLineData(byte[] data) {
+                protected int readLineData(java.nio.ByteBuffer data) {
                     return 0;
                 }
 
@@ -11433,34 +12249,129 @@ class QIODevice_infix__ {
                 public long size() {
                     return super.size();
                 }
-}// QIODevice_infix__
-
-class QIODevice_6_2__ {
 
                 @Override
-                protected long skipData(long maxSize) {
-                    return 0;
-                }
-}// QIODevice_6_2__
-
-class QIODevice_suffix__ {
-
-                @Override
-                protected int writeData(byte[] data) {
-                    try {
-                        stream.write(data);
-                        return data.length;
-                    } catch (java.io.IOException e) {
+                protected int writeData(java.nio.ByteBuffer data) {
+                    if(data==null)
                         return 0;
+                    try {
+                        if(data.hasArray()) {
+                            stream.write(data.array(), data.position(), data.limit()-data.position());
+                            return data.limit()-data.position();
+                        }else{
+                            int initialPos = data.position();
+                            while(data.limit()>data.position()) {
+                                int nextByte = data.get();
+                                stream.write(nextByte);
+                            }
+                            return data.position()-initialPos;
+                        }
+                    } catch (java.io.IOException e) {
                     }
+                    return -1;
                 }
                 
                 @Override
-                protected int readData(byte[] data) {
+                protected int readData(java.nio.ByteBuffer data) {
                     return 0;
                 }
+%SKIP2
             };
         }
+
+    /**
+     * Creates a new open QIODevice for reading from given Channel
+     * @param channel
+     * @return new open read and/or write QIODevice
+     */
+    public static @NonNull QIODevice fromChannel(java.nio.channels.@StrictNonNull Channel channel) {
+        return new QIODevice() {
+            final java.nio.channels.ReadableByteChannel rchannel;
+            final java.nio.channels.WritableByteChannel wchannel;
+            {
+                if(channel instanceof java.nio.channels.ReadableByteChannel) {
+                    rchannel = (java.nio.channels.ReadableByteChannel)channel;
+                    if(channel instanceof java.nio.channels.WritableByteChannel) {
+                        wchannel = (java.nio.channels.WritableByteChannel)channel;
+                        setOpenMode(QIODevice.OpenModeFlag.ReadWrite);
+                    }else {
+                        wchannel = null;
+                        setOpenMode(QIODevice.OpenModeFlag.ReadOnly);
+                    }
+                }else if(channel instanceof java.nio.channels.WritableByteChannel) {
+                    wchannel = (java.nio.channels.WritableByteChannel)channel;
+                    rchannel = null;
+                    setOpenMode(QIODevice.OpenModeFlag.WriteOnly);
+                }else {
+                    wchannel = null;
+                    rchannel = null;
+                }
+            }
+
+            @Override
+            public boolean canReadLine() {
+                return false;
+            }
+
+            @Override
+            public void close() {
+                try {
+                    channel.close();
+                } catch (java.io.IOException e) {
+                }
+                super.close();
+            }
+
+            @Override
+            public boolean isSequential() {
+                return true;
+            }
+
+            @Override
+            public boolean open(OpenMode mode) {
+                if(channel.isOpen() && openMode().testFlags(mode))
+                    return super.open(mode);
+                else return false;
+            }
+
+            @Override
+            protected int readLineData(java.nio.ByteBuffer data) {
+                return 0;
+            }
+
+            @Override
+            public boolean seek(long pos) {
+                return false;
+            }
+
+            @Override
+            protected int writeData(java.nio.ByteBuffer data) {
+                if(wchannel!=null) {
+                    if(data==null)
+                        return 0;
+                    try {
+                        return wchannel.write(data);
+                    } catch (java.io.IOException e) {
+                    }
+                }
+                return -1;
+            }
+
+            @Override
+            protected int readData(java.nio.ByteBuffer data) {
+                if(rchannel!=null) {
+                    if(data==null)
+                        return 0;
+                    try {
+                        return rchannel.read(data);
+                    } catch (java.io.IOException e) {
+                    }
+                }
+                return -1;
+            }
+%SKIP2
+        };
+    }
 }// class
 
 class QCalendar___ extends QCalendar {
@@ -11588,19 +12499,33 @@ class QtFuture___ {
         }
         return null;
     }
+
+    /**
+     * Tuple for three arguments.
+     */
+    public static class Tuple3<A,B,C>{
+        Tuple3(A arg1, B arg2, C arg3){
+            this.arg1 = arg1;
+            this.arg2 = arg2;
+            this.arg3 = arg3;
+        }
+        public final A arg1;
+        public final B arg2;
+        public final C arg3;
+    }
     
     /**
      * <p>See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a></p>
      */
     @QtUninvokable
-    public static <A,B,C> @NonNull QFuture<Object[]> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,B,C> signal) {
+    public static <A,B,C> @NonNull QFuture<Tuple3<A,B,C>> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal3<A,B,C> signal) {
         if(signal.containingObject() instanceof QObject) {
             QObject sender = (QObject)signal.containingObject();
-            QFutureInterface<Object[]> promise = new QFutureInterface<>();
+            QFutureInterface<Tuple3<A,B,C>> promise = new QFutureInterface<>();
             promise.reportStarted();
             QMetaObject.Connection[] connections = {null, null};
             connections[0] = signal.connect((a,b,c)->{
-                promise.reportResult(new Object[] {a,b,c});
+                promise.reportResult(new Tuple3<>(a,b,c));
                 promise.reportFinished();
                 QObject.disconnect(connections[0]);
                 QObject.disconnect(connections[1]);
@@ -11615,19 +12540,30 @@ class QtFuture___ {
         }
         return null;
     }
+
+    /**
+     * Tuple for four arguments.
+     */
+    public static class Tuple4<A,B,C,D> extends Tuple3<A,B,C>{
+        Tuple4(A arg1, B arg2, C arg3, D arg4){
+            super(arg1, arg2, arg3);
+            this.arg4 = arg4;
+        }
+        public final D arg4;
+    }
     
     /**
      * <p>See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a></p>
      */
     @QtUninvokable
-    public static <A,B,C,D> @NonNull QFuture<Object[]> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,C,D> signal) {
+    public static <A,B,C,D> @NonNull QFuture<Tuple4<A,B,C,D>> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal4<A,B,C,D> signal) {
         if(signal.containingObject() instanceof QObject) {
             QObject sender = (QObject)signal.containingObject();
-            QFutureInterface<Object[]> promise = new QFutureInterface<>();
+            QFutureInterface<Tuple4<A,B,C,D>> promise = new QFutureInterface<>();
             promise.reportStarted();
             QMetaObject.Connection[] connections = {null, null};
             connections[0] = signal.connect((a,b,c,d)->{
-                promise.reportResult(new Object[] {a,b,c,d});
+                promise.reportResult(new Tuple4<>(a,b,c,d));
                 promise.reportFinished();
                 QObject.disconnect(connections[0]);
                 QObject.disconnect(connections[1]);
@@ -11642,19 +12578,30 @@ class QtFuture___ {
         }
         return null;
     }
+
+    /**
+     * Tuple for five arguments.
+     */
+    public static class Tuple5<A,B,C,D,E> extends Tuple4<A,B,C,D>{
+        Tuple5(A arg1, B arg2, C arg3, D arg4, E arg5){
+            super(arg1, arg2, arg3, arg4);
+            this.arg5 = arg5;
+        }
+        public final E arg5;
+    }
     
     /**
      * <p>See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a></p>
      */
     @QtUninvokable
-    public static <A,B,C,D,E> @NonNull QFuture<Object[]> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,D,E> signal) {
+    public static <A,B,C,D,E> @NonNull QFuture<Tuple5<A,B,C,D,E>> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal5<A,B,C,D,E> signal) {
         if(signal.containingObject() instanceof QObject) {
             QObject sender = (QObject)signal.containingObject();
-            QFutureInterface<Object[]> promise = new QFutureInterface<>();
+            QFutureInterface<Tuple5<A,B,C,D,E>> promise = new QFutureInterface<>();
             promise.reportStarted();
             QMetaObject.Connection[] connections = {null, null};
             connections[0] = signal.connect((a,b,c,d,e)->{
-                promise.reportResult(new Object[] {a,b,c,d,e});
+                promise.reportResult(new Tuple5<>(a,b,c,d,e));
                 promise.reportFinished();
                 QObject.disconnect(connections[0]);
                 QObject.disconnect(connections[1]);
@@ -11669,19 +12616,30 @@ class QtFuture___ {
         }
         return null;
     }
+
+    /**
+     * Tuple for six arguments.
+     */
+    public static class Tuple6<A,B,C,D,E,F> extends Tuple5<A,B,C,D,E>{
+        Tuple6(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6){
+            super(arg1, arg2, arg3, arg4, arg5);
+            this.arg6 = arg6;
+        }
+        public final F arg6;
+    }
     
     /**
      * <p>See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a></p>
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F> @NonNull QFuture<Object[]> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,E,F> signal) {
+    public static <A,B,C,D,E,F> @NonNull QFuture<Tuple6<A,B,C,D,E,F>> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal6<A,B,C,D,E,F> signal) {
         if(signal.containingObject() instanceof QObject) {
             QObject sender = (QObject)signal.containingObject();
-            QFutureInterface<Object[]> promise = new QFutureInterface<>();
+            QFutureInterface<Tuple6<A,B,C,D,E,F>> promise = new QFutureInterface<>();
             promise.reportStarted();
             QMetaObject.Connection[] connections = {null, null};
             connections[0] = signal.connect((a,b,c,d,e,f)->{
-                promise.reportResult(new Object[] {a,b,c,d,e,f});
+                promise.reportResult(new Tuple6<>(a,b,c,d,e,f));
                 promise.reportFinished();
                 QObject.disconnect(connections[0]);
                 QObject.disconnect(connections[1]);
@@ -11696,19 +12654,30 @@ class QtFuture___ {
         }
         return null;
     }
+
+    /**
+     * Tuple for seven arguments.
+     */
+    public static class Tuple7<A,B,C,D,E,F,G> extends Tuple6<A,B,C,D,E,F>{
+        Tuple7(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7){
+            super(arg1, arg2, arg3, arg4, arg5, arg6);
+            this.arg7 = arg7;
+        }
+        public final G arg7;
+    }
     
     /**
      * <p>See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a></p>
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G> @NonNull QFuture<Object[]> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,F,G> signal) {
+    public static <A,B,C,D,E,F,G> @NonNull QFuture<Tuple7<A,B,C,D,E,F,G>> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,F,G> signal) {
         if(signal.containingObject() instanceof QObject) {
             QObject sender = (QObject)signal.containingObject();
-            QFutureInterface<Object[]> promise = new QFutureInterface<>();
+            QFutureInterface<Tuple7<A,B,C,D,E,F,G>> promise = new QFutureInterface<>();
             promise.reportStarted();
             QMetaObject.Connection[] connections = {null, null};
             connections[0] = signal.connect((a,b,c,d,e,f,g)->{
-                promise.reportResult(new Object[] {a,b,c,d,e,f,g});
+                promise.reportResult(new Tuple7<>(a,b,c,d,e,f,g));
                 promise.reportFinished();
                 QObject.disconnect(connections[0]);
                 QObject.disconnect(connections[1]);
@@ -11723,19 +12692,30 @@ class QtFuture___ {
         }
         return null;
     }
+
+    /**
+     * Tuple for eight arguments.
+     */
+    public static class Tuple8<A,B,C,D,E,F,G,H> extends Tuple7<A,B,C,D,E,F,G>{
+        Tuple8(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8){
+            super(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+            this.arg8 = arg8;
+        }
+        public final H arg8;
+    }
     
     /**
      * <p>See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a></p>
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H> @NonNull QFuture<Object[]> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal) {
+    public static <A,B,C,D,E,F,G,H> @NonNull QFuture<Tuple8<A,B,C,D,E,F,G,H>> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal) {
         if(signal.containingObject() instanceof QObject) {
             QObject sender = (QObject)signal.containingObject();
-            QFutureInterface<Object[]> promise = new QFutureInterface<>();
+            QFutureInterface<Tuple8<A,B,C,D,E,F,G,H>> promise = new QFutureInterface<>();
             promise.reportStarted();
             QMetaObject.Connection[] connections = {null, null};
             connections[0] = signal.connect((a,b,c,d,e,f,g,h)->{
-                promise.reportResult(new Object[] {a,b,c,d,e,f,g,h});
+                promise.reportResult(new Tuple8<>(a,b,c,d,e,f,g,h));
                 promise.reportFinished();
                 QObject.disconnect(connections[0]);
                 QObject.disconnect(connections[1]);
@@ -11750,19 +12730,30 @@ class QtFuture___ {
         }
         return null;
     }
+
+    /**
+     * Tuple for nine arguments.
+     */
+    public static class Tuple9<A,B,C,D,E,F,G,H,I> extends Tuple8<A,B,C,D,E,F,G,H>{
+        Tuple9(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9){
+            super(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+            this.arg9 = arg9;
+        }
+        public final I arg9;
+    }
     
     /**
      * <p>See <a href="@docRoot/qtfuture.html#connect"><code>QtFuture::connect(Sender *, Signal)</code></a></p>
      */
     @QtUninvokable
-    public static <A,B,C,D,E,F,G,H,I> @NonNull QFuture<Object[]> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal) {
+    public static <A,B,C,D,E,F,G,H,I> @NonNull QFuture<Tuple9<A,B,C,D,E,F,G,H,I>> connect(QMetaObject.@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal) {
         if(signal.containingObject() instanceof QObject) {
             QObject sender = (QObject)signal.containingObject();
-            QFutureInterface<Object[]> promise = new QFutureInterface<>();
+            QFutureInterface<Tuple9<A,B,C,D,E,F,G,H,I>> promise = new QFutureInterface<>();
             promise.reportStarted();
             QMetaObject.Connection[] connections = {null, null};
             connections[0] = signal.connect((a,b,c,d,e,f,g,h,i)->{
-                promise.reportResult(new Object[] {a,b,c,d,e,f,g,h,i});
+                promise.reportResult(new Tuple9<>(a,b,c,d,e,f,g,h,i));
                 promise.reportFinished();
                 QObject.disconnect(connections[0]);
                 QObject.disconnect(connections[1]);
@@ -11798,7 +12789,7 @@ class QtFuture_6_1to5__ {
      * <p>See <a href="@docRoot/qtfuture.html#makeReadyFuture-2"><code>QtFuture::makeReadyFuture(QList&lt;T>)</code></a></p>
      */
     @QtUninvokable
-    public static <T> @NonNull QFuture<T> makeReadyFuture(java.util.Collection<T> values)
+    public static <T> @NonNull QFuture<T> makeReadyFuture(java.util.@NonNull Collection<T> values)
     {
         QFutureInterface<T> promise = new QFutureInterface<>();
         promise.reportStarted();
@@ -11841,28 +12832,15 @@ class QtFuture_6_3__ {
      * <p>See <a href="@docRoot/qtfuture.html#whenAny-1"><code>QtFuture::whenAny(Futures)</code></a></p>
      */
     @QtUninvokable
-    public static @NonNull QFuture<QFuture<?>> whenAny(QFuture<?>... futures) {
-        if(futures==null || futures.length==0)
-            return makeReadyFuture(java.util.Collections.emptyList());
-        QPromise<QFuture<?>> promise = new QPromise<>();
-        promise.start();
-        java.util.concurrent.atomic.AtomicBoolean ab = new java.util.concurrent.atomic.AtomicBoolean();
-        for (QFuture<?> qFuture : futures) {
-            qFuture.then(f->{
-                if(ab.compareAndExchange(false, true)) {
-                    promise.addResult(f);
-                    promise.finish();
-                }
-            });
-        }
-        return promise.future();
+    public static @NonNull QFuture<QFuture<?>> whenAny(@NonNull QFuture<?> @NonNull... futures) {
+        return whenAny(java.util.Arrays.asList(futures));
     }
     
     /**
      * <p>See <a href="@docRoot/qtfuture.html#whenAny-1"><code>QtFuture::whenAny(Futures)</code></a></p>
      */
     @QtUninvokable
-    public static @NonNull QFuture<QFuture<?>> whenAny(java.util.Collection<QFuture<?>> futures) {
+    public static @NonNull QFuture<QFuture<?>> whenAny(java.util.@NonNull Collection<@NonNull QFuture<?>> futures) {
         if(futures==null || futures.size()==0)
             return makeReadyFuture(java.util.Collections.emptyList());
         QPromise<QFuture<?>> promise = new QPromise<>();
@@ -11883,33 +12861,15 @@ class QtFuture_6_3__ {
      * <p>See <a href="@docRoot/qtfuture.html#whenAll-1"><code>QtFuture::whenAll(Futures)</code></a></p>
      */
     @QtUninvokable
-    public static @NonNull QFuture<QList<QFuture<?>>> whenAll(QFuture<?>... futures) {
-        if(futures==null || futures.length==0)
-            return makeReadyFuture(java.util.Collections.emptyList());
-        QPromise<QList<QFuture<?>>> promise = new QPromise<>();
-        promise.start();
-        QList<QFuture<?>> list = new QList<>(QMetaType.Type.QVariant);
-        list.resize(futures.length);
-        java.util.concurrent.atomic.AtomicInteger ai = new java.util.concurrent.atomic.AtomicInteger(futures.length);
-        int i=0;
-        for (QFuture<?> qFuture : futures) {
-            int _i = i++;
-            qFuture.then(f->{
-                list.set(_i, f);
-                if(ai.incrementAndGet()==0) {
-                    promise.addResult(list);
-                    promise.finish();
-                }
-            });
-        }
-        return promise.future();
+    public static @NonNull QFuture<@NonNull QList<@NonNull QFuture<?>>> whenAll(@NonNull QFuture<?> @NonNull... futures) {
+        return whenAll(java.util.Arrays.asList(futures));
     }
     
     /**
      * <p>See <a href="@docRoot/qtfuture.html#whenAll-1"><code>QtFuture::whenAll(Futures)</code></a></p>
      */
     @QtUninvokable
-    public static @NonNull QFuture<QList<QFuture<?>>> whenAll(java.util.Collection<QFuture<?>> futures) {
+    public static @NonNull QFuture<@NonNull QList<@NonNull QFuture<?>>> whenAll(java.util.@NonNull Collection<@NonNull QFuture<?>> futures) {
         if(futures==null || futures.size()==0)
             return makeReadyFuture(java.util.Collections.emptyList());
         QPromise<QList<QFuture<?>>> promise = new QPromise<>();
@@ -11947,7 +12907,7 @@ class QtFuture_6_6__ {
      */
     @QtUninvokable
     @Deprecated
-    public static <T> @NonNull QFuture<T> makeReadyFuture(java.util.Collection<T> values){
+    public static <T> @NonNull QFuture<T> makeReadyFuture(java.util.@NonNull Collection<T> values){
         return makeReadyRangeFuture(values);
     }
 
@@ -11977,7 +12937,7 @@ class QtFuture_6_6__ {
      * <p>See <a href="@docRoot/qtfuture.html#makeReadyRangeFuture"><code>QtFuture::makeReadyRangeFuture(QList&lt;T>)</code></a></p>
      */
     @QtUninvokable
-    public static <T> @NonNull QFuture<T> makeReadyRangeFuture(java.util.Collection<T> values)
+    public static <T> @NonNull QFuture<T> makeReadyRangeFuture(java.util.@NonNull Collection<T> values)
     {
         QFutureInterface<T> promise = new QFutureInterface<>();
         promise.reportStarted();
@@ -11991,7 +12951,7 @@ class QtFuture_6_6__ {
      */
     @SafeVarargs
     @QtUninvokable
-    public static <T> @NonNull QFuture<T> makeReadyRangeFuture(T value0, T... valuesN)
+    public static <T> @NonNull QFuture<T> makeReadyRangeFuture(T value0, T @NonNull... valuesN)
     {
         QFutureInterface<T> promise = new QFutureInterface<>();
         promise.reportStarted();
@@ -12021,28 +12981,28 @@ class QJsonDocument___{
 class QJsonDocument_5__{
     
     /**
-     * <p>Overloaded function for {@link #fromRawData(java.nio.ByteBuffer, QJsonDocument.DataValidation)}.</p>
+     * <p>Overloaded function for {@link #fromRawData(String, QJsonDocument.DataValidation)}.</p>
      */
     public static @NonNull QJsonDocument fromRawData(@NonNull String data) {
         return fromRawData(data, QJsonDocument.DataValidation.Validate);
     }
     
     /**
-     * <p>Overloaded function for {@link #fromRawData(java.nio.ByteBuffer, QJsonDocument.DataValidation)}.</p>
+     * <p>Overloaded function for {@link #fromRawData(byte[], QJsonDocument.DataValidation)}.</p>
      */
     public static @NonNull QJsonDocument fromRawData(@NonNull String data, QJsonDocument.@NonNull DataValidation validation) {
         return fromRawData(data.getBytes(), validation);
     }
     
     /**
-     * <p>Overloaded function for {@link #fromRawData(java.nio.ByteBuffer, QJsonDocument.DataValidation)}.</p>
+     * <p>Overloaded function for {@link #fromRawData(byte[], QJsonDocument.DataValidation)}.</p>
      */
     public static @NonNull QJsonDocument fromRawData(byte @NonNull[] data) {
         return fromRawData(data, QJsonDocument.DataValidation.Validate);
     }
     
     /**
-     * <p>Overloaded function for {@link #fromRawData(java.nio.ByteBuffer, QJsonDocument.DataValidation)}.</p>
+     * <p>Overloaded function for {@link #fromRawData(java.nio.ByteBuffer, int, QJsonDocument.DataValidation)}.</p>
      */
     public static @NonNull QJsonDocument fromRawData(byte @NonNull[] data, QJsonDocument.@NonNull DataValidation validation) {
         java.nio.ByteBuffer buffer = java.nio.ByteBuffer.wrap(data);
@@ -12269,7 +13229,7 @@ class QMetaType___ extends QMetaType {
     
     /**
      * Registers debug stream operator for meta type <code>T</code>.
-     * @param debugstreamFn (only lambda expressions allowed)
+     * @param converterFn (only lambda expressions allowed)
      * @return the registered meta type
      */
     public static <T1,T2> boolean registerConverter(@StrictNonNull ConverterFn<T1,T2> converterFn) {
@@ -12681,12 +13641,12 @@ class QMetaType___ extends QMetaType {
         @NativeAccess
         private GenericValue(QPrivateConstructor p) { super(p); }
         
-        private native GenericValue clone(int type);
-        private native java.nio.ByteBuffer buffer(int type);
+        private static native GenericValue clone(long nativeId, int type);
+        private static native java.nio.ByteBuffer buffer(long nativeId, int type);
         
         @Override
         public @NonNull GenericValue clone() {
-            return clone(type);
+            return clone(QtJambi_LibraryUtilities.internal.nativeId(this), type);
         }
 
         @NativeAccess
@@ -12698,7 +13658,7 @@ class QMetaType___ extends QMetaType {
         }
         
         public java.nio.@NonNull ByteBuffer buffer(){
-            return buffer(type);
+            return buffer(QtJambi_LibraryUtilities.internal.nativeId(this), type);
         }
     }
     
@@ -14826,21 +15786,6 @@ class QCborValue_java__{
 }// class
 
 class QCborStreamReader_java__{
-    
-    /**
-     * <p>See <a href="@docRoot/qcborstreamreader.html#QCborStreamReader-1"><code>QCborStreamReader::QCborStreamReader(const char*,qsizetype)</code></a></p>
-     */
-    public QCborStreamReader(byte[] data){
-        this(new QByteArray(data));
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qcborstreamreader.html#addData"><code>QCborStreamReader::addData(QByteArray)</code></a></p>
-     */
-    @QtUninvokable
-    public final void addData(byte[] data){
-        addData(new QByteArray(data));
-    }
 }// class
 
 class QFactoryLoader_62_{
@@ -16314,12 +17259,12 @@ class QSharedMemory_java__{
          * Access to QSharedMemory's data
          */
         @QtUninvokable
-        public java.nio.@NonNull ByteBuffer data() {
+        public java.nio.@Nullable ByteBuffer data() {
             if(!sharedMemory.__qt_isInUse) {
                 throw new IllegalStateException();
             }
-            java.nio.ByteBuffer result = sharedMemory.data();
-            if(sharedMemory.__qt_accessMode==AccessMode.ReadOnly){
+            java.nio.ByteBuffer result = (java.nio.ByteBuffer)sharedMemory.data();
+            if(result!=null && sharedMemory.__qt_accessMode==AccessMode.ReadOnly){
                 result = result.asReadOnlyBuffer();
             }
             return result;
@@ -16692,7 +17637,7 @@ class QDataStream_6__{
     }
     
     /**
-     * <p>See <a href="@docRoot/qdatastream.html#operator-gt-gt-1"><code>QDataStream::operator&gt;&gt;</a></p>
+     * <p>See <a href="@docRoot/qdatastream.html#operator-gt-gt-1"><code>QDataStream::operator&gt;&gt;</code></a></p>
      */
     @SuppressWarnings("unchecked")
     public final <T> T readObject(Class<T> cl, @NonNull QMetaType @NonNull...instantiations){
@@ -16935,5 +17880,236 @@ class QtGlobal_6_ {
      * <p>See <a href="@docRoot/qhash.html#qHashMultiCommutative"><code>qHashMultiCommutative(long,T...)</code></a></p>
      */
     public static native long qHashMultiCommutative(long seed, Object... objects) throws UnsupportedOperationException;
+    }// class
+
+class QDeadlineTimer__ {
+    /**
+     * <p>Overloaded constructor for {@link #QDeadlineTimer(java.time.temporal.TemporalAmount, io.qt.core.Qt.TimerType)}
+     *  with <code>type = io.qt.core.Qt.TimerType.CoarseTimer</code>.</p>
+     */
+    public QDeadlineTimer(java.time.temporal.@NonNull TemporalAmount remaining) {
+        this(remaining, io.qt.core.Qt.TimerType.CoarseTimer);
+    }
+
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qdeadlinetimer.html#QDeadlineTimer-5">QDeadlineTimer::<wbr/>QDeadlineTimer(std::chrono::duration, Qt::TimerType)</a></code></p>
+     */
+    public QDeadlineTimer(java.time.temporal.@NonNull TemporalAmount remaining, io.qt.core.Qt.@NonNull TimerType type){
+        this(ForeverConstant.Forever, type);
+        java.time.Duration duration;
+        if(remaining instanceof java.time.Duration)
+            duration = (java.time.Duration)remaining;
+        else
+            duration = java.time.Duration.from(remaining);
+        if(duration.getSeconds()>=0 && duration.getSeconds()<Long.MAX_VALUE) {
+            setPreciseRemainingTime(duration.getSeconds(), duration.getNano(), type);
+        }
+    }
+
+    /**
+     * <p>Overloaded constructor for {@link #QDeadlineTimer(java.time.temporal.Temporal, io.qt.core.Qt.TimerType)}
+     *  with <code>type = io.qt.core.Qt.TimerType.CoarseTimer</code>.</p>
+     */
+    public QDeadlineTimer(java.time.temporal.@NonNull Temporal timePoint) {
+        this(timePoint, io.qt.core.Qt.TimerType.CoarseTimer);
+    }
+
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qdeadlinetimer.html#QDeadlineTimer-4">QDeadlineTimer::<wbr/>QDeadlineTimer(std::chrono::time_point, Qt::TimerType)</a></code></p>
+     */
+    public QDeadlineTimer(java.time.temporal.@NonNull Temporal timePoint, io.qt.core.Qt.@NonNull TimerType type){
+        this(ForeverConstant.Forever, type);
+        java.time.Instant instant;
+        if(timePoint instanceof java.time.Instant) {
+            instant = (java.time.Instant)timePoint;
+        }else {
+            instant = java.time.Instant.from(timePoint);
+        }
+        if(!java.time.Instant.MAX.equals(instant)) {
+            setPreciseDeadline(instant.getEpochSecond(), instant.getNano(), type);
+        }
+    }
+
+    /**
+     * <p>Overloaded method for {@link #setRemainingTime(java.time.temporal.TemporalAmount, io.qt.core.Qt.TimerType)}
+     *  with <code>type = io.qt.core.Qt.TimerType.CoarseTimer</code>.</p>
+     */
+    public void setRemainingTime(java.time.temporal.@NonNull TemporalAmount remaining) {
+        setRemainingTime(remaining, io.qt.core.Qt.TimerType.CoarseTimer);
+    }
+
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qdeadlinetimer.html#setRemainingTime-2">QDeadlineTimer::<wbr/>setRemainingTime(std::chrono::duration, Qt::TimerType)</a></code></p>
+     */
+    public void setRemainingTime(java.time.temporal.@NonNull TemporalAmount remaining, io.qt.core.Qt.@NonNull TimerType type){
+        java.time.Duration duration;
+        if(remaining instanceof java.time.Duration)
+            duration = (java.time.Duration)remaining;
+        else
+            duration = java.time.Duration.from(remaining);
+        if(duration.getSeconds()>=0 && duration.getSeconds()<Long.MAX_VALUE) {
+            setPreciseRemainingTime(duration.getSeconds(), duration.getNano(), type);
+        }else {
+            assign(new QDeadlineTimer(ForeverConstant.Forever));
+        }
+    }
+
+    /**
+     * <p>Overloaded method for {@link #setDeadline(java.time.temporal.Temporal, io.qt.core.Qt.TimerType)}
+     *  with <code>type = io.qt.core.Qt.TimerType.CoarseTimer</code>.</p>
+     */
+    public void setDeadline(java.time.temporal.@NonNull Temporal timePoint) {
+        setDeadline(timePoint, io.qt.core.Qt.TimerType.CoarseTimer);
+    }
+
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qdeadlinetimer.html#setDeadline-2">QDeadlineTimer::<wbr/>setDeadline(std::chrono::time_point, Qt::TimerType)</a></code></p>
+     */
+    public void setDeadline(java.time.temporal.@NonNull Temporal timePoint, io.qt.core.Qt.@NonNull TimerType type){
+        java.time.Instant instant;
+        if(timePoint instanceof java.time.Instant) {
+            instant = (java.time.Instant)timePoint;
+        }else {
+            instant = java.time.Instant.from(timePoint);
+        }
+        if(!java.time.Instant.MAX.equals(instant)) {
+            setPreciseDeadline(instant.getEpochSecond(), instant.getNano(), type);
+        }else {
+            assign(new QDeadlineTimer(ForeverConstant.Forever));
+        }
+    }
+
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qdeadlinetimer.html#operator-eq">QDeadlineTimer::<wbr/>operator=(std::chrono::time_point)</a></code></p>
+     */
+    @QtUninvokable
+    public final void assign(java.time.temporal.@NonNull Temporal timePoint){
+        setDeadline(timePoint);
+    }
+
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qdeadlinetimer.html#operator-eq-1">QDeadlineTimer::<wbr/>operator=(std::chrono::duration)</a></code></p>
+     */
+    @QtUninvokable
+    public final void assign(java.time.temporal.@NonNull TemporalAmount remaining){
+        setRemainingTime(remaining);
+    }
+
+    /**
+     * <p>See <code>operator+(QDeadlineTimer,<wbr/>std::chrono::duration)</code></p>
+     */
+    @QtUninvokable
+    public final io.qt.core.@NonNull QDeadlineTimer plus(java.time.temporal.@NonNull TemporalAmount remaining){
+        java.time.Duration duration;
+        if(remaining instanceof java.time.Duration)
+            duration = (java.time.Duration)remaining;
+        else
+            duration = java.time.Duration.from(remaining);
+        return addNSecs(this, duration.toNanos());
+    }
+
+    /**
+     * <p>See <code>QDeadlineTimer::<wbr/>deadline()const</code></p>
+     */
+    @QtUninvokable
+    public final <T extends java.time.temporal.Temporal> @NonNull T deadline(Class<T> type){
+        java.time.Instant instant = java.time.Instant.ofEpochSecond(0, deadlineNSecs());
+        if(type.isInstance(instant)) {
+            return type.cast(instant);
+        }else if(type.isAssignableFrom(java.time.LocalDate.class)) {
+            return type.cast(java.time.LocalDate.from(instant));
+        }else if(type.isAssignableFrom(java.time.LocalDateTime.class)) {
+            return type.cast(java.time.LocalDateTime.from(instant));
+        }else if(type.isAssignableFrom(java.time.LocalTime.class)) {
+            return type.cast(java.time.LocalTime.from(instant));
+        }else if(type.isAssignableFrom(java.time.OffsetTime.class)) {
+            return type.cast(java.time.OffsetTime.from(instant));
+        }else if(type.isAssignableFrom(java.time.OffsetDateTime.class)) {
+            return type.cast(java.time.OffsetDateTime.from(instant));
+        }else if(type.isAssignableFrom(java.time.ZonedDateTime.class)) {
+            return type.cast(java.time.ZonedDateTime.from(instant));
+        }else {
+            throw new IllegalArgumentException("Deadline cannot be expressed by type "+type.getName());
+        }
+    }
 }// class
 
+class QJsonArray___{
+    /**
+     * <p>Overloaded constructor for <code><a href="https://doc.qt.io/qt/qjsonarray.html#QJsonArray-1">QJsonArray::<wbr/>QJsonArray(std::initializer_list&lt;QJsonValue&gt;)</a></code></p>
+     */
+    public QJsonArray(@Nullable Object@NonNull  ... args){
+        super((QPrivateConstructor)null);
+        QJsonValue[] vargs = new QJsonValue[args.length];
+        for (int i = 0; i < vargs.length; i++) {
+            if(args[i] instanceof QJsonValue) {
+                vargs[i] = (QJsonValue)args[i];
+            }else if(args[i] instanceof String) {
+                vargs[i] = new QJsonValue((String)args[i]);
+            }else if(args[i] instanceof Boolean) {
+                vargs[i] = new QJsonValue((Boolean)args[i]);
+            }else if(args[i] instanceof Double) {
+                vargs[i] = new QJsonValue((Double)args[i]);
+            }else if(args[i] instanceof Integer) {
+                vargs[i] = new QJsonValue((Integer)args[i]);
+            }else if(args[i] instanceof QJsonArray) {
+                vargs[i] = new QJsonValue((QJsonArray)args[i]);
+            }else if(args[i] instanceof QJsonObject) {
+                vargs[i] = new QJsonValue((QJsonObject)args[i]);
+            }else if(args[i] instanceof Long) {
+                vargs[i] = new QJsonValue((Long)args[i]);
+            }else if(args[i]==null){
+                vargs[i] = new QJsonValue(QJsonValue.Type.Null);
+            }else {
+                vargs[i] = QJsonValue.fromVariant(args[i]);
+            }
+        }
+        initialize_native(this, vargs);
+    }
+}// class
+
+class QCborArray___{
+    /**
+     * <p>Overloaded constructor for <code><a href="https://doc.qt.io/qt/qcborarray.html#QCborArray-2">QCborArray::<wbr/>QCborArray(std::initializer_list&lt;QCborValue&gt;)</a></code></p>
+     */
+    public QCborArray(@Nullable Object@NonNull  ... args){
+        super((QPrivateConstructor)null);
+        QCborValue[] vargs = new QCborValue[args.length];
+        for (int i = 0; i < vargs.length; i++) {
+            if(args[i] instanceof QCborValue) {
+                vargs[i] = (QCborValue)args[i];
+            }else if(args[i] instanceof String) {
+                vargs[i] = new QCborValue((String)args[i]);
+            }else if(args[i] instanceof Boolean) {
+                vargs[i] = new QCborValue((Boolean)args[i]);
+            }else if(args[i] instanceof Double) {
+                vargs[i] = new QCborValue((Double)args[i]);
+            }else if(args[i] instanceof Integer) {
+                vargs[i] = new QCborValue((Integer)args[i]);
+            }else if(args[i] instanceof QCborArray) {
+                vargs[i] = new QCborValue((QCborArray)args[i]);
+            }else if(args[i] instanceof QCborMap) {
+                vargs[i] = new QCborValue((QCborMap)args[i]);
+            }else if(args[i] instanceof QByteArray) {
+                vargs[i] = new QCborValue((QByteArray)args[i]);
+            }else if(args[i] instanceof QCborSimpleType) {
+                vargs[i] = new QCborValue((QCborSimpleType)args[i]);
+            }else if(args[i] instanceof QDateTime) {
+                vargs[i] = new QCborValue((QDateTime)args[i]);
+            }else if(args[i] instanceof QRegularExpression) {
+                vargs[i] = new QCborValue((QRegularExpression)args[i]);
+            }else if(args[i] instanceof QUrl) {
+                vargs[i] = new QCborValue((QUrl)args[i]);
+            }else if(args[i] instanceof QUuid) {
+                vargs[i] = new QCborValue((QUuid)args[i]);
+            }else if(args[i] instanceof Long) {
+                vargs[i] = new QCborValue((Long)args[i]);
+            }else if(args[i]==null){
+                vargs[i] = new QCborValue(QCborValue.Type.Null);
+            }else {
+                vargs[i] = QCborValue.fromVariant(args[i]);
+            }
+        }
+        initialize_native(this, vargs);
+    }
+}// class

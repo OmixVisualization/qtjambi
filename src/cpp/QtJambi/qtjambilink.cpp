@@ -2618,8 +2618,8 @@ void QtJambiLink::unregisterPointer(void *ptr) {
         QWriteLocker locker(gLinkAccessLock());
         Q_UNUSED(locker)
         if(MultiLinkHash* h = gUserObjectCache()){
-            QList<QWeakPointer<QtJambiLink>> values = h->values(ptr);
-            for(QWeakPointer<QtJambiLink> wlink : values){
+            const QList<QWeakPointer<QtJambiLink>> values = h->values(ptr);
+            for(const QWeakPointer<QtJambiLink>& wlink : values){
                 QSharedPointer<QtJambiLink> link(wlink);
                 if(!link || link==m_this){
                     h->remove(ptr, link.toWeakRef());
@@ -2861,33 +2861,41 @@ DependencyManagerUserData::DependencyManagerUserData() : QtJambiObjectData() {
 
 DependencyManagerUserData::~DependencyManagerUserData(){
     QSet<QWeakPointer<QtJambiLink>> dependentObjects;
+    QList<std::function<void(JNIEnv*)>> finalizations;
     {
         QWriteLocker locker(QtJambiLinkUserData::lock());
         dependentObjects.swap(m_dependentObjects);
+        finalizations.swap(m_finalizations);
     }
-    if(!dependentObjects.empty()){
+    if(!dependentObjects.empty() || !finalizations.isEmpty()){
         if(JniEnvironment env{1024}){
-            clear(env, dependentObjects);
+            clear(env, dependentObjects, finalizations);
         }
     }
 }
 
 void DependencyManagerUserData::clear(JNIEnv* env){
     QSet<QWeakPointer<QtJambiLink>> dependentObjects;
+    QList<std::function<void(JNIEnv*)>> finalizations;
     {
         QWriteLocker locker(QtJambiLinkUserData::lock());
         dependentObjects.swap(m_dependentObjects);
+        finalizations.swap(m_finalizations);
     }
-    clear(env, dependentObjects);
+    clear(env, dependentObjects, finalizations);
 }
 
-void DependencyManagerUserData::clear(JNIEnv* env, QSet<QWeakPointer<QtJambiLink>>& dependentObjects){
-    for(const QWeakPointer<QtJambiLink>& weakLink : dependentObjects){
+void DependencyManagerUserData::clear(JNIEnv* env, QSet<QWeakPointer<QtJambiLink>>& dependentObjects, QList<std::function<void(JNIEnv*)>>& finalizations){
+    for(const QWeakPointer<QtJambiLink>& weakLink : qAsConst(dependentObjects)){
         if(QSharedPointer<QtJambiLink> link = weakLink.toStrongRef()){
             link->invalidate(env);
         }
     }
     dependentObjects.clear();
+    for(const std::function<void(JNIEnv*)>& f : qAsConst(finalizations)){
+        f(env);
+    }
+    finalizations.clear();
 }
 
 void DependencyManagerUserData::addDependentObject(const QSharedPointer<QtJambiLink>& dependent){
@@ -2920,6 +2928,10 @@ void DependencyManagerUserData::removeDependentObject(const QSharedPointer<QtJam
     }
 }
 
+void DependencyManagerUserData::addFinalization(std::function<void(JNIEnv*)>&& finalization){
+    m_finalizations << std::move(finalization);
+}
+
 bool DependencyManagerUserData::hasDependencies() const{
     return !m_dependentObjects.empty();
 }
@@ -2942,6 +2954,8 @@ DependencyManagerUserData* DependencyManagerUserData::instance(const QObject* ob
 Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gDependencyLock, (QReadWriteLock::Recursive))
 typedef QMultiHash<QSharedPointer<QtJambiLink>, QWeakPointer<QtJambiLink>> DependencyHash;
 Q_GLOBAL_STATIC(DependencyHash, gDependencies)
+typedef QMultiHash<QSharedPointer<QtJambiLink>, std::function<void(JNIEnv*)>> FinalizationHash;
+Q_GLOBAL_STATIC(FinalizationHash, gFinalizations)
 
 void QtJambiLink::registerDependentObject(const QObject* object, const QSharedPointer<QtJambiLink>& link){
     if(object && !link->isShell() && !link->isSmartPointer() && !link->m_flags.testFlag(Flag::IsDependent)){
@@ -2964,6 +2978,26 @@ void QtJambiLink::unregisterDependentObject(const QObject* object, const QShared
         }
         link->m_flags.setFlag(Flag::NoNativeDeletion, false);
         link->m_flags.setFlag(Flag::IsDependent, false);
+    }
+}
+
+void QtJambiLink::addFinalization(const QObject* object, std::function<void(JNIEnv*)>&& finalization){
+    if(object){
+        if(DependencyManagerUserData* dm = DependencyManagerUserData::instance(object)){
+            dm->addFinalization(std::move(finalization));
+        }
+    }
+}
+
+void QtJambiLink::addFinalization(std::function<void(JNIEnv*)>&& finalization){
+    if(isQObject()){
+        addFinalization(qobject(), std::move(finalization));
+    }else{
+        if(!m_flags.testFlag(Flag::HasDependencies))
+            m_flags.setFlag(Flag::HasDependencies);
+        QWriteLocker locker(gDependencyLock());
+        Q_UNUSED(locker)
+        gFinalizations->insert(m_this, std::move(finalization));
     }
 }
 
@@ -3015,16 +3049,22 @@ void QtJambiLink::invalidateDependentObjects(JNIEnv *env)
     }else{
         if(m_flags.testFlag(Flag::HasDependencies)){
             QList<QWeakPointer<QtJambiLink>> dependentObjects;
+            QList<std::function<void(JNIEnv*)>> finalizations;
             {
                 QWriteLocker locker(gDependencyLock());
                 Q_UNUSED(locker)
                 dependentObjects = gDependencies->values(m_this);
                 gDependencies->remove(m_this);
+                finalizations = gFinalizations->values(m_this);
+                gFinalizations->remove(m_this);
             }
-            for(const QWeakPointer<QtJambiLink>& weakLink : dependentObjects){
+            for(const QWeakPointer<QtJambiLink>& weakLink : qAsConst(dependentObjects)){
                 if(QSharedPointer<QtJambiLink> link = weakLink.toStrongRef()){
                     link->invalidate(env);
                 }
+            }
+            for(const std::function<void(JNIEnv*)>& f : qAsConst(finalizations)){
+                f(env);
             }
         }
     }
@@ -4424,11 +4464,11 @@ QString PointerToObjectLink::describe() const{
     QString strg = "[deletionPolicy=%1, createdByJava=%2, hasBeenCleaned=%3, isJavaObjectReleased=%4, isJavaLinkDetached=%5, isDeleteLater=%6, ownership=%7, metaType=%8, metaTypeId=%9]";
     strg = strg.arg("Normal");
     strg = strg
-            .arg(createdByJava() ? "true" : "false")
-            .arg(m_flags.testFlag(Flag::HasBeenCleaned) ? "true" : "false")
-            .arg(m_java.object==nullptr ? "true" : "false")
-            .arg(m_flags.testFlag(Flag::IsJavaLinkDetached) ? "true" : "false")
-            .arg(isDeleteLater() ? "true" : "false");
+            .arg(createdByJava() ? "true" : "false",
+                    m_flags.testFlag(Flag::HasBeenCleaned) ? "true" : "false",
+                    m_java.object==nullptr ? "true" : "false",
+                    m_flags.testFlag(Flag::IsJavaLinkDetached) ? "true" : "false",
+                    isDeleteLater() ? "true" : "false");
     if(m_flags.testFlag(Flag::JavaOwnership)) strg = strg.arg("Java");
     else if(m_flags.testFlag(Flag::CppOwnership)) strg = strg.arg("Cpp");
     else if(m_flags.testFlag(Flag::SplitOwnership)) strg = strg.arg("Split");
@@ -4442,14 +4482,13 @@ QString PointerToQObjectLink::describe() const{
     QString strg;
     if(qobject()){
         strg += QString("class=%1, objectName=%2, ")
-                .arg(qobject()->metaObject()->className())
-                .arg(qobject()->objectName());
+                    .arg(QLatin1String(qobject()->metaObject()->className()), qobject()->objectName());
     }
     strg += QString("createdByJava=%1, hasBeenCleaned=%2, isJavaObjectReleased=%3, isJavaLinkDetached=%4, ownership=%5")
-            .arg(createdByJava() ? "true" : "false")
-            .arg(m_flags.testFlag(Flag::HasBeenCleaned) ? "true" : "false")
-            .arg(m_java.object==nullptr ? "true" : "false")
-            .arg(m_flags.testFlag(Flag::IsJavaLinkDetached) ? "true" : "false");
+            .arg(createdByJava() ? "true" : "false",
+                     m_flags.testFlag(Flag::HasBeenCleaned) ? "true" : "false",
+                     m_java.object==nullptr ? "true" : "false",
+                     m_flags.testFlag(Flag::IsJavaLinkDetached) ? "true" : "false");
     if(m_flags.testFlag(Flag::JavaOwnership)) strg = strg.arg("Java");
     else if(m_flags.testFlag(Flag::CppOwnership)) strg = strg.arg("Cpp");
     else if(m_flags.testFlag(Flag::SplitOwnership)) strg = strg.arg("Split");
@@ -4462,11 +4501,11 @@ QString SmartPointerToObjectLink::describe() const{
     if(m_owner_function) strg = strg.arg("InSpecificThread");
     else strg = strg.arg("Normal");
     strg = strg
-            .arg(createdByJava() ? "true" : "false")
-            .arg(m_flags.testFlag(Flag::HasBeenCleaned) ? "true" : "false")
-            .arg(m_java.object==nullptr ? "true" : "false")
-            .arg(m_flags.testFlag(Flag::IsJavaLinkDetached) ? "true" : "false")
-            .arg(isPointerZeroed() ? "true" : "false");
+            .arg(createdByJava() ? "true" : "false",
+                    m_flags.testFlag(Flag::HasBeenCleaned) ? "true" : "false",
+                    m_java.object==nullptr ? "true" : "false",
+                    m_flags.testFlag(Flag::IsJavaLinkDetached) ? "true" : "false",
+                    isPointerZeroed() ? "true" : "false");
     if(m_flags.testFlag(Flag::JavaOwnership)) strg = strg.arg("JavaOwnership");
     else if(m_flags.testFlag(Flag::CppOwnership)) strg = strg.arg("CppOwnership");
     else if(m_flags.testFlag(Flag::SplitOwnership)) strg = strg.arg("SplitOwnership");
@@ -4485,15 +4524,13 @@ void QSharedPointerToQObjectLink::removeInterface(const std::type_info&){
 QString QSharedPointerToQObjectLink::describe() const{
     QString strg;
     if(qobject()){
-        strg += QString("class=%1, objectName=%2, ")
-                .arg(qobject()->metaObject()->className())
-                .arg(qobject()->objectName());
+        strg += QString("class=%1, objectName=%2, ").arg(QLatin1String(qobject()->metaObject()->className()), qobject()->objectName());
     }
     strg += QString("createdByJava=%1, hasBeenCleaned=%2, linkRemoved=%3, objectInvalid=%4, ownership=%6")
-            .arg(createdByJava() ? "true" : "false")
-            .arg(m_flags.testFlag(Flag::HasBeenCleaned) ? "true" : "false")
-            .arg(m_java.object==nullptr ? "true" : "false")
-            .arg(m_flags.testFlag(Flag::IsJavaLinkDetached) ? "true" : "false");
+            .arg(createdByJava() ? "true" : "false",
+                     m_flags.testFlag(Flag::HasBeenCleaned) ? "true" : "false",
+                     m_java.object==nullptr ? "true" : "false",
+                     m_flags.testFlag(Flag::IsJavaLinkDetached) ? "true" : "false");
     if(m_flags.testFlag(Flag::JavaOwnership)) strg = strg.arg("JavaOwnership");
     else if(m_flags.testFlag(Flag::CppOwnership)) strg = strg.arg("CppOwnership");
     else if(m_flags.testFlag(Flag::SplitOwnership)) strg = strg.arg("SplitOwnership");
@@ -4875,7 +4912,8 @@ void LINKTYPE::addInterface(const std::type_info& qtInterfaceType){\
     if(offset>0){\
         registerPointer(reinterpret_cast<void*>( quintptr(LINKSUPERTYPE::pointer()) + offset ));\
     }else{\
-        for(const std::type_info* ifaces : m_inheritedInterfaces[unique_id(qtInterfaceType)]){\
+        const QSet<const std::type_info*> inheritedInterfaces = m_inheritedInterfaces[unique_id(qtInterfaceType)];\
+        for(const std::type_info* ifaces : inheritedInterfaces){\
             Q_ASSERT(ifaces);\
             addInterface(*ifaces);\
         }\
@@ -4886,13 +4924,13 @@ void LINKTYPE::removeInterface(const std::type_info& qtInterfaceType){\
         m_availableInterfaces.remove(unique_id(qtInterfaceType));\
         if(m_interfaceOffsets.contains(unique_id(qtInterfaceType))){\
             size_t offset = m_interfaceOffsets.value(unique_id(qtInterfaceType));\
-            if(offset>0){\
+            if(offset>0)\
                 unregisterPointer(reinterpret_cast<void*>( quintptr(LINKSUPERTYPE::pointer()) + offset ));\
-            }else{\
+            else\
                 setInDestructor();\
-            }\
         }else{\
-            for(const std::type_info* ifaces : m_inheritedInterfaces[unique_id(qtInterfaceType)]){\
+            const QSet<const std::type_info*> inheritedInterfaces = m_inheritedInterfaces[unique_id(qtInterfaceType)];\
+            for(const std::type_info* ifaces : inheritedInterfaces){\
                 Q_ASSERT(ifaces);\
                 removeInterface(*ifaces);\
             }\
@@ -4905,9 +4943,8 @@ void* LINKTYPE::typedPointer(const std::type_info& qtInterfaceType) const{\
         if(!m_availableInterfaces.contains(unique_id(qtInterfaceType)))\
             return nullptr;\
         size_t offset = m_interfaceOffsets.value(unique_id(qtInterfaceType));\
-        if(offset>0){\
+        if(offset>0)\
             return reinterpret_cast<void*>( quintptr(LINKSUPERTYPE::pointer()) + offset );\
-        }\
     }\
     return LINKSUPERTYPE::pointer();\
 }\

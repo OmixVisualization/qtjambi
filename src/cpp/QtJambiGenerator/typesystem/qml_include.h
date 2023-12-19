@@ -33,6 +33,9 @@ public:
     const QStringList &getRequiredFeatures() const;
     void setRequiredFeatures(const QStringList &newRequiredFeatures);
 
+    bool getCkeckAvailability() const;
+    void setCkeckAvailability(bool newCkeckAvailability);
+
 signals:
     void fileNameChanged();
 
@@ -46,19 +49,23 @@ signals:
 
     void requiredFeaturesChanged();
 
+    void ckeckAvailabilityChanged();
+
 private:
     QString fileName;
     QString ppCondition;
     IncludeType location;
     bool inherited = false;
     bool suppressed = false;
+    bool ckeckAvailability = false;
     QStringList requiredFeatures;
     Q_PROPERTY(QString fileName READ getFileName WRITE setFileName NOTIFY fileNameChanged)
-    //Q_PROPERTY(QString ppCondition READ getPpCondition WRITE setPpCondition NOTIFY ppConditionChanged)
+    Q_PROPERTY(QString ppCondition READ getPpCondition WRITE setPpCondition NOTIFY ppConditionChanged)
     Q_PROPERTY(IncludeType location READ getLocation WRITE setLocation NOTIFY locationChanged)
     Q_PROPERTY(bool inherited READ getInherited WRITE setInherited NOTIFY inheritedChanged)
     Q_PROPERTY(bool suppressed READ getSuppressed WRITE setSuppressed NOTIFY suppressedChanged)
     Q_PROPERTY(QStringList requiredFeatures READ getRequiredFeatures WRITE setRequiredFeatures NOTIFY requiredFeaturesChanged)
+    Q_PROPERTY(bool ckeckAvailability READ getCkeckAvailability WRITE setCkeckAvailability NOTIFY ckeckAvailabilityChanged)
 };
 
 class ExtraIncludes : public AbstractObject{

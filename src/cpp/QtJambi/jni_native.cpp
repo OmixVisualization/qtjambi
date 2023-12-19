@@ -32,6 +32,7 @@
 #include "qtjambilink_p.h"
 #include "qtjambishell_p.h"
 #include "supertypeinfo_p.h"
+#include "java_p.h"
 #include "qtjambi_cast.h"
 
 extern "C" Q_DECL_EXPORT void
@@ -321,3 +322,25 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_NativeUtility_getInterfaces)
         return nullptr;
     }
 }
+
+extern "C" Q_DECL_EXPORT jobject JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_NativeUtility_mutableData)
+    (JNIEnv *env, jclass, QtJambiNativeID nid)
+{
+    jobject __java_return_value{0};
+    QTJAMBI_TRY {
+        QByteArray *__qt_this = QtJambiAPI::objectFromNativeId<QByteArray>(nid);
+        QtJambiAPI::checkNullPointer(env, __qt_this);
+        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QByteArray::data()", __qt_this)
+        char* __qt_return_value = __qt_this->data();
+        DataJBuffer d(env, __qt_return_value, jlong(__qt_this->capacity()));
+        if(__qt_this->size()<__qt_this->capacity())
+            d.setLimit(jsize(__qt_this->size()));
+        __java_return_value = d.take();
+        QtJambiAPI::registerDependency(env, __java_return_value, nid);
+    }QTJAMBI_CATCH(const JavaException& exn){
+        exn.raiseInJava(env);
+    }QTJAMBI_TRY_END
+        return __java_return_value;
+}
+

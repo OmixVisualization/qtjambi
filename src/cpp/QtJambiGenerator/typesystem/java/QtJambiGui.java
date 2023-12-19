@@ -251,10 +251,10 @@ class QBrush___ extends QBrush {
 }// class
 
 class QClipboard___ extends QClipboard {
-
     /**
      * Result type for {@link QClipboard#text(String, Mode)}.
      */
+    @Deprecated
     public final static class Text {
         private Text(String text, String subtype) {
             super();
@@ -263,6 +263,28 @@ class QClipboard___ extends QClipboard {
         }
         public final String text;
         public final String subtype;
+    }
+
+    /**
+     * @deprecated Use {@link #text(io.qt.core.QString, Mode)} instead
+     */
+    @Deprecated
+    @QtUninvokable
+    public final io.qt.gui.QClipboard.@StrictNonNull Text text(java.lang.String subtype, io.qt.gui.QClipboard.@NonNull Mode mode){
+        io.qt.core.QString _subType = new io.qt.core.QString(subtype);
+        String text = text(_subType, mode);
+        return new Text(text, _subType.toString());
+    }
+
+    /**
+     * @deprecated Use {@link #text(io.qt.core.QString)} instead
+     */
+    @Deprecated
+    @QtUninvokable
+    public final io.qt.gui.QClipboard.@StrictNonNull Text text(java.lang.String subtype){
+        io.qt.core.QString _subType = new io.qt.core.QString(subtype);
+        String text = text(_subType);
+        return new Text(text, _subType.toString());
     }
 }// class
 

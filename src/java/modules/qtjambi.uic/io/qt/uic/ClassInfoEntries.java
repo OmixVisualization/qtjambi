@@ -33,6 +33,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.TreeMap;
 
+/**
+ * @hidden
+ */
 public class ClassInfoEntries {
 	
 	private static final TreeMap<String, String> m_classToJavaQualifier = new TreeMap<>();

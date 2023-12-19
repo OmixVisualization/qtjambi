@@ -29,7 +29,6 @@
 ****************************************************************************/
 package io.qt.core;
 
-import io.qt.InternalAccess.Cleanable;
 import io.qt.QtUninvokable;
 
 /**
@@ -51,39 +50,24 @@ import io.qt.QtUninvokable;
  */
 public final class QScopeGuard implements AutoCloseable {
 	
-	private static class Data{
-		private Runnable data;
-		private Cleanable cleanable;
-		
-	    @QtUninvokable
-		void close(){
-			if(data!=null) {
-				try{
-					data.run();
-				}finally{
-					data = null;
-				}
-			}
-		}
-	}
-
-	private final Data data = new Data();
+	private final QScopedPointer.Data<Runnable> data = new QScopedPointer.Data<Runnable>();
 	
 	/**
 	 * Create a scope guard that will execute <code>function</code> at the end of the scope.
 	 * @param function runnable to be executed
 	 */
-	public QScopeGuard(Runnable runnable) {
-		this.data.data = runnable;
-		this.data.cleanable = QtJambi_LibraryUtilities.internal.registerCleaner(this, this.data::close);
+	public QScopeGuard(Runnable function) {
+		data.entry = new QScope.RunningEntry(function);
+		this.data.cleanable = QtJambi_LibraryUtilities.internal.registerCleaner(this, this.data::cleanup);
 	}
 
 	@Override
     @QtUninvokable
 	public void close(){
-		data.close();
-		if(this.data.cleanable!=null)
+		if(this.data.cleanable!=null) {
 			this.data.cleanable.clean();
+			this.data.cleanable = null;
+		}
 	}
 	
 	/**
@@ -91,9 +75,11 @@ public final class QScopeGuard implements AutoCloseable {
 	 */
 	@QtUninvokable
 	public void dismiss() {
-		data.data = null;
-		if(this.data.cleanable!=null)
+		data.entry = null;
+		if(this.data.cleanable!=null) {
 			this.data.cleanable.clean();
+			this.data.cleanable = null;
+		}
 	}
 
     /**

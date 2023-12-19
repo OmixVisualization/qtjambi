@@ -55,6 +55,9 @@ import io.qt.core.QMetaObject.Method4;
 import io.qt.core.QMetaObject.Method5;
 import io.qt.core.QObject;
 
+/**
+ * @hidden
+ */
 final class AccessUtility implements io.qt.InternalAccess{
 
 	private AccessUtility(){}
@@ -203,6 +206,11 @@ final class AccessUtility implements io.qt.InternalAccess{
 	@Override
 	public long checkedNativeId(QtObjectInterface object) {
 		return NativeUtility.checkedNativeId(object);
+	}
+	
+	@Override
+	public java.nio.ByteBuffer mutableData(io.qt.core.QByteArray byteArray){
+		return NativeUtility.mutableData(byteArray);
 	}
 
 	@Override

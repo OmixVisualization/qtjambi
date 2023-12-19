@@ -43,6 +43,9 @@ import io.qt.uic.ui4.DomSpacer;
 import io.qt.uic.ui4.DomUI;
 import io.qt.uic.ui4.DomWidget;
 
+/**
+ * @hidden
+ */
 public abstract class WriteIncludesBase extends TreeWalker{
 	public WriteIncludesBase(Uic uic) {
 		this.m_uic = uic;

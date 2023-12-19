@@ -522,14 +522,12 @@ namespace rpp {
                             "qpa/qplatformscreen.h",
                             "CoreFoundation/CoreFoundation.h",
                             "qplatformdefs.h",
+                            "QtAxContainer/QtAxContainer",
                             "QtActiveQt/QtActiveQtDepends",
                             "QtMacExtras/QtMacExtrasDepends",
                             "QtX11Extras/QtX11ExtrasDepends",
                             "QtWinExtras/QtWinExtrasDepends",
-                            "QtMacExtras/QtMacExtras",
-                            "QtX11Extras/QtX11Extras",
-                            "QtX11Extras/QX11Info",
-                            "QtWinExtras/QtWinExtras",
+                            "ActiveQt/ActiveQtDepends",
                             "QtGui/qopengles2ext.h",
                             "time.h",
                             "inttypes.h",
@@ -569,7 +567,8 @@ namespace rpp {
                             "cstdlib",
                             "chrono",
                             "stdbool.h",
-                            "climits"
+                            "climits",
+                            "QtCore/qjnitypes.h"
                         };
                     if((verbose & DEBUGLOG_INCLUDE_ERRORS) != 0) {
                         QString current_file(env.current_file.absoluteFilePath());

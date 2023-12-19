@@ -45,7 +45,7 @@ public final class QBooleanPropertyBinding extends QUntypedPropertyBinding {
 
 	/**
 	 * Creates a new <code>QBooleanPropertyBinding</code> with the given functor <code>f</code>.
-	 * @param t
+	 * @param f
 	 */
 	public QBooleanPropertyBinding(@StrictNonNull BooleanSupplier f) {
 		super(f);
@@ -117,8 +117,6 @@ public final class QBooleanPropertyBinding extends QUntypedPropertyBinding {
 
 	/**
 	 * Creates a <code>null</code>-<code>QBooleanPropertyBinding</code>.
-	 * @param binding
-	 * @return binding copy
 	 * @see QUntypedPropertyBinding#isNull()
 	 */
 	public QBooleanPropertyBinding() {

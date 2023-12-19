@@ -585,10 +585,11 @@ TypeSystem{
         EnumType{
             name: "FrameType"
         }
-    }
-    
-    ValueType{
-        name: "QCanBusFrame::TimeStamp"
+
+        ValueType{
+            name: "TimeStamp"
+            noImplicitConstructors: true
+        }
     }
     
     ValueType{
@@ -847,8 +848,8 @@ TypeSystem{
             signature: "data(QModbusDataUnit::RegisterType,quint16,quint16*)const"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    minLength: 1
+                AsArray{
+                    minLength: 0
                 }
             }
         }

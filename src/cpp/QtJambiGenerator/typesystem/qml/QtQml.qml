@@ -114,11 +114,6 @@ TypeSystem{
     }
     
     Rejection{
-        className: "QtQml"
-        functionName: "qmlInfo"
-    }
-    
-    Rejection{
         className: "QQmlV4Function"
     }
     
@@ -325,6 +320,14 @@ TypeSystem{
         EnumType{
             name: "Type"
             since: [6, 1]
+        }
+        ModifyFunction{
+            signature: "QJSManagedValue(QJSValue, QJSEngine *)"
+            noImplicitArguments: true
+        }
+        ModifyFunction{
+            signature: "QJSManagedValue(QJSPrimitiveValue, QJSEngine *)"
+            noImplicitArguments: true
         }
         since: [6, 1]
     }
@@ -587,16 +590,11 @@ TypeSystem{
                 location: Include.Local
             }
         }
+        Rejection{functionName: "qmlInfo"}
         ModifyFunction{
             signature: "qmlAttachedPropertiesObject(int *, const QObject *, const QMetaObject *, bool)"
             remove: RemoveFlag.All
             until: 5
-        }
-        ExtraIncludes{
-            Include{
-                fileName: "io.qt.core.*"
-                location: Include.Java
-            }
         }
         InjectCode{
             ImportFile{
@@ -605,50 +603,50 @@ TypeSystem{
                 quoteBeforeLine: "}// class"
             }
         }
-    }
-    
-    FunctionalType{
-        name: "QtQml::QQmlAttachedPropertiesFunc"
-        ExtraIncludes{
-            Include{
-                fileName: "hashes.h"
-                location: Include.Local
+
+        FunctionalType{
+            name: "QQmlAttachedPropertiesFunc"
+            ExtraIncludes{
+                Include{
+                    fileName: "hashes.h"
+                    location: Include.Local
+                }
             }
         }
-    }
-    
-    FunctionalType{
-        name: "QtQml::ValueCallback"
-        ExtraIncludes{
-            Include{
-                fileName: "QtQml/QQmlEngine"
-                location: Include.Global
-            }
-            Include{
-                fileName: "QtQml/QJSEngine"
-                location: Include.Global
-            }
-            Include{
-                fileName: "hashes.h"
-                location: Include.Local
+
+        FunctionalType{
+            name: "ValueCallback"
+            ExtraIncludes{
+                Include{
+                    fileName: "QtQml/QQmlEngine"
+                    location: Include.Global
+                }
+                Include{
+                    fileName: "QtQml/QJSEngine"
+                    location: Include.Global
+                }
+                Include{
+                    fileName: "hashes.h"
+                    location: Include.Local
+                }
             }
         }
-    }
-    
-    FunctionalType{
-        name: "QtQml::ObjectCallback"
-        ExtraIncludes{
-            Include{
-                fileName: "QtQml/QQmlEngine"
-                location: Include.Global
-            }
-            Include{
-                fileName: "QtQml/QJSEngine"
-                location: Include.Global
-            }
-            Include{
-                fileName: "hashes.h"
-                location: Include.Local
+
+        FunctionalType{
+            name: "ObjectCallback"
+            ExtraIncludes{
+                Include{
+                    fileName: "QtQml/QQmlEngine"
+                    location: Include.Global
+                }
+                Include{
+                    fileName: "QtQml/QJSEngine"
+                    location: Include.Global
+                }
+                Include{
+                    fileName: "hashes.h"
+                    location: Include.Local
+                }
             }
         }
     }
@@ -1106,6 +1104,13 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
             }
         }
         ModifyFunction{
+            signature: "QQmlApplicationEngine(QUrl,QObject*)"
+            ModifyArgument{
+                index: 1
+                noImplicitCalls: true
+            }
+        }
+        ModifyFunction{
             signature: "rootObjects()"
             remove: RemoveFlag.All
             since: [5, 9]
@@ -1142,6 +1147,20 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
             Include{
                 fileName: "QtJambi/QmlAPI"
                 location: Include.Global
+            }
+        }
+        ModifyFunction{
+            signature: "QQmlComponent(QQmlEngine*,QUrl,QObject*)"
+            ModifyArgument{
+                index: 2
+                noImplicitCalls: true
+            }
+        }
+        ModifyFunction{
+            signature: "QQmlComponent(QQmlEngine*,QUrl,QQmlComponent::CompilationMode,QObject*)"
+            ModifyArgument{
+                index: 2
+                noImplicitCalls: true
             }
         }
         ModifyFunction{
@@ -1202,6 +1221,13 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
         ModifyFunction{
             signature: "create(QQmlIncubator &, QQmlContext *, QQmlContext *)"
             blockExceptions: true
+        }
+        ModifyFunction{
+            signature: "setData(QByteArray,QUrl)"
+            ModifyArgument{
+                index: 1
+                AddImplicitCall{type: "java.lang.@NonNull String"}
+            }
         }
     }
     
@@ -1377,6 +1403,10 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
                 location: Include.Global
             }
         }
+        InjectCode{
+            target: CodeClass.Native
+            Text{content: "QT_WARNING_DISABLE_DEPRECATED\nQT_WARNING_DISABLE_GCC(\"-Wdeprecated-declarations\")"}
+        }
     }
     
     InterfaceType{
@@ -1527,11 +1557,6 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
     
     GlobalFunction{
         signature: "qmlRegisterCustomType<T>(const char*, int, int, const char*, QQmlCustomParser*)"
-        remove: RemoveFlag.All
-    }
-    
-    GlobalFunction{
-        signature: "qmlRegisterSingletonInstance<T>(const char*, int, int, const char*, T*)"
         remove: RemoveFlag.All
     }
     
@@ -1981,6 +2006,11 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
             }
         }
     }
+
+    GlobalFunction{
+        signature: "qmlRegisterSingletonInstance<T>(const char*, int, int, const char*, T*)"
+        remove: RemoveFlag.All
+    }
     
     GlobalFunction{
         signature: "qmlRegisterSingletonType(const char*,int,int,const char*,QJSValue(*)(QQmlEngine*,QJSEngine*))"
@@ -2168,4 +2198,5 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
     SuppressedWarning{text: "WARNING(CppImplGenerator) :: protected function '*' in final class '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: visibility of function '*' modified in class '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: hiding of function '*' in class '*'"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping field 'QQmlListProperty::*' with unmatched type 'QQmlListProperty::*'"}
 }

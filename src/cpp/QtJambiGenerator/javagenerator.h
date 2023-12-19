@@ -66,7 +66,8 @@ public:
     void writeFunctionArgument(QTextStream &s,
                               const MetaFunction *java_function,
                               const MetaArgument *java_argument,
-                              const QString* alternativeType = nullptr,
+                              bool &commaRequired,
+                              const QMap<int,const QString*>* alternativeTypes = nullptr,
                               Option options = Option::NoOption);
     void writeFunctional(QTextStream &s, const MetaFunctional *java_functional);
     void writeEnum(QTextStream &s, const MetaEnum *java_enum);
@@ -176,12 +177,14 @@ protected:
     QList<const MetaFunction *> m_reference_count_candidate_functions;
     QList<const MetaFunction *> m_factory_functions;
     QList<const MetaFunction *> m_inconsistent_functions;
+    QList<const MetaFunction *> m_implicit_constructors;
+    QList<const MetaFunction *> m_functions_with_implicit_calls;
     TS::TypeDatabase* m_database;
 
 private:
     QList<QString> m_currentPackages;
     QSet<QString> m_exportedPackages;
-    QSet<QString> m_currentMethodSignatures;
+    QHash<QString,const MetaFunction *> m_currentMethodSignatures;
     QHash<TypeSystemTypeEntry *,QList<QString>> m_packagesByTypeSystem;
     QMap<QString,TypeSystemTypeEntry *> m_typeSystemByPackage;
     QNetworkAccessManager m_networkManager;

@@ -32,6 +32,9 @@ package io.qt.qtjambi.generator;
 
 import io.qt.QtUtilities;
 
+/**
+ * @hidden
+ */
 public final class Main {
 
 	private Main() {

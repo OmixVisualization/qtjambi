@@ -179,8 +179,18 @@
   </target>
   
   <target name="library.native.bundle.release-impl">
-	<delete dir="${deploymentdir}/platforms/${qtjambi.osname}/release"/>
-	<mkdir dir="${deploymentdir}/platforms/${qtjambi.osname}/release"/>
+	<if>
+		<equals arg1="${qtjambi.osname}" arg2="android"/>
+		<then>
+			<mkdir dir="${deploymentdir}/platforms/android-arm/release"/>
+			<mkdir dir="${deploymentdir}/platforms/android-arm64/release"/>
+			<mkdir dir="${deploymentdir}/platforms/android-x86/release"/>
+			<mkdir dir="${deploymentdir}/platforms/android-x64/release"/>
+		</then>
+		<else>
+			<mkdir dir="${deploymentdir}/platforms/${qtjambi.osname}/release"/>
+		</else>
+	</if>
 	<ant antfile="${basedir}/src/java/modules/modules.xml" inheritrefs="true" target="build">
 		<property name="qtjambi-native-bundle" value="true"/>
 		<property name="platformjar.debug" value="false"/>
@@ -268,17 +278,12 @@
 	<if>
 		<equals arg1="${qtjambi.osname}" arg2="android"/>
 		<then>
-			<delete dir="${deploymentdir}/platforms/android-arm/debug"/>
 			<mkdir dir="${deploymentdir}/platforms/android-arm/debug"/>
-			<delete dir="${deploymentdir}/platforms/android-arm64/debug"/>
 			<mkdir dir="${deploymentdir}/platforms/android-arm64/debug"/>
-			<delete dir="${deploymentdir}/platforms/android-x86/debug"/>
 			<mkdir dir="${deploymentdir}/platforms/android-x86/debug"/>
-			<delete dir="${deploymentdir}/platforms/android-x64/debug"/>
 			<mkdir dir="${deploymentdir}/platforms/android-x64/debug"/>
 		</then>
 		<else>
-			<delete dir="${deploymentdir}/platforms/${qtjambi.osname}/debug"/>
 			<mkdir dir="${deploymentdir}/platforms/${qtjambi.osname}/debug"/>
 		</else>
 	</if>

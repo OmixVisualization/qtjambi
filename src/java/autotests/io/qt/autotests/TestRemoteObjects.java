@@ -157,6 +157,7 @@ public class TestRemoteObjects extends UnitTestInitializer {
 		timer.start();
 		Throwable exception[] = {new AssertionError("Replica not initialized")};
 		try {
+			System.out.println("initialize QRemoteObjectDynamicReplica...");
 			pong.initialized.connect(()->{
 				exception[0] = null;
 				timer.stop();
@@ -164,26 +165,6 @@ public class TestRemoteObjects extends UnitTestInitializer {
 				QObject object = new QObject();
 				object.destroyed.connect(()->{
 					try {
-						AbstractPublicSignal0 pongSignal = (AbstractPublicSignal0)QMetaObject.findSignal(pong, "pong");
-						AbstractPublicSignal0 pingSignal = (AbstractPublicSignal0)QMetaObject.findSignal(pong, "ping");
-						Assert.assertTrue(pongSignal!=null);
-						Assert.assertTrue(pingSignal!=null);
-						boolean[] received = {false,false};
-						pongSignal.connect(()->received[0] = true);
-						pingSignal.connect(()->received[1] = true);
-						QEventLoop loop = new QEventLoop();
-						timer.timeout.connect(loop::quit);
-						pingSignal.connect(loop::quit);
-						timer.start();
-						QMetaObject.invokeMethod(pong, "emitPing");
-						loop.exec();
-						timer.stop();
-						timer.timeout.disconnect();
-						Assert.assertTrue("pong not received", received[0]);
-						Assert.assertTrue("ping not received", received[1]);
-						pongSignal.disconnect();
-						pingSignal.disconnect();
-						
 						Object result;
 						result = QMetaObject.invokeMethod(pong, "getInt");
 						if(result instanceof QRemoteObjectPendingCall) {
@@ -248,6 +229,33 @@ public class TestRemoteObjects extends UnitTestInitializer {
 						}else {
 							Assert.fail("QRemoteObjectPendingCall expected but was "+result);
 						}
+						
+						AbstractPublicSignal0 pongSignal = (AbstractPublicSignal0)QMetaObject.findSignal(pong, "pong");
+						AbstractPublicSignal0 pingSignal = (AbstractPublicSignal0)QMetaObject.findSignal(pong, "ping");
+						Assert.assertTrue(pongSignal!=null);
+						Assert.assertTrue(pingSignal!=null);
+						boolean[] received = {false,false};
+						pongSignal.connect(()->{
+							System.out.println("pongSignal received");
+							received[0] = true;
+						});
+						pingSignal.connect(()->{
+							System.out.println("pingSignal received");
+							received[1] = true;
+						});
+						QEventLoop loop = new QEventLoop();
+						timer.timeout.connect(loop::quit);
+						pingSignal.connect(loop::quit);
+						timer.start();
+						System.out.println("calling remote emitPing...");
+						QMetaObject.invokeMethod(pong, "emitPing");
+						loop.exec();
+						timer.stop();
+						timer.timeout.disconnect();
+						Assert.assertTrue("pong not received", received[0]);
+						Assert.assertTrue("ping not received", received[1]);
+						pongSignal.disconnect();
+						pingSignal.disconnect();
 					}catch(Throwable t) {
 						exception[0] = t;
 					}finally {

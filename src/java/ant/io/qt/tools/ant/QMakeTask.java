@@ -182,6 +182,7 @@ public class QMakeTask extends Task {
         if("true".equals(AntUtil.getPropertyAsString(propertyHelper, Constants.QTJAMBI_DEBUG_TOOLS)))
         	parameters.add("DEFINES+=QTJAMBI_DEBUG_TOOLS");
         if(OSInfo.crossOS()==OSInfo.OS.MacOS) {
+        	parameters.add("DEFINES+=_XOPEN_SOURCE");
         	if(Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_GENERATE_FRAMEWORKS))) {
             	parameters.add("QTJAMBI_GENERATE_FRAMEWORKS=true");
         	}else{

@@ -356,6 +356,10 @@ TypeSystem{
         ModifyFunction{
             signature: "bind(QHostAddress, quint16, QAbstractSocket::BindMode)"
             ModifyArgument{
+                index: 1
+                noImplicitCalls: true
+            }
+            ModifyArgument{
                 index: 2
                 ReplaceType{
                     modifiedType: "int"
@@ -444,6 +448,16 @@ TypeSystem{
     
     ObjectType{
         name: "QTcpSocket"
+        ModifyFunction{
+            signature: "bind(QHostAddress::SpecialAddress, quint16, QAbstractSocket::BindMode)"
+            ModifyArgument{
+                index: 2
+                ReplaceType{
+                    modifiedType: "int"
+                }
+            }
+            since: 6
+        }
     }
     
     ObjectType{
@@ -482,25 +496,25 @@ TypeSystem{
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "%out = jlong(%in);\n"+
-                                  "if(%3){\n"+
-                                  "    Java::QtNetwork::QHostAddress$HostInfo::set_address(%env, %3, qtjambi_cast<jobject>(%env, host));\n"+
-                                  "    Java::QtNetwork::QHostAddress$HostInfo::set_port(%env, %3, jshort(port));\n"+
+                                  "if(%4){\n"+
+                                  "    Java::QtNetwork::QHostAddress$HostInfo::set_address(%env, %4, qtjambi_cast<jobject>(%env, host));\n"+
+                                  "    Java::QtNetwork::QHostAddress$HostInfo::set_port(%env, %4, jshort(port));\n"+
                                   "}"}
                 }
             }
             ModifyArgument{
                 index: 1
-                ArrayType{
-                    asBuffer: true
+                AsBuffer{
                     lengthParameter: 2
                 }
+                AddImplicitCall{type: "byte @NonNull[]"}
+                AddImplicitCall{type: "io.qt.core.@NonNull QByteArray"}
             }
             ModifyArgument{
                 index: 3
-                ReplaceType{
-                    modifiedType: "io.qt.network.QUdpSocket$HostInfo"
-                }
                 RemoveDefaultExpression{
+                }
+                RemoveArgument{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -510,10 +524,13 @@ TypeSystem{
             }
             ModifyArgument{
                 index: 4
-                RemoveDefaultExpression{
+                ReplaceType{
+                    modifiedType: "io.qt.network.QUdpSocket$HostInfo"
                 }
-                RemoveArgument{
+                ReplaceDefaultExpression{
+                    expression: "null"
                 }
+                rename: "hostInfo"
                 ConversionRule{
                     codeClass: CodeClass.Native
                     Text{content: "ushort port(0);\n"+
@@ -525,11 +542,20 @@ TypeSystem{
             signature: "writeDatagram(const char*,qint64,QHostAddress,quint16)"
             ModifyArgument{
                 index: 1
-                ArrayType{
-                    asBuffer: true
+                AsBuffer{
                     lengthParameter: 2
                 }
             }
+        }
+        ModifyFunction{
+            signature: "bind(QHostAddress::SpecialAddress, quint16, QAbstractSocket::BindMode)"
+            ModifyArgument{
+                index: 2
+                ReplaceType{
+                    modifiedType: "int"
+                }
+            }
+            since: 6
         }
     }
     
@@ -680,86 +706,38 @@ TypeSystem{
         ModifyFunction{
             signature: "get(QNetworkRequest)"
             threadAffinity: true
-            ModifyArgument{
-                index: 1
-                AddImpliciteCall{type: "java.lang.@NonNull String"}
-                AddImpliciteCall{type: "io.qt.core.@NonNull QUrl"}
-            }
         }
         ModifyFunction{
             signature: "head(QNetworkRequest)"
             threadAffinity: true
-            ModifyArgument{
-                index: 1
-                AddImpliciteCall{type: "java.lang.@NonNull String"}
-                AddImpliciteCall{type: "io.qt.core.@NonNull QUrl"}
-            }
         }
         ModifyFunction{
             signature: "post(QNetworkRequest,QIODevice*)"
             threadAffinity: true
-            ModifyArgument{
-                index: 1
-                AddImpliciteCall{type: "java.lang.@NonNull String"}
-                AddImpliciteCall{type: "io.qt.core.@NonNull QUrl"}
-            }
         }
         ModifyFunction{
             signature: "post(QNetworkRequest,QByteArray)"
             threadAffinity: true
-            ModifyArgument{
-                index: 2
-                AddImpliciteCall{type: "byte @NonNull[]"}
-            }
         }
         ModifyFunction{
             signature: "post(QNetworkRequest,QHttpMultiPart*)"
             threadAffinity: true
-            ModifyArgument{
-                index: 1
-                AddImpliciteCall{type: "java.lang.@NonNull String"}
-                AddImpliciteCall{type: "io.qt.core.@NonNull QUrl"}
-            }
         }
         ModifyFunction{
             signature: "put(QNetworkRequest,QByteArray)"
             threadAffinity: true
-            ModifyArgument{
-                index: 1
-                AddImpliciteCall{type: "java.lang.@NonNull String"}
-                AddImpliciteCall{type: "io.qt.core.@NonNull QUrl"}
-            }
-            ModifyArgument{
-                index: 2
-                AddImpliciteCall{type: "byte @NonNull[]"}
-            }
         }
         ModifyFunction{
             signature: "put(QNetworkRequest,QIODevice*)"
             threadAffinity: true
-            ModifyArgument{
-                index: 1
-                AddImpliciteCall{type: "java.lang.@NonNull String"}
-                AddImpliciteCall{type: "io.qt.core.@NonNull QUrl"}
-            }
         }
         ModifyFunction{
             signature: "put(QNetworkRequest,QHttpMultiPart*)"
             threadAffinity: true
-            ModifyArgument{
-                index: 1
-                AddImpliciteCall{type: "java.lang.@NonNull String"}
-                AddImpliciteCall{type: "io.qt.core.@NonNull QUrl"}
-            }
         }
         ModifyFunction{
             signature: "deleteResource(QNetworkRequest)"
             threadAffinity: true
-            ModifyArgument{
-                index: 1
-                AddImpliciteCall{type: "java.lang.@NonNull String"}
-                AddImpliciteCall{type: "io.qt.core.@NonNull QUrl"}
-            }
         }
         ModifyFunction{
             signature: "connectToHostEncrypted(const QString &, quint16, const QSslConfiguration &)"
@@ -778,43 +756,24 @@ TypeSystem{
         ModifyFunction{
             signature: "sendCustomRequest(const QNetworkRequest &, const QByteArray &, QIODevice*)"
             ModifyArgument{
-                index: 1
-                AddImpliciteCall{type: "java.lang.@NonNull String"}
-                AddImpliciteCall{type: "io.qt.core.@NonNull QUrl"}
-            }
-            ModifyArgument{
                 index: 2
-                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImplicitCall{type: "java.lang.@NonNull String"}
             }
             threadAffinity: true
         }
         ModifyFunction{
             signature: "sendCustomRequest(const QNetworkRequest &, const QByteArray &, QByteArray)"
             ModifyArgument{
-                index: 1
-                AddImpliciteCall{type: "java.lang.@NonNull String"}
-                AddImpliciteCall{type: "io.qt.core.@NonNull QUrl"}
-            }
-            ModifyArgument{
                 index: 2
-                AddImpliciteCall{type: "java.lang.@NonNull String"}
-            }
-            ModifyArgument{
-                index: 3
-                AddImpliciteCall{type: "byte @NonNull[]"}
+                AddImplicitCall{type: "java.lang.@NonNull String"}
             }
             threadAffinity: true
         }
         ModifyFunction{
             signature: "sendCustomRequest(const QNetworkRequest &, const QByteArray &, QHttpMultiPart*)"
             ModifyArgument{
-                index: 1
-                AddImpliciteCall{type: "java.lang.@NonNull String"}
-                AddImpliciteCall{type: "io.qt.core.@NonNull QUrl"}
-            }
-            ModifyArgument{
                 index: 2
-                AddImpliciteCall{type: "java.lang.@NonNull String"}
+                AddImplicitCall{type: "java.lang.@NonNull String"}
             }
             threadAffinity: true
         }
@@ -835,11 +794,6 @@ TypeSystem{
                     codeClass: CodeClass.Shell
                     ownership: Ownership.Cpp
                 }
-            }
-            ModifyArgument{
-                index: 2
-                AddImpliciteCall{type: "java.lang.@NonNull String"}
-                AddImpliciteCall{type: "io.qt.core.@NonNull QUrl"}
             }
         }
         ModifyFunction{
@@ -924,7 +878,6 @@ TypeSystem{
     
     ValueType{
         name: "QHostAddress"
-
         EnumType{
             name: "SpecialAddress"
         }
@@ -1058,6 +1011,7 @@ TypeSystem{
     
     ValueType{
         name: "QNetworkProxy"
+        noImplicitConstructors: true
 
         EnumType{
             name: "Capability"
@@ -1157,6 +1111,14 @@ TypeSystem{
             name: "SameSite"
             since: [6, 1]
         }
+        ModifyFunction{
+            signature: "parseCookies(QByteArray)"
+            ModifyArgument{
+                index: 1
+                noImplicitCalls: true
+            }
+            since: 6.7
+        }
     }
     
     ValueType{
@@ -1208,13 +1170,6 @@ TypeSystem{
                 ReferenceCount{
                     action: ReferenceCount.Ignore
                 }
-            }
-        }
-        ModifyFunction{
-            signature: "QNetworkRequest(QUrl)"
-            ModifyArgument{
-                index: 1
-                AddImpliciteCall{type: "java.lang.@NonNull String"}
             }
         }
     }
@@ -1500,6 +1455,7 @@ TypeSystem{
     
     ValueType{
         name: "QNetworkDatagram"
+        noImplicitConstructors: true
     }
     
     ValueType{

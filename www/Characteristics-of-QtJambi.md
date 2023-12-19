@@ -52,11 +52,71 @@ or by disposing the object (`widget.dispose();`).
 
 ## Qt Types and Java Types
 
-Almost all Qt C++ object and value types have counterparts in Java. The
-Java classes provide all methods of the native Qt classes. In these
-methods, C++ primitive types are mapped to the corresponding Java
-primitive types. Since Java does not support unsigned integers all
-unsigned types are used as signed Java types.
+Almost all classes and namespaces declared by Qt API have counterparts in Java. 
+The Java classes provide all methods of the native Qt classes with similar method signature.
+
+### Primitive Types
+
+C++ and Qt-specific primitive types are mapped to the corresponding Java primitive types:
+All unsigned types are used as signed Java types, as Java does not support unsigned integers.
+
+| native                             | java   |
+|------------------------------------|--------|
+| int, qint32, quint32               | int    |
+| short, qint16, quint16             | short  |
+| char, qint8, quint8                | byte   |
+| qint64, quint64, qintptr, quintptr | long   |
+| bool, 1-bit field                  | byte   |
+| QChar, char_16                     | char   |
+| float                              | float  |
+| double                             | double |
+| void                               | void   |
+
+### Value and Object Types
+
+Qt provides two different categories of classes: object types and value types.
+An instance of an object type is a unique entity. Entities cannot be copied and two entities are never equals.
+In Qt's native API they are mostly represented as pointer argument types, e.g. `QObject* object`.
+
+In contrast, value types can be copied and compared. The unmodified copies of a value are always equal.
+In Qt's native API they are mostly represented as const-reference-typed argument or copy argument, e.g. `const QColor& color`.
+
+### Null Value and Nullness
+
+If you submit `null` as object type argument (showing a `*` pointer in Qt API) it is translated to a native null pointer (`nullptr`).
+However, there are a few cases where `null` is prohibited according to Qt's documentation.
+If you submit `null` as value type argument it is converted to the default value. For instance, calling `widget.setWindowIcon(null);`
+is equivalent to `widget.setWindowIcon(new QIcon());` (but faster).
+Only in cases where the native Qt API expects a **non-constant reference** the corresponding Java method does not accept `null`.
+
+QtJambi API uses type annotations for arguments to show their *nullness*, i.e. whether their C++ representation is pointer-based (`@Nullable`), value-based/const-reference-based (`@NonNull`) or reference-based (`@StrictNonNull`).
+In Java, `@Nullable` and `@NonNull` have no further meaning. You can submit `null` to `@NonNull`-annotated method argument. Qt will use the default value as described above.
+`@StrictNonNull` annotated methods will throw `NullPointerException` or `IllegalArgumentException` when submitting `null`. Nullness annotations are primarily used to specify type nullness for programming language **Kotlin**.
+
+### Pointers and References
+
+Java does not support constant types (`const`), C-pointers (`*`) or
+C-references (`&`). Corresponding function argument types are simply used as Java reference types: 
+`const QSize& size` is `QSize size` and `QGraphicsItem* item` as well as 
+`const QGraphicsItem* item` is `QGraphicsItem item` in Java.
+
+If a Qt function returns a constant reference to a value the corresponding Java method returns a copy of the value.
+
+Sometimes, occurences of call-by-reference or call-by-value-pointer in Qt are
+represented in QtJambi as wrapped return values.
+For example, the `QFormLayout` C++-method `void getItemPosition(int index, int *rowPtr, QFormLayout::ItemRole *rolePtr) const` 
+where `rowPtr` and `rolePtr` are pointers for storing the method output, is represented in Java by 
+`public final ItemInfo getItemPosition(int index)` whereas
+`ItemInfo` provides `role` and `row` as public member fields.
+
+### Array Pointers
+
+In some cases, array pointer of primitive type are mapped to Java NIO
+buffers. For instance, `QSharedMemory.data()`, `QImage.bits()` and
+`QUdpSocket.readDatagram(ByteBuffer,HostInfo)`. If the native Qt API
+specifies constant pointers, the given Java buffer is read only.
+
+In rare cases, `void*` or `const void*` maps to `QNativePointer` as the most generic way to represent native pointers.
 
 ### Strings
 
@@ -76,6 +136,7 @@ convert from or to integer values. Instead, all Qt enum Java classes
 provide a `value()` providing the enum value and a `resolve(int)` method
 for converting an `int` to the corrensponding enum entry. In case of 64
 Bit enums, the corresponding methods point to `long`.
+In most cases, Qt enumerator arguments don't accept `null`. 
 
 #### Extensible Enums
 
@@ -112,28 +173,7 @@ instance:
 
 `QWindow.startSystemResize(io.qt.core.Qt.Edges edges)`
 
-### Pointers and References
-
-Java does not support constant types (`const`), C-pointers (`*`) or
-C-references (`&`). All constant reference types are used as value
-copies and all pointer types are used as Java reference types: 
-`const QSize& size` is `QSize size` and `QGraphicsItem* item` as well as 
-`const QGraphicsItem* item` is `QGraphicsItem item` in Java.
-
-All occurences of call-by-reference or call-by-value-pointer in Qt are
-represented in QtJambi as wrapped return values.
-
-For example, the `QClipboard` C++-method `QString text(QString &subtype, QClipboard::Mode) const` 
-where subtype is method input as well as possible method output, is represented in Java by 
-`public final QClipboard.Text text(String subtype, QClipboard.Mode mode)` whereas
-`QClipboard.Text` provides `text` and `subtype` as public member fields.
-
-### Array Pointers
-
-In some cases, array pointer of primitive type are mapped to Java NIO
-buffers. For instance, `QSharedMemory.data()`, `QImage.bits()` and
-`QUdpSocket.readDatagram(ByteBuffer,HostInfo)`. If the native Qt API
-specifies constant pointers, the given Java buffer is read only.
+In most cases, QFlags arguments don't accept `null`. 
 
 ### Function Pointers
 
@@ -247,23 +287,35 @@ instance:
 A Java object of any Qt type is actually a wrapper for an underlying C++
 object. The native C++ object is created immediately when the Java
 object is created. The C++ object exists as long as the Java object
-exists unless it is deleted by Qt internal mechanisms.
+exists unless it is deleted by Qt internal mechanisms. The Java object exists
+as long as there is no more reference available unless the native side 
+does not own a global reference of the object. This is the case whenever
+the ownership of an argument is given to Qt as described in Qt API.
 
 If the C++ object is deleted prior to the Java object, the Java object
 is *disposed*, i.e. it does no longer provide a native resource. Calling
-any method on the object will throw a `QNoNativeResourcesException`. You
+any method on the object will then throw a `QNoNativeResourcesException`. You
 can check if an object is disposed by `isDisposed()`.
 
 You can actively delete the native C++ object by calling `dispose()`.
 Usually, you don't have to care about object deletion because the Java
 garbage collection cares for it.
-
-`QObject` parenthood avoids the garbage collection to delete the child
+However, `QObject` parenthood avoids the garbage collection to delete the child
 objects of a parent even if no more references to a child exist in Java.
 **You need to manage the life cycle of parented `QObject` instances manually wherever the parent outlasts the child's life time.**
 Therfore, use `dispose()` or `disposeLater()`. This is especially required
 for `QDialog` because dialogs are usually created with the main window as parent
 which avoids deletion even when Java has no more reference.
+
+### Object Deletion
+
+Calling `dispose()` causes a native object to be deleted. Most types are not thread affine, thus, these objects are deleted instantly. Other types are thread affine. 
+In this case, the deletion is scheduled in the object's thread. All `QObject`-derived types are thread affine but also some types that are associated to `QObject`s such as `QTextCursor` (it belongs to a `QTextDocument`). 
+When calling `dispose()` on `QObject` in another thread the behavior is similar to `disposeLater()`, i.e. a deleteion event is posted and handled by the event loop. 
+When calling `dispose()` on an "owned `non-QObject`" object (as `QTextCursor` is) in another thread its deletion also takes place in the thread of the owner (here `QTextDocument`) by posing a deletion event on a deletion handler object.
+When calling `dispose()` the Java object is instantly disconnected from its native counterpart even when the effective deletion takes place later through event handler.
+When calling `disposeLater()` the Java object stays connected to its native counterpart until the deletion event has been executed by event handler (which always takes place in the future).
+Java GC always performs a cleanup similar to `dispose()`, i.e. `QObject`s are always deleted in their associated thread.
 
 ### Smart Pointers
 
@@ -313,6 +365,10 @@ Be aware that `disposed` is not identical to `QObject`'s `deleted` signal.
 The `deleted` signal is emitted during an object's destructor, i.e. when the native component is deleted.
 The `disposed` signal (by `QtUtilities.getSignalOnDispose()`) is emitted when the Java component is detached from its native component.
 This can be by deleting the native component or by other reasons where the native object survives the Java wrapper.
+
+### Scope
+
+Use `QScope` to manage the object life time in a try-with-resource block. This is similar to `QScopedPointer` but for many objects.
 
 ## QObject and QMetaObject
 
@@ -621,20 +677,22 @@ properties](https://doc.qt.io/qt-6/properties.html) are also available
 in QtJambi:
 
 ``` java
-@QtPropertyNotify(name="text")
+@QtPropertyNotify
 public final Signal1<String> textChanged = new Signal1<>();
 
-@QtPropertyReader(name="text")
+@QtPropertyReader
 public final String text(){...}
 
-@QtPropertyWriter(name="text")
+@QtPropertyWriter
 public final void setText(String text){...}
 
-@QtPropertyResetter(name="text")
-public final void clearText(){...}
+@QtPropertyResetter
+public final void resetText(){...}
 ```
 
 ...creates a property "text" with reader, writer, resetter and notify signal.
+In case the annotated getter/setter method does not reflect the initended property name
+you can use the field `name` of `@QtPropertyReader` and/or `@QtPropertyWriter` to specify the actual property name.
 
 Further annotations reflect the corresponding features of Qt properties:
 
@@ -650,7 +708,8 @@ Further annotations reflect the corresponding features of Qt properties:
 Qt6 provides `QProperty` as bindable property member.
 
 In QObject-derived classes, the appearance of `void setFoo(int)` and `int getFoo()` (or `int foo()`) is auto-detected as property `foo`. 
-Here, you don't need `QtPropertyReader` and `QtPropertyWriter` annotations. However, QtJambi does not auto-detect read-only or write-only properties.
+Here, you don't need `QtPropertyReader` and `QtPropertyWriter` annotations. For an existing property "foo" an available method `void resetFoo()`
+is considered to be the property's resetter.
 
 Likewise, signal `fooChanged` is auto-detected as corresponding notifier even without `QtPropertyNotify` annotation and
 method `bindableFoo()` returning `QBindable` is auto-detected as corresponding bindable even without `QtPropertyBindable` annotation.
@@ -703,6 +762,8 @@ You explicitely need to specify `@QtPropertyReader/Writer` annotation for every 
 Alternatively, you can enable auto-detection by annotating the gadget class with `@QtAsGadget`.
 If you want to use other classes as gadgets, e.g. from third-party library, you may specify `QtUtilities.useAsGadget(class)` 
 or `QtUtilities.usePackageContentAsGadgets(package)` at startup.
+
+Pure java objects which are prepared as Qt gadget can also be used in QML.
 
 ## Threads
 
@@ -1038,7 +1099,7 @@ device.close();
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.5.3.jar:qtjambi-uic-6.5.3.jar
+     -p qtjambi-6.5.4.jar:qtjambi-uic-6.5.4.jar
      -m qtjambi.uic --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -1046,7 +1107,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.5.3.jar:qtjambi-uic-6.5.3.jar
+     -cp qtjambi-6.5.4.jar:qtjambi-uic-6.5.4.jar
      io.qt.uic.Main --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -1263,6 +1324,69 @@ qml
              |  qtdir
 ```
 
+### Pure Java objects in QML
+
+Since pure java objects can be used as Qt gadget they can also be used in QML/JavaScript.
+There are basically two different types of Java-defined gadgets: cloneable values and unique entities.
+A Java class represents a cloneable value if it has a standard constructor and a `clone()` method
+returning a copy of the instance. Alternatively, instead of `clone()` method the class can 
+implement the interface `java.lang.Cloneable`. By convention, the `equals(Object)` function returns `true` 
+for each clone and the `hashCode()` of clones returns the same value. All Java classes not meeting this
+characteristic are types for unique entities.
+
+Unique entities can only be created in Java. If a unique entity is transferred to QML for instance by a method call
+the JavaScript variable stores a reference to the Java object. Actually, the reference is represented by a wrapper, thus, 
+you cannot successively compare to `null` in JavaScript. therefore, you need to write an invokable Java method and do the null check there.
+
+```QML
+Item{
+	Component.onCompleted: {
+		// expecting a Java-defined singleton subclassing QObject...
+		var object = singleton.supplyJavaGadget();
+		// object now contains a reference to the Java object.
+		// The Java object has getText and setText methods.
+		object.text = "Hello World!"
+		
+		// null test never succeeds:
+		if(object==null)...
+		
+		// instead do the null check in Java:
+		if(singleton.checkForNull(object))...
+	}
+}
+```
+
+In contrast to unique entities instances of cloneable value types are created in QML.
+Whenever they are assigned to another variable or used as function parameter a new clone of the object is created.
+
+Cloneable types have to be registered as QML type with lower case typename:
+
+```Java
+qmlRegisterType(ValueType.class, "com.example.program", 1, 0, "myGadget");
+```
+
+Such a type can then be used in QML:
+
+```QML
+import com.example.program
+
+QtObject{
+    property myGadget gadget
+}
+```
+
+An object of type `ValueType` is created when the QML object is loaded and assigned to the proeprty variable `gadget`.
+Optionally, a cloneable value type class can define a constructor taking one `QJSValue` argument.
+If this is the case you can specify arguments for value creation in QML:
+
+```QML
+import com.example.program
+
+QtObject{
+    property myGadget gadget: {"text": "Hello World!"}
+}
+```
+
 ## Qt Plugins
 
 You can implement custom Qt plugins in Java. These plugins can be either
@@ -1304,7 +1428,7 @@ and *QtJambi* libraries:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.5.3.jar:qtjambi-deployer-6.5.3.jar
+     -p qtjambi-6.5.4.jar:qtjambi-deployer-6.5.4.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1316,7 +1440,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.5.3.jar:qtjambi-deployer-6.5.3.jar
+     -cp qtjambi-6.5.4.jar:qtjambi-deployer-6.5.4.jar
      io.qt.qtjambi.deployer.Main plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1343,7 +1467,7 @@ This is especially necessary on macOS (arm64).
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.5.3.jar:qtjambi-deployer-6.5.3.jar
+     -p qtjambi-6.5.4.jar:qtjambi-deployer-6.5.4.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar

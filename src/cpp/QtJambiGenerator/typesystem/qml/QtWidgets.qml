@@ -1644,6 +1644,10 @@ TypeSystem{
                 deprecated: true
             }
         }
+        ModifyFunction{
+            signature: "QStyleOptionHeaderV2(int)"
+            remove: RemoveFlag.All
+        }
         ModifyField{
             name: "unused"
             read: false
@@ -4778,6 +4782,7 @@ TypeSystem{
     
     ObjectType{
         name: "QStyleHintReturn"
+        noImplicitConstructors: true
         ModifyFunction{
             signature: "QStyleHintReturn(int, int)"
             ModifyArgument{
@@ -5393,14 +5398,6 @@ TypeSystem{
     
     ObjectType{
         name: "QAbstractButton"
-        ModifyFunction{
-            signature: "setShortcut(QKeySequence)"
-            ModifyArgument{
-                index: 1
-                AddImpliciteCall{type: "java.lang.@NonNull String"}
-                AddImpliciteCall{type: "io.qt.gui.QKeySequence.@NonNull StandardKey"}
-            }
-        }
     }
     
     ObjectType{
@@ -7114,14 +7111,16 @@ TypeSystem{
             }
             ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     lengthParameter: 2
+                    noOffset: true
                 }
             }
             ModifyArgument{
                 index: 4
-                ArrayType{
+                AsArray{
                     lengthParameter: 2
+                    noOffset: true
                 }
             }
         }
@@ -7562,6 +7561,14 @@ TypeSystem{
                     ownership: Ownership.Cpp
                 }
             }
+            ModifyArgument{
+                index: 5
+                noImplicitCalls: true
+            }
+            ModifyArgument{
+                index: 6
+                noImplicitCalls: true
+            }
         }
         ModifyFunction{
             signature: "addEllipse(const QRectF &, const QPen &, const QBrush &)"
@@ -7572,6 +7579,14 @@ TypeSystem{
                     codeClass: CodeClass.Java
                     ownership: Ownership.Cpp
                 }
+            }
+            ModifyArgument{
+                index: 2
+                noImplicitCalls: true
+            }
+            ModifyArgument{
+                index: 3
+                noImplicitCalls: true
             }
         }
         ModifyFunction{
@@ -7584,6 +7599,10 @@ TypeSystem{
                     ownership: Ownership.Cpp
                 }
             }
+            ModifyArgument{
+                index: 5
+                noImplicitCalls: true
+            }
         }
         ModifyFunction{
             signature: "addLine(const QLineF &, const QPen &)"
@@ -7595,6 +7614,10 @@ TypeSystem{
                     ownership: Ownership.Cpp
                 }
             }
+            ModifyArgument{
+                index: 2
+                noImplicitCalls: true
+            }
         }
         ModifyFunction{
             signature: "addPath(const QPainterPath &, const QPen &, const QBrush &)"
@@ -7605,6 +7628,14 @@ TypeSystem{
                     codeClass: CodeClass.Java
                     ownership: Ownership.Cpp
                 }
+            }
+            ModifyArgument{
+                index: 2
+                noImplicitCalls: true
+            }
+            ModifyArgument{
+                index: 3
+                noImplicitCalls: true
             }
         }
         ModifyFunction{
@@ -7628,6 +7659,14 @@ TypeSystem{
                     ownership: Ownership.Cpp
                 }
             }
+            ModifyArgument{
+                index: 2
+                noImplicitCalls: true
+            }
+            ModifyArgument{
+                index: 3
+                noImplicitCalls: true
+            }
         }
         ModifyFunction{
             signature: "addRect(qreal,qreal,qreal,qreal, const QPen &, const QBrush &)"
@@ -7638,6 +7677,14 @@ TypeSystem{
                     codeClass: CodeClass.Java
                     ownership: Ownership.Cpp
                 }
+            }
+            ModifyArgument{
+                index: 5
+                noImplicitCalls: true
+            }
+            ModifyArgument{
+                index: 6
+                noImplicitCalls: true
             }
         }
         ModifyFunction{
@@ -7650,6 +7697,14 @@ TypeSystem{
                     ownership: Ownership.Cpp
                 }
             }
+            ModifyArgument{
+                index: 2
+                noImplicitCalls: true
+            }
+            ModifyArgument{
+                index: 3
+                noImplicitCalls: true
+            }
         }
         ModifyFunction{
             signature: "addSimpleText(const QString &, const QFont &)"
@@ -7661,6 +7716,10 @@ TypeSystem{
                     ownership: Ownership.Cpp
                 }
             }
+            ModifyArgument{
+                index: 2
+                noImplicitCalls: true
+            }
         }
         ModifyFunction{
             signature: "addText(const QString &, const QFont &)"
@@ -7671,6 +7730,10 @@ TypeSystem{
                     codeClass: CodeClass.Java
                     ownership: Ownership.Cpp
                 }
+            }
+            ModifyArgument{
+                index: 2
+                noImplicitCalls: true
             }
         }
         ModifyFunction{
@@ -7783,14 +7846,16 @@ TypeSystem{
             }
             ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     lengthParameter: 2
+                    noOffset: true
                 }
             }
             ModifyArgument{
                 index: 4
-                ArrayType{
+                AsArray{
                     lengthParameter: 2
+                    noOffset: true
                 }
             }
         }
@@ -11921,22 +11986,6 @@ TypeSystem{
                     variableName: "__rcMenu"
                     action: ReferenceCount.Set
                 }
-            }
-        }
-        ModifyFunction{
-            signature: "setShortcut(QKeySequence)"
-            ModifyArgument{
-                index: 1
-                AddImpliciteCall{type: "java.lang.@NonNull String"}
-                AddImpliciteCall{type: "QKeySequence.@NonNull StandardKey"}
-            }
-        }
-        ModifyFunction{
-            signature: "setIcon(QIcon)"
-            ModifyArgument{
-                index: 1
-                AddImpliciteCall{type: "@NonNull QPixmap"}
-                AddImpliciteCall{type: "java.lang.@NonNull String"}
             }
         }
         ExtraIncludes{

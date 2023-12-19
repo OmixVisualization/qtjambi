@@ -133,7 +133,11 @@ void AbstractGenerator::writeInclude(QTextStream &s, const TS::Include &inc, QSe
                 }
                 s << "#if QT_CONFIG(" << feature << ")" << Qt::endl;
             }
+            if(inc.ckeckAvailability)
+                s << "#if __has_include(" << incString << ")" << Qt::endl;
             s << "#include " << incString << Qt::endl;
+            if(inc.ckeckAvailability)
+                s << "#endif" << Qt::endl;
             for(const QString& feature : inc.requiredFeatures.keys()){
                 s << "#endif //QT_CONFIG(" << feature << ")" << Qt::endl;
             }

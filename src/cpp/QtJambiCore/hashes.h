@@ -214,6 +214,11 @@ inline hash_type qHash(const QDeadlineTimer &value, hash_type seed = 0)
     return seed;
 }
 
+#if defined(QTJAMBI_GENERATOR_RUNNING)
+QDeadlineTimer operator+(QDeadlineTimer dt, qint64 msecs);
+QDeadlineTimer& QDeadlineTimer::operator=(const QDeadlineTimer& other);
+#endif
+
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 inline hash_type qHash(const QSize &size, hash_type seed = 0)
 {

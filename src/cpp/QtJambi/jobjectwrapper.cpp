@@ -38,6 +38,16 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "typemanager_p.h"
 #include "qtjambi_cast.h"
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
+QT_WARNING_DISABLE_DEPRECATED
+
+template<>
+inline bool qMapLessThanKey<QVariant>(const QVariant& v1, const QVariant& v2){
+    return v1 < v2;
+}
+#endif
+
 template<typename Cleanup>
 void reference_cleanup(jobject object){
     try{
@@ -1250,7 +1260,7 @@ JObjectWrapperRef JObjectArrayWrapper::operator[](jsize index){
         if(index>=0 && index < env->GetArrayLength(object())){
             return JObjectWrapperRef(*this, index);
         }else{
-            Java::Runtime::IndexOutOfBoundsException::throwNew(env, QString::number(index) QTJAMBI_STACKTRACEINFO);
+            JavaException::raiseIndexOutOfBoundsException(env, QString::number(index) QTJAMBI_STACKTRACEINFO);
         }
     }
     return JObjectWrapperRef(JObjectWrapper(), 0);

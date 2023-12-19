@@ -125,8 +125,8 @@ TypeSystem{
             signature: "instanceBuffer(int*)"
             ModifyArgument{
                 index: 1
-                ArrayType{
-                    minLength: 1
+                AsArray{
+                    minLength: 0
                 }
             }
         }
@@ -134,8 +134,8 @@ TypeSystem{
             signature: "getInstanceBuffer(int*)"
             ModifyArgument{
                 index: 1
-                ArrayType{
-                    minLength: 1
+                AsArray{
+                    minLength: 0
                 }
             }
         }

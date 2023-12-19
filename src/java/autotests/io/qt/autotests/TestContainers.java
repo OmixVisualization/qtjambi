@@ -36,7 +36,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Deque;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -80,6 +80,7 @@ import io.qt.core.QPointF;
 import io.qt.core.QQueue;
 import io.qt.core.QRunnable;
 import io.qt.core.QSet;
+import io.qt.core.QStack;
 import io.qt.core.QString;
 import io.qt.core.QStringList;
 import io.qt.gui.QColor;
@@ -272,7 +273,7 @@ public class TestContainers extends ApplicationInitializer {
         ArrayDeque<Integer> s = new ArrayDeque<Integer>();
         for (int i = 0; i < 10; ++i)
             s.push(i);
-        Deque<Integer> s2 = tulip.do_QStack_of_int(s);
+        Collection<Integer> s2 = tulip.do_QStack_of_int(s);
         assertTrue(s2 != null);
         assertEquals(new ArrayList<Integer>(s), new ArrayList<Integer>(s2));
     }
@@ -282,7 +283,7 @@ public class TestContainers extends ApplicationInitializer {
         QStack_int s = new QStack_int();
         for (int i = 0; i < 10; ++i)
             s.push(i);
-        Deque<Integer> s2 = tulip.do_QStack_of_int(s);
+        Collection<Integer> s2 = tulip.do_QStack_of_int(s);
         assertTrue(s2 != null);
         assertEquals(new ArrayList<Integer>(s), new ArrayList<Integer>(s2));
     }
@@ -633,6 +634,45 @@ public class TestContainers extends ApplicationInitializer {
     	assertEquals(3, counter);
     	midList.clear();
     	assertEquals(0, midList.size());
+    	pointList = new QList<>(QPoint.class);
+    	pointList.add(0, new QPoint(5,6));
+    	assertEquals(new QPoint(5,6), pointList.at(0));
+    	assertEquals(1, pointList.size());
+    }
+    
+    @Test
+    public void test_create_QStack_QPoint() {
+    	QStack<QPoint> pointList = new QStack<>(QPoint.class);
+    	pointList.reserve(20);
+    	pointList.append(new QPoint(1,2));
+    	pointList.append(new QPoint(3,4));
+    	pointList.append(Arrays.asList(new QPoint(5,6)));
+    	pointList.prepend(new QPoint(0,0));
+    	assertEquals(new QPoint(5,6), pointList.at(3));
+    	assertTrue(pointList.contains(new QPoint(3,4)));
+    	assertEquals(4, pointList.size());
+    	pointList.append(new QPoint(1,2));
+    	assertEquals(2, pointList.count(new QPoint(1,2)));
+    	assertEquals(1, pointList.indexOf(new QPoint(1,2)));
+    	assertEquals(4, pointList.lastIndexOf(new QPoint(1,2)));
+    	assertTrue(pointList.endsWith(new QPoint(1,2)));
+    	assertFalse(pointList.startsWith(new QPoint(1,2)));
+    	pointList.swapItemsAt(0, 1);
+    	assertTrue(pointList.startsWith(new QPoint(1,2)));
+    	assertFalse(pointList.equals(new QStack<>(QPoint.class)));
+    	assertEquals(new QPoint(100,200), pointList.value(100, new QPoint(100,200)));
+    	pointList.removeAt(1);
+    	assertEquals(new QPoint(5,6), pointList.takeAt(2));
+    	pointList.append(new QPoint(3,4));
+    	assertFalse(pointList.removeOne(new QPoint(5,6)));
+    	assertEquals(2, pointList.removeAll(new QPoint(3,4)));
+    	pointList.replace(0, new QPoint(10,20));
+    	assertEquals(1, pointList.count(new QPoint(1,2)));
+    	assertEquals(1, pointList.count(new QPoint(10,20)));
+    	pointList.prepend(new QPoint(0,0));
+    	pointList.move(0, 2);
+    	assertTrue(pointList.endsWith(new QPoint(0,0)));
+    	pointList.insert(1, new QPoint(30,30));
     }
     
     @Test

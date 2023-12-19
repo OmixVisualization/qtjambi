@@ -45,6 +45,9 @@ import io.qt.QtObjectInterface;
 import io.qt.core.QMetaObject;
 import io.qt.internal.NativeUtility.NativeLink;
 
+/**
+ * @hidden
+ */
 abstract class ReferenceUtility {
 	private ReferenceUtility() {
 		throw new RuntimeException();

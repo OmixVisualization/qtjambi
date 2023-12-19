@@ -36,6 +36,11 @@
 #include <QtCore/QDebug>
 #include <QtCore/QDataStream>
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && defined(QLINKEDLIST_H)
+QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
+QT_WARNING_DISABLE_DEPRECATED
+#endif
+
 namespace QtJambiPrivate {
 
 template<class T>
@@ -268,8 +273,13 @@ std::false_type supports_increment_test(...);
 template<class T> struct supports_increment : decltype(supports_increment_test(std::declval<T>())){};
 template<> struct supports_increment<void> : std::false_type{};
 
+std::true_type is_bidirectional_iterator_test(const std::bidirectional_iterator_tag&);
+std::false_type is_bidirectional_iterator_test(...);
+template<class T> struct is_bidirectional_iterator : decltype(is_bidirectional_iterator_test(std::declval<typename std::iterator_traits<T>::iterator_category>())){};
+template<> struct is_bidirectional_iterator<void> : std::false_type{};
+
 template<class T, class = decltype( --std::declval<T>() )>
-std::true_type  supports_decrement_test(const T&);
+std::true_type supports_decrement_test(const T&);
 std::false_type supports_decrement_test(...);
 
 template<class T> struct supports_decrement : decltype(supports_decrement_test(std::declval<T>())){};

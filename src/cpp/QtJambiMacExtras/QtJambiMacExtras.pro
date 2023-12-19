@@ -1,3 +1,4 @@
 include(../QtJambi/configure.pri)
 
-QT += core gui widgets macextras
+QT = core
+macx*: QT += gui widgets macextras

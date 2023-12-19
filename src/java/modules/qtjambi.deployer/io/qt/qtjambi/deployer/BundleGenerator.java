@@ -214,7 +214,7 @@ final class BundleGenerator {
 		                        		Element element = (Element)child;
 		                        		String libraryName = element.getAttribute("name");
 		                        		if(libraryName.equals("utilities/QtAndroidBindings.jar")) {
-		                        			androidBindingsURL = new URL(eform.substring(0, end+2)+libraryName);
+		                        			androidBindingsURL = Main.createURL(eform.substring(0, end+2)+libraryName);
 		                        			break;
 		                        		}
 		                        	}
@@ -1619,10 +1619,12 @@ final class BundleGenerator {
 						isEmpty = !libDoc.getDocumentElement().hasChildNodes();
 						isDEmpty = !debugInfoDoc.getDocumentElement().hasChildNodes();
 						if(!osArchName.startsWith("android-")) {
-							libBundleJarFile.putNextEntry(new ZipEntry("qtjambi-deployment.xml"));
-							StreamResult result = new StreamResult(libBundleJarFile);
-							transformer.transform(new DOMSource(libDoc), result);
+							libBundleJarFile.putNextEntry(new ZipEntry("META-INF/qtjambi-deployment.xml"));
+							transformer.transform(new DOMSource(libDoc), new StreamResult(libBundleJarFile));
 							libBundleJarFile.closeEntry();
+							libDebugInfoJarFile.putNextEntry(new ZipEntry("META-INF/qtjambi-deployment.xml"));
+							transformer.transform(new DOMSource(debugInfoDoc), new StreamResult(libDebugInfoJarFile));
+							libDebugInfoJarFile.closeEntry();
 						}
 					}
 					if(isDEmpty || isDebug || osArchName.startsWith("android") || osArchName.equals("ios"))
@@ -1680,10 +1682,12 @@ final class BundleGenerator {
 						isEmpty = !libDoc.getDocumentElement().hasChildNodes();
 						isDEmpty = !debugInfoDoc.getDocumentElement().hasChildNodes();
 						if(!osArchName.startsWith("android-")) {
-							jarFile.putNextEntry(new ZipEntry("qtjambi-deployment.xml"));
-							StreamResult result = new StreamResult(jarFile);
-							transformer.transform(new DOMSource(libDoc), result);
+							jarFile.putNextEntry(new ZipEntry("META-INF/qtjambi-deployment.xml"));
+							transformer.transform(new DOMSource(libDoc), new StreamResult(jarFile));
 							jarFile.closeEntry();
+							libDebugInfoJarFile.putNextEntry(new ZipEntry("META-INF/qtjambi-deployment.xml"));
+							transformer.transform(new DOMSource(debugInfoDoc), new StreamResult(libDebugInfoJarFile));
+							libDebugInfoJarFile.closeEntry();
 						}
 					}
 					if(isEmpty)
@@ -1751,10 +1755,12 @@ final class BundleGenerator {
 						isEmpty = !libDoc.getDocumentElement().hasChildNodes();
 						isDEmpty = !debugInfoDoc.getDocumentElement().hasChildNodes();
 						if(!osArchName.startsWith("android-")) {
-							jarFile.putNextEntry(new ZipEntry("qtjambi-deployment.xml"));
-							StreamResult result = new StreamResult(jarFile);
-							transformer.transform(new DOMSource(libDoc), result);
+							jarFile.putNextEntry(new ZipEntry("META-INF/qtjambi-deployment.xml"));
+							transformer.transform(new DOMSource(libDoc), new StreamResult(jarFile));
 							jarFile.closeEntry();
+							libDebugInfoJarFile.putNextEntry(new ZipEntry("META-INF/qtjambi-deployment.xml"));
+							transformer.transform(new DOMSource(debugInfoDoc), new StreamResult(libDebugInfoJarFile));
+							libDebugInfoJarFile.closeEntry();
 						}
 					}
 					if(isEmpty)

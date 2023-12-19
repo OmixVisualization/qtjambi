@@ -1173,6 +1173,7 @@ QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const void *qt_object, qint
             if(QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, *_typeId)){
                 if(typeEntry->isQObject()){
                     if(const QObjectTypeEntry* pt = dynamic_cast<const QObjectTypeEntry*>(typeEntry.data())){
+                        Q_UNUSED(pt)
                         const void* ptr = qt_object;
                         if(_offset!=0){
                             ptr = reinterpret_cast<const char*>(ptr)-_offset;

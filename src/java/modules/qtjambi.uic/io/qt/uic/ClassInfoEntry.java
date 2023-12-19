@@ -29,6 +29,9 @@
 ****************************************************************************/
 package io.qt.uic;
 
+/**
+ * @hidden
+ */
 public class ClassInfoEntry {
     ClassInfoEntry(String klass, String packge) {
 		this.klass = klass;

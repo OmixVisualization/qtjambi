@@ -110,13 +110,13 @@ public final class QIntPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided alias.
 	 * @param other
 	 */
-	public QIntPropertyAlias(@StrictNonNull QIntPropertyAlias alias) {
-		super(alias);
+	public QIntPropertyAlias(@StrictNonNull QIntPropertyAlias other) {
+		super(other);
 	}
 	
 	/**
 	 * Creates a new alias to the provided binding's underlying property.
-	 * @param other
+	 * @param bindable
 	 */
 	public QIntPropertyAlias(@StrictNonNull QIntBindable bindable) {
 		super(bindable.data(), bindable.iface());
@@ -124,7 +124,7 @@ public final class QIntPropertyAlias extends QAbstractPropertyAlias {
 	
 	/**
 	 * Creates a new alias to the provided binding's underlying property.
-	 * @param other
+	 * @param bindable
 	 */
 	public QIntPropertyAlias(@StrictNonNull QBindable<@NonNull@QtPrimitiveType Integer> bindable) {
 		super(bindable.data(), bindable.iface());

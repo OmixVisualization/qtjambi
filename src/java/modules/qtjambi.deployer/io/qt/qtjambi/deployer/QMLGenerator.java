@@ -240,7 +240,7 @@ final class QMLGenerator {
 		                        		Element element = (Element)child;
 		                        		String libraryName = element.getAttribute("name");
 		                        		if(libraryName.contains("jarimport")) {
-		                        			URL libraryURL = new URL(eform.substring(0, end+2)+libraryName);
+		                        			URL libraryURL = Main.createURL(eform.substring(0, end+2)+libraryName);
 		                        			libraries.add(new SimpleEntry<>(system, libraryURL));
 		                        		}
 		                        	}
@@ -325,19 +325,19 @@ final class QMLGenerator {
         							String jarFileURL = path.substring(4, idx);
         							String filePath = path.substring(idx);
         							try {
-        								debuginfoURL = new URL(jarFileURL.replace("-native-", "-debuginfo-"));
+        								debuginfoURL = Main.createURL(jarFileURL.replace("-native-", "-debuginfo-"));
         								if(!new File(debuginfoURL.toURI()).exists()) {
-        									debuginfoURL = new URL(jarFileURL.replace("-native-", "-debuginfo-").replace("/native/", "/debuginfo/"));
+        									debuginfoURL = Main.createURL(jarFileURL.replace("-native-", "-debuginfo-").replace("/native/", "/debuginfo/"));
         									if(!new File(debuginfoURL.toURI()).exists()) {
         										debuginfoURL = null;
         									}
         								}
         								if(debuginfoURL!=null) {
-        									debuginfoURL = new URL("jar:"+debuginfoURL.toString()+filePath.substring(0, filePath.length()-3)+"pdb");
+        									debuginfoURL = Main.createURL("jar:"+debuginfoURL.toString()+filePath.substring(0, filePath.length()-3)+"pdb");
         									try(InputStream s = debuginfoURL.openStream()){
         										targetDebuginfoFile = new File(dir, "jarimport.pdb");
         									} catch (IOException e) {
-        										debuginfoURL = new URL("jar:"+debuginfoURL.toString()+filePath+".debug");
+        										debuginfoURL = Main.createURL("jar:"+debuginfoURL.toString()+filePath+".debug");
         										try(InputStream s = debuginfoURL.openStream()){
         											targetDebuginfoFile = new File(dir, "jarimport.dll.debug");
         										} catch (IOException e2) {
@@ -410,22 +410,22 @@ final class QMLGenerator {
 									String jarFileURL = path.substring(4, idx);
 									String filePath = path.substring(idx);
 									try {
-										debuginfoURL = new URL(jarFileURL.replace("-native-", "-debuginfo-"));
+										debuginfoURL = Main.createURL(jarFileURL.replace("-native-", "-debuginfo-"));
 										if(!new File(debuginfoURL.toURI()).exists()) {
-											debuginfoURL = new URL(jarFileURL.replace("-native-", "-debuginfo-").replace("/native/", "/debuginfo/"));
+											debuginfoURL = Main.createURL(jarFileURL.replace("-native-", "-debuginfo-").replace("/native/", "/debuginfo/"));
 											if(!new File(debuginfoURL.toURI()).exists()) {
 												debuginfoURL = null;
 											}
 										}
 										if(debuginfoURL!=null) {
 											URL debuginfoBaseURL = debuginfoURL;
-											debuginfoURL = new URL("jar:"+debuginfoBaseURL.toString()+filePath+".dSYM/Contents/Resources/DWARF/libjarimport.dylib");
+											debuginfoURL = Main.createURL("jar:"+debuginfoBaseURL.toString()+filePath+".dSYM/Contents/Resources/DWARF/libjarimport.dylib");
 											try(InputStream s = debuginfoURL.openStream()){
 												targetDebuginfoFile = new File(dir, "libjarimport.dylib.dSYM/Contents/Resources/DWARF/libjarimport.dylib");
 											} catch (IOException e) {
 												debuginfoURL = null;
 											}
-											URL debuginfoURL2 = new URL("jar:"+debuginfoBaseURL.toString()+filePath+".dSYM/Contents/Info.plist");
+											URL debuginfoURL2 = Main.createURL("jar:"+debuginfoBaseURL.toString()+filePath+".dSYM/Contents/Info.plist");
 											try(InputStream s = debuginfoURL2.openStream()){
 												File targetDebuginfoFile2 = new File(dir, "libjarimport.dylib.dSYM/Contents/Info.plist");
 												targetDebuginfoFile2.getParentFile().mkdirs();
@@ -470,15 +470,15 @@ final class QMLGenerator {
 									String jarFileURL = path.substring(4, idx);
 									String filePath = path.substring(idx);
 									try {
-										debuginfoURL = new URL(jarFileURL.replace("-native-", "-debuginfo-"));
+										debuginfoURL = Main.createURL(jarFileURL.replace("-native-", "-debuginfo-"));
 										if(!new File(debuginfoURL.toURI()).exists()) {
-											debuginfoURL = new URL(jarFileURL.replace("-native-", "-debuginfo-").replace("/native/", "/debuginfo/"));
+											debuginfoURL = Main.createURL(jarFileURL.replace("-native-", "-debuginfo-").replace("/native/", "/debuginfo/"));
 											if(!new File(debuginfoURL.toURI()).exists()) {
 												debuginfoURL = null;
 											}
 										}
 										if(debuginfoURL!=null) {
-											debuginfoURL = new URL("jar:"+debuginfoURL.toString()+filePath+".debug");
+											debuginfoURL = Main.createURL("jar:"+debuginfoURL.toString()+filePath+".debug");
 											try(InputStream s = debuginfoURL.openStream()){
 												targetDebuginfoFile = new File(dir, "libjarimport.so.debug");
 											} catch (IOException e) {

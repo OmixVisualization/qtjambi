@@ -40,6 +40,7 @@ import io.qt.core.QCoreApplication;
 import io.qt.core.QMetaObject;
 import io.qt.core.QMetaProperty;
 import io.qt.core.QObject;
+import io.qt.core.QUrl;
 import io.qt.qml.QQmlComponent;
 import io.qt.qml.QQmlEngine;
 
@@ -64,7 +65,7 @@ public class TestQmlPlugin extends ApplicationInitializer{
 			qmlengine.addImportPath(path);
 		}
 		QQmlComponent component = new QQmlComponent(qmlengine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		QObject car = component.create();
 		Assert.assertFalse(component.errorString(), component.isError());
 		Assert.assertTrue("car is null", car!=null);
@@ -106,7 +107,7 @@ public class TestQmlPlugin extends ApplicationInitializer{
 			qmlengine.addImportPath(path);
 		}
 		QQmlComponent component = new QQmlComponent(qmlengine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		QObject garage = component.create();
 		Assert.assertFalse(component.errorString(), component.isError());
 		Assert.assertTrue("garage is null", garage!=null);

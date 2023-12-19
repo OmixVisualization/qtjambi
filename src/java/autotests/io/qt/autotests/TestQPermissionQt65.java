@@ -45,23 +45,28 @@ public class TestQPermissionQt65 extends ApplicationInitializer {
         ApplicationInitializer.testInitializeWithWidgets();
     }
 	
-    @SuppressWarnings({ "unchecked", "rawtypes" })
 	@Test
     public void test() throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
-    	Class contactsClass = null;
+    	Class<? extends QPermission> permissionClass = null;
     	try {
-			contactsClass = Class.forName("io.qt.core.QContactsPermission");
+    		@SuppressWarnings({ "unchecked", "rawtypes" })
+			Class<? extends QPermission> pc = (Class)Class.forName("io.qt.core.QLocationPermission");
+			permissionClass = pc;
 		} catch (ClassNotFoundException e) {
 		}
-		assumeTrue("QContactsPermission class required", contactsClass!=null);
+		assumeTrue("Permission class required", permissionClass!=null);
 		Object[] results = {null,null};
-		QCoreApplication.instance().requestPermission(contactsClass, (permission,status)->{
+		QEventLoop loop = new QEventLoop();
+		QCoreApplication.instance().requestPermission(permissionClass, (permission,status)->{
 			System.out.println(permission+" = "+status);
 			results[0] = permission;
 			results[1] = status;
+			QMetaObject.invokeMethod(loop, "quit()", Qt.ConnectionType.AutoConnection);
 		});
-		QCoreApplication.processEvents();
-		assertTrue("permission type does not match. Expected: "+contactsClass.getName()+", got: "+(results[0]==null ? "null" : results[0].getClass().getName()), contactsClass.isInstance(results[0]));
+		QTimer.singleShot(java.time.Duration.ofSeconds(20), loop, "quit()");
+		loop.exec();
+		assertTrue("permission has not been requested", results[1]!=null);
 		assertTrue("permission result = "+results[1], results[1] instanceof Qt.PermissionStatus);
+		assertTrue("permission type does not match. Expected: "+permissionClass.getName()+", got: "+(results[0]==null ? "null" : results[0].getClass().getName()), permissionClass.isInstance(results[0]));
     }
 }

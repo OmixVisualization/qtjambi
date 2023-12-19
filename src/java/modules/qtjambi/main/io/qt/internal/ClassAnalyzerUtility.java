@@ -69,6 +69,9 @@ import io.qt.core.QObject;
 import io.qt.core.QPair;
 import io.qt.internal.SignalUtility.AbstractSignal;
 
+/**
+ * @hidden
+ */
 public abstract class ClassAnalyzerUtility {
 
 	private ClassAnalyzerUtility() {
@@ -553,8 +556,9 @@ public abstract class ClassAnalyzerUtility {
 	
 	public native static <T> Class<T> getClass(T object);//Class.getClass() lead to recursive calls on android when using inside of interface default methods.
 	
-
-
+	/**
+	 * @hidden
+	 */
 	public static final class LambdaInfo {
 		public LambdaInfo(Class<?> ownerClass, Object owner, QObject qobject, boolean isStatic,
 				MethodHandle methodHandle, Method reflectiveMethod, Constructor<?> reflectiveConstructor, List<Object> lambdaArgs) {

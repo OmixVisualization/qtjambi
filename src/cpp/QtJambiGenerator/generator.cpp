@@ -893,7 +893,15 @@ void GeneratorApplication::analyzeDependencies()
 
     for(TypeSystemTypeEntry* entry : typeSystemsByQtLibrary.values()){
         for(const QString& dependency : dependenciesByLib[entry->qtLibrary()]){
-            entry->addRequiredQtLibrary(QString(dependency));
+            bool skip = false;
+            for(const Dependency& requiredQtLibrary : entry->requiredQtLibraries()){
+                if(requiredQtLibrary.entry==dependency && requiredQtLibrary.mode==TS::Dependency::Mandatory){
+                    skip = true;
+                    break;
+                }
+            }
+            if(!skip)
+                entry->addRequiredQtLibrary(QString(dependency));
         }
     }
 }

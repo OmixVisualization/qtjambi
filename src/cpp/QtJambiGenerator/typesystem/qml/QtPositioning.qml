@@ -55,21 +55,17 @@ TypeSystem{
         name: "QGeoAddress"
     }
     
-    EnumType{
-        name: "QGeoShape::ShapeType"
-    }
-
-    Rejection{
-        className: "QGeoShape"
-        functionName: "dataStreamOut"
-    }
-    Rejection{
-        className: "QGeoShape"
-        functionName: "dataStreamIn"
-    }
-    
     ValueType{
         name: "QGeoShape"
+        Rejection{
+            functionName: "dataStreamOut"
+        }
+        Rejection{
+            functionName: "dataStreamIn"
+        }
+        EnumType{
+            name: "ShapeType"
+        }
         isPolymorphicBase: true
         polymorphicIdExpression: "%1->type() == QGeoShape::UnknownType"
         ModifyFunction{
@@ -80,26 +76,46 @@ TypeSystem{
     
     ValueType{
         name: "QGeoCircle"
+        noImplicitConstructors: true
         polymorphicIdExpression: "%1->type() == QGeoShape::CircleType"
         ModifyFunction{
             signature: "center()const"
             remove: RemoveFlag.All
         }
+        ModifyFunction{
+            signature: "QGeoCircle(QGeoShape)"
+            isForcedExplicit: true
+        }
     }
     
     ValueType{
         name: "QGeoPath"
+        noImplicitConstructors: true
         polymorphicIdExpression: "%1->type() == QGeoShape::PathType"
+        ModifyFunction{
+            signature: "QGeoPath(QGeoShape)"
+            isForcedExplicit: true
+        }
     }
     
     ValueType{
         name: "QGeoPolygon"
+        noImplicitConstructors: true
         polymorphicIdExpression: "%1->type() == QGeoShape::PolygonType"
+        ModifyFunction{
+            signature: "QGeoPolygon(QGeoShape)"
+            isForcedExplicit: true
+        }
     }
     
     ValueType{
         name: "QGeoRectangle"
+        noImplicitConstructors: true
         polymorphicIdExpression: "%1->type() == QGeoShape::RectangleType"
+        ModifyFunction{
+            signature: "QGeoRectangle(QGeoShape)"
+            isForcedExplicit: true
+        }
         ModifyFunction{
             signature: "center()const"
             remove: RemoveFlag.All
@@ -114,52 +130,52 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QGeoCoordinate::CoordinateType"
-    }
-    
-    EnumType{
-        name: "QGeoCoordinate::CoordinateFormat"
-    }
-    
     ValueType{
         name: "QGeoCoordinate"
+
+        EnumType{
+            name: "CoordinateType"
+        }
+
+        EnumType{
+            name: "CoordinateFormat"
+        }
     }
     
     ValueType{
         name: "QGeoLocation"
     }
     
-    EnumType{
-        name: "QGeoSatelliteInfo::Attribute"
-    }
-    
-    EnumType{
-        name: "QGeoSatelliteInfo::SatelliteSystem"
-    }
-    
     ValueType{
         name: "QGeoSatelliteInfo"
-    }
-    
-    EnumType{
-        name: "QGeoPositionInfo::Attribute"
+
+        EnumType{
+            name: "Attribute"
+        }
+
+        EnumType{
+            name: "SatelliteSystem"
+        }
     }
     
     ValueType{
         name: "QGeoPositionInfo"
-    }
-    
-    EnumType{
-        name: "QGeoAreaMonitorSource::Error"
-    }
-    
-    EnumType{
-        name: "QGeoAreaMonitorSource::AreaMonitorFeature"
+
+        EnumType{
+            name: "Attribute"
+        }
     }
     
     ObjectType{
         name: "QGeoAreaMonitorSource"
+
+        EnumType{
+            name: "Error"
+        }
+
+        EnumType{
+            name: "AreaMonitorFeature"
+        }
         ModifyFunction{
             signature: "setPositionInfoSource(QGeoPositionInfoSource*)"
             ModifyArgument{
@@ -254,16 +270,16 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QGeoPositionInfoSource::Error"
-    }
-    
-    EnumType{
-        name: "QGeoPositionInfoSource::PositioningMethod"
-    }
-    
     ObjectType{
         name: "QGeoPositionInfoSource"
+
+        EnumType{
+            name: "Error"
+        }
+
+        EnumType{
+            name: "PositioningMethod"
+        }
         ModifyFunction{
             signature: "createDefaultSource(QObject*)"
             ModifyArgument{
@@ -304,14 +320,14 @@ TypeSystem{
                 }
             }
         }
-    }
-    
-    EnumType{
-        name: "QGeoSatelliteInfoSource::Error"
     }
     
     ObjectType{
         name: "QGeoSatelliteInfoSource"
+
+        EnumType{
+            name: "Error"
+        }
         ModifyFunction{
             signature: "createDefaultSource(QObject*)"
             ModifyArgument{
@@ -354,12 +370,12 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QNmeaPositionInfoSource::UpdateMode"
-    }
-    
     ObjectType{
         name: "QNmeaPositionInfoSource"
+
+        EnumType{
+            name: "UpdateMode"
+        }
         ExtraIncludes{
             Include{
                 fileName: "utils_p.h"
@@ -399,17 +415,9 @@ TypeSystem{
                 index: 1
                 NoNullPointer{
                 }
-                ReplaceType{
-                    modifiedType: "java.nio.ByteBuffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferConstData %in_buffer(%env, %in);\n"+
-                                  "const char* %out = %in_buffer;"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jobject %out = %env->NewDirectByteBuffer(const_cast<char*>(%in), %2);"}
+                AsBuffer{
+                    lengthParameter: 2
+                    AsArray{}
                 }
             }
             ModifyArgument{
@@ -461,6 +469,11 @@ TypeSystem{
                                   "    }\n"+
                                   "}"}
                 }
+            }
+            ModifyArgument{
+                index: 1
+                noImplicitCalls: true
+                AddImplicitCall{type: "io.qt.core.@NonNull QByteArray"}
             }
             ModifyArgument{
                 index: 2
@@ -536,8 +549,11 @@ TypeSystem{
                 index: 1
                 NoNullPointer{
                 }
-                ArrayType{
+                AsBuffer{
                     lengthParameter: 2
+                    AsArray{
+                        noOffset: true
+                    }
                 }
             }
             ModifyArgument{
@@ -548,7 +564,7 @@ TypeSystem{
                 index: 4
                 NoNullPointer{
                 }
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -563,7 +579,7 @@ TypeSystem{
                 index: 3
                 NoNullPointer{
                 }
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -575,13 +591,30 @@ TypeSystem{
                 index: 1
                 NoNullPointer{
                 }
-                ArrayType{
+                AsBuffer{
                     lengthParameter: 2
+                    AsArray{
+                        noOffset: true
+                    }
                 }
             }
             ModifyArgument{
                 index: 3
                 invalidateAfterUse: true
+            }
+        }
+        ModifyFunction{
+            signature: "parseSatelliteInfoFromNmea(QByteArrayView,QList<QGeoSatelliteInfo>&,QGeoSatelliteInfo::SatelliteSystem&)"
+            ModifyArgument{
+                index: 1
+                noImplicitCalls: true
+            }
+        }
+        ModifyFunction{
+            signature: "parseSatellitesInUseFromNmea(QByteArrayView,QList<int>&)"
+            ModifyArgument{
+                index: 1
+                noImplicitCalls: true
             }
         }
         since: [6, 2]

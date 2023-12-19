@@ -335,6 +335,38 @@ TypeSystem{
     
     ObjectType{
         name: "CustomPaintEngine"
+        ModifyFunction{
+            signature: "callDrawLineFs(QLineF,int)"
+            noImplicitArguments: true
+        }
+        ModifyFunction{
+            signature: "callDrawLines(QLine,int)"
+            noImplicitArguments: true
+        }
+        ModifyFunction{
+            signature: "callDrawPointFs(QPointF,int)"
+            noImplicitArguments: true
+        }
+        ModifyFunction{
+            signature: "callDrawPoints(QPoint,int)"
+            noImplicitArguments: true
+        }
+        ModifyFunction{
+            signature: "callDrawPolygonFs(QPointF,int)"
+            noImplicitArguments: true
+        }
+        ModifyFunction{
+            signature: "callDrawPolygons(QPoint,int)"
+            noImplicitArguments: true
+        }
+        ModifyFunction{
+            signature: "callDrawRectFs(QRectF,int)"
+            noImplicitArguments: true
+        }
+        ModifyFunction{
+            signature: "callDrawRects(QRect,int)"
+            noImplicitArguments: true
+        }
     }
     
     ObjectType{
@@ -689,8 +721,8 @@ TypeSystem{
             signature: "callValidate(QString *, int *)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    minLength: 1
+                AsArray{
+                    minLength: 0
                 }
             }
         }

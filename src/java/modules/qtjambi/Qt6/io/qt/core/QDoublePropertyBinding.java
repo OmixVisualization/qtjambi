@@ -48,7 +48,7 @@ public final class QDoublePropertyBinding extends QUntypedPropertyBinding {
 
 	/**
 	 * Creates a new <code>QDoublePropertyBinding</code> with the given functor <code>f</code>.
-	 * @param t
+	 * @param f
 	 */
 	public QDoublePropertyBinding(@StrictNonNull DoubleSupplier f) {
 		super(f);
@@ -120,8 +120,6 @@ public final class QDoublePropertyBinding extends QUntypedPropertyBinding {
 
 	/**
 	 * Creates a <code>null</code>-<code>QDoublePropertyBinding</code>.
-	 * @param binding
-	 * @return binding copy
 	 * @see QUntypedPropertyBinding#isNull()
 	 */
 	public QDoublePropertyBinding() {

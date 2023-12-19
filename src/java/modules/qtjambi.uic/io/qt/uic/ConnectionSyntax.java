@@ -29,6 +29,9 @@
 ****************************************************************************/
 package io.qt.uic;
 
+/**
+ * @hidden
+ */
 public enum ConnectionSyntax {
 	StringBased, MemberFunctionPtr;
 	

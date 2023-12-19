@@ -652,6 +652,10 @@ TypeSystem{
     
     ValueType{
         name: "QXmlParseException"
+        InjectCode{
+            target: CodeClass.Native
+            Text{content: "QT_WARNING_DISABLE_DEPRECATED\nQT_WARNING_DISABLE_GCC(\"-Wdeprecated-declarations\")"}
+        }
     }
     
     ValueType{

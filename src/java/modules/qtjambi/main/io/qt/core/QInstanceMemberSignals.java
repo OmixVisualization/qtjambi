@@ -2577,12 +2577,12 @@ public interface QInstanceMemberSignals {
          * @throws java.lang.RuntimeException Raised if the signal object could not be successfully introspected or if the
          *                                    signatures of the signal and slot are incompatible.
          */
-        public final QMetaObject.@NonNull Connection connect(Object receiver, String method, Qt.ConnectionType... type) {
+        public final QMetaObject.@NonNull Connection connect(Object receiver, String method, Qt.ConnectionType... connectionType) {
             if (receiver == null)
                 throw new NullPointerException("Receiver must be non-null");
             if (method == null)
                 throw new NullPointerException("Slot must be non-null");
-            return super.connect(receiver, method, type);
+            return super.connect(receiver, method, connectionType);
         }
         
         /**

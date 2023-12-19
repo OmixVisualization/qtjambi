@@ -33,6 +33,9 @@ import java.lang.reflect.Method;
 
 import io.qt.core.QMetaMethod;
 
+/**
+ * @hidden
+ */
 public class SignalSlot {
     public SignalSlot(String name, String signature, String className, QMetaMethod metaMethod, Method method, boolean isAmbiguous) {
 		this.name = name;

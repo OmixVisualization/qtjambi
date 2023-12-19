@@ -47,6 +47,9 @@ import io.qt.uic.ui4.DomCustomWidget;
 import io.qt.uic.ui4.DomInclude;
 import io.qt.uic.ui4.DomUI;
 
+/**
+ * @hidden
+ */
 public class WriteImports extends WriteIncludesBase {
 	
 	public WriteImports(Uic uic) {

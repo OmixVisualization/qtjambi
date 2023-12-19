@@ -131,14 +131,16 @@ struct DependencyManagerUserData : public QtJambiObjectData
     ~DependencyManagerUserData() override;
     void addDependentObject(const QSharedPointer<QtJambiLink>& dependent);
     void removeDependentObject(const QSharedPointer<QtJambiLink>& dependent);
+    void addFinalization(std::function<void(JNIEnv*)>&& finalization);
     bool hasDependencies() const;
     void clear(JNIEnv* env);
     static DependencyManagerUserData* instance(const QObject* object, bool forceConstruction = true);
     QTJAMBI_OBJECTUSERDATA_ID_DECL
 private:
     Q_DISABLE_COPY_MOVE(DependencyManagerUserData)
-    void clear(JNIEnv* env, QSet<QWeakPointer<QtJambiLink>>& dependentObjects);
+    void clear(JNIEnv* env, QSet<QWeakPointer<QtJambiLink>>& dependentObjects, QList<std::function<void(JNIEnv*)>>& finalizations);
     QSet<QWeakPointer<QtJambiLink>> m_dependentObjects;
+    QList<std::function<void(JNIEnv*)>> m_finalizations;
 };
 
 class DependentLink{
@@ -469,9 +471,11 @@ public:
 
     virtual void* typedPointer(const std::type_info& qtType) const;
     void registerDependentObject(const QSharedPointer<QtJambiLink>& link);
+    void addFinalization(std::function<void(JNIEnv*)>&& finalization);
     void unregisterDependentObject(const QSharedPointer<QtJambiLink>& link);
     static void registerDependentObject(const QObject* object, const QSharedPointer<QtJambiLink>& link);
     static void unregisterDependentObject(const QObject* object, const QSharedPointer<QtJambiLink>& link);
+    static void addFinalization(const QObject* object, std::function<void(JNIEnv*)>&& finalization);
 
 #if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
     const char* qtTypeName() const;
@@ -497,9 +501,10 @@ public:
 #endif
 public:
     bool isInitialized() const;
+    bool isDeleteLater() const { return m_flags.testFlag(Flag::IsDeleteLater); }
+    bool isCleanedUp() const { return m_flags.testFlag(Flag::HasBeenCleaned); }
 protected:
     void dispose();
-    bool isDeleteLater() const { return m_flags.testFlag(Flag::IsDeleteLater); }
     void setDeleteLater(){ m_flags.setFlag(Flag::IsDeleteLater); }
     void invalidateDependentObjects(JNIEnv *env);
     void setInDestructor();

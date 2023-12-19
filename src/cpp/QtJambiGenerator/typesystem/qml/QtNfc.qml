@@ -46,6 +46,12 @@ TypeSystem{
         target: CodeClass.MetaInfo
         Text{content: "initialize_meta_info_QtNfc();"}
     }
+
+    RequiredLibrary{
+        name: "QtDBus"
+        mode: RequiredLibrary.Optional
+        until: 5
+    }
     
     Rejection{
         className: "RequestIdPrivate"
@@ -171,6 +177,7 @@ TypeSystem{
     
     ValueType{
         name: "QNdefMessage"
+        noImplicitConstructors: true
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
@@ -181,7 +188,9 @@ TypeSystem{
                           "    struct supports_stream_operators<QNdefMessage> : std::false_type{};\n"+
                           "    template<>\n"+
                           "    struct supports_debugstream<QNdefMessage> : std::false_type{};\n"+
-                          "}"}
+                          "}\n"+
+                          "QT_WARNING_DISABLE_CLANG(\"-Wdeprecated-copy\")\n"+
+                          "QT_WARNING_DISABLE_GCC(\"-Wdeprecated-copy\")"}
         }
     }
     
@@ -191,12 +200,16 @@ TypeSystem{
         EnumType{
             name: "Action"
         }
+        ModifyFunction{
+            signature: "QNdefNfcSmartPosterRecord(QNdefRecord)"
+            isForcedExplicit: true
+        }
         polymorphicIdExpression: "%1->isRecordType<QNdefNfcSmartPosterRecord>()"
     }
     
     ValueType{
         name: "QNdefNfcTextRecord"
-
+        noImplicitConstructors: true
         EnumType{
             name: "Encoding"
         }
@@ -205,11 +218,13 @@ TypeSystem{
     
     ValueType{
         name: "QNdefNfcUriRecord"
+        noImplicitConstructors: true
         polymorphicIdExpression: "%1->isRecordType<QNdefNfcUriRecord>()"
     }
     
     ValueType{
         name: "QNdefNfcIconRecord"
+        noImplicitConstructors: true
         polymorphicIdExpression: "%1->isRecordType<QNdefNfcIconRecord>()"
     }
     

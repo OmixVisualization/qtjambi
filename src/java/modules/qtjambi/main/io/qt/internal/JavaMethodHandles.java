@@ -15,6 +15,9 @@ import java.util.function.Supplier;
 import io.qt.core.QDataStream;
 import io.qt.core.QMetaObject;
 
+/**
+ * @hidden
+ */
 final class JavaMethodHandles implements ReflectionUtility.MethodInvocationHandler{
 	public final boolean useMethodHandleProxies;
 

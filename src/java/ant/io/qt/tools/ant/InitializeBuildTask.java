@@ -35,6 +35,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -323,8 +324,8 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		Map<String,String> qmakeQuery;
 		if(qtQmake!=null && !qtQmake.isEmpty()) {
 			sourceValue = " (from property:qmake)";
-			mySetProperty(-1, Constants.QMAKE, sourceValue, new java.io.File(qtQmake).getName(), true);
-			mySetProperty(-1, Constants.QMAKE_ABSPATH, sourceValue, new java.io.File(qtQmake).getAbsolutePath(), true);
+			mySetProperty(-1, Constants.QMAKE, sourceValue, new File(qtQmake).getName(), true);
+			mySetProperty(-1, Constants.QMAKE_ABSPATH, sourceValue, new File(qtQmake).getAbsolutePath(), true);
 			qmakeQuery = QMakeTask.query(this, qtQmake);
 		}else {
 			String QTDIR = AntUtil.getPropertyAsString(propertyHelper, "QTDIR"); // used here
@@ -471,7 +472,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 				}else {
 					String QTDIR = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.qtdir");
 					if(QTDIR!=null) {
-						String androidSpec = new java.io.File(QTDIR).getName();
+						String androidSpec = new File(QTDIR).getName();
 						switch(androidSpec) {
 						case "android_arm64_v8a":
 							osname += "-arm64";
@@ -1168,21 +1169,21 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		
 		mySetProperty(-1, "TODAY", null, new SimpleDateFormat("yyyy-MM-dd").format(new Date()), false);
 		
-		java.io.File buildDir = new java.io.File(new java.io.File(qtjambiFullVersion), "build");
+		File buildDir = new File(new File(qtjambiFullVersion), "build");
 		mySetProperty(-1, "outputDir", null, buildDir.getAbsolutePath(), true);
-		mySetProperty(-1, "deploymentdir", null, new java.io.File(new java.io.File(qtjambiFullVersion), "deployment").getAbsolutePath(), true);
-		mySetProperty(-1, "java.outdir", null, new java.io.File(buildDir, "java").getAbsolutePath(), true);
-		mySetProperty(-1, "java.outsrcdir", null, new java.io.File(buildDir, "java-src").getAbsolutePath(), true);
-		java.io.File platformBuildDir = new java.io.File(buildDir, osname);
-		mySetProperty(-1, "qtjambi.builddir", null, new java.io.File(platformBuildDir, "qtjambi").getAbsolutePath(), true);
+		mySetProperty(-1, "deploymentdir", null, new File(new File(qtjambiFullVersion), "deployment").getAbsolutePath(), true);
+		mySetProperty(-1, "java.outdir", null, new File(buildDir, "java").getAbsolutePath(), true);
+		mySetProperty(-1, "java.outsrcdir", null, new File(buildDir, "java-src").getAbsolutePath(), true);
+		File platformBuildDir = new File(buildDir, osname);
+		mySetProperty(-1, "qtjambi.builddir", null, new File(platformBuildDir, "qtjambi").getAbsolutePath(), true);
 		if(Objects.equals(OSInfo.osArchName(), OSInfo.crossOSArchName())) {
-			mySetProperty(-1, "generator.builddir", null, new java.io.File(new java.io.File(platformBuildDir, "qtjambi"), "QtJambiGenerator").getAbsolutePath(), true);
+			mySetProperty(-1, "generator.builddir", null, new File(new File(platformBuildDir, "qtjambi"), "QtJambiGenerator").getAbsolutePath(), true);
 		}else {
-			mySetProperty(-1, "generator.builddir", null, new java.io.File(new java.io.File(platformBuildDir, "generator"), "QtJambiGenerator").getAbsolutePath(), true);
+			mySetProperty(-1, "generator.builddir", null, new File(new File(platformBuildDir, "generator"), "QtJambiGenerator").getAbsolutePath(), true);
 		}
-		mySetProperty(-1, "plugins.builddir", null, new java.io.File(platformBuildDir, "plugins").getAbsolutePath(), true);
+		mySetProperty(-1, "plugins.builddir", null, new File(platformBuildDir, "plugins").getAbsolutePath(), true);
 		
-		java.io.File generatorOutputdir = new java.io.File(buildDir, "generator");
+		File generatorOutputdir = new File(buildDir, "generator");
 		mySetProperty(-1, "generator.outputdir", null, generatorOutputdir.getAbsolutePath(), true);
 		configureGenerator(generatorOutputdir);
 		
@@ -1590,7 +1591,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		return specFound;
 	}
 
-	private void configureGenerator(java.io.File generatorOutputdir) {
+	private void configureGenerator(File generatorOutputdir) {
 		String qtsources = AntUtil.getPropertyAsString(propertyHelper, "qtsources");
 		if(qtsources==null || qtsources.isEmpty()) {
 			String qtdir = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.qtdir");
@@ -1609,6 +1610,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		File includePath = new File(AntUtil.getPropertyAsString(propertyHelper, Constants.INCLUDEDIR));
 		Map<String, ModuleInfo> moduleInfos = moduleInfos();
 		List<String> modules = new ArrayList<>();
+		File headersdir = new File(generatorOutputdir, "missing-headers");
 		for (String module : moduleInfos.keySet()) {
 			ModuleInfo info = moduleInfos.get(module);
 			if (Boolean.parseBoolean(AntUtil.getPropertyAsString(propertyHelper, "qtjambi." + module + ".any.true"))) {
@@ -1684,20 +1686,164 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 				}
 			} else if (info.preprocdef != null) {
 				switch (module) {
+				case "activex":
+					if (skippedModules.contains(module) || qtsources==null || qtsources.isEmpty()) {
+						generatorPreProcDefinesList.add(info.preprocdef);
+					} else {
+						if(qtMajorVersion==5) {
+							File includeDir = new File(new File(new File(qtsources), "qtactiveqt"), "include");
+							if(includeDir.isDirectory()) {
+								for(File moduleDir : includeDir.listFiles()) {
+									if(moduleDir.isDirectory() && !moduleDir.getName().startsWith(".")) {
+										File moduleHeaders = new File(headersdir, moduleDir.getName());
+										if(!moduleHeaders.isDirectory()) {
+											moduleHeaders.mkdirs();
+											for(File header : moduleDir.listFiles()) {
+												if(header.isFile()) {
+													File target = new File(moduleHeaders, header.getName());
+													if(header.getName().endsWith(".h")) {
+														for(File subdir : new File(new File(new File(new File(qtsources), "qtactiveqt"), "src"), "activeqt").listFiles()) {
+															if(subdir.isDirectory()) {
+																File header2 = new File(subdir, header.getName());
+																if(header2.isFile()) {
+																	header = header2;
+																	break;
+																}
+															}
+														}
+													}
+													try {
+														Files.copy(header.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+													} catch (IOException e) {
+														e.printStackTrace();
+													}
+												}
+											}
+										}
+									}
+								}
+								String qtjambiLibName = "QtJambi"+info.libraryName.substring(2);
+								if (Boolean.parseBoolean(
+										AntUtil.getPropertyAsString(propertyHelper, "qtjambi." + module + ".staticlib"))
+										|| info.isPureStaticLib) {
+									generatorStaticLibsList.add(info.libraryName);
+								}
+								if(!modules.contains(qtjambiLibName))
+									modules.add(qtjambiLibName);
+							}else {
+								generatorPreProcDefinesList.add(info.preprocdef);
+							}
+						}else {
+							File srcDir = new File(new File(new File(new File(qtsources), "qtactiveqt"), "src"), "activeqt");
+							File cmakeFile = new File(srcDir, "CMakeLists.txt");
+							if(cmakeFile.isFile()) {
+								try {
+									String cmakeSpec = new String(Files.readAllBytes(cmakeFile.toPath()), "UTF-8");
+									int idx = cmakeSpec.indexOf("qt_internal_add_module");
+									if(idx>0) {
+										idx = cmakeSpec.indexOf('(', idx);
+										if(idx>0) {
+											int idx2 = cmakeSpec.indexOf(')', idx);
+											String qt_internal_add_module = cmakeSpec.substring(idx+1, idx2);
+											if(qt_internal_add_module.contains("HEADER_MODULE") && qt_internal_add_module.contains("SOURCES")) {
+												idx = qt_internal_add_module.indexOf("MODULE_INCLUDE_NAME ");
+												if(idx>0) {
+													idx = qt_internal_add_module.indexOf(' ', idx);
+													idx2 = qt_internal_add_module.indexOf('\n', idx);
+													String includeName = qt_internal_add_module.substring(idx+1, idx2).trim();
+													idx = qt_internal_add_module.indexOf("SOURCES", idx2);
+													if(idx>0) {
+														File axcontainerHeaders = new File(headersdir, "QtAxContainer");
+														if(!axcontainerHeaders.isDirectory()) {
+															axcontainerHeaders.mkdirs();
+														}
+														File moduleHeaders = new File(headersdir, includeName);
+														if(!moduleHeaders.isDirectory()) {
+															moduleHeaders.mkdirs();
+														}
+														try(PrintStream out1 = new PrintStream(new File(moduleHeaders, qtMajorVersion>6 || qtMinorVersion>=5 ? "QtActiveQt" : "ActiveQt"));
+																PrintStream out2 = new PrintStream(new File(axcontainerHeaders, "QtAxContainer"))){
+															String[] sources = qt_internal_add_module.substring(idx+7).trim().split("[\\s]+");
+															for(String srcentry : sources) {
+																if(srcentry.endsWith(".h") && !srcentry.endsWith("_p.h")) {
+																	if(File.separatorChar!='/')
+																		srcentry = srcentry.replace('/', File.separatorChar);
+																	File srcFile = new File(srcDir, srcentry);
+																	File target = new File(moduleHeaders, srcFile.getName());
+																	Files.copy(srcFile.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+																	target = new File(axcontainerHeaders, srcFile.getName());
+																	Files.copy(srcFile.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+																	out1.print("#include \"");
+																	out1.print(srcFile.getName());
+																	out1.println("\"");
+																	out2.print("#include \"");
+																	out2.print(srcFile.getName());
+																	out2.println("\"");
+																}
+															}
+														}
+													}
+												}
+											}
+										}
+									}
+									String qtjambiLibName = "QtJambi"+info.libraryName.substring(2);
+									if (Boolean.parseBoolean(
+											AntUtil.getPropertyAsString(propertyHelper, "qtjambi." + module + ".staticlib"))
+											|| info.isPureStaticLib) {
+										generatorStaticLibsList.add(info.libraryName);
+									}
+									if(!modules.contains(qtjambiLibName))
+										modules.add(qtjambiLibName);
+								} catch (IOException e) {
+									e.printStackTrace();
+								}
+							}else {
+								generatorPreProcDefinesList.add(info.preprocdef);
+							}
+						}
+					}
+					break;
 				case "macextras":
 				case "x11extras":
 				case "winextras":
 					if (skippedModules.contains(module) || qtMajorVersion>5 || qtsources==null || qtsources.isEmpty()) {
 						generatorPreProcDefinesList.add(info.preprocdef);
 					} else {
-						if (new File(new File(qtsources), "qt" + module).isDirectory()
-								&& new File(new File(qtsources), "qt" + module).listFiles().length > 0) {
-							if (generatorExtraIncludes == null)
-								generatorExtraIncludes = "";
-							if (!generatorExtraIncludes.isEmpty())
-								generatorExtraIncludes += ";";
-							generatorExtraIncludes += qtsources + "/qt" + module + "/include";
-						} else {
+						File includeDir = new File(new File(new File(qtsources), "qt" + module), "include");
+						if(includeDir.isDirectory()) {
+							for(File moduleDir : includeDir.listFiles()) {
+								if(moduleDir.isDirectory() && !moduleDir.getName().startsWith(".")) {
+									File moduleHeaders = new File(headersdir, moduleDir.getName());
+									if(!moduleHeaders.isDirectory()) {
+										moduleHeaders.mkdirs();
+										for(File header : moduleDir.listFiles()) {
+											if(header.isFile()) {
+												File target = new File(moduleHeaders, header.getName());
+												if(header.getName().endsWith(".h")) {
+													File header2 = new File(new File(new File(new File(new File(qtsources), "qt" + module), "src"), module), header.getName());
+													if(header2.isFile())
+														header = header2;
+												}
+												try {
+													Files.copy(header.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
+												} catch (IOException e) {
+													e.printStackTrace();
+												}
+											}
+										}
+									}
+								}
+							}
+							String qtjambiLibName = "QtJambi"+info.libraryName.substring(2);
+							if (Boolean.parseBoolean(
+									AntUtil.getPropertyAsString(propertyHelper, "qtjambi." + module + ".staticlib"))
+									|| info.isPureStaticLib) {
+								generatorStaticLibsList.add(info.libraryName);
+							}
+							if(!modules.contains(qtjambiLibName))
+								modules.add(qtjambiLibName);
+						}else {
 							generatorPreProcDefinesList.add(info.preprocdef);
 						}
 					}
@@ -1709,41 +1855,64 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		}
 		AntUtil.setProperty(propertyHelper, Constants.QTJAMBI_MODULES, String.join(",", modules), false);
 		if(((qtMajorVersion==6 && qtMinorVersion>=5) || qtMajorVersion>6) && qtsources!=null) {
-			java.io.File headersdir = new java.io.File(generatorOutputdir, "missing-headers");
 			if(!headersdir.isDirectory()) {
-				java.io.File opengldir = new java.io.File(headersdir, "QtOpenGL");
-				opengldir.mkdirs();
+				headersdir.mkdirs();
+			}
+			File opengldir = new File(headersdir, "QtOpenGL");
+			if(!opengldir.isDirectory()) {
+				File originalIncludeDir = new File(includePath, "QtOpenGL");
+				if((!originalIncludeDir.exists() || !originalIncludeDir.isDirectory()) 
+						&& OSInfo.crossOS()==OSInfo.OS.MacOS && useQtFramework) {
+					originalIncludeDir = new File(libPath, "QtOpenGL.framework/Versions/A/Headers");
+				}
 				File moduleDir = new File(new File(qtsources), "qtbase" + File.separator + "src" + File.separator + "opengl");
 				if (moduleDir.isDirectory()) {
 					for(File file : moduleDir.listFiles(f->f.getName().startsWith("qopenglfunctions_") && f.getName().endsWith(".h"))) {
-						try {
-							Files.copy(file.toPath(), new java.io.File(opengldir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
-						} catch (IOException e) {
-							e.printStackTrace();
+						if(!new File(originalIncludeDir, file.getName()).exists()) {
+							try {
+								opengldir.mkdirs();
+								Files.copy(file.toPath(), new File(opengldir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
 						}
 					}
 				}
-				java.io.File coredir = new java.io.File(headersdir, "QtCore");
-				coredir.mkdirs();
-				moduleDir = new File(new File(qtsources), "qtbase" + File.separator + "src" + File.separator + "corelib" + File.separator + "kernel");
+			}
+			File coredir = new File(headersdir, "QtCore");
+			if(!coredir.isDirectory()) {
+				File originalIncludeDir = new File(includePath, "QtCore");
+				if((!originalIncludeDir.exists() || !originalIncludeDir.isDirectory()) 
+						&& OSInfo.crossOS()==OSInfo.OS.MacOS && useQtFramework) {
+					originalIncludeDir = new File(libPath, "QtCore.framework/Versions/A/Headers");
+				}
+				File moduleDir = new File(new File(qtsources), "qtbase" + File.separator + "src" + File.separator + "corelib" + File.separator + "kernel");
 				if (moduleDir.isDirectory()) {
 					File file = new File(moduleDir, "qpermissions.h");
-					if(file.exists()) {
+					if(file.exists() && !new File(originalIncludeDir, file.getName()).exists()) {
 						try {
-							Files.copy(file.toPath(), new java.io.File(coredir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
+							coredir.mkdirs();
+							Files.copy(file.toPath(), new File(coredir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
 					}
 				}
-				java.io.File guidir = new java.io.File(headersdir, "QtGui");
-				guidir.mkdirs();
-				moduleDir = new File(new File(qtsources), "qtbase" + File.separator + "src" + File.separator + "gui" + File.separator + "platform" + File.separator + "darwin");
+			}
+			File guidir = new File(headersdir, "QtGui");
+			if(!guidir.isDirectory()) {
+				File originalIncludeDir = new File(includePath, "QtGui");
+				if((!originalIncludeDir.exists() || !originalIncludeDir.isDirectory()) 
+						&& OSInfo.crossOS()==OSInfo.OS.MacOS && useQtFramework) {
+					originalIncludeDir = new File(libPath, "QtGui.framework/Versions/A/Headers");
+				}
+				File moduleDir = new File(new File(qtsources), "qtbase" + File.separator + "src" + File.separator + "gui" + File.separator + "platform" + File.separator + "darwin");
 				if (moduleDir.isDirectory()) {
 					File file = new File(moduleDir, "qutimimeconverter.h");
-					if(file.exists()) {
+					if(file.exists() && !new File(originalIncludeDir, file.getName()).exists()) {
 						try {
-							Files.copy(file.toPath(), new java.io.File(guidir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
+							guidir.mkdirs();
+							Files.copy(file.toPath(), new File(guidir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
@@ -1752,15 +1921,30 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 				moduleDir = new File(new File(qtsources), "qtbase" + File.separator + "src" + File.separator + "gui" + File.separator + "platform" + File.separator + "windows");
 				if (moduleDir.isDirectory()) {
 					File file = new File(moduleDir, "qwindowsmimeconverter.h");
-					if(file.exists()) {
+					if(file.exists() && !new File(originalIncludeDir, file.getName()).exists()) {
 						try {
-							Files.copy(file.toPath(), new java.io.File(guidir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
+							guidir.mkdirs();
+							Files.copy(file.toPath(), new File(guidir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}
+				moduleDir = new File(new File(qtsources), "qtbase" + File.separator + "src" + File.separator + "gui" + File.separator + "vulkan");
+				if (moduleDir.isDirectory()) {
+					File file = new File(moduleDir, "qvulkaninstance.h");
+					if(file.exists() && !new File(originalIncludeDir, file.getName()).exists()) {
+						try {
+							guidir.mkdirs();
+							Files.copy(file.toPath(), new File(guidir, file.getName()).toPath(), StandardCopyOption.REPLACE_EXISTING);
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
 					}
 				}
 			}
+		}
+		if(headersdir.isDirectory()) {
 			if (generatorExtraIncludes == null)
 				generatorExtraIncludes = "";
 			if (!generatorExtraIncludes.isEmpty())

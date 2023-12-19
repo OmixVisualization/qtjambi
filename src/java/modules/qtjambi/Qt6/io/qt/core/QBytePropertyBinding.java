@@ -44,7 +44,7 @@ public final class QBytePropertyBinding extends QUntypedPropertyBinding {
 
 	/**
 	 * Creates a new <code>QBytePropertyBinding</code> with the given functor <code>f</code>.
-	 * @param t
+	 * @param f
 	 */
 	public QBytePropertyBinding(@StrictNonNull ByteSupplier f) {
 		super(f);
@@ -116,8 +116,6 @@ public final class QBytePropertyBinding extends QUntypedPropertyBinding {
 
 	/**
 	 * Creates a <code>null</code>-<code>QBytePropertyBinding</code>.
-	 * @param binding
-	 * @return binding copy
 	 * @see QUntypedPropertyBinding#isNull()
 	 */
 	public QBytePropertyBinding() {

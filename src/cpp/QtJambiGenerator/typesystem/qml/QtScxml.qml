@@ -126,40 +126,14 @@ TypeSystem{
             signature: "stateMachineTable() const"
             ModifyArgument{
                 index: 0
-                ReplaceType{
-                    modifiedType: "java.nio.IntBuffer"
-                }
-                NoNullPointer{}
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "int* %out = reinterpret_cast<int*>(%env->GetDirectBufferAddress(%in));"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jobject %out = %env->NewDirectByteBuffer(const_cast<int*>(%in), 1024*1024 /* this number is an assumption */);\n"+
-                                  "%out = Java::Runtime::ByteBuffer::asReadOnlyBuffer(%env,%out);\n"+
-                                  "%out = Java::Runtime::ByteBuffer::asIntBuffer(%env,%out);"}
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "instructions() const"
             ModifyArgument{
                 index: 0
-                ReplaceType{
-                    modifiedType: "java.nio.IntBuffer"
-                }
-                NoNullPointer{}
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "int* %out = reinterpret_cast<int*>(%env->GetDirectBufferAddress(%in));"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jobject %out = %env->NewDirectByteBuffer(const_cast<int*>(%in), 1024*1024 /* this number is an assumption */);\n"+
-                                  "%out = Java::Runtime::ByteBuffer::asReadOnlyBuffer(%env,%out);\n"+
-                                  "%out = Java::Runtime::ByteBuffer::asIntBuffer(%env,%out);"}
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
@@ -167,18 +141,18 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.nio.IntBuffer"
+                    modifiedType: "java.nio.@Nullable IntBuffer"
                 }
-                NoNullPointer{}
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "int* %out = reinterpret_cast<int*>(%env->GetDirectBufferAddress(%in));\n"+
-                                  "if(%1)*%1 = qMax(0, int(%env->GetDirectBufferCapacity(%in)));"}
+                    Text{content: "JBufferData d(%env, %in);\n"+
+                                  "int* %out = d.data<int>();\n"+
+                                  "if(%1)*%1 = d.size<int>();\n"+
+                                  "d.take();"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = %env->NewDirectByteBuffer(%in, jlong(sizeof(int)) * count);\n"+
-                                  "%out = Java::Runtime::ByteBuffer::asIntBuffer(%env,%out);"}
+                    Text{content: "jobject %out = DataJBuffer(%env, %in, jlong(sizeof(int)) * count).take();"}
                 }
             }
             ModifyArgument{

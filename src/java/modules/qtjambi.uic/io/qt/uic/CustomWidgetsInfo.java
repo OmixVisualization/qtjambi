@@ -49,6 +49,9 @@ import io.qt.uic.ui4.DomCustomWidget;
 import io.qt.uic.ui4.DomCustomWidgets;
 import io.qt.uic.ui4.DomUI;
 
+/**
+ * @hidden
+ */
 public class CustomWidgetsInfo extends TreeWalker{
 	
 	public DomCustomWidget customWidget(String name)
@@ -125,6 +128,9 @@ public class CustomWidgetsInfo extends TreeWalker{
 	    return false;
 	}
 	
+	/**
+	 * @hidden
+	 */
 	public static class MethodInfo{
 		private MethodInfo(QMetaMethod metaMethod, Method method, boolean isAmbiguous) {
 			this.metaMethod = metaMethod;

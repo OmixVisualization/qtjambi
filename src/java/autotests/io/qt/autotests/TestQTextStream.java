@@ -32,53 +32,20 @@ package io.qt.autotests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.nio.Buffer;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.CharBuffer;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-import io.qt.core.QDataStream;
 import io.qt.core.QFile;
 import io.qt.core.QIODevice;
-import io.qt.core.QPointF;
 import io.qt.core.QTemporaryFile;
 import io.qt.core.QTextStream;
-import io.qt.gui.QPolygonF;
 
 public class TestQTextStream extends ApplicationInitializer {
-    // For ARM float/double conversion values must be within precision of a float
-    private static final double DELTA = 0.000001;
-
-    @Test public void testQPolygonF() {
-        QPolygonF p = new QPolygonF();
-        p.add(new QPointF(10, 11));
-        p.add(new QPointF(12.2, 13.3));
-        p.add(new QPointF(14, 15));
-
-        QFile f = new QTemporaryFile();
-
-        {
-            f.open(QFile.OpenModeFlag.WriteOnly);
-            QDataStream stream = new QDataStream(f);
-            p.writeTo(stream);
-            f.close();
-        }
-
-        {
-            f.open(QFile.OpenModeFlag.ReadOnly);
-            QDataStream stream = new QDataStream(f);
-            QPolygonF p2 = new QPolygonF();
-            p2.readFrom(stream);
-
-            assertEquals(10.0, p2.get(0).x(), 0.0);
-            assertEquals(11.0, p2.get(0).y(), 0.0);
-            assertEquals(12.2, p2.get(1).x(), DELTA);	// ARM expected:<12.2> but was:<12.199999809265137>
-            assertEquals(13.3, p2.get(1).y(), DELTA);	// ARM expected:<13.3> but was:<13.300000190734863>
-            assertEquals(14.0, p2.get(2).x(), 0.0);
-            assertEquals(15.0, p2.get(2).y(), 0.0);
-            f.close();
-        }
-        f.remove();
-        f.dispose();
-    }
 
     @Test public void testStringStream()
     {
@@ -94,6 +61,18 @@ public class TestQTextStream extends ApplicationInitializer {
             Assert.assertEquals("Hei", stream.readString());
             Assert.assertEquals("TestString\n55 Hei", s.toString());
             Assert.assertTrue(stream.string()==s);
+            CharBuffer buffer = ByteBuffer.allocateDirect(1024).order(ByteOrder.nativeOrder()).asCharBuffer();
+            ((Buffer)buffer).limit(12);
+            buffer.append("DataAsBuffer");
+            ((Buffer)buffer).position(0);
+            Assert.assertEquals('D', buffer.get());
+            ((Buffer)buffer).position(4);
+            stream.dispose();
+            stream = new QTextStream(s, new QIODevice.OpenMode(QIODevice.OpenModeFlag.ReadWrite));
+            stream.writeString(buffer);
+            stream.flush();
+            Assert.assertEquals("TestString\n55 HeiAsBuffer", s.toString());
+            stream.dispose();
         }
 
         StringBuilder daString = new StringBuilder();

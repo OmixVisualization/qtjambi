@@ -69,54 +69,53 @@ TypeSystem{
                 location: Include.Global
             }
         }
-    }
-    
-    EnumType{
-        name: "QLocation::Visibility"
-    }
-    
-    EnumType{
-        name: "QGeoCodeReply::Error"
+
+        EnumType{
+            name: "Visibility"
+        }
     }
     
     ObjectType{
         name: "QGeoCodeReply"
-    }
-    
-    EnumType{
-        name: "QGeoRouteReply::Error"
+
+        EnumType{
+            name: "Error"
+        }
     }
     
     ObjectType{
         name: "QGeoRouteReply"
-    }
-    
-    EnumType{
-        name: "QGeoServiceProvider::Error"
-    }
-    
-    EnumType{
-        name: "QGeoServiceProvider::GeocodingFeature"
-    }
-    
-    EnumType{
-        name: "QGeoServiceProvider::MappingFeature"
-    }
-    
-    EnumType{
-        name: "QGeoServiceProvider::NavigationFeature"
-    }
-    
-    EnumType{
-        name: "QGeoServiceProvider::PlacesFeature"
-    }
-    
-    EnumType{
-        name: "QGeoServiceProvider::RoutingFeature"
+        EnumType{
+            name: "Error"
+        }
     }
     
     ObjectType{
         name: "QGeoServiceProvider"
+
+        EnumType{
+            name: "Error"
+        }
+
+        EnumType{
+            name: "GeocodingFeature"
+        }
+
+        EnumType{
+            name: "MappingFeature"
+        }
+
+        EnumType{
+            name: "NavigationFeature"
+        }
+
+        EnumType{
+            name: "PlacesFeature"
+        }
+
+        EnumType{
+            name: "RoutingFeature"
+        }
         ModifyFunction{
             signature: "setQmlEngine(QQmlEngine *)"
             ModifyArgument{
@@ -129,24 +128,24 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QPlaceReply::Error"
-    }
-    
-    EnumType{
-        name: "QPlaceReply::Type"
-    }
-    
-    EnumType{
-        name: "QPlaceIdReply::OperationType"
-    }
-    
     ObjectType{
         name: "QPlaceReply"
+
+        EnumType{
+            name: "Error"
+        }
+
+        EnumType{
+            name: "Type"
+        }
     }
     
     ObjectType{
         name: "QPlaceIdReply"
+
+        EnumType{
+            name: "OperationType"
+        }
     }
     
     ObjectType{
@@ -498,12 +497,12 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QGeoManeuver::InstructionDirection"
-    }
-    
     ValueType{
         name: "QGeoManeuver"
+
+        EnumType{
+            name: "InstructionDirection"
+        }
     }
     
     ValueType{
@@ -522,41 +521,45 @@ TypeSystem{
         name: "QPlaceMatchRequest"
     }
     
-    EnumType{
-        name: "QPlaceSearchResult::SearchResultType"
-    }
-    
     ValueType{
         name: "QPlaceSearchResult"
+
+        EnumType{
+            name: "SearchResultType"
+        }
     }
     
     ValueType{
         name: "QPlaceResult"
-    }
-    
-    EnumType{
-        name: "QPlaceContent::Type"
-    }
-
-    EnumType{
-        name: "QPlaceContent::DataTag"
-        since: [6,5]
+        noImplicitConstructors: true
     }
     
     ValueType{
         name: "QPlaceContent"
+
+        EnumType{
+            name: "Type"
+        }
+
+        EnumType{
+            name: "DataTag"
+            since: [6,5]
+        }
     }
     
     ValueType{
         name: "QPlaceEditorial"
+        noImplicitConstructors: true
     }
     
     ValueType{
         name: "QPlaceImage"
+        noImplicitConstructors: true
     }
     
     ValueType{
         name: "QPlaceReview"
+        noImplicitConstructors: true
     }
     
     ValueType{
@@ -565,18 +568,19 @@ TypeSystem{
     
     ValueType{
         name: "QPlaceProposedSearchResult"
+        noImplicitConstructors: true
     }
     
     ValueType{
         name: "QPlaceRatings"
     }
     
-    EnumType{
-        name: "QPlaceSearchRequest::RelevanceHint"
-    }
-    
     ValueType{
         name: "QPlaceSearchRequest"
+
+        EnumType{
+            name: "RelevanceHint"
+        }
     }
     
     ValueType{

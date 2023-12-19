@@ -35,14 +35,17 @@ TypeSystem{
     targetName: "QtJambiActiveX"
     module: "qtjambi.activex"
     description: "Classes for applications which use ActiveX and COM"
+    defaultPPCondition: "defined(Q_OS_WIN)"
     ExtraIncludes{
         Include{
             fileName: "qaxobject.h"
             location: Include.Global
+            ckeckAvailability: true
         }
         Include{
             fileName: "qaxwidget.h"
             location: Include.Global
+            ckeckAvailability: true
         }
         Include{
             fileName: "QtJambi/RegistryAPI"
@@ -53,16 +56,20 @@ TypeSystem{
     InjectCode{
         target: CodeClass.MetaInfo
         position: Position.End
-        Text{content: "RegistryAPI::registerMetaType<HRESULT>(\"HRESULT\");\n"+
-                      "RegistryAPI::registerPrimitiveTypeInfo<HRESULT>(\"HRESULT\", \"int\");"}
+        Text{content: "#if defined(Q_OS_WIN)\n"+
+                      "RegistryAPI::registerMetaType<HRESULT>(\"HRESULT\");\n"+
+                      "RegistryAPI::registerPrimitiveTypeInfo<HRESULT>(\"HRESULT\", \"int\");\n"+
+                      "#endif"}
     }
     
     InjectCode{
         target: CodeClass.MetaInfo
         position: Position.End
         until: [5, 15]
-        Text{content: "RegistryAPI::registerMetaObject(typeid(QAxObject), QAxObject::staticMetaObject, false);\n"+
-                      "RegistryAPI::registerMetaObject(typeid(QAxWidget), QAxWidget::staticMetaObject, false);"}
+        Text{content: "#if defined(Q_OS_WIN)\n"+
+                      "RegistryAPI::registerMetaObject(typeid(QAxObject), QAxObject::staticMetaObject, false);\n"+
+                      "RegistryAPI::registerMetaObject(typeid(QAxWidget), QAxWidget::staticMetaObject, false);\n"+
+                      "#endif"}
     }
     
     RequiredLibrary{

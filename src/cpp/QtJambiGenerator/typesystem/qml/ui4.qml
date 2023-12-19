@@ -35,6 +35,8 @@ TypeSystem{
     targetName: "QtJambiUIC"
     module: "qtjambi.uic"
     description: "QtJambi User Interface Compiler"
+    noExports: true
+
     InjectCode{
         target: CodeClass.MetaInfo
         position: Position.Position1
@@ -53,6 +55,11 @@ TypeSystem{
     
     ObjectType{
         name: "DomUI"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
         ModifyFunction{
             signature: "takeElementButtonGroups()"
             ModifyArgument{
@@ -387,53 +394,113 @@ TypeSystem{
     
     ObjectType{
         name: "DomIncludes"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomInclude"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomResources"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomResource"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomActionGroup"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
         implementing: "DomAttributeInterface"
     }
     
     ObjectType{
         name: "DomAction"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
         implementing: "DomAttributeInterface"
     }
     
     ObjectType{
         name: "DomActionRef"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomButtonGroup"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
         implementing: "DomAttributeInterface"
     }
     
     ObjectType{
         name: "DomButtonGroups"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomCustomWidgets"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomHeader"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomCustomWidget"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
         ModifyFunction{
             signature: "takeElementHeader()"
             ModifyArgument{
@@ -558,24 +625,56 @@ TypeSystem{
     
     ObjectType{
         name: "DomLayoutDefault"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomLayoutFunction"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomTabStops"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomLayout"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
         implementing: "DomAttributeInterface"
     }
     
     ObjectType{
         name: "DomLayoutItem"
-        EnumType{name: "Kind"}
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
+        EnumType{
+            name: "Kind"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Comment
+                Text{content: "@hidden"}
+            }
+        }
         ModifyFunction{
             signature: "takeElementLayout()"
             ModifyArgument{
@@ -670,32 +769,67 @@ TypeSystem{
     
     ObjectType{
         name: "DomRow"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomColumn"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomItem"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomWidget"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
         implementing: "DomAttributeInterface"
     }
     
     ObjectType{
         name: "DomSpacer"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
         implementing: "DomAttributeInterface"
     }
     
     ObjectType{
         name: "DomColor"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomGradientStop"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
         ModifyFunction{
             signature: "takeElementColor()"
             ModifyArgument{
@@ -730,11 +864,28 @@ TypeSystem{
     
     ObjectType{
         name: "DomGradient"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomBrush"
-        EnumType{name: "Kind"}
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
+        EnumType{
+            name: "Kind"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Comment
+                Text{content: "@hidden"}
+            }
+        }
         ModifyFunction{
             signature: "setElementColor(DomColor*)"
             ModifyArgument{
@@ -859,6 +1010,11 @@ TypeSystem{
     
     ObjectType{
         name: "DomColorRole"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
         ModifyFunction{
             signature: "setElementBrush(DomBrush*)"
             ModifyArgument{
@@ -893,14 +1049,29 @@ TypeSystem{
     
     ObjectType{
         name: "DomColorGroup"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomFont"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomPalette"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
         ModifyFunction{
             signature: "takeElementActive()"
             ModifyArgument{
@@ -995,46 +1166,101 @@ TypeSystem{
     
     ObjectType{
         name: "DomPoint"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomRect"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomLocale"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomSizePolicy"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomSize"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomDate"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomTime"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomDateTime"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomStringList"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomResourcePixmap"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomResourceIcon"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
         ModifyFunction{
             signature: "takeElementActiveOff()"
             ModifyArgument{
@@ -1279,26 +1505,56 @@ TypeSystem{
     
     ObjectType{
         name: "DomString"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomPointF"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomRectF"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomSizeF"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomChar"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomUrl"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
         ModifyFunction{
             signature: "takeElementString()"
             ModifyArgument{
@@ -1333,8 +1589,20 @@ TypeSystem{
     
     ObjectType{
         name: "DomProperty"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
 
-        EnumType{name: "Kind"}
+        EnumType{
+            name: "Kind"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Comment
+                Text{content: "@hidden"}
+            }
+        }
         ModifyFunction{
             signature: "takeElementBrush()"
             ModifyArgument{
@@ -1969,10 +2237,20 @@ TypeSystem{
     
     ObjectType{
         name: "DomConnections"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomConnection"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
         ModifyFunction{
             signature: "takeElementHints()"
             ModifyArgument{
@@ -2007,29 +2285,64 @@ TypeSystem{
     
     ObjectType{
         name: "DomConnectionHints"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomConnectionHint"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomDesignerData"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomSlots"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomPropertySpecifications"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomPropertyToolTip"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
     
     ObjectType{
         name: "DomStringPropertySpecification"
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Comment
+            Text{content: "@hidden"}
+        }
     }
 }

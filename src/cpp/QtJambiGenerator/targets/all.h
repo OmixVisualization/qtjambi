@@ -400,16 +400,16 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 
 #ifndef QTJAMBI_NO_WEBCHANNEL
 #include <QtWebChannel/QtWebChannel>
-#endif
-
-#ifndef QTJAMBI_NO_WEBCHANNELQUICK
-#include <QtWebChannelQuick/QtWebChannelQuick>
+//#ifndef QTJAMBI_NO_WEBCHANNELQUICK
+//#include <QtWebChannelQuick/QtWebChannelQuick>
+//#endif
 #endif
 
 #ifndef QTJAMBI_NO_WEBVIEW
 #include <QtWebView/QtWebView>
 #endif
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #ifndef QTJAMBI_NO_WINEXTRAS
 #ifndef Q_OS_WIN
 #define Q_OS_WIN
@@ -441,6 +441,7 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #include <QtX11Extras/QX11Info>
 #endif
 #endif
+#endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
 #ifndef QTJAMBI_NO_SERIALPORT
 #include <QtSerialPort/QtSerialPort>

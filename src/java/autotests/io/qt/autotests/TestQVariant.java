@@ -396,8 +396,8 @@ public class TestQVariant extends ApplicationInitializer {
     public void testQVariant_DirStack() {
     	Object variant = Variants.getDirStack();
     	assertNotNull(variant);
-    	assertTrue(variant.getClass().getName(), variant instanceof Deque);
-    	assertEquals(Arrays.asList(new QDir("/"), new QDir("/home")), new ArrayList<>((Deque<?>)variant));
+    	assertTrue(variant.getClass().getName(), variant instanceof QStack);
+    	assertEquals(Arrays.asList(new QDir("/"), new QDir("/home")), new ArrayList<>((QStack<?>)variant));
     }
     
 	@Test
@@ -521,7 +521,7 @@ public class TestQVariant extends ApplicationInitializer {
     	Object variant = Variants.getTestObjectStack();
     	assertNotNull(variant);
     	assertTrue(variant.getClass().getName(), variant instanceof QStack);
-    	variantConsumer.accept((Deque<?>)variant);
+    	variantConsumer.accept((QStack<?>)variant);
     }
     
     @Test
@@ -1718,13 +1718,15 @@ public class TestQVariant extends ApplicationInitializer {
 	    		Object received = receivedArguments.get("test15");
 		    	assertTrue(received!=null);
 		    	assertEquals(QStack.class, received.getClass());
-		    	assertEquals(((Deque<?>)sentArguments.get("test15")).size(), ((Deque<?>)received).size());
-		    	assertEquals(QQueue.class, ((QStack<?>)received).getFirst().getClass());
-		    	assertTrue(Arrays.equals(((Collection<?>)((Deque<?>)sentArguments.get("test15")).getFirst()).toArray(), ((Collection<?>)((Deque<?>)received).getFirst()).toArray()));
-		    	((QStack<?>)received).removeLast();
-		    	((Deque<?>)sentArguments.get("test15")).removeLast();
-		    	assertEquals(QQueue.class, ((QStack<?>)received).getFirst().getClass());
-		    	assertTrue(Arrays.equals(((Collection<?>)((Deque<?>)sentArguments.get("test15")).getFirst()).toArray(), ((Collection<?>)((QStack<?>)received).getFirst()).toArray()));
+		    	Deque<?> sent = (Deque<?>)sentArguments.get("test15");
+		    	QStack<?> rstack = (QStack<?>)received;
+		    	assertEquals(sent.size(), rstack.size());
+		    	assertEquals(QQueue.class, rstack.getFirst().getClass());
+		    	assertTrue(Arrays.equals(((Collection<?>)sent.getFirst()).toArray(), ((Collection<?>)rstack.getFirst()).toArray()));
+		    	rstack.removeLast();
+		    	sent.removeLast();
+		    	assertEquals(QQueue.class, rstack.getFirst().getClass());
+		    	assertTrue(Arrays.equals(((Collection<?>)sent.getFirst()).toArray(), ((Collection<?>)rstack.getFirst()).toArray()));
 	    	}
 	    	
 	    	if(sentArguments.containsKey("test16")) {

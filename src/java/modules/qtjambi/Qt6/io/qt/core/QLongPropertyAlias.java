@@ -110,13 +110,13 @@ public final class QLongPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided alias.
 	 * @param other
 	 */
-	public QLongPropertyAlias(@StrictNonNull QLongPropertyAlias alias) {
-		super(alias);
+	public QLongPropertyAlias(@StrictNonNull QLongPropertyAlias other) {
+		super(other);
 	}
 	
 	/**
 	 * Creates a new alias to the provided binding's underlying property.
-	 * @param other
+	 * @param bindable
 	 */
 	public QLongPropertyAlias(@StrictNonNull QLongBindable bindable) {
 		super(bindable.data(), bindable.iface());
@@ -124,7 +124,7 @@ public final class QLongPropertyAlias extends QAbstractPropertyAlias {
 	
 	/**
 	 * Creates a new alias to the provided binding's underlying property.
-	 * @param other
+	 * @param bindable
 	 */
 	public QLongPropertyAlias(@StrictNonNull QBindable<@NonNull@QtPrimitiveType Long> bindable) {
 		super(bindable.data(), bindable.iface());

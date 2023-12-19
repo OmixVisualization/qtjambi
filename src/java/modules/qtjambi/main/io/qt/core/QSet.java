@@ -230,13 +230,6 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
         return size()==0;
     }
 
-    @QtUninvokable
-    private final boolean operator_equal(java.util.Collection<T> l)    {
-        return operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), l);
-    }
-    @QtUninvokable
-    private static native <T> boolean operator_equal(long __this__nativeId, java.util.Collection<T> l);
-
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#remove">QSet::<wbr>remove(T)</a></code></p>
      */
@@ -330,15 +323,17 @@ public class QSet<T> extends AbstractSequentialContainer<T> implements Set<T>, C
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qset.html#operator-eq-eq">QSet::<wbr>operator==(QSet&lt;T>)const</a></code></p>
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
     @QtUninvokable
     public boolean equals(Object other) {
         if (other instanceof java.util.Collection && QList.checkContainerType(this.elementMetaType(), (java.util.Collection<?>) other)) {
-            return operator_equal((java.util.Collection) other);
+            return operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), (java.util.Collection<?>) other);
         }
         return false;
     }
+
+    @QtUninvokable
+    private static native boolean operator_equal(long __this__nativeId, java.util.Collection<?> l);
 
     /**
      * Returns the objects's hash code computed by <code>qHash(QSet&lt;T>)</code>.

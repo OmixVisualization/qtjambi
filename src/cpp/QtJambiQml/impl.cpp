@@ -2082,6 +2082,7 @@ void qtjambi_qmlRegisterTypesAndRevisions(JNIEnv *env, jobjectArray types, const
         jclass type = jclass(env->GetObjectArrayElement(types, i));
         if(jobject sequencialContainerAnnotation = Java::Runtime::Class::getAnnotation(env, type, Java::QtQml::Util::QmlSequencialContainer::getClass(env))){
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+            Q_UNUSED(sequencialContainerAnnotation)
             Java::QtQml::QmlTypeRegistrationException::throwNew(env, "Qml sequential containers are not supported in Qt5." QTJAMBI_STACKTRACEINFO );
 #else
             const QMetaObject *type_meta_object = CoreAPI::metaObjectForClass(env, type);
@@ -2161,9 +2162,11 @@ void qtjambi_qmlRegisterTypesAndRevisions(JNIEnv *env, jobjectArray types, const
             QQmlPrivate::qmlregister(QQmlPrivate::SequentialContainerAndRevisionsRegistration, &type);
 #endif
         }else if(jobject singletonAnnotation = Java::Runtime::Class::getAnnotation(env, type, Java::QtQml::Util::QmlSingleton::getClass(env))){
+            Q_UNUSED(singletonAnnotation)
             jclass resolvedClass = type;
             jclass extendedClass = nullptr;
             if(jobject unavailableAnnotation = Java::Runtime::Class::getAnnotation(env, type, Java::QtQml::Util::QmlUnavailable::getClass(env))){
+                Q_UNUSED(unavailableAnnotation)
                 resolvedClass = Java::Runtime::Object::getClass(env);
             }else if(jobject foreignAnnotation = Java::Runtime::Class::getAnnotation(env, type, Java::QtQml::Util::QmlForeign::getClass(env))){
                 resolvedClass = Java::QtQml::Util::QmlForeign::value(env, foreignAnnotation);
@@ -2253,6 +2256,7 @@ void qtjambi_qmlRegisterTypesAndRevisions(JNIEnv *env, jobjectArray types, const
             if (qmlTypeIds)
                 qmlTypeIds->append(id);
         }else if(jobject interfaceAnnotation = Java::Runtime::Class::isInterface(env, type) ? Java::Runtime::Class::getAnnotation(env, type, Java::QtQml::Util::QmlInterface::getClass(env)) : nullptr){
+            Q_UNUSED(interfaceAnnotation)
             const int id = qtjambi_qmlRegisterInterface(env, type, uri, versionMajor);
             if (qmlTypeIds)
                 qmlTypeIds->append(id);
@@ -2262,6 +2266,7 @@ void qtjambi_qmlRegisterTypesAndRevisions(JNIEnv *env, jobjectArray types, const
             int resolvedMetaTypeId = 0;
             jclass extendedClass = nullptr;
             if(jobject unavailableAnnotation = Java::Runtime::Class::getAnnotation(env, type, Java::QtQml::Util::QmlUnavailable::getClass(env))){
+                Q_UNUSED(unavailableAnnotation)
                 resolvedClass = Java::Runtime::Object::getClass(env);
             }else if(jobject foreignAnnotation = Java::Runtime::Class::getAnnotation(env, type, Java::QtQml::Util::QmlForeign::getClass(env))){
                 resolvedClass = Java::QtQml::Util::QmlForeign::value(env, foreignAnnotation);

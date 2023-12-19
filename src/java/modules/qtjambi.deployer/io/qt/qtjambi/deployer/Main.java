@@ -52,6 +52,9 @@ import io.qt.core.QCoreApplication;
 import io.qt.core.QList;
 import io.qt.core.QScopeGuard;
 
+/**
+ * @hidden
+ */
 public class Main {
 	
 	enum JVMDetectionModes implements QtLongEnumerator{
@@ -168,7 +171,7 @@ public class Main {
 	static Enumeration<URL> findSpecs() throws MalformedURLException {
 		Enumeration<URL> specsFound = Collections.emptyEnumeration();
         try {
-			specsFound = Main.class.getClassLoader().getResources("qtjambi-utilities.xml");
+			specsFound = Main.class.getClassLoader().getResources("META-INF/qtjambi-utilities.xml");
 		} catch (IOException e) {
 			Logger.getLogger("io.qt").log(Level.WARNING, "", e);
 		}
@@ -181,7 +184,7 @@ public class Main {
 		    	if(classURL.startsWith("jar:file:") && (index = classURL.indexOf("!/"))>0) {
 		    		String jarFileURL = classURL.substring(4, index);
 		    		try {
-						jarFile = new File(new URL(jarFileURL).toURI());
+						jarFile = new File(createURL(jarFileURL).toURI());
 					} catch (URISyntaxException e) {
 					}
 		    	}else {
@@ -203,7 +206,7 @@ public class Main {
 	    			for(String jar : directory.list()) {
 	    				if(jar.startsWith(fileName) && jar.endsWith(suffix)) {
 	    					File nativeFile = new File(directory, jar);
-	    					URL nativeFileURL = new URL("jar:"+nativeFile.toURI()+"!/qtjambi-utilities.xml");
+	    					URL nativeFileURL = createURL("jar:"+nativeFile.toURI()+"!/META-INF/qtjambi-utilities.xml");
 	    					foundURLs.add(nativeFileURL);
 	    				}
 	    			}
@@ -211,7 +214,7 @@ public class Main {
 	    				for(String jar : new File(directory, "native").list()) {
 		    				if(jar.startsWith(fileName) && jar.endsWith(suffix)) {
 		    					File nativeFile = new File(new File(directory, "native"), jar);
-		    					URL nativeFileURL = new URL("jar:"+nativeFile.toURI()+"!/qtjambi-utilities.xml");
+		    					URL nativeFileURL = createURL("jar:"+nativeFile.toURI()+"!/META-INF/qtjambi-utilities.xml");
 		    					foundURLs.add(nativeFileURL);
 		    				}
 		    			}
@@ -223,4 +226,8 @@ public class Main {
         }
     	return specsFound;
 	}
+	
+	static URL createURL(String url) throws MalformedURLException {
+    	return new URL(url);
+    }
 }

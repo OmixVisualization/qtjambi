@@ -36,7 +36,7 @@ import io.qt.*;
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qvector.html">QVector</a></p>
  */
-public class QVector<T> extends AbstractList<T> implements java.util.List<T>, Cloneable
+public class QVector<T> extends AbstractList<T> implements Cloneable
 {
 
     static {
@@ -350,13 +350,6 @@ public class QVector<T> extends AbstractList<T> implements java.util.List<T>, Cl
     private static native <T> void move(long __this__nativeId, int from, int to);
 
     @QtUninvokable
-    private final boolean operator_equal(java.util.Collection<T> l) {
-        return operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), l);
-    }
-    @QtUninvokable
-    private static native <T> boolean operator_equal(long __this__nativeId, java.util.Collection<T> l);
-
-    @QtUninvokable
     public final void prepend(T t) {
     	try {
         	insert(QtJambi_LibraryUtilities.internal.nativeId(this), 0, 1, t);
@@ -551,24 +544,20 @@ public class QVector<T> extends AbstractList<T> implements java.util.List<T>, Cl
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qvector.html#operator-eq-eq" class="member-name-class">QVector::<wbr>operator==(QVector&lt;T>)const</a></code></p>
      */
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
     @QtUninvokable
     public boolean equals(Object other) {
+    	if(other instanceof StackDeque<?>) {
+			other = ((StackDeque<?>)other).stack;
+		}
         if (other instanceof java.util.Collection && QList.checkContainerType(this.elementMetaType(), (java.util.Collection<?>) other)) {
-            return operator_equal((java.util.Collection) other);
+            return operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), (java.util.Collection<?>) other);
         }
         return false;
     }
 	
-	public QVector<T> reversed(){
-		QVector<T> result = new QVector<>(elementMetaType());
-		result.reserve(size());
-		for(T t : this) {
-			result.add(0, t);
-		}
-    	return result;
-    }
+    @QtUninvokable
+    private static native boolean operator_equal(long __this__nativeId, java.util.Collection<?> l);
 
     /**
      * Returns the objects's hash code computed by <code>qHash(QVector&lt;T>)</code>.
@@ -680,7 +669,7 @@ public class QVector<T> extends AbstractList<T> implements java.util.List<T>, Cl
     /**
      * Returns a QVector containing given elements.
      *
-     * @param <E> the {@code QVector}'s element type
+     * @param <T> the {@code QVector}'s element type
      * @param element0 the first element
      * @param elements subsequent elements
      * @return a {@code QVector} containing the specified element

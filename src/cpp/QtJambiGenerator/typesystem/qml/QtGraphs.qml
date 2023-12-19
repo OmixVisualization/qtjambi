@@ -56,6 +56,11 @@ TypeSystem{
         className: "*"
         fieldName: "d_ptr"
     }
+
+    Rejection{
+        className: "QQuickGraphsItem"
+        since: 6.7
+    }
     
     NamespaceType{
         name: "QtGraphs"
@@ -196,6 +201,7 @@ TypeSystem{
         EnumType{
             name: "CameraPreset"
         }
+        until: 6.6
     }
     
     ObjectType{
@@ -232,10 +238,12 @@ TypeSystem{
     
     ObjectType{
         name: "Q3DLight"
+        until: 6.6
     }
     
     ObjectType{
         name: "Q3DObject"
+        until: 6.6
     }
     
     ObjectType{
@@ -331,6 +339,7 @@ TypeSystem{
                     action: ReferenceCount.Ignore
                 }
             }
+            until: 6.6
         }
         ModifyFunction{
             signature: "setActiveLight(Q3DLight *)"
@@ -342,6 +351,7 @@ TypeSystem{
                     action: ReferenceCount.Ignore
                 }
             }
+            until: 6.6
         }
     }
     
@@ -699,6 +709,7 @@ TypeSystem{
     
     ValueType{
         name: "QBarDataItem"
+        noImplicitConstructors: true
     }
     
     ObjectType{
@@ -761,6 +772,13 @@ TypeSystem{
                     codeClass: CodeClass.Native
                     ownership: Ownership.Cpp
                 }
+            }
+        }
+        ModifyFunction{
+            signature: "resetArray()"
+            InjectCode{
+                position: Position.Beginning
+                Text{content: "QtJambi_LibraryUtilities.internal.invalidateObject(__rcArray);"}
             }
         }
         ModifyFunction{
@@ -840,6 +858,7 @@ TypeSystem{
     
     ObjectType{
         name: "QCustom3DItem"
+        noImplicitConstructors: true
     }
     
     ObjectType{
@@ -852,9 +871,7 @@ TypeSystem{
             signature: "setSubTextureData(Qt::Axis,int,const uchar*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
@@ -990,6 +1007,7 @@ TypeSystem{
     
     ValueType{
         name: "QScatterDataItem"
+        noImplicitConstructors: true
     }
     
     ObjectType{
@@ -1016,6 +1034,7 @@ TypeSystem{
                     ownership: Ownership.Cpp
                 }
             }
+            until: 6.6
         }
         InjectCode{
             Text{content: "private QScatterDataArray __rcArray;"}
@@ -1079,6 +1098,7 @@ TypeSystem{
     
     ValueType{
         name: "QSurfaceDataItem"
+        noImplicitConstructors: true
     }
     
     ObjectType{
@@ -1112,6 +1132,14 @@ TypeSystem{
                     ownership: Ownership.Cpp
                 }
             }
+        }
+        ModifyFunction{
+            signature: "resetArray()"
+            InjectCode{
+                position: Position.Beginning
+                Text{content: "QtJambi_LibraryUtilities.internal.invalidateObject(__rcArray);"}
+            }
+            since: 6.7
         }
         ModifyFunction{
             signature: "resetArray(QSurfaceDataArray*)"
@@ -1246,6 +1274,5 @@ TypeSystem{
     }
     
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type *Q*DataArray."}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'fromAdapter(quint32,qint32,int)' for function modification in 'QQuickGraphicsDevice' not found. Possible candidates: "}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'from*' for function modification in 'QQuickRenderTarget' not found. Possible candidates: "}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'from*' for function modification in 'QQuick*' not found. Possible candidates: "}
 }

@@ -37,6 +37,10 @@
 #endif
 
 QT_WARNING_DISABLE_GCC("-Wstrict-aliasing")
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && defined(QLINKEDLIST_H)
+QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
+QT_WARNING_DISABLE_DEPRECATED
+#endif
 
 namespace QtJambiPrivate {
 

@@ -342,9 +342,10 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_toByteBuffer)
 {
 	jobject buffer{nullptr};
     try{
-        buffer = env->NewDirectByteBuffer(reinterpret_cast<void*>(ptr), capacity);
         if(readOnly){
-            buffer = Java::Runtime::ByteBuffer::asReadOnlyBuffer(env, buffer);
+            buffer = DataJBuffer(env, reinterpret_cast<const void*>(ptr), capacity).take();
+        }else{
+            buffer = DataJBuffer(env, reinterpret_cast<void*>(ptr), capacity).take();
         }
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
@@ -357,11 +358,40 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_fromBuffer)
   (JNIEnv * env, jclass, jobject buffer)
 {
     try{
-        return Java::QtJambi::QNativePointer::newInstance2(env, buffer, jlong(JBufferConstData(env, buffer, false).data()));
+        if(Java::Runtime::Buffer::isReadOnly(env, buffer)){
+            JBufferConstData* d = new JBufferConstData(env, buffer);
+            if(d->isDirect()){
+                jlong ptr = jlong(d->take());
+                delete d;
+                return Java::QtJambi::QNativePointer::newInstance2(env, buffer, ptr, jlong(0));
+            }else{
+                return Java::QtJambi::QNativePointer::newInstance2(env, buffer, jlong(d->data()), jlong(d));
+            }
+        }else{
+            JBufferData* d = new JBufferData(env, buffer);
+            if(d->isDirect()){
+                jlong ptr = jlong(d->take());
+                delete d;
+                return Java::QtJambi::QNativePointer::newInstance2(env, buffer, ptr, jlong(0));
+            }else{
+                return Java::QtJambi::QNativePointer::newInstance2(env, buffer, jlong(d->data()), jlong(d));
+            }
+        }
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
     return nullptr;
+}
+
+extern "C" Q_DECL_EXPORT void JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_deleteBufferAccess)
+    (JNIEnv *, jclass, jlong ptr, jboolean isReadonly)
+{
+    if(isReadonly){
+        delete reinterpret_cast<JBufferConstData*>(ptr);
+    }else{
+        delete reinterpret_cast<JBufferData*>(ptr);
+    }
 }
 
 extern "C" Q_DECL_EXPORT jstring JNICALL
@@ -485,7 +515,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_writeString)
 
 extern "C" Q_DECL_EXPORT jlong JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_createPointer)
-  (JNIEnv *, jobject, jint type, jlong _size, jint indirections)
+  (JNIEnv *, jclass, jint type, jlong _size, jint indirections)
 {
     size_t size = size_t(_size);
     Q_ASSERT(indirections > 0);
@@ -527,7 +557,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_createPointer)
 
 extern "C" Q_DECL_EXPORT void JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_deletePointer)
-  (JNIEnv *, jobject, jlong ptr, jint type, jint deleteMode)
+  (JNIEnv *, jclass, jlong ptr, jint type, jint deleteMode)
 {
     if (deleteMode == 0) { // free()
         switch (type) {
@@ -631,10 +661,6 @@ qint64 DirectAddressIODevice::writeData(const char *data, qint64 len)
     return -1;
 }
 
-QIODevice* CoreAPI::newDirectAddressDevice(qint64 capacity, char* address, bool readOnly, JNIEnv* env, jobject buffer, QObject *parent){
-    return new DirectAddressIODevice(capacity, address, readOnly, env, buffer, parent);
-}
-
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_ioDevice)
 (JNIEnv *env,
  jobject buffer)
@@ -654,4 +680,67 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNat
         exn.raiseInJava(env);
     }
     return nullptr;
+}
+
+class BufferIODevice : public QIODevice{
+public:
+    BufferIODevice(JNIEnv* env, jobject buffer, QObject *parent = nullptr);
+    ~BufferIODevice();
+    bool open(OpenMode mode);
+protected:
+    qint64 readData(char *data, qint64 maxlen);
+    qint64 writeData(const char *data, qint64 len);
+private:
+    const bool m_readOnly;
+    JBufferConstData* d;
+};
+
+BufferIODevice::BufferIODevice(JNIEnv* env, jobject object, QObject *parent)
+    : QIODevice(parent),
+    m_readOnly(object && Java::Runtime::Buffer::isReadOnly(env, object)),
+    d(m_readOnly ? new JBufferConstData(env, object) : new JBufferData(env, object)) {}
+
+BufferIODevice::~BufferIODevice(){
+    if(m_readOnly){
+        delete d;
+    }else{
+        delete reinterpret_cast<JBufferData*>(d);
+    }
+    d = nullptr;
+}
+
+bool BufferIODevice::open(OpenMode mode)
+{
+    if(mode & QIODevice::Append)
+        return false;
+    if(bool(mode & QIODevice::WriteOnly) == m_readOnly){
+        return false;
+    }
+    return QIODevice::open(mode);
+}
+
+qint64 BufferIODevice::readData(char *data, qint64 maxlen)
+{
+    if((openMode() & QIODevice::ReadOnly) && maxlen>0){
+        qint64 len = qMin(maxlen, d->limit()-pos());
+        if(len>0)
+            memcpy(data, d->data<char>()+pos(), size_t(len));
+        return qint64(len);
+    }
+    return -1;
+}
+
+qint64 BufferIODevice::writeData(const char *data, qint64 len)
+{
+    if((openMode() & QIODevice::WriteOnly)){
+        qint64 _len = qMin(len, d->limit()-pos());
+        if(_len>0)
+            memcpy(reinterpret_cast<JBufferData*>(d)->data<char>()+pos(), data, size_t(_len));
+        return qint64(_len);
+    }
+    return -1;
+}
+
+QIODevice* CoreAPI::newDirectAddressDevice(JNIEnv* env, jobject buffer, QObject *parent){
+    return env->IsSameObject(buffer, nullptr) ? nullptr : new BufferIODevice(env, buffer, parent);
 }

@@ -60,7 +60,7 @@ public final class QAudioFrame {
 	    }
 	    public void clear() {
 	    	channels.clear();
-	        for (int i = 0; i < channels.capacity(); ++i)
+	        for (int i = 0; i < channels.limit(); ++i)
 	            channels.put(i, (byte)0x80);
 	    }
 
@@ -91,7 +91,7 @@ public final class QAudioFrame {
 	    }
 	    public void clear() {
 	    	channels.clear();
-	        for (int i = 0; i < channels.capacity(); ++i)
+	        for (int i = 0; i < channels.limit(); ++i)
 	            channels.put(i, (short)0);
 	    }
 
@@ -122,7 +122,7 @@ public final class QAudioFrame {
 	    }
 	    public void clear() {
 	    	channels.clear();
-	        for (int i = 0; i < channels.capacity(); ++i)
+	        for (int i = 0; i < channels.limit(); ++i)
 	            channels.put(i, 0);
 	    }
 
@@ -153,7 +153,7 @@ public final class QAudioFrame {
 	    }
 	    public void clear() {
 	    	channels.clear();
-	        for (int i = 0; i < channels.capacity(); ++i)
+	        for (int i = 0; i < channels.limit(); ++i)
 	            channels.put(i, 0);
 	    }
 

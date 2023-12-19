@@ -230,7 +230,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                         __jni_env->ReleaseStringUTFChars(jstring(val), chars);
                         void* ptr = byteArray;
                         if(argPointerOrReference==0){
-                            arg = __jni_env->NewDirectByteBuffer(ptr, jsize(sizeof(QByteArray)));
+                            arg = DataJBuffer(__jni_env, ptr, jsize(sizeof(QByteArray))).take();
                             cleaners.append(QSharedDataPointer<Cleanup>{new Cleanup{[ptr](){ operator delete (ptr); }}});
                         }else{
                             arg = Java::JNA::Pointer::newInstance(__jni_env, jlong(ptr));
@@ -242,7 +242,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                         QStringView* strg = new QStringView(chars);
                         void* ptr = strg;
                         if(argPointerOrReference==0){
-                            arg = __jni_env->NewDirectByteBuffer(ptr, jsize(sizeof(QStringView)));
+                            arg = DataJBuffer(__jni_env, ptr, jsize(sizeof(QStringView))).take();
                             cleaners.append(QSharedDataPointer<Cleanup>{new Cleanup{[ptr, val, chars, __jni_env](){ operator delete (ptr); __jni_env->ReleaseStringChars(jstring(val), chars); }}});
                         }else{
                             arg = Java::JNA::Pointer::newInstance(__jni_env, jlong(ptr));
@@ -255,7 +255,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                     *string = qtjambi_cast<QString>(__jni_env, val);
                     void* ptr = string;
                     if(argPointerOrReference==0){
-                        arg = __jni_env->NewDirectByteBuffer(ptr, jsize(sizeof(QString)));
+                        arg = DataJBuffer(__jni_env, ptr, jsize(sizeof(QString))).take();
                         cleaners.append(QSharedDataPointer<Cleanup>{new Cleanup{[ptr](){ operator delete (ptr); }}});
                     }else{
                         arg = Java::JNA::Pointer::newInstance(__jni_env, jlong(ptr));
@@ -726,7 +726,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                                         _argMetaType.reset(argMetaType = nullptr);
                                     if(argMetaType){
                                         ptr = argMetaType->create(ptr);
-                                        arg = __jni_env->NewDirectByteBuffer(ptr, jsize(size));
+                                        arg = DataJBuffer(__jni_env, ptr, jsize(size)).take();
                                         cleaners.append(QSharedDataPointer<Cleanup>{new Cleanup{[ptr](){ operator delete (ptr); }}});
                                     }else{
                                         Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassName(__jni_env, argClassType).replace(QLatin1Char('$'), QLatin1Char('.'))) QTJAMBI_STACKTRACEINFO );
@@ -763,7 +763,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                                         }
                                     }
                                     if(argPointerOrReference==0 && !isReferenceMetaType){
-                                        arg = __jni_env->NewDirectByteBuffer(ptr, jsize(size));
+                                        arg = DataJBuffer(__jni_env, ptr, jsize(size)).take();
                                         cleaners.append(QSharedDataPointer<Cleanup>{new Cleanup{[ptr](){ operator delete (ptr); }}});
                                     }else{
                                         arg = Java::JNA::Pointer::newInstance(__jni_env, ptr);
@@ -792,7 +792,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                                         else
                                             ptr = operator new(size);
                                         if(QtJambiAPI::convertJavaToNative(__jni_env, *typeId, val, ptr)){
-                                            arg = __jni_env->NewDirectByteBuffer(ptr, jsize(size));
+                                            arg = DataJBuffer(__jni_env, ptr, jsize(size)).take();
                                             cleaners.append(QSharedDataPointer<Cleanup>{new Cleanup{[ptr](){ operator delete (ptr); }}});
                                         }else{
                                             Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassName(__jni_env, argClassType).replace(QLatin1Char('$'), QLatin1Char('.'))) QTJAMBI_STACKTRACEINFO );
@@ -872,7 +872,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                                     ptr = link->pointer();
                                     if(argPointerOrReference==0 && !isReferenceMetaType){
                                         ptr = argMetaType->create(ptr);
-                                        arg = __jni_env->NewDirectByteBuffer(ptr, jsize(size));
+                                        arg = DataJBuffer(__jni_env, ptr, jsize(size)).take();
                                         cleaners.append(QSharedDataPointer<Cleanup>{new Cleanup{[ptr](){ operator delete (ptr); }}});
                                     }else{
                                         arg = Java::JNA::Pointer::newInstance(__jni_env, ptr);
@@ -901,7 +901,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                                         }
                                     }
                                     if(argPointerOrReference==0 && !isReferenceMetaType){
-                                        arg = __jni_env->NewDirectByteBuffer(ptr, jsize(size));
+                                        arg = DataJBuffer(__jni_env, ptr, jsize(size)).take();
                                         cleaners.append(QSharedDataPointer<Cleanup>{new Cleanup{[ptr](){ operator delete (ptr); }}});
                                     }else{
                                         arg = Java::JNA::Pointer::newInstance(__jni_env, ptr);
@@ -915,7 +915,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                                     argMetaType = &plink->metaType();
                                     if(argMetaType->isValid()){
                                         ptr = argMetaType->create(link->pointer());
-                                        arg = __jni_env->NewDirectByteBuffer(ptr, jsize(size));
+                                        arg = DataJBuffer(__jni_env, ptr, jsize(size)).take();
                                         cleaners.append(QSharedDataPointer<Cleanup>{new Cleanup{[ptr](){ operator delete (ptr); }}});
                                     }else{
                                         Java::QtJambi::QUnsuccessfulInvocationException::throwNew(__jni_env, QString("Type %1 not supported.").arg(QtJambiAPI::getClassName(__jni_env, argClassType).replace(QLatin1Char('$'), QLatin1Char('.'))) QTJAMBI_STACKTRACEINFO );

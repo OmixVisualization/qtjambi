@@ -45,6 +45,9 @@ import io.qt.uic.ui4.DomLayoutItem;
 import io.qt.uic.ui4.DomSpacer;
 import io.qt.uic.ui4.DomWidget;
 
+/**
+ * @hidden
+ */
 public class Driver {
 	
 	public Driver() {}

@@ -32,6 +32,9 @@
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #include <QtCore/qnativeinterface.h>
+#else
+QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
+QT_WARNING_DISABLE_DEPRECATED
 #endif
 
 #include "qtjambiapi.h"
@@ -119,7 +122,7 @@ QTJAMBI_EXPORT QReadWriteLock* objectDataLock();
 
 QTJAMBI_EXPORT jobject findObject(JNIEnv *env, const void * pointer);
 
-QTJAMBI_EXPORT QIODevice* newDirectAddressDevice(qint64 capacity, char* address, bool readOnly, JNIEnv* env, jobject buffer, QObject *parent = nullptr);
+QTJAMBI_EXPORT QIODevice* newDirectAddressDevice(JNIEnv* env, jobject buffer, QObject *parent = nullptr);
 
 QTJAMBI_EXPORT jobject invokeMetaMethodOnGadget(JNIEnv * env, jobject _metaMethod, jobject object, jobjectArray argClassTypeArray, jobjectArray args);
 

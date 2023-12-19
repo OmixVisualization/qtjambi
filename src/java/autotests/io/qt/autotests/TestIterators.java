@@ -75,42 +75,54 @@ public class TestIterators extends ApplicationInitializer {
 	@Test
     public void test_QTreeWidgetItemIterator_owner() {
     	QTreeWidget widget = new QTreeWidget();
-    	QTreeWidgetItemIterator iterator = new QTreeWidgetItem(widget).iterator();
-    	Assert.assertTrue(General.internalAccess.hasOwnerFunction(iterator));
-    	Assert.assertEquals(widget.model(), General.internalAccess.owner(iterator));
+    	try {
+	    	QTreeWidgetItemIterator iterator = new QTreeWidgetItem(widget).iterator();
+	    	Assert.assertTrue(General.internalAccess.hasOwnerFunction(iterator));
+	    	Assert.assertEquals(widget.model(), General.internalAccess.owner(iterator));
+    	}finally {
+    		widget.dispose();
+    	}
 	}
 	
 	@Test
     public void test_QTreeWidgetItemIterator_owner_deletion() {
     	QTreeWidget widget = new QTreeWidget();
-    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("A")));
-    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("B")));
-    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("C")));
-    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("D")));
-    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("E")));
-    	QTreeWidgetItemIterator iterator = widget.iterator();
-    	widget.dispose();
     	try {
-			iterator.hasNext();
-			Assert.assertFalse("QNoNativeResourcesException expected to be thrown.", true);
-		} catch (QNoNativeResourcesException e) {
-		}
+	    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("A")));
+	    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("B")));
+	    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("C")));
+	    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("D")));
+	    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("E")));
+	    	QTreeWidgetItemIterator iterator = widget.iterator();
+	    	widget.dispose();
+	    	try {
+				iterator.hasNext();
+				Assert.assertFalse("QNoNativeResourcesException expected to be thrown.", true);
+			} catch (QNoNativeResourcesException e) {
+			}
+    	}finally {
+    		widget.dispose();
+    	}
 	}
 	
 	@Test
     public void test_QTreeWidgetItemIterator_correct_iteration() {
     	QTreeWidget widget = new QTreeWidget();
-    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("A")));
-    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("B")));
-    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("C")));
-    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("D")));
-    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("E")));
-    	List<String> texts = new ArrayList<>();
-    	for(QTreeWidgetItem item : widget) {
-    		Assert.assertTrue(item!=null);
-    		texts.add(item.text(0));
+    	try {
+	    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("A")));
+	    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("B")));
+	    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("C")));
+	    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("D")));
+	    	widget.addTopLevelItem(new QTreeWidgetItem(Arrays.asList("E")));
+	    	List<String> texts = new ArrayList<>();
+	    	for(QTreeWidgetItem item : widget) {
+	    		Assert.assertTrue(item!=null);
+	    		texts.add(item.text(0));
+	    	}
+	    	Assert.assertEquals(Arrays.asList("A", "B", "C", "D", "E"), texts);
+    	}finally {
+    		widget.dispose();
     	}
-    	Assert.assertEquals(Arrays.asList("A", "B", "C", "D", "E"), texts);
     }
     
     @Test

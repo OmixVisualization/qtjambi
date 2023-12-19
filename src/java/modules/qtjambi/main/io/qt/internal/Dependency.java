@@ -31,6 +31,9 @@ package io.qt.internal;
 
 import io.qt.QtUtilities.LibraryRequirementMode;
 
+/**
+ * @hidden
+ */
 final class Dependency {
     Dependency(String library) {
         this(library, LibraryRequirementMode.Mandatory);

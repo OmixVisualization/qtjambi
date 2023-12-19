@@ -360,14 +360,6 @@ QByteArray QtJambiAPI::typeName(const std::type_info& typeId){
     return typeName;
 }
 
-void QtJambiAPI::registerDependency(JNIEnv *env, jobject dependentObject, QtJambiNativeID nativeId){
-    QSharedPointer<QtJambiLink> _dependentLink = QtJambiLink::findLinkForJavaInterface(env, dependentObject);
-    QSharedPointer<QtJambiLink> _ownerLink = QtJambiLink::fromNativeId(nativeId);
-    if(_dependentLink && _ownerLink){
-        _ownerLink->registerDependentObject(_dependentLink);
-    }
-}
-
 void QtJambiAPI::setJavaOwnershipForTopLevelObject(JNIEnv *env, QObject* qobject)
 {
     if(qobject && !qobject->parent()){
@@ -508,6 +500,14 @@ bool enabledDanglingPointerCheck(JNIEnv * env){
 
 #if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS)) && !defined(Q_OS_ANDROID)
 #include <signal.h>
+#include <ucontext.h>
+
+struct bad_typeid : std::bad_typeid{
+    QByteArray _what;
+    const char* what() const Q_DECL_NOEXCEPT override{
+        return _what;
+    }
+};
 #endif
 
 const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, const void* ptr){
@@ -519,10 +519,21 @@ const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, cons
     memset(&sa, 0, sizeof(sa));
     memset(&sa_old, 0, sizeof(sa_old));
     sigemptyset(&sa.sa_mask);
-    sa.sa_flags = SA_NODEFER;
-    sa.sa_handler = [](int){
+    sa.sa_flags = SA_NODEFER | SA_SIGINFO;
+    sa.sa_sigaction = [](int, siginfo_t *, void *){
         isSigSegv.setLocalData(true);
+        if(JniEnvironment _env{200}){
+            jobject exn = Java::Runtime::Error::newInstance(_env, _env->NewStringUTF("Error when trying to get type of dangling pointer."));
+            jbyteArray array = Java::QtJambi::ExceptionUtility::printException(_env, exn);
+            bad_typeid exception;
+            jsize len = _env->GetArrayLength(array);
+            exception._what.fill(0, len);
+            _env->GetByteArrayRegion(array, 0, len, reinterpret_cast<jbyte*>(exception._what.data()));
+            throw exception;
+        }
         throw std::bad_typeid();
+        //ucontext_t *context = reinterpret_cast<ucontext_t *>(v_context);
+        //context->uc_mcontext.gregs[REG_RIP] += 10;
     };
     bool success = sigaction(SIGSEGV, &sa, &sa_old)==0;
     auto sc = qScopeGuard([&](){
@@ -532,24 +543,13 @@ const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, cons
     });
     try{
         isSigSegv.setLocalData(false);
-        const std::type_info& typeId = typeInfoSupplier(ptr);
-        const char* typeName = typeId.name();
-//        fprintf(stderr, "got type %s\n", typeName);
-//        fflush(stderr);
-        std::strlen(typeName);
-        switch(typeName[0]){
-        case '1':
-        case '2':
-        case '3':
-        case '4':
-        case '5':
-        case '6':
-        case '7':
-        case '8':
-        case '9':
-            break;
-        case 'N':
-            switch(typeName[1]){
+        const std::type_info* typeId = typeInfoSupplier(ptr);
+        if(typeId){
+            const char* typeName = typeId->name();
+//          fprintf(stderr, "got type %s\n", typeName);
+//          fflush(stderr);
+//          std::strlen(typeName);
+            switch(typeName[0]){
             case '1':
             case '2':
             case '3':
@@ -560,25 +560,38 @@ const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, cons
             case '8':
             case '9':
                 break;
+            case 'N':
+                switch(typeName[1]){
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    break;
+                default: // not valid name of class
+                    return nullptr;
+                }
+                break;
             default: // not valid name of class
                 return nullptr;
             }
-            break;
-        default: // not valid name of class
-            return nullptr;
         }
         if(isSigSegv.localData())
             return nullptr;
-//        typeId.hash_code();
-        return &typeId;
+        return typeId;
     }catch(const std::bad_typeid&){
+        return nullptr;
+    }catch(...){
         return nullptr;
     }
 #else
     try{
-        const std::type_info& typeId = typeInfoSupplier(ptr);
-        return &typeId;
-    }catch(const std::bad_typeid&){
+        return typeInfoSupplier(ptr);
+    }catch(...){
         return nullptr;
     }
 #endif
@@ -594,9 +607,8 @@ const std::type_info* tryGetTypeInfo(JNIEnv *env, TypeInfoSupplier typeInfoSuppl
     Q_UNUSED(env)
 #endif
     try{
-        const std::type_info& typeId = typeInfoSupplier(ptr);
-        return &typeId;
-    }catch(const std::bad_typeid&){
+        return typeInfoSupplier(ptr);
+    }catch(...){
         return nullptr;
     }
 }
@@ -678,65 +690,65 @@ jobjectArray QtJambiAPI::createObjectArray(JNIEnv *env, const std::type_info& co
 }
 
 jintArray QtJambiAPI::toJIntArray(JNIEnv *__jni_env, const jint* in, jsize length) {
-    jintArray out = __jni_env->NewIntArray(length);
+    jintArray out = __jni_env->NewIntArray(in ? length : 0);
     JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
-    __jni_env->SetIntArrayRegion(out, 0, length, in);
+    if(in)__jni_env->SetIntArrayRegion(out, 0, length, in);
     JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
     return out;
 }
 
 jshortArray QtJambiAPI::toJShortArray(JNIEnv *__jni_env, const jshort* in, jsize length) {
-    jshortArray out = __jni_env->NewShortArray(length);
+    jshortArray out = __jni_env->NewShortArray(in ? length : 0);
     JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
-    __jni_env->SetShortArrayRegion(out, 0, length, in);
+    if(in)__jni_env->SetShortArrayRegion(out, 0, length, in);
     JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
     return out;
 }
 
 jbyteArray QtJambiAPI::toJByteArray(JNIEnv *__jni_env, const jbyte* in, jsize length) {
-    jbyteArray out = __jni_env->NewByteArray(length);
+    jbyteArray out = __jni_env->NewByteArray(in ? length : 0);
     JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
-    __jni_env->SetByteArrayRegion(out, 0, length, in);
+    if(in)__jni_env->SetByteArrayRegion(out, 0, length, in);
     JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
     return out;
 }
 
 jlongArray QtJambiAPI::toJLongArray(JNIEnv *__jni_env, const jlong* in, jsize length) {
-    jlongArray out = __jni_env->NewLongArray(length);
+    jlongArray out = __jni_env->NewLongArray(in ? length : 0);
     JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
-    __jni_env->SetLongArrayRegion(out, 0, length, in);
+    if(in)__jni_env->SetLongArrayRegion(out, 0, length, in);
     JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
     return out;
 }
 
 jfloatArray QtJambiAPI::toJFloatArray(JNIEnv *__jni_env, const jfloat* in, jsize length) {
-    jfloatArray out = __jni_env->NewFloatArray(length);
+    jfloatArray out = __jni_env->NewFloatArray(in ? length : 0);
     JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
-    __jni_env->SetFloatArrayRegion(out, 0, length, in);
+    if(in)__jni_env->SetFloatArrayRegion(out, 0, length, in);
     JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
     return out;
 }
 
 jdoubleArray QtJambiAPI::toJDoubleArray(JNIEnv *__jni_env, const jdouble* in, jsize length) {
-    jdoubleArray out = __jni_env->NewDoubleArray(length);
+    jdoubleArray out = __jni_env->NewDoubleArray(in ? length : 0);
     JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
-    __jni_env->SetDoubleArrayRegion(out, 0, length, in);
+    if(in)__jni_env->SetDoubleArrayRegion(out, 0, length, in);
     JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
     return out;
 }
 
 jcharArray QtJambiAPI::toJCharArray(JNIEnv *__jni_env, const jchar* in, jsize length) {
-    jcharArray out = __jni_env->NewCharArray(length);
+    jcharArray out = __jni_env->NewCharArray(in ? length : 0);
     JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
-    __jni_env->SetCharArrayRegion(out, 0, length, in);
+    if(in)__jni_env->SetCharArrayRegion(out, 0, length, in);
     JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
     return out;
 }
 
 jbooleanArray QtJambiAPI::toJBooleanArray(JNIEnv *__jni_env, const jboolean* in, jsize length) {
-    jbooleanArray out = __jni_env->NewBooleanArray(length);
+    jbooleanArray out = __jni_env->NewBooleanArray(in ? length : 0);
     JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
-    __jni_env->SetBooleanArrayRegion(out, 0, length, in);
+    if(in)__jni_env->SetBooleanArrayRegion(out, 0, length, in);
     JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
     return out;
 }
@@ -1009,14 +1021,90 @@ jbyte QtJambiAPI::fromJavaByteObject(JNIEnv *env, jobject byte_object)
     return byte_object ? Java::Runtime::Number::byteValue(env, byte_object) : 0;
 }
 
+jobject QtJambiAPI::convertDuration(JNIEnv *env, std::chrono::nanoseconds t){
+    return Java::Runtime::Time::Duration::ofSeconds(env, 0, t.count());
+}
+
+jobject QtJambiAPI::convertDuration(JNIEnv *env, std::chrono::seconds t){
+    return Java::Runtime::Time::Duration::ofSeconds(env, t.count(), 0);
+}
+
+jobject QtJambiAPI::convertDuration(JNIEnv *env, std::chrono::milliseconds t){
+    return Java::Runtime::Time::Duration::ofMillis(env, t.count());
+}
+
+std::chrono::nanoseconds QtJambiAPI::convertDuration(JNIEnv *env, jobject t, std::chrono::nanoseconds defaultValue){
+    if(t){
+        if(!Java::Runtime::Time::Duration::isInstanceOf(env, t))
+            t = Java::Runtime::Time::Duration::from(env, t);
+        std::chrono::nanoseconds nanos{Java::Runtime::Time::Duration::getNano(env, t)};
+        std::chrono::seconds seconds{Java::Runtime::Time::Duration::getSeconds(env, t)};
+        return std::chrono::duration_cast<std::chrono::nanoseconds>(seconds + nanos);
+    }
+    return defaultValue;
+}
+
+std::chrono::seconds QtJambiAPI::convertDuration(JNIEnv *env, jobject t, std::chrono::seconds defaultValue){
+    if(t){
+        if(!Java::Runtime::Time::Duration::isInstanceOf(env, t))
+            t = Java::Runtime::Time::Duration::from(env, t);
+        std::chrono::nanoseconds nanos{Java::Runtime::Time::Duration::getNano(env, t)};
+        std::chrono::seconds seconds{Java::Runtime::Time::Duration::getSeconds(env, t)};
+        return std::chrono::duration_cast<std::chrono::seconds>(seconds + nanos);
+    }
+    return defaultValue;
+}
+
+std::chrono::milliseconds QtJambiAPI::convertDuration(JNIEnv *env, jobject t, std::chrono::milliseconds defaultValue){
+    if(t){
+        if(!Java::Runtime::Time::Duration::isInstanceOf(env, t))
+            t = Java::Runtime::Time::Duration::from(env, t);
+        std::chrono::nanoseconds nanos{Java::Runtime::Time::Duration::getNano(env, t)};
+        std::chrono::seconds seconds{Java::Runtime::Time::Duration::getSeconds(env, t)};
+        return std::chrono::duration_cast<std::chrono::milliseconds>(seconds + nanos);
+    }
+    return defaultValue;
+}
+
+jobject QtJambiAPI::convertTimePointFromEpoch(JNIEnv *env, std::chrono::nanoseconds t){
+    return Java::Runtime::Time::Instant::ofEpochSecond(env, 0, t.count());
+}
+
+jobject QtJambiAPI::convertTimePointFromEpoch(JNIEnv *env, std::chrono::seconds t){
+    return Java::Runtime::Time::Instant::ofEpochSecond(env, t.count(), 0);
+}
+
+jobject QtJambiAPI::convertTimePointFromEpoch(JNIEnv *env, std::chrono::milliseconds t){
+    return Java::Runtime::Time::Instant::ofEpochMilli(env, t.count());
+}
+
+QPair<std::chrono::seconds, std::chrono::nanoseconds> QtJambiAPI::readDuration(JNIEnv *env, jobject t){
+    if(t){
+        if(!Java::Runtime::Time::Duration::isInstanceOf(env, t))
+            t = Java::Runtime::Time::Duration::from(env, t);
+        std::chrono::nanoseconds nanos{Java::Runtime::Time::Duration::getNano(env, t)};
+        std::chrono::seconds seconds{Java::Runtime::Time::Duration::getSeconds(env, t)};
+        return {seconds, nanos};
+    }
+    return {std::chrono::seconds::zero(), std::chrono::nanoseconds::zero()};
+}
+
+QPair<std::chrono::seconds, std::chrono::nanoseconds> QtJambiAPI::readTimePoint(JNIEnv *env, jobject t){
+    if(t){
+        if(!Java::Runtime::Time::Instant::isInstanceOf(env, t))
+            t = Java::Runtime::Time::Instant::from(env, t);
+        std::chrono::nanoseconds nanos{Java::Runtime::Time::Instant::getNano(env, t)};
+        std::chrono::seconds seconds{Java::Runtime::Time::Instant::getEpochSecond(env, t)};
+        return {seconds, nanos};
+    }
+    return {std::chrono::seconds::zero(), std::chrono::nanoseconds::zero()};
+}
+
 bool QtJambiAPI::isJavaString(JNIEnv *env, jobject obj){
     return Java::Runtime::String::isInstanceOf(env, obj);
 }
 
 bool QtJambiAPI::isQStringObject(JNIEnv *env, jobject obj){
-    if(env->IsSameObject(obj, nullptr) || !Java::QtJambi::QtObjectInterface::isInstanceOf(env, obj)){
-        return false;
-    }
     return Java::QtCore::QString::isInstanceOf(env, obj);
 }
 
@@ -1211,4 +1299,74 @@ void QtJambiAPI::setQQmlListPropertyElementType(JNIEnv *env, jobject list, jobje
 
 QTJAMBI_EXPORT const char* qtjambi_build(){
     return "QtJambi " CONCAT(QT_VERSION_MAJOR, QT_VERSION_MINOR, QTJAMBI_PATCH_VERSION) " (" DEBUG_STRING " build; by " COMPILERS_NAME ")";
+}
+
+namespace PrivateFields{
+QTJAMBI_REPOSITORY_DECLARE_CLASS(Buffer,
+                                 QTJAMBI_REPOSITORY_DECLARE_INT_FIELD(capacity)
+                                 inline static jfieldID capacity_field(JNIEnv* env){
+                                    auto _this = __qt_get_this(env);
+                                    return _this.__capacity;
+                                 }
+                                 )
+QTJAMBI_REPOSITORY_DECLARE_CLASS(DirectByteBuffer,
+                                 QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(att)
+                                 inline static jfieldID att_field(JNIEnv* env){
+                                    auto _this = __qt_get_this(env);
+                                    return _this.__att;
+                                 }
+                                 )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,Buffer,
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(capacity,I)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(java/nio,DirectByteBuffer,
+                                QTJAMBI_REPOSITORY_DEFINE_FIELD(att,Ljava/lang/Object;)
+                                )
+}
+
+void truncateBuffer(JNIEnv *env, jobject buffer){
+    Java::Runtime::Internal::Buffer::clear(env, buffer);
+    Java::Runtime::Internal::Buffer::setLimit(env, buffer, 0);
+    typedef void(*BufferTruncator)(JNIEnv *, jobject, jsize);
+    static BufferTruncator bufferTruncator = [](JNIEnv *env)->BufferTruncator{
+        try{
+            if(PrivateFields::Buffer::capacity_field(env))
+                return &PrivateFields::Buffer::set_capacity;
+        }catch(const JavaException&){
+        }
+        return [](JNIEnv *, jobject, jsize){};
+    }(env);
+    bufferTruncator(env, buffer, 0);
+}
+
+void QtJambiAPI::registerDependency(JNIEnv *env, jobject dependentObject, QtJambiNativeID nativeId){
+    if(QSharedPointer<QtJambiLink> _ownerLink = QtJambiLink::fromNativeId(nativeId)){
+        if(QSharedPointer<QtJambiLink> _dependentLink = QtJambiLink::findLinkForJavaInterface(env, dependentObject)){
+            _ownerLink->registerDependentObject(_dependentLink);
+        }else if(Java::Runtime::Buffer::isInstanceOf(env, dependentObject)){
+            typedef void(*DirectByteBufferConnector)(JNIEnv *, jobject, const QSharedPointer<QtJambiLink>&);
+            static DirectByteBufferConnector directByteBufferConnector = [](JNIEnv *env)->DirectByteBufferConnector{
+                try{
+                    if(PrivateFields::DirectByteBuffer::att_field(env))
+                        return [](JNIEnv *env, jobject dependentObject, const QSharedPointer<QtJambiLink>& _ownerLink){
+                            if(PrivateFields::DirectByteBuffer::isInstanceOf(env, dependentObject)
+                                && !PrivateFields::DirectByteBuffer::att(env, dependentObject)){
+                                PrivateFields::DirectByteBuffer::set_att(env, dependentObject, _ownerLink->getJavaObjectLocalRef(env));
+                            }
+                        };
+                }catch(const JavaException&){
+                }
+                return [](JNIEnv *, jobject, const QSharedPointer<QtJambiLink>&){};
+            }(env);
+            JObjectWrapper _dependentObject(env, dependentObject, false);
+            _ownerLink->addFinalization([_dependentObject](JNIEnv* _env){
+                jobject buffer = _env->NewLocalRef(_dependentObject.object());
+                if(!_env->IsSameObject(buffer, nullptr)){
+                    truncateBuffer(_env, buffer);
+                    _env->DeleteLocalRef(buffer);
+                }
+            });
+            directByteBufferConnector(env, dependentObject, _ownerLink);
+        }
+    }
 }

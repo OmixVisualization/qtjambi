@@ -1449,23 +1449,16 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 #endif
 
 
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QIODevice_fromDirectBuffer)
+extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QIODevice_fromBuffer)
 (JNIEnv *env,
  jclass,
  jobject buffer)
 {
     jobject _result{nullptr};
     QTJAMBI_TRY{
-        bool isDirect = Java::Runtime::Buffer::isDirect(env, buffer);
-        if(isDirect){
-            jlong capacity = env->GetDirectBufferCapacity(buffer);
-            void* address = env->GetDirectBufferAddress(buffer);
-            bool readOnly = Java::Runtime::Buffer::isReadOnly(env, buffer);
-            if(address && capacity>0){
-                QIODevice* device = CoreAPI::newDirectAddressDevice(capacity, reinterpret_cast<char*>(address), readOnly, env, buffer);
-                _result = qtjambi_cast<jobject>(env, device);
-            }
-        }
+        QIODevice* device = CoreAPI::newDirectAddressDevice(env, buffer);
+        _result = qtjambi_cast<jobject>(env, device);
+        QtJambiAPI::setJavaOwnershipForTopLevelObject(env, device);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
     }QTJAMBI_TRY_END
@@ -1771,15 +1764,16 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaType_javaType__J)
 
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaType_00024GenericValue_buffer)
 (JNIEnv *__jni_env,
- jobject _this,
+ jclass, QtJambiNativeID __this_nativeId,
  jint type0)
 {
     jobject _result{nullptr};
     QTJAMBI_TRY{
-        if(void* ptr = QtJambiAPI::convertJavaObjectToNative(__jni_env, _this)){
+        if(void* ptr = QtJambiAPI::fromNativeId(__this_nativeId)){
             jlong size = QMetaType::sizeOf(type0);
             if(size>0){
-                _result = __jni_env->NewDirectByteBuffer(ptr, size);
+                _result = DataJBuffer(__jni_env, ptr, size).take();
+                QtJambiAPI::registerDependency(__jni_env, _result, __this_nativeId);
             }
         }
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -1790,12 +1784,12 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaType_00024GenericValue_clone)
 (JNIEnv *__jni_env,
- jobject _this,
+ jclass, QtJambiNativeID __this_nativeId,
  jint type0)
 {
     jobject _result{nullptr};
     QTJAMBI_TRY{
-        if(void* ptr = QtJambiAPI::convertJavaObjectToNative(__jni_env, _this)){
+        if(void* ptr = QtJambiAPI::fromNativeId(__this_nativeId)){
             _result = QtJambiAPI::convertNativeToJavaOwnedObjectAsWrapper(__jni_env, QMetaType::create(type0, ptr), Java::QtCore::QMetaType$GenericValue::getClass(__jni_env));
             if(_result)
                 Java::QtCore::QMetaType$GenericValue::set_type(__jni_env, _result, type0);
@@ -2318,7 +2312,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_findEnumForFlags)
 
 extern "C" Q_DECL_EXPORT jobject JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_methodByIndex)
-    (JNIEnv * env, jobject, jlong metaObjectPointer, jint index)
+    (JNIEnv * env, jclass, jlong metaObjectPointer, jint index)
 {
     jobject result = nullptr;
     QTJAMBI_TRY{
@@ -2329,7 +2323,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QMetaObject_methodByIndex)
             if(method.isValid()){
                 result = qtjambi_cast<jobject>(env, method);
             }else{
-                Java::Runtime::IndexOutOfBoundsException::throwNew(env, QStringLiteral("Index %1 is not a valid method of class %2").arg(index).arg(metaObject->className()) QTJAMBI_STACKTRACEINFO );
+                JavaException::raiseIndexOutOfBoundsException(env, QStringLiteral("Index %1 is not a valid method of class %2").arg(index).arg(metaObject->className()) QTJAMBI_STACKTRACEINFO );
             }
         }
     }QTJAMBI_CATCH(const JavaException& exn){
@@ -5438,14 +5432,14 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QB
     }QTJAMBI_TRY_END
 }
 
-// new QByteArrayView(Buffer,qsizetype)
+// new QByteArrayView(Buffer)
 void __qt_construct_QByteArrayView_2(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QByteArrayView(Buffer)")
     void* address = __jni_env->GetDirectBufferAddress(__java_arguments[0].l);
     jlong capacity = __jni_env->GetDirectBufferCapacity(__java_arguments->l);
     if(capacity!=-1){
-        new(__qtjambi_ptr) QByteArrayView(reinterpret_cast<char*>(address), __java_arguments[1].j<0 ? capacity : qMin(capacity, __java_arguments[1].j));
+        new(__qtjambi_ptr) QByteArrayView(reinterpret_cast<char*>(address)+__java_arguments[1].i, __java_arguments[1].j<0 ? capacity : qMin(capacity, __java_arguments[2].i));
     }else{
         new(__qtjambi_ptr) QByteArrayView();
     }
@@ -5453,17 +5447,18 @@ void __qt_construct_QByteArrayView_2(void* __qtjambi_ptr, JNIEnv* __jni_env, job
 }
 
 // QByteArrayView::QByteArrayView(Buffer,qsizetype)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QByteArrayView_initialize_1native__Lio_qt_core_QByteArrayView_2Ljava_nio_ByteBuffer_2J)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QByteArrayView_initialize_1native__Lio_qt_core_QByteArrayView_2Ljava_nio_ByteBuffer_2II)
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,
- jobject data, jlong size)
+ jobject data, jint offset, jint length)
 {
     QTJAMBI_NATIVE_METHOD_CALL("QByteArrayView::QByteArrayView(Buffer)")
     QTJAMBI_TRY{
-        jvalue argument[2];
+        jvalue argument[3];
         argument[0].l = data;
-        argument[1].j = size;
+        argument[1].j = offset;
+        argument[2].j = length;
         QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QByteArrayView_2, sizeof(QByteArrayView), typeid(QByteArrayView), false, argument);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -5475,11 +5470,11 @@ void __qt_construct_QByteArrayView_3(void* __qtjambi_ptr, JNIEnv* __jni_env, job
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QByteArrayView(Buffer)")
     JBufferConstData* bufferData = new JBufferConstData(__jni_env, __java_arguments[0].l);
-    if(bufferData->size()>0){
+    if(bufferData->size<char>()>0){
         jobject address = QtJambiAPI::toJavaLongObject(__jni_env, qintptr(bufferData));
-        __jni_env->SetObjectArrayElement(jobjectArray(__java_arguments[2].l), 0, address);
+        __jni_env->SetObjectArrayElement(jobjectArray(__java_arguments[1].l), 0, address);
         JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
-        new(__qtjambi_ptr) QByteArrayView(reinterpret_cast<const char*>(bufferData->data()), __java_arguments[1].j<0 ? bufferData->size() : qMin(bufferData->size(), __java_arguments[1].j));
+        new(__qtjambi_ptr) QByteArrayView(bufferData->data<char>(), bufferData->size<char>());
     }else{
         delete bufferData;
         new(__qtjambi_ptr) QByteArrayView();
@@ -5488,18 +5483,17 @@ void __qt_construct_QByteArrayView_3(void* __qtjambi_ptr, JNIEnv* __jni_env, job
 }
 
 // QByteArrayView::QByteArrayView(Buffer,qsizetype)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QByteArrayView_initialize_1native__Lio_qt_core_QByteArrayView_2Ljava_nio_ByteBuffer_2J_3Ljava_lang_Long_2)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QByteArrayView_initialize_1native__Lio_qt_core_QByteArrayView_2Ljava_nio_ByteBuffer_2_3Ljava_lang_Long_2)
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,
- jobject data, jlong size, jobjectArray pointerOut)
+ jobject data, jobjectArray pointerOut)
 {
     QTJAMBI_NATIVE_METHOD_CALL("QByteArrayView::QByteArrayView(Buffer)")
     QTJAMBI_TRY{
-        jvalue argument[3];
+        jvalue argument[2];
         argument[0].l = data;
-        argument[1].j = size;
-        argument[2].l = pointerOut;
+        argument[1].l = pointerOut;
         QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QByteArrayView_3, sizeof(QByteArrayView), typeid(QByteArrayView), false, argument);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
@@ -5570,9 +5564,9 @@ void __qt_construct_QByteArrayView_5(void* __qtjambi_ptr, JNIEnv* __jni_env, job
     JByteArrayPointer* bufferData = new JByteArrayPointer(__jni_env, jbyteArray(__java_arguments[0].l));
     if(bufferData->size()>0){
         jobject address = QtJambiAPI::toJavaLongObject(__jni_env, qintptr(bufferData));
-        __jni_env->SetObjectArrayElement(jobjectArray(__java_arguments[2].l), 0, address);
+        __jni_env->SetObjectArrayElement(jobjectArray(__java_arguments[3].l), 0, address);
         JavaException::check(__jni_env QTJAMBI_STACKTRACEINFO );
-        new(__qtjambi_ptr) QByteArrayView(bufferData->pointer(), __java_arguments[1].i<0 ? bufferData->size() : qMin(bufferData->size(), __java_arguments[1].i));
+        new(__qtjambi_ptr) QByteArrayView(bufferData->pointer()+__java_arguments[1].i, __java_arguments[2].i<0 ? bufferData->size()-__java_arguments[1].i : qMin<jsize>(bufferData->size()-__java_arguments[1].i, __java_arguments[2].i));
     }else{
         delete bufferData;
         new(__qtjambi_ptr) QByteArrayView();
@@ -5581,18 +5575,19 @@ void __qt_construct_QByteArrayView_5(void* __qtjambi_ptr, JNIEnv* __jni_env, job
 }
 
 // QByteArrayView::QByteArrayView(byte[],int)
-extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QByteArrayView_initialize_1native__Lio_qt_core_QByteArrayView_2_3BI_3Ljava_lang_Long_2)
+extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QByteArrayView_initialize_1native__Lio_qt_core_QByteArrayView_2_3BII_3Ljava_lang_Long_2)
 (JNIEnv *__jni_env,
  jclass __jni_class,
  jobject __jni_object,
- jbyteArray data, jint size, jobjectArray pointerOut)
+ jbyteArray data, jint offset, jint length, jobjectArray pointerOut)
 {
     QTJAMBI_NATIVE_METHOD_CALL("QByteArrayView::QByteArrayView(byte[])")
     QTJAMBI_TRY{
-        jvalue argument[3];
+        jvalue argument[4];
         argument[0].l = data;
-        argument[1].i = size;
-        argument[2].l = pointerOut;
+        argument[1].i = offset;
+        argument[2].i = length;
+        argument[3].l = pointerOut;
         QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QByteArrayView_5, sizeof(QByteArrayView), typeid(QByteArrayView), false, argument);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);

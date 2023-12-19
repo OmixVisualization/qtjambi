@@ -196,435 +196,337 @@ TypeSystem{
             signature: "glDeleteBuffers(GLsizei,const GLuint*)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glDeleteFramebuffers(GLsizei,const GLuint*)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glDeleteRenderbuffers(GLsizei,const GLuint*)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glDeleteTextures(GLsizei,const GLuint*)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGenBuffers(GLsizei,GLuint*)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGenFramebuffers(GLsizei,GLuint*)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGenRenderbuffers(GLsizei,GLuint*)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGenTextures(GLsizei,GLuint*)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetBooleanv(GLenum,GLboolean*)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetBufferParameteriv(GLenum,GLenum,GLint*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetFloatv(GLenum,GLfloat*)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetFramebufferAttachmentParameteriv(GLenum,GLenum,GLenum,GLint*)"
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetIntegerv(GLenum,GLint*)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetUniformfv(GLuint, GLint, GLfloat*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetUniformiv(GLuint, GLint, GLint*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetRenderbufferParameteriv(GLenum, GLenum, GLint*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetTexParameterfv(GLenum, GLenum, GLfloat*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetTexParameteriv(GLenum, GLenum, GLint*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glReadPixels(GLint,GLint,GLsizei,GLsizei,GLenum,GLenum,GLvoid*)"
             ModifyArgument{
                 index: 7
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glTexImage2D(GLenum,GLint,GLint,GLsizei,GLsizei,GLint,GLenum,GLenum,const GLvoid*)"
             ModifyArgument{
                 index: 9
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glTexParameterfv(GLenum,GLenum,const GLfloat*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glTexParameteriv(GLenum,GLenum,const GLint*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glTexSubImage2D(GLenum,GLint,GLint,GLint,GLsizei,GLsizei,GLenum,GLenum,const GLvoid*)"
             ModifyArgument{
                 index: 9
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glDrawElements(GLenum, GLsizei, GLenum, const GLvoid*)"
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetAttachedShaders(GLuint, GLsizei, GLsizei*, GLuint*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetProgramiv(GLuint, GLenum, GLint*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetShaderPrecisionFormat(GLenum, GLenum, GLint*, GLint*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetShaderiv(GLuint, GLenum, GLint*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetUniformfv(GLuint, GLint, GLfloat*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetUniformiv(GLuint, GLint, GLint*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetVertexAttribfv(GLuint, GLenum, GLfloat*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetVertexAttribiv(GLuint, GLenum, GLint*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glUniform1fv(GLint, GLsizei, const GLfloat*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glUniform1iv(GLint, GLsizei, const GLint*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glUniform2fv(GLint, GLsizei, const GLfloat*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glUniform2iv(GLint, GLsizei, const GLint*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glUniform3fv(GLint, GLsizei, const GLfloat*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glUniform3iv(GLint, GLsizei, const GLint*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glUniform4fv(GLint, GLsizei, const GLfloat*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glUniform4iv(GLint, GLsizei, const GLint*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glUniformMatrix2fv(GLint, GLsizei, GLboolean, const GLfloat*)"
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glUniformMatrix3fv(GLint, GLsizei, GLboolean, const GLfloat*)"
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glUniformMatrix4fv(GLint, GLsizei, GLboolean, const GLfloat*)"
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glVertexAttrib1fv(GLuint, const GLfloat*)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glVertexAttrib2fv(GLuint, const GLfloat*)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glVertexAttrib3fv(GLuint, const GLfloat*)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glVertexAttrib4fv(GLuint, const GLfloat*)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
     }
@@ -635,7 +537,7 @@ TypeSystem{
             signature: "glGetBooleanv(GLenum, GLboolean *)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -644,7 +546,7 @@ TypeSystem{
             signature: "glGetDoublev(GLenum, GLdouble *)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -653,7 +555,7 @@ TypeSystem{
             signature: "glGetFloatv(GLenum, GLfloat *)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -662,7 +564,7 @@ TypeSystem{
             signature: "glGetIntegerv(GLenum, GLint *)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -671,36 +573,28 @@ TypeSystem{
             signature: "glGetTexLevelParameterfv(GLenum, GLint, GLenum, GLfloat *)"
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetTexLevelParameteriv(GLenum, GLint, GLenum, GLint *)"
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetTexParameterfv(GLenum, GLenum, GLfloat *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetTexParameteriv(GLenum, GLenum, GLint *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
@@ -708,7 +602,11 @@ TypeSystem{
             ModifyArgument{
                 index: 0
                 ReplaceType{
-                    modifiedType: "java.lang.String"
+                    modifiedType: "java.lang.@NonNull String"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "%out = qtjambi_cast<jstring>(%env, QLatin1String(reinterpret_cast<const char *>(%in)));"}
                 }
             }
         }
@@ -716,18 +614,14 @@ TypeSystem{
             signature: "glTexParameterfv(GLenum,GLenum,const GLfloat*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glTexParameteriv(GLenum,GLenum,const GLint*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
     }
@@ -738,36 +632,28 @@ TypeSystem{
             signature: "glReadPixels(GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, GLvoid *)"
             ModifyArgument{
                 index: 7
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetTexImage(GLenum, GLint, GLenum, GLenum, GLvoid *)"
             ModifyArgument{
                 index: 5
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glTexImage1D(GLenum, GLint, GLint, GLsizei, GLint, GLenum, GLenum, const GLvoid *)"
             ModifyArgument{
                 index: 8
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glTexImage2D(GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLenum, GLenum, const GLvoid *)"
             ModifyArgument{
                 index: 9
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
     }
@@ -778,36 +664,28 @@ TypeSystem{
             signature: "glReadPixels(GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, void *)"
             ModifyArgument{
                 index: 7
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetTexImage(GLenum, GLint, GLenum, GLenum, void *)"
             ModifyArgument{
                 index: 5
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glTexImage1D(GLenum, GLint, GLint, GLsizei, GLint, GLenum, GLenum, const void *)"
             ModifyArgument{
                 index: 8
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glTexImage2D(GLenum, GLint, GLint, GLsizei, GLsizei, GLint, GLenum, GLenum, const void *)"
             ModifyArgument{
                 index: 9
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
     }
@@ -818,45 +696,35 @@ TypeSystem{
             signature: "glPixelMapfv(GLenum, GLint, const GLfloat *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glPixelMapuiv(GLenum, GLint, const GLuint *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glPixelMapusv(GLenum, GLint, const GLushort *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glCallLists(GLsizei, GLenum, const GLvoid *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glDrawPixels(GLsizei, GLsizei, GLenum, GLenum, const GLvoid *)"
             ModifyArgument{
                 index: 5
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
     }
@@ -867,45 +735,35 @@ TypeSystem{
             signature: "glPixelMapfv(GLenum, GLsizei, const GLfloat *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glPixelMapuiv(GLenum, GLsizei, const GLuint *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glPixelMapusv(GLenum, GLsizei, const GLushort *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glCallLists(GLsizei, GLenum, const void *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glDrawPixels(GLsizei, GLsizei, GLenum, GLenum, const void *)"
             ModifyArgument{
                 index: 5
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
     }
@@ -968,34 +826,28 @@ TypeSystem{
             signature: "glGetTexGendv(GLenum, GLenum, GLdouble *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetTexGenfv(GLenum, GLenum, GLfloat *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetTexGeniv(GLenum, GLenum, GLint *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetClipPlane(GLenum, GLdouble *)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     minLength: 4
                 }
             }
@@ -1004,7 +856,7 @@ TypeSystem{
             signature: "glGetMaterialfv(GLenum, GLenum, GLfloat *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1013,7 +865,7 @@ TypeSystem{
             signature: "glGetMaterialiv(GLenum, GLenum, GLint *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1022,7 +874,7 @@ TypeSystem{
             signature: "glClipPlane(GLenum, const GLdouble *)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     minLength: 4
                 }
             }
@@ -1031,31 +883,27 @@ TypeSystem{
             signature: "glGetPixelMapfv(GLenum, GLfloat *)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glPolygonStipple(const GLubyte *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glRectdv(const GLdouble *,const GLdouble *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 2
                 }
             }
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     minLength: 2
                 }
             }
@@ -1064,13 +912,13 @@ TypeSystem{
             signature: "glRectfv(const GLfloat *,const GLfloat *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 2
                 }
             }
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     minLength: 2
                 }
             }
@@ -1079,13 +927,13 @@ TypeSystem{
             signature: "glRectiv(const GLint *,const GLint *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 2
                 }
             }
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     minLength: 2
                 }
             }
@@ -1094,13 +942,13 @@ TypeSystem{
             signature: "glRectsv(const GLshort *,const GLshort *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 2
                 }
             }
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     minLength: 2
                 }
             }
@@ -1109,16 +957,14 @@ TypeSystem{
             signature: "glBitmap(GLsizei, GLsizei, GLfloat, GLfloat, GLfloat, GLfloat, const GLubyte *)"
             ModifyArgument{
                 index: 7
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glFogiv(GLenum, const GLint *)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1127,7 +973,7 @@ TypeSystem{
             signature: "glFogfv(GLenum, const GLfloat *)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1136,7 +982,7 @@ TypeSystem{
             signature: "glMultMatrixd(const GLdouble *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 16
                 }
             }
@@ -1145,7 +991,7 @@ TypeSystem{
             signature: "glMultMatrixf(const GLfloat *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 16
                 }
             }
@@ -1154,7 +1000,7 @@ TypeSystem{
             signature: "glNormal3bv(const GLbyte *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 3
                 }
             }
@@ -1163,7 +1009,7 @@ TypeSystem{
             signature: "glNormal3sv(const GLshort *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 3
                 }
             }
@@ -1172,7 +1018,7 @@ TypeSystem{
             signature: "glNormal3iv(const GLint *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 3
                 }
             }
@@ -1181,7 +1027,7 @@ TypeSystem{
             signature: "glNormal3fv(const GLfloat *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 3
                 }
             }
@@ -1190,7 +1036,7 @@ TypeSystem{
             signature: "glNormal3dv(const GLdouble *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 3
                 }
             }
@@ -1199,7 +1045,7 @@ TypeSystem{
             signature: "glColor4bv(const GLbyte *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 4
                 }
             }
@@ -1208,7 +1054,7 @@ TypeSystem{
             signature: "glColor3bv(const GLbyte *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 3
                 }
             }
@@ -1217,7 +1063,7 @@ TypeSystem{
             signature: "glColor4sv(const GLshort *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 4
                 }
             }
@@ -1226,7 +1072,7 @@ TypeSystem{
             signature: "glColor3sv(const GLshort *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 3
                 }
             }
@@ -1235,7 +1081,7 @@ TypeSystem{
             signature: "glColor4iv(const GLint *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 4
                 }
             }
@@ -1244,7 +1090,7 @@ TypeSystem{
             signature: "glColor3iv(const GLint *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 3
                 }
             }
@@ -1253,7 +1099,7 @@ TypeSystem{
             signature: "glColor4fv(const GLfloat *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 4
                 }
             }
@@ -1262,7 +1108,7 @@ TypeSystem{
             signature: "glColor3fv(const GLfloat *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 3
                 }
             }
@@ -1271,7 +1117,7 @@ TypeSystem{
             signature: "glColor4dv(const GLdouble *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 4
                 }
             }
@@ -1280,7 +1126,7 @@ TypeSystem{
             signature: "glColor3dv(const GLdouble *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 3
                 }
             }
@@ -1289,7 +1135,7 @@ TypeSystem{
             signature: "glRasterPos4sv(const GLshort *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 4
                 }
             }
@@ -1298,7 +1144,7 @@ TypeSystem{
             signature: "glRasterPos3sv(const GLshort *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 3
                 }
             }
@@ -1307,7 +1153,7 @@ TypeSystem{
             signature: "glRasterPos2sv(const GLshort *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 2
                 }
             }
@@ -1316,7 +1162,7 @@ TypeSystem{
             signature: "glRasterPos4iv(const GLint *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 4
                 }
             }
@@ -1325,7 +1171,7 @@ TypeSystem{
             signature: "glRasterPos3iv(const GLint *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 3
                 }
             }
@@ -1334,7 +1180,7 @@ TypeSystem{
             signature: "glRasterPos2iv(const GLint *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 2
                 }
             }
@@ -1343,7 +1189,7 @@ TypeSystem{
             signature: "glRasterPos4fv(const GLfloat *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 4
                 }
             }
@@ -1352,7 +1198,7 @@ TypeSystem{
             signature: "glRasterPos3fv(const GLfloat *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 3
                 }
             }
@@ -1361,7 +1207,7 @@ TypeSystem{
             signature: "glRasterPos2fv(const GLfloat *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 2
                 }
             }
@@ -1370,7 +1216,7 @@ TypeSystem{
             signature: "glRasterPos4dv(const GLdouble *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 4
                 }
             }
@@ -1379,7 +1225,7 @@ TypeSystem{
             signature: "glRasterPos3dv(const GLdouble *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 3
                 }
             }
@@ -1388,7 +1234,7 @@ TypeSystem{
             signature: "glRasterPos2dv(const GLdouble *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 2
                 }
             }
@@ -1397,7 +1243,7 @@ TypeSystem{
             signature: "glLightModeliv(GLenum, const GLint *)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1406,7 +1252,7 @@ TypeSystem{
             signature: "glLightModelfv(GLenum, const GLfloat *)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1415,16 +1261,14 @@ TypeSystem{
             signature: "glGetPolygonStipple(GLubyte *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetLightfv(GLenum, GLenum, GLfloat *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1433,7 +1277,7 @@ TypeSystem{
             signature: "glGetLightiv(GLenum, GLenum, GLint *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1442,7 +1286,7 @@ TypeSystem{
             signature: "glLightiv(GLenum, GLenum, const GLint *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1451,7 +1295,7 @@ TypeSystem{
             signature: "glLightfv(GLenum, GLenum, const GLfloat *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1460,7 +1304,7 @@ TypeSystem{
             signature: "glEvalCoord1fv(const GLfloat *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1469,7 +1313,7 @@ TypeSystem{
             signature: "glEvalCoord1dv(const GLdouble *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1478,7 +1322,7 @@ TypeSystem{
             signature: "glEvalCoord2fv(const GLfloat *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 2
                 }
             }
@@ -1487,7 +1331,7 @@ TypeSystem{
             signature: "glEvalCoord2dv(const GLdouble *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 2
                 }
             }
@@ -1496,7 +1340,7 @@ TypeSystem{
             signature: "glGetMapdv(GLenum, GLenum, GLdouble *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1505,7 +1349,7 @@ TypeSystem{
             signature: "glGetMapfv(GLenum, GLenum, GLfloat *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1514,7 +1358,7 @@ TypeSystem{
             signature: "glGetMapiv(GLenum, GLenum, GLint *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1523,26 +1367,21 @@ TypeSystem{
             signature: "glGetPixelMapuiv(GLenum, GLuint *)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetPixelMapusv(GLenum, GLushort *)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glSelectBuffer(GLsizei,GLuint *)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
+                AsBuffer{
                     lengthParameter: 1
                 }
             }
@@ -1551,7 +1390,7 @@ TypeSystem{
             signature: "glMaterialiv(GLenum, GLenum, const GLint *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1560,7 +1399,7 @@ TypeSystem{
             signature: "glMaterialfv(GLenum, GLenum, const GLfloat *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1569,7 +1408,7 @@ TypeSystem{
             signature: "glVertex4sv(const GLshort *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 4
                 }
             }
@@ -1578,7 +1417,7 @@ TypeSystem{
             signature: "glVertex3sv(const GLshort *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 3
                 }
             }
@@ -1587,7 +1426,7 @@ TypeSystem{
             signature: "glVertex2sv(const GLshort *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 2
                 }
             }
@@ -1596,7 +1435,7 @@ TypeSystem{
             signature: "glVertex4iv(const GLint *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 4
                 }
             }
@@ -1605,7 +1444,7 @@ TypeSystem{
             signature: "glVertex3iv(const GLint *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 3
                 }
             }
@@ -1614,7 +1453,7 @@ TypeSystem{
             signature: "glVertex2iv(const GLint *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 2
                 }
             }
@@ -1623,7 +1462,7 @@ TypeSystem{
             signature: "glVertex4fv(const GLfloat *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 4
                 }
             }
@@ -1632,7 +1471,7 @@ TypeSystem{
             signature: "glVertex3fv(const GLfloat *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 3
                 }
             }
@@ -1641,7 +1480,7 @@ TypeSystem{
             signature: "glVertex2fv(const GLfloat *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 2
                 }
             }
@@ -1650,7 +1489,7 @@ TypeSystem{
             signature: "glVertex4dv(const GLdouble *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 4
                 }
             }
@@ -1659,7 +1498,7 @@ TypeSystem{
             signature: "glVertex3dv(const GLdouble *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 3
                 }
             }
@@ -1668,7 +1507,7 @@ TypeSystem{
             signature: "glVertex2dv(const GLdouble *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 2
                 }
             }
@@ -1677,7 +1516,7 @@ TypeSystem{
             signature: "glTexCoord4sv(const GLshort *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 4
                 }
             }
@@ -1686,7 +1525,7 @@ TypeSystem{
             signature: "glTexCoord3sv(const GLshort *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 3
                 }
             }
@@ -1695,7 +1534,7 @@ TypeSystem{
             signature: "glTexCoord2sv(const GLshort *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 2
                 }
             }
@@ -1704,7 +1543,7 @@ TypeSystem{
             signature: "glTexCoord1sv(const GLshort *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1713,7 +1552,7 @@ TypeSystem{
             signature: "glTexCoord4iv(const GLint *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 4
                 }
             }
@@ -1722,7 +1561,7 @@ TypeSystem{
             signature: "glTexCoord3iv(const GLint *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 3
                 }
             }
@@ -1731,7 +1570,7 @@ TypeSystem{
             signature: "glTexCoord2iv(const GLint *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 2
                 }
             }
@@ -1740,7 +1579,7 @@ TypeSystem{
             signature: "glTexCoord1iv(const GLint *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1749,7 +1588,7 @@ TypeSystem{
             signature: "glTexCoord4fv(const GLfloat *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 4
                 }
             }
@@ -1758,7 +1597,7 @@ TypeSystem{
             signature: "glTexCoord3fv(const GLfloat *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 3
                 }
             }
@@ -1767,7 +1606,7 @@ TypeSystem{
             signature: "glTexCoord2fv(const GLfloat *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 2
                 }
             }
@@ -1776,7 +1615,7 @@ TypeSystem{
             signature: "glTexCoord1fv(const GLfloat *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1785,7 +1624,7 @@ TypeSystem{
             signature: "glTexCoord4dv(const GLdouble *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 4
                 }
             }
@@ -1794,7 +1633,7 @@ TypeSystem{
             signature: "glTexCoord3dv(const GLdouble *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 3
                 }
             }
@@ -1803,7 +1642,7 @@ TypeSystem{
             signature: "glTexCoord2dv(const GLdouble *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 2
                 }
             }
@@ -1812,7 +1651,7 @@ TypeSystem{
             signature: "glTexCoord1dv(const GLdouble *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1821,7 +1660,7 @@ TypeSystem{
             signature: "glTexEnviv(GLenum, GLenum, const GLint *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1830,7 +1669,7 @@ TypeSystem{
             signature: "glTexEnvfv(GLenum, GLenum, const GLfloat *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1839,25 +1678,21 @@ TypeSystem{
             signature: "glGetTexEnvfv(GLenum, GLenum, GLfloat *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetTexEnviv(GLenum, GLenum, GLint *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glTexGendv(GLenum, GLenum, const GLdouble *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1866,7 +1701,7 @@ TypeSystem{
             signature: "glTexGenfv(GLenum, GLenum, const GLfloat *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1875,7 +1710,7 @@ TypeSystem{
             signature: "glTexGeniv(GLenum, GLenum, const GLint *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1884,8 +1719,7 @@ TypeSystem{
             signature: "glFeedbackBuffer(GLsizei, GLenum, GLfloat *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
+                AsBuffer{
                     lengthParameter: 1
                 }
             }
@@ -1894,7 +1728,7 @@ TypeSystem{
             signature: "glLoadMatrixd(const GLdouble *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 16
                 }
             }
@@ -1903,7 +1737,7 @@ TypeSystem{
             signature: "glLoadMatrixf(const GLfloat *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 16
                 }
             }
@@ -1912,43 +1746,35 @@ TypeSystem{
             signature: "glMap1d(GLenum, GLdouble, GLdouble, GLint, GLint, const GLdouble *)"
             ModifyArgument{
                 index: 6
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glMap1f(GLenum, GLfloat, GLfloat, GLint, GLint, const GLfloat *)"
             ModifyArgument{
                 index: 6
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glMap2d(GLenum, GLdouble, GLdouble, GLint, GLint, GLdouble, GLdouble, GLint, GLint, const GLdouble *)"
             ModifyArgument{
                 index: 10
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glMap2f(GLenum, GLfloat, GLfloat, GLint, GLint, GLfloat, GLfloat, GLint, GLint, const GLfloat *)"
             ModifyArgument{
                 index: 10
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glIndexdv(const GLdouble *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1957,7 +1783,7 @@ TypeSystem{
             signature: "glIndexfv(const GLfloat *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1966,7 +1792,7 @@ TypeSystem{
             signature: "glIndexiv(const GLint *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1975,7 +1801,7 @@ TypeSystem{
             signature: "glIndexsv(const GLshort *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -1988,15 +1814,15 @@ TypeSystem{
             signature: "glAreTexturesResident(GLsizei, const GLuint *, GLboolean *)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
+                AsBuffer{
                     lengthParameter: 1
                 }
             }
             ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     lengthParameter: 1
+                    noOffset: true
                 }
             }
         }
@@ -2004,15 +1830,11 @@ TypeSystem{
             signature: "glPrioritizeTextures(GLsizei, const GLuint *, const GLfloat *)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
     }
@@ -2023,63 +1845,49 @@ TypeSystem{
             signature: "glColorPointer(GLint, GLenum, GLsizei, const GLvoid *)"
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glVertexPointer(GLint, GLenum, GLsizei, const GLvoid *)"
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glTexCoordPointer(GLint, GLenum, GLsizei, const GLvoid *)"
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glInterleavedArrays(GLenum, GLsizei, const GLvoid *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glNormalPointer(GLenum, GLsizei, const GLvoid *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glEdgeFlagPointer(GLsizei, const GLvoid *)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glIndexPointer(GLenum, GLsizei, const GLvoid *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
     }
@@ -2090,63 +1898,49 @@ TypeSystem{
             signature: "glColorPointer(GLint, GLenum, GLsizei, const void *)"
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glVertexPointer(GLint, GLenum, GLsizei, const void *)"
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glTexCoordPointer(GLint, GLenum, GLsizei, const void *)"
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glInterleavedArrays(GLenum, GLsizei, const void *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glNormalPointer(GLenum, GLsizei, const void *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glEdgeFlagPointer(GLsizei, const void *)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glIndexPointer(GLenum, GLsizei, const void *)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
     }
@@ -2157,18 +1951,14 @@ TypeSystem{
             signature: "glGenTextures(GLsizei, GLuint *)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glDeleteTextures(GLsizei, const GLuint *)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
     }
@@ -2191,7 +1981,7 @@ TypeSystem{
                                   "                                        pointer = nullptr;\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return env->NewDirectByteBuffer(ptr, INT_MAX);\n"+
+                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   "                                );\n"+
                                   "if(%out.size()==0){\n"+
@@ -2204,27 +1994,21 @@ TypeSystem{
             signature: "glDrawElements(GLenum, GLsizei, GLenum, const GLvoid *)"
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glTexSubImage2D(GLenum, GLint, GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, const GLvoid *)"
             ModifyArgument{
                 index: 9
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glTexSubImage1D(GLenum, GLint, GLint, GLsizei, GLenum, GLenum, const GLvoid *)"
             ModifyArgument{
                 index: 7
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
     }
@@ -2235,27 +2019,21 @@ TypeSystem{
             signature: "glDrawElements(GLenum, GLsizei, GLenum, const void *)"
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glTexSubImage2D(GLenum, GLint, GLint, GLint, GLsizei, GLsizei, GLenum, GLenum, const void *)"
             ModifyArgument{
                 index: 9
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glTexSubImage1D(GLenum, GLint, GLint, GLsizei, GLenum, GLenum, const void *)"
             ModifyArgument{
                 index: 7
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
     }
@@ -2266,7 +2044,7 @@ TypeSystem{
             signature: "glIndexubv(const GLubyte *)"
             ModifyArgument{
                 index: 1
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -2291,7 +2069,7 @@ TypeSystem{
                                   "                                        pointer = nullptr;\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return env->NewDirectByteBuffer(ptr, INT_MAX);\n"+
+                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   "                                );\n"+
                                   "if(%out.size()==0){\n"+
@@ -2314,9 +2092,7 @@ TypeSystem{
             signature: "glMultiDrawElements(GLenum, const GLsizei *, GLenum, const GLvoid *const*, GLsizei)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
             ModifyArgument{
                 index: 4
@@ -2331,11 +2107,10 @@ TypeSystem{
                                   "                                    [&%scope](const void* & pointer,JNIEnv *env, jobject o){\n"+
                                   "                                        JBufferData* bufferData = new JBufferData(env, o);\n"+
                                   "                                        %scope.addDeletion(bufferData);\n"+
-                                  "                                        pointer = bufferData->data();\n"+
+                                  "                                        pointer = bufferData->data<void>();\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, const void* const& ptr) -> jobject {\n"+
-                                  "                                        jobject result = env->NewDirectByteBuffer(const_cast<void*>(ptr), INT_MAX);\n"+
-                                  "                                        return Java::Runtime::ByteBuffer::asReadOnlyBuffer(env, result);\n"+
+                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   "                                );\n"+
                                   "if(%out.size()==0){\n"+
@@ -2358,9 +2133,7 @@ TypeSystem{
             signature: "glMultiDrawElements(GLenum, const GLsizei *, GLenum, const void *const*, GLsizei)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
             ModifyArgument{
                 index: 4
@@ -2375,11 +2148,10 @@ TypeSystem{
                                   "                                    [&%scope](const void* & pointer,JNIEnv *env, jobject o){\n"+
                                   "                                        JBufferData* bufferData = new JBufferData(env, o);\n"+
                                   "                                        %scope.addDeletion(bufferData);\n"+
-                                  "                                        pointer = bufferData->data();\n"+
+                                  "                                        pointer = bufferData->data<void>();\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, const void* const& ptr) -> jobject {\n"+
-                                  "                                        jobject result = env->NewDirectByteBuffer(const_cast<void*>(ptr), INT_MAX);\n"+
-                                  "                                        return Java::Runtime::ByteBuffer::asReadOnlyBuffer(env, result);\n"+
+                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   ");"}
                 }
@@ -2393,12 +2165,12 @@ TypeSystem{
             signature: "glMapBuffer(GLenum, GLenum)"
             ModifyArgument{
                 index: 0
-                ReplaceType{
-                    modifiedType: "java.nio.@Nullable Buffer"
+                AsBuffer{
+                    lengthExpression: "INT_MAX"
                 }
-                ConversionRule{
+                DefineOwnership{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = %in ? %env->NewDirectByteBuffer(%in, INT_MAX) : nullptr;"}
+                    ownership: Ownership.Dependent
                 }
             }
         }
@@ -2436,9 +2208,7 @@ TypeSystem{
             }
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
     }
@@ -2459,7 +2229,7 @@ TypeSystem{
                                   "                                        pointer = nullptr;\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return env->NewDirectByteBuffer(ptr, INT_MAX);\n"+
+                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   "                                );\n"+
                                   "if(%out.size()==0){\n"+
@@ -2486,7 +2256,7 @@ TypeSystem{
                                   "                                        pointer = nullptr;\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return env->NewDirectByteBuffer(ptr, INT_MAX);\n"+
+                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   "                                );\n"+
                                   "if(%out.size()==0){\n"+
@@ -2525,7 +2295,7 @@ TypeSystem{
                                   "                                        pointer = nullptr;\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return env->NewDirectByteBuffer(ptr, INT_MAX);\n"+
+                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   ");"}
                 }
@@ -2549,7 +2319,7 @@ TypeSystem{
                                   "                                        pointer = nullptr;\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return env->NewDirectByteBuffer(ptr, INT_MAX);\n"+
+                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   "                                );\n"+
                                   "if(%out.size()==0){\n"+
@@ -2588,7 +2358,7 @@ TypeSystem{
                                   "                                        pointer = nullptr;\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return env->NewDirectByteBuffer(ptr, INT_MAX);\n"+
+                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   ");"}
                 }
@@ -2657,13 +2427,13 @@ TypeSystem{
             }
             ModifyArgument{
                 index: 5
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
             ModifyArgument{
                 index: 6
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -2692,7 +2462,11 @@ TypeSystem{
             ModifyArgument{
                 index: "return"
                 ReplaceType{
-                    modifiedType: "java.lang.String"
+                    modifiedType: "java.lang.@NonNull String"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "%out = qtjambi_cast<jstring>(%env, QLatin1String(reinterpret_cast<const char *>(%in)));"}
                 }
             }
         }
@@ -2713,8 +2487,7 @@ TypeSystem{
             signature: "glMapBufferRange(GLenum, GLintptr, GLsizeiptr, GLbitfield)"
             ModifyArgument{
                 index: 0
-                ArrayType{
-                    asBuffer: true
+                AsBuffer{
                     lengthParameter: 3
                 }
             }
@@ -2778,7 +2551,7 @@ TypeSystem{
             }
             ModifyArgument{
                 index: 4
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -2811,9 +2584,7 @@ TypeSystem{
             signature: "glMultiDrawElementsBaseVertex(GLenum, const GLsizei *, GLenum, const GLvoid *const*, GLsizei, const GLint *)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
             ModifyArgument{
                 index: 4
@@ -2828,20 +2599,17 @@ TypeSystem{
                                   "                                    [&%scope](const void* & pointer,JNIEnv *env, jobject o){\n"+
                                   "                                        JBufferData* bufferData = new JBufferData(env, o);\n"+
                                   "                                        %scope.addDeletion(bufferData);\n"+
-                                  "                                        pointer = bufferData->data();\n"+
+                                  "                                        pointer = bufferData->data<void>();\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, const void* const& ptr) -> jobject {\n"+
-                                  "                                        jobject result = env->NewDirectByteBuffer(const_cast<void*>(ptr), INT_MAX);\n"+
-                                  "                                        return Java::Runtime::ByteBuffer::asReadOnlyBuffer(env, result);\n"+
+                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   ");"}
                 }
             }
             ModifyArgument{
                 index: 6
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
     }
@@ -2861,9 +2629,7 @@ TypeSystem{
             signature: "glMultiDrawElementsBaseVertex(GLenum, const GLsizei *, GLenum, const void *const*, GLsizei, const GLint *)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
             ModifyArgument{
                 index: 4
@@ -2878,20 +2644,17 @@ TypeSystem{
                                   "                                    [&%scope](const void* & pointer,JNIEnv *env, jobject o){\n"+
                                   "                                        JBufferData* bufferData = new JBufferData(env, o);\n"+
                                   "                                        %scope.addDeletion(bufferData);\n"+
-                                  "                                        pointer = bufferData->data();\n"+
+                                  "                                        pointer = bufferData->data<void>();\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, const void* const& ptr) -> jobject {\n"+
-                                  "                                        jobject result = env->NewDirectByteBuffer(const_cast<void*>(ptr), INT_MAX);\n"+
-                                  "                                        return Java::Runtime::ByteBuffer::asReadOnlyBuffer(env, result);\n"+
+                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   ");"}
                 }
             }
             ModifyArgument{
                 index: 6
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
     }
@@ -3063,25 +2826,25 @@ TypeSystem{
             }
             ModifyArgument{
                 index: 3
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
             ModifyArgument{
                 index: 4
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
             ModifyArgument{
                 index: 5
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
             ModifyArgument{
                 index: 6
-                ArrayType{
+                AsArray{
                     minLength: 1
                 }
             }
@@ -3256,12 +3019,12 @@ TypeSystem{
             signature: "glMapNamedBuffer(GLuint, GLenum)"
             ModifyArgument{
                 index: 0
-                ReplaceType{
-                    modifiedType: "java.nio.Buffer"
+                AsBuffer{
+                    lengthExpression: "INT_MAX"
                 }
-                ConversionRule{
+                DefineOwnership{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = %env->NewDirectByteBuffer(%in, INT_MAX);"}
+                    ownership: Ownership.Dependent
                 }
             }
         }
@@ -3269,12 +3032,12 @@ TypeSystem{
             signature: "glMapNamedBufferRange(GLuint,GLintptr,GLsizei,GLbitfield)"
             ModifyArgument{
                 index: 0
-                ReplaceType{
-                    modifiedType: "java.nio.Buffer"
+                AsBuffer{
+                    lengthExpression: "INT_MAX"
                 }
-                ConversionRule{
+                DefineOwnership{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = %env->NewDirectByteBuffer(%in, INT_MAX);"}
+                    ownership: Ownership.Dependent
                 }
             }
         }
@@ -3292,7 +3055,7 @@ TypeSystem{
                                   "                                        pointer = nullptr;\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return env->NewDirectByteBuffer(ptr, INT_MAX);\n"+
+                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   ");"}
                 }
@@ -3499,39 +3262,33 @@ TypeSystem{
             signature: "allocate(const void *, int)"
             ModifyArgument{
                 index: 1
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "read(int, void *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "write(int, const void *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "map(QOpenGLBuffer::Access)"
             ModifyArgument{
                 index: 0
-                ReplaceType{
-                    modifiedType: "java.nio.ByteBuffer"
+                AsBuffer{
+                    lengthExpression: "__qt_this->size()"
                 }
-                ConversionRule{
+                DefineOwnership{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = %env->NewDirectByteBuffer(%in, __qt_this->size());"}
+                    ownership: Ownership.Dependent
                 }
             }
         }
@@ -3539,12 +3296,12 @@ TypeSystem{
             signature: "mapRange(int, int, QOpenGLBuffer::RangeAccessFlags)"
             ModifyArgument{
                 index: 0
-                ReplaceType{
-                    modifiedType: "java.nio.ByteBuffer"
+                AsBuffer{
+                    lengthExpression: "qMin<qsizetype>(count1, __qt_this->size()-offset0)"
                 }
-                ConversionRule{
+                DefineOwnership{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = %env->NewDirectByteBuffer(%in, qMin(%2, __qt_this->size()-%1));"}
+                    ownership: Ownership.Dependent
                 }
             }
         }
@@ -4174,7 +3931,7 @@ TypeSystem{
                                   "                                        pointer = nullptr;\n"+
                                   "                                    },\n"+
                                   "                                    [](JNIEnv * env, void* const& ptr) -> jobject {\n"+
-                                  "                                        return env->NewDirectByteBuffer(ptr, INT_MAX);\n"+
+                                  "                                        return DataJBuffer(env, ptr, INT_MAX).take();\n"+
                                   "                                    }\n"+
                                   ");"}
                 }
@@ -4185,7 +3942,11 @@ TypeSystem{
             ModifyArgument{
                 index: "return"
                 ReplaceType{
-                    modifiedType: "java.lang.String"
+                    modifiedType: "java.lang.@NonNull String"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "%out = qtjambi_cast<jstring>(%env, QLatin1String(reinterpret_cast<const char *>(%in)));"}
                 }
             }
         }
@@ -4193,90 +3954,66 @@ TypeSystem{
             signature: "glBufferData(GLenum,GLsizeiptr,const GLvoid*,GLenum)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glBufferSubData(GLenum,GLintptr,GLsizeiptr,const GLvoid*)"
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glCompressedTexImage2D(GLenum,GLint,GLenum,GLsizei,GLsizei,GLint,GLsizei,const GLvoid*)"
             ModifyArgument{
                 index: 8
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glCompressedTexSubImage2D(GLenum,GLint,GLint,GLint,GLsizei,GLsizei,GLenum,GLsizei,const GLvoid*)"
             ModifyArgument{
                 index: 9
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetActiveAttrib(GLuint, GLuint, GLsizei, GLsizei*, GLint*, GLenum*, GLchar*)"
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
             ModifyArgument{
                 index: 5
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
             ModifyArgument{
                 index: 6
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
             ModifyArgument{
                 index: 7
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetActiveUniform(GLuint, GLuint, GLsizei, GLsizei*, GLint*, GLenum*, GLchar*)"
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
             ModifyArgument{
                 index: 5
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
             ModifyArgument{
                 index: 6
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
             ModifyArgument{
                 index: 7
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
@@ -4292,45 +4029,33 @@ TypeSystem{
             signature: "glGetProgramInfoLog(GLuint, GLsizei, GLsizei*, GLchar*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glGetShaderInfoLog(GLuint, GLsizei, GLsizei*, GLchar*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "glShaderBinary(GLsizei,const GLuint*,GLenum,const GLvoid*,GLsizei)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
@@ -4375,9 +4100,7 @@ TypeSystem{
             signature: "glVertexAttribPointer(GLuint, GLint, GLenum, GLboolean, GLsizei, const GLvoid*)"
             ModifyArgument{
                 index: 6
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
@@ -4393,15 +4116,11 @@ TypeSystem{
             signature: "glGetShaderSource(GLuint, GLsizei, GLsizei*, GLchar*)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         Import{
@@ -4524,26 +4243,23 @@ TypeSystem{
             signature: "setAttributeArray(int, const GLfloat *, int, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "setAttributeArray(const char *, const GLfloat *, int, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "setAttributeArray(int, const QVector2D *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4551,8 +4267,9 @@ TypeSystem{
             signature: "setAttributeArray(int, const QVector3D *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4560,8 +4277,9 @@ TypeSystem{
             signature: "setAttributeArray(int, const QVector4D *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4569,8 +4287,9 @@ TypeSystem{
             signature: "setAttributeArray(const char *, const QVector2D *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4578,8 +4297,9 @@ TypeSystem{
             signature: "setAttributeArray(const char *, const QVector3D *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4587,8 +4307,9 @@ TypeSystem{
             signature: "setAttributeArray(const char *, const QVector4D *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4596,44 +4317,28 @@ TypeSystem{
             signature: "setAttributeArray(int, GLenum, const void *, int, int)"
             ModifyArgument{
                 index: 3
-                ReplaceType{
-                    modifiedType: "java.nio.Buffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferConstData %out(%env, %in);"}
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "setAttributeArray(const char *, GLenum, const void *, int, int)"
             ModifyArgument{
                 index: 3
-                ReplaceType{
-                    modifiedType: "java.nio.Buffer"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "JBufferConstData %out(%env, %in);"}
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "setAttributeValue(int, const GLfloat *, int, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "setAttributeValue ( const char * , const GLfloat * , int , int )"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
@@ -4644,26 +4349,23 @@ TypeSystem{
             signature: "setUniformValueArray(int, const GLint *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "setUniformValueArray(int, const GLfloat *, int, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "setUniformValueArray(int, const QVector2D *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4671,8 +4373,9 @@ TypeSystem{
             signature: "setUniformValueArray(int, const QVector3D *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4680,8 +4383,9 @@ TypeSystem{
             signature: "setUniformValueArray(int, const QVector4D *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4689,8 +4393,9 @@ TypeSystem{
             signature: "setUniformValueArray(int, const QMatrix4x4 *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4698,8 +4403,9 @@ TypeSystem{
             signature: "setUniformValueArray(int, const QMatrix2x2 *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4707,8 +4413,9 @@ TypeSystem{
             signature: "setUniformValueArray(int, const QMatrix3x2 *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4716,8 +4423,9 @@ TypeSystem{
             signature: "setUniformValueArray(int, const QMatrix4x2 *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4725,8 +4433,9 @@ TypeSystem{
             signature: "setUniformValueArray(int, const QMatrix2x3 *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4734,8 +4443,9 @@ TypeSystem{
             signature: "setUniformValueArray(int, const QMatrix3x3 *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4743,8 +4453,9 @@ TypeSystem{
             signature: "setUniformValueArray(int, const QMatrix4x3 *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4752,8 +4463,9 @@ TypeSystem{
             signature: "setUniformValueArray(int, const QMatrix2x4 *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4761,8 +4473,9 @@ TypeSystem{
             signature: "setUniformValueArray(int, const QMatrix3x4 *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4774,26 +4487,23 @@ TypeSystem{
             signature: "setUniformValueArray(const char*, const GLint *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const GLfloat *, int, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "setUniformValueArray(const char*, const QVector2D *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4801,8 +4511,9 @@ TypeSystem{
             signature: "setUniformValueArray(const char*, const QVector3D *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4810,8 +4521,9 @@ TypeSystem{
             signature: "setUniformValueArray(const char*, const QVector4D *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4819,8 +4531,9 @@ TypeSystem{
             signature: "setUniformValueArray(const char*, const QMatrix4x4 *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4828,8 +4541,9 @@ TypeSystem{
             signature: "setUniformValueArray(const char*, const QMatrix2x2 *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4837,8 +4551,9 @@ TypeSystem{
             signature: "setUniformValueArray(const char*, const QMatrix3x2 *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4846,8 +4561,9 @@ TypeSystem{
             signature: "setUniformValueArray(const char*, const QMatrix4x2 *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4855,8 +4571,9 @@ TypeSystem{
             signature: "setUniformValueArray(const char*, const QMatrix2x3 *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4864,8 +4581,9 @@ TypeSystem{
             signature: "setUniformValueArray(const char*, const QMatrix3x3 *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4873,8 +4591,9 @@ TypeSystem{
             signature: "setUniformValueArray(const char*, const QMatrix4x3 *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4882,8 +4601,9 @@ TypeSystem{
             signature: "setUniformValueArray(const char*, const QMatrix2x4 *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -4891,8 +4611,9 @@ TypeSystem{
             signature: "setUniformValueArray(const char*, const QMatrix3x4 *, int)"
             ModifyArgument{
                 index: 2
-                ArrayType{
+                AsArray{
                     lengthParameter: 3
+                    noOffset: true
                 }
             }
         }
@@ -5059,9 +4780,7 @@ TypeSystem{
             signature: "setData(int, int, int, int, int, int, int, int, QOpenGLTexture::CubeMapFace, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions *const)"
             ModifyArgument{
                 index: 13
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
             since: [5, 14]
         }
@@ -5069,9 +4788,7 @@ TypeSystem{
             signature: "setData(int, int, int, int, int, int, int, int, QOpenGLTexture::CubeMapFace, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions *const)"
             ModifyArgument{
                 index: 12
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
             since: [5, 14]
         }
@@ -5079,9 +4796,7 @@ TypeSystem{
             signature: "setData(int, int, int, int, int, int, int, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions *const)"
             ModifyArgument{
                 index: 11
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
             since: [5, 14]
         }
@@ -5089,9 +4804,7 @@ TypeSystem{
             signature: "setData(int, int, int, int, int, int, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions *const)"
             ModifyArgument{
                 index: 10
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
             since: [5, 14]
         }
@@ -5099,9 +4812,7 @@ TypeSystem{
             signature: "setData(int, int, int, int, int, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions *const)"
             ModifyArgument{
                 index: 9
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
             since: [5, 14]
         }
@@ -5109,90 +4820,70 @@ TypeSystem{
             signature: "setData(int, int, QOpenGLTexture::CubeMapFace, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)"
             ModifyArgument{
                 index: 6
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "setData(int, int, int, QOpenGLTexture::CubeMapFace, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)"
             ModifyArgument{
                 index: 7
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "setData(int, int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)"
             ModifyArgument{
                 index: 5
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "setData(int, QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)"
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "setData(QOpenGLTexture::PixelFormat, QOpenGLTexture::PixelType, const void *, const QOpenGLPixelTransferOptions * const)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "setCompressedData(int, int, int, QOpenGLTexture::CubeMapFace, int, const void *,const QOpenGLPixelTransferOptions * const)"
             ModifyArgument{
                 index: 6
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "setCompressedData(int, int, QOpenGLTexture::CubeMapFace, int, const void *,const QOpenGLPixelTransferOptions * const)"
             ModifyArgument{
                 index: 5
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "setCompressedData(int, int, int, const void *,const QOpenGLPixelTransferOptions * const)"
             ModifyArgument{
                 index: 4
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "setCompressedData(int, int, const void *,const QOpenGLPixelTransferOptions * const)"
             ModifyArgument{
                 index: 3
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
         ModifyFunction{
             signature: "setCompressedData(int, const void *,const QOpenGLPixelTransferOptions * const)"
             ModifyArgument{
                 index: 2
-                ArrayType{
-                    asBuffer: true
-                }
+                AsBuffer{}
             }
         }
     }

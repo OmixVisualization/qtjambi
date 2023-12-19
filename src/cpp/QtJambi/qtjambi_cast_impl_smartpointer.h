@@ -35,6 +35,11 @@
 #include "qtjambi_cast_impl_container_sequential.h"
 #include "qtjambi_cast_impl_container_associative.h"
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && defined(QLINKEDLIST_H)
+QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
+QT_WARNING_DISABLE_DEPRECATED
+#endif
+
 template<class O, class T>
 constexpr O qtjambi_cast(JNIEnv *env, T& in);
 template<class O, class T>

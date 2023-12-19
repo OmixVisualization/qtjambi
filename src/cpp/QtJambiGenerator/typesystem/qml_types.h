@@ -132,6 +132,9 @@ public:
     bool getNoMetaType() const;
     void setNoMetaType(bool newNoMetaType);
 
+    bool getNoImplicitConstructors() const;
+    void setNoImplicitConstructors(bool newNoImplicitConstructors);
+
 signals:
     void packageNameChanged();
 
@@ -169,6 +172,8 @@ signals:
 
     void noMetaTypeChanged();
 
+    void noImplicitConstructorsChanged();
+
 private:
     QString packageName;
     QString implementing;
@@ -188,6 +193,7 @@ private:
     QString extendType;
     QString ppCondition;
     bool noMetaType = false;
+    bool noImplicitConstructors = false;
     Q_PROPERTY(QString packageName READ getPackageName WRITE setPackageName NOTIFY packageNameChanged)
     Q_PROPERTY(QString implementing READ getImplementing WRITE setImplementing NOTIFY implementingChanged)
     Q_PROPERTY(QString using READ getUsing WRITE setUsing NOTIFY usingChanged)
@@ -206,6 +212,7 @@ private:
     Q_PROPERTY(QString extendType READ getExtendType WRITE setExtendType NOTIFY extendTypeChanged)
     Q_PROPERTY(QString ppCondition READ getPpCondition WRITE setPpCondition NOTIFY ppConditionChanged)
     Q_PROPERTY(bool noMetaType READ getNoMetaType WRITE setNoMetaType NOTIFY noMetaTypeChanged)
+    Q_PROPERTY(bool noImplicitConstructors READ getNoImplicitConstructors WRITE setNoImplicitConstructors NOTIFY noImplicitConstructorsChanged FINAL)
 };
 
 class ObjectType : public ComplexType

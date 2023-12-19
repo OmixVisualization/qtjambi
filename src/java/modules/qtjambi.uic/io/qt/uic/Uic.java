@@ -44,6 +44,9 @@ import io.qt.uic.ui4.DomInclude;
 import io.qt.uic.ui4.DomIncludes;
 import io.qt.uic.ui4.DomUI;
 
+/**
+ * @hidden
+ */
 public class Uic {
 	public Uic(Driver driver) {
 		this.drv = driver;

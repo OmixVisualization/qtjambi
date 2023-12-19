@@ -283,6 +283,9 @@ QString ContainerTypeEntry::javaPackage() const {
         return "io.qt.dbus";
     if (m_type == QQmlListPropertyContainer)
         return "io.qt.qml";
+    if (m_type == std_chrono
+        || m_type == std_chrono_template)
+        return "java.time";
     return "java.util";
 }
 
@@ -293,7 +296,6 @@ QString ContainerTypeEntry::targetLangName() const {
         case ByteArrayListContainer: return "QList";
         case ListContainer: return "QList";
         case std_vector: return "List";
-        case InitializerListContainer: return "List";
         case QModelRoleDataSpanContainer: return "Map";
         case QPropertyBindingContainer: return "QPropertyBinding";
         case QBindableContainer: return "QBindable";
@@ -318,6 +320,10 @@ QString ContainerTypeEntry::targetLangName() const {
         case PairContainer: return "QPair";
         case std_optional: return "Optional";
         case std_atomic: return "Atomic";
+        case std_chrono_template:
+            if(qualifiedCppName()=="std::chrono::time_point")
+                return "Instant";
+        case std_chrono: return "Duration";
         case QQmlListPropertyContainer: return "QQmlListProperty"; // new for QtQml module
         default:
             qWarning("bad container type for %s: %d", qPrintable(ComplexTypeEntry::targetLangName()), m_type);
@@ -329,8 +335,6 @@ QString ContainerTypeEntry::targetLangName() const {
 QString ContainerTypeEntry::qualifiedCppName() const {
     if (m_type == StringListContainer)
         return "QStringList";
-    if (m_type == InitializerListContainer)
-        return "std::initializer_list";
     if (m_type == ByteArrayListContainer)
         return "QByteArrayList";
     if (m_type == QModelRoleDataSpanContainer)
@@ -503,6 +507,16 @@ QString ComplexTypeEntry::qualifiedCppName() const {
         return designatedInterface()->qualifiedCppName();
     }
     return m_qualified_cpp_name;
+}
+
+bool ComplexTypeEntry::getNoImplicitConstructors() const
+{
+    return noImplicitConstructors;
+}
+
+void ComplexTypeEntry::setNoImplicitConstructors(bool newNoImplicitConstructors)
+{
+    noImplicitConstructors = newNoImplicitConstructors;
 }
 
 bool ImplementorTypeEntry::isValueOwner() const

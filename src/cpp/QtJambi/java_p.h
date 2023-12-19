@@ -135,15 +135,21 @@ namespace Java{
     namespace Runtime{
         namespace Internal{
             QTJAMBI_REPOSITORY_DECLARE_CLASS(ByteBuffer,
+                                            QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(order)
                                             QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(allocateDirect))
             QTJAMBI_REPOSITORY_DECLARE_CLASS(Buffer,
                                             QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(capacity)
                                             QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(limit)
+                                            QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(setLimit)
                                             QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(position)
+                                             QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(clear)
                                             QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(mark)
+                                            QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(array)
                                             QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(hasArray)
                                             QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(arrayOffset))
         }
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(ByteOrder,
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(nativeOrder))
         QTJAMBI_REPOSITORY_DECLARE_CLASS(ClassLoader,
                                          QTJAMBI_REPOSITORY_DECLARE_CLASS_METHOD(loadClass)
                                          public: static inline jclass tryLoadClass(JNIEnv* env, jobject object, jstring className){
@@ -253,6 +259,7 @@ namespace Java{
             QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isDaemon)
             QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getName)
             QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(getId)
+            QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(dumpStack)
         )
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(ThreadGroup,QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(add))
@@ -281,6 +288,21 @@ namespace Java{
         QTJAMBI_REPOSITORY_DECLARE_CLASS(Enum,
                       QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(ordinal)
                       QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(name))
+
+        namespace Time{
+            QTJAMBI_REPOSITORY_DECLARE_CLASS(Duration,
+                                             QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(getSeconds)
+                                             QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(getNano)
+                                             QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(from)
+                                             QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(ofMillis)
+                                             QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(ofSeconds))
+            QTJAMBI_REPOSITORY_DECLARE_CLASS(Instant,
+                                             QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(getEpochSecond)
+                                             QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(getNano)
+                                             QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(from)
+                                             QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(ofEpochMilli)
+                                             QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(ofEpochSecond))
+        }
     }
 
     namespace QtJambi
@@ -324,6 +346,7 @@ namespace Java{
                                          )
         QTJAMBI_REPOSITORY_DECLARE_CLASS(ExceptionUtility,
                                          QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(reportException)
+                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_BYTEARRAY_METHOD(printException)
                                          QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(extendStackTrace)
                                          )
         QTJAMBI_REPOSITORY_DECLARE_CLASS(AccessUtility,
@@ -344,7 +367,7 @@ namespace Java{
         QTJAMBI_REPOSITORY_DECLARE_CLASS(ResourceUtility$JarResource,
                                          QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getJarEntry)
                                          QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getInputStream)
-                                         QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(fileTime)
+                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(fileTime)
                                          QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getName)
                                          QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(getOrReopen)
                                          QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(put)

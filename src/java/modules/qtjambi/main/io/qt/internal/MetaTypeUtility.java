@@ -69,6 +69,7 @@ import io.qt.core.QByteArray;
 import io.qt.core.QDataStream;
 import io.qt.core.QDebug;
 import io.qt.core.QHash;
+import io.qt.core.QIODevice;
 import io.qt.core.QList;
 import io.qt.core.QMap;
 import io.qt.core.QMetaType;
@@ -83,6 +84,9 @@ import io.qt.core.QStringList;
 import io.qt.core.QVariant;
 import io.qt.core.Qt;
 
+/**
+ * @hidden
+ */
 public final class MetaTypeUtility {
 	static {
 		QtJambi_LibraryUtilities.initialize();
@@ -219,19 +223,13 @@ public final class MetaTypeUtility {
 	@NativeAccess
 	private static Object readSerializableJavaObject(final QDataStream s) throws ClassNotFoundException, IOException {
 		Object res = null;
-		InputStream is = new InputStream() {
-			@Override
-			public int read() throws IOException {
-				return s.readByte();
-			}
-		};
 		boolean isSerialized = true;
 		s.startTransaction();
 		{
-			int ch1 = is.read();
-	        int ch2 = is.read();
-			int ch3 = is.read();
-	        int ch4 = is.read();
+			int ch1 = s.readByte();
+	        int ch2 = s.readByte();
+			int ch3 = s.readByte();
+	        int ch4 = s.readByte();
 	        short magic = (short)((ch1 << 8) + (ch2 & 0xFF));
 	        short version = (short)((ch3 << 8) + (ch4 & 0xFF));
 			if(magic!=ObjectStreamConstants.STREAM_MAGIC
@@ -242,8 +240,19 @@ public final class MetaTypeUtility {
 		s.rollbackTransaction();
 		
 		if(isSerialized) {
-			try (ObjectInputStream in = new ObjectInputStream(is)) {
-				res = in.readObject();
+			if(s.device()!=null && s.device().isReadable()) {
+				try (ObjectInputStream in = new ObjectInputStream(QIODevice.toInputStream(s.device()))) {
+					res = in.readObject();
+				}
+			}else {
+				try (ObjectInputStream in = new ObjectInputStream(new InputStream() {
+					@Override
+					public int read() throws IOException {
+						return s.readByte();
+					}
+				})) {
+					res = in.readObject();
+				}
 			}
 		}else {
 			Class<?> cls;
@@ -487,12 +496,16 @@ public final class MetaTypeUtility {
 					} catch (Throwable e) {
 						throw new IOException(e);
 					}
+				}else if(s.device()!=null && s.device().isWritable()) {
+					try(ObjectOutputStream out = new ObjectOutputStream(QIODevice.toOutputStream(s.device()))) {
+						out.writeObject(o);
+					}
 				}else {
 					ByteArrayOutputStream bos = new ByteArrayOutputStream();
 					try(ObjectOutputStream out = new ObjectOutputStream(bos)) {
 						out.writeObject(o);
 					}
-					s.writeBytes(bos.toByteArray());
+					s.writeRawData(bos.toByteArray());
 				}
 			}
 		}

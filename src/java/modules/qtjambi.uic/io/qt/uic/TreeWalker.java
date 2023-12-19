@@ -63,6 +63,9 @@ import io.qt.uic.ui4.DomTime;
 import io.qt.uic.ui4.DomUI;
 import io.qt.uic.ui4.DomWidget;
 
+/**
+ * @hidden
+ */
 public class TreeWalker {
 	public void acceptUI(DomUI ui)
 	{

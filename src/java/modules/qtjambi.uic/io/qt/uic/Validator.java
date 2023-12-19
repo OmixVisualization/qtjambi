@@ -36,7 +36,10 @@ import io.qt.uic.ui4.DomLayoutItem;
 import io.qt.uic.ui4.DomUI;
 import io.qt.uic.ui4.DomWidget;
 
-public class Validator extends TreeWalker{
+/**
+ * @hidden
+ */
+class Validator extends TreeWalker{
 	public Validator(Uic ui) {
 		this.m_driver = ui.driver();
 	}

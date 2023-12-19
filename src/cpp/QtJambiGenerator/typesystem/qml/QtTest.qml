@@ -449,6 +449,39 @@ TypeSystem{
             }
         }
         ModifyFunction{
+            signature: "qWaitFor<Functor>(Functor,QDeadlineTimer)"
+            Instantiation{
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "java.util.function.BooleanSupplier"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "JObjectWrapper functor(%env, %in);\n"+
+                                      "auto %out = [functor]() -> bool {\n"+
+                                      "                    if(JniEnvironment env{200}){\n"+
+                                      "                        return Java::Runtime::BooleanSupplier::getAsBoolean(env, functor.object());\n"+
+                                      "                    }\n"+
+                                      "                    else return false;\n"+
+                                      "                };"}
+                    }
+                }
+            }
+            ModifyArgument{
+                index: 2
+                ReplaceDefaultExpression{
+                    expression: "new io.qt.core.QDeadlineTimer(java.time.Duration.ofSeconds(5))"
+                }
+            }
+            since: 6.7
+        }
+        ModifyFunction{
             signature: "addColumn<T>(const char *, T *)"
             Instantiation{
                 Argument{
@@ -1036,6 +1069,11 @@ TypeSystem{
         ModifyFunction{
             signature: "wait(int)"
             rename: "waitForTimeout"
+        }
+        ModifyFunction{
+            signature: "wait(std::chrono::milliseconds)"
+            rename: "waitForTimeout"
+            since: 6.6
         }
         ExtraIncludes{
             Include{

@@ -260,7 +260,7 @@ bool isLessThan(const QMetaType& keyMetaType, const void * ptr, const void* ptr2
         default: break;
         }
     }else if(AbstractContainerAccess::isPointerType(keyMetaType)){
-        return *reinterpret_cast<void*const*const>(ptr) < *reinterpret_cast<void*const*const>(ptr2);
+        return *reinterpret_cast<const quintptr*>(ptr) < *reinterpret_cast<const quintptr*>(ptr2);
     }
     return false;
 }
@@ -278,14 +278,14 @@ bool isEquals(const QMetaType& keyMetaType, const void * ptr, const void* ptr2){
         return QVariant(keyMetaType.id(), ptr)==QVariant(keyMetaType.id(), ptr2);
     if(keyMetaType.flags() & QMetaType::IsEnumeration){
         switch(keyMetaType.sizeOf()){
-        case 1: return *reinterpret_cast<const qint8*>(ptr) < *reinterpret_cast<const qint8*>(ptr2);
-        case 2: return *reinterpret_cast<const qint16*>(ptr) < *reinterpret_cast<const qint16*>(ptr2);
-        case 4: return *reinterpret_cast<const qint32*>(ptr) < *reinterpret_cast<const qint32*>(ptr2);
-        case 8: return *reinterpret_cast<const qint64*>(ptr) < *reinterpret_cast<const qint64*>(ptr2);
+        case 1: return *reinterpret_cast<const qint8*>(ptr) == *reinterpret_cast<const qint8*>(ptr2);
+        case 2: return *reinterpret_cast<const qint16*>(ptr) == *reinterpret_cast<const qint16*>(ptr2);
+        case 4: return *reinterpret_cast<const qint32*>(ptr) == *reinterpret_cast<const qint32*>(ptr2);
+        case 8: return *reinterpret_cast<const qint64*>(ptr) == *reinterpret_cast<const qint64*>(ptr2);
         default: break;
         }
     }else if(AbstractContainerAccess::isPointerType(keyMetaType)){
-        return *reinterpret_cast<void*const*const>(ptr) == *reinterpret_cast<void*const*const>(ptr2);
+        return *reinterpret_cast<const quintptr*>(ptr) == *reinterpret_cast<const quintptr*>(ptr2);
     }
     return false;
 }

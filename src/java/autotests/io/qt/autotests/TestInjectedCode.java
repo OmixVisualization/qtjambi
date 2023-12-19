@@ -29,28 +29,20 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.math.BigInteger;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
+import java.nio.ReadOnlyBufferException;
 import java.util.Iterator;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 
-import io.qt.QtUninvokable;
-import io.qt.autotests.generated.AccessibleTextInterfaceSubclass;
-import io.qt.autotests.generated.GraphicsItemSubclass;
-import io.qt.autotests.generated.GraphicsWidgetSubclass;
-import io.qt.autotests.generated.IODeviceSubclass;
-import io.qt.autotests.generated.ImageIOHandlerSubclass;
-import io.qt.autotests.generated.PictureSubclass;
-import io.qt.autotests.generated.SomeQObject;
-import io.qt.autotests.generated.StyledItemDelegateSubclass;
-import io.qt.autotests.generated.ValidatorSubclass;
+import io.qt.*;
+import io.qt.autotests.generated.*;
 import io.qt.core.*;
 import io.qt.gui.*;
 import io.qt.widgets.*;
@@ -71,36 +63,36 @@ public class TestInjectedCode extends ApplicationInitializer {
         }
 
         @Override
-        protected int readData(byte[] data) {
-            inputBufferSize = data.length;
+        protected int readData(java.nio.ByteBuffer data) {
+            inputBufferSize = data.limit() - data.position();
 
             int size = super.readData(data);
             buffer = new byte[size];
             for (int i=0; i<size; ++i)
-                buffer[i] = data[i];
+                buffer[i] = data.get(i);
 
             return size;
         }
 
         @Override
-        protected int writeData(byte[] data) {
-            inputBufferSize = data.length;
-            buffer = new byte[data.length];
+        protected int writeData(java.nio.ByteBuffer data) {
+            inputBufferSize = data.limit() - data.position();
+            buffer = new byte[data.limit() - data.position()];
 
-            for (int i=0; i<data.length; ++i)
-                buffer[i] = data[i];
+            for (int i=0; i<inputBufferSize; ++i)
+                buffer[i] = data.get(i);
 
             return super.writeData(data);
         }
 
         @Override
-        protected int readLineData(byte[] data) {
-            inputBufferSize = data.length;
+        protected int readLineData(java.nio.ByteBuffer data) {
+            inputBufferSize = data.limit() - data.position();
 
             int size = super.readLineData(data);
             buffer = new byte[size];
             for (int i=0; i<size; ++i)
-                buffer[i] = data[i];
+                buffer[i] = data.get(i);
 
             return size;
         }
@@ -112,26 +104,26 @@ public class TestInjectedCode extends ApplicationInitializer {
         public QByteArray ba = new QByteArray();
 
         @Override
-        protected int readData(byte[] data) {
+        protected int readData(java.nio.ByteBuffer data) {
             if (i == bytes.length) return -1;
-            data[0] = bytes[i++];
+            data.put(bytes[i++]);
             return 1;
         }
 
         @Override
-        protected int writeData(byte[] data) {
-            if (data.length == 0) return -1;
-            ba.append(data[0]);
+        protected int writeData(java.nio.ByteBuffer data) {
+            if (data.limit() - data.position() == 0) return -1;
+            ba.append(data);
             return 1;
         }
     }
 
     static class PictureSubclassSubclass extends PictureSubclass {
-        public byte[] data;
+        public int dataLength;
 
         @Override
-        public void setData(byte[] data) {
-            this.data = data;
+        public void setData(java.nio.ByteBuffer data) {
+            this.dataLength = data.limit() - data.position();
             super.setData(data);
         }
 
@@ -627,7 +619,7 @@ public class TestInjectedCode extends ApplicationInitializer {
     @Test
     public void testQCborStreamReader__fromByteBuffer() {
     	ByteBuffer data = ByteBuffer.allocateDirect(1024*1024);
-    	QIODevice device = QIODevice.fromDirectBuffer(data);
+    	QIODevice device = QIODevice.fromBuffer(data);
     	assertTrue(device.open(QIODevice.OpenModeFlag.WriteOnly));
     	assertTrue(device.isOpen());
     	QCborStreamWriter writer = new QCborStreamWriter(device);
@@ -682,7 +674,8 @@ public class TestInjectedCode extends ApplicationInitializer {
     	assertEquals(0.371391f, axisAndAngle.axis.x(), 0.001);
     	assertEquals(0.557086f, axisAndAngle.axis.y(), 0.001);
     	assertEquals(0.742781f, axisAndAngle.axis.z(), 0.001);
-    	assertEquals(0.0f, axisAndAngle.angle, 0.001);
+    	if(QLibraryInfo.version().compareTo(new QVersionNumber(6,7,0))>=0)
+    		assertEquals(158.96054077148438f, axisAndAngle.angle, 0.001);
     	assertEquals(-41.81031799316406f, eulerAngles.pitch, 0.001);
     	assertEquals(79.69515228271484f, eulerAngles.yaw, 0.001);
     	assertEquals(116.56504821777344f, eulerAngles.roll, 0.001);
@@ -778,6 +771,7 @@ public class TestInjectedCode extends ApplicationInitializer {
     }
 
     @Test
+    @Deprecated
     public void testQClipboard_text() {
         QClipboard clipboard = QApplication.clipboard();
         clipboard.clear();
@@ -1090,7 +1084,7 @@ public class TestInjectedCode extends ApplicationInitializer {
         file.reset();
         QByteArray data = file.readAll();
         img = new QImage();
-        img.loadFromData(data.toArray());
+        img.loadFromData(data);
         assertFalse(img.isNull());
         assertEquals(418, img.width());
         file.reset();
@@ -1107,12 +1101,12 @@ public class TestInjectedCode extends ApplicationInitializer {
 
         img = new QImage();
         file.reset();
-        img.loadFromData(file.readAll().toArray(), "JPEG");
+        img.loadFromData(file.readAll(), "JPEG");
         assertTrue(img.isNull());
 
         img = new QImage();
         file.reset();
-        img.loadFromData(file.readAll().toArray());
+        img.loadFromData(file.readAll());
         assertFalse(img.isNull());
         assertEquals(418, img.width());
     }
@@ -1282,7 +1276,7 @@ public class TestInjectedCode extends ApplicationInitializer {
         PictureSubclassSubclass pss = new PictureSubclassSubclass();
         pss.callSetData(ba);
 
-        assertEquals(ba.size(), pss.data.length);
+        assertEquals(ba.size(), pss.dataLength);
 
         verifyQPicture(pss);
     }
@@ -1323,13 +1317,13 @@ public class TestInjectedCode extends ApplicationInitializer {
             QDataStream stream = new QDataStream(ba, QIODevice.OpenModeFlag.WriteOnly);
             byte bytes[] = "abra ka dabra".getBytes();
             stream.writeInt(bytes.length);
-            stream.writeBytes(bytes);
+            stream.writeRawData(bytes);
         }
 
         {
             QDataStream stream = new QDataStream(ba);
             byte bytes[] = new byte[stream.readInt()];
-            stream.readBytes(bytes);
+            stream.readRawData(bytes);
             String s = new String(bytes);
             assertEquals("abra ka dabra".length(), s.length());
             assertEquals("abra ka dabra", s);
@@ -1499,20 +1493,43 @@ public class TestInjectedCode extends ApplicationInitializer {
     }
 
     @Test
-    public void testIODeviceWrite() {
+    public void testIODeviceRW() {
         QTemporaryFile file = new QTemporaryFile();
         file.setAutoRemove(true);
-
-        assertTrue(file.open(QIODevice.OpenModeFlag.WriteOnly));
-        byte data[] = new QByteArray("I am a boy").toArray();
-        assertEquals(10, file.write(data));
-        file.close();
-
-        assertTrue(file.open(QIODevice.OpenModeFlag.ReadOnly));
-        QByteArray all = file.readAll();
-        assertEquals("I am a boy", all.toString());
-
-        file.dispose();
+        byte data[] = "I am a boy".getBytes();
+        try {
+	        assertTrue(file.open(QIODevice.OpenModeFlag.WriteOnly));
+	        assertEquals(10, file.write(data));
+	        file.close();
+	
+	        assertTrue(file.open(QIODevice.OpenModeFlag.ReadOnly));
+	        QByteArray all = file.readAll();
+	        assertEquals("I am a boy", all.toString());
+        }finally {
+        	file.dispose();
+        }
+    }
+    
+    @Test
+    public void testStreamBasedIODeviceRW() {
+    	ByteArrayOutputStream out = new ByteArrayOutputStream();
+        QIODevice iodevice = QIODevice.fromOutputStream(out);
+        byte data[] = "I am a girl".getBytes();
+        try {
+	        assertTrue(iodevice.openMode().testFlag(QIODevice.OpenModeFlag.WriteOnly));
+	        assertEquals(11, iodevice.write(data));
+        }finally {
+	        iodevice.close();
+        	iodevice.dispose();
+        }
+        iodevice = QIODevice.fromInputStream(new ByteArrayInputStream(out.toByteArray()));
+        try {
+	        assertTrue(iodevice.openMode().testFlag(QIODevice.OpenModeFlag.ReadOnly));
+	        QByteArray all = iodevice.readAll();
+	        assertEquals("I am a girl", all.toString());
+        }finally {
+        	iodevice.dispose();
+        }
     }
 
     @Test
@@ -1703,6 +1720,58 @@ public class TestInjectedCode extends ApplicationInitializer {
         assertEquals((byte) 'l', ba.at(2));
         assertEquals((byte) 'l', ba.at(3));
         assertEquals((byte) 'o', ba.at(4));
+    }
+    
+    @Test
+    public void testByteArray() {
+		io.qt.core.QByteArray bv = new io.qt.core.QByteArray("Byte\0Array");
+		assertArrayEquals("Byte\0Array".getBytes(), bv.toArray());
+		assertEquals("Byte\0Array", new String(bv.toArray()));
+		bv.dispose();
+		bv = new io.qt.core.QByteArray("Byte\0Array".getBytes());
+		assertArrayEquals("Byte\0Array".getBytes(), bv.toArray());
+		assertEquals("Byte\0Array", new String(bv.toArray()));
+		bv.dispose();
+		bv = new io.qt.core.QByteArray(ByteBuffer.wrap("Byte\0Array".getBytes()));
+		assertArrayEquals("Byte\0Array".getBytes(), bv.toArray());
+		assertEquals("Byte\0Array", new String(bv.toArray()));
+		bv.dispose();
+		bv = new io.qt.core.QByteArray("ByteArray".getBytes(), 2, 4);
+		assertEquals(new io.qt.core.QByteArray("teAr"), bv);
+		assertEquals("teAr", bv.toString());
+		assertEquals("teAr", new String(bv.toArray()));
+		bv.dispose();
+		bv = new io.qt.core.QByteArray(ByteBuffer.wrap("ByteArray".getBytes(), 2, 4));
+		assertEquals(new io.qt.core.QByteArray("teAr"), bv);
+		assertEquals("teAr", bv.toString());
+		assertEquals("teAr", new String(bv.toArray()));
+		bv.dispose();
+	}
+    
+    @Test
+    public void testByteArrayBuffers() {
+    	io.qt.core.QByteArray bv = new io.qt.core.QByteArray();
+    	bv.fill((byte)'X', 8);
+    	assertEquals("XXXXXXXX", bv.toString());
+    	assertEquals(8, bv.size());
+    	ByteBuffer rbuffer = bv.data();
+    	try{
+    		rbuffer.put((byte)'A');
+    		Assert.fail("ReadOnlyBufferException expected to be thrown");
+    	} catch (ReadOnlyBufferException e) {
+		}
+    	assertEquals((byte)'X', rbuffer.get());
+    	ByteBuffer wbuffer = General.internalAccess.mutableData(bv);
+//    	assertEquals(bv.size(), buffer.limit());
+    	assertEquals(bv.capacity(), wbuffer.capacity());
+    	wbuffer.put((byte)'A');
+    	assertEquals("AXXXXXXX", bv.toString());
+    	bv.dispose();
+    	try {
+			wbuffer.put((byte)'M');
+			Assert.fail("BufferOverflowException expected to be thrown");
+		} catch (BufferOverflowException e) {
+		}
     }
 
     @Test

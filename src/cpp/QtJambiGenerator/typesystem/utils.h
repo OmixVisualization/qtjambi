@@ -130,9 +130,9 @@ namespace TS {
             TargetLangImport
         };
 
-        Include() : type(IncludePath), name(), inherited(false), suppressed(false) { }
-        Include(IncludeType t, const QString &nam, bool _inherited = false, bool _suppressed = false) : type(t), name(nam), inherited(_inherited), suppressed(_suppressed) { }
-        Include(IncludeType t, const QString &nam, const QMap<QString,QString>& _requiredFeatures, bool _inherited = false, bool _suppressed = false) : type(t), name(nam), requiredFeatures(_requiredFeatures), inherited(_inherited), suppressed(_suppressed) { }
+            Include() : type(IncludePath), name(), inherited(false), suppressed(false), ckeckAvailability(false) { }
+        Include(IncludeType t, const QString &nam, bool _inherited = false, bool _suppressed = false, bool _ckeckAvailability = false) : type(t), name(nam), inherited(_inherited), suppressed(_suppressed), ckeckAvailability(_ckeckAvailability) { }
+        Include(IncludeType t, const QString &nam, const QMap<QString,QString>& _requiredFeatures, bool _inherited = false, bool _suppressed = false, bool _ckeckAvailability = false) : type(t), name(nam), requiredFeatures(_requiredFeatures), inherited(_inherited), suppressed(_suppressed), ckeckAvailability(_ckeckAvailability) { }
 
         bool isValid() const { return !name.isEmpty(); }
 
@@ -144,6 +144,7 @@ namespace TS {
         QMap<QString,QString> requiredFeatures;
         bool inherited;
         bool suppressed;
+        bool ckeckAvailability;
     };
 
     struct OwnershipRule {

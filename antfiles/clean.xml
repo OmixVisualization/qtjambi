@@ -52,7 +52,7 @@
 
     <target name="distclean-impl"
         depends="realclean-impl">
-        <delete dir="${basedir}/extjars" quiet="true"/><!-- Try not to download this too much -->
+        <delete dir="${basedir}/${resourcesdir}" quiet="true"/><!-- Try not to download this too much -->
         <delete dir="${basedir}/buildlogs" quiet="true"/>
     </target>
 </project>

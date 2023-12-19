@@ -98,6 +98,7 @@
 #define Q_OBJECT_EXPORT(...) Q_OBJECT
 #define Q_DECLARE_MIXED_ENUM_OPERATORS_SYMMETRIC(...)
 #define Q_DECLARE_MIXED_ENUM_OPERATORS(...)
+#define Q_DECLARE_JNI_CLASS(...)
 
 // There are symbols in Qt that exist in Debug but
 // not in release

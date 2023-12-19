@@ -569,19 +569,31 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QD
 
 void qtjambi_dbus_check_write_argument(JNIEnv * env, const QDBusArgument * arg){
     QDBusArgumentPrivate* d = arg ? QDBusArgumentPrivate::d(*const_cast<QDBusArgument *>(arg)) : nullptr;
-    if(d && d->direction!=QDBusArgumentPrivate::Marshalling)
+    if(d && d->direction!=QDBusArgumentPrivate
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+                 ::Direction
+#endif
+                 ::Marshalling)
         Java::Runtime::IllegalAccessException::throwNew(env, "QDBusArgument: write from a read-only object" QTJAMBI_STACKTRACEINFO );
 }
 
 void qtjambi_dbus_check_read_argument(JNIEnv * env, const QDBusArgument * arg){
     QDBusArgumentPrivate* d = arg ? QDBusArgumentPrivate::d(*const_cast<QDBusArgument *>(arg)) : nullptr;
-    if(d && d->direction!=QDBusArgumentPrivate::Demarshalling)
+    if(d && d->direction!=QDBusArgumentPrivate
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+                 ::Direction
+#endif
+                 ::Demarshalling)
         Java::Runtime::IllegalAccessException::throwNew(env, "QDBusArgument: read from a write-only object" QTJAMBI_STACKTRACEINFO );
 }
 
 bool qtjambi_dbus_is_read_argument(const QDBusArgument *arg){
     QDBusArgumentPrivate* d = arg ? QDBusArgumentPrivate::d(*const_cast<QDBusArgument *>(arg)) : nullptr;
-    return d && d->direction==QDBusArgumentPrivate::Demarshalling;
+    return d && d->direction==QDBusArgumentPrivate
+#if QT_VERSION >= QT_VERSION_CHECK(6,7,0)
+                    ::Direction
+#endif
+                    ::Demarshalling;
 }
 
 void initialize_meta_info_QtDBus()

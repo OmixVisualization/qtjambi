@@ -31,7 +31,9 @@ package io.qt.internal;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import io.qt.QtObject;
@@ -40,17 +42,29 @@ import io.qt.core.QMetaObject;
 import io.qt.core.QMetaProperty;
 import io.qt.core.QObject;
 
+/**
+ * @hidden
+ */
 public abstract class CoreUtility {
 	protected CoreUtility() {throw new RuntimeException();}
+	/**
+	 * @hidden
+	 */
 	protected static abstract class AbstractSignal extends SignalUtility.AbstractSignal {
-		protected AbstractSignal(){}
+		protected AbstractSignal(){
+			super();
+		}
+		
+		protected AbstractSignal(Consumer<Object[]> argumentTest){
+			super(argumentTest);
+		}
 	    
-		protected AbstractSignal(Class<?>[] types) {
-            super(types);
+		protected AbstractSignal(Class<?> declaringClass) {
+            super(declaringClass);
         }
-        
-		protected AbstractSignal(Class<?> declaringClass, boolean isStatic) {
-            super(declaringClass, isStatic);
+		
+		protected AbstractSignal(Class<?> declaringClass, boolean isDisposed) {
+            super(declaringClass, isDisposed);
         }
         
 		protected AbstractSignal(String signalName, Class<?>[] types) {
@@ -58,6 +72,9 @@ public abstract class CoreUtility {
         }
     }
     
+	/**
+	 * @hidden
+	 */
     protected static abstract class AbstractMultiSignal<Signal extends AbstractSignal> extends SignalUtility.AbstractMultiSignal<Signal> {
     	protected AbstractMultiSignal() {
             super();
@@ -110,5 +127,9 @@ public abstract class CoreUtility {
     
     protected static <A,B> Function<A,B> functionFromMethod(Method method){
     	return ReflectionUtility.functionFromMethod(method);
+    }
+    
+    protected static URL createURL(String url) throws MalformedURLException {
+    	return new URL(url);
     }
 }

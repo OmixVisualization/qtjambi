@@ -1054,6 +1054,23 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
         }
         addType(new QMetaObjectConnectionTypeEntry());
         addType(new GLsyncTypeEntry());
+        {
+            ContainerTypeEntry* cronoType = new ContainerTypeEntry("std::chrono::milliseconds", ContainerTypeEntry::std_chrono);
+            cronoType->setCodeGeneration(TypeEntry::GenerateNothing);
+            addType(cronoType);
+            cronoType = new ContainerTypeEntry("std::chrono::nanoseconds", ContainerTypeEntry::std_chrono);
+            cronoType->setCodeGeneration(TypeEntry::GenerateNothing);
+            addType(cronoType);
+            cronoType = new ContainerTypeEntry("std::chrono::seconds", ContainerTypeEntry::std_chrono);
+            cronoType->setCodeGeneration(TypeEntry::GenerateNothing);
+            addType(cronoType);
+            cronoType = new ContainerTypeEntry("std::chrono::duration", ContainerTypeEntry::std_chrono_template);
+            cronoType->setCodeGeneration(TypeEntry::GenerateNothing);
+            addType(cronoType);
+            cronoType = new ContainerTypeEntry("std::chrono::time_point", ContainerTypeEntry::std_chrono_template);
+            cronoType->setCodeGeneration(TypeEntry::GenerateNothing);
+            addType(cronoType);
+        }
     }
     if(!parseFile(filename, importInputDirectoryList, typeystemDirectory, generate)){
         std::exit(-1);

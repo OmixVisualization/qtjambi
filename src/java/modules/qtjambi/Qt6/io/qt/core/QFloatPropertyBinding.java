@@ -47,7 +47,7 @@ public final class QFloatPropertyBinding extends QUntypedPropertyBinding {
 
 	/**
 	 * Creates a new <code>QFloatPropertyBinding</code> with the given functor <code>f</code>.
-	 * @param t
+	 * @param f
 	 */
 	public QFloatPropertyBinding(@StrictNonNull FloatSupplier f) {
 		super(f);
@@ -119,8 +119,6 @@ public final class QFloatPropertyBinding extends QUntypedPropertyBinding {
 
 	/**
 	 * Creates a <code>null</code>-<code>QFloatPropertyBinding</code>.
-	 * @param binding
-	 * @return binding copy
 	 * @see QUntypedPropertyBinding#isNull()
 	 */
 	public QFloatPropertyBinding() {

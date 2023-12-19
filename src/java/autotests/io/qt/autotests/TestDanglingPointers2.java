@@ -1,6 +1,5 @@
 /****************************************************************************
 **
-** Copyright (C) 1992-2009 Nokia. All rights reserved.
 ** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
@@ -35,25 +34,19 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QDanglingPointerException;
-import io.qt.QNativePointer;
 import io.qt.core.QLibraryInfo;
 import io.qt.core.QList;
 import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QSysInfo;
-import io.qt.widgets.QFontDialog;
 import io.qt.widgets.QGraphicsEllipseItem;
 import io.qt.widgets.QGraphicsItem;
 import io.qt.widgets.QGraphicsScene;
-import io.qt.widgets.QHBoxLayout;
-import io.qt.widgets.QLayoutItem;
-import io.qt.widgets.QWidget;
-import io.qt.widgets.QWidgetItem;
 
-public class TestDanglingPointers extends ApplicationInitializer{
+public class TestDanglingPointers2 extends ApplicationInitializer{
 	
 	static {
-		System.setProperty("io.qt.enable-dangling-pointer-check", "true");
+//		System.setProperty("io.qt.enable-dangling-pointer-check", "true");
 	}
 	
 	@BeforeClass
@@ -63,15 +56,6 @@ public class TestDanglingPointers extends ApplicationInitializer{
 		ApplicationInitializer.testInitializeWithWidgets();
     }
 	
-    @Test
-    public void testNativePointer() {
-    	try {
-			QNativePointer.fromNative(5).object(QObject.class);
-		} catch (QDanglingPointerException e) {
-			Assert.assertEquals(String.format("Cannot convert dangling pointer to object of type %1$s", QObject.class.getName()), e.getMessage());
-		}
-    }
-    
     @Test
     public void testGraphicsItem() {
 		Assume.assumeTrue("Can only run successfully on Windows MSVC.", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows) && QLibraryInfo.build().contains("MSVC"));
@@ -94,43 +78,8 @@ public class TestDanglingPointers extends ApplicationInitializer{
 			Assert.assertEquals(String.format("Dangling pointer to object of type %1$s", QGraphicsEllipseItem.class.getName()), e.getMessage());
 		}
     }
-    
-    @Test
-    public void testLayoutItem() {
-    	QWidget parent = new QWidget();
-    	QHBoxLayout layout = new QHBoxLayout(parent);
-    	layout.addWidget(new QWidget(parent));
-    	layout.addWidget(new QWidget(parent));
-    	layout.addWidget(new QWidget(parent));
-		QLayoutItem item0 = layout.itemAt(0);
-//		QLayoutItem item1 = layout.itemAt(1);
-//		QLayoutItem item2 = layout.itemAt(2);
-		parent.dispose();
-		Assert.assertFalse(item0.isDisposed());
-    	try {
-    		item0.widget();
-		} catch (QDanglingPointerException e) {
-			try {
-				Assert.assertEquals(String.format("Dangling pointer to object of type %1$s", QWidgetItem.class.getName()), e.getMessage());
-			} catch (org.junit.ComparisonFailure e2) {
-				Assert.assertEquals(String.format("Cannot convert dangling pointer to object of type %1$s", QWidget.class.getName()), e.getMessage());
-			}
-		}
-    }
-    
-    @Test
-    public void testChildren() {
-    	QFontDialog dialog = new QFontDialog();
-		QList<QObject> children = dialog.children();
-		dialog.dispose();
-		try {
-			children.at(0);
-		} catch (QDanglingPointerException e) {
-			Assert.assertEquals(String.format("Cannot convert dangling pointer to object of type %1$s", QObject.class.getName()), e.getMessage());
-		}
-    }
 
     public static void main(String args[]) {
-        org.junit.runner.JUnitCore.main(TestDanglingPointers.class.getName());
+        org.junit.runner.JUnitCore.main(TestDanglingPointers2.class.getName());
     }
 }

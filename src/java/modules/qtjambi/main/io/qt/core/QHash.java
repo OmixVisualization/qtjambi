@@ -531,17 +531,16 @@ public class QHash<Key,T> extends AbstractAssociativeContainer<Key,T> implements
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qhash.html#operator-eq-eq">operator==<wbr>(QHash&lt;Key,T>,QHash&lt;Key,T>)</a></code></p>
      */
-    @SuppressWarnings("unchecked")
 	@Override
     @QtUninvokable
     public boolean equals(Object other) {
         if (other instanceof java.util.Map && QMap.checkContainerType(this.keyMetaType(), this.valueMetaType(), (java.util.Map<?,?>) other)) {
-            return operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), (java.util.Map<Key,T>) other);
+            return operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), (java.util.Map<?,?>) other);
         }
         return false;
     }
     @QtUninvokable
-    static native <Key,T> boolean operator_equal(long __this__nativeId, java.util.Map<Key,T> other);
+    static native boolean operator_equal(long __this__nativeId, java.util.Map<?,?> other);
 
     /**
      * Returns the objects's hash code computed by <code>qHash(QHash&lt;Key,T>)</code>.

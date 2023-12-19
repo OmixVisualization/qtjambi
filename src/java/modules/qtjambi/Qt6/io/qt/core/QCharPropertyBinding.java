@@ -47,7 +47,7 @@ public final class QCharPropertyBinding extends QUntypedPropertyBinding {
 
 	/**
 	 * Creates a new <code>QCharPropertyBinding</code> with the given functor <code>f</code>.
-	 * @param t
+	 * @param f
 	 */
 	public QCharPropertyBinding(@StrictNonNull CharSupplier f) {
 		super(f);
@@ -119,8 +119,6 @@ public final class QCharPropertyBinding extends QUntypedPropertyBinding {
 
 	/**
 	 * Creates a <code>null</code>-<code>QCharPropertyBinding</code>.
-	 * @param binding
-	 * @return binding copy
 	 * @see QUntypedPropertyBinding#isNull()
 	 */
 	public QCharPropertyBinding() {

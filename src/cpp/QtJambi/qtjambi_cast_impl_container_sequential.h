@@ -33,6 +33,11 @@
 #include "qtjambi_cast_impl_util.h"
 #include "qtjambi_cast_impl_container_iterator.h"
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0) && defined(QLINKEDLIST_H)
+QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
+QT_WARNING_DISABLE_DEPRECATED
+#endif
+
 namespace RegistryAPI{
 template<typename T>
 int registerMetaType(const QByteArray& typeName);

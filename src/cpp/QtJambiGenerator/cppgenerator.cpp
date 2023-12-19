@@ -385,12 +385,13 @@ void CppGenerator::writeFunctionArguments(QTextStream &s,
         MetaArgument *arg = arguments.at(i);
         if(option & JNIProxyFunction){
             QString typeReplaced = java_function->typeReplaced(arg->argumentIndex() + 1);
+            bool addArrayOffset = false;
             if(!typeReplaced.isEmpty())
                 s << jniName(annotationFreeTypeName(typeReplaced));
             else{
-                if(java_function->argumentTypeBuffer(arg->argumentIndex() + 1)){
+                if(java_function->useArgumentAsBuffer(arg->argumentIndex() + 1)){
                     s << "jobject";
-                }else if(java_function->argumentTypeArray(arg->argumentIndex() + 1)){
+                }else if(java_function->useArgumentAsArray(arg->argumentIndex() + 1)){
                     if(arg->type()->typeEntry()->isPrimitive()){
                         if(arg->type()->typeEntry()->targetLangName()=="int"){
                             s << "jintArray";
@@ -414,12 +415,38 @@ void CppGenerator::writeFunctionArguments(QTextStream &s,
                     }else{
                         s << "jobjectArray";
                     }
+                    addArrayOffset = java_function->insertArrayOffsetArgument(arg->argumentIndex() + 1);
                 }else{
                     s << translateType(arg->type(), Option(option & ~JNIProxyFunction));
                 }
             }
             if (!(option & SkipName)){
                 s << " " << arg->indexedName();
+            }
+            if(addArrayOffset){
+                s << ", ";
+                int lengthParameter = java_function->arrayOrBufferLengthIndex(arg->argumentIndex() + 1);
+                if(lengthParameter>0 && lengthParameter<=arguments.size()){
+                    const MetaArgument *lengthParam = arguments[lengthParameter - 1];
+                    if(!lengthParam || lengthParam->argumentIndex()+1!=lengthParameter){
+                        lengthParam = nullptr;
+                        for(const MetaArgument *argument : arguments) {
+                            if(argument && argument->argumentIndex()+1==lengthParameter){
+                                lengthParam = argument;
+                            }
+                        }
+                    }
+                    if(lengthParam && java_function->argumentRemoved(lengthParam->argumentIndex() + 1)==ArgumentRemove_No){
+                        typeReplaced = java_function->typeReplaced(lengthParam->argumentIndex() + 1);
+                        if(!typeReplaced.isEmpty())
+                            s << jniName(annotationFreeTypeName(typeReplaced));
+                        else
+                            s << translateType(lengthParam->type(), Option(option & ~JNIProxyFunction));
+                        if (!(option & SkipName)){
+                            s << " __qt_offset_of_" << arg->indexedName();
+                        }
+                    }
+                }
             }
         }else {
             if(arg->type()->isArray() && !(option & SkipName)){
@@ -668,23 +695,7 @@ QString CppGenerator::jni_signature(const MetaFunctional *function, JNISignature
     const MetaArgumentList& arguments = function->arguments();
     for(const MetaArgument *argument : arguments) {
         if (function->argumentRemoved(argument->argumentIndex() + 1)==ArgumentRemove_No) {
-            if(function->argumentTypeArray(argument->argumentIndex() + 1)){
-                QScopedPointer<MetaType> array(argument->type()->copy());
-                array->setConstant(false);
-                array->setReferenceType(MetaType::NoReference);
-                array->setTypeUsagePattern(MetaType::ArrayPattern);
-                QScopedPointer<MetaType> cpy(argument->type()->copy());
-                cpy->setConstant(false);
-                cpy->setReferenceType(MetaType::NoReference);
-                QList<bool> indirections = cpy->indirections();
-                if(!indirections.isEmpty()){
-                    indirections.removeLast();
-                    cpy->setIndirections(indirections);
-                }
-                MetaBuilder::decideUsagePattern(cpy.get());
-                array->setArrayElementType(cpy.get());
-                returned += jni_signature(array.get(), format);
-            }else if(function->argumentTypeBuffer(argument->argumentIndex() + 1)){
+            if(function->useArgumentAsBuffer(argument->argumentIndex() + 1)){
                 QScopedPointer<MetaType> cpy(argument->type()->copy());
                 cpy->setConstant(false);
                 cpy->setReferenceType(MetaType::NoReference);
@@ -711,6 +722,47 @@ QString CppGenerator::jni_signature(const MetaFunctional *function, JNISignature
                     returned += jni_signature("java.nio.DoubleBuffer", format);
                 }else{
                     returned += jni_signature("java.nio.Buffer", format);
+                }
+            }else if(function->useArgumentAsArray(argument->argumentIndex() + 1)){
+                QScopedPointer<MetaType> array(argument->type()->copy());
+                array->setConstant(false);
+                array->setReferenceType(MetaType::NoReference);
+                array->setTypeUsagePattern(MetaType::ArrayPattern);
+                QScopedPointer<MetaType> cpy(argument->type()->copy());
+                cpy->setConstant(false);
+                cpy->setReferenceType(MetaType::NoReference);
+                QList<bool> indirections = cpy->indirections();
+                if(!indirections.isEmpty()){
+                    indirections.removeLast();
+                    cpy->setIndirections(indirections);
+                }
+                MetaBuilder::decideUsagePattern(cpy.get());
+                array->setArrayElementType(cpy.get());
+                returned += jni_signature(array.get(), format);
+                if(function->insertArrayOffsetArgument(argument->argumentIndex() + 1)){
+                    int lengthParameter = function->arrayOrBufferLengthIndex(argument->argumentIndex() + 1);
+                    if(lengthParameter>0 && lengthParameter<=arguments.size()){
+                        const MetaArgument *lengthParam = arguments[lengthParameter - 1];
+                        if(!lengthParam || lengthParam->argumentIndex()+1!=lengthParameter){
+                            lengthParam = nullptr;
+                            for(const MetaArgument *argument : arguments) {
+                                if(argument && argument->argumentIndex()+1==lengthParameter){
+                                    lengthParam = argument;
+                                }
+                            }
+                        }
+                        if(lengthParam && function->argumentRemoved(lengthParam->argumentIndex() + 1)==ArgumentRemove_No){
+                            QString jniType;
+                            QString modified_type = function->typeReplaced(lengthParam->argumentIndex() + 1, &jniType);
+
+                            if (modified_type.isEmpty())
+                                returned += jni_signature(lengthParam->type(), format);
+                            else if(jniType.isEmpty())
+                                returned += jni_signature(modified_type.replace("@Nullable ", "").replace("@NonNull ", ""), format);
+                            else
+                                returned += jni_signature(jniType, format);
+                        }
+                    }
                 }
             }else{
                 QString jniType;
@@ -766,7 +818,26 @@ QString CppGenerator::jni_signature(const MetaFunction *function, JNISignatureFo
     }
     for(const MetaArgument *argument : arguments) {
         if (function->argumentRemoved(argument->argumentIndex() + 1)==ArgumentRemove_No) {
-            if(function->argumentTypeArray(argument->argumentIndex() + 1)){
+            if(function->useArgumentAsBuffer(argument->argumentIndex() + 1)){
+                QString singleType = argument->type()->fullName();
+                if(singleType=="int"){
+                    returned += jni_signature("java.nio.IntBuffer", format);
+                }else if(singleType=="byte"){
+                    returned += jni_signature("java.nio.ByteBuffer", format);
+                }else if(singleType=="char"){
+                    returned += jni_signature("java.nio.CharBuffer", format);
+                }else if(singleType=="short"){
+                    returned += jni_signature("java.nio.ShortBuffer", format);
+                }else if(singleType=="long"){
+                    returned += jni_signature("java.nio.LongBuffer", format);
+                }else if(singleType=="float"){
+                    returned += jni_signature("java.nio.FloatBuffer", format);
+                }else if(singleType=="double"){
+                    returned += jni_signature("java.nio.DoubleBuffer", format);
+                }else{
+                    returned += jni_signature("java.nio.Buffer", format);
+                }
+            }else if(function->useArgumentAsArray(argument->argumentIndex() + 1)){
                 QScopedPointer<MetaType> array(argument->type()->copy());
                 array->setConstant(false);
                 array->setReferenceType(MetaType::NoReference);
@@ -782,33 +853,30 @@ QString CppGenerator::jni_signature(const MetaFunction *function, JNISignatureFo
                 MetaBuilder::decideUsagePattern(cpy.get());
                 array->setArrayElementType(cpy.get());
                 returned += jni_signature(array.get(), format);
-            }else if(function->argumentTypeBuffer(argument->argumentIndex() + 1)){
-                QScopedPointer<MetaType> cpy(argument->type()->copy());
-                cpy->setConstant(false);
-                cpy->setReferenceType(MetaType::NoReference);
-                QList<bool> indirections = cpy->indirections();
-                if(!indirections.isEmpty()){
-                    indirections.removeLast();
-                    cpy->setIndirections(indirections);
-                }
-                MetaBuilder::decideUsagePattern(cpy.get());
-                QString singleType = jni_signature(cpy.get(), format);
-                if(singleType=="jint"){
-                    returned += jni_signature("java.nio.IntBuffer", format);
-                }else if(singleType=="jbyte"){
-                    returned += jni_signature("java.nio.ByteBuffer", format);
-                }else if(singleType=="jchar"){
-                    returned += jni_signature("java.nio.CharBuffer", format);
-                }else if(singleType=="jshort"){
-                    returned += jni_signature("java.nio.ShortBuffer", format);
-                }else if(singleType=="jlong"){
-                    returned += jni_signature("java.nio.LongBuffer", format);
-                }else if(singleType=="jfloat"){
-                    returned += jni_signature("java.nio.FloatBuffer", format);
-                }else if(singleType=="jdouble"){
-                    returned += jni_signature("java.nio.DoubleBuffer", format);
-                }else{
-                    returned += jni_signature("java.nio.Buffer", format);
+                if(function->insertArrayOffsetArgument(argument->argumentIndex() + 1)){
+                    int lengthParameter = function->arrayOrBufferLengthIndex(argument->argumentIndex() + 1);
+                    if(lengthParameter>0 && lengthParameter<=arguments.size()){
+                        const MetaArgument *lengthParam = arguments[lengthParameter - 1];
+                        if(!lengthParam || lengthParam->argumentIndex()+1!=lengthParameter){
+                            lengthParam = nullptr;
+                            for(const MetaArgument *argument : arguments) {
+                                if(argument && argument->argumentIndex()+1==lengthParameter){
+                                    lengthParam = argument;
+                                }
+                            }
+                        }
+                        if(lengthParam && function->argumentRemoved(lengthParam->argumentIndex() + 1)==ArgumentRemove_No){
+                            QString jniType;
+                            QString modified_type = function->typeReplaced(lengthParam->argumentIndex() + 1, &jniType);
+
+                            if (modified_type.isEmpty())
+                                returned += jni_signature(lengthParam->type(), format);
+                            else if(jniType.isEmpty())
+                                returned += jni_signature(modified_type.replace("@Nullable ", "").replace("@NonNull ", ""), format);
+                            else
+                                returned += jni_signature(jniType, format);
+                        }
+                    }
                 }
             }else{
                 QString jniType;
@@ -932,19 +1000,7 @@ QString CppGenerator::jni_signature(const MetaType *java_type, JNISignatureForma
     if (!java_type)
         return "V";
 
-    if(( (format & NoQContainers) == NoQContainers )
-            && java_type->typeEntry()->isContainer()
-            && (java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QSet"
-            ||  java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QList"
-            ||  java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QStringList"
-            ||  java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QQueue"
-            ||  java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QVector"
-            ||  java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QStack"
-            ||  java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QLinkedList"
-            ||  java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QMap"
-            ||  java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QHash"
-            ||  java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QMultiMap"
-            ||  java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QMultiHash")){
+    if(( (format & NoQContainers) == NoQContainers ) && java_type->typeEntry()->isContainer()){
         if(java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QSet")
             return jni_signature("java.util.Set", format);
         if(java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QQueue")
@@ -963,9 +1019,14 @@ QString CppGenerator::jni_signature(const MetaType *java_type, JNISignatureForma
                 || java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QVector"
                 || java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QStringList")
             return jni_signature("java.util.List", format);
-    }else if(( (format & ReturnType) != ReturnType )
-            && java_type->typeEntry()->isContainer()
-            && (java_type->typeEntry()->qualifiedTargetLangName()=="java.util.List"
+//        if(java_type->typeEntry()->qualifiedTargetLangName()=="java.time.Duration")
+//            return jni_signature("java.time.temporal.TemporalAmount", format);
+//        if(java_type->typeEntry()->qualifiedTargetLangName()=="java.time.Instant")
+//            return jni_signature("java.time.temporal.Temporal", format);
+    }
+    if(( (format & ReturnType) != ReturnType )
+            && java_type->typeEntry()->isContainer()){
+        if(java_type->typeEntry()->qualifiedTargetLangName()=="java.util.List"
             ||  java_type->typeEntry()->qualifiedTargetLangName()=="java.util.LinkedList"
             ||  java_type->typeEntry()->qualifiedTargetLangName()=="java.util.ArrayList"
             ||  java_type->typeEntry()->qualifiedTargetLangName()=="java.util.Vector"
@@ -978,26 +1039,30 @@ QString CppGenerator::jni_signature(const MetaType *java_type, JNISignatureForma
             ||  java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QQueue"
             ||  java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QVector"
             ||  java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QStack"
-            ||  java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QLinkedList")){
-        return jni_signature("java.util.Collection", format);
-    }else if(( (format & ReturnType) != ReturnType )
-             && java_type->typeEntry()->isContainer()
-             && (java_type->typeEntry()->qualifiedTargetLangName()=="java.util.Map"
-             ||  java_type->typeEntry()->qualifiedTargetLangName()=="java.util.SortedMap"
-             ||  java_type->typeEntry()->qualifiedTargetLangName()=="java.util.HashMap"
-             ||  java_type->typeEntry()->qualifiedTargetLangName()=="java.util.TreeMap"
-             ||  java_type->typeEntry()->qualifiedTargetLangName()=="java.util.NavigableMap"
-             ||  java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QMap"
-             ||  java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QHash"
-             ||  java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QMultiMap"
-             ||  java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QMultiHash")){
-         return jni_signature("java.util.Map", format);
-     }else if (java_type->isArray()) {
+            ||  java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QLinkedList")
+            return jni_signature("java.util.Collection", format);
+        if(java_type->typeEntry()->qualifiedTargetLangName()=="java.util.Map"
+            ||  java_type->typeEntry()->qualifiedTargetLangName()=="java.util.SortedMap"
+            ||  java_type->typeEntry()->qualifiedTargetLangName()=="java.util.HashMap"
+            ||  java_type->typeEntry()->qualifiedTargetLangName()=="java.util.TreeMap"
+            ||  java_type->typeEntry()->qualifiedTargetLangName()=="java.util.NavigableMap"
+            ||  java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QMap"
+            ||  java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QHash"
+            ||  java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QMultiMap"
+            ||  java_type->typeEntry()->qualifiedTargetLangName()=="io.qt.core.QMultiHash")
+            return jni_signature("java.util.Map", format);
+        if(java_type->typeEntry()->qualifiedTargetLangName()=="java.time.Duration")
+            return jni_signature("java.time.temporal.TemporalAmount", format);
+        if(java_type->typeEntry()->qualifiedTargetLangName()=="java.time.Instant")
+            return jni_signature("java.time.temporal.Temporal", format);
+    }
+    if (java_type->isArray()) {
         if ((format & Underscores) == Underscores)
             return "_3" + jni_signature(java_type->arrayElementType(), format);
         else
             return "[" + jni_signature(java_type->arrayElementType(), format);
-    } else if (java_type->isInitializerList() && java_type->instantiations().size()==1) {
+    }
+    if (java_type->isInitializerList() && java_type->instantiations().size()==1) {
         const MetaType* instantiation = java_type->instantiations()[0];
         if (instantiation->isTargetLangEnum() || instantiation->isTargetLangFlags()) {
             QString name = instantiation->name();
@@ -1021,26 +1086,32 @@ QString CppGenerator::jni_signature(const MetaType *java_type, JNISignatureForma
             return "_3" + jni_signature(instantiation, format);
         else
             return "[" + jni_signature(instantiation, format);
-    } else if (java_type->isPointerContainer() && java_type->instantiations().size()==1) {
+    }
+    if (java_type->isPointerContainer() && java_type->instantiations().size()==1) {
         MetaType* instantiation = java_type->instantiations()[0]->copy();
         instantiation->setIndirections(QList<bool>(instantiation->indirections()) << false);
         MetaBuilder::decideUsagePattern(instantiation);
         return jni_signature(instantiation, format);
-    } else if(java_type->typeEntry()->type()==TypeEntry::InstantiatedTemplateArgumentType){
+    }
+    if(java_type->typeEntry()->type()==TypeEntry::InstantiatedTemplateArgumentType){
         return jni_signature(reinterpret_cast<const InstantiatedTemplateArgumentEntry*>(java_type->typeEntry())->javaInstantiationBaseType(), format);
-    } else if (java_type->isCharString()) {
+    }
+    if (java_type->isCharString()) {
         if ((format & Underscores) == Underscores)
             return "Ljava_lang_String_2";
         else
             return "Ljava/lang/String;";
-    } else if (java_type->isNativePointer()) {
+    }
+    if (java_type->isNativePointer()) {
         if ((format & Underscores) == Underscores)
             return "Lio_qt_QNativePointer_2";
         else
             return "Lio/qt/QNativePointer;";
-    } else if (java_type->isFlags() && !(format & NoModification)) {
+    }
+    if (java_type->isFlags() && !(format & NoModification)) {
         return "I";
-    } else if (java_type->isEnum() && (!(format & NoModification) || reinterpret_cast<const EnumTypeEntry *>(java_type->typeEntry())->forceInteger())) {
+    }
+    if (java_type->isEnum() && (!(format & NoModification) || reinterpret_cast<const EnumTypeEntry *>(java_type->typeEntry())->forceInteger())) {
         uint size = reinterpret_cast<const EnumTypeEntry *>(java_type->typeEntry())->size();
         switch(size){
         case 8: return "B";

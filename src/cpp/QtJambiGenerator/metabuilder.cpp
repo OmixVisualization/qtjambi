@@ -301,6 +301,7 @@ void MetaBuilder::addInclude(TS::TypeEntry * entry, QString fileName, bool extra
             requiredFeatures[feature] = "";
         }
     }
+    bool ckeckAvailability = !entry->ppCondition().isEmpty();
     QFileInfo file(QDir::fromNativeSeparators(fileName));
     if(file.exists()){
         fileName = file.canonicalFilePath();
@@ -319,15 +320,15 @@ void MetaBuilder::addInclude(TS::TypeEntry * entry, QString fileName, bool extra
                     if(extra)
                         dynamic_cast<TS::ComplexTypeEntry*>(entry)->addExtraInclude(Include(Include::IncludePath, path, requiredFeatures));
                     else
-                        dynamic_cast<TS::ComplexTypeEntry*>(entry)->setInclude(Include(Include::IncludePath, path, requiredFeatures));
+                        dynamic_cast<TS::ComplexTypeEntry*>(entry)->setInclude(Include(Include::IncludePath, path, requiredFeatures, false, false, ckeckAvailability));
                 }else if(entry->isEnum()){
                     if(!extra)
-                        dynamic_cast<TS::EnumTypeEntry*>(entry)->setInclude(Include(Include::IncludePath, path, requiredFeatures));
+                        dynamic_cast<TS::EnumTypeEntry*>(entry)->setInclude(Include(Include::IncludePath, path, requiredFeatures, false, false, ckeckAvailability));
                 }else if(entry->isFunctional()){
                     if(extra)
                         dynamic_cast<TS::FunctionalTypeEntry*>(entry)->addExtraInclude(Include(Include::IncludePath, path, requiredFeatures));
                     else
-                        dynamic_cast<TS::FunctionalTypeEntry*>(entry)->setInclude(Include(Include::IncludePath, path, requiredFeatures));
+                        dynamic_cast<TS::FunctionalTypeEntry*>(entry)->setInclude(Include(Include::IncludePath, path, requiredFeatures, false, false, ckeckAvailability));
                 }
                 fileName.clear();
             }
@@ -335,8 +336,9 @@ void MetaBuilder::addInclude(TS::TypeEntry * entry, QString fileName, bool extra
 #endif
     }
     if(!fileName.isEmpty()){
-        for(const QString& includePath : m_includePathsList){
-            QFileInfo f(includePath);
+        bool found = false;
+        for(auto iter = m_includePathsList.rbegin(); iter!=m_includePathsList.rend(); ++iter){
+            QFileInfo f(*iter);
             if(f.isDir()){
                 QString path = f.canonicalFilePath();
                 if(!path.endsWith("/"))
@@ -347,19 +349,23 @@ void MetaBuilder::addInclude(TS::TypeEntry * entry, QString fileName, bool extra
                         if(extra)
                             dynamic_cast<TS::ComplexTypeEntry*>(entry)->addExtraInclude(Include(Include::IncludePath, path, requiredFeatures));
                         else
-                            dynamic_cast<TS::ComplexTypeEntry*>(entry)->setInclude(Include(Include::IncludePath, path, requiredFeatures));
+                            dynamic_cast<TS::ComplexTypeEntry*>(entry)->setInclude(Include(Include::IncludePath, path, requiredFeatures, false, false, ckeckAvailability));
                     }else if(entry->isEnum()){
                         if(!extra)
-                            dynamic_cast<TS::EnumTypeEntry*>(entry)->setInclude(Include(Include::IncludePath, path, requiredFeatures));
+                            dynamic_cast<TS::EnumTypeEntry*>(entry)->setInclude(Include(Include::IncludePath, path, requiredFeatures, false, false, ckeckAvailability));
                     }else if(entry->isFunctional()){
                         if(extra)
                             dynamic_cast<TS::FunctionalTypeEntry*>(entry)->addExtraInclude(Include(Include::IncludePath, path, requiredFeatures));
                         else
-                            dynamic_cast<TS::FunctionalTypeEntry*>(entry)->setInclude(Include(Include::IncludePath, path, requiredFeatures));
+                            dynamic_cast<TS::FunctionalTypeEntry*>(entry)->setInclude(Include(Include::IncludePath, path, requiredFeatures, false, false, ckeckAvailability));
                     }
+                    found = true;
                     break;
                 }
             }
+        }
+        if(!found){
+            ReportHandler::warning(QString("Unable to decide include for '%1'.").arg(fileName));
         }
     }
 }
@@ -3752,15 +3758,16 @@ MetaClass *MetaBuilder::traverseTypeAlias(TypeAliasModelItem typeAlias) {
         typeAliasType->setIndirections(typeAlias->type().indirections());
         typeAliasType->setConstant(typeAlias->type().isConstant());
         typeAliasType->setReferenceType(MetaType::ReferenceType(typeAlias->type().getReferenceType()));
+        Q_ASSERT(typeAliasType->typeEntry());
         meta_class->setTypeAliasType(typeAliasType);
     }else{
         bool ok = false;
         MetaType* typeAliasType = translateType(typeInfo, &ok, "traverseTypeAlias " + class_name);
-        if(typeAliasType){
-            typeAliasType->setTypeEntry(typeAliasEntry);
+        if(typeAliasType && typeAliasType->typeEntry()){
             typeAliasType->setIndirections(typeAlias->type().indirections());
             typeAliasType->setConstant(typeAlias->type().isConstant());
             typeAliasType->setReferenceType(MetaType::ReferenceType(typeAlias->type().getReferenceType()));
+            Q_ASSERT(typeAliasType->typeEntry());
             meta_class->setTypeAliasType(typeAliasType);
         }
         meta_class->setBaseClassTypeInfo({{typeAlias->type(), true}});
@@ -4611,6 +4618,11 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                         case OperatorType::GreaterOrEquals:
                         case OperatorType::NotEquals:
                         case OperatorType::Equals:
+                        case OperatorType::Plus:
+                        case OperatorType::Minus:
+                        case OperatorType::Times:
+                        case OperatorType::Div:
+                        case OperatorType::Rem:
                             if(arguments.size()>=1 && arguments[0]->type()->getReferenceType()!=MetaType::RReference){
                                 if (MetaClass *cls = argumentToClass(arguments[0]->type())) {
                                     if(m_current_class
@@ -5772,9 +5784,8 @@ void MetaBuilder::fixFunctions(MetaClass * cls) {
     }
 
     cls->setFunctions(funcs);
-    for(MetaFunction *func : funcs) {
+    for(MetaFunction *func : cls->functions()) {
         // Make sure that we include files for all classes that are in use
-
         if (!func->isRemovedFrom(cls, TS::ShellCode)){
             if(func->type()){
                 addInclude(cls->typeEntry(), func->type());
@@ -5878,7 +5889,8 @@ void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBas
                     if((!newTypeAliasType->typeEntry()->isPrimitive() || !newTypeAliasType->indirections().isEmpty()) && typeAliasType->isConstant())
                         newTypeAliasType->setConstant(true);
                     decideUsagePattern(newTypeAliasType);
-                    delete meta_class->typeAliasType();
+                    delete typeAliasType;
+                    Q_ASSERT(newTypeAliasType->typeEntry());
                     meta_class->setTypeAliasType(newTypeAliasType);
                 }
             }
@@ -6299,7 +6311,7 @@ MetaFunction *MetaBuilder::traverseFunction(FunctionModelItem function_item, con
         meta_function->setInvalid(true);
     } else if (m_current_class && !m_current_class->isNamespace() && strip_template_args(function_name) == stripped_class_name) {
         meta_function->setFunctionType(MetaFunction::ConstructorFunction);
-        meta_function->setExplicit(function_item->isExplicit());
+        meta_function->setDeclExplicit(function_item->isExplicit());
         meta_function->setName(m_current_class->simpleName());
     } else {
         bool ok = false;
@@ -6632,7 +6644,7 @@ MetaFunction *MetaBuilder::traverseFunction(FunctionModelItem function_item, con
                 return nullptr;
             }else{
                 if(meta_function->type()){
-                    meta_function->setExplicit(function_item->isExplicit());
+                    meta_function->setDeclExplicit(function_item->isExplicit());
                     if(!isRenamed){
                         QString targetLangName = meta_function->type()->typeEntry()->targetLangName();
                         auto idx = targetLangName.lastIndexOf('.');
@@ -6856,7 +6868,7 @@ MetaFunction *MetaBuilder::traverseFunction(FunctionModelItem function_item, con
             break;
         case OperatorType::Equals:
             if(!isRenamed)
-                meta_function->setName("operator_equal");
+                meta_function->setName("equals");
             break;
         case OperatorType::Subscript:
             if(!isRenamed){
@@ -7555,6 +7567,7 @@ MetaType *MetaBuilder::translateType(TypeInfo typei,
         bool found = false;
         if(MetaClass * iteratorClass = classes().findClass(iteratorType->qualifiedCppName(), MetaClassList::QualifiedCppName)){
             if(iteratorClass->typeAliasType()){
+                Q_ASSERT(iteratorClass->typeAliasType()->typeEntry());
                 if(iteratorClass->typeAliasType()->typeEntry()->isAlias()){
                     m_missing_iterators << MissingIterator(iteratorType, meta_type, m_current_class);
                     found = true;
@@ -7847,7 +7860,8 @@ QString MetaBuilder::translateDefaultValue(const QString& defaultValueExpression
     QString expr = defaultValueExpression;
     if(type->isTemplateArgument()){
         return expr;
-    }else if (type->isPrimitive() || type->isQChar()) {
+    }
+    if (type->isPrimitive() || type->isQChar()) {
         if (type->name() == "boolean") {
             if (expr == "false" || expr == "true") {
                 return expr;
@@ -7884,166 +7898,227 @@ QString MetaBuilder::translateDefaultValue(const QString& defaultValueExpression
             // processed. This is done in figureOutEnumValues()
             return expr;
         }
-    } else if (type && (type->isFlags() || type->isEnum())) {
+    }
+    if (type && (type->isFlags() || type->isEnum())) {
         if(expr == "{}")
             return "0";
         // Same as with enum explanation above...
         return expr;
 
-    } else {
-        if (type && type->isFunctional() && (expr == "{}"
-                                             || (expr.startsWith("std::function<") && expr.endsWith(">()"))
-                                             || (expr.startsWith("qxp::function_ref<") && expr.endsWith(">()")))) {
-            return "null";
-        }
-        if (type
-                && type->typeEntry()->isUnknown()
-                && (type->typeEntry()->qualifiedCppName().startsWith("std::function<")
-                    || type->typeEntry()->qualifiedCppName().startsWith("qxp::function_ref<")
-                    || type->typeEntry()->qualifiedCppName().contains("(*)")
-                    )
-                && (expr == "{}" || expr == "0" || expr == "nullptr" || (expr.startsWith("std::function<") && expr.endsWith(">()")))) {
-            return "null";
-        }
-        // constructor or functioncall can be a bit tricky...
-        if (expr == "QVariant()") {
-            return "null";
-        } else if (expr == "QModelIndex()") {
-            return "new io.qt.core.QModelIndex()";
-        } else if (expr == "QStringList()"
-                   || ((expr.startsWith("QVector<") || expr.startsWith("QList<") || expr.startsWith("QStack<") || expr.startsWith("QQueue<")) && expr.endsWith(">()"))
-                  ) {
-            return "java.util.Collections.emptyList()";
-        } else if (expr == "QVariantHash()"
-                   || ((expr.startsWith("QHash<") || expr.startsWith("QMultiHash<")) && expr.endsWith(">()"))) {
-            return "java.util.Collections.emptyMap()";
-        } else if (expr == "QVariantMap()"
-                   || ((expr.startsWith("QMap<") || expr.startsWith("QMultiMap<")) && expr.endsWith(">()"))) {
-            return "java.util.Collections.emptyNavigableMap()";
-        } else if (expr.startsWith("QSet<") && expr.endsWith(">()")) {
-            return "java.util.Collections.emptySet()";
-        } else if (expr.endsWith(")") && expr.contains("::")) {
-            TypeEntry *typeEntry = m_database->findType(expr.left(expr.indexOf("::")));
-            if (typeEntry)
-                return typeEntry->qualifiedTargetLangName().replace("$", ".") + "." + expr.right(expr.length() - expr.indexOf("::") - 2);
-        } else if (expr.endsWith(")") && type->typeEntry()->isComplex()
-                   && !(type->typeEntry()->isContainer()
-                        || type->typeEntry()->isQChar()
-                        || type->isQString()
-                        || type->isCharString()
-                        || type->isQStringView()
-                        || type->isQAnyStringView()
-                        || type->isQUtf8StringView())) {
-            auto pos = expr.indexOf("(");
-
-            TypeEntry *typeEntry = m_database->findType(expr.left(pos));
-            if (typeEntry)
-                return "new " + typeEntry->qualifiedTargetLangName().replace("$", ".") + expr.right(expr.length() - pos);
-            else
-                return expr;
-        } else if (expr == "0" || expr == "nullptr" || expr == "NULL") {
-            return "null";
-        } else if (type->isQString()
-                   || type->isCharString()
-                   || type->isQStringView()
-                   || type->isQAnyStringView()
-                   || type->isQUtf8StringView()) {
-            if (expr == "{}"
-                    || expr == "QString()"
-                    || expr == "QStringRef()"
-                    || expr == "QStringView()"
-                    || expr == "QAnyStringView()"
-                    || expr == "QUtf8StringView()") {
-                return "(String)null";
-            }
-            if(expr.startsWith("QString(\"") && expr.endsWith("\")"))
-                return expr.mid(8, expr.length()-9);
-            if(expr.startsWith("QLatin1String(\"") && expr.endsWith("\")"))
-                return expr.mid(14, expr.length()-15);
-            else if ((expr.startsWith("u'") || expr.startsWith("U'") || expr.startsWith("L'")) && expr.endsWith("'"))
-                return expr.mid(1);
-            else if (expr.startsWith("QLatin1Char('") && expr.endsWith("')"))
-                return expr.chopped(1).mid(12);
-            else if (expr.startsWith("u8'") && expr.endsWith("'"))
-                return expr.mid(2);
-            else if(expr.startsWith("u8\"") && expr.endsWith("\""))
-                return expr.mid(2);
-            else if((expr.startsWith("u\"") || expr.startsWith("U\"") || expr.startsWith("L\"")) && expr.endsWith("\""))
-                return expr.mid(1);
-            else if(expr.startsWith("R\"(") && expr.endsWith(")\"")){
-                expr = expr.mid(3, expr.length()-5);
-                expr.replace("\\", "\\\\");
-                expr.replace("\"", "\\\"");
-                expr.replace("\t", "\\t");
-                expr.replace("\n", "\\n");
-                expr.replace("\r", "\\r");
-                expr.replace("\b", "\\b");
-                expr.replace("\f", "\\f");
-                expr = "\"" + expr + "\"";
-            }
-            return expr;
-        } else if ((type->typeEntry()->isComplex() && !type->typeEntry()->isContainer() && !type->typeEntry()->isQChar()) || expr.contains("::")) { // like Qt::black passed to a QColor
-            if(type->isObject() && expr == type->name()+"()"){
-                return "null";
-            }
-            if (expr == "{}"){
-                return "new " + type->typeEntry()->qualifiedTargetLangName().replace("$", ".") + "()";
-            }
-            else if (expr.startsWith("QLatin1Char('") && expr.endsWith("')"))
-                return expr.chopped(1).mid(12);
-            else if ((expr.startsWith("u'") || expr.startsWith("U'") || expr.startsWith("L'")) && expr.endsWith("'"))
-                return expr.mid(1);
-            TypeEntry *typeEntry = m_database->findType(expr.left(expr.indexOf("::")));
-
-            expr = expr.right(expr.length() - expr.indexOf("::") - 2);
-            if (typeEntry) {
-                return "new " + type->typeEntry()->qualifiedTargetLangName().replace("$", ".") +
-                       "(" + typeEntry->qualifiedTargetLangName().replace("$", ".") + "." + expr + ")";
-            }
-        }else if (expr.startsWith("QLatin1Char('") && expr.endsWith("')")){
-            return expr.chopped(1).mid(12);
-        } else if ((expr.startsWith("u'") || expr.startsWith("U'") || expr.startsWith("L'")) && expr.endsWith("'")){
-            return expr.mid(1);
-        } else if (expr == "QString()" || expr == "QStringRef()" || expr == "QStringView()") {
-            return "null";
-        } else if (expr == "QChar()") {
-            return "'\\0'";
-        } else if (type && type->isContainer() && type->typeEntry() && type->typeEntry()->isContainer() && expr == "{}") {
-            const ContainerTypeEntry* cte = reinterpret_cast<const ContainerTypeEntry*>(type->typeEntry());
-            switch(cte->type()){
-            case ContainerTypeEntry::StringListContainer:
-            case ContainerTypeEntry::ByteArrayListContainer:
-            case ContainerTypeEntry::ListContainer:
-            case ContainerTypeEntry::std_vector:
-            case ContainerTypeEntry::InitializerListContainer:
-            case ContainerTypeEntry::LinkedListContainer:
-            case ContainerTypeEntry::VectorContainer:
-            case ContainerTypeEntry::QArrayDataContainer:
-            case ContainerTypeEntry::QTypedArrayDataContainer:
+    }
+    if (type && type->isFunctional() && (expr == "{}"
+                                         || (expr.startsWith("std::function<") && expr.endsWith(">()"))
+                                         || (expr.startsWith("qxp::function_ref<") && expr.endsWith(">()")))) {
+        return "null";
+    }
+    if (type
+            && type->typeEntry()->isUnknown()
+            && (type->typeEntry()->qualifiedCppName().startsWith("std::function<")
+                || type->typeEntry()->qualifiedCppName().startsWith("qxp::function_ref<")
+                || type->typeEntry()->qualifiedCppName().contains("(*)")
+                )
+            && (expr == "{}" || expr == "0" || expr == "nullptr" || (expr.startsWith("std::function<") && expr.endsWith(">()")))) {
+        return "null";
+    }
+    // constructor or functioncall can be a bit tricky...
+    if (expr == "QVariant()") {
+        return "null";
+    }
+    if (expr == "QModelIndex()") {
+        return "new io.qt.core.QModelIndex()";
+    }
+    if (expr == "QStringList()"
+               || ((expr.startsWith("QVector<") || expr.startsWith("QList<") || expr.startsWith("QStack<") || expr.startsWith("QQueue<")) && expr.endsWith(">()"))
+              ) {
+        return "java.util.Collections.emptyList()";
+    }
+    if (expr == "QVariantHash()"
+               || ((expr.startsWith("QHash<") || expr.startsWith("QMultiHash<")) && expr.endsWith(">()"))) {
+        return "java.util.Collections.emptyMap()";
+    }
+    if (expr == "QVariantMap()"
+               || ((expr.startsWith("QMap<") || expr.startsWith("QMultiMap<")) && expr.endsWith(">()"))) {
+        return "java.util.Collections.emptyNavigableMap()";
+    }
+    if (expr.startsWith("QSet<") && expr.endsWith(">()")) {
+        return "java.util.Collections.emptySet()";
+    }
+    if (type && type->typeEntry() && type->typeEntry()->isInitializerList()) {
+        if(expr == "{}")
+            return "";
+    }
+    if (type && type->typeEntry() && type->typeEntry()->isContainer()) {
+        const ContainerTypeEntry* cte = reinterpret_cast<const ContainerTypeEntry*>(type->typeEntry());
+        switch(cte->type()){
+        case ContainerTypeEntry::StringListContainer:
+        case ContainerTypeEntry::ByteArrayListContainer:
+        case ContainerTypeEntry::ListContainer:
+        case ContainerTypeEntry::std_vector:
+        case ContainerTypeEntry::LinkedListContainer:
+        case ContainerTypeEntry::VectorContainer:
+        case ContainerTypeEntry::QArrayDataContainer:
+        case ContainerTypeEntry::QTypedArrayDataContainer:
+            if(expr == "{}")
                 return "java.util.Collections.emptyList()";
-            case ContainerTypeEntry::StackContainer: return "java.util.new ArrayDeque<>()";
-            case ContainerTypeEntry::QueueContainer: return "java.util.new ArrayDeque<>()";
-            case ContainerTypeEntry::SetContainer:
+            break;
+        case ContainerTypeEntry::StackContainer:
+            if(expr == "{}")
+                return "new java.util.ArrayDeque<>()";
+            break;
+        case ContainerTypeEntry::QueueContainer:
+            if(expr == "{}")
+                return "new java.util.ArrayDeque<>()";
+            break;
+        case ContainerTypeEntry::SetContainer:
+            if(expr == "{}")
                 return "java.util.Collections.emptySet()";
-            case ContainerTypeEntry::MultiMapContainer:
-            case ContainerTypeEntry::MapContainer:
+            break;
+        case ContainerTypeEntry::MultiMapContainer:
+        case ContainerTypeEntry::MapContainer:
+            if(expr == "{}")
                 return "java.util.Collections.emptyNavigableMap()";
-            case ContainerTypeEntry::QDBusReplyContainer: return "new io.qt.dbus.QDBusReply()";
-            case ContainerTypeEntry::HashContainer: return "java.util.Collections.emptyMap()";
-            case ContainerTypeEntry::MultiHashContainer: return "java.util.Collections.emptyMap()";
-            case ContainerTypeEntry::PairContainer: return "new io.qt.core.QPair<>()";
-            case ContainerTypeEntry::std_optional: return "java.util.Optional.empty()";
-            default:
-                break;
+            break;
+        case ContainerTypeEntry::QDBusReplyContainer:
+            if(expr == "{}")
+                return "new io.qt.dbus.QDBusReply()";
+            break;
+        case ContainerTypeEntry::HashContainer:
+            if(expr == "{}")
+                return "java.util.Collections.emptyMap()";
+            break;
+        case ContainerTypeEntry::MultiHashContainer:
+            if(expr == "{}")
+                return "java.util.Collections.emptyMap()";
+            break;
+        case ContainerTypeEntry::PairContainer:
+            if(expr == "{}")
+                return "new io.qt.core.QPair<>()";
+            break;
+        case ContainerTypeEntry::std_optional:
+            if(expr == "{}")
+                return "java.util.Optional.empty()";
+            break;
+        case ContainerTypeEntry::std_chrono:
+        case ContainerTypeEntry::std_chrono_template:
+            if(expr == "std::chrono::milliseconds::zero()"
+                || expr == "std::chrono::seconds::zero()"
+                || expr == "std::chrono::nanoseconds::zero()"){
+                return "java.time.Duration.ZERO";
             }
+            if((expr.startsWith("std::chrono::seconds{") && expr.endsWith("}"))
+                || (expr.startsWith("std::chrono::seconds(") && expr.endsWith(")"))){
+                return QStringLiteral("java.time.Duration.ofSeconds(") + expr.mid(21).chopped(1) + ")";
+            }
+            if((expr.startsWith("std::chrono::milliseconds{") && expr.endsWith("}"))
+                || (expr.startsWith("std::chrono::milliseconds(") && expr.endsWith(")"))){
+                return QStringLiteral("java.time.Duration.ofMillis(") + expr.mid(26).chopped(1) + ")";
+            }
+            break;
+        default:
+            break;
         }
     }
+    if (expr.endsWith(")") && expr.contains("::")) {
+        TypeEntry *typeEntry = m_database->findType(expr.left(expr.indexOf("::")));
+        if (typeEntry)
+            return typeEntry->qualifiedTargetLangName().replace("$", ".") + "." + expr.right(expr.length() - expr.indexOf("::") - 2);
+        expr = defaultValueExpression;
+    }
+    if (expr.endsWith(")") && type->typeEntry()->isComplex()
+               && !(type->typeEntry()->isContainer()
+                    || type->typeEntry()->isQChar()
+                    || type->isQString()
+                    || type->isCharString()
+                    || type->isQStringView()
+                    || type->isQAnyStringView()
+                    || type->isQUtf8StringView())) {
+        auto pos = expr.indexOf("(");
+
+        TypeEntry *typeEntry = m_database->findType(expr.left(pos));
+        if (typeEntry)
+            return "new " + typeEntry->qualifiedTargetLangName().replace("$", ".") + expr.right(expr.length() - pos);
+        else
+            return expr;
+    }
+    if (expr == "0" || expr == "nullptr" || expr == "NULL") {
+        return "null";
+    }
+    if (type->isQString()
+               || type->isCharString()
+               || type->isQStringView()
+               || type->isQAnyStringView()
+               || type->isQUtf8StringView()) {
+        if (expr == "{}"
+                || expr == "QString()"
+                || expr == "QStringRef()"
+                || expr == "QStringView()"
+                || expr == "QAnyStringView()"
+                || expr == "QUtf8StringView()") {
+            return "(String)null";
+        }
+        if(expr.startsWith("QString(\"") && expr.endsWith("\")"))
+            return expr.mid(8, expr.length()-9);
+        if(expr.startsWith("QLatin1String(\"") && expr.endsWith("\")"))
+            return expr.mid(14, expr.length()-15);
+        else if ((expr.startsWith("u'") || expr.startsWith("U'") || expr.startsWith("L'")) && expr.endsWith("'"))
+            return expr.mid(1);
+        else if (expr.startsWith("QLatin1Char('") && expr.endsWith("')"))
+            return expr.chopped(1).mid(12);
+        else if (expr.startsWith("u8'") && expr.endsWith("'"))
+            return expr.mid(2);
+        else if(expr.startsWith("u8\"") && expr.endsWith("\""))
+            return expr.mid(2);
+        else if((expr.startsWith("u\"") || expr.startsWith("U\"") || expr.startsWith("L\"")) && expr.endsWith("\""))
+            return expr.mid(1);
+        else if(expr.startsWith("R\"(") && expr.endsWith(")\"")){
+            expr = expr.mid(3, expr.length()-5);
+            expr.replace("\\", "\\\\");
+            expr.replace("\"", "\\\"");
+            expr.replace("\t", "\\t");
+            expr.replace("\n", "\\n");
+            expr.replace("\r", "\\r");
+            expr.replace("\b", "\\b");
+            expr.replace("\f", "\\f");
+            expr = "\"" + expr + "\"";
+        }
+        return expr;
+    }
+    if ((type->typeEntry()->isComplex() && !type->typeEntry()->isContainer() && !type->typeEntry()->isQChar()) || expr.contains("::")) { // like Qt::black passed to a QColor
+        if(type->isObject() && expr == type->name()+"()")
+            return "null";
+        if (expr == "{}")
+            return "new " + type->typeEntry()->qualifiedTargetLangName().replace("$", ".") + "()";
+        if (expr.startsWith("QLatin1Char('") && expr.endsWith("')"))
+            return expr.chopped(1).mid(12);
+        if ((expr.startsWith("u'") || expr.startsWith("U'") || expr.startsWith("L'")) && expr.endsWith("'"))
+            return expr.mid(1);
+        if (defaultValueExpression == QLatin1String("std::nullopt"))
+            return "java.util.Optional.empty()";
+        if(MetaEnumValue * enumValue = m_meta_classes.findEnumValue(expr)){
+            return "new " + type->typeEntry()->qualifiedTargetLangName().replace("$", ".") +
+                   "(" + enumValue->getEnum()->typeEntry()->qualifiedTargetLangName().replace('$', '.') + "." + enumValue->name() + ")";
+        }
+        TypeEntry *typeEntry = m_database->findType(expr.left(expr.indexOf("::")));
+        if (typeEntry) {
+            expr = expr.right(expr.length() - expr.indexOf("::") - 2);
+            return "new " + type->typeEntry()->qualifiedTargetLangName().replace("$", ".") +
+                   "(" + typeEntry->qualifiedTargetLangName().replace("$", ".") + "." + expr + ")";
+        }
+        expr = defaultValueExpression;
+    }
+    if (expr.startsWith("QLatin1Char('") && expr.endsWith("')"))
+        return expr.chopped(1).mid(12);
+    if ((expr.startsWith("u'") || expr.startsWith("U'") || expr.startsWith("L'")) && expr.endsWith("'"))
+        return expr.mid(1);
+    if (expr == "QString()" || expr == "QStringRef()" || expr == "QStringView()")
+        return "null";
+    if (expr == "QChar()")
+        return "'\\0'";
     if (defaultValueExpression == QLatin1String("std::nullopt"))
         return "java.util.Optional.empty()";
 
-
     QString warn = QString("Unsupported default value '%1' of argument %2 in function '%3%4'")
-                   .arg(defaultValueExpression, QString::number(argument_index), class_name.isEmpty() ? class_name : QString("%1::").arg(class_name), fnc->minimalSignature());
+                   .arg(defaultValueExpression, QString::number(argument_index+1), class_name.isEmpty() ? class_name : QString("%1::").arg(class_name), fnc->minimalSignature());
     ReportHandler::warning(warn);
 
     return QString();
@@ -8813,6 +8888,12 @@ void MetaBuilder::parseQ_Property(MetaClass *meta_class, const QStringList &decl
             else if (aspect == QLatin1String("FINAL")){
                 spec->setFinal(true);
             }
+            else if (aspect == QLatin1String("MEMBER")){
+                if(pos < l.size()-1)
+                    spec->setMember(l.at(++pos));
+                else
+                    ReportHandler::warning(QString("Q_PROPERTY(%1): aspect %2 requires argument").arg(declarations.at(i), aspect));
+            }
             else
                 ReportHandler::warning(QString("Q_PROPERTY(%1): unknown aspect %2").arg(declarations.at(i), aspect));
         }
@@ -9076,6 +9157,51 @@ void MetaBuilder::setupConstructorAvailability(MetaClass *meta_class){
                     && !meta_class->typeEntry()->hasProtectedMoveAssignment()
                     && !meta_class->typeEntry()->hasPrivateMoveAssignment()){
                 applyOnType(meta_class->typeEntry(), [](ComplexTypeEntry* c){c->setHasPublicMoveAssignment();});
+            }
+        }
+
+        if(meta_class->typeEntry()->hasPublicCopyConstructor()
+            && meta_class->typeEntry()->hasPublicDefaultConstructor()
+            && meta_class->typeEntry()->hasPublicDefaultAssignment()){
+            for(MetaFunction * constructor : meta_class->queryFunctions(MetaClass::Constructors)){
+                const MetaArgumentList& arguments = constructor->arguments();
+                if(constructor->isConstructor()
+                    && !constructor->isCopyConstructor()
+                    && constructor->wasPublic()
+                    && arguments.size()>=1
+                    && !constructor->isTemplate()
+                    && !constructor->hasTemplateArgumentTypes()
+                    && !constructor->isModifiedRemoved(TS::TargetLangCode)
+                ){
+                    decltype(arguments.size()) i = 0;
+                    bool is1Arg = false;
+                    for(decltype(arguments.size()) l = arguments.size(); i < l; ++i){
+                        if(!constructor->argumentRemoved(arguments[0]->argumentIndex()+1)
+                            && arguments[0]->type()
+                            && arguments[0]->type()->indirections().isEmpty()
+                            && (arguments[0]->type()->isConstant() || arguments[0]->type()->getReferenceType()!=MetaType::Reference)
+                            && constructor->typeReplaced(arguments[0]->argumentIndex() + 1).isEmpty()
+                            && !arguments[0]->type()->typeEntry()->isInitializerList()){
+                            is1Arg = true;
+                            ++i;
+                            break;
+                        }
+                    }
+                    for(decltype(arguments.size()) l = arguments.size(); i < l; ++i){
+                        if(arguments[i]->defaultValueExpression().isEmpty()){
+                            is1Arg = false;
+                            break;
+                        }
+                    }
+                    if(is1Arg){
+                        if(!constructor->isDeclExplicit()){
+                            if(!constructor->isForcedExplicit())
+                                meta_class->typeEntry()->addDeclImplicitCast(constructor);
+                        }else if(constructor->isForcedImplicit()){
+                            meta_class->typeEntry()->addDeclImplicitCast(constructor);
+                        }
+                    }
+                }
             }
         }
     }

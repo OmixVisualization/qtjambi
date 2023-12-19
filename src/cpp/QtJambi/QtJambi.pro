@@ -105,6 +105,7 @@ HEADERS += \
     qtjambi_cast_impl_template4.h \
     qtjambi_cast_impl_template5.h \
     qtjambi_cast_impl_dbus.h \
+    qtjambi_cast_impl_time.h \
     qtjambi_cast_impl_util.h \
     qtjambiapi.h \
     qtjambimetaobject_p.h \

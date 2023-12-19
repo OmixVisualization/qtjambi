@@ -110,13 +110,13 @@ public final class QCharPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided alias.
 	 * @param other
 	 */
-	public QCharPropertyAlias(@StrictNonNull QCharPropertyAlias alias) {
-		super(alias);
+	public QCharPropertyAlias(@StrictNonNull QCharPropertyAlias other) {
+		super(other);
 	}
 	
 	/**
 	 * Creates a new alias to the provided binding's underlying property.
-	 * @param other
+	 * @param bindable
 	 */
 	public QCharPropertyAlias(@StrictNonNull QCharBindable bindable) {
 		super(bindable.data(), bindable.iface());
@@ -124,7 +124,7 @@ public final class QCharPropertyAlias extends QAbstractPropertyAlias {
 	
 	/**
 	 * Creates a new alias to the provided binding's underlying property.
-	 * @param other
+	 * @param bindable
 	 */
 	public QCharPropertyAlias(@StrictNonNull QBindable<@NonNull@QtPrimitiveType Character> bindable) {
 		super(bindable.data(), bindable.iface());

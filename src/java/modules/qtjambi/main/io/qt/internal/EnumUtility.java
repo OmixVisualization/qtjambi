@@ -53,6 +53,9 @@ import io.qt.QtLongFlagEnumerator;
 import io.qt.QtShortEnumerator;
 import io.qt.QtShortFlagEnumerator;
 
+/**
+ * @hidden
+ */
 public final class EnumUtility {
 	static {
 		QtJambi_LibraryUtilities.initialize();

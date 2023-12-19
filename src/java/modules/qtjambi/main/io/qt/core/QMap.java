@@ -650,17 +650,16 @@ public class QMap<Key,T> extends AbstractAssociativeContainer<Key,T> implements 
     /**
      * <p>See <code><a href="https://doc.qt.io/qt/qmap.html#operator-eq-eq">operator==<wbr>(QMap&lt;Key,T>,QMap&lt;Key,T>)</a></code></p>
      */
-    @SuppressWarnings("unchecked")
 	@Override
     @QtUninvokable
     public boolean equals(Object other) {
         if (other instanceof java.util.Map && checkContainerType(this.keyMetaType(), this.valueMetaType(), (java.util.Map<?,?>) other)) {
-            return operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), (java.util.Map<Key,T>) other);
+            return operator_equal(QtJambi_LibraryUtilities.internal.nativeId(this), (java.util.Map<?,?>) other);
         }
         return false;
     }
     @QtUninvokable
-    static native <Key,T> boolean operator_equal(long __this__nativeId, java.util.Map<Key,T> other);
+    static native boolean operator_equal(long __this__nativeId, java.util.Map<?,?> other);
 
     /**
      * Returns the objects's hash code computed by <code>qHash(QMap&lt;Key,T>)</code>.

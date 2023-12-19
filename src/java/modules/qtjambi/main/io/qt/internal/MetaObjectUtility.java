@@ -99,6 +99,7 @@ import io.qt.internal.SignalUtility.SignalParameterType;
 
 /**
  * Methods to help construct the fake meta object.
+ * @hidden
  */
 final class MetaObjectUtility extends AbstractMetaObjectUtility{
     
@@ -515,7 +516,7 @@ signalLoop:	    for (Field declaredField : declaredFields) {
                             propertyRequiredResolvers.put(property, isRequired(declaredField, clazz));
                             propertyConstantResolvers.put(property, isConstant(declaredField));
                             propertyFinalResolvers.put(property, false);
-	            		}else if((isQObject || isGadget) && Modifier.isFinal(declaredField.getModifiers()) && Modifier.isPublic(declaredField.getModifiers())) {
+	            		}else if((isQObject || isGadget) && Modifier.isPublic(declaredField.getModifiers())) {
 	            			String property = declaredField.getName();
 	            			if(!(Modifier.isStatic(declaredField.getModifiers()) && property.equals("staticMetaObject"))) {
 		                		propertyMembers.put(property, declaredField);
@@ -659,6 +660,8 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
             	return m1.toGenericString().compareTo(m2.toGenericString());
             });
             declaredMethods.addAll(Arrays.asList(clazz.getDeclaredMethods()));
+            List<QPair<String,Method>> possibleReaders = Collections.emptyList();
+            Set<Method> usedGetters = new HashSet<>();
             for (Method declaredMethod : declaredMethods) {
                 if(declaredMethod.isSynthetic() 
                         || declaredMethod.isBridge()) {
@@ -920,6 +923,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         	continue;
 
                         propertyReaders.put(name, declaredMethod);
+                        usedGetters.add(declaredMethod);
                         propertyDesignableResolvers.put(name, isDesignable(declaredMethod, clazz));
                                                                                                    
                         propertyScriptableResolvers.put(name, isScriptable(declaredMethod, clazz));
@@ -950,40 +954,55 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                 if ((isQObject || isGadget)
                     && writer == null
                     && reader == null // reader can't be a writer, cause the signature doesn't match, just an optimization
-                    && declaredMethodName.startsWith("set")
-                    && declaredMethodName.length() > 3
-                    && Character.isUpperCase(declaredMethodName.charAt(3))
-                    && isValidSetter(declaredMethod)) {
+                    ) {
+            		if(declaredMethodName.startsWith("set")
+                            && declaredMethodName.length() > 3
+                            && Character.isUpperCase(declaredMethodName.charAt(3))
+                            && isValidSetter(declaredMethod)) {
+            			Class<?> paramType = declaredMethod.getParameterTypes()[0];
+                        String propertyName = Character.toLowerCase(declaredMethodName.charAt(3))
+                                            + declaredMethodName.substring(4);
 
-                    Class<?> paramType = declaredMethod.getParameterTypes()[0];
-                    String propertyName = Character.toLowerCase(declaredMethodName.charAt(3))
-                                        + declaredMethodName.substring(4);
+                        if (!propertyReaders.containsKey(propertyName)) {
+                            // We need a reader as well, and the reader must not be annotated as disabled
+                            // The reader can be called 'xxx', 'getXxx', 'isXxx' or 'hasXxx'
+                            // (just booleans for the last two)
+                            Method readerMethod = findPropertyReader(getDeclaredMethod(clazz, propertyName), propertyName, paramType);
+                            if (readerMethod == null)
+                                readerMethod = findPropertyReader(getDeclaredMethod(clazz, "get" + capitalizeFirst(propertyName)), propertyName, paramType);
+                            if (readerMethod == null && isBoolean(paramType))
+                                readerMethod = findPropertyReader(getDeclaredMethod(clazz, "is" + capitalizeFirst(propertyName)), propertyName, paramType);
+                            if (readerMethod == null && isBoolean(paramType))
+                                readerMethod = findPropertyReader(getDeclaredMethod(clazz, "has" + capitalizeFirst(propertyName)), propertyName, paramType);
 
-                    if (!propertyReaders.containsKey(propertyName)) {
-                        // We need a reader as well, and the reader must not be annotated as disabled
-                        // The reader can be called 'xxx', 'getXxx', 'isXxx' or 'hasXxx'
-                        // (just booleans for the last two)
-                        Method readerMethod = findPropertyReader(getDeclaredMethod(clazz, propertyName), propertyName, paramType);
-                        if (readerMethod == null)
-                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "get" + capitalizeFirst(propertyName)), propertyName, paramType);
-                        if (readerMethod == null && isBoolean(paramType))
-                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "is" + capitalizeFirst(propertyName)), propertyName, paramType);
-                        if (readerMethod == null && isBoolean(paramType))
-                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "has" + capitalizeFirst(propertyName)), propertyName, paramType);
+                            if (readerMethod != null) { // yay
+                                reader = PropertyAnnotation.readerAnnotation(readerMethod);
+                                if (reader == null) {
+                                	usedGetters.add(readerMethod);
+                                    propertyReaders.put(propertyName, readerMethod);
+                                    propertyWriters.computeIfAbsent(propertyName, arrayListFactory()).add(declaredMethod);
 
-                        if (readerMethod != null) { // yay
-                            reader = PropertyAnnotation.readerAnnotation(readerMethod);
-                            if (reader == null) {
-                                propertyReaders.put(propertyName, readerMethod);
-                                propertyWriters.computeIfAbsent(propertyName, arrayListFactory()).add(declaredMethod);
-
-                                propertyDesignableResolvers.put(propertyName, isDesignable(readerMethod, clazz));
-                                propertyScriptableResolvers.put(propertyName, isScriptable(readerMethod, clazz));
-                                propertyUserResolvers.put(propertyName, isUser(readerMethod, clazz));
-                                propertyRequiredResolvers.put(propertyName, isRequired(readerMethod, clazz));
+                                    propertyDesignableResolvers.put(propertyName, isDesignable(readerMethod, clazz));
+                                    propertyScriptableResolvers.put(propertyName, isScriptable(readerMethod, clazz));
+                                    propertyUserResolvers.put(propertyName, isUser(readerMethod, clazz));
+                                    propertyRequiredResolvers.put(propertyName, isRequired(readerMethod, clazz));
+                                }
                             }
                         }
-                    }
+            		}else if(isValidGetter(declaredMethod)){
+            			int offset = 3;
+            			if((   declaredMethodName.startsWith("get") 
+            				|| (isBoolean(declaredMethod.getReturnType()) && declaredMethodName.startsWith("has"))
+            				|| (isBoolean(declaredMethod.getReturnType()) && (--offset==2) && declaredMethodName.startsWith("is"))
+            			   ) && declaredMethodName.length() > offset
+                             && Character.isUpperCase(declaredMethodName.charAt(offset))) {
+	            			String propertyName = Character.toLowerCase(declaredMethodName.charAt(offset))
+	                                + declaredMethodName.substring(offset+1);
+	            			if(possibleReaders.isEmpty())
+	            				possibleReaders = new ArrayList<>();
+	            			possibleReaders.add(new QPair<>(propertyName, declaredMethod));
+            			}
+            		}
                 }
                 
                 // Rules for notifys:
@@ -1008,6 +1027,19 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                     	possibleBindables.add(declaredMethod);
                     }
                 }
+            }
+            
+            for(QPair<String,Method> pair : possibleReaders) {
+            	if (!propertyReaders.containsKey(pair.first) && !usedGetters.contains(pair.second)) {
+            		Field signalField = signals.get(pair.first);
+                    if(signalField!=null && SignalUtility.AbstractSignal.class.isAssignableFrom(pair.second.getReturnType()))
+                    	continue;
+            		propertyReaders.put(pair.first, pair.second);
+            		propertyDesignableResolvers.put(pair.first, isDesignable(pair.second, clazz));
+                    propertyScriptableResolvers.put(pair.first, isScriptable(pair.second, clazz));
+                    propertyUserResolvers.put(pair.first, isUser(pair.second, clazz));
+                    propertyRequiredResolvers.put(pair.first, isRequired(pair.second, clazz));
+            	}
             }
             
             for(Method possibleBindable : possibleBindables) {
@@ -2058,7 +2090,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
         	String name = member.getName();
             switch(type) {
             case Resetter:
-            	if(name.startsWith("reset") && name.length() > 5) {
+            	if((name.startsWith("clear") || name.startsWith("reset")) && name.length() > 5) {
             		return removeAndLowercaseFirst(name, 5);
             	}
                 return "";

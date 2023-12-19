@@ -283,7 +283,28 @@ TypeSystem{
     ObjectType{
         name: "QWebEngineUrlSchemeHandler"
     }
-    
+
+    ObjectType{
+        name: "QWebEngineWebAuthUXRequest"
+        EnumType{
+            name: "WebAuthUXState"
+        }
+        EnumType{
+            name: "PINEntryReason"
+        }
+        EnumType{
+            name: "PINEntryError"
+        }
+        EnumType{
+            name: "RequestFailureReason"
+        }
+        since: 6.7
+    }
+    ObjectType{
+        name: "QWebEngineWebAuthPINRequest"
+        since: 6.7
+    }
+
     ObjectType{
         name: "QWebEngineClientCertificateStore"
         ppCondition: "QT_CONFIG(ssl)"

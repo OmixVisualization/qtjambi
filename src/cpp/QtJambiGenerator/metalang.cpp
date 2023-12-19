@@ -266,8 +266,8 @@ bool MetaFunction::needsCallThrough() const {
                 || arg->type()->isTargetLangFlags()
                 || arg->type()->typeEntry()->isNativeIdBased())
             return true;
-        if(argumentTypeArray(arg->argumentIndex()+1) || argumentTypeBuffer(arg->argumentIndex()+1)){
-            int minArrayLength = argumentTypeArrayLengthMinValue(arg->argumentIndex()+1);
+        if(useArgumentAsArray(arg->argumentIndex()+1) || useArgumentAsBuffer(arg->argumentIndex()+1)){
+            int minArrayLength = arrayOrBufferLengthMinValue(arg->argumentIndex()+1);
             if(minArrayLength>0)
                 return true;
         }
@@ -456,15 +456,13 @@ uint MetaFunction::compareTo(const MetaFunction *other) const {
                 break;
             }
             if(min_arg->type()->typeEntry()==max_arg->type()->typeEntry()
-                    && min_arg->type()->typeEntry()->isContainer()){
-                if(reinterpret_cast<const ContainerTypeEntry*>(min_arg->type()->typeEntry())->type()==ContainerTypeEntry::InitializerListContainer){
-                    if(min_arg->type()->instantiations().size()==1
-                            && max_arg->type()->instantiations().size()==1){
-                        if (min_arg->type()->instantiations()[0]->typeEntry() != max_arg->type()->instantiations()[0]->typeEntry()
-                                && min_arg->type()->instantiations()[0]->typeEntry()->qualifiedTargetLangName() != max_arg->type()->instantiations()[0]->typeEntry()->qualifiedTargetLangName()) {
-                            same = false;
-                            break;
-                        }
+                    && min_arg->type()->typeEntry()->isInitializerList()){
+                if(min_arg->type()->instantiations().size()==1
+                        && max_arg->type()->instantiations().size()==1){
+                    if (min_arg->type()->instantiations()[0]->typeEntry() != max_arg->type()->instantiations()[0]->typeEntry()
+                            && min_arg->type()->instantiations()[0]->typeEntry()->qualifiedTargetLangName() != max_arg->type()->instantiations()[0]->typeEntry()->qualifiedTargetLangName()) {
+                        same = false;
+                        break;
                     }
                 }
             }
@@ -729,8 +727,8 @@ bool MetaFunction::resetObjectAfterUse(int argument_idx) const {
             && !hasConversionRule(TS::ShellCode, argument_idx)
             && typeReplaced(argument_idx).isEmpty()
             && argumentRemoved(argument_idx)==ArgumentRemove_No
-            && !argumentTypeArray(argument_idx)
-            && !argumentTypeBuffer(argument_idx)){
+            && !useArgumentAsArray(argument_idx)
+            && !useArgumentAsBuffer(argument_idx)){
         const MetaArgument *argument = m_arguments[argument_idx-1];
         if(argument->type()->isObject()
             || (argument->type()->isValue()
@@ -1079,7 +1077,42 @@ QList<Parameter> MetaFunction::addedParameterTypes() const
     return result;
 }
 
-QStringList MetaFunction::impliciteCalls(int key) const{
+bool MetaFunction::isForcedExplicit() const{
+    if(implementingClass()->typeEntry()->getNoImplicitConstructors())
+        return true;
+    FunctionModificationList modifications = this->modifications(implementingClass());
+    if(implementingClass()!=declaringClass())
+        modifications << this->modifications(declaringClass());
+    for(const FunctionModification& modification : modifications) {
+        if(modification.isForcedExplicit())
+            return true;
+    }
+    return false;
+}
+
+bool MetaFunction::isForcedImplicit() const{
+    FunctionModificationList modifications = this->modifications(implementingClass());
+    if(implementingClass()!=declaringClass())
+        modifications << this->modifications(declaringClass());
+    for(const FunctionModification& modification : modifications) {
+        if(modification.isForcedImplicit())
+            return true;
+    }
+    return false;
+}
+
+bool MetaFunction::isNoImplicitArguments() const{
+    FunctionModificationList modifications = this->modifications(implementingClass());
+    if(implementingClass()!=declaringClass())
+        modifications << this->modifications(declaringClass());
+    for(const FunctionModification& modification : modifications) {
+        if(modification.isNoImplicitArguments())
+            return true;
+    }
+    return false;
+}
+
+QStringList MetaFunction::implicitCalls(int key) const{
     QStringList result;
     FunctionModificationList modifications = this->modifications(implementingClass());
     if(implementingClass()!=declaringClass())
@@ -1087,11 +1120,40 @@ QStringList MetaFunction::impliciteCalls(int key) const{
     for(const FunctionModification& modification : modifications) {
         for(const ArgumentModification& argument_modification : modification.argument_mods) {
             if(argument_modification.type==ArgumentModification::Default && argument_modification.index == key){
-                result << argument_modification.impliciteCalls;
+                result << argument_modification.implicitCalls;
             }
         }
     }
     return result;
+}
+
+QStringList MetaFunction::inhibitedImplicitCalls(int key) const{
+    QStringList result;
+    FunctionModificationList modifications = this->modifications(implementingClass());
+    if(implementingClass()!=declaringClass())
+        modifications << this->modifications(declaringClass());
+    for(const FunctionModification& modification : modifications) {
+        for(const ArgumentModification& argument_modification : modification.argument_mods) {
+            if(argument_modification.type==ArgumentModification::Default && argument_modification.index == key){
+                result << argument_modification.inhibitedImplicitCalls;
+            }
+        }
+    }
+    return result;
+}
+
+bool MetaFunction::isNoImplicitCalls(int key) const{
+    FunctionModificationList modifications = this->modifications(implementingClass());
+    if(implementingClass()!=declaringClass())
+        modifications << this->modifications(declaringClass());
+    for(const FunctionModification& modification : modifications) {
+        for(const ArgumentModification& argument_modification : modification.argument_mods) {
+            if(argument_modification.type==ArgumentModification::Default && argument_modification.index == key && argument_modification.no_implicit_calls){
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 ArgumentRemove MetaFunction::argumentRemoved(int key) const {
@@ -1106,9 +1168,13 @@ ArgumentRemove MetaFunction::argumentRemoved(int key) const {
                 if (argument_modification.removed) {
                     return ArgumentRemove_Remove;
                 }
-            }else if (argument_modification.useAsArrayType.testFlag(AsArrayType::Yes)
-                          && argument_modification.arrayLengthParameter == key) {
-                return ArgumentRemove_UseAsLength;
+            }else if(argument_modification.arrayLengthParameter == key){
+                if (argument_modification.useAsBufferType.testFlag(AsBufferType::Yes)) {
+                    return ArgumentRemove_UseAsLength;
+                }else if (argument_modification.useAsArrayType.testFlag(AsArrayType::Yes)
+                    && argument_modification.useAsArrayType.testFlag(AsArrayType::NoOffset)) {
+                    return ArgumentRemove_UseAsLength;
+                }
             }
         }
     }
@@ -1136,9 +1202,13 @@ ArgumentRemove MetaFunctional::argumentRemoved(int key) const {
         if (argument_modification.index == key) {
             if (argument_modification.removed) {
                 return ArgumentRemove_Remove;
-            }else if (argument_modification.useAsArrayType.testFlag(AsArrayType::Yes)
-                        && argument_modification.arrayLengthParameter == key) {
-                return ArgumentRemove_UseAsLength;
+            }else if(argument_modification.arrayLengthParameter == key){
+                if (argument_modification.useAsBufferType.testFlag(AsBufferType::Yes)) {
+                    return ArgumentRemove_UseAsLength;
+                }else if (argument_modification.useAsArrayType.testFlag(AsArrayType::Yes)
+                    && argument_modification.useAsArrayType.testFlag(AsArrayType::NoOffset)) {
+                    return ArgumentRemove_UseAsLength;
+                }
             }
         }
     }
@@ -1279,10 +1349,25 @@ bool MetaFunction::isRemovedFrom(const MetaClass *cls, TS::Language language) co
     }
 
     return false;
-
 }
 
-int MetaFunction::argumentTypeArrayLengthIndex(int key) const{
+QString MetaFunction::arrayOrBufferLengthExpression(int key) const{
+    FunctionModificationList modifications = this->modifications(implementingClass());
+    if(implementingClass()!=declaringClass())
+        modifications << this->modifications(declaringClass());
+    for(const FunctionModification& modification : modifications) {
+        for(const ArgumentModification& argument_modification : modification.argument_mods) {
+            if (argument_modification.index == key
+                && (argument_modification.useAsArrayType.testFlag(AsArrayType::Yes)
+                    || argument_modification.useAsBufferType.testFlag(AsBufferType::Yes))) {
+                return argument_modification.arrayLengthExpression;
+            }
+        }
+    }
+    return {};
+}
+
+int MetaFunction::arrayOrBufferLengthIndex(int key) const{
     FunctionModificationList modifications = this->modifications(implementingClass());
     if(implementingClass()!=declaringClass())
         modifications << this->modifications(declaringClass());
@@ -1291,7 +1376,8 @@ int MetaFunction::argumentTypeArrayLengthIndex(int key) const{
             if(argument_modification.type!=ArgumentModification::Default)
                 continue;
             if (argument_modification.index == key
-                    && argument_modification.useAsArrayType.testFlag(AsArrayType::Yes)) {
+                && (argument_modification.useAsArrayType.testFlag(AsArrayType::Yes)
+                    || argument_modification.useAsBufferType.testFlag(AsBufferType::Yes))) {
                 return argument_modification.arrayLengthParameter;
             }
         }
@@ -1300,7 +1386,7 @@ int MetaFunction::argumentTypeArrayLengthIndex(int key) const{
     return -1;
 }
 
-int MetaFunction::argumentTypeArrayLengthMinValue(int key) const{
+int MetaFunction::arrayOrBufferLengthMinValue(int key) const{
     FunctionModificationList modifications = this->modifications(implementingClass());
     if(implementingClass()!=declaringClass())
         modifications << this->modifications(declaringClass());
@@ -1309,7 +1395,8 @@ int MetaFunction::argumentTypeArrayLengthMinValue(int key) const{
             if(argument_modification.type!=ArgumentModification::Default)
                 continue;
             if (argument_modification.index == key
-                    && argument_modification.useAsArrayType.testFlag(AsArrayType::Yes)) {
+                && (argument_modification.useAsArrayType.testFlag(AsArrayType::Yes)
+                    || argument_modification.useAsBufferType.testFlag(AsBufferType::Yes))) {
                 return argument_modification.minArrayLength;
             }
         }
@@ -1317,7 +1404,7 @@ int MetaFunction::argumentTypeArrayLengthMinValue(int key) const{
     return -1;
 }
 
-int MetaFunction::argumentTypeArrayLengthMaxValue(int key) const{
+int MetaFunction::arrayOrBufferLengthMaxValue(int key) const{
     FunctionModificationList modifications = this->modifications(implementingClass());
     if(implementingClass()!=declaringClass())
         modifications << this->modifications(declaringClass());
@@ -1326,7 +1413,8 @@ int MetaFunction::argumentTypeArrayLengthMaxValue(int key) const{
             if(argument_modification.type!=ArgumentModification::Default)
                 continue;
             if (argument_modification.index == key
-                    && argument_modification.useAsArrayType.testFlag(AsArrayType::Yes)) {
+                    && (argument_modification.useAsArrayType.testFlag(AsArrayType::Yes)
+                    || argument_modification.useAsBufferType.testFlag(AsBufferType::Yes))) {
                 return argument_modification.maxArrayLength;
             }
         }
@@ -1334,37 +1422,51 @@ int MetaFunction::argumentTypeArrayLengthMaxValue(int key) const{
     return -1;
 }
 
-int MetaFunctional::argumentTypeArrayLengthIndex(int key) const{
+QString MetaFunctional::arrayOrBufferLengthExpression(int key) const{
     for(const ArgumentModification& argument_modification : this->typeEntry()->argumentModification()) {
         if (argument_modification.index == key
-                && argument_modification.useAsArrayType.testFlag(AsArrayType::Yes)) {
+            && (argument_modification.useAsArrayType.testFlag(AsArrayType::Yes)
+                || argument_modification.useAsBufferType.testFlag(AsBufferType::Yes))) {
+            return argument_modification.arrayLengthExpression;
+        }
+    }
+    return {};
+}
+
+int MetaFunctional::arrayOrBufferLengthIndex(int key) const{
+    for(const ArgumentModification& argument_modification : this->typeEntry()->argumentModification()) {
+        if (argument_modification.index == key
+                && (argument_modification.useAsArrayType.testFlag(AsArrayType::Yes)
+                || argument_modification.useAsBufferType.testFlag(AsBufferType::Yes))) {
             return argument_modification.arrayLengthParameter;
         }
     }
     return -1;
 }
 
-int MetaFunctional::argumentTypeArrayLengthMinValue(int key) const{
+int MetaFunctional::arrayOrBufferLengthMinValue(int key) const{
     for(const ArgumentModification& argument_modification : this->typeEntry()->argumentModification()) {
         if (argument_modification.index == key
-                && argument_modification.useAsArrayType.testFlag(AsArrayType::Yes)) {
+                && (argument_modification.useAsArrayType.testFlag(AsArrayType::Yes)
+                || argument_modification.useAsBufferType.testFlag(AsBufferType::Yes))) {
             return argument_modification.minArrayLength;
         }
     }
     return -1;
 }
 
-int MetaFunctional::argumentTypeArrayLengthMaxValue(int key) const{
+int MetaFunctional::arrayOrBufferLengthMaxValue(int key) const{
     for(const ArgumentModification& argument_modification : this->typeEntry()->argumentModification()) {
         if (argument_modification.index == key
-                && argument_modification.useAsArrayType.testFlag(AsArrayType::Yes)) {
+                && (argument_modification.useAsArrayType.testFlag(AsArrayType::Yes)
+                || argument_modification.useAsBufferType.testFlag(AsBufferType::Yes))) {
             return argument_modification.maxArrayLength;
         }
     }
     return -1;
 }
 
-bool MetaFunction::argumentTypeArrayDeref(int key) const{
+bool MetaFunction::useArgumentAsDerefPointer(int key) const{
     FunctionModificationList modifications = this->modifications(implementingClass());
     if(implementingClass()!=declaringClass())
         modifications << this->modifications(declaringClass());
@@ -1373,7 +1475,8 @@ bool MetaFunction::argumentTypeArrayDeref(int key) const{
             if(argument_modification.type!=ArgumentModification::Default)
                 continue;
             if (argument_modification.index == key) {
-                return argument_modification.useAsArrayType.testFlag(AsArrayType::Yes) && argument_modification.useAsArrayType.testFlag(AsArrayType::Deref);
+                return (argument_modification.useAsArrayType.testFlag(AsArrayType::Yes) && argument_modification.useAsArrayType.testFlag(AsArrayType::Deref))
+                       || (argument_modification.useAsBufferType.testFlag(AsBufferType::Yes) && argument_modification.useAsBufferType.testFlag(AsBufferType::Deref));
             }
         }
     }
@@ -1438,7 +1541,7 @@ bool MetaFunction::isRethrowExceptions() const{
     return false;
 }
 
-bool MetaFunction::argumentTypeArray(int key) const{
+bool MetaFunction::useArgumentAsArray(int key) const{
     FunctionModificationList modifications = this->modifications(implementingClass());
     if(implementingClass()!=declaringClass())
         modifications << this->modifications(declaringClass());
@@ -1447,15 +1550,14 @@ bool MetaFunction::argumentTypeArray(int key) const{
             if(argument_modification.type!=ArgumentModification::Default)
                 continue;
             if (argument_modification.index == key) {
-                return argument_modification.useAsArrayType.testFlag(AsArrayType::Yes) && !argument_modification.useAsArrayType.testFlag(AsArrayType::Buffer);
+                return argument_modification.useAsArrayType.testFlag(AsArrayType::Yes);
             }
         }
     }
-
     return false;
 }
 
-bool MetaFunction::argumentTypeBuffer(int key) const{
+bool MetaFunction::useArgumentAsBuffer(int key) const{
     FunctionModificationList modifications = this->modifications(implementingClass());
     if(implementingClass()!=declaringClass())
         modifications << this->modifications(declaringClass());
@@ -1464,15 +1566,48 @@ bool MetaFunction::argumentTypeBuffer(int key) const{
             if(argument_modification.type!=ArgumentModification::Default)
                 continue;
             if (argument_modification.index == key) {
-                return argument_modification.useAsArrayType.testFlag(AsArrayType::Yes) && argument_modification.useAsArrayType.testFlag(AsArrayType::Buffer);
+                return argument_modification.useAsBufferType.testFlag(AsBufferType::Yes);
             }
         }
     }
-
     return false;
 }
 
-bool MetaFunction::argumentTypeArrayVarArgs(int key) const{
+bool MetaFunction::insertArrayOffsetArgument(int key) const{
+    FunctionModificationList modifications = this->modifications(implementingClass());
+    if(implementingClass()!=declaringClass())
+        modifications << this->modifications(declaringClass());
+    for(const FunctionModification& modification : modifications) {
+        for(const ArgumentModification& argument_modification : modification.argument_mods) {
+            if(argument_modification.type!=ArgumentModification::Default)
+                continue;
+            if (argument_modification.index == key) {
+                return argument_modification.useAsArrayType.testFlag(AsArrayType::Yes)
+                        && !argument_modification.useAsArrayType.testFlag(AsArrayType::NoOffset)
+                        && argument_modification.arrayLengthParameter>key;
+            }
+        }
+    }
+    return false;
+}
+
+bool MetaFunction::implementPlainArrayDelegate(int key) const{
+    FunctionModificationList modifications = this->modifications(implementingClass());
+    if(implementingClass()!=declaringClass())
+        modifications << this->modifications(declaringClass());
+    for(const FunctionModification& modification : modifications) {
+        for(const ArgumentModification& argument_modification : modification.argument_mods) {
+            if(argument_modification.type!=ArgumentModification::Default)
+                continue;
+            if (argument_modification.index == key) {
+                return argument_modification.useAsArrayType.testFlag(AsArrayType::Yes) && argument_modification.useAsArrayType.testFlag(AsArrayType::AddPlainDelegate);
+            }
+        }
+    }
+    return false;
+}
+
+bool MetaFunction::useArgumentAsVarArgs(int key) const{
     FunctionModificationList modifications = this->modifications(implementingClass());
     if(implementingClass()!=declaringClass())
         modifications << this->modifications(declaringClass());
@@ -1485,11 +1620,10 @@ bool MetaFunction::argumentTypeArrayVarArgs(int key) const{
             }
         }
     }
-
     return false;
 }
 
-bool MetaFunctional::argumentTypeArrayVarArgs(int key) const{
+bool MetaFunctional::useArgumentAsVarArgs(int key) const{
     for(const ArgumentModification& argument_modification : this->typeEntry()->argumentModification()) {
         if (argument_modification.index == key) {
             return argument_modification.useAsArrayType.testFlag(AsArrayType::Yes) && argument_modification.useAsArrayType.testFlag(AsArrayType::VarArgs);
@@ -1498,28 +1632,53 @@ bool MetaFunctional::argumentTypeArrayVarArgs(int key) const{
     return false;
 }
 
-bool MetaFunctional::argumentTypeArrayDeref(int key) const{
+bool MetaFunctional::useArgumentAsDerefPointer(int key) const{
     for(const ArgumentModification& argument_modification : this->typeEntry()->argumentModification()) {
         if (argument_modification.index == key) {
-            return argument_modification.useAsArrayType.testFlag(AsArrayType::Yes) && argument_modification.useAsArrayType.testFlag(AsArrayType::Deref);
+            return (argument_modification.useAsArrayType.testFlag(AsArrayType::Yes) && argument_modification.useAsArrayType.testFlag(AsArrayType::Deref))
+                   || (argument_modification.useAsBufferType.testFlag(AsBufferType::Yes) && argument_modification.useAsBufferType.testFlag(AsBufferType::Deref));
         }
     }
     return false;
 }
 
-bool MetaFunctional::argumentTypeArray(int key) const{
+bool MetaFunctional::useArgumentAsArray(int key) const{
     for(const ArgumentModification& argument_modification : this->typeEntry()->argumentModification()) {
         if (argument_modification.index == key) {
-            return argument_modification.useAsArrayType.testFlag(AsArrayType::Yes) && !argument_modification.useAsArrayType.testFlag(AsArrayType::Buffer);
+            return argument_modification.useAsArrayType.testFlag(AsArrayType::Yes);
         }
     }
     return false;
 }
 
-bool MetaFunctional::argumentTypeBuffer(int key) const{
+bool MetaFunctional::useArgumentAsBuffer(int key) const{
     for(const ArgumentModification& argument_modification : this->typeEntry()->argumentModification()) {
         if (argument_modification.index == key) {
-            return argument_modification.useAsArrayType.testFlag(AsArrayType::Yes) && argument_modification.useAsArrayType.testFlag(AsArrayType::Buffer);
+            return argument_modification.useAsBufferType.testFlag(AsBufferType::Yes);
+        }
+    }
+    return false;
+}
+
+bool MetaFunctional::insertArrayOffsetArgument(int key) const{
+    for(const ArgumentModification& argument_modification : this->typeEntry()->argumentModification()) {
+        if(argument_modification.type!=ArgumentModification::Default)
+            continue;
+        if (argument_modification.index == key) {
+            return argument_modification.useAsArrayType.testFlag(AsArrayType::Yes)
+                   && !argument_modification.useAsArrayType.testFlag(AsArrayType::NoOffset)
+                   && argument_modification.arrayLengthParameter>key;
+        }
+    }
+    return false;
+}
+
+bool MetaFunctional::implementPlainArrayDelegate(int key) const{
+    for(const ArgumentModification& argument_modification : this->typeEntry()->argumentModification()) {
+        if(argument_modification.type!=ArgumentModification::Default)
+            continue;
+        if (argument_modification.index == key) {
+            return argument_modification.useAsArrayType.testFlag(AsArrayType::Yes) && argument_modification.useAsArrayType.testFlag(AsArrayType::AddPlainDelegate);
         }
     }
     return false;
@@ -1669,8 +1828,7 @@ FunctionModificationList MetaFunction::modifications(const ComplexTypeEntry *ent
                 MetaType *t = arguments.at(i)->type();
                 if(t->isNativePointer() && (t->typeEntry()->isPrimitive() || t->typeEntry()->isVoid()) && t->typeEntry()->qualifiedCppName()!="GLboolean" && t->indirections().size()==1){
                     ArgumentModification mod(i+1);
-                    mod.useAsArrayType |= AsArrayType::Yes;
-                    mod.useAsArrayType |= AsArrayType::Buffer;
+                    mod.useAsBufferType |= AsBufferType::Yes;
                     argumentMods << mod;
                 }
             }
@@ -2057,7 +2215,7 @@ MetaFunctionList MetaClass::virtualOverrideFunctions() const {
 }
 
 bool function_sorter(MetaFunction *a, MetaFunction *b){
-    return a->signature() < b->signature();
+    return a->minimalSignature() < b->minimalSignature();
 };
 
 void MetaClass::sortFunctions() {
@@ -2134,7 +2292,6 @@ void MetaClass::setBaseClass(MetaClass *base_class) {
 
 void MetaClass::setFunctions(const MetaFunctionList &functions) {
     m_functions = functions;
-    //sortFunctions();
 
     // Functions must be sorted by name before next loop
     QString currentName;
@@ -2344,7 +2501,6 @@ void MetaClass::addFunction(MetaFunction *function) {
                 arg->type()->setTypeUsagePattern(MetaType::ObjectPattern);
             }
         }
-        //sortFunctions();
     }
 
     m_has_virtual_slots |= function->isVirtualSlot();
@@ -2452,6 +2608,13 @@ bool MetaClass::generateShellClass() const {
 QPropertySpec *MetaClass::propertySpecForRead(const QString &name) const {
     for (int i = 0; i < m_property_specs.size(); ++i)
         if (name == m_property_specs.at(i)->read())
+            return m_property_specs.at(i);
+    return nullptr;
+}
+
+QPropertySpec *MetaClass::propertySpecForMember(const QString &name) const {
+    for (int i = 0; i < m_property_specs.size(); ++i)
+        if (name == m_property_specs.at(i)->member())
             return m_property_specs.at(i);
     return nullptr;
 }
@@ -2606,6 +2769,10 @@ const MetaFunction *MetaField::setter() const {
         if(accessModifier & Modification::AccessModifierMask){
             m_setter->setVisibility(accessModifier & Modification::AccessModifierMask);
         }
+        if (QPropertySpec *read = m_class->propertySpecForMember(this->name())) {
+            *m_setter += MetaAttributes::PropertyWriter;
+            m_setter->setPropertySpec(read);
+        }
         MetaArgumentList arguments;
         MetaArgument *argument = new MetaArgument;
         argument->setType(type()->copy());
@@ -2659,6 +2826,10 @@ const MetaFunction *MetaField::getter() const {
                                 MetaAttributes::GetterFunction);
         if(accessModifier & Modification::AccessModifierMask){
             m_getter->setVisibility(accessModifier & Modification::AccessModifierMask);
+        }
+        if (QPropertySpec *read = m_class->propertySpecForMember(this->name())) {
+            *m_getter += MetaAttributes::PropertyReader;
+            m_getter->setPropertySpec(read);
         }
         if((attributes() & MetaAttributes::ConstExpr || (isStatic() && type()->isConstant() && type()->indirections().isEmpty()))
                 && (
@@ -2745,7 +2916,7 @@ bool MetaClass::hasExplicitStandardConstructor() const {
         MetaFunctionList functions = queryFunctions(Constructors);
         m_has_explicitstandardconstructor = -1;
         for(MetaFunction *f : functions) {
-            if (f->isExplicit()
+            if (f->isDeclExplicit()
                     && !f->isInvalid()
                     && !f->isEmptyFunction()
                     && !f->isFake()
@@ -2847,7 +3018,7 @@ bool MetaClass::hasExplicitCopyConstructor() const {
         MetaFunctionList functions = queryFunctions(Constructors);
         m_has_explicitcopyconstructor = -1;
         for(MetaFunction *f : functions) {
-            if (f->isExplicit()
+            if (f->isDeclExplicit()
                     && !f->isInvalid()
                     && !f->isEmptyFunction() && !f->isFake()
                     && f->implementingClass()==this

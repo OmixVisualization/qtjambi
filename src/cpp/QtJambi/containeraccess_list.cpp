@@ -645,10 +645,10 @@ int AutoListAccess::registerContainer(const QByteArray& typeName)
                                 }),
                       _copyIter(nullptr)
                 {
-                    IteratorCapabilities& capabilities = reinterpret_cast<IteratorCapabilities&>(_iteratorCapabilities);
-                    capabilities._revision = 1;
-                    capabilities._iteratorCapabilities = QtMetaTypePrivate::BiDirectionalCapability;
-                    capabilities._containerCapabilities = 0;
+                    IteratorCapabilities* capabilities = reinterpret_cast<IteratorCapabilities*>(&_iteratorCapabilities);
+                    capabilities->_revision = 1;
+                    capabilities->_iteratorCapabilities = QtMetaTypePrivate::BiDirectionalCapability;
+                    capabilities->_containerCapabilities = 0;
                 }
 
                 static bool convert(const AbstractConverterFunction *_f, const void *src, void*target){

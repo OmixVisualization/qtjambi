@@ -70,7 +70,7 @@
     <typedef name="directory"
          classname="io.qt.tools.ant.Directory"/>
     <typedef name="file"
-         classname="io.qt.tools.ant.File"/>
+         classname="io.qt.tools.ant.FileDirent"/>
     <componentdef name="less"
          classname="io.qt.tools.ant.IsLessThan"/>
 </antlib>

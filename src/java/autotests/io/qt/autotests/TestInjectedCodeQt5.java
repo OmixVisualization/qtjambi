@@ -35,6 +35,8 @@ package io.qt.autotests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.nio.*;
+
 import org.junit.Test;
 
 import io.qt.autotests.generated.General;
@@ -42,6 +44,7 @@ import io.qt.autotests.generated.TextCodecSubclass;
 import io.qt.core.QByteArray;
 import io.qt.core.QLineF;
 import io.qt.core.QPointF;
+import io.qt.core.QSysInfo;
 import io.qt.core.QTemporaryFile;
 import io.qt.core.QTextCodec;
 import io.qt.gui.QPictureIO;
@@ -69,21 +72,27 @@ public class TestInjectedCodeQt5 extends ApplicationInitializer {
     }
     
     static class TextCodecSubclassSubclass extends TextCodecSubclass {
-        char receivedChar[];
-        byte receivedByte[];
+        char receivedChar[] = {};
+        byte receivedByte[] = {};
         QTextCodec.ConverterState receivedState;
 
         @Override
-        protected QByteArray convertFromUnicode(char[] data, QTextCodec.ConverterState state) {
-            receivedChar = data;
+        protected QByteArray convertFromUnicode(CharBuffer data, QTextCodec.ConverterState state) {
+            receivedChar = new char[data.remaining()];
+            int position = data.position();
+            data.get(receivedChar);
             receivedState = state;
+            ((Buffer)data).position(position);
             return super.convertFromUnicode(data, state);
         }
 
         @Override
-        protected String convertToUnicode(byte[] data, QTextCodec.ConverterState state) {
-            receivedByte = data;
+        protected String convertToUnicode(ByteBuffer data, QTextCodec.ConverterState state) {
+            receivedByte = new byte[data.remaining()];
+            int position = data.position();
+            data.get(receivedByte);
             receivedState = state;
+            ((Buffer)data).position(position);
             return super.convertToUnicode(data, state);
         }
 
@@ -125,10 +134,11 @@ public class TestInjectedCodeQt5 extends ApplicationInitializer {
 
         QTextCodec.ConverterState state = new QTextCodec.ConverterState();
 
-        assertEquals("abba", tcss.callToUnicode(new QByteArray("baab"), state));
+        String result = tcss.callToUnicode(new QByteArray("edde"), state);
+        assertEquals("baab", result);
         assertTrue(state == tcss.receivedState);
         assertTrue(state == tcss.receivedState());
-        assertEquals("baab", new QByteArray(tcss.receivedByte).toString());
+        assertEquals("edde", new QByteArray(tcss.receivedByte).toString());
         tcss.receivedState = null;
         tcss.dispose();
     }
@@ -139,7 +149,8 @@ public class TestInjectedCodeQt5 extends ApplicationInitializer {
         assertTrue(General.internalAccess.isCppOwnership(tcss));
         QTextCodec.ConverterState state = new QTextCodec.ConverterState();
 
-        assertEquals("sas", tcss.callFromUnicode("asa", state).toString());
+        QByteArray result = tcss.callFromUnicode("asa", state);
+        assertEquals("dvd", result.toString());
         assertTrue(state == tcss.receivedState);
         assertTrue(state == tcss.receivedState());
         assertEquals("asa", new String(tcss.receivedChar));

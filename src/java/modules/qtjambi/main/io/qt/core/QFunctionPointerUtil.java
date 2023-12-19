@@ -284,7 +284,7 @@ final class QFunctionPointerUtil {
 				}else if(method.getDeclaringClass()==Object.class){
 					switch(method.getName()) {
 					case "hashCode":
-						return Long.valueOf(QNativePointer.fromObject(iface).pointerAt(0).pointer()).hashCode();
+						return Long.hashCode(QNativePointer.fromObject(iface).pointerAt(0).pointer());
 					case "equals":
 						if(args[0] instanceof QtObjectInterface) {
 							if(Proxy.isProxyClass(args[0].getClass())) {

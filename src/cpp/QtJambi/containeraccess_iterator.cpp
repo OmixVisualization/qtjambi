@@ -197,12 +197,6 @@ AutoAssociativeIteratorAccess::AutoAssociativeIteratorAccess(
         SetValueFn setValue
         )
     : AbstractAssociativeIteratorAccess(),
-      AutoSequentialConstIteratorAccess(valueInternalToExternalConverter,
-                        increment,
-                        decrement,
-                        value,
-                        lessThan,
-                        equals),
       AutoAssociativeConstIteratorAccess(valueInternalToExternalConverter,
                         increment,
                         decrement,

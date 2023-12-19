@@ -31,6 +31,9 @@ package io.qt.uic;
 
 import io.qt.core.QDir;
 
+/**
+ * @hidden
+ */
 public class Option {
 	public boolean copyrightHeader = true;
 	public boolean generateImplemetation;

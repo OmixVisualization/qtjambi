@@ -124,6 +124,7 @@ public:
     inline jsize size() const {return m_size;}
     virtual ~PointerArray();
     Q_DISABLE_COPY(PointerArray)
+    inline JArray array(JNIEnv *env) {return JArray(env->NewLocalRef(m_array));}
 protected:
     PointerArray(JNIEnv *env, CType* pointer, JArray array, jsize size);
     CType* pointer () { return m_pointer; }

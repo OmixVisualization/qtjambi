@@ -47,6 +47,19 @@ TypeSystem{
         target: CodeClass.MetaInfo
         Text{content: "initialize_meta_info_QtMultimedia();"}
     }
+
+    RequiredLibrary{
+        name: "QtMultimediaGstTools"
+        mode: RequiredLibrary.ProvideOnly
+        platforms: ["linux"]
+        until: 5
+    }
+
+    RequiredLibrary{
+        name: "QtMultimediaWidgets"
+        mode: RequiredLibrary.ProvideOnly
+        until: 5
+    }
     
     SuppressedWarning{text: "WARNING(CppImplGenerator) :: protected function '*' in final class '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: visibility of function '*' modified in class '*'"}
@@ -415,12 +428,12 @@ TypeSystem{
             rename: "buffer"
             ModifyArgument{
                 index: 0
-                ReplaceType{
-                    modifiedType: "java.nio.@NonNull ByteBuffer"
+                AsBuffer{
+                    lengthExpression: "__qt_this->mappedBytes(%1)"
                 }
-                ConversionRule{
+                DefineOwnership{
                     codeClass: CodeClass.Native
-                    Text{content: "%out = %env->NewDirectByteBuffer(%in, __qt_this->mappedBytes(%1));"}
+                    ownership: Ownership.Dependent
                 }
             }
             since: [6, 2]
@@ -467,13 +480,12 @@ TypeSystem{
                 rename: "dataAsReadOnlyBuffer"
                 ModifyArgument{
                     index: 0
-                    ReplaceType{
-                        modifiedType: "java.nio.@NonNull ByteBuffer"
+                    AsBuffer{
+                        lengthExpression: "__qt_this->byteCount()"
                     }
-                    ConversionRule{
+                    DefineOwnership{
                         codeClass: CodeClass.Native
-                        Text{content: "%out = %env->NewDirectByteBuffer(const_cast<char*>(%in), __qt_this->byteCount());\n"+
-                                      "%out = Java::Runtime::ByteBuffer::asReadOnlyBuffer(%env, %out);"}
+                        ownership: Ownership.Dependent
                     }
                 }
             }
@@ -510,12 +522,12 @@ TypeSystem{
                 rename: "dataAsBuffer"
                 ModifyArgument{
                     index: 0
-                    ReplaceType{
-                        modifiedType: "java.nio.@NonNull ByteBuffer"
+                    AsBuffer{
+                        lengthExpression: "__qt_this->byteCount()"
                     }
-                    ConversionRule{
+                    DefineOwnership{
                         codeClass: CodeClass.Native
-                        Text{content: "%out = %env->NewDirectByteBuffer(%in, __qt_this->byteCount());"}
+                        ownership: Ownership.Dependent
                     }
                 }
             }
@@ -598,7 +610,8 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject buffer = %env->NewDirectByteBuffer(%in, %2);\n"+
+                    Text{content: "jobject buffer = DataJBuffer(%env, %in, %2).take();\n"+
+                                  "QtJambiAPI::registerDependency(%env, buffer, __this_nativeId);\n"+
                                   "jobject %out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newInstance(%env, buffer, jint(%3), false);"}
                 }
                 ConversionRule{
@@ -686,7 +699,7 @@ TypeSystem{
                                   "%in = 4;\n"+
                                   "%out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newArray(%env, jsize(%in));\n"+
                                   "for(int i=0; i<%in; ++i){\n"+
-                                  "jobject buffer = %env->NewDirectByteBuffer(__qt_%4[i], %2);\n"+
+                                  "jobject buffer = DataJBuffer(%env, __qt_%4[i], %2).take();\n"+
                                   "jobject element = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newInstance(%env, buffer, jint(__qt_%3[i]), false);\n"+
                                   "%env->SetObjectArrayElement(%out, jsize(i), element);\n"+
                                   "JavaException::check(%env QTJAMBI_STACKTRACEINFO );\n"+
@@ -775,7 +788,7 @@ TypeSystem{
                                   "%in = 4;\n"+
                                   "%out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newArray(%env, jsize(%in));\n"+
                                   "for(int i=0; i<%in; ++i){\n"+
-                                  "jobject buffer = %env->NewDirectByteBuffer(__qt_%4[i], %2);\n"+
+                                  "jobject buffer = DataJBuffer(%env, __qt_%4[i], %2).take();\n"+
                                   "jobject element = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newInstance(%env, buffer, jint(__qt_%3[i]), false);\n"+
                                   "%env->SetObjectArrayElement(%out, jsize(i), element);\n"+
                                   "JavaException::check(%env QTJAMBI_STACKTRACEINFO );\n"+
@@ -883,10 +896,7 @@ TypeSystem{
             signature: "normalizedSampleValue(const void*)const"
             ModifyArgument{
                 index: 1
-                ArrayType{
-                    asBuffer: true
-                    minLength: 1
-                }
+                AsBuffer{}
             }
             since: [6, 2]
         }
@@ -921,10 +931,12 @@ TypeSystem{
     
     ValueType{
         name: "QMediaContent"
+        noImplicitConstructors: true
     }
     
     ValueType{
         name: "QMediaResource"
+        noImplicitConstructors: true
     }
     
     ValueType{
@@ -933,6 +945,7 @@ TypeSystem{
     
     ValueType{
         name: "QMediaTimeRange"
+        noImplicitConstructors: true
         ValueType{
             name: "Interval"
             since: [6, 2]
@@ -953,6 +966,7 @@ TypeSystem{
     
     ValueType{
         name: "QMediaServiceProviderHint"
+        noImplicitConstructors: true
 
         EnumType{
             name: "Feature"

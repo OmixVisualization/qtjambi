@@ -117,8 +117,7 @@ public class QPair <T, S> implements Cloneable {
     
     /**
      * Convenient entry-pair converter method for new pair.
-     * @param t
-     * @param s
+     * @param entry
      * @return new pair
      */
     @QtUninvokable
@@ -128,8 +127,7 @@ public class QPair <T, S> implements Cloneable {
     
     /**
      * Convenient pair-entry converter method.
-     * @param t
-     * @param s
+     * @param pair
      * @return new entry
      */
     @QtUninvokable

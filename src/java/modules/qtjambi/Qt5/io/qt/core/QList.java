@@ -366,15 +366,21 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
     public final void removeAt(int i) {
         remove(QtJambi_LibraryUtilities.internal.nativeId(this), i, 1);
     }
-
+	
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#removeFirst">QList::<wbr>removeFirst()</a></code></p>
+     */
     @QtUninvokable
-    public final void removeFirst() {
-        takeFirst();
+    public final T removeFirst() {
+		return takeFirst();
     }
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt/qlist.html#removeFirst">QList::<wbr>removeLast()</a></code></p>
+     */
     @QtUninvokable
-    public final void removeLast() {
-        takeLast();
+    public final T removeLast() {
+		return takeLast();
     }
 
     @QtUninvokable
@@ -599,14 +605,6 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
 		set.unite(this);
         return set;
     }
-	
-	public QList<T> reversed(){
-		QList<T> result = new QList<>(elementMetaType());
-		for(T t : this) {
-			result.add(0, t);
-		}
-    	return result;
-    }
     
     /**
      * <p>See <code>operator&lt;&lt;(QDataStream&amp;,<wbr>QList&lt;T>)</code></p>
@@ -667,7 +665,6 @@ public class QList<T> extends AbstractList<T> implements java.util.List<T>, Clon
     /**
      * Returns a QStringList containing given elements.
      *
-     * @param <T> the {@code QStringList}'s element type
      * @param element0 the first element
      * @param elements subsequent elements
      * @return a {@code QStringList} containing the specified element

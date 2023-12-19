@@ -36,6 +36,9 @@ import java.util.TreeMap;
 import io.qt.uic.ui4.DomProperty;
 import io.qt.uic.ui4.DomString;
 
+/**
+ * @hidden
+ */
 public class Utils {
 	public static Map<String, DomProperty> propertyMap(List<DomProperty> properties)
 	{

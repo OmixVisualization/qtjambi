@@ -1,3 +1,4 @@
 include(../QtJambi/configure.pri)
 
-QT += core x11extras
+QT = core
+linux-g++*: QT += x11extras

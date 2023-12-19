@@ -198,14 +198,13 @@ jobject QtJambiAPI::convertQCharToJavaObject(JNIEnv *env, const QChar &strg)
 {
     jobject returned = Java::QtCore::QChar::newInstance(env, nullptr);
     QChar* sptr = new QChar(strg);
-    if (const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(
+    if (!QtJambiLink::createLinkForNativeObject(
                 env,
                 returned,
                 sptr,
                 LINK_NAME_ARG("QChar")
                 false,
                 false, [](void * ptr,bool){delete reinterpret_cast<QChar*>(ptr);}, QtJambiLink::Ownership::Java)) {
-    } else {
         delete sptr;
         returned = nullptr;
     }
@@ -215,14 +214,13 @@ jobject QtJambiAPI::convertQCharToJavaObject(JNIEnv *env, const QChar &strg)
 jobject QtJambiAPI::convertQCharToJavaObject(JNIEnv *env, QChar *strg)
 {
     jobject returned = Java::QtCore::QChar::newInstance(env, nullptr);
-    if (const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(
+    if (!QtJambiLink::createLinkForNativeObject(
                 env,
                 returned,
                 strg,
                 LINK_NAME_ARG("QChar")
                 false,
                 false, [](void * ptr,bool){delete reinterpret_cast<QChar*>(ptr);}, QtJambiLink::Ownership::None)) {
-    } else {
         returned = nullptr;
     }
     return returned;
@@ -232,14 +230,13 @@ jobject QtJambiAPI::convertQVariantToJavaVariant(JNIEnv *env, const QVariant &va
 {
     jobject returned = Java::QtCore::QVariant::newInstance(env, nullptr);
     QVariant* vptr = new QVariant(variant);
-    if (const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(
+    if (!QtJambiLink::createLinkForNativeObject(
                 env,
                 returned,
                 vptr,
                 LINK_NAME_ARG("QVariant")
                 false,
                 false, [](void * ptr,bool){delete reinterpret_cast<QVariant*>(ptr);}, QtJambiLink::Ownership::Java)) {
-    } else {
         delete vptr;
         returned = nullptr;
     }
@@ -249,14 +246,13 @@ jobject QtJambiAPI::convertQVariantToJavaVariant(JNIEnv *env, const QVariant &va
 jobject QtJambiAPI::convertQVariantToJavaVariant(JNIEnv *env, QVariant *variant)
 {
     jobject returned = Java::QtCore::QVariant::newInstance(env, nullptr);
-    if (const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(
+    if (!QtJambiLink::createLinkForNativeObject(
                 env,
                 returned,
                 variant,
                 LINK_NAME_ARG("QVariant")
                 false,
                 false, [](void * ptr,bool){delete reinterpret_cast<QVariant*>(ptr);}, QtJambiLink::Ownership::None)) {
-    } else {
         returned = nullptr;
     }
     return returned;
@@ -266,14 +262,13 @@ jobject QtJambiAPI::convertQStringToJavaObject(JNIEnv *env, const QString &strg)
 {
     jobject returned = Java::QtCore::QString::newInstance(env, nullptr);
     QString* sptr = new QString(strg);
-    if (const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(
+    if (!QtJambiLink::createLinkForNativeObject(
                 env,
                 returned,
                 sptr,
                 LINK_NAME_ARG("QString")
                 false,
                 false, [](void * ptr,bool){delete reinterpret_cast<QString*>(ptr);}, QtJambiLink::Ownership::Java)) {
-    } else {
         delete sptr;
         returned = nullptr;
     }
@@ -283,14 +278,13 @@ jobject QtJambiAPI::convertQStringToJavaObject(JNIEnv *env, const QString &strg)
 jobject QtJambiAPI::convertQStringToJavaObject(JNIEnv *env, QString *strg)
 {
     jobject returned = Java::QtCore::QString::newInstance(env, nullptr);
-    if (const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(
+    if (!QtJambiLink::createLinkForNativeObject(
                 env,
                 returned,
                 strg,
                 LINK_NAME_ARG("QString")
                 false,
                 false, [](void * ptr,bool){delete reinterpret_cast<QString*>(ptr);}, QtJambiLink::Ownership::None)) {
-    } else {
         returned = nullptr;
     }
     return returned;

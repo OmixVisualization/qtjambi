@@ -289,23 +289,23 @@ public abstract class AbstractInitializeTask extends Task {
 			}
         }
         String javaHome = AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_HOME_TARGET);
-        switch(OSInfo.os()) {
-		case Windows:
-			File jvm;
-			if((jvm = new File(new File(javaHome, "bin"), "java.exe")).exists()) {
-				mySetProperty(-1, "tools.jvm", " (taken from "+Constants.JAVA_HOME_TARGET+")", jvm.getAbsolutePath(), true);
-			}else {
-				mySetProperty(-1, "tools.jvm", " (default)", "java", true);
-			}
-			break;
-		default:
-			if((jvm = new File(new File(javaHome, "bin"), "java")).exists()) {
-				mySetProperty(-1, "tools.jvm", " (taken from "+Constants.JAVA_HOME_TARGET+")", jvm.getAbsolutePath(), true);
-			}else {
-				mySetProperty(-1, "tools.jvm", " (default)", "java", true);
-			}
-			break;
-        }
+        String app = OSInfo.os()==OSInfo.OS.Windows ? "%1$s.exe" : "%1$s";
+        File executable;
+		if((executable = new File(new File(javaHome, "bin"), String.format(app, "java"))).exists()) {
+			mySetProperty(-1, "tools.jvm", " (taken from "+Constants.JAVA_HOME_TARGET+")", executable.getAbsolutePath(), true);
+		}else {
+			mySetProperty(-1, "tools.jvm", " (default)", "java", true);
+		}
+		if((executable = new File(new File(javaHome, "bin"), String.format(app, "javac"))).exists()) {
+			mySetProperty(-1, "tools.javac", " (taken from "+Constants.JAVA_HOME_TARGET+")", executable.getAbsolutePath(), true);
+		}else {
+			mySetProperty(-1, "tools.javac", " (default)", "javac", true);
+		}
+		if((executable = new File(new File(javaHome, "bin"), String.format(app, "javadoc"))).exists()) {
+			mySetProperty(-1, "tools.javadoc", " (taken from "+Constants.JAVA_HOME_TARGET+")", executable.getAbsolutePath(), true);
+		}else {
+			mySetProperty(-1, "tools.javadoc", " (default)", "javadoc", true);
+		}
         return result;
     }
     

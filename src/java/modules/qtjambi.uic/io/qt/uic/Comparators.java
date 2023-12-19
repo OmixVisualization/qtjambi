@@ -35,7 +35,13 @@ import io.qt.uic.ui4.DomFont;
 import io.qt.uic.ui4.DomResourceIcon;
 import io.qt.uic.ui4.DomSizePolicy;
 
+/**
+ * @hidden
+ */
 public class Comparators {
+	/**
+	 * @hidden
+	 */
 	public static class DomFontComparator implements Comparator<DomFont>{
 		public int compare(DomFont v1, DomFont v2) {
 			String family    = v1.hasElementFamily()     ?     v1.elementFamily() : "";
@@ -96,6 +102,9 @@ public class Comparators {
 		}
 	}
 	
+	/**
+	 * @hidden
+	 */
 	public static class DomResourceIconComparator implements Comparator<DomResourceIcon>{
 		public int compare(DomResourceIcon v1, DomResourceIcon v2) {
 			int comp;
@@ -149,6 +158,9 @@ public class Comparators {
 		}
 	}
 	
+	/**
+	 * @hidden
+	 */
 	public static class DomSizePolicyComparator implements Comparator<DomSizePolicy>{
 		public int compare(DomSizePolicy v1, DomSizePolicy v2) {
 		    int hSizeType    = v1.hasElementHSizeType()     ? v1.elementHSizeType()     : -1;

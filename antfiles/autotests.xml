@@ -172,15 +172,15 @@
     <target name="check.junit">
 		<if>
 			<not>
-				<available type="file" file="extjars/junit.jar"/>
+				<available type="file" file="${resourcesdir}/junit.jar"/>
 			</not>
 			<then>
-				<mkdir dir="extjars"/>
-				<get src="${junit.url}" dest="extjars/junit.jar" verbose="true"/>
-				<get src="${hamcrest.url}" dest="extjars/hamcrest.jar" verbose="true"/>
+				<mkdir dir="${resourcesdir}"/>
+				<get src="${junit.url}" dest="${resourcesdir}/junit.jar" verbose="true"/>
+				<get src="${hamcrest.url}" dest="${resourcesdir}/hamcrest.jar" verbose="true"/>
 			</then>
 		</if>
-        <available property="junit.path" type="file" file="extjars/junit.jar"/>
+        <available property="junit.path" type="file" file="${resourcesdir}/junit.jar"/>
         <fail message="Path to JUnit is required to build the Unit Tests. Specify the path in tests.properties">
             <condition>
                 <not>
@@ -194,7 +194,7 @@
         <available property="qtjambi.ssl" type="file" file="${generator.outputdir}/java/io/qt/network/QSslSocket.java"/>
     </target>
 
-    <target name="compile.native.generator" depends="init.build, load-properties, generator.make-impl">
+    <target name="compile.native.generator" unless="${skip-generate}" depends="init.build, load-properties, generator.make-impl">
         <mkdir dir="${outputDir}/tests"/>
         <generator dir="${generator.builddir}/../bin"
                 importdirectories="generator/${psep}${basedir}/src/cpp/autotests"
@@ -404,8 +404,8 @@
 					<include name="qtjambi*-${qtjambi.jar.version}.jar"/>
 					<exclude name="qtjambi-*native-*.jar"/>
 				</fileset>
-				<pathelement location="extjars/junit.jar" />
-				<pathelement location="extjars/hamcrest.jar" />
+				<pathelement location="${resourcesdir}/junit.jar" />
+				<pathelement location="${resourcesdir}/hamcrest.jar" />
             </classpath>
         </javac>
         <antcall inheritrefs="true" target="copy-resources">
@@ -627,14 +627,14 @@
 							<istrue value="${qtjambi.enable-event-thread-affinity-check}"/>
 						</condition>
 						<if>
-							<available type="file" file="extjars/sqlite-jdbc.jar"/>
+							<available type="file" file="${resourcesdir}/sqlite-jdbc.jar"/>
 							<then>
 							</then>
 							<else>
-								<mkdir dir="extjars"/>
+								<mkdir dir="${resourcesdir}"/>
 								<trycatch>
 									<try>
-										<get src="${sqlite.jdbc.download.url}" dest="extjars/sqlite-jdbc.jar" verbose="true"/>
+										<get src="${sqlite.jdbc.download.url}" dest="${resourcesdir}/sqlite-jdbc.jar" verbose="true"/>
 									</try>
 									<catch>
 										<echo>Unable to download ${sqlite.jdbc.download.url}</echo>
@@ -642,16 +642,16 @@
 								</trycatch>
 							</else>
 						</if>
-						<property name="testJdbcPath"   location="extjars/sqlite-jdbc.jar" />
+						<property name="testJdbcPath"   location="${resourcesdir}/sqlite-jdbc.jar" />
 						<if>
-							<available type="file" file="extjars/jna.jar"/>
+							<available type="file" file="${resourcesdir}/jna.jar"/>
 							<then>
 							</then>
 							<else>
-								<mkdir dir="extjars"/>
+								<mkdir dir="${resourcesdir}"/>
 								<trycatch>
 									<try>
-										<get src="${jna.lib.download.url}" dest="extjars/jna.jar" verbose="true"/>
+										<get src="${jna.lib.download.url}" dest="${resourcesdir}/jna.jar" verbose="true"/>
 									</try>
 									<catch>
 										<echo>Unable to download ${jna.lib.download.url}</echo>
@@ -703,10 +703,10 @@
 											<include name="qtjambi*-${qtjambi.jar.version}.jar"/>
 											<exclude name="qtjambi-*native-*.jar"/>
 										</fileset>
-										<pathelement location="extjars/junit.jar" />
-										<pathelement location="extjars/hamcrest.jar" />
-										<pathelement location="extjars/sqlite-jdbc.jar" />
-										<pathelement location="extjars/jna.jar" />
+										<pathelement location="${resourcesdir}/junit.jar" />
+										<pathelement location="${resourcesdir}/hamcrest.jar" />
+										<pathelement location="${resourcesdir}/sqlite-jdbc.jar" />
+										<pathelement location="${resourcesdir}/jna.jar" />
 										<pathelement path="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-${qtjambi.jar.version}.jar" />
 									</classpath>
 									<jvmarg value="-Dio.qt.library-path-override=${qtPath}${psep}${qtJambiPath}${psep}${testLibPath}"/>

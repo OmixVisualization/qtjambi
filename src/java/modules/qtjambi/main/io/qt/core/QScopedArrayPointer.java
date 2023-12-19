@@ -36,6 +36,7 @@ import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.function.ToLongFunction;
+import java.util.logging.Level;
 
 import io.qt.QtUninvokable;
 import io.qt.InternalAccess.Cleanable;
@@ -66,8 +67,13 @@ public final class QScopedArrayPointer<O> implements AutoCloseable {
 			if(cleanup!=null) {
 				try{
 					if(data!=null) {
-						for(O o : data)
-							cleanup.accept(o);
+						for(O o : data) {
+							try{
+								cleanup.accept(o);
+							} catch (Throwable e) {
+								QScopedPointer.logger.log(Level.WARNING, "QScopedArrayPointer cleanup", e);
+							}
+						}
 					}
 				}finally{
 					cleanup = null;
@@ -130,8 +136,9 @@ public final class QScopedArrayPointer<O> implements AutoCloseable {
 			O[] oldData = data.data;
 			data.data = other;
 			if(oldData!=null) {
-				for(O o : oldData)
+				for(O o : oldData) {
 					data.cleanup.accept(o);
+				}
 			}
 		}
 	}
@@ -155,8 +162,10 @@ public final class QScopedArrayPointer<O> implements AutoCloseable {
     @QtUninvokable
 	public void close(){
 		data.close();
-		if(this.data.cleanable!=null)
+		if(this.data.cleanable!=null) {
 			this.data.cleanable.clean();
+			this.data.cleanable = null;
+		}
 	}
 	
     @QtUninvokable

@@ -48,7 +48,7 @@
           jdoc-enabled
       -->
 
-    <target name="tools.generator.qmake" depends="init.build">
+    <target name="tools.generator.qmake" unless="${skip-generate}" depends="init.build">
         <mkdir dir="${generator.builddir}"/>
         <delete quiet="true">
             <fileset dir="${generator.builddir}">
@@ -60,7 +60,7 @@
                 tools="true"/>
     </target>
 
-    <target name="tools.generator.make" depends="tools.generator.qmake">
+    <target name="tools.generator.make" unless="${skip-generate}" depends="tools.generator.qmake">
         <make dir="${generator.builddir}" tools="true"/>
     </target>
 </project>

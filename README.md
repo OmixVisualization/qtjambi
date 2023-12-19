@@ -19,6 +19,7 @@ would simply add the corresponding Java libraries (.jar files) to their Java pro
 
 QtJambi is available for Java 8 or 11 and higher using Qt5.15 and Qt6 in Java on Windows, Android Linux and macOS. 
 Most Qt modules are available as QtJambi module as [listed here](www/Modules.md). All modules are published as Maven Artifact.
+**The native components for Windows available on Maven require Qt binaries for MSVC (msvc2019_64). Mingw Qt is not compatible with QtJambi unless you build it from scratch with Mingw.**
 
 ## Support
 
@@ -35,66 +36,87 @@ Make yourself familiar with [developing applications with QtJambi](www/How-to-de
 
 ### Requirements
 * [Apache Ant](https://ant.apache.org/) (min. 1.10.x)
-* Java Development Kit (e.g. [OpenJDK](https://adoptopenjdk.net/), tested with Java 1.8 and 20)
+* Java Development Kit (e.g. [OpenJDK](https://adoptopenjdk.net/), tested with Java 1.8, 11 and 21)
 * Qt 5.15 or 6.x (using the Qt Online Installer)
 * Minimum required Qt modules: QtCore, QtQml, QtNetwork, QtConcurrent and QtXml
 * C++ compiler and make (Gcc, Clang, MSVC2019)
 * XCode command line tools (macOS only)
 
+When building for Android all required SDK and NDK components are downloaded automatically.
+
 ### Building QtJambi
+
 If you don't need the entire set of Qt modules available in Java edit property `qtjambi.skipped.modules` in `build.properties` and exclude Qt modules you don't need.
 This saves compilation time. Although QtJambi build process requires the availability of QtQml, QtNetwork, QtConcurrent and QtXml, you can skip them from being generated as QtJambi module.
 
-#### Pre-Build Steps On Windows
-* Open the Visual Studio command prompt for x64 architecture.
-> to be found in: --> Start Menu --> Programs --> Visual Studio 2022 --> Visual Studio Tools --> VC
+On Windows open the Visual Studio command prompt for x64 architecture (to be found in: --> Start Menu --> Programs --> Visual Studio 2022 --> Visual Studio Tools --> VC).
+On Linux, macOS or if you intend to use Mingw instead of MSVC open a plain terminal.
 
-* Change to directory of your QtJambi clone
+Change to directory of your QtJambi clone.
 
-* Set paths:
+Add Apache Ant to your `PATH` variable for easy access:
+
+`> set PATH=<path to..>\apache-ant\bin;%PATH%`
+
+If the command line does not find the program `java` by default or if you intend to use specific Java installation add this variable:
 
 `> set JAVA_HOME_TARGET=path to your java jdk`
 
-`> set PATH=...\apache-ant-1.10.3\bin;%PATH%`
-
-`> set QTDIR=C:\Qt\6.5.3\msvc2019_64`
-
-#### Pre-Build Steps On Linux and macOS
-
-* Open a shell and change to directory of your QtJambi clone
-
-* Set paths:
-
-`> export JAVA_HOME_TARGET=path to your java jdk`
-
-`> export QTDIR=/opt/Qt/6.5.3/gcc_64` on Linux
-
-`> export QTDIR=/opt/Qt/6.5.3/macos` on macOS
-
-#### Building Bindings
-
-* build QtJambi:
+Start the build process by following command:
 
 `> ant all`
 
 (This step may take several hours.)
 
-* optionally, create and run unit tests:
+QtJambi's build process will automatically detect installed Qt:
+
+* On Windows it expects Qt to be installed in `C:\Qt`.
+
+* On Linux and macOS it searches for Qt installation in `/opt/Qt`.
+
+* On macOS it additionally searches in `/Library/Qt` and `/System/Qt`.
+
+If Qt has not been found at these locations the build process searches in the user's home directory and in QtJambi's parent directory for Qt installation.
+
+If a Qt installation has been found the build process starts building QtJambi for all Qt versions available.
+
+If no Qt installation has been found the build process tries to detect `qmake` executable (on Linux additionally `qmake-qt5`/`qmake-qt6`).
+
+The generated QtJambi version is based upon the Qt version linked against. Be aware that the patch version number (third) is not necessarily the same for Qt and QtJambi.
+
+Finally, find all Java libraries in directory `<qtjambiversion>/deployment` and native bundles in `<qtjambiversion>/deployment/native`. Additionally, the platform-dependent libraries can be found in `<qtjambiversion>/deployment/platforms`.
+
+#### Additional Options
+
+You can call ant with additional properties as listed below. Therefore use the `-D` command line argument: `ant -Dkey=value all`.
+
+* `qt` - specify comma-separated Qt versions to be used, e.g. `-Dqt="5.15,6.2"`.
+* `qtbase` - specify Qt installer's base directory, e.g. `-Dqtbase=/var/Qt`. Can be combined with `qt`.
+* `qtdir` - specify Qt version and platform directory, e.g. `-Dqtdir=/var/Qt/6.5.3/macos`. This option allows multiple directories separated by path separator. (If this option is specified `qt` and `qtbase` have no effect.)
+* `qmake` - specify a path to a `qmake` program to be used for building QtJambi. (If this option is specified `qt`, `qtbase` and `qtdir` have no effect.)
+* `android` - specify `true` to build QtJambi for Android. Therefore, Qt for Android has to be installed. By specify `-Dandroid=only` ant skips building QtJambi for the build platform. When compiling for Android all required NDK and SDK components are downloaded automatically. Alternatively, specify the Android NDK install path with `-Dndk=...`.
+
+All these properties could also be placed in `build.properties` file.
+
+Alternatively, ant reads following environment variables:
+
+* `QTVERSIONS` - may soecify comma-separated Qt versions to be used
+* `QTBASE` - may specify Qt installer's base directory
+* `QTDIR` - may specify Qt version and platform directory
+* `ANDROID_NDK` - path to installed Android NDK
+
+#### Unit Tests
+
+Optionally, you could create and run unit tests:
 
 `> ant tests.generate tests.run`
 
-* Find unit test results in directory `TestResults`.
-
-* Finally, find all Java libraries in directory `$VERSION/deployment` and all native libraries in platform- and configuration-specific subdirectory, e.g. `native/windows-x64/release`.
+Find unit test results in directory `TestResults`.
 
 #### Cross-Compilation
 
 After building QtJambi for the running operation system you can additionally cross-compile QtJambi for other platforms.
-For instance if you want to build for Android use the following command (on Windows):
-
-`> ant -Dqmake=C:\Qt\6.5.3\android_x86_64\bin\qmake.bat library.native`
-
-or if you want to build for Linux arm:
+For instance if you want to build for Linux arm:
 
 `> ant -Dqmake=/opt/Qt/6.5.3/arm-gnueabi/bin/qmake library.native`
 
@@ -115,7 +137,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `5.15.17`, by `6.5.3` or by `6.6.0`).
+(exchange `$VERSION` either by `5.15.18`, by `6.5.4` or by `6.6.1`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 
@@ -135,7 +157,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.5.3.jar Test.java
+javac -cp qtjambi-6.5.4.jar Test.java
 ```
 
 ### Execute Example
@@ -144,6 +166,7 @@ For execution you need the platform dependent binaries of QtJambi either as self
 For instance, if you are working on Windows download **qtjambi-native-windows-x64-VERSION.jar**
 from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-windows-x64/) and add it to java class path. 
 Additionally, you need *Qt*. Use the [Qt installer](https://www.qt.io/download-qt-installer) to install Qt on your system. Make sure you are using the same Qt version and QtJambi version (e.g. 5.15 or 6.x).
+**When using Maven artifacts for Windows you need to select MSVC 2019 64-Bit (msvc2019_64), as they are not compatible with Mingw Qt.**
 
 When running a QtJambi application you have to make the locations of Qt libraries known to Java.
 Therefore, use the PATH environment (LD_LIBRARY_PATH on Linux, DYLD_LIBRARY_PATH on macOS) 
@@ -153,16 +176,20 @@ In case your Linux distribution provides Qt (of correct version) as system libra
 
 The example program can be executed this way on Windows:
 ``` powershell
-java -cp qtjambi-6.5.3.jar;. -Djava.library.path=C:\Qt\6.5.3\msvc2019_64\bin Test
+java -cp qtjambi-6.5.4.jar;. -Djava.library.path=C:\Qt\6.5.3\msvc2019_64\bin Test
 ```
 On Linux it looks this way:
 ``` bash
-java -cp qtjambi-6.5.3.jar:. -Djava.library.path=<path to>/Qt/6.5.3/gcc_64/lib Test
+java -cp qtjambi-6.5.4.jar:. -Djava.library.path=<path to>/Qt/6.5.3/gcc_64/lib Test
 ```
-On macOS you additionally need to use the start parameter -XstartOnFirstThread:
+On macOS you additionally need to use the start parameter `-XstartOnFirstThread`:
 ``` bash
-java -cp qtjambi-6.5.3.jar:. -Djava.library.path=<path to>/Qt/6.5.3/macos/lib -XstartOnFirstThread Test
+java -cp qtjambi-6.5.4.jar:. -Djava.library.path=<path to>/Qt/6.5.3/macos/lib -XstartOnFirstThread Test
 ```
+
+If the example fails with a `UnsatisfiedLinkError` QtJambi libraries and Qt libraries seem to be incompatible.
+[Read here about library requirements and compatibility.](www/Modules.md)
+
 In general, you can start learning how to use Qt in Java [as it is introduced for C++](https://doc.qt.io/qt-6/gettingstarted.html#create-your-first-applications). 
 There are a couple of specifics for QtJambi that are [introduced here](/www/Characteristics-of-QtJambi.md). 
 Instead of starting your program with a java command as shown above you can deploy your application as executable as [described here](/www/How-to-deploy-QtJambi-applications.md).

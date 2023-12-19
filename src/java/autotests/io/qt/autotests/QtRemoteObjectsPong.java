@@ -67,13 +67,21 @@ public class QtRemoteObjectsPong {
 		
 		{
 			ping.connect(pong);
+			pong.connect(()->{
+				System.out.println("pongSignal emitted");
+			});
+			ping.connect(()->{
+				System.out.println("pingSignal emitted");
+			});
 		}
 		
 		public void emitPing(){
+			System.out.println("Pong.emitPing()");
 			ping.emit();
 		}
 		
 		public void emitPong(){
+			System.out.println("Pong.emitPong()");
 			pong.emit();
 		}
 		

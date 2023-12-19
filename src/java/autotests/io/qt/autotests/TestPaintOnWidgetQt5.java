@@ -34,7 +34,7 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.core.QEventLoop;
+import io.qt.core.*;
 import io.qt.gui.*;
 import io.qt.widgets.*;
 
@@ -42,6 +42,7 @@ public class TestPaintOnWidgetQt5 extends ApplicationInitializer {
 	
     @BeforeClass
     public static void testInitialize() throws Exception {
+		QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
         ApplicationInitializer.testInitializeWithWidgets();
 		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
 	}
@@ -50,6 +51,7 @@ public class TestPaintOnWidgetQt5 extends ApplicationInitializer {
     public void testPaintingInWidgetPaintGLViaBegin() {
     	QPainter[] activePainter = {null};
     	QEventLoop loop = new QEventLoop();
+    	QTimer.singleShot(5000, loop::quit);
     	QOpenGLWidget widget = new QOpenGLWidget() {
 			@Override
 			protected void paintGL() {
@@ -66,7 +68,7 @@ public class TestPaintOnWidgetQt5 extends ApplicationInitializer {
     	widget.setVisible(true);
     	loop.exec();
     	widget.setVisible(false);
-    	assertTrue(activePainter[0]!=null);
+    	assertTrue("paintGL() not called", activePainter[0]!=null);
     	assertTrue(activePainter[0].isDisposed());
     }
     
@@ -74,6 +76,7 @@ public class TestPaintOnWidgetQt5 extends ApplicationInitializer {
     public void testPaintingInWidgetPaintGLViaConstructor() {
     	QPainter[] activePainter = {null};
     	QEventLoop loop = new QEventLoop();
+    	QTimer.singleShot(5000, loop::quit);
     	QOpenGLWidget widget = new QOpenGLWidget() {
 			@Override
 			protected void paintGL() {
@@ -89,7 +92,7 @@ public class TestPaintOnWidgetQt5 extends ApplicationInitializer {
     	widget.setVisible(true);
     	loop.exec();
     	widget.setVisible(false);
-    	assertTrue(activePainter[0]!=null);
+    	assertTrue("paintGL() not called", activePainter[0]!=null);
     	assertTrue(activePainter[0].isDisposed());
     }
     
@@ -97,6 +100,7 @@ public class TestPaintOnWidgetQt5 extends ApplicationInitializer {
     public void testPaintingInWindowPaintGLViaBegin() {
     	QPainter[] activePainter = {null};
     	QEventLoop loop = new QEventLoop();
+    	QTimer.singleShot(5000, loop::quit);
     	QOpenGLWindow widget = new QOpenGLWindow() {
 			@Override
 			protected void paintGL() {
@@ -111,9 +115,10 @@ public class TestPaintOnWidgetQt5 extends ApplicationInitializer {
 			}
     	};
     	widget.setVisible(true);
+    	widget.update();
     	loop.exec();
     	widget.setVisible(false);
-    	assertTrue(activePainter[0]!=null);
+    	assertTrue("paintGL() not called", activePainter[0]!=null);
     	assertTrue(activePainter[0].isDisposed());
     }
     
@@ -121,6 +126,7 @@ public class TestPaintOnWidgetQt5 extends ApplicationInitializer {
     public void testPaintingInWindowPaintGLViaConstructor() {
     	QPainter[] activePainter = {null};
     	QEventLoop loop = new QEventLoop();
+    	QTimer.singleShot(5000, loop::quit);
     	QOpenGLWindow widget = new QOpenGLWindow() {
 			@Override
 			protected void paintGL() {
@@ -134,9 +140,10 @@ public class TestPaintOnWidgetQt5 extends ApplicationInitializer {
 			}
     	};
     	widget.setVisible(true);
+    	widget.update();
     	loop.exec();
     	widget.setVisible(false);
-    	assertTrue(activePainter[0]!=null);
+    	assertTrue("paintGL() not called", activePainter[0]!=null);
     	assertTrue(activePainter[0].isDisposed());
     }
     

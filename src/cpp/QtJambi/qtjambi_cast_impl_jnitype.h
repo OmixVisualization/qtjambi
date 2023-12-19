@@ -1008,11 +1008,16 @@ struct qtjambi_jnitype_caster<false, has_scope,
     static NativeType_out cast(JNIEnv *env, jobject in, const char* name, QtJambiScope* scope){
         if(QtJambiAPI::isQStringObject(env, in)){
             return QAnyStringView(QtJambiAPI::convertJavaObjectToNativeReference<QString>(env, in));
+        }else if(JBufferConstData::isBuffer(env, in)){
+            if(!scope)
+                JavaException::raiseError(env, "Cannot cast to QStringView without scope." QTJAMBI_STACKTRACEINFO );
+            JBufferConstData* buffer = new JBufferConstData(env, in);
+            scope->addDeletion(buffer);
+            return QAnyStringView(buffer->constData<QChar>(), buffer->size<QChar>());
         }else{
             if(!scope)
                 JavaException::raiseError(env, "Cannot cast to QAnyStringView without scope." QTJAMBI_STACKTRACEINFO );
-            in = QtJambiAPI::toJavaString(env, in);
-            return qtjambi_scoped_cast<true,NativeType_out,jobject>::cast(env, in, name, scope);
+            return qtjambi_scoped_cast<true,NativeType_out,jstring>::cast(env, QtJambiAPI::toJavaString(env, in), name, scope);
         }
     }
 };
@@ -1141,6 +1146,12 @@ struct qtjambi_jnitype_caster<false, has_scope,
     static NativeType_out cast(JNIEnv *env, jobject in, const char* name, QtJambiScope* scope){
         if(QtJambiAPI::isQStringObject(env, in)){
             return QStringView(QtJambiAPI::convertJavaObjectToNativeReference<QString>(env, in));
+        }else if(JBufferConstData::isBuffer(env, in)){
+            if(!scope)
+                JavaException::raiseError(env, "Cannot cast to QStringView without scope." QTJAMBI_STACKTRACEINFO );
+            JBufferConstData* buffer = new JBufferConstData(env, in);
+            scope->addDeletion(buffer);
+            return QStringView(buffer->constData<QChar>(), buffer->size<QChar>());
         }else{
             if(!scope)
                 JavaException::raiseError(env, "Cannot cast to QStringView without scope." QTJAMBI_STACKTRACEINFO );
@@ -1244,9 +1255,30 @@ struct qtjambi_jnitype_caster<false, has_scope,
     static NativeType_out cast(JNIEnv *env, jobject in, const char* name, QtJambiScope* scope){
         if(QtJambiAPI::isQStringObject(env, in)){
             return ptr2ref<is_reference || !is_pointer, QString>::value(env, QtJambiAPI::convertJavaObjectToNative<QString>(env, in));
+        }else if(JBufferConstData::isBuffer(env, in)){
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+            if constexpr(is_pointer || is_reference){
+#else
+            if(is_pointer || is_reference){
+#endif
+                if(!scope)
+                    JavaException::raiseError(env, is_pointer ? "Cannot cast to QString* without scope." : "Cannot cast to QString& without scope." QTJAMBI_STACKTRACEINFO );
+                JBufferConstData* buffer = new JBufferConstData(env, in);
+                scope->addDeletion(buffer);
+                QString* result = new QString(buffer->constData<QChar>(), buffer->size<QChar>());
+                return ptr2ref<is_reference || !is_pointer, QString>::value(env, result);
+            }else{
+                JBufferConstData buffer(env, in);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                return QString(buffer.constData<QChar>(), buffer.size<QChar>());
+#else
+                QString result(buffer.constData<QChar>(), buffer.size<QChar>());
+                return ptr2ref<is_reference || !is_pointer, QString>::value(env, &result);
+#endif
+            }
         }else{
             if((is_pointer || is_reference) && !scope)
-                JavaException::raiseError(env, is_pointer ? "Cannot cast to QStringView* without scope." : "Cannot cast to QStringView& without scope." QTJAMBI_STACKTRACEINFO );
+                JavaException::raiseError(env, is_pointer ? "Cannot cast to QString* without scope." : "Cannot cast to QString& without scope." QTJAMBI_STACKTRACEINFO );
             return qtjambi_scoped_cast<is_pointer||is_reference,NativeType_out,jstring>::cast(env, QtJambiAPI::toJavaString(env, in), name, scope);
         }
     }

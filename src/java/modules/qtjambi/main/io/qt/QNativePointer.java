@@ -179,6 +179,8 @@ public final class QNativePointer {
     }
     
     private QNativePointer(Type type, long size, int indirections, boolean isReadOnly) {
+    	data = new Data();
+    	QtJambi_LibraryUtilities.internal.registerCleaner(this, this.data::dispose);
         if (indirections < 1)
             throw new IllegalArgumentException("level of indirection must be at least 1");
         if (size == 0)
@@ -193,6 +195,8 @@ public final class QNativePointer {
     
     @NativeAccess
     private QNativePointer(int type, long size, int indirections, long ptr, boolean isReadOnly) {
+    	data = new Data();
+    	QtJambi_LibraryUtilities.internal.registerCleaner(this, this.data::dispose);
         data.m_ptr = ptr;
         data.m_type = Type.resolve(type);
         data.m_knownSize = size;
@@ -207,7 +211,13 @@ public final class QNativePointer {
     }
     
     @NativeAccess
-    private QNativePointer(Buffer buffer, long ptr) {
+    private QNativePointer(Buffer buffer, long ptr, long bufferAccess) {
+    	if(buffer.isDirect()) {
+    		data = new Data();
+    	}else {
+    		data = new BufferData(bufferAccess, buffer);
+    	}
+    	QtJambi_LibraryUtilities.internal.registerCleaner(this, this.data::dispose);
         data.m_ptr = ptr;
         if(buffer instanceof ByteBuffer)
         	data.m_type = Type.Byte;
@@ -226,19 +236,17 @@ public final class QNativePointer {
         else
         	data.m_type = Type.Pointer;
 
-        data.m_knownSize = buffer.capacity();
+        data.m_knownSize = buffer.remaining();
         data.m_indirections = 1;
+        data.m_isReadonly = buffer.isReadOnly();
         if(buffer.isDirect()) {
         	QtJambi_LibraryUtilities.internal.registerCleaner(buffer, data::reset);
-        	data.m_autodelete = AutoDeleteMode.None;
-        	data.m_isReadonly = buffer.isReadOnly();
-        }else {
-            data.m_autodelete = data.m_knownSize == 1 ? AutoDeleteMode.Delete : AutoDeleteMode.DeleteArray;
-            data.m_isReadonly = false;
         }
     }
 
     private QNativePointer() {
+    	data = new Data();
+    	QtJambi_LibraryUtilities.internal.registerCleaner(this, this.data::dispose);
     	data.m_knownSize = -1;
     	data.m_autodelete = AutoDeleteMode.None;
     };
@@ -1347,8 +1355,7 @@ public final class QNativePointer {
             return null;
         byte[] data = string.getBytes();
         QNativePointer s = new QNativePointer(QNativePointer.Type.Byte, data.length + 1);
-        for (int i = 0; i < data.length; ++i)
-            s.setByteAt(i, data[i]);
+        copyFromB(s.data.m_ptr, data);
         s.setByteAt(data.length, (byte) 0);
         return s;
     }
@@ -1433,35 +1440,37 @@ public final class QNativePointer {
     private static native void writeString(long ptr, long pos, String value);
     private static native long createPointer(int type, long size, int indirections);
     private static native void deletePointer(long ptr, int type, int deleteMode);
+    private static native void deleteBufferAccess(long ptr, boolean readOnly);
     
-    private final Data data = new Data();
-    {
-    	QtJambi_LibraryUtilities.internal.registerCleaner(this, this.data::dispose);
-    }
+    private final Data data;
 
     public final void invalidate() {
 		data.dispose();
 	}
     
     private static class Data{
-        private long m_ptr;
-        private Type m_type;
-        private long m_knownSize;
-        private AutoDeleteMode m_autodelete;
-        private int m_indirections;
-        private boolean m_isReadonly;
-        private boolean m_isInvalid = false;
+        long m_ptr = 0;
+        private Type m_type = Type.Pointer;
+        private long m_knownSize = 0;
+        AutoDeleteMode m_autodelete = AutoDeleteMode.None;
+        private int m_indirections = 0;
+        private boolean m_isReadonly = true;
+        boolean m_isInvalid = false;
         private boolean m_verification_enabled = true;
         private List<WeakReference<? extends QtObjectInterface>> m_dependentObjects;
         
-        void dispose() {
+        void invalidateDependentObjects() {
         	if(m_dependentObjects!=null) {
         		for(WeakReference<? extends QtObjectInterface> object : m_dependentObjects) {
         			QtJambi_LibraryUtilities.internal.invalidateObject(object.get());
         		}
         		m_dependentObjects = null;
         	}
-            switch (m_autodelete) {
+        }
+        
+        void dispose() {
+        	invalidateDependentObjects();
+        	switch (m_autodelete) {
             case Free:
                 free();
                 break;
@@ -1502,13 +1511,33 @@ public final class QNativePointer {
             m_ptr = 0;
         }
         
-        private boolean isNull() {
+        boolean isNull() {
             return m_ptr == 0;
         }
         
         void reset() {
         	m_ptr = 0;
         }
+    }
+    
+    private static class BufferData extends Data{
+    	private final long m_bufferAccess;
+    	private final Buffer buffer;
+    	
+    	BufferData(long m_bufferAccess, Buffer buffer) {
+			this.m_bufferAccess = m_bufferAccess;
+			this.buffer = buffer;
+			m_autodelete = AutoDeleteMode.Delete;
+		}
+		void dispose() {
+            if (isNull())
+                return;
+        	invalidateDependentObjects();
+        	deleteBufferAccess(m_bufferAccess, buffer.isReadOnly());
+        	m_ptr = 0;
+            m_autodelete = AutoDeleteMode.None;
+            m_isInvalid = true;
+    	}
     }
     
     /**

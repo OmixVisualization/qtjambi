@@ -47,6 +47,7 @@ import io.qt.autotests.qmlreg.PointFForeignExtendedByQObjectWrapper;
 import io.qt.core.QByteArray;
 import io.qt.core.QLibraryInfo;
 import io.qt.core.QObject;
+import io.qt.core.QUrl;
 import io.qt.core.QVersionNumber;
 import io.qt.gui.QTextLayout;
 import io.qt.qml.QQmlComponent;
@@ -89,7 +90,7 @@ public class TestQmlTypesQt6 extends ApplicationInitializer{
 		});
 		
 		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		QObject root = component.create();
@@ -127,7 +128,7 @@ public class TestQmlTypesQt6 extends ApplicationInitializer{
 		});
 		
 		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		QObject root = component.create();
@@ -185,7 +186,7 @@ public class TestQmlTypesQt6 extends ApplicationInitializer{
 		});
 		
 		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		QObject root = component.create();
@@ -247,7 +248,7 @@ public class TestQmlTypesQt6 extends ApplicationInitializer{
 		});
 		
 		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		QObject root = component.create();

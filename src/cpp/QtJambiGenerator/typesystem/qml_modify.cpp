@@ -97,6 +97,19 @@ void ModifyArgument::setValueAsPointer(bool newValueAsPointer)
     emit valueAsPointerChanged();
 }
 
+bool ModifyArgument::getNoImplicitCalls() const
+{
+    return noImplicitCalls;
+}
+
+void ModifyArgument::setNoImplicitCalls(bool newNoImplicitCalls)
+{
+    if (noImplicitCalls == newNoImplicitCalls)
+        return;
+    noImplicitCalls = newNoImplicitCalls;
+    emit noImplicitCallsChanged();
+}
+
 const QString &ReplaceDefaultExpression::getExpression() const
 {
     return expression;
@@ -201,12 +214,12 @@ void ReferenceCount::setAccess(AccessModifications newAccess)
     emit accessChanged();
 }
 
-bool ArrayType::getDeref() const
+bool AsArray::getDeref() const
 {
     return deref;
 }
 
-void ArrayType::setDeref(bool newDeref)
+void AsArray::setDeref(bool newDeref)
 {
     if (deref == newDeref)
         return;
@@ -214,12 +227,12 @@ void ArrayType::setDeref(bool newDeref)
     emit derefChanged();
 }
 
-bool ArrayType::getVarargs() const
+bool AsArray::getVarargs() const
 {
     return varargs;
 }
 
-void ArrayType::setVarargs(bool newVarargs)
+void AsArray::setVarargs(bool newVarargs)
 {
     if (varargs == newVarargs)
         return;
@@ -227,25 +240,12 @@ void ArrayType::setVarargs(bool newVarargs)
     emit varargsChanged();
 }
 
-bool ArrayType::getAsBuffer() const
-{
-    return asBuffer;
-}
-
-void ArrayType::setAsBuffer(bool newAsBuffer)
-{
-    if (asBuffer == newAsBuffer)
-        return;
-    asBuffer = newAsBuffer;
-    emit asBufferChanged();
-}
-
-int ArrayType::getLengthParameter() const
+int AsArray::getLengthParameter() const
 {
     return lengthParameter;
 }
 
-void ArrayType::setLengthParameter(int newLengthParameter)
+void AsArray::setLengthParameter(int newLengthParameter)
 {
     if (lengthParameter == newLengthParameter)
         return;
@@ -253,12 +253,12 @@ void ArrayType::setLengthParameter(int newLengthParameter)
     emit lengthParameterChanged();
 }
 
-int ArrayType::getMinLength() const
+int AsArray::getMinLength() const
 {
     return minLength;
 }
 
-void ArrayType::setMinLength(int newMinLength)
+void AsArray::setMinLength(int newMinLength)
 {
     if (minLength == newMinLength)
         return;
@@ -266,17 +266,56 @@ void ArrayType::setMinLength(int newMinLength)
     emit minLengthChanged();
 }
 
-int ArrayType::getMaxLength() const
+int AsArray::getMaxLength() const
 {
     return maxLength;
 }
 
-void ArrayType::setMaxLength(int newMaxLength)
+void AsArray::setMaxLength(int newMaxLength)
 {
     if (maxLength == newMaxLength)
         return;
     maxLength = newMaxLength;
     emit maxLengthChanged();
+}
+
+bool AsArray::getNoOffset() const
+{
+    return noOffset;
+}
+
+void AsArray::setNoOffset(bool newNoOffset)
+{
+    if (noOffset == newNoOffset)
+        return;
+    noOffset = newNoOffset;
+    emit noOffsetChanged();
+}
+
+bool AsArray::getAddPlainDelegate() const
+{
+    return addPlainDelegate;
+}
+
+void AsArray::setAddPlainDelegate(bool newAddPlainDelegate)
+{
+    if (addPlainDelegate == newAddPlainDelegate)
+        return;
+    addPlainDelegate = newAddPlainDelegate;
+    emit addPlainDelegateChanged();
+}
+
+QString AsArray::getLengthExpression() const
+{
+    return lengthExpression;
+}
+
+void AsArray::setLengthExpression(const QString &newLengthExpression)
+{
+    if (lengthExpression == newLengthExpression)
+        return;
+    lengthExpression = newLengthExpression;
+    emit lengthExpressionChanged();
 }
 
 const QString &ReplaceType::getModifiedType() const
@@ -994,6 +1033,45 @@ void ModifyFunction::setNoKotlinGetter(bool newNoKotlinGetter)
     emit noKotlinGetterChanged();
 }
 
+bool ModifyFunction::getIsForcedExplicit() const
+{
+    return isForcedExplicit;
+}
+
+void ModifyFunction::setIsForcedExplicit(bool newIsForcedExplicit)
+{
+    if (isForcedExplicit == newIsForcedExplicit)
+        return;
+    isForcedExplicit = newIsForcedExplicit;
+    emit isForcedExplicitChanged();
+}
+
+bool ModifyFunction::getIsForcedImplicit() const
+{
+    return isForcedImplicit;
+}
+
+void ModifyFunction::setIsForcedImplicit(bool newIsForcedImplicit)
+{
+    if (isForcedImplicit == newIsForcedImplicit)
+        return;
+    isForcedImplicit = newIsForcedImplicit;
+    emit isForcedImplicitChanged();
+}
+
+bool ModifyFunction::getNoImplicitArguments() const
+{
+    return noImplicitArguments;
+}
+
+void ModifyFunction::setNoImplicitArguments(bool newNoImplicitArguments)
+{
+    if (noImplicitArguments == newNoImplicitArguments)
+        return;
+    noImplicitArguments = newNoImplicitArguments;
+    emit noImplicitArgumentsChanged();
+}
+
 RemoveFlag::Entries Remove::getCodeClass() const
 {
     return codeClass;
@@ -1319,17 +1397,112 @@ void Delegate::setIsSelfReturning(bool newIsSelfReturning)
     emit isSelfReturningChanged();
 }
 
-AddImpliciteCall::AddImpliciteCall(QObject *parent) : AbstractObject(parent){}
+AddImplicitCall::AddImplicitCall(QObject *parent) : AbstractObject(parent){}
 
-QString AddImpliciteCall::getType() const
+QString AddImplicitCall::getType() const
 {
     return type;
 }
 
-void AddImpliciteCall::setType(const QString &newType)
+void AddImplicitCall::setType(const QString &newType)
 {
     if (type == newType)
         return;
     type = newType;
     emit typeChanged();
+}
+
+InhibitImplicitCall::InhibitImplicitCall(QObject *parent) : AbstractObject(parent){}
+
+QString InhibitImplicitCall::getType() const
+{
+    return type;
+}
+
+void InhibitImplicitCall::setType(const QString &newType)
+{
+    if (type == newType)
+        return;
+    type = newType;
+    emit typeChanged();
+}
+
+ImplicitCast::ImplicitCast(QObject *parent) : AbstractObject(parent){}
+
+QString ImplicitCast::getType() const
+{
+    return type;
+}
+
+void ImplicitCast::setType(const QString &newType)
+{
+    if (type == newType)
+        return;
+    type = newType;
+    emit typeChanged();
+}
+
+bool AsBuffer::getDeref() const
+{
+    return deref;
+}
+
+void AsBuffer::setDeref(bool newDeref)
+{
+    if (deref == newDeref)
+        return;
+    deref = newDeref;
+    emit derefChanged();
+}
+
+int AsBuffer::getLengthParameter() const
+{
+    return lengthParameter;
+}
+
+void AsBuffer::setLengthParameter(int newLengthParameter)
+{
+    if (lengthParameter == newLengthParameter)
+        return;
+    lengthParameter = newLengthParameter;
+    emit lengthParameterChanged();
+}
+
+int AsBuffer::getMinLength() const
+{
+    return minLength;
+}
+
+void AsBuffer::setMinLength(int newMinLength)
+{
+    if (minLength == newMinLength)
+        return;
+    minLength = newMinLength;
+    emit minLengthChanged();
+}
+
+int AsBuffer::getMaxLength() const
+{
+    return maxLength;
+}
+
+void AsBuffer::setMaxLength(int newMaxLength)
+{
+    if (maxLength == newMaxLength)
+        return;
+    maxLength = newMaxLength;
+    emit maxLengthChanged();
+}
+
+QString AsBuffer::getLengthExpression() const
+{
+    return lengthExpression;
+}
+
+void AsBuffer::setLengthExpression(const QString &newLengthExpression)
+{
+    if (lengthExpression == newLengthExpression)
+        return;
+    lengthExpression = newLengthExpression;
+    emit lengthExpressionChanged();
 }

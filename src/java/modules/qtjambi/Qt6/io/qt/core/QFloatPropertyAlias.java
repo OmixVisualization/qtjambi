@@ -110,13 +110,13 @@ public final class QFloatPropertyAlias extends QAbstractPropertyAlias {
 	 * Creates a new alias to the provided alias.
 	 * @param other
 	 */
-	public QFloatPropertyAlias(@StrictNonNull QFloatPropertyAlias alias) {
-		super(alias);
+	public QFloatPropertyAlias(@StrictNonNull QFloatPropertyAlias other) {
+		super(other);
 	}
 	
 	/**
 	 * Creates a new alias to the provided binding's underlying property.
-	 * @param other
+	 * @param bindable
 	 */
 	public QFloatPropertyAlias(@StrictNonNull QFloatBindable bindable) {
 		super(bindable.data(), bindable.iface());
@@ -124,7 +124,7 @@ public final class QFloatPropertyAlias extends QAbstractPropertyAlias {
 	
 	/**
 	 * Creates a new alias to the provided binding's underlying property.
-	 * @param other
+	 * @param bindable
 	 */
 	public QFloatPropertyAlias(@StrictNonNull QBindable<@NonNull@QtPrimitiveType Float> bindable) {
 		super(bindable.data(), bindable.iface());

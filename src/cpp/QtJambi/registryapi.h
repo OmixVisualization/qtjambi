@@ -36,6 +36,11 @@
 #include "utils.h"
 #include "typetests.h"
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
+QT_WARNING_DISABLE_DEPRECATED
+#endif
+
 class QtJambiScope;
 class AbstractContainerAccess;
 
@@ -288,7 +293,7 @@ typedef void (*AfterRegistrationFunction)(int);
 typedef AbstractContainerAccess*(*NewContainerAccessFunction)();
 typedef bool (*PolymorphyHandler)(void *object, qintptr& offset);
 typedef jobject(* FunctionalResolver)(JNIEnv*,const void*);
-typedef const std::type_info& (*TypeInfoSupplier)(const void *object);
+typedef const std::type_info* (*TypeInfoSupplier)(const void *object);
 
 namespace RegistryAPI{
 
@@ -611,9 +616,15 @@ namespace Private{
 
 template<typename T, bool = std::is_polymorphic<T>::value>
 struct PolymorphicTypeInfoSupplier{
-    static const std::type_info& value(const void *ptr) {
+    static const std::type_info* value(const void *ptr) {
         const T* object = reinterpret_cast<const T*>(ptr);
-        return typeid(*object);
+        try{
+            return &typeid(*object);
+        }catch(const std::bad_typeid&){
+            return nullptr;
+        }catch(...){
+            return nullptr;
+        }
     };
 };
 

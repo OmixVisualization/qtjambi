@@ -94,6 +94,6 @@ public:
     }
 };
 
-size_t qHash(const QHttpPart &value, size_t seed){
+hash_type qHash(const QHttpPart &value, hash_type seed){
     return qHash(qintptr(QHttpMultiPartIODevice::d(value)), seed);
 }

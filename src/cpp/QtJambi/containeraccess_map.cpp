@@ -1250,7 +1250,9 @@ AutoMapAccess::Node* AutoMapAccess::rootNode(QMapDataBase *const* map){
 
 AutoMapAccess::Node* AutoMapAccess::beginNode(QMapDataBase *const* map){
     QMapDataBase* d = *map;
-    if (rootNode(map)) return static_cast<Node*>(d->mostLeftNode); return endNode(map);
+    if (rootNode(map))
+        return static_cast<Node*>(d->mostLeftNode);
+    return endNode(map);
     return reinterpret_cast<Node*>(d->header.left);
 }
 

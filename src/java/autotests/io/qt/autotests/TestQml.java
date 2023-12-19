@@ -302,7 +302,7 @@ public class TestQml extends ApplicationInitializer{
 				"}");
 		QQmlEngine engine = new QQmlEngine();
 		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		QObject root = component.create();
@@ -332,7 +332,7 @@ public class TestQml extends ApplicationInitializer{
 				"}");
 		QQmlEngine engine = new QQmlEngine();
 		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		try {
@@ -359,7 +359,7 @@ public class TestQml extends ApplicationInitializer{
 		QQmlIncubationController incubationController = new QQmlIncubationController.Impl();
 		engine.setIncubationController(incubationController);
 		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		try {
@@ -388,7 +388,7 @@ public class TestQml extends ApplicationInitializer{
 		QQmlIncubationController incubationController = new QQmlIncubationController.Impl();
 		engine.setIncubationController(incubationController);
 		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		try {
@@ -416,7 +416,7 @@ public class TestQml extends ApplicationInitializer{
 		QQmlIncubationController incubationController = new QQmlIncubationController.Impl();
 		engine.setIncubationController(incubationController);
 		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		try {
@@ -462,7 +462,7 @@ public class TestQml extends ApplicationInitializer{
 				"}");
 		QQmlEngine engine = new QQmlEngine();
 		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		try {
@@ -486,7 +486,7 @@ public class TestQml extends ApplicationInitializer{
 				"}");
 		QQmlEngine engine = new QQmlEngine();
 		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		try {
@@ -548,7 +548,7 @@ public class TestQml extends ApplicationInitializer{
 				"}");
 		QQmlEngine engine = new QQmlEngine();
 		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		QObject root = component.create();
@@ -581,7 +581,7 @@ public class TestQml extends ApplicationInitializer{
 				"    testChildren: [Item{}]\n" +
 				"}");
 		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(QQmlComponent.Status.Error, component.status());
 		Assert.assertEquals(":5 Cannot assign object to list property \"testChildren\"", component.errorString().trim());
 	}
@@ -599,7 +599,7 @@ public class TestQml extends ApplicationInitializer{
 				"    testItems: [TestChild{}]\n" +
 				"}");
 		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(QQmlComponent.Status.Error, component.status());
 		Assert.assertEquals(":5 Cannot assign object to list property \"testItems\"", component.errorString().trim());
 	}
@@ -634,7 +634,7 @@ public class TestQml extends ApplicationInitializer{
 				"    text: msg.author\n" + 
 				"}");
 		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		QObject root = component.create();
@@ -802,7 +802,7 @@ public class TestQml extends ApplicationInitializer{
 		QQmlEngine engine = new QQmlEngine();
 		QQmlComponent component = new QQmlComponent(engine);
 		engine.rootContext().setContextProperty("messageBoard", messageBoard);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		QObject root = component.create();
@@ -859,7 +859,7 @@ public class TestQml extends ApplicationInitializer{
 		QQmlEngine engine = new QQmlEngine();
 		QQmlComponent component = new QQmlComponent(engine);
 		engine.rootContext().setContextProperty("messageBoard", messageBoard);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		QObject root = component.create();
@@ -902,7 +902,7 @@ public class TestQml extends ApplicationInitializer{
 				"}");
 		QQmlEngine engine = new QQmlEngine();
 		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		QObject root = component.create();
@@ -916,6 +916,15 @@ public class TestQml extends ApplicationInitializer{
 			Assert.assertTrue(weakSingleton.get()!=null);
 		}
 		Assert.assertFalse(disposed[0]);
+		component.dispose();
+		engine.dispose();
+		QtQml.qmlClearTypeRegistrations();
+		for (int i = 0; i < 30; i++) {
+			ApplicationInitializer.runGC();
+			QApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+		}
+		Assert.assertFalse(weakSingleton.get()!=null);
+		Assert.assertTrue(disposed[0]);
 	}
 	
 	@Test
@@ -929,7 +938,7 @@ public class TestQml extends ApplicationInitializer{
 				"}");
 		QQmlEngine engine = new QQmlEngine();
 		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(QQmlComponent.Status.Error, component.status());
 		Assert.assertEquals(":1 module \"io.qt.test\" is not installed", component.errorString().trim());
 	}
@@ -943,14 +952,14 @@ public class TestQml extends ApplicationInitializer{
 				"}");
 		QQmlEngine engine = new QQmlEngine();
 		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(QQmlComponent.Status.Error, component.status());
 		Assert.assertEquals("No Errors", 1, component.errors().size());
 		QtQml.qmlRegisterType(TestChild.class, "io.qt.test", 1, 0, "TestChild");
 		QtQml.qmlRegisterType(TestObject.class, "io.qt.test", 1, 0, "TestObject");
 		engine = new QQmlEngine();
 		component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		QObject root = component.create();
@@ -1000,7 +1009,7 @@ public class TestQml extends ApplicationInitializer{
 				"}");
 		QQmlEngine engine = new QQmlEngine();
 		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		QObject root = component.create();
@@ -1020,7 +1029,7 @@ public class TestQml extends ApplicationInitializer{
 				"}");
 		QQmlEngine engine = new QQmlEngine();
 		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(QQmlComponent.Status.Error, component.status());
 		Assert.assertEquals("No Errors", 1, component.errors().size());
 	}
@@ -1094,7 +1103,7 @@ public class TestQml extends ApplicationInitializer{
 				"}");
 		QQmlEngine engine = new QQmlEngine();
 		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		QObject root = component.create();
@@ -1232,7 +1241,7 @@ public class TestQml extends ApplicationInitializer{
 				"}");
 		QQmlEngine engine = new QQmlEngine();
 		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		QObject item = component.create();
@@ -1278,7 +1287,7 @@ public class TestQml extends ApplicationInitializer{
 				"    id: test\n" + 
 				"}");
 		QQmlComponent component = new QQmlComponent(new QQmlEngine());
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		MultiInterfaceObject root = component.create(MultiInterfaceObject.class);
 		QThread thread = new QThread();
 		thread.start();

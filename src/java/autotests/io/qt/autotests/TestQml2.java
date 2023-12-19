@@ -110,7 +110,7 @@ public class TestQml2 extends ApplicationInitializer{
 				"    Rectangle{objectName: \"rectangle\"}\n" +
 				"}");
 		QQmlComponent component = new QQmlComponent(engine);
-		component.setData(data, null);
+		component.setData(data, (QUrl)null);
 		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
 		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
 		QObject root = component.create();

@@ -353,7 +353,7 @@ final class RetroHelper {
     static void findModules(Set<java.net.URL> modules) throws MalformedURLException{
     	try {
 	    	for(Module module : ModuleLayer.boot().modules()) {
-	    		modules.add(new java.net.URL("jrt:/"+module.getName()+"/"));
+	    		modules.add(CoreUtility.createURL("jrt:/"+module.getName()+"/"));
 	    	}
 		} catch (Throwable e) {}
     }

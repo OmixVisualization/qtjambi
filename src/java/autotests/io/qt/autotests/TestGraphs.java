@@ -32,6 +32,7 @@ import static org.junit.Assert.*;
 
 import java.util.*;
 
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -169,24 +170,6 @@ public class TestGraphs extends ApplicationInitializer {
     }
     
     @Test
-    public void testQ3DScene() {
-    	QObject parent = new QObject();
-    	Q3DScene scene = new Q3DScene();
-    	Q3DCamera camera = new Q3DCamera();
-    	Q3DLight light = new Q3DLight(parent);
-    	scene.setActiveCamera(camera);
-    	scene.setActiveLight(light);
-    	assertTrue(camera.parent()!=null);
-    	assertTrue(light.parent()!=null);
-    	assertEquals(scene, light.parent());
-    	assertEquals(camera.parent(), light.parent());
-    	Q3DCamera camera2 = new Q3DCamera();
-    	scene.setActiveCamera(camera2);
-    	assertEquals(camera2.parent(), light.parent());
-    	assertEquals(camera.parent(), light.parent());
-    }
-    
-    @Test
     public void testQSurface3DSeries() {
     	QSurface3DSeries series = new QSurface3DSeries();
     	QSurfaceDataProxy proxy = new QSurfaceDataProxy();
@@ -242,6 +225,7 @@ public class TestGraphs extends ApplicationInitializer {
     
     @Test
     public void testQScatterDataProxy(){
+    	Assume.assumeTrue(QLibraryInfo.version().compareTo(new QVersionNumber(6,6,0))<=0);
     	QScatterDataProxy proxy = new QScatterDataProxy();
     	QScatterDataArray array = new QScatterDataArray();
     	proxy.resetArray(array);

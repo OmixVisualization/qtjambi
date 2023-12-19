@@ -74,7 +74,7 @@ public class Directory extends Task implements Dirent {
             throw new BuildException("Attribute 'rootPath' is missing or invalid; rootPath=" + rootPath);
     }
 
-    public void addConfigured(File file) {
+    public void addConfigured(FileDirent file) {
         try {
             file.perform();
             childList.add(file);

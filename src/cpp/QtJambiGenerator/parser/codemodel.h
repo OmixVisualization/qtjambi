@@ -768,7 +768,7 @@ class _EnumModelItem: public _CodeModelItem {
         bool isDeclDeprecated() { return _M_isDeclDeprecated; }
         void setDeclDeprecated(bool b) { _M_isDeclDeprecated = b; }
         const QString& getDeclDeprecatedComment() { return _M_declDeprecatedComment; }
-        void setDeclDeprecatedComment(const QString& s) { _M_declDeprecatedComment = s; }
+        void setDeclDeprecatedComment(const QString& s);
 
         CodeModel::AccessPolicy accessPolicy() const;
         void setAccessPolicy(CodeModel::AccessPolicy accessPolicy);
