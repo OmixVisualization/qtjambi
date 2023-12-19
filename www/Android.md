@@ -70,10 +70,10 @@ Add the following lines to the `dependencies` section (for ABI arm64-v8a):
 ```gradle
     implementation 'io.qtjambi:qtjambi:6.5.4'
     implementation 'io.qtjambi:qtjambi-native-android-arm64:6.5.4'
-    implementation files('qt-lib-core-native-android-arm64-6.5.4.jar',
-                         'qt-lib-core-native-android-common-6.5.4.jar',
-                         'qt-lib-gui-native-android-arm64-6.5.4.jar',
-                         'qt-lib-widgets-native-android-arm64-6.5.4.jar')
+    implementation files('qt-lib-core-native-android-arm64-6.5.3.jar',
+                         'qt-lib-core-native-android-common-6.5.3.jar',
+                         'qt-lib-gui-native-android-arm64-6.5.3.jar',
+                         'qt-lib-widgets-native-android-arm64-6.5.3.jar')
 ```
 
 Exchange `android-arm64` by `android-arm` (armeabi-v7a), `android-x86` (x86) or `android-x64` (x86_64).

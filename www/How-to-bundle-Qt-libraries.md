@@ -25,9 +25,9 @@ java -Djava.library.path=<path to Qt libraries>
 *QtJambi deployer* autodetects Qt installation on your computer and creates jar bundles for each of the Qt libraries along with their specific plugins.
 E.g. the output files for Windows look this way:
 
-- `qt-lib-core-native-windows-x64-6.5.4.jar`
-- `qt-lib-gui-native-windows-x64-6.5.4.jar`
-- `qt-lib-qml-native-windows-x64-6.5.4.jar`
+- `qt-lib-core-native-windows-x64-6.5.3.jar`
+- `qt-lib-gui-native-windows-x64-6.5.3.jar`
+- `qt-lib-qml-native-windows-x64-6.5.3.jar`
 - ...
 
 Place these libraries next to the **qtjambi-native-X.jar** files.

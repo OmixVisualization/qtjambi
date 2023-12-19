@@ -90,7 +90,7 @@ Finally, find all Java libraries in directory `<qtjambiversion>/deployment` and 
 
 You can call ant with additional properties as listed below. Therefore use the `-D` command line argument: `ant -Dkey=value all`.
 
-* `qt` - specify comma-separated Qt versions to be used, e.g. `-Dqt="5.15,6.2"`.
+* `qt` - specify comma-separated Qt versions to be used, e.g. `-Dqt="5.15,6.3"`.
 * `qtbase` - specify Qt installer's base directory, e.g. `-Dqtbase=/var/Qt`. Can be combined with `qt`.
 * `qtdir` - specify Qt version and platform directory, e.g. `-Dqtdir=/var/Qt/6.5.3/macos`. This option allows multiple directories separated by path separator. (If this option is specified `qt` and `qtbase` have no effect.)
 * `qmake` - specify a path to a `qmake` program to be used for building QtJambi. (If this option is specified `qt`, `qtbase` and `qtdir` have no effect.)
@@ -121,6 +121,12 @@ For instance if you want to build for Linux arm:
 `> ant -Dqmake=/opt/Qt/6.5.3/arm-gnueabi/bin/qmake library.native`
 
 Just specify the third-platform cross-compiled qmake with `-Dqmake=path`.
+
+If you are using Qt from Qt installer located at default installation path (e.g. `C:\Qt`)
+and Android binaries are installed you can simply use the `-Dandroid=true` argument to 
+build Qtjambi for Android along with the platform-soecific binaries:
+
+`> ant -Dandroid=true all`
 
 ## How To Use QtJambi
 
@@ -169,10 +175,9 @@ Additionally, you need *Qt*. Use the [Qt installer](https://www.qt.io/download-q
 **When using Maven artifacts for Windows you need to select MSVC 2019 64-Bit (msvc2019_64), as they are not compatible with Mingw Qt.**
 
 When running a QtJambi application you have to make the locations of Qt libraries known to Java.
-Therefore, use the PATH environment (LD_LIBRARY_PATH on Linux, DYLD_LIBRARY_PATH on macOS) 
-or the Java runtime property java.library.path. 
+Therefore, use the `PATH` environment (`LD_LIBRARY_PATH` on Linux, `DYLD_FRAMEWORK_PATH` on macOS) 
+or the Java runtime property `java.library.path`. 
 By default, on Windows Qt libraries are located in `bin` directory and on Linux and macOS in `lib` directory.
-In case your Linux distribution provides Qt (of correct version) as system library you don't need to specify library path.
 
 The example program can be executed this way on Windows:
 ``` powershell
@@ -186,6 +191,10 @@ On macOS you additionally need to use the start parameter `-XstartOnFirstThread`
 ``` bash
 java -cp qtjambi-6.5.4.jar:. -Djava.library.path=<path to>/Qt/6.5.3/macos/lib -XstartOnFirstThread Test
 ```
+
+On Linux of your distribution provides Qt (of correct version) as system library you don't need to specify library path at all.
+However, since Maven-published binaries for Linux have been built with Qt from installer they might be incompatible to your system-specific Qt.
+In this case it is recommended to build QtJambi on your Linux system by using the installed `qmake`.
 
 If the example fails with a `UnsatisfiedLinkError` QtJambi libraries and Qt libraries seem to be incompatible.
 [Read here about library requirements and compatibility.](www/Modules.md)

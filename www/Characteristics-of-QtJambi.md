@@ -57,7 +57,7 @@ The Java classes provide all methods of the native Qt classes with similar metho
 
 ### Primitive Types
 
-C++ and Qt-specific primitive types are mapped to the corresponding Java primitive types:
+C++ and Qt-specific primitive types are mapped to the corresponding Java primitive types.
 All unsigned types are used as signed Java types, as Java does not support unsigned integers.
 
 | native                             | java   |
