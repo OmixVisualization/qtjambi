@@ -28,7 +28,7 @@ Search for qtjambi modules by name in Maven repository. Each java module require
 **<module>-native-windows-x64**, **<module>-native-linux-x64**, **<module>-native-macos** or **<module>-native-android**. 
 Info files for native debugging can be found in **<module>-debuginfo-windows-x64**, **<module>-debuginfo-linux-x64** and **<module>-debuginfo-macos**.
 
-QtJambi 6.6.1 requires Qt 6.6.x whereas x can be any patch version greater or equals 0 (except **qtjambi-activex**).
+QtJambi 6.6.1 requires Qt 6.6.x whereas x can be any patch version greater or equals 1 (except **qtjambi-activex**).
 This release has been built with Qt 6.6.1. Qt 6.6.0 is not binary compatible to higher versions.
 
 QtJambi 6.5.4 requires Qt 6.5.x whereas x can be any patch version less or equals 3 (except **qtjambi-activex**).
