@@ -329,7 +329,10 @@ public class ForeachVersionTask extends Task {
 											qtDirs.add(new java.io.File(versionDir, "mingw_64"));
 											break;
 										default:
-											qtDirs.add(new java.io.File(versionDir, "msvc2019_64"));
+											if(compiler.name().endsWith("_arm64"))
+												qtDirs.add(new java.io.File(versionDir, "msvc2019_arm64"));
+											else
+												qtDirs.add(new java.io.File(versionDir, "msvc2019_64"));
 											break;
 										}
 										break;
@@ -366,7 +369,10 @@ public class ForeachVersionTask extends Task {
 											qtDir = new java.io.File(versionDir, "mingw_64");
 											break;
 										default:
-											qtDir = new java.io.File(versionDir, "msvc2019_64");
+											if(compiler.name().endsWith("_arm64"))
+												qtDir = new java.io.File(versionDir, "msvc2019_arm64");
+											else
+												qtDir = new java.io.File(versionDir, "msvc2019_64");
 											break;
 										}
 										if(iVersion[0]<6) {

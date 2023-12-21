@@ -57,25 +57,28 @@ public class FindCompiler {
         MSVC2002("msvc2002"),
         MSVC2003("msvc2003"),
         MSVC2005("msvc2005"),
-        MSVC2005_64("msvc2005x64"),
+        MSVC2005_x64("msvc2005x64"),
         MSVC2008("msvc2008"),
-        MSVC2008_64("msvc2008x64"),
+        MSVC2008_x64("msvc2008x64"),
         MSVC2010("msvc2010"),
-        MSVC2010_64("msvc2010x64"),
+        MSVC2010_x64("msvc2010x64"),
         MSVC2012("msvc2012"),
-        MSVC2012_64("msvc2012x64"),
+        MSVC2012_x64("msvc2012x64"),
         MSVC2013("msvc2013"),
-        MSVC2013_64("msvc2013x64"),
+        MSVC2013_x64("msvc2013x64"),
         MSVC2015("msvc2015"),
-        MSVC2015_64("msvc2015x64"),
+        MSVC2015_x64("msvc2015x64"),
         MSVC2017("msvc2017"),
-        MSVC2017_64("msvc2017x64"),
-        MSVC2019("msvc2019"),
-        MSVC2019_64("msvc2019x64"),
-        MSVC2022("msvc2022"),
-        MSVC2022_64("msvc2022x64"),
-        MSVC20XX("msvc20XX"),
-        MSVC20XX_64("msvc20XXx64"),
+        MSVC2017_x64("msvc2017x64"),
+        MSVC2019_x86("msvc2019x86"),
+        MSVC2019_x64("msvc2019x64"),
+        MSVC2019_arm64("msvc2019arm64"),
+        MSVC2022_x86("msvc2022x86"),
+        MSVC2022_x64("msvc2022x64"),
+        MSVC2022_arm64("msvc2022arm64"),
+        MSVC20XX_x86("msvc20XXx86"),
+        MSVC20XX_x64("msvc20XXx64"),
+        MSVC20XX_arm64("msvc20XXarb64"),
         MinGW("mingw"),
         MinGW_W64("mingw-w64"),
         OldGCC("gcc3.3"),
@@ -97,25 +100,28 @@ public class FindCompiler {
             if(name.equals("msvc2002")) return MSVC2002;
             if(name.equals("msvc2003")) return MSVC2003;
             if(name.equals("msvc2005")) return MSVC2005;
-            if(name.equals("msvc2005x64")) return MSVC2005_64;
+            if(name.equals("msvc2005x64")) return MSVC2005_x64;
             if(name.equals("msvc2008")) return MSVC2008;
-            if(name.equals("msvc2008x64")) return MSVC2008_64;
+            if(name.equals("msvc2008x64")) return MSVC2008_x64;
             if(name.equals("msvc2010")) return MSVC2010;
-            if(name.equals("msvc2010x64")) return MSVC2010_64;
+            if(name.equals("msvc2010x64")) return MSVC2010_x64;
             if(name.equals("msvc2012")) return MSVC2012;
-            if(name.equals("msvc2012x64")) return MSVC2012_64;
+            if(name.equals("msvc2012x64")) return MSVC2012_x64;
             if(name.equals("msvc2013")) return MSVC2013;
-            if(name.equals("msvc2013x64")) return MSVC2013_64;
+            if(name.equals("msvc2013x64")) return MSVC2013_x64;
             if(name.equals("msvc2015")) return MSVC2015;
-            if(name.equals("msvc2015x64")) return MSVC2015_64;
+            if(name.equals("msvc2015x64")) return MSVC2015_x64;
             if(name.equals("msvc2017")) return MSVC2017;
-            if(name.equals("msvc2017x64")) return MSVC2017_64;
-            if(name.equals("msvc2019")) return MSVC2019;
-            if(name.equals("msvc2019x64")) return MSVC2019_64;
-            if(name.equals("msvc2022")) return MSVC2022;
-            if(name.equals("msvc2022x64")) return MSVC2022_64;
-            if(name.equals("msvc20XX")) return MSVC20XX;
-            if(name.equals("msvc20XXx64")) return MSVC20XX_64;
+            if(name.equals("msvc2017x64")) return MSVC2017_x64;
+            if(name.equals("msvc2019x86")) return MSVC2019_x86;
+            if(name.equals("msvc2019x64")) return MSVC2019_x64;
+            if(name.equals("msvc2019arm64")) return MSVC2019_arm64;
+            if(name.equals("msvc2022x86")) return MSVC2022_x86;
+            if(name.equals("msvc2022x64")) return MSVC2022_x64;
+            if(name.equals("msvc2022arm64")) return MSVC2022_arm64;
+            if(name.equals("msvc20XXx86")) return MSVC20XX_x86;
+            if(name.equals("msvc20XXx64")) return MSVC20XX_x64;
+            if(name.equals("msvc20XXarm64")) return MSVC20XX_arm64;
             if(name.equals("mingw")) return MinGW;
             if(name.equals("mingw-w64")) return MinGW_W64;
             if(name.equals("gcc3.3")) return OldGCC;
@@ -134,19 +140,19 @@ public class FindCompiler {
     void checkCompilerDetails() {
         if(compiler!=null) switch(compiler) {
         case MSVC2005:
-        case MSVC2005_64:
+        case MSVC2005_x64:
         case MSVC2008:
-        case MSVC2008_64:
+        case MSVC2008_x64:
         case MSVC2010:
-        case MSVC2010_64:
+        case MSVC2010_x64:
         case MSVC2012:
-        case MSVC2012_64:
+        case MSVC2012_x64:
         case MSVC2013:
-        case MSVC2013_64:
+        case MSVC2013_x64:
         case MSVC2015:
-        case MSVC2015_64:
+        case MSVC2015_x64:
         case MSVC2017:
-        case MSVC2017_64:
+        case MSVC2017_x64:
             try {
                 String vcdir = System.getenv("VSINSTALLDIR");
                 if(vcdir == null) {
@@ -165,13 +171,13 @@ public class FindCompiler {
                     		((InitializeBuildTask)task).mySetProperty(-1, Constants.VSINSTALLDIR, " (taken from environment)", vcdir, true);
 
                         String redistDir;
-                        if(compiler == Compiler.MSVC2005_64 || compiler == Compiler.MSVC2008_64 || compiler == Compiler.MSVC2010_64)
+                        if(compiler == Compiler.MSVC2005_x64 || compiler == Compiler.MSVC2008_x64 || compiler == Compiler.MSVC2010_x64)
                             redistDir = Util.pathCanon(new String[] { vcdir, "vc", "redist", "amd64" });
-                        else if(compiler == Compiler.MSVC2012_64 || compiler == Compiler.MSVC2013_64 || compiler == Compiler.MSVC2015_64)
+                        else if(compiler == Compiler.MSVC2012_x64 || compiler == Compiler.MSVC2013_x64 || compiler == Compiler.MSVC2015_x64)
                             redistDir = Util.pathCanon(new String[] { vcdir, "vc", "redist", "x64" });
 						else if(compiler == Compiler.MSVC2017)
 							redistDir = Util.pathCanon(new String[] { vcdir, "vc", "redist", "MSVC", "14.10.25008", "x86" });
-						else if(compiler == Compiler.MSVC2017_64)
+						else if(compiler == Compiler.MSVC2017_x64)
 							redistDir = Util.pathCanon(new String[] { vcdir, "vc", "redist", "MSVC", "14.10.25008", "x64" });
 						else
                             redistDir = Util.pathCanon(new String[] { vcdir, "vc", "redist", "x86" });
@@ -199,7 +205,7 @@ public class FindCompiler {
     void checkCompilerBits() {
         if(OSInfo.os() == OSInfo.OS.Windows) {
             boolean vmx64 = OSInfo.osArchName().equals(OSInfo.K_WIN_X64);
-            boolean compiler64 = compiler == Compiler.MSVC2005_64 || compiler == Compiler.MSVC2008_64 || compiler == Compiler.MSVC2010_64 || compiler == Compiler.MSVC2012_64 || compiler == Compiler.MSVC2013_64 || compiler == Compiler.MSVC2015_64 || compiler == Compiler.MSVC2017_64;
+            boolean compiler64 = compiler == Compiler.MSVC2005_x64 || compiler == Compiler.MSVC2008_x64 || compiler == Compiler.MSVC2010_x64 || compiler == Compiler.MSVC2012_x64 || compiler == Compiler.MSVC2013_x64 || compiler == Compiler.MSVC2015_x64 || compiler == Compiler.MSVC2017_x64;
             if(vmx64 != compiler64) {
                 // This is allowed and is not an outright build failure, but warn the user.
                 if(vmx64)
@@ -494,52 +500,58 @@ public class FindCompiler {
                     return Compiler.MSVC2003;
                 if(stderr.contains("14.00")) {
                     if(stderr.contains("x64"))
-                        return Compiler.MSVC2005_64;
+                        return Compiler.MSVC2005_x64;
                     return Compiler.MSVC2005;
                 }
                 if(stderr.contains("15.00")) {
                     if(stderr.contains("x64"))
-                        return Compiler.MSVC2008_64;
+                        return Compiler.MSVC2008_x64;
                     return Compiler.MSVC2008;
                 }
                 if(stderr.contains("16.00")) {
                     if(stderr.contains("x64"))
-                        return Compiler.MSVC2010_64;
+                        return Compiler.MSVC2010_x64;
                     return Compiler.MSVC2010;
                 }
                 if(stderr.contains("17.00")) {
                     if(stderr.contains("x64"))
-                        return Compiler.MSVC2012_64;
+                        return Compiler.MSVC2012_x64;
                     return Compiler.MSVC2012;
                 }
                 if(stderr.contains("18.00")) {
                     if(stderr.contains("x64"))
-                        return Compiler.MSVC2013_64;
+                        return Compiler.MSVC2013_x64;
                     return Compiler.MSVC2013;
                 }
                 if(stderr.contains("19.00")) {
                     if(stderr.contains("x64"))
-                        return Compiler.MSVC2015_64;
+                        return Compiler.MSVC2015_x64;
                     return Compiler.MSVC2015;
                 }
 				if(stderr.contains("19.1")) {
                     if(stderr.contains("x64"))
-                        return Compiler.MSVC2017_64;
+                        return Compiler.MSVC2017_x64;
                     return Compiler.MSVC2017;
                 }
 				if(stderr.contains("19.2")) {
                     if(stderr.contains("x64"))
-                        return Compiler.MSVC2019_64;
-                    return Compiler.MSVC2019;
+                        return Compiler.MSVC2019_x64;
+                    if(stderr.contains("ARM64"))
+                        return Compiler.MSVC2019_arm64;
+                    return Compiler.MSVC2019_x86;
                 }
 				if(stderr.contains("19.3")) {
                     if(stderr.contains("x64"))
-                        return Compiler.MSVC2022_64;
-                    return Compiler.MSVC2022;
+                        return Compiler.MSVC2022_x64;
+                    if(stderr.contains("ARM64"))
+                        return Compiler.MSVC2022_arm64;
+                    return Compiler.MSVC2022_x86;
                 }
                 if(stderr.contains("x64"))
-                    return Compiler.MSVC20XX_64;
-                return Compiler.MSVC20XX;
+                    return Compiler.MSVC20XX_x64;
+                if(stderr.contains("ARM64"))
+                    return Compiler.MSVC20XX_arm64;
+                return Compiler.MSVC20XX_x86;
             }
         } catch(InterruptedException ex) {
             if(verbose)
