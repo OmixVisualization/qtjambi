@@ -213,6 +213,9 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 				if((qtMajorVersion==6 && qtMinorVersion>=6) || qtMajorVersion>7) {
 					_moduleInfos.put("graphs", new ModuleInfo("QTJAMBI_NO_GRAPHS", "QtGraphs"));
 				}
+				if((qtMajorVersion==6 && qtMinorVersion>=7) || qtMajorVersion>8) {
+					_moduleInfos.put("qmlbuiltins", new ModuleInfo("QTJAMBI_NO_QMLBUILTINS", "QtQmlBuiltins", ModuleInfo.Headers.Public, true));
+				}
 			}
 			moduleInfos = Collections.unmodifiableMap(_moduleInfos);
 		}
@@ -318,6 +321,38 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 				getProject().log(this, "test=" + value, Project.MSG_INFO);
 			}
 		}
+		
+		String s;
+		FindCompiler finder = new FindCompiler(this.propertyHelper, this);
+		Compiler compiler;
+		{
+			Compiler detectedCompiler = null;
+			String compilerError = null;
+			try {
+				detectedCompiler = finder.decideCompiler();
+			} catch (BuildException e) {
+				compilerError = e.getMessage();
+			}
+			String compilerValue = AntUtil.getPropertyAsString(propertyHelper, Constants.COMPILER);
+			if (compilerValue == null || compilerValue.isEmpty()) {
+				sourceValue = " (available compilers: " + finder.getAvailableCompilers() + "; auto-detected)";
+				compilerValue = (detectedCompiler==null ? "" : detectedCompiler.toString());
+				compiler = detectedCompiler;
+			} else {
+				if ("help".equals(compilerValue) || "?".equals(compilerValue)) {
+					Compiler[] values = Compiler.values();
+					s = Arrays.toString(values);
+					throw new BuildException(Constants.COMPILER + " valid values: " + s);
+				}
+				compiler = Compiler.resolve(compilerValue);
+				sourceValue = " (available compilers: " + finder.getAvailableCompilers() + "; detected: "
+						+ (detectedCompiler==null ? "none" : detectedCompiler) + ")";
+			}
+			isMinGW = compiler==Compiler.MinGW || compiler==Compiler.MinGW_W64;
+			mySetProperty(-1, Constants.COMPILER, sourceValue, compilerValue, true); // report value
+			if(compilerError!=null)
+				mySetProperty(-1, "qtjambi.compiler.error", sourceValue, compilerError, true);
+		}
 
 		String qtQmake = AntUtil.getPropertyAsString(propertyHelper, "qmake");
 
@@ -390,26 +425,12 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			qmakeQuery = QMakeTask.query(this, qtQmakeAbspath);
 		}
 		sourceValue = " (from qmake -query)";
-		for(Map.Entry<String, QtContent> entry : qtContents.entrySet()) {
-			String value = AntUtil.getPropertyAsString(propertyHelper, entry.getKey());
-			if(value==null || value.isEmpty()) {
-				value = qmakeQuery.get(entry.getValue().query);
-				switch(entry.getKey()) {
-				case Constants.RESOURCESDIR:
-					value += "/resources";
-					break;
-				}
-				mySetProperty(-1, entry.getKey(), sourceValue, value, true);
-			}
-		}
+//		Constants.TOOLS_BINDIR
 		if(AntUtil.getPropertyAsString(propertyHelper, "QTDIR")==null)
 			AntUtil.setProperty(propertyHelper, "QTDIR", AntUtil.getPropertyAsString(propertyHelper, "qtjambi.qtdir"));
 		if (!decideQtVersion(qmakeQuery))
 			throw new BuildException("Unable to determine Qt version.");
-		if (!decideQMAKE_XSPEC(qmakeQuery))
-			throw new BuildException("Unable to determine QMAKE_XSPEC");
 		analyzeLibinfix();
-		String s;
 
 		String qtVersionShort = String.format("%1$s.%2$s", qtMajorVersion, qtMinorVersion);
 		InputStream inStream = null;
@@ -441,9 +462,6 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		String qtjambiFullVersion = qtVersionShort + "." + qtJambiVersion;
 		mySetProperty(-1, "qtjambi.jar.version", sourceValue, qtjambiFullVersion, true); // report
 																												// value
-
-		FindCompiler finder = new FindCompiler(this.propertyHelper, this);
-
 		String detectedOsname = OSInfo.crossOSArchName();
 		String osname = AntUtil.getPropertyAsString(propertyHelper, Constants.OSNAME);
 		if (osname == null || osname.isEmpty()) {
@@ -507,35 +525,27 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			sourceValue = " (detected: " + detectedOsname + ")";
 		}
 		mySetProperty(-1, Constants.OSNAME, sourceValue, osname, true); // report value
-
-		Compiler compiler;
-		{
-			Compiler detectedCompiler = null;
-			String compilerError = null;
-			try {
-				detectedCompiler = finder.decideCompiler();
-			} catch (BuildException e) {
-				compilerError = e.getMessage();
-			}
-			String compilerValue = AntUtil.getPropertyAsString(propertyHelper, Constants.COMPILER);
-			if (compilerValue == null || compilerValue.isEmpty()) {
-				sourceValue = " (available compilers: " + finder.getAvailableCompilers() + "; auto-detected)";
-				compilerValue = (detectedCompiler==null ? "" : detectedCompiler.toString());
-				compiler = detectedCompiler;
-			} else {
-				if ("help".equals(compilerValue) || "?".equals(compilerValue)) {
-					Compiler[] values = Compiler.values();
-					s = Arrays.toString(values);
-					throw new BuildException(Constants.COMPILER + " valid values: " + s);
+		
+		if(compiler!=null && compiler.name().endsWith("_arm64")) {
+			qmakeQuery.put("QMAKE_SPEC", qmakeQuery.get("QMAKE_XSPEC"));
+			qmakeQuery.put("QT_HOST_BINS", qmakeQuery.get("QT_INSTALL_BINS"));
+			qmakeQuery.put("QT_HOST_LIBS", qmakeQuery.get("QT_INSTALL_LIBS"));
+			qmakeQuery.put("QT_HOST_LIBEXECS", qmakeQuery.get("QT_INSTALL_LIBEXECS"));
+			qmakeQuery.put("QT_HOST_PREFIX", qmakeQuery.get("QT_INSTALL_PREFIX"));
+		}
+		if (!decideQMAKE_XSPEC(qmakeQuery))
+			throw new BuildException("Unable to determine QMAKE_XSPEC");
+		for(Map.Entry<String, QtContent> entry : qtContents.entrySet()) {
+			String value = AntUtil.getPropertyAsString(propertyHelper, entry.getKey());
+			if(value==null || value.isEmpty()) {
+				value = qmakeQuery.get(entry.getValue().query);
+				switch(entry.getKey()) {
+				case Constants.RESOURCESDIR:
+					value += "/resources";
+					break;
 				}
-				compiler = Compiler.resolve(compilerValue);
-				sourceValue = " (available compilers: " + finder.getAvailableCompilers() + "; detected: "
-						+ (detectedCompiler==null ? "none" : detectedCompiler) + ")";
+				mySetProperty(-1, entry.getKey(), sourceValue, value, true);
 			}
-			isMinGW = compiler==Compiler.MinGW || compiler==Compiler.MinGW_W64;
-			mySetProperty(-1, Constants.COMPILER, sourceValue, compilerValue, true); // report value
-			if(compilerError!=null)
-				mySetProperty(-1, "qtjambi.compiler.error", sourceValue, compilerError, true);
 		}
 
 		String vsredistdirValue = AntUtil.getPropertyAsString(propertyHelper, Constants.VSREDISTDIR);
