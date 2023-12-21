@@ -26,7 +26,7 @@ HEADERS += \
     CONFIG += precompile_header
 }
 
-win32-msvc*: {
+win32-arm64-msvc* | win32-msvc*: {
     QMAKE_CXXFLAGS += /bigobj
 }
 

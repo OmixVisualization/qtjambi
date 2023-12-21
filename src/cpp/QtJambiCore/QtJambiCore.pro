@@ -29,7 +29,7 @@ CONFIG+=no_private_qt_headers_warning
     CONFIG += precompile_header
 }
 
-win32-msvc*: {
+win32-arm64-msvc* | win32-msvc*: {
     QMAKE_CXXFLAGS += /bigobj
 }
 

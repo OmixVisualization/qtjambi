@@ -24,7 +24,7 @@ CONFIG(debug, debug|release) {
 QT -= gui widgets
 
 contains(QT_CONFIG, release):contains(QT_CONFIG, debug) {
-    win32-msvc* | !CONFIG(force_debug_info): {
+    win32-arm64-msvc* | win32-msvc* | !CONFIG(force_debug_info): {
         # Qt was configued with both debug and release libs
         CONFIG += debug_and_release build_all
     }else{

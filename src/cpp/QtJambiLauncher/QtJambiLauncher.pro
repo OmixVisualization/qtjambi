@@ -6,7 +6,7 @@ QT = core
 
 SOURCES = main.cpp
 
-win32-msvc* {
+win32-arm64-msvc* | win32-msvc* {
     CONFIG += embed_manifest_dll force_embed_manifest
 }
 

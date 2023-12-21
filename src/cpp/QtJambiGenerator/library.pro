@@ -6,7 +6,7 @@ DESTDIR = ../lib
 DLLDESTDIR = ../bin
 
 contains(QT_CONFIG, release):contains(QT_CONFIG, debug) {
-    win32-msvc* | !CONFIG(force_debug_info): {
+    win32-arm64-msvc* | win32-msvc* | !CONFIG(force_debug_info): {
         # Qt was configued with both debug and release libs
         CONFIG += debug_and_release build_all
     }else{
@@ -161,7 +161,7 @@ QML_IMPORT_NAME = QtJambiGenerator
 QML_IMPORT_MAJOR_VERSION = 1
 
 # These option changes are recommended since at least: win32-msvc.net
-win32-msvc* {
+win32-arm64-msvc* | win32-msvc* {
 #    QMAKE_CXXFLAGS += -Zm500
  #   QMAKE_CXXFLAGS -= -Zm200
   #  QMAKE_CFLAGS -= -Zm200
