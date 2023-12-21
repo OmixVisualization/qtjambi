@@ -527,11 +527,13 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 		mySetProperty(-1, Constants.OSNAME, sourceValue, osname, true); // report value
 		
 		if(compiler!=null && compiler.name().endsWith("_arm64")) {
+			qmakeQuery = new TreeMap<>(qmakeQuery);
 			qmakeQuery.put("QMAKE_SPEC", qmakeQuery.get("QMAKE_XSPEC"));
 			qmakeQuery.put("QT_HOST_BINS", qmakeQuery.get("QT_INSTALL_BINS"));
 			qmakeQuery.put("QT_HOST_LIBS", qmakeQuery.get("QT_INSTALL_LIBS"));
 			qmakeQuery.put("QT_HOST_LIBEXECS", qmakeQuery.get("QT_INSTALL_LIBEXECS"));
 			qmakeQuery.put("QT_HOST_PREFIX", qmakeQuery.get("QT_INSTALL_PREFIX"));
+			qmakeQuery = Collections.unmodifiableMap(qmakeQuery);
 		}
 		if (!decideQMAKE_XSPEC(qmakeQuery))
 			throw new BuildException("Unable to determine QMAKE_XSPEC");
