@@ -220,7 +220,6 @@ public class FindCompiler {
 
     private void checkWindowsCompilers(boolean isTools) {
         Compiler msvc = testForVisualStudio();
-        Compiler mingw = testForMinGW();
         Compiler mingw_w64 = testForMinGW_W64();
 
         StringBuffer sb = new StringBuffer();
@@ -229,11 +228,6 @@ public class FindCompiler {
                 sb.append(", ");
             sb.append(mingw_w64.toString());
         }
-        if(mingw != null) {
-            if(sb.length() > 0)
-                sb.append(", ");
-            sb.append(mingw.toString());
-        }
         if(msvc != null) {
             if(sb.length() > 0)
                sb.append(", ");
@@ -241,7 +235,7 @@ public class FindCompiler {
         }
         availableCompilers = sb.toString();
 
-        if(msvc != null && mingw != null && mingw_w64 != null) {
+        if(msvc != null && mingw_w64 != null) {
             // allows use of QMAKESPEC to select between msvc and mingw-like
             System.out.println("Multiple compilers are available (" + sb.toString() + ")\n"
                                + "Choosing based on environment variable QMAKESPEC");
@@ -254,13 +248,11 @@ public class FindCompiler {
 	            }
             }
             if(spec == null) {
-                throw new BuildException("Environment variable QMAKESPEC is not set...");
+            	compiler = msvc;
             } else if(msvc != null && spec.contains("msvc")) {
                 compiler = msvc;
             } else if(mingw_w64 != null && spec.contains("g++")) {  // first due to regex for "mingw" on mingw detection
                 compiler = mingw_w64;
-            } else if(mingw != null && spec.contains("g++")) {
-                compiler = mingw;
             } else {
                 throw new BuildException("Invalid QMAKESPEC variable...");
             }
@@ -268,8 +260,6 @@ public class FindCompiler {
             compiler = msvc;
         } else if(mingw_w64 != null) {  // first due to regex for "mingw" on mingw detection
             compiler = mingw_w64;
-        } else if(mingw != null) {
-            compiler = mingw;
         } else {
             throw new BuildException("No compiler detected, please make sure " +
                     "MinGW, MinGW-W64 or VisualC++ binaries are available in PATH");
