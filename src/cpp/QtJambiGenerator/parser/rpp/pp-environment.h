@@ -87,9 +87,9 @@ namespace rpp {
 
             void bind(pp_fast_string const *__name, pp_macro const &__macro);
 
-            void unbind(pp_fast_string const *__name);
+            bool unbind(pp_fast_string const *__name);
 
-            void unbind(char const *__s, std::size_t __size);
+            bool unbind(char const *__s, std::size_t __size);
 
             /**
              * Find corresponding pp_macro from hash table.

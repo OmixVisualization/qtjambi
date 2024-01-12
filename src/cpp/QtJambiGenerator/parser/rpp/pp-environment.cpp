@@ -55,24 +55,27 @@ void rpp::pp_environment::bind(pp_fast_string const *__name, pp_macro const &__m
         x__macro.assign(__macro.definition->begin(), __macro.definition->size());
     else
         x__macro = "<nul>";
-    std::cerr << "** DEFINE " << x__name.assign(__name->begin(), __name->size()) << " " << x__macro << " ** in " << current_file << std::endl;
+    std::cerr << "** DEFINE " << x__name.assign(__name->begin(), __name->size()) << " " << x__macro << " ** in " << qPrintable(current_file.absoluteFilePath()) << std::endl;
 #endif
 }
 
-void rpp::pp_environment::unbind(pp_fast_string const *__name) {
+bool rpp::pp_environment::unbind(pp_fast_string const *__name) {
+    bool result{false};
     if (pp_macro *m = resolve(__name)){
         m->hidden = true;
         _M_featureRegistry(std::string(__name->begin()), m->definition ? std::string(m->definition->begin()) : std::string(), current_file, false);
+        result = true;
     }
 #ifdef DEBUG_DEFUNDEF
     std::string x__name = std::string((const char *)__name);
-    std::cerr << "** UNDEF " << x__name.assign(__name->begin(), __name->size()) << " ** in " << current_file << std::endl;
+    std::cerr << "** UNDEF " << x__name.assign(__name->begin(), __name->size()) << " ** in " << qPrintable(current_file.absoluteFilePath()) << std::endl;
 #endif
+    return result;
 }
 
-void rpp::pp_environment::unbind(char const *__s, std::size_t __size) {
+bool rpp::pp_environment::unbind(char const *__s, std::size_t __size) {
     rpp::pp_fast_string __tmp(__s, __size);
-    unbind(&__tmp);
+    return unbind(&__tmp);
 }
 
 rpp::pp_macro *rpp::pp_environment::resolve(pp_fast_string const *p_name) const {

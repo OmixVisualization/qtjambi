@@ -115,7 +115,7 @@ namespace rpp {
                         first = skip_blanks(++first, last);
                         lines += skip_blanks.lines;
 
-                        if (first != last && *first == '#')
+                        if (first != last && *first == '#' && !frame)
                             break;
                     } else if (*first == '#') {
                         first = skip_blanks(++first, last);

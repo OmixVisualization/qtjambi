@@ -37,7 +37,7 @@
 #define QT_KEYPAD_NAVIGATION
 
 #define QT_NO_STL
-#define Q_BYTE_ORDER Q_BYTE_ORDER
+#define Q_BYTE_ORDER 1
 
 //qtjambi preprocessor does not understand properly
 #define GL_APIENTRY
@@ -583,19 +583,17 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 
 #ifndef QTJAMBI_NO_OPENGL
 
-#include <QtOpenGL/QtOpenGL>
-#include <QtJambiOpenGL/hashes.h>
-
-#undef QT_CONFIG
-#define QT_CONFIG(A) 0
-#endif
-
 #ifdef QT_NO_OPENGL
 #undef QT_NO_OPENGL
 #define QT_NO_OPENGL_BRIDGE
 #endif
 
-#include <QtOpenGL/QOpenGLPixelTransferOptions>
+#include <QtOpenGL/QtOpenGL>
+#include <QtJambiOpenGL/hashes.h>
+#include <QtOpenGL/qopenglfunctions_es2.h>
+
+#define QTJAMBI_FEATURE_opengles2 -1
+
 #include <QtOpenGL/qopenglfunctions_1_0.h>
 #include <QtOpenGL/qopenglfunctions_1_1.h>
 #include <QtOpenGL/qopenglfunctions_1_2.h>
@@ -623,10 +621,8 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #include <QtOpenGL/qopenglfunctions_4_5_compatibility.h>
 #include <QtOpenGL/qopenglfunctions_4_5_core.h>
 
-#undef QT_CONFIG
-#define QT_CONFIG(feature) (1/QT_FEATURE_##feature == 1)
-
-#include <QtOpenGL/qopenglfunctions_es2.h>
+#undef QT_FEATURE_opengles2
+#define QT_FEATURE_opengles2 1
 
 #ifdef QT_NO_OPENGL_BRIDGE
 #undef QT_NO_OPENGL_BRIDGE

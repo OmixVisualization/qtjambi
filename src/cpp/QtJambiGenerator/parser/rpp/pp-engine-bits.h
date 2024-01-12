@@ -645,7 +645,7 @@ namespace rpp {
                         }
                     }
 
-                    assert(*__first == ')');
+                    assert(*__first == ')' || *__first == '\\');
                     ++__first;
                 }
 
@@ -679,11 +679,16 @@ namespace rpp {
 #else
                 QByteArrayView macroName(macro_name->begin(), macro_name->size());
 #endif
-                if(macroName=="QT_CONFIG"){
-                    if(definition=="0")
-                        definition = "0";
-                    else
-                        definition = "1";
+                if(macroName.startsWith("QT_FEATURE_")){
+                    definition = "1";
+                }else if(macroName.startsWith("QTJAMBI_FEATURE_")){
+                    QByteArray feature("QT");
+                    feature.append(macroName.mid(7));
+                    pp_fast_string _macro_name(feature.constBegin(), feature.size());
+                    if(rpp::pp_macro * macro = env.resolve(&_macro_name)){
+                        env.unbind(macro->name);
+                        macro_name = macro->name;
+                    }
                 }else if(macroName.startsWith("QT_DEPRECATED_VERSION_X")){
                     definition = "Q_DECL_DEPRECATED_X(text)";
                 }else if(macroName.startsWith("QT_DEPRECATED_VERSION")){
@@ -842,6 +847,14 @@ namespace rpp {
                                 }
                             }
                         }else{
+							if(rpp::pp_macro * macro = env.resolve(_M_current_text.c_str(), _M_current_text.size())){
+                                if(macro->definition && !QLatin1String(macro->definition->begin(), macro->definition->size()).contains(QLatin1String(_M_current_text.c_str(), _M_current_text.size()))){
+                                    std::string previous_text(_M_current_text);
+                                    _M_current_text = std::string(macro->definition->begin(), macro->definition->end());
+                                    eval_expression(macro->definition->begin(), macro->definition->end(), result);
+                                    _M_current_text = previous_text;
+                                }
+                            }
                             break;
                         }
                     }
@@ -1288,9 +1301,9 @@ namespace rpp {
                 std::copy(__first, end_macro_name, __buffer);
 
                 pp_fast_string const __tmp(__buffer, __size);
+                bool success = env.unbind(&__tmp);
                 if((verbose & DEBUGLOG_UNDEF) != 0)
-                    std::cout << "#undef " << std::string(__tmp.begin(), __tmp.end()) << std::endl;
-                env.unbind(&__tmp);
+                    std::cout << "#undef " << std::string(__tmp.begin(), __tmp.end()) << (success ? "" : " failed!!!") << std::endl;
 
                 __first = end_macro_name;
 
