@@ -430,7 +430,6 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			AntUtil.setProperty(propertyHelper, "QTDIR", AntUtil.getPropertyAsString(propertyHelper, "qtjambi.qtdir"));
 		if (!decideQtVersion(qmakeQuery))
 			throw new BuildException("Unable to determine Qt version.");
-		analyzeLibinfix();
 
 		String qtVersionShort = String.format("%1$s.%2$s", qtMajorVersion, qtMinorVersion);
 		InputStream inStream = null;
@@ -849,6 +848,7 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 			s = qtVersion + canonVersionSuffix;
 		}
 		mySetProperty(-1, Constants.BUNDLE_VERSION, null, s, true);
+		analyzeLibinfix();
 
 		{ // Need to detect the version of Qt we a reworking with before deciding
 			// configuration
