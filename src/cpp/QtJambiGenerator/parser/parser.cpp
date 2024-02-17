@@ -2,7 +2,7 @@
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
 ** Copyright (C) 2002-2005 Roberto Raggi <roberto@kdevelop.org>
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -278,12 +278,12 @@ bool Parser::skipUntilDeclaration() {
             case Token_float:
             case Token_double:
             case Token_void:
-            case Token_extern:
             case Token_namespace:
             case Token_using:
             case Token_typedef:
             case Token_asm:
             case Token_template:
+            case Token_extern:
             case Token_export:
             case Token_auto:
             case Token_constexpr:
@@ -538,20 +538,9 @@ bool Parser::parseDeclaration(DeclarationAST *&node) {
         Q_FALLTHROUGH();
 
         default: {
-        ExpressionAST *annotationExpression(nullptr);
-            if (token_stream.lookAhead() == '[' && token_stream.lookAhead(1) == '[') {
-                token_stream.nextToken();
-                token_stream.nextToken();
-                if(!parseExpression(annotationExpression)){
-                    token_stream.rewind(start);
-                }else{
-                    if (token_stream.lookAhead() == ']' && token_stream.lookAhead(1) == ']') {
-                        token_stream.nextToken();
-                        token_stream.nextToken();
-                    }else{
-                        token_stream.rewind(start);
-                    }
-                }
+            ExpressionAST *annotationExpression(nullptr);
+            if(!parseAnnotation(annotationExpression)){
+                token_stream.rewind(start);
             }
             if (token_stream.lookAhead() == Token_typedef){
                 token_stream.rewind(start);
@@ -565,59 +554,41 @@ bool Parser::parseDeclaration(DeclarationAST *&node) {
 
             const ListNode<std::size_t> *storageSpec = nullptr;
             StringLiteralAST *deprecationComment = nullptr;
+            bool hasExported = parseExportedSpecifier(storageSpec);
             bool hasDeprecated = parseDeprecatedSpecifier(storageSpec, deprecationComment);
-            if (!annotationExpression && token_stream.lookAhead() == '[' && token_stream.lookAhead(1) == '[') {
-                token_stream.nextToken();
-                token_stream.nextToken();
-                if(!parseExpression(annotationExpression)){
-                    token_stream.rewind(start);
-                }else{
-                    if (token_stream.lookAhead() == ']' && token_stream.lookAhead(1) == ']') {
-                        token_stream.nextToken();
-                        token_stream.nextToken();
-                    }else{
-                        token_stream.rewind(start);
-                    }
-                }
+            if(!hasExported)
+                hasExported = parseExportedSpecifier(storageSpec);
+            if(!annotationExpression && !parseAnnotation(annotationExpression)){
+                token_stream.rewind(start);
             }
 
             parseStorageClassSpecifier(storageSpec);
 
+            if(!hasExported)
+                hasExported = parseExportedSpecifier(storageSpec);
             if(!hasDeprecated)
                 hasDeprecated = parseDeprecatedSpecifier(storageSpec, deprecationComment);
-            if (!annotationExpression && token_stream.lookAhead() == '[' && token_stream.lookAhead(1) == '[') {
-                token_stream.nextToken();
-                token_stream.nextToken();
-                if(!parseExpression(annotationExpression)){
-                    token_stream.rewind(start);
-                }else{
-                    if (token_stream.lookAhead() == ']' && token_stream.lookAhead(1) == ']') {
-                        token_stream.nextToken();
-                        token_stream.nextToken();
-                    }else{
-                        token_stream.rewind(start);
-                    }
-                }
+            if(!hasExported)
+                hasExported = parseExportedSpecifier(storageSpec);
+            if(!annotationExpression && !parseAnnotation(annotationExpression)){
+                token_stream.rewind(start);
             }
+            if(!hasExported)
+                hasExported = parseExportedSpecifier(storageSpec);
 
             parseCvQualify(cv);
 
+            if(!hasExported)
+                hasExported = parseExportedSpecifier(storageSpec);
             if(!hasDeprecated)
                 hasDeprecated = parseDeprecatedSpecifier(storageSpec, deprecationComment);
-            if (!annotationExpression && token_stream.lookAhead() == '[' && token_stream.lookAhead(1) == '[') {
-                token_stream.nextToken();
-                token_stream.nextToken();
-                if(!parseExpression(annotationExpression)){
-                    token_stream.rewind(start);
-                }else{
-                    if (token_stream.lookAhead() == ']' && token_stream.lookAhead(1) == ']') {
-                        token_stream.nextToken();
-                        token_stream.nextToken();
-                    }else{
-                        token_stream.rewind(start);
-                    }
-                }
+            if(!hasExported)
+                hasExported = parseExportedSpecifier(storageSpec);
+            if(!annotationExpression && !parseAnnotation(annotationExpression)){
+                token_stream.rewind(start);
             }
+            if(!hasExported)
+                hasExported = parseExportedSpecifier(storageSpec);
 
             TypeSpecifierAST *spec = nullptr;
             if (parseEnumSpecifier(spec)
@@ -835,20 +806,9 @@ bool Parser::parseUsing(DeclarationAST *&node) {
     parseDeprecatedSpecifier(storageSpec, deprecationComment);
 
     ExpressionAST *annotationExpression(nullptr);
-    if (token_stream.lookAhead() == '[' && token_stream.lookAhead(1) == '[') {
-        token_stream.nextToken();
-        token_stream.nextToken();
-        if(!parseExpression(annotationExpression)){
-            token_stream.rewind(start);
-            return false;
-        }
-        if (token_stream.lookAhead() == ']' && token_stream.lookAhead(1) == ']') {
-            token_stream.nextToken();
-            token_stream.nextToken();
-        }else{
-            token_stream.rewind(start);
-            return false;
-        }
+    if(!parseAnnotation(annotationExpression)){
+        token_stream.rewind(start);
+        return false;
     }
 
     if (token_stream.lookAhead() == '=') {
@@ -1047,20 +1007,9 @@ bool Parser::parseTypedef(DeclarationAST *&node) {
     std::size_t start = token_stream.cursor();
 
     ExpressionAST *annotationExpression(nullptr);
-    if (token_stream.lookAhead() == '[' && token_stream.lookAhead(1) == '[') {
-        token_stream.nextToken();
-        token_stream.nextToken();
-        if(!parseExpression(annotationExpression)){
-            token_stream.rewind(start);
-            return false;
-        }
-        if (token_stream.lookAhead() == ']' && token_stream.lookAhead(1) == ']') {
-            token_stream.nextToken();
-            token_stream.nextToken();
-        }else{
-            token_stream.rewind(start);
-            return false;
-        }
+    if(!parseAnnotation(annotationExpression)){
+        token_stream.rewind(start);
+        return false;
     }
     if (token_stream.lookAhead() == Token_QTJAMBI_DEPRECATED) {
         token_stream.nextToken();
@@ -1084,20 +1033,9 @@ bool Parser::parseTypedef(DeclarationAST *&node) {
 
     CHECK(Token_typedef);
 
-    if (token_stream.lookAhead() == '[' && token_stream.lookAhead(1) == '[') {
-        token_stream.nextToken();
-        token_stream.nextToken();
-        if(!parseExpression(annotationExpression)){
-            token_stream.rewind(start);
-            return false;
-        }
-        if (token_stream.lookAhead() == ']' && token_stream.lookAhead(1) == ']') {
-            token_stream.nextToken();
-            token_stream.nextToken();
-        }else{
-            token_stream.rewind(start);
-            return false;
-        }
+    if(!annotationExpression && !parseAnnotation(annotationExpression)){
+        token_stream.rewind(start);
+        return false;
     }
 
     if (token_stream.lookAhead() == Token_QTJAMBI_DEPRECATED) {
@@ -1781,20 +1719,9 @@ bool Parser::parseEnumSpecifier(TypeSpecifierAST *&node) {
     CHECK(Token_enum);
 
     ExpressionAST *annotationExpression(nullptr);
-    if (token_stream.lookAhead() == '[' && token_stream.lookAhead(1) == '[') {
-        token_stream.nextToken();
-        token_stream.nextToken();
-        if(!parseExpression(annotationExpression)){
-                token_stream.rewind(start);
-                return false;
-        }
-        if (token_stream.lookAhead() == ']' && token_stream.lookAhead(1) == ']') {
-                token_stream.nextToken();
-                token_stream.nextToken();
-        }else{
-                token_stream.rewind(start);
-                return false;
-        }
+    if(!parseAnnotation(annotationExpression)){
+        token_stream.rewind(start);
+        return false;
     }
     bool isDeprecated = false;
     StringLiteralAST *deprecationComment = nullptr;
@@ -1875,20 +1802,9 @@ bool Parser::parseEnumClassSpecifier(TypeSpecifierAST *&node) {
     }
 
     ExpressionAST *annotationExpression(nullptr);
-    if (token_stream.lookAhead() == '[' && token_stream.lookAhead(1) == '[') {
-        token_stream.nextToken();
-        token_stream.nextToken();
-        if(!parseExpression(annotationExpression)){
-            token_stream.rewind(start);
-            return false;
-        }
-        if (token_stream.lookAhead() == ']' && token_stream.lookAhead(1) == ']') {
-            token_stream.nextToken();
-            token_stream.nextToken();
-        }else{
-            token_stream.rewind(start);
-            return false;
-        }
+    if(!parseAnnotation(annotationExpression)){
+        token_stream.rewind(start);
+        return false;
     }
     bool isDeprecated = false;
     StringLiteralAST *deprecationComment = nullptr;
@@ -2119,13 +2035,26 @@ bool Parser::parseDeprecatedSpecifier(const ListNode<std::size_t> *&node, String
     return start != token_stream.cursor();
 }
 
+bool Parser::parseExportedSpecifier(const ListNode<std::size_t> *&node){
+    std::size_t start = token_stream.cursor();
+
+    int tk;
+    while (0 != (tk = token_stream.lookAhead())
+           && (tk == Token_QTJAMBI_EXPORT)) {
+        node = snoc(node, token_stream.cursor(), _M_pool);
+        token_stream.nextToken();
+    }
+
+    return start != token_stream.cursor();
+}
+
 bool Parser::parseFunctionSpecifier(const ListNode<std::size_t> *&node) {
     std::size_t start = token_stream.cursor();
 
     int tk;
     while (0 != (tk = token_stream.lookAhead())
             && (tk == Token_constexpr || tk == Token_inline || tk == Token_virtual
-                || tk == Token_explicit || tk == Token_Q_INVOKABLE || tk == Token_Q_SCRIPTABLE)) {
+                || tk == Token_explicit || tk == Token_Q_INVOKABLE || tk == Token_Q_SCRIPTABLE || tk == Token_QTJAMBI_EXPORT)) {
         node = snoc(node, token_stream.cursor(), _M_pool);
         token_stream.nextToken();
     }
@@ -2239,20 +2168,9 @@ bool Parser::parseParameterDeclarationList(const ListNode<ParameterDeclarationAS
 bool Parser::parseParameterDeclaration(ParameterDeclarationAST *&node) {
     std::size_t start = token_stream.cursor();
 
-    if (token_stream.lookAhead() == '[' && token_stream.lookAhead(1) == '[') {
-        token_stream.nextToken();
-        token_stream.nextToken();
-        ExpressionAST *annotationExpression(nullptr);
-        if(!parseExpression(annotationExpression)){
-            token_stream.rewind(start);
-        }else{
-            if (token_stream.lookAhead() == ']' && token_stream.lookAhead(1) == ']') {
-                token_stream.nextToken();
-                token_stream.nextToken();
-            }else{
-                token_stream.rewind(start);
-            }
-        }
+    ExpressionAST *annotationExpression(nullptr);
+    if(!parseAnnotation(annotationExpression)){
+        token_stream.rewind(start);
     }
 
     const ListNode<std::size_t> *storage = nullptr;
@@ -2340,6 +2258,16 @@ bool Parser::parseForwardDeclarationSpecifier(TypeSpecifierAST *&node) {
     std::size_t class_key = token_stream.cursor();
     token_stream.nextToken();
 
+    const ListNode<std::size_t> *storageSpec = nullptr;
+    bool hasExported = parseExportedSpecifier(storageSpec);
+
+    ExpressionAST *annotationExpression(nullptr);
+    if(!parseAnnotation(annotationExpression)){
+        token_stream.rewind(start);
+    }
+    if(!hasExported)
+        hasExported = parseExportedSpecifier(storageSpec);
+
     NameAST *name = nullptr;
     if (!parseName(name, false)) {
         token_stream.rewind(start);
@@ -2371,17 +2299,8 @@ bool Parser::parseForwardDeclarationSpecifier(TypeSpecifierAST *&node) {
     return true;
 }
 
-bool Parser::parseClassSpecifier(TypeSpecifierAST *&node) {
+bool Parser::parseAnnotation(ExpressionAST *&annotationExpression){
     std::size_t start = token_stream.cursor();
-
-    int kind = token_stream.lookAhead();
-    if (kind != Token_class && kind != Token_struct && kind != Token_union)
-        return false;
-
-    std::size_t class_key = token_stream.cursor();
-    token_stream.nextToken();
-
-    ExpressionAST *annotationExpression(nullptr);
     if (token_stream.lookAhead() == '[' && token_stream.lookAhead(1) == '[') {
         token_stream.nextToken();
         token_stream.nextToken();
@@ -2397,9 +2316,38 @@ bool Parser::parseClassSpecifier(TypeSpecifierAST *&node) {
             return false;
         }
     }
+    return true;
+}
 
+bool Parser::parseClassSpecifier(TypeSpecifierAST *&node) {
+    std::size_t start = token_stream.cursor();
+
+    int kind = token_stream.lookAhead();
+    if (kind != Token_class && kind != Token_struct && kind != Token_union)
+        return false;
+
+    std::size_t class_key = token_stream.cursor();
+    token_stream.nextToken();
+
+    ExpressionAST *annotationExpression(nullptr);
+    if(!parseAnnotation(annotationExpression)){
+        token_stream.rewind(start);
+        return false;
+    }
+
+    bool isExported = false;
     bool isDeprecated = false;
     StringLiteralAST *deprecationComment = nullptr;
+
+    if (token_stream.lookAhead() == Token_QTJAMBI_EXPORT) {
+        token_stream.nextToken();
+        isExported = true;
+    }
+
+    if(!annotationExpression && !parseAnnotation(annotationExpression)){
+        token_stream.rewind(start);
+        return false;
+    }
 
     if (token_stream.lookAhead() == Token_QTJAMBI_DEPRECATED) {
         token_stream.nextToken();
@@ -2415,6 +2363,21 @@ bool Parser::parseClassSpecifier(TypeSpecifierAST *&node) {
             return false;
         }
         ADVANCE(')', ")")
+    }
+
+    if(!annotationExpression && !parseAnnotation(annotationExpression)){
+        token_stream.rewind(start);
+        return false;
+    }
+
+    if (!isExported && token_stream.lookAhead() == Token_QTJAMBI_EXPORT) {
+        token_stream.nextToken();
+        isExported = true;
+    }
+
+    if(!annotationExpression && !parseAnnotation(annotationExpression)){
+        token_stream.rewind(start);
+        return false;
     }
 
     WinDeclSpecAST *winDeclSpec = nullptr;
@@ -2489,6 +2452,7 @@ bool Parser::parseClassSpecifier(TypeSpecifierAST *&node) {
     ast->base_clause = bases;
     ast->is_final = isFinal;
     ast->is_deprecated = isDeprecated;
+    ast->is_dllExported = isExported;
     ast->deprecationComment = deprecationComment;
     ast->annotationExpression = annotationExpression;
 
@@ -2739,20 +2703,9 @@ bool Parser::parseEnumerator(EnumeratorAST *&node) {
     EnumeratorAST *ast = CreateNode<EnumeratorAST>(_M_pool);
     ast->id = id;
 
-    if (token_stream.lookAhead() == '[' && token_stream.lookAhead(1) == '[') {
-        token_stream.nextToken();
-        token_stream.nextToken();
-        if(!parseExpression(ast->annotationExpression)){
-            token_stream.rewind(start);
-            return false;
-        }
-        if (token_stream.lookAhead() == ']' && token_stream.lookAhead(1) == ']') {
-            token_stream.nextToken();
-            token_stream.nextToken();
-        }else{
-            token_stream.rewind(start);
-            return false;
-        }
+    if(!ast->annotationExpression && !parseAnnotation(ast->annotationExpression)){
+        token_stream.rewind(start);
+        return false;
     }
 
     if (token_stream.lookAhead() == Token_QTJAMBI_DEPRECATED) {
@@ -3175,6 +3128,11 @@ bool Parser::parseExpressionStatement(StatementAST *&node) {
 
     ExpressionAST *expr = nullptr;
     parseCommaExpression(expr);
+
+    if (token_stream.lookAhead() != ';') {
+        token_stream.rewind(start);
+        parseAnnotation(expr);
+    }
 
     ADVANCE(';', ";")
 
@@ -3747,6 +3705,7 @@ bool Parser::parseBlockDeclaration(DeclarationAST *&node) {
     parseStorageClassSpecifier(storageSpec);
 
     parseCvQualify(cv);
+    bool hasExported = parseExportedSpecifier(storageSpec);
 
     TypeSpecifierAST *spec = nullptr;
     if (!parseTypeSpecifierOrClassSpec(spec)) { // replace with simpleTypeSpecifier?!?!
@@ -3754,6 +3713,8 @@ bool Parser::parseBlockDeclaration(DeclarationAST *&node) {
         return false;
     }
 
+    if(!hasExported)
+        hasExported = parseExportedSpecifier(storageSpec);
     parseCvQualify(cv);
     spec->cv = cv;
 
@@ -3866,20 +3827,9 @@ bool Parser::parseDeclarationInternal(DeclarationAST *&node) {
     }
 
     ExpressionAST *annotationExpression(nullptr);
-    if (token_stream.lookAhead() == '[' && token_stream.lookAhead(1) == '[') {
-        token_stream.nextToken();
-        token_stream.nextToken();
-        if(!parseExpression(annotationExpression)){
-            token_stream.rewind(start);
-            return false;
-        }
-        if (token_stream.lookAhead() == ']' && token_stream.lookAhead(1) == ']') {
-            token_stream.nextToken();
-            token_stream.nextToken();
-        }else{
-            token_stream.rewind(start);
-            return false;
-        }
+    if(!annotationExpression && !parseAnnotation(annotationExpression)){
+        token_stream.rewind(start);
+        return false;
     }
 
     const ListNode<std::size_t> *funSpec = nullptr;
@@ -3893,65 +3843,35 @@ bool Parser::parseDeclarationInternal(DeclarationAST *&node) {
 
     if(!hasDeprecated)
         hasDeprecated = parseDeprecatedSpecifier(storageSpec, deprecationComment);
+    hasFunSpec |= parseFunctionSpecifier(funSpec);
 
-    if (!annotationExpression && token_stream.lookAhead() == '[' && token_stream.lookAhead(1) == '[') {
-        token_stream.nextToken();
-        token_stream.nextToken();
-        if(!parseExpression(annotationExpression)){
-            token_stream.rewind(start);
-            return false;
-        }
-        if (token_stream.lookAhead() == ']' && token_stream.lookAhead(1) == ']') {
-            token_stream.nextToken();
-            token_stream.nextToken();
-        }else{
-            token_stream.rewind(start);
-            return false;
-        }
+    if(!annotationExpression && !parseAnnotation(annotationExpression)){
+        token_stream.rewind(start);
+        return false;
     }
 
     parseStorageClassSpecifier(storageSpec);
 
     parseCvQualify(cv);
 
+    hasFunSpec |= parseFunctionSpecifier(funSpec);
     if(!hasDeprecated)
         hasDeprecated = parseDeprecatedSpecifier(storageSpec, deprecationComment);
+    hasFunSpec |= parseFunctionSpecifier(funSpec);
 
-    if (!annotationExpression && token_stream.lookAhead() == '[' && token_stream.lookAhead(1) == '[') {
-        token_stream.nextToken();
-        token_stream.nextToken();
-        if(!parseExpression(annotationExpression)){
-            token_stream.rewind(start);
-            return false;
-        }
-        if (token_stream.lookAhead() == ']' && token_stream.lookAhead(1) == ']') {
-            token_stream.nextToken();
-            token_stream.nextToken();
-        }else{
-            token_stream.rewind(start);
-            return false;
-        }
+    if(!annotationExpression && !parseAnnotation(annotationExpression)){
+        token_stream.rewind(start);
+        return false;
     }
 
     hasFunSpec |= parseFunctionSpecifier(funSpec);
-
     if(!hasDeprecated)
         hasDeprecated = parseDeprecatedSpecifier(storageSpec, deprecationComment);
+    hasFunSpec |= parseFunctionSpecifier(funSpec);
 
-    if (!annotationExpression && token_stream.lookAhead() == '[' && token_stream.lookAhead(1) == '[') {
-        token_stream.nextToken();
-        token_stream.nextToken();
-        if(!parseExpression(annotationExpression)){
-            token_stream.rewind(start);
-            return false;
-        }
-        if (token_stream.lookAhead() == ']' && token_stream.lookAhead(1) == ']') {
-            token_stream.nextToken();
-            token_stream.nextToken();
-        }else{
-            token_stream.rewind(start);
-            return false;
-        }
+    if(!annotationExpression && !parseAnnotation(annotationExpression)){
+        token_stream.rewind(start);
+        return false;
     }
 
     // that is for the case 'friend __declspec(dllexport) ....'

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -28,6 +28,8 @@
 **
 ****************************************************************************/
 package io.qt.qtjambi.deployer;
+
+import static io.qt.qtjambi.deployer.QMLGenerator.isCompatible;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -203,7 +205,7 @@ final class AppGenerator {
 					if(!exeFile.isFile()) {
 						throw new Error("Specified launcher executable does not exist: "+exeinfo[0]);
 					}
-					os = "linux";
+					os = "linux_unix";
 				}
 				if(os!=null) {
 					executables.add(new SimpleEntry<>(os, exeFile.toURI().toURL()));
@@ -226,7 +228,7 @@ final class AppGenerator {
                 }else if(entry.equals("QtJambiLauncher_arm64-v8a")) {
                     os = "android-arm64";
                 }else if(entry.equals("QtJambiLauncher")) {
-                    os = "linux";
+                    os = "linux_unix";
                 }
                 if(os!=null && entry.contains("QtJambiLauncher")) {
                 	File libFile = new File(location.absoluteFilePath(entry));
@@ -341,12 +343,17 @@ final class AppGenerator {
 		
 		for(Map.Entry<String,URL> entry : executables) {
 			String os = entry.getKey();
-			if(os!=null && (platform==null || platform.startsWith(os))) {
+			if(os!=null && (platform==null || isCompatible(platform, os))) {
                 URL url = entry.getValue();
 				QFile newFile;
 				URL debuginfoURL = null;
 				QFile debuginfoFile = null;
-                switch(os.toLowerCase()) {
+				String _os = os.toLowerCase();
+				if(os.contains("bsd-") || os.startsWith("solaris-")) {
+					_os = "linux_unix";
+				}
+                switch(_os) {
+                case "linux_unix":
 				case "linux":
 				case "linux32":
 				case "linux64":

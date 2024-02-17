@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -115,7 +115,9 @@ QObject* createPluginInstance(QueryMetadata qt_plugin_query_metadata){
         QJsonObject pluginMetaData;
         if (err.error == QCborError::NoError && metadata.isMap()) {
             QCborValue cbClassName = metadata[qint64(QtPluginMetaDataKeys::ClassName)];
-            QCborValue cbPluginName = metadata[qint64(0x0CAFEBABE0L)];
+            QCborValue cbPluginName = metadata[qint64(0x0CAFE0L)];
+            if(cbPluginName.isInvalid())
+                cbPluginName = metadata[qint64(0x0CAFEBABE0L)];
             QString className = cbClassName.toString().replace("::", ".");
             QString pluginName = cbPluginName.toString();
             if(JniEnvironment env{500}){
@@ -132,60 +134,20 @@ QObject* createPluginInstance(QueryMetadata qt_plugin_query_metadata){
     return nullptr;
 }
 
-typedef QHash<quintptr,QObject*> JarimportHash;
-Q_GLOBAL_STATIC(JarimportHash, gJarimports)
-Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gJarimportsLock, (QReadWriteLock::Recursive))
-
-void clearJarImportersAtShutdown(JNIEnv *){
-    QHash<quintptr,QObject*> jarimports;
-    if(!gJarimports.isDestroyed()){
-        QWriteLocker wlocker(gJarimportsLock());
-        gJarimports->swap(jarimports);
-    }
-    for(QObject* o : jarimports.values()){
-        if(!o->thread() || o->thread()==QThread::currentThread())
-            delete o;
-        else
-            o->deleteLater();
-    }
-    jarimports.clear();
-}
-
 QObject* createJarImport(QueryMetadata ptr){
-    quintptr val = quintptr(ptr);
-    if(!gJarimports.isDestroyed()){
-        QObject* result;
-        {
-            QReadLocker rlocker(gJarimportsLock());
-            result = gJarimports->value(val);
-        }
-        if(!result){
-            QString path = getFunctionLibraryPath(reinterpret_cast<QFunctionPointer>(ptr));
-            if(JniEnvironment env{300}){
-                try{
-                    jobject obj = Java::QtQml::Internal::QmlTypes$JarImport::newInstance(env, qtjambi_cast<jstring>(env, path));
-                    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, obj)){
-                        if(link->isQObject()){
-                            link->setCppOwnership(env);
-                            result = link->qobject();
-                            {
-                                QWriteLocker wlocker(gJarimportsLock());
-                                QObject* _result = gJarimports->value(val);
-                                if(_result){
-                                    delete result;
-                                    return _result;
-                                }else{
-                                    gJarimports->insert(val, result);
-                                }
-                            }
-                        }
-                    }
-                }catch(const JavaException& exn){
-                    exn.report(env);
+    QString path = getFunctionLibraryPath(reinterpret_cast<QFunctionPointer>(ptr));
+    if(JniEnvironment env{300}){
+        try{
+            jobject obj = Java::QtQml::Internal::QmlTypes$JarImport::newInstance(env, qtjambi_cast<jstring>(env, path));
+            if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, obj)){
+                if(link->isQObject()){
+                    link->setCppOwnership(env);
+                    return link->qobject();
                 }
             }
+        }catch(const JavaException& exn){
+            exn.report(env);
         }
-        return result;
     }
     return nullptr;
 }

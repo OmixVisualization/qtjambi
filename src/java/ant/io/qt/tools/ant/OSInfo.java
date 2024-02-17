@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -39,71 +39,118 @@ package io.qt.tools.ant;
  */
 public class OSInfo
 {
-    public enum OS
+    public enum OperationSystem
     {
-        Unknown ("unkwnown"),
-        Windows ("windows"),
-        Linux ("linux"),
-        MacOS ("macos"),
-        Android ("android"),
-        IOS ("ios");
-
-        private String name;
-
-        OS(final String name)
-        {
-            this.name = name;
-        }
-
-        @Override
-        public String toString()
-        {
-            return name;
-        }
+        Unknown,
+        Windows,
+        Linux,
+        MacOS,
+        Android,
+        IOS,
+        FreeBSD,
+        NetBSD,
+        OpenBSD,
+        Solaris
+        ;
+    	boolean isAndroid() {
+			return this==Android;
+		}
+    	boolean isUnixLike() {
+			switch (this) {
+			case FreeBSD:
+			case NetBSD:
+			case OpenBSD:
+			case Solaris:
+			case Linux:
+				return true;
+			default:
+				return false;
+			}
+		}
     }
-
-    public static final String K_WIN_X86 = "windows-x86";
-    public static final String K_WIN_X64 = "windows-x64";
-    public static final String K_WIN_ARM32 = "windows-arm";
-    public static final String K_WIN_ARM64 = "windows-arm64";
-
-    public static final String K_LINUX_X86 = "linux-x86";
-    public static final String K_LINUX_X64 = "linux-x64";
-    public static final String K_LINUX_ARM32 = "linux-arm";
-    public static final String K_LINUX_ARM64 = "linux-arm64";
     
-    public static final String K_ANDROID_X86 = "android-x86";
-    public static final String K_ANDROID_X64 = "android-x64";
-    public static final String K_ANDROID_ARM32 = "android-arm";
-    public static final String K_ANDROID_ARM64 = "android-arm64";
-
-    public static final String K_WINDOWS = "windows";
-    public static final String K_ANDROID = "android";
-    public static final String K_LINUX = "linux";
-    public static final String K_MACOS = "macos";
-    public static final String K_IOS = "ios";
+    enum Architecture{
+		x86,
+		x86_64,
+		arm,
+		arm64,
+		sparc,
+		mips,
+		mips64,
+		riscv64
+	}
 
     /**
      * Returns the operating system
      */
-    public static OS os() {
+    public static OperationSystem os() {
         if (os == null) {
             String osname = System.getProperty("os.name").toLowerCase();
-            if (osname.contains("linux"))
-                os = OS.Linux;
-            else if (osname.contains("windows"))
-                os = OS.Windows;
-            else if (osname.contains("mac os") || osname.contains("macos"))
-                os = OS.MacOS;
-            else if (osname.contains("android"))
-                os = OS.Android;
+            if (osname.contains("linux")) {
+            	if(System.getProperty("java.runtime.name").toLowerCase().startsWith("android"))
+            		os = OperationSystem.Android;
+            	else
+            		os = OperationSystem.Linux;
+            }else if (osname.contains("windows"))
+                os = OperationSystem.Windows;
+            else if (osname.startsWith("freebsd")) 
+            	os = OperationSystem.FreeBSD;
+            else if (osname.startsWith("netbsd")) 
+            	os = OperationSystem.NetBSD;
+            else if (osname.startsWith("openbsd")) 
+            	os = OperationSystem.OpenBSD;
+            else if (osname.startsWith("solaris") || osname.startsWith("sunos")) 
+            	os = OperationSystem.Solaris;
+            else if (osname.contains("mac os") || osname.contains("macos") || osname.contains("darwin"))
+                os = OperationSystem.MacOS;
             else
-                os = OS.Unknown;
+                os = OperationSystem.Unknown;
         }
         return os;
     }
+
+	public static Architecture arch() {
+		if(arch == null) {
+	    	String osarch = System.getProperty("os.arch").toLowerCase();
+	    	switch(osarch) {
+        	case "arm":
+        	case "armv":
+        	case "armv6":
+        	case "armv7":
+        	case "arm32":
+        		arch = Architecture.arm; break;
+        	case "arm64":
+        	case "aarch64":
+        		arch = Architecture.arm64; break;
+        	case "x86_64":
+        	case "x64":
+        	case "amd64":
+        		arch = Architecture.x86_64; break;
+        	case "x86":
+        	case "i386":
+        		arch = Architecture.x86; break;
+        	case "sparc":
+        		arch = Architecture.sparc; break;
+        	case "mips":
+        		arch = Architecture.mips; break;
+        	case "mips64":
+        		arch = Architecture.mips64; break;
+        	case "riscv64":
+        		arch = Architecture.riscv64; break;
+        	default:
+        		if(osarch.startsWith("arm-"))
+        			arch = Architecture.arm;
+        		else if(osarch.startsWith("aarch64-"))
+        			arch = Architecture.arm64;
+        		else
+        			arch = Architecture.x86_64;
+        		break;
+        	}
+		}
+		return arch;
+	}
     
-    public static OS crossOS() {
+    public static OperationSystem crossOS() {
     	if(crossOS==null) {
     		return os();
     	}
@@ -112,121 +159,149 @@ public class OSInfo
     	}
     }
     
-    public static String crossOSArchName() {
-    	if(crossOSArchName==null) {
-    		return osArchName();
-    	}
-    	else {
-    		return crossOSArchName;
+    public static String targetPlatform() {
+    	if(crossOS==null) {
+    		switch (os()) {
+            case Windows:
+            case Linux:
+            case FreeBSD:
+            case NetBSD:
+            case OpenBSD:
+            case Solaris:
+            case Android:
+            	switch(arch()) {
+            	case x86_64:
+            		return os().name().toLowerCase()+"-x64";
+            	default:
+            		return os().name().toLowerCase()+"-"+arch().name().toLowerCase();
+            	}
+            case MacOS:
+                return "macos";
+            case IOS:
+            	return "ios";
+            default:
+            	return "unknown";
+            }
+    	}else {
+	    	switch (crossOS) {
+	        case Windows:
+	        case Linux:
+	        case FreeBSD:
+	        case NetBSD:
+	        case OpenBSD:
+            case Solaris:
+	        case Android:
+	        	if(crossArch!=null) {
+	            	switch(crossArch) {
+	            	case x86_64:
+	            		return crossOS.name().toLowerCase()+"-x64";
+	            	default:
+	            		return crossOS.name().toLowerCase()+"-"+crossArch.name().toLowerCase();
+	            	}
+	        	}else {
+	        		return crossOS.name().toLowerCase();
+	        	}
+	        case MacOS:
+	            return "macos";
+	        case IOS:
+	        	return "ios";
+        	default:
+	        	return "unknown";
+	        }
     	}
     }
-
-
-    /**
-     * Returns a string containing the operating system and
-     * architecture name
-     *
-     * @return e.g. "win32" or "linux64"..
-     */
-    public static String osArchName() {
-        if (osArchName == null) {
-            switch (os()) {
-            case Windows:
-            	switch(System.getProperty("os.arch").toLowerCase()) {
-            	case "arm":
-            	case "arm32":
-            		osArchName = K_WIN_ARM32; break;
-            	case "arm64":
-            	case "aarch64":
-            		osArchName = K_WIN_ARM64; break;
-            	case "x86_64":
-            	case "x64":
-            	case "amd64":
-            		osArchName = K_WIN_X64; break;
-            	default:
-            		osArchName = K_WIN_X86; break;
-            	}
-                break;
-            case Linux:
-        		switch(System.getProperty("os.arch").toLowerCase()) {
-            	case "arm":
-            	case "arm32":
-            		osArchName = K_LINUX_ARM32; break;
-            	case "arm64":
-            	case "aarch64":
-            		osArchName = K_LINUX_ARM64; break;
-            	case "x86_64":
-            	case "x64":
-            	case "amd64":
-            		osArchName = K_LINUX_X64; break;
-            	default:
-            		osArchName = K_LINUX_X86; break;            	
-            	}
-                break;
-            case MacOS:
-                osArchName = "macos";
-                break;
-            case Android:
-                osArchName = "android";
-                break;
-            case IOS:
-                osArchName = "ios";
-                break;
-            case Unknown:
-                osArchName = "unknown";
-                break;
-            }
-        }
-        return osArchName;
+    
+    public static Architecture crossArch() {
+    	if(crossOS==null) {
+    		return null;
+    	}else if(crossOS==OperationSystem.Android) {
+    		return crossArch;
+    	}else {
+	    	if(crossArch==null) {
+	    		return arch();
+	    	}
+	    	else {
+	    		return crossArch;
+	    	}
+    	}
     }
 
     static void setQMakeXSpec(String qmakeXSpec) {
     	if(qmakeXSpec==null) {
     		crossOS = null;
-    		crossOSArchName = null;    		
     	}else {
 	    	switch(qmakeXSpec) {
 	    	case "linux-arm-gnueabi-g++":
-	    		crossOS = OS.Linux;
-	    		crossOSArchName = K_LINUX_ARM32;
+	    		crossOS = OperationSystem.Linux;
+	    		crossArch = Architecture.arm;
 	    		break;
 	    	case "linux-aarch64-gnu-g++":
-	    		crossOS = OS.Linux;
-	    		crossOSArchName = K_LINUX_ARM64;
+	    		crossOS = OperationSystem.Linux;
+	    		crossArch = Architecture.arm64;
 	    		break;
 	    	case "linux-g++-32":
-	    		crossOS = OS.Linux;
-	    		crossOSArchName = K_LINUX_X86;
+	    		crossOS = OperationSystem.Linux;
+	    		crossArch = Architecture.x86;
+	    		break;
+	    	case "linux-g++-64":
+	    		crossOS = OperationSystem.Linux;
+	    		crossArch = Architecture.x86_64;
 	    		break;
 	    	case "win32-arm64-msvc":
-	    		crossOS = OS.Windows;
-	    		crossOSArchName = K_WIN_ARM64;
+	    		crossOS = OperationSystem.Windows;
+	    		crossArch = Architecture.arm64;
+	    		break;
+	    	case "win32-x64-msvc":
+	    		crossOS = OperationSystem.Windows;
+	    		crossArch = Architecture.x86_64;
+	    		break;
+	    	case "freebsd-clang":
+	    	case "freebsd-g++":
+	    		crossOS = OperationSystem.FreeBSD;
+	    		crossArch = Architecture.x86_64;
+	    		break;
+	    	case "netbsd-clang":
+	    	case "netbsd-g++":
+	    		crossOS = OperationSystem.NetBSD;
+	    		crossArch = Architecture.x86_64;
+	    		break;
+	    	case "openbsd-clang":
+	    	case "openbsd-g++":
+	    		crossOS = OperationSystem.OpenBSD;
+	    		crossArch = Architecture.x86_64;
+	    		break;
+	    	case "solaris-cc-64":
+	    	case "solaris-cc-64-stlport":
+	    	case "solaris-g++-64":
+	    		crossOS = OperationSystem.Solaris;
+	    		crossArch = Architecture.x86_64;
 	    		break;
 	    	case "android-clang":
-	    		crossOS = OS.Android;
-	    		crossOSArchName = "android";
+	    		crossOS = OperationSystem.Android;
+	    		crossArch = null;
 	    		break;
 	    	case "macx-ios-clang":
 	    	case "macx-tvos-clang":
 	    	case "macx-watchos-clang":
-	    		crossOS = OS.IOS;
-	    		crossOSArchName = "ios";
+	    		crossOS = OperationSystem.IOS;
+	    		crossArch = null;
 	    		break;
 			default:
 	    		crossOS = null;
-	    		crossOSArchName = null;
+	    		crossArch = null;
 				break;
 	    	}
     	}
     }
     
-    static void setCrossOSArchName(String crossOSArchName) {
-		OSInfo.crossOSArchName = crossOSArchName;
-	}
-
-    private static OS crossOS;
-    private static String crossOSArchName;
-    private static OS os;
-    private static String osArchName;
+    static void setCrossCompilation(OperationSystem _crossOS, Architecture _crossArch) {
+    	crossOS = _crossOS;
+    	crossArch = _crossArch;
+    }
+    
+    private static OperationSystem crossOS;
+    private static Architecture crossArch;
+    private static OperationSystem os;
+    private static Architecture arch;
 }
 

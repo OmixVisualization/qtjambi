@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -83,11 +83,16 @@ void swap(SuperTypeInfo& a, SuperTypeInfo& b) noexcept;
 class SuperTypeInfos : public QVector<SuperTypeInfo>{
 public:
     SuperTypeInfos() = default;
+    SuperTypeInfos(const SuperTypeInfos&);
+    SuperTypeInfos(SuperTypeInfos&&);
     SuperTypeInfos(JNIEnv *env, jobject obj);
+    ~SuperTypeInfos();
+    SuperTypeInfos& operator=(const SuperTypeInfos&);
+    SuperTypeInfos& operator=(SuperTypeInfos&&);
     jobject interfaceList(JNIEnv *env) const;
     static const SuperTypeInfos& fromClass(JNIEnv *env, jclass cls);
 private:
-    JObjectWrapper m_interfaceList;
+    jobject m_interfaceList;
     friend void clearSuperTypesAtShutdown(JNIEnv *env);
 };
 

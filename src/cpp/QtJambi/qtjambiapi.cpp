@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -498,7 +498,7 @@ bool enabledDanglingPointerCheck(JNIEnv * env){
     return b;
 }
 
-#if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS)) && !defined(Q_OS_ANDROID)
+#if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS) || defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD) || defined(Q_OS_SOLARIS)) && !defined(Q_OS_ANDROID)
 #include <signal.h>
 #include <ucontext.h>
 
@@ -512,7 +512,7 @@ struct bad_typeid : std::bad_typeid{
 
 const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, const void* ptr){
     Q_ASSERT(typeInfoSupplier);
-#if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS)) && !defined(Q_OS_ANDROID)
+#if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS) || defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD) || defined(Q_OS_SOLARIS)) && !defined(Q_OS_ANDROID)
     static QThreadStorage<bool> isSigSegv;
     struct sigaction sa;
     struct sigaction sa_old;
@@ -599,7 +599,7 @@ const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, cons
 
 const std::type_info* tryGetTypeInfo(JNIEnv *env, TypeInfoSupplier typeInfoSupplier, const void* ptr){
     Q_ASSERT(typeInfoSupplier);
-#if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS)) && !defined(Q_OS_ANDROID)
+#if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS) || defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD) || defined(Q_OS_SOLARIS)) && !defined(Q_OS_ANDROID)
     if(enabledDanglingPointerCheck(env)){
         return checkedGetTypeInfo(typeInfoSupplier, ptr);
     }
@@ -1274,6 +1274,8 @@ void QtJambiAPI::setQQmlListPropertyElementType(JNIEnv *env, jobject list, jobje
 
 #if defined(Q_CC_CLANG)
 #  define COMPILERS_NAME __VERSION__
+#elif defined(Q_CC_GHS)
+#  define COMPILER_STRING "GHS " QT_STRINGIFY(__GHS_VERSION_NUMBER)
 #elif defined(Q_CC_GNU)
 #  define COMPILERS_NAME "GCC " __VERSION__
 #elif defined(Q_CC_MSVC)
@@ -1297,8 +1299,70 @@ void QtJambiAPI::setQQmlListPropertyElementType(JNIEnv *env, jobject list, jobje
 #  define DEBUG_STRING "debug"
 #endif
 
+#if defined(Q_PROCESSOR_ARM_64)
+#  define ARCH_PROCESSOR "arm64"
+#elif defined(Q_PROCESSOR_ARM_32)
+#  define ARCH_PROCESSOR "arm"
+#elif defined(Q_PROCESSOR_X86_32)
+#  define ARCH_PROCESSOR "i386"
+#elif defined(Q_PROCESSOR_X86_64)
+#  define ARCH_PROCESSOR "x86_64"
+#else
+#  define ARCH_PROCESSOR "unknown"
+#endif
+
+#if Q_BYTE_ORDER == Q_LITTLE_ENDIAN
+#  define ARCH_ENDIANNESS "little_endian"
+#elif Q_BYTE_ORDER == Q_BIG_ENDIAN
+#  define ARCH_ENDIANNESS "big_endian"
+#endif
+
+#if defined(Q_OS_WIN64)
+#  define ARCH_POINTER "llp64"
+#elif defined(__LP64__) || QT_POINTER_SIZE - 0 == 8
+#  define ARCH_POINTER "lp64"
+#else
+#  define ARCH_POINTER "ilp32"
+#endif
+
+#ifdef QT_COORD_TYPE_STRING
+#  define ARCH_COORD_TYPE   "-qreal_" QT_COORD_TYPE_STRING
+#else
+#  define ARCH_COORD_TYPE  ""
+#endif
+
+#if defined(__ARM_EABI__) || defined(__mips_eabi)
+#  define ARCH_ABI1 "-eabi"
+#elif defined(_MIPS_SIM)
+#  if _MIPS_SIM == _ABIO32
+#    define ARCH_ABI1 "-o32"
+#  elif _MIPS_SIM == _ABIN32
+#    define ARCH_ABI1 "-n32"
+#  elif _MIPS_SIM == _ABI64
+#    define ARCH_ABI1 "-n64"
+#  elif _MIPS_SIM == _ABIO64
+#    define ARCH_ABI1 "-o64"
+#  endif
+#else
+#  define ARCH_ABI1 ""
+#endif
+#if defined(__ARM_PCS_VFP) || defined(__mips_hard_float)
+// Use "-hardfloat" for platforms that usually have no FPUs
+// (and for the platforms which had "-hardfloat" before we established the rule)
+#  define ARCH_ABI2 "-hardfloat"
+#elif defined(_SOFT_FLOAT)
+// Use "-softfloat" for architectures that usually have FPUs
+#  define ARCH_ABI2 "-softfloat"
+#else
+#  define ARCH_ABI2 ""
+#endif
+
+#define ARCH_ABI ARCH_ABI1 ARCH_ABI2
+
+#define ARCH_FULL ARCH_PROCESSOR "-" ARCH_ENDIANNESS "-" ARCH_POINTER ARCH_COORD_TYPE ARCH_ABI
+
 QTJAMBI_EXPORT const char* qtjambi_build(){
-    return "QtJambi " CONCAT(QT_VERSION_MAJOR, QT_VERSION_MINOR, QTJAMBI_PATCH_VERSION) " (" DEBUG_STRING " build; by " COMPILERS_NAME ")";
+    return "QtJambi " CONCAT(QT_VERSION_MAJOR, QT_VERSION_MINOR, QTJAMBI_PATCH_VERSION) " (" ARCH_FULL " " DEBUG_STRING " build; by " COMPILERS_NAME ")";
 }
 
 namespace PrivateFields{
@@ -1358,14 +1422,16 @@ void QtJambiAPI::registerDependency(JNIEnv *env, jobject dependentObject, QtJamb
                 }
                 return [](JNIEnv *, jobject, const QSharedPointer<QtJambiLink>&){};
             }(env);
-            JObjectWrapper _dependentObject(env, dependentObject, false);
-            _ownerLink->addFinalization([_dependentObject](JNIEnv* _env){
-                jobject buffer = _env->NewLocalRef(_dependentObject.object());
-                if(!_env->IsSameObject(buffer, nullptr)){
-                    truncateBuffer(_env, buffer);
-                    _env->DeleteLocalRef(buffer);
-                }
-            });
+            _ownerLink->addFinalization(env->NewWeakGlobalRef(dependentObject),
+                                                            [](JNIEnv* _env, void* data){
+                                                                jobject buffer = _env->NewLocalRef(reinterpret_cast<jweak>(data));
+                                                                if(!_env->IsSameObject(buffer, nullptr)){
+                                                                    truncateBuffer(_env, buffer);
+                                                                    _env->DeleteLocalRef(buffer);
+                                                                }
+                                                            }, [](JNIEnv* _env, void* data){
+                                                                _env->DeleteWeakGlobalRef(reinterpret_cast<jweak>(data));
+                                                            });
             directByteBufferConnector(env, dependentObject, _ownerLink);
         }
     }

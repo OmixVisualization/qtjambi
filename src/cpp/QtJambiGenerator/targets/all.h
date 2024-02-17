@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -85,6 +85,7 @@
 
 #ifndef QTJAMBI_NO_GUI
 #define QACCESSIBLE_H
+#undef QSCREEN_PLATFORM_H
 typedef struct __GLsync *GLsync;
 #include <QtGui/QtGui>
 typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
@@ -400,9 +401,9 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 
 #ifndef QTJAMBI_NO_WEBCHANNEL
 #include <QtWebChannel/QtWebChannel>
-//#ifndef QTJAMBI_NO_WEBCHANNELQUICK
-//#include <QtWebChannelQuick/QtWebChannelQuick>
-//#endif
+#ifndef QTJAMBI_NO_WEBCHANNELQUICK
+#include <QtWebChannelQuick/QtWebChannelQuick>
+#endif
 #endif
 
 #ifndef QTJAMBI_NO_WEBVIEW
@@ -621,8 +622,7 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #include <QtOpenGL/qopenglfunctions_4_5_compatibility.h>
 #include <QtOpenGL/qopenglfunctions_4_5_core.h>
 
-#undef QT_FEATURE_opengles2
-#define QT_FEATURE_opengles2 1
+#define QTJAMBI_FEATURE_opengles2 1
 
 #ifdef QT_NO_OPENGL_BRIDGE
 #undef QT_NO_OPENGL_BRIDGE
@@ -631,15 +631,7 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 
 #undef Q_OS_ANDROID_EMBEDDED
 #define Q_OS_ANDROID
-#undef QT_FEATURE_xcb
-#undef QT_FEATURE_opengl
-#undef QT_FEATURE_vulkan
-#undef QT_FEATURE_vsp2
 #undef Q_OS_WEBOS
-#define QT_FEATURE_xcb 1
-#define QT_FEATURE_opengl 1
-#define QT_FEATURE_vulkan 1
-#define QT_FEATURE_vsp2 1
 #define Q_OS_WIN
 #define Q_OS_MACOS
 #define Q_CLANG_QDOC
@@ -665,6 +657,13 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #ifndef QTJAMBI_NO_QUICK
 #undef QSGTEXTURE_PLATFORM_H
 #include <QtQuick/qsgtexture_platform.h>
+#endif
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+#undef QSCREEN_PLATFORM_H
+#define Q_OS_WIN32
+#define Q_OS_ANDROID
+#include <QtGui/qscreen_platform.h>
 #endif
 
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)

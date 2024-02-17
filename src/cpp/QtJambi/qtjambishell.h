@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -41,7 +41,7 @@ class AbstractContainerAccess;
 
 class QTJAMBI_EXPORT QtJambiShell{
 public:
-    typedef void (*ConstructorFunction)(void*, JNIEnv*, jobject, jvalue*);
+    typedef void (*ConstructorFunction)(void*, JNIEnv*, jobject, jvalue*, bool);
 
     virtual void destructed(const std::type_info& typeId) = 0;
     virtual void constructed(const std::type_info& typeId) = 0;

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -64,5 +64,26 @@ public class TestQuickInjectedCode extends ApplicationInitializer {
     	Assert.assertTrue(vertexData instanceof QSGGeometry.TexturedPoint2DVertexData);
     	QtObjectInterface p1 = vertexData.get(0);
     	Assert.assertTrue(p1 instanceof QSGGeometry.TexturedPoint2D);
+    }
+    
+    @Test
+    public void testQSGGeometry_AttributeSet() {
+    	QSGGeometry.AttributeSet attributeSet = new QSGGeometry.AttributeSet(5, 
+    			new QSGGeometry.Attribute(0, 0, 0, false, QSGGeometry.AttributeType.UnknownAttribute, 0), 
+    			new QSGGeometry.Attribute(1, 0, 0, false, QSGGeometry.AttributeType.UnknownAttribute, 0), 
+    			new QSGGeometry.Attribute(2, 0, 0, false, QSGGeometry.AttributeType.UnknownAttribute, 0), 
+    			new QSGGeometry.Attribute(3, 0, 0, false, QSGGeometry.AttributeType.UnknownAttribute, 0), 
+    			new QSGGeometry.Attribute(4, 0, 0, false, QSGGeometry.AttributeType.UnknownAttribute, 0));
+    	QSGGeometry.Attribute[] attributes = attributeSet.attributes();
+    	Assert.assertEquals(5, attributes.length);
+    	for (int i = 0; i < attributes.length; i++) {
+    		Assert.assertEquals(i, attributes[i].position());
+		}
+    	QSGGeometry geometry = new QSGGeometry(attributeSet, 4);
+    	attributes = geometry.attributes();
+    	Assert.assertEquals(5, attributes.length);
+    	for (int i = 0; i < attributes.length; i++) {
+    		Assert.assertEquals(i, attributes[i].position());
+		}
     }
 }

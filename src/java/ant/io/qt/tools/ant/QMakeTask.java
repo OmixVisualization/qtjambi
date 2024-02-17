@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -47,7 +47,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.PropertyHelper;
 import org.apache.tools.ant.Task;
 
-import io.qt.tools.ant.OSInfo.OS;
+import io.qt.tools.ant.OSInfo.OperationSystem;
 
 public class QMakeTask extends Task {
 
@@ -181,7 +181,7 @@ public class QMakeTask extends Task {
         }
         if("true".equals(AntUtil.getPropertyAsString(propertyHelper, Constants.QTJAMBI_DEBUG_TOOLS)))
         	parameters.add("DEFINES+=QTJAMBI_DEBUG_TOOLS");
-        if(OSInfo.crossOS()==OSInfo.OS.MacOS) {
+        if(OSInfo.crossOS()==OSInfo.OperationSystem.MacOS) {
         	parameters.add("DEFINES+=_XOPEN_SOURCE");
         	if(Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_GENERATE_FRAMEWORKS))) {
             	parameters.add("QTJAMBI_GENERATE_FRAMEWORKS=true");
@@ -219,7 +219,7 @@ public class QMakeTask extends Task {
             }
 		}
         */
-        if(OSInfo.os()==OSInfo.OS.MacOS) {
+        if(OSInfo.crossOS()==OSInfo.OperationSystem.MacOS) {
         	if(Boolean.valueOf(AntUtil.getPropertyAsString(propertyHelper, Constants.MAC_OS_CONVERT_QT_FRAMEWORK))) {
         		parameters.add("DEFINES+=\"QTJAMBI_NO_DEBUG_PLUGINS\"");
         	}
@@ -310,13 +310,17 @@ public class QMakeTask extends Task {
 //        	command.add(AntUtil.getPropertyAsString(propertyHelper, Constants.QT_SPEC));
         	String binpath = AntUtil.getPropertyAsString(propertyHelper, Constants.BINDIR);
         	Map<String,String> env = null;
-        	if(OSInfo.crossOS()==OS.Android) {
+        	if(OSInfo.crossOS()==OperationSystem.Android) {
+        		System.out.println("Preparing NDK for android...");
         		String ndkRoot = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.android.ndk");
         		if(ndkRoot!=null) {
+            		System.out.println("Preparing NDK for android: "+ndkRoot);
 	            	env = new HashMap<>();
 	            	File nrkRootFile = new File(ndkRoot);
 	            	env.put("ANDROID_NDK_ROOT", nrkRootFile.getAbsolutePath().replace('\\', '/'));
 	            	command.add("\"ANDROID_ABIS="+AntUtil.getPropertyAsString(propertyHelper, Constants.QTJAMBI_ABIS)+"\"");
+        		}else {
+        			System.out.println("...failed");
         		}
         	}
         	Exec.execute(this, command, dirExecute, getProject(), binpath, null, env);

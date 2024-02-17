@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -41,6 +41,10 @@
 
 #include <qdebug.h>
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+#define qAsConst std::as_const
+#endif
+
 static Indentor INDENT;
 
 CppHeaderGenerator::CppHeaderGenerator(PriGenerator *pri)
@@ -51,14 +55,14 @@ QString CppHeaderGenerator::fileNameForClass(const MetaClass *java_class) const 
     if(java_class->typeEntry()->designatedInterface()){
         return fileNameForClass(java_class->enclosingClass());
     }
-    return QString("%1_shell.h").arg(java_class->name().replace("$", "_"));
+    return QStringLiteral(u"%1_shell.h").arg(java_class->name().replace(u'$', u'_'));
 }
 
 QString CppHeaderGenerator::fileNameForFunctional(const MetaFunctional *java_class) const {
     if(java_class->enclosingClass() && !java_class->enclosingClass()->isFake())
-        return QString("%1_%2_shell.h").arg(java_class->enclosingClass()->name().replace("$", "_")).arg(java_class->name().replace("$", "_"));
+        return QStringLiteral(u"%1_%2_shell.h").arg(java_class->enclosingClass()->name().replace(u'$', u'_')).arg(java_class->name().replace(u'$', u'_'));
     else
-        return QString("%1_shell.h").arg(java_class->name().replace("$", "_"));
+        return QStringLiteral(u"%1_shell.h").arg(java_class->name().replace(u'$', u'_'));
 }
 
 void CppHeaderGenerator::writeFieldAccessors(QTextStream &s, const MetaField *java_field) {
@@ -83,8 +87,8 @@ void CppHeaderGenerator::writeFieldAccessors(QTextStream &s, const MetaField *ja
     }
     if(!pps.isEmpty()){
         for (int i=0; i<pps.size(); ++i) {
-            if(pps[i].contains("|")){
-                pps[i] = "(" + pps[i] + ")";
+            if(pps[i].contains(QStringLiteral(u"|"))){
+                pps[i] = QStringLiteral(u"(%1)").arg(pps[i]);
             }
         }
     }
@@ -103,17 +107,17 @@ void CppHeaderGenerator::writeFieldAccessors(QTextStream &s, const MetaField *ja
     }
     if (mod.isWritable() && isWritable && setter->wasProtected()){
         if((hasPPS = !pps.isEmpty()))
-            s << Qt::endl << "#if " << pps.join(" && ") << Qt::endl;
+            s << Qt::endl << "#if " << pps.join(QStringLiteral(u" && ")) << Qt::endl;
         writeFunction(s, setter, Option(EnumAsInts | UseNativeIds | JNIProxyFunction));
     }
 
     if (mod.isReadable() && getter->wasProtected()) {
         if(!hasPPS && (hasPPS = !pps.isEmpty()))
-            s << Qt::endl << "#if " << pps.join(" && ") << Qt::endl;
+            s << Qt::endl << "#if " << pps.join(QStringLiteral(u" && ")) << Qt::endl;
         writeFunction(s, getter, Option(EnumAsInts | UseNativeIds | JNIProxyFunction));
     }
     if(hasPPS)
-        s << "#endif //" << pps.join(" && ") << Qt::endl << Qt::endl;
+        s << "#endif //" << pps.join(QStringLiteral(u" && ")) << Qt::endl << Qt::endl;
 }
 
 void CppHeaderGenerator::write(QTextStream &s, const MetaFunctional *java_class, int) {
@@ -132,7 +136,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaFunctional *java_class,
         }
     }
 #endif
-    QString include_block = java_class->name().replace("$", "_").toUpper() + "_SHELL_H";
+    QString include_block = java_class->name().replace(u'$', u'_').toUpper() + "_SHELL_H";
     s << "#ifndef " << include_block << Qt::endl
       << "#define " << include_block << Qt::endl << Qt::endl;
 
@@ -147,7 +151,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaFunctional *java_class,
                 writeInclude(s, icl, included);
         }
     }
-    writeInclude(s, Include(Include::IncludePath, "QtCore/QtGlobal"), included);
+    writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtCore/QtGlobal")), included);
     bool hasDeprecation = java_class->isDeclDeprecated() || (java_class->type() && (java_class->type()->typeEntry()->isDeclDeprecated() || java_class->type()->typeEntry()->isContainer()));
     if(!hasDeprecation){
         for(const MetaArgument* arg : java_class->arguments()){
@@ -158,7 +162,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaFunctional *java_class,
         }
     }
     if(hasDeprecation){
-        writeInclude(s, Include(Include::IncludePath, "QtCore/qcompilerdetection.h"), included);
+        writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtCore/qcompilerdetection.h")), included);
         s << Qt::endl << "QT_WARNING_DISABLE_DEPRECATED" << Qt::endl
           << "QT_WARNING_DISABLE_GCC(\"-Wdeprecated-declarations\")" << Qt::endl << Qt::endl;
     }
@@ -167,10 +171,10 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaFunctional *java_class,
         writeInclude(s, java_class->enclosingClass()->typeEntry()->include(), included);
     }
     writeInclude(s, java_class->typeEntry()->include(), included);
-    writeInclude(s, Include(Include::IncludePath, "QtJambi/QtJambiAPI"), included);
-    writeInclude(s, Include(Include::IncludePath, "QtJambi/FunctionalBase"), included);
+    writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/QtJambiAPI")), included);
+    writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/FunctionalBase")), included);
     if(java_class->isFunctionPointer() && !java_class->typeEntry()->getUsing().isEmpty()){
-        writeInclude(s, Include(Include::IncludePath, "QtJambi/FunctionPointer"), included);
+        writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/FunctionPointer")), included);
     }
     IncludeList list = java_class->typeEntry()->extraIncludes();
     std::sort(list.begin(), list.end());
@@ -219,7 +223,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaFunctional *java_class,
       << "        Functor(" << shellClassName(java_class) << "& functional);" << Qt::endl
       << "        friend class " << shellClassName(java_class) << ";" << Qt::endl
       << "    };" << Qt::endl << Qt::endl
-      << "    static jobject resolveFunctional(JNIEnv *, const " << java_class->typeEntry()->qualifiedCppName() << "*);" << Qt::endl << Qt::endl
+      << "    static jobject resolveFunctional(JNIEnv *, const void*, bool* ok);" << Qt::endl << Qt::endl
       << "private:" << Qt::endl
       << "    QtJambiShell* __shell() const override final;" << Qt::endl
       << "    friend class " << shellClassName(java_class) << "::Functor;" << Qt::endl;
@@ -260,7 +264,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
         }
     }
 #endif
-    QString include_block = java_class->name().replace("$", "_").toUpper() + "_SHELL_H";
+    QString include_block = java_class->name().replace(u'$', u'_').toUpper() + "_SHELL_H";
 
     s << "#ifndef " << include_block << Qt::endl
       << "#define " << include_block << Qt::endl << Qt::endl;
@@ -276,7 +280,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
                 writeInclude(s, icl, included);
         }
     }
-    writeInclude(s, Include(Include::IncludePath, "QtCore/QtGlobal"), included);
+    writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtCore/QtGlobal")), included);
 
     QList<const MetaFunction *> returnScopeRequired;
     for(const MetaFunction *function : java_class->functionsInShellClass()) {
@@ -285,7 +289,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
     }
 
     if(!returnScopeRequired.isEmpty())
-        writeInclude(s, Include(Include::IncludePath, "memory"), included);
+        writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"memory")), included);
 
     bool hasDeprecation = java_class->isDeclDeprecated();
     if(!hasDeprecation){
@@ -312,7 +316,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
         }
     }
     if(hasDeprecation){
-        writeInclude(s, Include(Include::IncludePath, "QtCore/qcompilerdetection.h"), included);
+        writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtCore/qcompilerdetection.h")), included);
         s << Qt::endl << "QT_WARNING_DISABLE_DEPRECATED" << Qt::endl
           << "QT_WARNING_DISABLE_GCC(\"-Wdeprecated-declarations\")" << Qt::endl << Qt::endl;
     }
@@ -324,7 +328,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
 
     writeInclude(s, java_class->typeEntry()->include(), included);
 
-    writeInclude(s, Include(Include::IncludePath, "QtJambi/QtJambiAPI"), included);
+    writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/QtJambiAPI")), included);
 
     IncludeList list = java_class->typeEntry()->extraIncludes();
     std::sort(list.begin(), list.end());
@@ -334,12 +338,9 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
         writeInclude(s, inc, included);
     }
     if(java_class->hasPaintMethod())
-        writeInclude(s, Include(Include::IncludePath, "QtJambi/AboutToPaint"), included);
-//    if(java_class->hasQmlListProperty())
-//        writeInclude(s, Include(Include::IncludePath, "QtJambi/QmlAPI"), included);
+        writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/AboutToPaint")), included);
 
-
-    writeInclude(s, Include(Include::IncludePath, "QtJambi/RegistryAPI"), included);
+    writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/RegistryAPI")), included);
     s << Qt::endl;
 
     if(!java_class->typeEntry()->ppCondition().isEmpty()){
@@ -380,8 +381,8 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
                     }
                     if(!ppConditions.isEmpty()){
                         for (int i=0; i<ppConditions.size(); ++i) {
-                            if(ppConditions[i].contains("||")){
-                                ppConditions[i] = "(" + ppConditions[i] + ")";
+                            if(ppConditions[i].contains(QStringLiteral(u"||"))){
+                                ppConditions[i] = QStringLiteral(u"(%1)").arg(ppConditions[i]);
                             }
                         }
                         s << Qt::endl << "#if " << ppConditions.join(" && ") << Qt::endl << Qt::endl;

@@ -330,6 +330,7 @@ struct ClassSpecifierAST: public TypeSpecifierAST {
     const ListNode<DeclarationAST*> *member_specs;
     bool is_final;
     bool is_deprecated;
+    bool is_dllExported;
     StringLiteralAST *deprecationComment;
     ExpressionAST *annotationExpression;
 };

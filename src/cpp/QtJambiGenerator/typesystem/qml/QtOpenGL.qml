@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -4185,11 +4185,27 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "setUniformValue(int, Array)"
+            signature: "setUniformValue(int, const GLfloat[2][2])"
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "setUniformValue(const char*, Array)"
+            signature: "setUniformValue(int, const GLfloat[3][3])"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "setUniformValue(int, const GLfloat[4][4])"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "setUniformValue(const char*, const GLfloat[2][2])"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "setUniformValue(const char*, const GLfloat[3][3])"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "setUniformValue(const char*, const GLfloat[4][4])"
             remove: RemoveFlag.All
         }
         ModifyFunction{

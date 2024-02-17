@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -53,7 +53,7 @@ void reference_cleanup(jobject object){
     try{
         if(object && !QCoreApplication::closingDown()){
             DEREF_JOBJECT;
-            if(DefaultJniEnvironment env{200}){
+            if(DefaultJniEnvironment env{0}){
                 jthrowable throwable = nullptr;
                 if(env->ExceptionCheck()){
                     throwable = env->ExceptionOccurred();
@@ -62,6 +62,7 @@ void reference_cleanup(jobject object){
                 (env->*Cleanup::DeleteRef)(typename Cleanup::RefType(object));
                 if(throwable){
                     env->Throw(throwable);
+                    env->DeleteLocalRef(throwable);
                 }
             }
         }
@@ -1235,12 +1236,14 @@ JObjectArrayWrapper& JObjectArrayWrapper::operator=(JObjectArrayWrapper &&wrappe
 jsize JObjectArrayWrapper::length() const
 {
     if(JniEnvironment env{16}){
-        return env->GetArrayLength(object());
+        return object() ? env->GetArrayLength(object()) : 0;
     }
     return 0;
 }
 
 jobject JObjectArrayWrapper::at(JNIEnv *env, jsize index) const{
+    if(!object())
+        JavaException::raiseIndexOutOfBoundsException(env, QString::number(index) QTJAMBI_STACKTRACEINFO);
     jobject value = env->GetObjectArrayElement(object(), index);
     JavaException::check(env QTJAMBI_STACKTRACEINFO );
     return value;
@@ -1248,6 +1251,8 @@ jobject JObjectArrayWrapper::at(JNIEnv *env, jsize index) const{
 
 JObjectWrapper JObjectArrayWrapper::operator[](jsize index) const{
     if(JniEnvironment env{500}){
+        if(!object())
+            JavaException::raiseIndexOutOfBoundsException(env, QString::number(index) QTJAMBI_STACKTRACEINFO);
         jobject value = env->GetObjectArrayElement(object(), index);
         JavaException::check(env QTJAMBI_STACKTRACEINFO );
         return JObjectWrapper(env, value);
@@ -1257,7 +1262,7 @@ JObjectWrapper JObjectArrayWrapper::operator[](jsize index) const{
 
 JObjectWrapperRef JObjectArrayWrapper::operator[](jsize index){
     if(JniEnvironment env{500}){
-        if(index>=0 && index < env->GetArrayLength(object())){
+        if(index>=0 && object() && index < env->GetArrayLength(object())){
             return JObjectWrapperRef(*this, index);
         }else{
             JavaException::raiseIndexOutOfBoundsException(env, QString::number(index) QTJAMBI_STACKTRACEINFO);
@@ -1271,7 +1276,7 @@ QString JObjectArrayWrapper::toString(bool * ok) const{
         *ok = true;
     QString result = QLatin1String("[");
     if(JniEnvironment env{500}){
-        jsize length = env->GetArrayLength(object());
+        jsize length = object() ? env->GetArrayLength(object()) : 0;
         for(jsize i=0; i<length; ++i){
             if(i>0)
                 result += QLatin1String(",");

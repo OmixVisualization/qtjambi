@@ -1,5 +1,7 @@
 package io.qt.tools.ant;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -82,12 +84,12 @@ public class ForeachVersionTask extends Task {
 			if(base==null) {
 				takeDefaultQt = "default".equals(dirs);
 				if (!takeDefaultQt) {
-					if(OSInfo.os()==OSInfo.OS.Windows) {
+					if(OSInfo.os()==OSInfo.OperationSystem.Windows) {
 						base = "C:\\Qt";
 						if(base==null || !new java.io.File(base).isDirectory()) {
 							base = null;
 						}
-					}else if(OSInfo.os()==OSInfo.OS.MacOS) {
+					}else if(OSInfo.os()==OSInfo.OperationSystem.MacOS) {
 						base = "/Library/Qt";
 						if(base==null || !new java.io.File(base).isDirectory()) {
 							base = "/System/Qt";
@@ -98,7 +100,7 @@ public class ForeachVersionTask extends Task {
 						if(base==null || !new java.io.File(base).isDirectory()) {
 							base = null;
 						}
-					}else if(OSInfo.os()==OSInfo.OS.Linux) {
+					}else if(OSInfo.os().isUnixLike()) {
 						base = "/opt/Qt";
 						if(base==null || !new java.io.File(base).isDirectory()) {
 							base = null;
@@ -122,36 +124,80 @@ public class ForeachVersionTask extends Task {
 				List<java.io.File> qmakes = new ArrayList<>();
 				java.io.File qmake;
 				switch(OSInfo.os()) {
-				case MacOS:
-				case Linux:
-					qmake = Util.LOCATE_EXEC("qmake", "/usr/bin", "");
-					if(qmake.exists())
-						qmakes.add(qmake);
-					qmake = Util.LOCATE_EXEC("qmake5", "/usr/bin", "");
-					if(qmake.exists())
-						qmakes.add(qmake);
-					qmake = Util.LOCATE_EXEC("qmake-qt5", "/usr/bin", "");
-					if(qmake.exists())
-						qmakes.add(qmake);
-					qmake = Util.LOCATE_EXEC("qmake6", "/usr/bin", "");
-					if(qmake.exists())
-						qmakes.add(qmake);
-					qmake = Util.LOCATE_EXEC("qmake-qt6", "/usr/bin", "");
-					if(qmake.exists())
-						qmakes.add(qmake);
-					break;
 				case Windows:
-					qmake = Util.LOCATE_EXEC("qmake.exe", "", "");
-					if(qmake.exists()) {
+					qmake = Util.TRY_LOCATE_EXEC("qmake.exe", "", "");
+					if(qmake!=null && qmake.exists()) {
 						qmakes.add(qmake);
 					}else {
-						qmake = Util.LOCATE_EXEC("qmake.bat", "", "");
-						if(qmake.exists())
+						qmake = Util.TRY_LOCATE_EXEC("qmake.bat", "", "");
+						if(qmake!=null && qmake.exists())
 							qmakes.add(qmake);
 					}
 					break;
-					default:
+				default:
+					if(!OSInfo.os().isUnixLike()) {
 						break;
+					}
+				case MacOS:
+					List<String> paths = new ArrayList<>(Arrays.asList(System.getProperty("java.library.path", "").split("\\"+File.pathSeparator)));
+					paths.add(0, "/usr/pkg");
+					paths.add(0, "/usr/local/bin");
+					paths.add(0, "/usr/bin");
+					String _paths = String.join(File.pathSeparator, paths);
+					qmake = Util.TRY_LOCATE_EXEC("qt5/bin/qmake5", _paths, "");
+					if(qmake!=null && qmake.exists()) {
+						qmakes.add(qmake);
+					}else {
+						qmake = Util.TRY_LOCATE_EXEC("qt5/bin/qmake-qt5", _paths, "");
+						if(qmake!=null && qmake.exists()) {
+							qmakes.add(qmake);
+						}else {
+							qmake = Util.TRY_LOCATE_EXEC("qt5/bin/qmake", _paths, "");
+							if(qmake!=null && qmake.exists()) {
+								qmakes.add(qmake);
+							}else {
+								qmake = Util.TRY_LOCATE_EXEC("qmake5", _paths, "");
+								if(qmake!=null && qmake.exists()) {
+									qmakes.add(qmake);
+								}else {
+									qmake = Util.TRY_LOCATE_EXEC("qmake-qt5", _paths, "");
+									if(qmake!=null && qmake.exists()) {
+										qmakes.add(qmake);
+									}
+								}
+							}
+						}
+					}
+					qmake = Util.TRY_LOCATE_EXEC("qt6/bin/qmake6", _paths, "");
+					if(qmake!=null && qmake.exists()) {
+						qmakes.add(qmake);
+					}else {
+						qmake = Util.TRY_LOCATE_EXEC("qt6/bin/qmake-qt6", _paths, "");
+						if(qmake!=null && qmake.exists()) {
+							qmakes.add(qmake);
+						}else {
+							qmake = Util.TRY_LOCATE_EXEC("qt6/bin/qmake", _paths, "");
+							if(qmake!=null && qmake.exists()) {
+								qmakes.add(qmake);
+							}else {
+								qmake = Util.TRY_LOCATE_EXEC("qmake-qt6", _paths, "");
+								if(qmake!=null && qmake.exists()) {
+									qmakes.add(qmake);
+								}else {
+									qmake = Util.TRY_LOCATE_EXEC("qmake6", _paths, "");
+									if(qmake!=null && qmake.exists()) {
+										qmakes.add(qmake);
+									}
+								}
+							}
+						}
+					}
+					if(qmakes.isEmpty()) {
+						qmake = Util.TRY_LOCATE_EXEC("qmake", "/usr/bin", "");
+						if(qmake!=null && qmake.exists())
+							qmakes.add(qmake);
+					}
+					break;
 				}
 				if(qmakes.isEmpty()) {
 					// to cause an error...
@@ -170,20 +216,48 @@ public class ForeachVersionTask extends Task {
 					Properties lastProperties = null;
 					Properties versionProperties = (Properties)targetProperties.clone();
 					Set<Map<String,String>> queries = new HashSet<>();
+					
+					String versions = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.qtversions");
+					if(versions==null)
+						versions = AntUtil.getPropertyAsString(propertyHelper, "qt");
+					if(versions==null)
+						versions = AntUtil.getPropertyAsString(propertyHelper, "QTVERSION");
+					if(versions==null)
+						versions = AntUtil.getPropertyAsString(propertyHelper, "QTVERSIONS");
+					if(versions==null)
+						versions = System.getenv("QTVERSION");
+					if(versions==null)
+						versions = System.getenv("QTVERSIONS");
+					
 					for (java.io.File file : qmakes) {
-						Map<String,String> query = QMakeTask.query(this, file.getAbsolutePath());
+						String absolutePath;
+						try {
+							java.nio.file.Path path = file.toPath();
+							if(Files.isSymbolicLink(path)) {
+								path = path.toRealPath();
+							}
+							absolutePath = path.toFile().getAbsolutePath();
+						} catch (Throwable e) {
+							absolutePath = file.getAbsolutePath();
+						}
+						Map<String,String> query = QMakeTask.query(this, absolutePath);
 						if(queries.contains(query))
 							continue;
 						queries.add(query);
 						Properties specProperties = (Properties)versionProperties.clone();
-						specProperties.setProperty("qmake", file.getAbsolutePath());
+						specProperties.setProperty("qmake", absolutePath);
 						if(containsTestReport)
 							specProperties.setProperty("skip.report", "true");
 						InitializeBuildTask.setTargetProperties(specProperties);
 						for(String target : targets) {
 							if(!target.equals("tests.report")) {
 								AntUtil.setProperty(propertyHelper, "proxy.target", target);
-								getProject().executeTarget("targetproxy");
+								if(versions!=null) {
+									AntUtil.setProperty(propertyHelper, "targetversions", versions);
+								}
+								try {
+									getProject().executeTarget("targetproxy");
+								}catch(InitializeBuildTask.VersionSkip s) {}
 							}
 						}
 						InitializeBuildTask.setTargetProperties(null);
@@ -306,9 +380,6 @@ public class ForeachVersionTask extends Task {
 									case IOS:
 										qtDirs.add(new java.io.File(versionDir, "ios"));
 										break;
-									case Linux:
-										qtDirs.add(new java.io.File(versionDir, "gcc_64"));
-										break;
 									case MacOS:
 										if(!"only".equalsIgnoreCase(AntUtil.getPropertyAsString(propertyHelper, "ios"))) {
 											if(iVersion[0]<6) {
@@ -337,6 +408,9 @@ public class ForeachVersionTask extends Task {
 										}
 										break;
 									default:
+										if(OSInfo.crossOS().isUnixLike()){
+											qtDirs.add(new java.io.File(versionDir, "gcc_64"));
+										}
 										break;
 									}
 								}

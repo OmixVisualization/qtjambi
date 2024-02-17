@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -39,11 +39,11 @@ namespace Java{
             QTJAMBI_REPOSITORY_DECLARE_THROWABLE_CONSTRUCTOR()
             QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getMessage))
     }
-}
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
-void qtjambi_synthesize1(JNIEnv *env, class QTextToSpeech *_this, jobject context, const QString&  text, jobject func);
-void qtjambi_synthesize2(JNIEnv *env, class QTextToSpeech *_this, jobject context, const QString&  text, jobject func);
-#endif
+    namespace QtMultimedia{
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QAudioBuffer,)
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QAudioFormat,)
+    }
+}
 
 #endif // UTILS_P_H

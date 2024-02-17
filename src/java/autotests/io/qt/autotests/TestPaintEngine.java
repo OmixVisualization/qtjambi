@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -116,7 +116,13 @@ public class TestPaintEngine extends ApplicationInitializer {
     	painter.setFont(f);
     	painter.drawRect(1, 2, 3, 4);
     	painter.end();
-    	Assert.assertEquals(f.toString(), ""+fontResult[0]);
+    	Assert.assertTrue("fontResult[0] is null", fontResult[0]!=null);
+    	Assert.assertEquals(f.family(), fontResult[0].family());
+    	Assert.assertEquals(f.pointSize(), fontResult[0].pointSize());
+    	Assert.assertEquals(f.weight(), fontResult[0].weight());
+    	Assert.assertEquals(f.style(), fontResult[0].style());
+    	Assert.assertEquals(f.underline(), fontResult[0].underline());
+    	Assert.assertEquals(f.strikeOut(), fontResult[0].strikeOut());
     }
     
  // For ARM float/double conversion values must be within precision of a float

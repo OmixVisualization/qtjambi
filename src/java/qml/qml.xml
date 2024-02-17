@@ -1,3 +1,33 @@
+<!--===============================================================================================
+==
+== Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+==
+== This file is part of Qt Jambi.
+==
+== $BEGIN_LICENSE$
+==
+== GNU Lesser General Public License Usage
+== This file may be used under the terms of the GNU Lesser
+== General Public License version 2.1 as published by the Free Software
+== Foundation and appearing in the file LICENSE.LGPL included in the
+== packaging of this file.  Please review the following information to
+== ensure the GNU Lesser General Public License version 2.1 requirements
+== will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+==
+== GNU General Public License Usage
+== Alternatively, this file may be used under the terms of the GNU
+== General Public License version 3.0 as published by the Free Software
+== Foundation and appearing in the file LICENSE.GPL included in the
+== packaging of this file.  Please review the following information to
+== ensure the GNU General Public License version 3.0 requirements will be
+== met: http://www.gnu.org/copyleft/gpl.html.
+==
+== $END_LICENSE$
+==
+== This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+== WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+==
+================================================================================================-->
 <project default="build">
     <target name="build">
         <if>
@@ -210,19 +240,13 @@
         <jar destfile="${outputDir}/${qtjambi.osname}/tests/${module}.jar" excludes="${jar.excludes}">
             <manifest>
                 <attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
-<!--                <attribute name="Bundle-Activator"       value="io.qt.qtjambi.${qtjambi.osplatform}.${qtjambi.configuration}.osgi.Activator"/> -->
                 <attribute name="Bundle-Description"      value="QtJambi Common API Bundle (${qtjambi.osname} ${qtjambi.configuration})"/>
-                <!-- TODO: qtjambi.png -->
-                <!-- <attribute name="Bundle-Icon"             value="qtjambi.png"/> -->
                 <attribute name="Bundle-License"          value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999 with Nokia Qt LGPL Exception version 1.0"/>
-<!--                <attribute name="Bundle-Localization"    value="plugin"/> -->
                 <attribute name="Bundle-ManifestVersion"  value="2"/>
                 <attribute name="Bundle-Name"             value="QtJambi Common API Bundle (${qtjambi.osname} ${qtjambi.configuration})"/>
                 <attribute name="Bundle-RequiredExecutionEnvironment" value="${minimum.java.version}"/>
                 <attribute name="Bundle-SymbolicName"     value="io.qt.qtjambi.${qtjambi.osname}${qtjambi.configuration.osgi};singleton:=true"/>
                 <attribute name="Bundle-Version"          value="${qtjambi.version.bundle}"/>
-                <attribute name="Require-Capability"      value="gui.ws.qtjambi.native;filter:=&quot;(&amp;(osplatform=${qtjambi.osplatform})(oscpu=${qtjambi.oscpu})(compiler=${qtjambi.compiler})(configuration=release))&quot;"/>
-                <attribute name="Require-Bundle"          value="io.qt.qtjambi.native.${qtjambi.osplatform}.${qtjambi.oscpu}.${qtjambi.compiler}${qtjambi.configuration.osgi};version=${qtjambi.version.bundle}"/>
                 <attribute name="X-QtJambi-Arch"          value="${qtjambi.osname}"/>
                 <attribute name="X-QtJambi-Build"         value="${qtjambi.configuration}"/><!-- release debug test -->
                 <attribute name="X-QtJambi-Version"       value="${qtjambi.version.bundle}"/>
@@ -232,7 +256,6 @@
         </jar>
         <pathconvert property="librarypath">
             <path id="librarypath">
-                <pathelement location="${qtjambi.builddir}/lib/"/>
                 <pathelement location="${tools.qt.bindir}"/>
                 <pathelement location="${tools.qt.libdir}"/>
             </path>
@@ -255,24 +278,33 @@
                 <property name="debug.conf" value="release" />
             </else>
         </if>
-        <java fork="true" jvm="${tools.jvm}" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
-            <jvmarg value="-Djava.library.path=${librarypath}"/>
-            <!--jvmarg value="-Dio.qt.no-deployment-spec=true"/-->
-            <!--jvmarg value="-Dio.qt.debug=${debug.conf}"/-->
-            <jvmarg value="${XstartOnFirstThread}"/>
-            <!--jvmarg value="-Xint"/>
-            <jvmarg value="-Xrs"/>
-            <jvmarg value="-Xcheck:jni"/-->
-            <arg value="qml" />
-            <arg value="--library=${outputDir}/${qtjambi.osname}/tests/${module}.jar" />
-            <arg value="--configuration=${debug.conf}" />
-            <arg value="--dir=${destdir}" />
-            <arg value="--jarimport-location=${qtjambi.builddir}/lib/" />
-            <env key="DYLD_LIBRARY_PATH" value="${librarypath}" />
-            <classpath>
-                <fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-deployer-${qtjambi.jar.version}.jar"/>
-            </classpath>
-        </java>
+		<trycatch>
+			<try>
+				<delete dir="${outputDir}/${qtjambi.osname}/tmp" failonerror="false"/>
+				<java fork="true" jvm="${tools.jvm}" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
+					<jvmarg value="-Djava.library.path=${librarypath}"/>
+					<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/${qtjambi.osname}/tmp"/>
+					<!--jvmarg value="-Dio.qt.no-deployment-spec=true"/-->
+					<!--jvmarg value="-Dio.qt.debug=${debug.conf}"/-->
+					<jvmarg value="${XstartOnFirstThread}"/>
+					<!--jvmarg value="-Xint"/>
+					<jvmarg value="-Xrs"/>
+					<jvmarg value="-Xcheck:jni"/-->
+					<arg value="qml" />
+					<arg value="--library=${outputDir}/${qtjambi.osname}/tests/${module}.jar" />
+					<arg value="--configuration=${debug.conf}" />
+					<arg value="--dir=${destdir}" />
+					<arg value="--jarimport-location=${qtjambi.builddir}/lib/" />
+					<env key="DYLD_LIBRARY_PATH" value="${librarypath}" />
+					<classpath>
+						<fileset dir="${deploymentdir}" includes="qtjambi-${qtjambi.jar.version}.jar,qtjambi-deployer-${qtjambi.jar.version}.jar"/>
+					</classpath>
+				</java>
+			</try>
+			<finally>
+				<delete dir="${outputDir}/${qtjambi.osname}/tmp" failonerror="false"/>
+			</finally>
+		</trycatch>
 		<if>
 			<equals arg1="${qtjambi.osname}" arg2="android"/>
 			<then>
@@ -311,12 +343,7 @@
 		<property name="moduledash" value="qtjambi-qml-${module}"/>
 		<stringreplace property="moduledash" target="." replacement="-"/>
 		<if>
-			<or>
-				<equals arg1="${qtjambi.osname}" arg2="android-arm"/>
-				<equals arg1="${qtjambi.osname}" arg2="android-arm64"/>
-				<equals arg1="${qtjambi.osname}" arg2="android-x64"/>
-				<equals arg1="${qtjambi.osname}" arg2="android-x86"/>
-			</or>
+			<equals arg1="${qtjambi.osplatform}" arg2="android"/>
 			<then>
 				<if>
 					<istrue value="${qtjambi.testbuild}"/>
@@ -361,10 +388,7 @@
 				<not>
 					<istrue value="${qtjambi.testbuild}"/>
 				</not>
-				<equals arg1="${qtjambi.osname}" arg2="android-arm"/>
-				<equals arg1="${qtjambi.osname}" arg2="android-arm64"/>
-				<equals arg1="${qtjambi.osname}" arg2="android-x64"/>
-				<equals arg1="${qtjambi.osname}" arg2="android-x86"/>
+				<equals arg1="${qtjambi.osplatform}" arg2="android"/>
 			</or>
 			<then>
 				<if>

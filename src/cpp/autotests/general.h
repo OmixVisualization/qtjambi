@@ -78,21 +78,9 @@ bool operator ==(const std::initializer_list<T>& a,const std::initializer_list<T
 class General {
 
 public:
-    static bool canVulkan(){
-#if QT_CONFIG(vulkan)
-        return true;
-#else
-        return false;
-#endif
-    }
-    static bool hasVulkanInstance(QWindow* window){
-#if QT_CONFIG(vulkan)
-        return window->vulkanInstance();
-#else
-        Q_UNUSED(window)
-        return false;
-#endif
-    }
+    static bool canVulkan();
+    static bool hasVulkanInstance(QWindow* window);
+    static bool canCreateVulkanInstance();
 
 #ifndef QTJAMBI_NO_WIDGETS
     static void callPaintCell(QCalendarWidget *w, QPainter *painter);

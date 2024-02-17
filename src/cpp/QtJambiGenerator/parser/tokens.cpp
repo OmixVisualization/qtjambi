@@ -169,6 +169,7 @@ static char const * const _S_token_names[] = {
     "QT_REQUIRE_CONFIG",
     "QTJAMBI_DEPRECATED",
     "QTJAMBI_DEPRECATED_X",
+    "QTJAMBI_EXPORT",
     "decltype",
     "alignas",
     "alignof",

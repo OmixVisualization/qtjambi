@@ -1878,6 +1878,24 @@ void Lexer::scanKeyword14() {
                 return;
             }
             break;
+        case 'Q':
+            if (*(cursor + 1) == 'T' &&
+                *(cursor + 2) == 'J' &&
+                *(cursor + 3) == 'A' &&
+                *(cursor + 4) == 'M' &&
+                *(cursor + 5) == 'B' &&
+                *(cursor + 6) == 'I' &&
+                *(cursor + 7) == '_' &&
+                *(cursor + 8) == 'E' &&
+                *(cursor + 9) == 'X' &&
+                *(cursor + 10) == 'P' &&
+                *(cursor + 11) == 'O' &&
+                *(cursor + 12) == 'R' &&
+                *(cursor + 13) == 'T') {
+                token_stream[index++].kind = Token_QTJAMBI_EXPORT;
+                return;
+            }
+            break;
     }
     token_stream[index++].kind = Token_identifier;
 }

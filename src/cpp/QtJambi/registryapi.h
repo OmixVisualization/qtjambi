@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -102,7 +102,7 @@ struct QTJAMBI_EXPORT FunctionInfo{
 };
 
 struct QTJAMBI_EXPORT ConstructorInfo{
-    typedef void (*Constructor)(void*, JNIEnv*, jobject, jvalue*);
+    typedef void (*Constructor)(void*, JNIEnv*, jobject, jvalue*, bool);
     ConstructorInfo();
     ConstructorInfo(const ConstructorInfo& other);
     ConstructorInfo(Constructor _constructorFunction, const char *_signature);
@@ -292,7 +292,7 @@ struct QMetaTypeInterfaceFunctions
 typedef void (*AfterRegistrationFunction)(int);
 typedef AbstractContainerAccess*(*NewContainerAccessFunction)();
 typedef bool (*PolymorphyHandler)(void *object, qintptr& offset);
-typedef jobject(* FunctionalResolver)(JNIEnv*,const void*);
+typedef jobject(* FunctionalResolver)(JNIEnv*,const void*,bool*);
 typedef const std::type_info* (*TypeInfoSupplier)(const void *object);
 
 namespace RegistryAPI{
@@ -879,9 +879,7 @@ const std::type_info& registerFunctionalTypeInfo(const char *qt_name, const char
     registerAlignmentOfType(id, Q_ALIGNOF(T));
     registerMetaTypeID(id, qRegisterMetaType<T>(qt_name));
     registerSizeOfShell(id, sizeof(Tshell));
-    registerFunctionalResolver(id, [](JNIEnv* env, const void* ptr) -> jobject {
-                return Tshell::resolveFunctional(env, reinterpret_cast<const T*>(ptr));
-            });
+    registerFunctionalResolver(id, &Tshell::resolveFunctional);
     registerConstructorInfos(id, destructor, constructors);
     registerDeleter(id, deleter);
     registerFunctionInfos(id, virtualFunctions);

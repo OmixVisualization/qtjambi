@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -41,7 +41,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.PropertyHelper;
 import org.apache.tools.ant.Task;
 
-import io.qt.tools.ant.OSInfo.OS;
+import io.qt.tools.ant.OSInfo.OperationSystem;
 
 public abstract class AbstractInitializeTask extends Task {
 
@@ -158,8 +158,8 @@ public abstract class AbstractInitializeTask extends Task {
                 if(s != null) {
                 	File home = new File(s);
                 	try {
-						while(Files.isSymbolicLink(home.toPath())) {
-							home = Files.readSymbolicLink(home.toPath()).toFile();
+						if(Files.isSymbolicLink(home.toPath())) {
+							home = home.toPath().toRealPath().toFile();
 						}
 					} catch (Exception e) {
 					}
@@ -169,7 +169,7 @@ public abstract class AbstractInitializeTask extends Task {
                     	sourceValue = " (from envvar:JAVA_HOME_TARGET)";
             		}else {
                 		File binDir = new File(home, "bin");
-                		File javaExe = new File(binDir, OSInfo.os()==OS.Windows ? "java.exe" : "java");
+                		File javaExe = new File(binDir, OSInfo.os()==OperationSystem.Windows ? "java.exe" : "java");
                 		if(javaExe.isFile()) {
                 			error = "JDK does not provide headers: "+home.getAbsolutePath();
                 		}else {
@@ -187,8 +187,8 @@ public abstract class AbstractInitializeTask extends Task {
                 if(s != null) {
                 	File home = new File(s);
                 	try {
-						while(Files.isSymbolicLink(home.toPath())) {
-							home = Files.readSymbolicLink(home.toPath()).toFile();
+						if(Files.isSymbolicLink(home.toPath())) {
+							home = home.toPath().toRealPath().toFile();
 						}
 					} catch (Exception e) {
 					}
@@ -199,7 +199,7 @@ public abstract class AbstractInitializeTask extends Task {
             			error = null;
             		}else {
                 		File binDir = new File(home, "bin");
-                		File javaExe = new File(binDir, OSInfo.os()==OS.Windows ? "java.exe" : "java");
+                		File javaExe = new File(binDir, OSInfo.os()==OperationSystem.Windows ? "java.exe" : "java");
                 		if(javaExe.isFile()) {
                 			error = "JDK does not provide headers: "+home.getAbsolutePath();
                 		}else {
@@ -217,8 +217,8 @@ public abstract class AbstractInitializeTask extends Task {
         	if(s != null) {
         		File home = new File(s);
             	try {
-					while(Files.isSymbolicLink(home.toPath())) {
-						home = Files.readSymbolicLink(home.toPath()).toFile();
+					if(Files.isSymbolicLink(home.toPath())) {
+						home = home.toPath().toRealPath().toFile();
 					}
 				} catch (Exception e) {
 				}
@@ -229,7 +229,10 @@ public abstract class AbstractInitializeTask extends Task {
         			error = null;
         		}else {
         			s = null;
+        			error = "Unable to find include/jni.h in JAVA_HOME. Please install headers for JDK.";
         		}
+        	}else {
+        		error = "Unable to detect JAVA_HOME";
         	}
         }
         if(error!=null) {
@@ -239,18 +242,20 @@ public abstract class AbstractInitializeTask extends Task {
         mySetProperty(-1, Constants.JAVA_HOME_TARGET, sourceValue, result, true);
         String targetJavaVersion = this.getProject().getProperty("target.java.version");
         if(targetJavaVersion==null || targetJavaVersion.isEmpty()) {
-	        File releaseFile = new File(new File(result), "release");
-			targetJavaVersion = "11";
 			String javaVersion = null;
-	        if(releaseFile.exists()) {
-		        Properties properties = new Properties();
-				try(FileInputStream stream = new FileInputStream(releaseFile)){
-					properties.load(stream);
-				} catch (IOException e) {
-					getProject().log("reading java version", e, Project.MSG_ERR);
-				}
-				javaVersion = properties.getProperty("JAVA_VERSION", "\"11\"");
-	        }
+        	if(result!=null) {
+		        File releaseFile = new File(new File(result), "release");
+				targetJavaVersion = "11";
+		        if(releaseFile.exists()) {
+			        Properties properties = new Properties();
+					try(FileInputStream stream = new FileInputStream(releaseFile)){
+						properties.load(stream);
+					} catch (IOException e) {
+						getProject().log("reading java version", e, Project.MSG_ERR);
+					}
+					javaVersion = properties.getProperty("JAVA_VERSION", "\"11\"");
+		        }
+        	}
 			if(javaVersion!=null && !javaVersion.isEmpty()) {
 				int offset = 0;
 				if(javaVersion.startsWith("\"")) {
@@ -289,7 +294,7 @@ public abstract class AbstractInitializeTask extends Task {
 			}
         }
         String javaHome = AntUtil.getPropertyAsString(propertyHelper, Constants.JAVA_HOME_TARGET);
-        String app = OSInfo.os()==OSInfo.OS.Windows ? "%1$s.exe" : "%1$s";
+        String app = OSInfo.os()==OSInfo.OperationSystem.Windows ? "%1$s.exe" : "%1$s";
         File executable;
 		if((executable = new File(new File(javaHome, "bin"), String.format(app, "java"))).exists()) {
 			mySetProperty(-1, "tools.jvm", " (taken from "+Constants.JAVA_HOME_TARGET+")", executable.getAbsolutePath(), true);

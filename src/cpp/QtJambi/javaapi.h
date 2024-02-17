@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -773,6 +773,14 @@ QTJAMBI_REPOSITORY_DECLARE_EMPTY_CLASS(QtObject)
 QTJAMBI_REPOSITORY_DECLARE_CLASS(QtObjectInterface,
               QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(dispose)
               QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isDisposed))
+
+QTJAMBI_REPOSITORY_DECLARE_CLASS(ReferenceUtility,
+                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(setReferenceCount)
+                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(addAllReferenceCount)
+                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(addReferenceCount)
+                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(putReferenceCount)
+                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(copyReferenceCount)
+                                 )
 }
 
 #ifdef Q_OS_ANDROID

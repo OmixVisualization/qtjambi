@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -288,6 +288,13 @@ TypeSystem{
     
     ObjectType{
         name: "QQuickRenderControl"
+        ExtraIncludes{
+            Include{
+                fileName: "QtGui/rhi/qrhi.h"
+                location: Include.Global
+            }
+            since: 6.6
+        }
         ModifyFunction{
             signature: "renderWindow(QPoint *)"
             ModifyArgument{
@@ -709,7 +716,6 @@ TypeSystem{
         Rejection{
             enumName: "NativeObjectType"
         }
-
         Rejection{
             functionName: "createTextureFromNativeObject"
         }
@@ -1415,44 +1421,84 @@ TypeSystem{
             }
         }
 
-        ObjectType{
+        ValueType{
             name: "AttributeSet"
             InjectCode{
                 target: CodeClass.DestructorFunction
                 Text{content: "delete[] %this->attributes;"}
             }
+            CustomConstructor{
+                type: CustomConstructor.Legacy
+                Text{content: "if(copy){\n"+
+                              "    QSGGeometry::AttributeSet* result = new(placement) QSGGeometry::AttributeSet{*copy};\n"+
+                              "    QSGGeometry::Attribute* attributes;\n"+
+                              "    result->attributes = attributes = copy->count>0 ? new QSGGeometry::Attribute[copy->count] : nullptr;\n"+
+                              "    for(int i=0; i<copy->count; ++i){\n"+
+                              "        attributes[i] = copy->attributes[i];\n"+
+                              "    }\n"+
+                              "    return result;\n"+
+                              "}else{\n"+
+                              "    return new(placement) QSGGeometry::AttributeSet{};\n"+
+                              "}"}
+            }
+            CustomConstructor{
+                type: CustomConstructor.Copy
+                Text{content: "QSGGeometry::AttributeSet* result = new(placement) QSGGeometry::AttributeSet{*copy};\n"+
+                              "QSGGeometry::Attribute* attributes;\n"+
+                              "result->attributes = attributes = copy->count>0 ? new QSGGeometry::Attribute[copy->count] : nullptr;\n"+
+                              "for(int i=0; i<copy->count; ++i){\n"+
+                              "    attributes[i] = copy->attributes[i];\n"+
+                              "}\n"}
+            }
+            CustomConstructor{
+                type: CustomConstructor.Move
+                Text{content: "new(placement) QSGGeometry::AttributeSet{std::move(*copy)};\n"+
+                              "copy->count = 0;\n"+
+                              "copy->attributes = nullptr;\n"+
+                              "copy->stride = 0;\n"}
+            }
+            CustomDestructor{
+                Text{content: "delete[] ptr->attributes;\n"+
+                              "ptr->count = 0;\n"+
+                              "ptr->stride = 0;\n"+
+                              "ptr->attributes = nullptr;\n"+
+                              "ptr->~AttributeSet();\n"}
+            }
+
             ModifyFunction{
-                signature: "AttributeSet()"
-                AddArgument{
-                    name: "attributes"
-                    type: "io.qt.quick.QSGGeometry$Attribute[]"
-                }
-                AddArgument{
-                    name: "stride"
-                    type: "int"
-                }
+                signature: "AttributeSet(const QSGGeometry::AttributeSet&)"
                 InjectCode{
                     target: CodeClass.Native
                     position: Position.End
-                    Text{content: "__qt_this->stride = stride;\n"+
-                                  "__qt_this->count = %env->GetArrayLength(attributes);\n"+
-                                  "QSGGeometry::Attribute* _attributes = new QSGGeometry::Attribute[size_t(__qt_this->count)];\n"+
-                                  "__qt_this->attributes = _attributes;\n"+
-                                  "for(jsize i=0; i<jsize(__qt_this->count); ++i){\n"+
-                                  "    jobject element = %env->GetObjectArrayElement(attributes, i);\n"+
-                                  "    _attributes[i] = qtjambi_cast<const QSGGeometry::Attribute&>(%env, element);\n"+
+                    ArgumentMap{index: 1; metaName: "%1"}
+                    Text{content: "QSGGeometry::Attribute* attributes;\n"+
+                                  "__qt_this->attributes = attributes = __qt_%1.count>0 ? new QSGGeometry::Attribute[__qt_%1.count] : nullptr;\n"+
+                                  "for(int i=0; i<__qt_%1.count; ++i){\n"+
+                                  "    attributes[i] = __qt_%1.attributes[i];\n"+
                                   "}"}
                 }
             }
+
             ModifyField{
                 name: "attributes"
-                write: false
                 ReplaceType{
-                    modifiedType: "io.qt.quick.QSGGeometry$@Nullable Attribute @NonNull[]"
+                    modifiedType: "io.qt.quick.QSGGeometry$@NonNull Attribute @Nullable..."
                 }
                 ConversionRule{
                     codeClass: CodeClass.NativeGetter
                     Text{content: "%out = qtjambi_array_cast<jobjectArray>(%env, %scope, %in, __qt_this->count);"}
+                }
+                ConversionRule{
+                    codeClass: CodeClass.NativeSetter
+                    Text{content: String.raw`
+__qt_this->count = %in ? %env->GetArrayLength(jobjectArray(%in)) : 0;
+QSGGeometry::Attribute* %out = __qt_this->count>0 ? new QSGGeometry::Attribute[__qt_this->count] : nullptr;
+for(jsize i=0; i<jsize(__qt_this->count); ++i){
+    jobject element = %env->GetObjectArrayElement(jobjectArray(%in), i);
+    JavaException::check(%env QTJAMBI_STACKTRACEINFO);
+    %out[i] = qtjambi_cast<const QSGGeometry::Attribute&>(%env, element);
+}`
+                    }
                 }
             }
             ModifyField{
@@ -1461,7 +1507,31 @@ TypeSystem{
             }
             ModifyField{
                 name: "stride"
-                write: false
+            }
+            ModifyFunction{
+                signature: "AttributeSet{int,int,const QSGGeometry::Attribute*}"
+                ModifyArgument{
+                    index: 3
+                    ReplaceType{
+                        modifiedType: "io.qt.quick.QSGGeometry$@NonNull Attribute @Nullable..."
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+jsize count0 = %in ? %env->GetArrayLength(%in) : 0;
+QSGGeometry::Attribute* %out = count0>0 ? new QSGGeometry::Attribute[count0] : nullptr;
+for(jsize i=0; i<count0; ++i){
+    jobject element = %env->GetObjectArrayElement(%in, i);
+    JavaException::check(%env QTJAMBI_STACKTRACEINFO);
+    %out[i] = qtjambi_cast<const QSGGeometry::Attribute&>(%env, element);
+}`
+                        }
+                    }
+                }
+                ModifyArgument{
+                    index: 1
+                    RemoveArgument{}
+                }
             }
             InjectCode{
                 target: CodeClass.Java
@@ -1476,6 +1546,65 @@ TypeSystem{
         ValueType{
             name: "ColoredPoint2D"
         }
+
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/JavaAPI"
+                location: Include.Global
+            }
+            Include{
+                fileName: "utils_p.h"
+                location: Include.Local
+            }
+        }
+        ModifyFunction{
+            signature: "QSGGeometry(const QSGGeometry::AttributeSet &, int, int, int)"
+            ModifyArgument{
+                index: 1
+                NoNullPointer{
+                }
+                ReferenceCount{
+                    variableName: "__rcAttributeSet"
+                    action: ReferenceCount.Set
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+if(__qtjambi_is_generic)
+    %in = Java::QtQuick::QSGGeometry$AttributeSet::clone(%env, %in);
+const QSGGeometry::AttributeSet& %out = QtJambiAPI::checkedAddressOf(%env, QtJambiAPI::convertJavaObjectToNative<QSGGeometry::AttributeSet>(%env, %in));
+if(__qtjambi_is_generic){
+    if(%out.stride<=0)
+        JavaException::raiseIllegalArgumentException(%env, "AttributeSet stride > 0 expected" QTJAMBI_STACKTRACEINFO);
+    if(%out.count<=0)
+        JavaException::raiseIllegalArgumentException(%env, "AttributeSet count > 0 expected" QTJAMBI_STACKTRACEINFO);
+}
+                        `}
+                }
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: String.raw`
+if(%1.stride()<=0)
+    throw new IllegalArgumentException("AttributeSet stride > 0 expected");
+if(%1.count()<=0)
+    throw new IllegalArgumentException("AttributeSet count > 0 expected");
+%1 = %1.clone();`
+                }
+            }
+        }
+
+        InjectCode{
+            target: CodeClass.Java
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiQuick.java"
+                quoteAfterLine: "class QSGGeometry__"
+                quoteBeforeLine: "}// class"
+            }
+        }
+
         ModifyFunction{
             signature: "indexData() const"
             remove: RemoveFlag.All
@@ -1524,12 +1653,6 @@ TypeSystem{
             signature: "vertexDataAsTexturedPoint2D() const"
             remove: RemoveFlag.All
         }
-        ExtraIncludes{
-            Include{
-                fileName: "QtJambi/JavaAPI"
-                location: Include.Global
-            }
-        }
         ModifyFunction{
             signature: "indexData()"
             ModifyArgument{
@@ -1575,67 +1698,9 @@ TypeSystem{
             signature: "attributes()const"
             ModifyArgument{
                 index: 0
-                ReplaceType{
-                    modifiedType: "io.qt.quick.QSGGeometry$@NonNull Attribute @NonNull[]"
+                AsArray{
+                    lengthExpression: "__qt_this->attributeCount()"
                 }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = qtjambi_array_cast<jobjectArray>(%env, %scope, %in, __qt_this->attributeCount());"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "defaultAttributes_Point2D()"
-            ModifyArgument{
-                index: 0
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = QtJambiAPI::convertNativeToJavaObjectAsWrapper(%env, &%in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "defaultAttributes_ColoredPoint2D()"
-            ModifyArgument{
-                index: 0
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = QtJambiAPI::convertNativeToJavaObjectAsWrapper(%env, &%in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "defaultAttributes_TexturedPoint2D()"
-            ModifyArgument{
-                index: 0
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = QtJambiAPI::convertNativeToJavaObjectAsWrapper(%env, &%in);"}
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "QSGGeometry(const QSGGeometry::AttributeSet &, int, int, int)"
-            ModifyArgument{
-                index: 1
-                NoNullPointer{
-                }
-                ReferenceCount{
-                    variableName: "__rcAttributeSet"
-                    action: ReferenceCount.Set
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "const QSGGeometry::AttributeSet& %out = QtJambiAPI::checkedAddressOf<QSGGeometry::AttributeSet>(%env, QtJambiAPI::convertJavaObjectToNative<QSGGeometry::AttributeSet>(%env, %in));"}
-                }
-            }
-        }
-        InjectCode{
-            target: CodeClass.Java
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiQuick.java"
-                quoteAfterLine: "class QSGGeometry__"
-                quoteBeforeLine: "}// class"
             }
         }
     }
@@ -1698,9 +1763,6 @@ TypeSystem{
     ObjectType{
         name: "QSGMaterialShader"
         Rejection{
-            functionName: "rhi"
-        }
-        Rejection{
             functionName: "resourceUpdateBatch"
         }
         Rejection{
@@ -1720,6 +1782,10 @@ TypeSystem{
             name: "RenderState"
             EnumType{
                 name: "DirtyState"
+            }
+            Rejection{
+                functionName: "rhi"
+                until: 6.5
             }
             ModifyFunction{
                 signature: "uniformData()"
@@ -2492,7 +2558,7 @@ TypeSystem{
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
-            since: [6, 4]
+            since: [6, 2]
             Text{content: "QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromPhysicalDevice(JNIEnv *, jlong);\n"+
                           "QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromDeviceObjects(JNIEnv *, jlong, jlong, int, int);"}
         }
@@ -3030,53 +3096,6 @@ TypeSystem{
         since: [6, 6]
     }
     
-    PrimitiveType{
-        name: "VkFormat"
-        javaName: "io.qt.QNativePointer"
-        jniName: "jobject"
-        preferredConversion: false
-        since: [6, 4]
-    }
-    
-    PrimitiveType{
-        name: "MTLTexture"
-        javaName: "io.qt.QNativePointer"
-        jniName: "jobject"
-        preferredConversion: false
-        since: [6, 2]
-    }
-    
-    PrimitiveType{
-        name: "MTLDevice"
-        javaName: "io.qt.QNativePointer"
-        jniName: "jobject"
-        preferredConversion: false
-        since: [6, 2]
-    }
-    
-    PrimitiveType{
-        name: "MTLCommandQueue"
-        javaName: "io.qt.QNativePointer"
-        jniName: "jobject"
-        preferredConversion: false
-        since: [6, 2]
-    }
-    
-    ObjectType{
-        name: "id"
-        template: true
-        TemplateArguments{
-            arguments: ["MTLTexture"]
-        }
-        since: [6, 2]
-    }
-    
-    ObjectType{
-        name: "id<MTLTexture>"
-        generate: false
-        since: [6, 2]
-    }
-    
     InterfaceType{
         name: "QNativeInterface::QSGMetalTexture"
         packageName: "io.qt.quick.nativeinterface"
@@ -3230,6 +3249,19 @@ TypeSystem{
             }
         }
         since: [6, 2]
+    }
+
+    ObjectType{
+        name: "QQuickRhiItem"
+        EnumType{
+            name: "TextureFormat"
+        }
+        since: 6.7
+    }
+
+    ObjectType{
+        name: "QQuickRhiItemRenderer"
+        since: 6.7
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping *unmatched *type 'Vk*'"}

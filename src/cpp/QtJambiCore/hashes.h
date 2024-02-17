@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -604,53 +604,6 @@ inline bool operator==(const QMetaProperty &value1, const QMetaProperty &value2)
             && value2.propertyIndex()==value2.propertyIndex();
 }
 
-#ifdef QTJAMBI_GENERATOR_RUNNING
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-QDebug operator<<(QDebug out, const QByteArrayView &);
-
-struct QtJambiItemSelection{
-    QtJambiItemSelection(std::initializer_list<QItemSelectionRange>);
-    QtJambiItemSelection();
-};
-#endif
-
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-inline bool operator<(const QString &, const QString &) noexcept{return false;}
-inline bool operator<(const QChar &, const QChar &) noexcept{return false;}
-inline bool operator==(const QChar &, const QChar &) noexcept{return false;}
-#endif
-
-struct QtJambiStringList{
-    QtJambiStringList() = delete;
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QString join(const QString &sep);
-    QString join(QChar sep);
-    QStringList filter(const QString &str, Qt::CaseSensitivity cs);
-    QStringList filter(const QRegularExpression  &re);
-    int removeDuplicates();
-    void replaceInStrings(const QString &before, const QString &after, Qt::CaseSensitivity cs);
-    void replaceInStrings(const QRegularExpression &re, const QString &after);
-    void sort(Qt::CaseSensitivity cs);
-#else
-    QtJambiStringList(std::initializer_list<QString>);
-    QtJambiStringList(QList<QString>);
-    void sort(Qt::CaseSensitivity cs);
-    qsizetype removeDuplicates();
-    QString join(QStringView sep);
-    QString join(QChar sep);
-    QStringList filter(const QStringView str, Qt::CaseSensitivity cs);
-    void replaceInStrings(QStringView before, QStringView after, Qt::CaseSensitivity cs);
-    bool contains(const QStringView str, Qt::CaseSensitivity cs) noexcept;
-    #if QT_CONFIG(regularexpression)
-    QStringList filter(const QRegularExpression &re);
-    void replaceInStrings(const QRegularExpression &re, const QString &after);
-    qsizetype indexOf(const QRegularExpression &re, qsizetype from);
-    qsizetype lastIndexOf(const QRegularExpression &re, qsizetype from);
-#endif // QT_CONFIG(regularexpression)
-#endif
-};
-#endif //QTJAMBI_GENERATOR_RUNNING
-
 #if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
 #if QT_CONFIG(permissions)
 inline size_t qHash(const QBluetoothPermission &, size_t seed = 0)
@@ -726,7 +679,8 @@ inline bool operator==(const QPermission &v1, const QPermission &v2){
     }
     return false;
 }
-#endif
+#endif // QT_CONFIG(permissions)
+
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
 inline bool operator==(const QUuid::Id128Bytes &v1, const QUuid::Id128Bytes &v2){
     return memcmp(&v1, &v2, sizeof(QUuid::Id128Bytes))==0;
@@ -734,7 +688,55 @@ inline bool operator==(const QUuid::Id128Bytes &v1, const QUuid::Id128Bytes &v2)
 inline size_t qHash(const QUuid::Id128Bytes &value, size_t seed = 0){
     return qHashBits(&value, sizeof(QUuid::Id128Bytes), seed);
 }
+#endif // QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+
+#endif // QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+
+#ifdef QTJAMBI_GENERATOR_RUNNING
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+QDebug operator<<(QDebug out, const QByteArrayView &);
+
+struct QtJambiItemSelection{
+    QtJambiItemSelection(std::initializer_list<QItemSelectionRange>);
+    QtJambiItemSelection();
+};
 #endif
-#endif
+
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+inline bool operator<(const QString &, const QString &) noexcept{return false;}
+inline bool operator<(const QChar &, const QChar &) noexcept{return false;}
+inline bool operator==(const QChar &, const QChar &) noexcept{return false;}
+#endif // QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+
+struct QtJambiStringList{
+    QtJambiStringList() = delete;
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    QString join(const QString &sep);
+    QString join(QChar sep);
+    QStringList filter(const QString &str, Qt::CaseSensitivity cs);
+    QStringList filter(const QRegularExpression  &re);
+    int removeDuplicates();
+    void replaceInStrings(const QString &before, const QString &after, Qt::CaseSensitivity cs);
+    void replaceInStrings(const QRegularExpression &re, const QString &after);
+    void sort(Qt::CaseSensitivity cs);
+#else // QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QtJambiStringList(std::initializer_list<QString>);
+    QtJambiStringList(QList<QString>);
+    void sort(Qt::CaseSensitivity cs);
+    qsizetype removeDuplicates();
+    QString join(QStringView sep);
+    QString join(QChar sep);
+    QStringList filter(const QStringView str, Qt::CaseSensitivity cs);
+    void replaceInStrings(QStringView before, QStringView after, Qt::CaseSensitivity cs);
+    bool contains(const QStringView str, Qt::CaseSensitivity cs) noexcept;
+#if QT_CONFIG(regularexpression)
+    QStringList filter(const QRegularExpression &re);
+    void replaceInStrings(const QRegularExpression &re, const QString &after);
+    qsizetype indexOf(const QRegularExpression &re, qsizetype from);
+    qsizetype lastIndexOf(const QRegularExpression &re, qsizetype from);
+#endif // QT_CONFIG(regularexpression)
+#endif // QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+};
+#endif //QTJAMBI_GENERATOR_RUNNING
 
 #endif // QTJAMBICORE_HASHES_H

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -43,6 +43,10 @@
 #include <QFile>
 #include <QFileInfo>
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+#define qAsConst std::as_const
+#endif
+
 AbstractGenerator::AbstractGenerator() {
     m_num_generated = 0;
     m_num_generated_written = 0;
@@ -59,7 +63,7 @@ void AbstractGenerator::generate() {
         return;
     }
 
-    for(MetaClass *cls : m_classes) {
+    for(MetaClass *cls : qAsConst(m_classes)) {
         for(MetaFunctional* functional : cls->functionals()){
             if (!shouldGenerate(functional)){
                 continue;
@@ -151,7 +155,7 @@ void AbstractGenerator::printClasses() {
     QVector<MetaClass*> classes = m_classes.toVector();
     std::sort(classes.begin(), classes.end(), [](MetaClass *a, MetaClass *b) ->bool {return a->name() < b->name();});
 
-    for(MetaClass *cls : classes) {
+    for(MetaClass *cls : qAsConst(classes)) {
         if (!shouldGenerate(cls))
             continue;
         write(s, cls);
@@ -378,9 +382,9 @@ bool AbstractGenerator::hasDefaultConstructor(const MetaType *type) {
 
 bool AbstractGenerator::hasPublicDefaultConstructor(const MetaType *type) {
     QString full_name = type->typeEntry()->qualifiedTargetLangName();
-    QString class_name = type->typeEntry()->targetLangName();
+    //QString class_name = type->typeEntry()->targetLangName();
 
-    for(const MetaClass *java_class : m_classes) {
+    for(const MetaClass *java_class : qAsConst(m_classes)) {
         if (java_class->typeEntry()->qualifiedTargetLangName() == full_name) {
             MetaFunctionList functions = java_class->functions();
             bool hasConstructor = false;
@@ -407,19 +411,26 @@ bool AbstractGenerator::hasPublicAssignmentOperator(const MetaType *type) {
     QString full_name = type->typeEntry()->qualifiedTargetLangName();
     QString class_name = "operator=";
 
-    for(const MetaClass *java_class : m_classes) {
+    for(const MetaClass *java_class : qAsConst(m_classes)) {
         if (java_class->typeEntry()->qualifiedTargetLangName() == full_name) {
             MetaFunctionList functions = java_class->functions();
             for(const MetaFunction *function : functions) {
                 if (function->name() == class_name
                         && function->wasPublic()
                         && function->arguments().size()==1
+                        && function->arguments()[0]->type()->getReferenceType()!=MetaType::RReference
                         && function->arguments()[0]->type()->typeEntry()==type->typeEntry()){
                     return true;
                 }
             }
+            if(type->typeEntry()->isComplex()){
+                return reinterpret_cast<const ComplexTypeEntry*>(type->typeEntry())->hasPublicDefaultAssignment();
+            }
             return false;
         }
+    }
+    if(type->typeEntry()->isComplex()){
+        return reinterpret_cast<const ComplexTypeEntry*>(type->typeEntry())->hasPublicDefaultAssignment();
     }
     return false;
 }

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -226,19 +226,19 @@ protected:
 
         QSet<MetaClass *> m_setup_inheritance_done;
 
-        struct MissingIterator{
-            MissingIterator(const IteratorTypeEntry* _iteratorType,
+        struct MissingAlias{
+            MissingAlias(const TypeEntry* _aliasType,
                             MetaType *_meta_type,
             MetaClass * _current_class) :
-                iteratorType(_iteratorType),
+                aliasType(_aliasType),
                 meta_type(_meta_type),
                 current_class(_current_class)
             {}
-            const IteratorTypeEntry* iteratorType;
+            const TypeEntry* aliasType;
             MetaType *meta_type;
             MetaClass * current_class;
         };
-        QList<MissingIterator> m_missing_iterators;
+        QList<MissingAlias> m_missing_aliases;
         const QMap<QString, QString>* m_features;
         QMap<QString,TypeSystemTypeEntry *> m_typeSystemByPackage;
         QList<MetaEnum *> m_scopeChangedEnums;

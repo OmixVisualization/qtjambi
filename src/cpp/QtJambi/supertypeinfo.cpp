@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -31,6 +31,7 @@
 #include <QtCore/QHash>
 #include <QtCore/QVector>
 #include <QtCore/QString>
+#include <QtCore/QCoreApplication>
 #include <QtCore/QReadWriteLock>
 #include "qtjambiapi.h"
 #include "java_p.h"
@@ -239,10 +240,78 @@ PtrOwnerFunction SuperTypeInfo::ownerFunction() const {
 }
 
 
-SuperTypeInfos::SuperTypeInfos(JNIEnv *env, jobject obj) : QVector<SuperTypeInfo>(), m_interfaceList(env, obj){}
+SuperTypeInfos::SuperTypeInfos(JNIEnv *env, jobject obj) : QVector<SuperTypeInfo>(), m_interfaceList(obj ? env->NewGlobalRef(obj) : nullptr){}
+
+SuperTypeInfos::SuperTypeInfos(const SuperTypeInfos& other) : QVector<SuperTypeInfo>(other), m_interfaceList(nullptr){
+    if(other.m_interfaceList){
+        if(DefaultJniEnvironment env{0}){
+            m_interfaceList = env->NewGlobalRef(other.m_interfaceList);
+        }
+    }
+}
+
+SuperTypeInfos::SuperTypeInfos(SuperTypeInfos&& other) : QVector<SuperTypeInfo>(std::move(other)), m_interfaceList(other.m_interfaceList){
+    other.m_interfaceList = nullptr;
+}
+
+SuperTypeInfos& SuperTypeInfos::operator=(const SuperTypeInfos& other){
+    if(this!=&other){
+        QVector<SuperTypeInfo>& _this = *this;
+        _this = other;
+        if(DefaultJniEnvironment env{0}){
+            if(m_interfaceList){
+                env->DeleteGlobalRef(m_interfaceList);
+            }
+            if(other.m_interfaceList){
+                m_interfaceList = env->NewGlobalRef(other.m_interfaceList);
+            }else{
+                m_interfaceList = nullptr;
+            }
+        }
+    }
+    return *this;
+}
+
+SuperTypeInfos& SuperTypeInfos::operator=(SuperTypeInfos&& other){
+    if(this!=&other){
+        QVector<SuperTypeInfo>& _this = *this;
+        _this = std::move(other);
+        if(m_interfaceList){
+            if(DefaultJniEnvironment env{0}){
+                env->DeleteGlobalRef(m_interfaceList);
+                m_interfaceList = nullptr;
+            }
+        }
+        m_interfaceList = other.m_interfaceList;
+        other.m_interfaceList = nullptr;
+    }
+    return *this;
+}
+
+SuperTypeInfos::~SuperTypeInfos(){
+    try{
+        if(m_interfaceList && !QCoreApplication::closingDown()){
+            DEREF_JOBJECT;
+            if(DefaultJniEnvironment env{0}){
+                jthrowable throwable = nullptr;
+                if(env->ExceptionCheck()){
+                    throwable = env->ExceptionOccurred();
+                    env->ExceptionClear();
+                }
+                jobject interfaceList = m_interfaceList;
+                m_interfaceList = nullptr;
+                env->DeleteGlobalRef(interfaceList);
+                if(throwable){
+                    env->Throw(throwable);
+                    env->DeleteLocalRef(throwable);
+                }
+            }
+        }
+    }catch(...){}
+}
 
 jobject SuperTypeInfos::interfaceList(JNIEnv *env) const{
-    return env->NewLocalRef(m_interfaceList.object());
+    return m_interfaceList ? env->NewLocalRef(m_interfaceList) : nullptr;
 }
 
 void clearSuperTypesAtShutdown(JNIEnv *env){
@@ -255,7 +324,11 @@ void clearSuperTypesAtShutdown(JNIEnv *env){
     }
     if(env){
         for(SuperTypeInfos& info : superTypeInfosMap){
-            info.m_interfaceList.clear(env);
+            if(info.m_interfaceList){
+                jobject interfaceList = info.m_interfaceList;
+                info.m_interfaceList = nullptr;
+                env->DeleteGlobalRef(interfaceList);
+            }
         }
     }
 }

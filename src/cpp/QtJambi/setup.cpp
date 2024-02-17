@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -37,6 +37,7 @@ QT_WARNING_DISABLE_DEPRECATED
 #include <QtCore/QDir>
 #include <QtCore/QCborValue>
 #include <QtCore/QLibrary>
+
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QtCore/QLinkedList>
 #include <QtCore/QVector>
@@ -80,8 +81,8 @@ void clearTypeHandlersAtShutdown(JNIEnv *env);
 void clearMessageHandlerAtShutdown(JNIEnv *env);
 void clearSuperTypesAtShutdown(JNIEnv *env);
 void clearMetaObjectsAtShutdown(JNIEnv * env);
-void clearJarImportersAtShutdown(JNIEnv * env);
 void clearFunctionPointersAtShutdown();
+void clearObjectsByFunctionPointerAtShutdown(JNIEnv* env);
 void registerPointerContainerAccess();
 JNIEnv *currentJNIEnvironment(bool initializeJavaThread = true);
 QObject* connectionSender(const QMetaObject::Connection* connection);
@@ -875,11 +876,11 @@ void shutdown(JNIEnv * env)
     #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         QtJambiVariant::unregisterHandler();
     #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-        clearJarImportersAtShutdown(env);
         clearSuperTypesAtShutdown(env);
         clearMetaObjectsAtShutdown(env);
         clearTypeHandlersAtShutdown(env);
         clearFunctionPointersAtShutdown();
+        clearObjectsByFunctionPointerAtShutdown(env);
         if(env){
             try{
                 Java::QtJambi::LibraryUtility::clear(env);

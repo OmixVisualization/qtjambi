@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -67,8 +67,10 @@ extern "C" Q_DECL_EXPORT jlong JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_multim
     case QAudioFormat::ChannelConfigMono: return jlong(&QAudioFrame<QAudioFormat::ChannelConfigMono, QAudioFormat::Int32>::positionToIndex);
     case QAudioFormat::ChannelConfigStereo: return jlong(&QAudioFrame<QAudioFormat::ChannelConfigStereo, QAudioFormat::Int32>::positionToIndex);
     case QAudioFormat::ChannelConfig2Dot1: return jlong(&QAudioFrame<QAudioFormat::ChannelConfig2Dot1, QAudioFormat::Int32>::positionToIndex);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
     case QAudioFormat::ChannelConfig3Dot0: return jlong(&QAudioFrame<QAudioFormat::ChannelConfig3Dot0, QAudioFormat::Int32>::positionToIndex);
     case QAudioFormat::ChannelConfig3Dot1: return jlong(&QAudioFrame<QAudioFormat::ChannelConfig3Dot1, QAudioFormat::Int32>::positionToIndex);
+#endif
     case QAudioFormat::ChannelConfigSurround5Dot0: return jlong(&QAudioFrame<QAudioFormat::ChannelConfigSurround5Dot0, QAudioFormat::Int32>::positionToIndex);
     case QAudioFormat::ChannelConfigSurround5Dot1: return jlong(&QAudioFrame<QAudioFormat::ChannelConfigSurround5Dot1, QAudioFormat::Int32>::positionToIndex);
     case QAudioFormat::ChannelConfigSurround7Dot0: return jlong(&QAudioFrame<QAudioFormat::ChannelConfigSurround7Dot0, QAudioFormat::Int32>::positionToIndex);

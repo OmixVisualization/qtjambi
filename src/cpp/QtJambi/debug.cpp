@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -30,6 +30,9 @@
 #include "qtjambilink_p.h"
 #include "debugapi.h"
 #include "java_p.h"
+#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME)
+#include "qtjambishell_p.h"
+#endif
 
 #include <QtCore/QLoggingCategory>
 
@@ -321,7 +324,7 @@ void printWithType(bool isEnter, MethodPrint::Type callType, const void* pointer
     }
 }
 
-struct MethodPrintWithTypePrivate{
+class MethodPrintWithTypePrivate{
     MethodPrint::Type m_callType;
     const void* m_pointer;
     const char* m_method;
@@ -340,17 +343,17 @@ struct MethodPrintWithTypePrivate{
     }
 public:
     ~MethodPrintWithTypePrivate(){
-        printWithType(false, m_callType, m_pointer, m_method, type_name, m_file, m_line, m_function);
+        printWithType(false, m_callType, m_pointer, m_method, m_type, m_file, m_line, m_function);
     }
     static MethodPrintWithTypePrivate* create(MethodPrint::Type callType, const char* method, const QtJambiShell* shell, const char* file, int line, const char *function){
         if(enabledMethodTracePrints() && callType!=MethodPrint::Disabled){
             const char* type_name = nullptr;
             const void* pointer = nullptr;
-            if(QSharedPointer<QtJambiLink> link = static_cast<const QtJambiShellImpl*>(shell)->link()){
+            if(QSharedPointer<QtJambiLink> link = reinterpret_cast<const QtJambiShellImpl*>(shell)->link()){
                 type_name = link->qtTypeName();
                 pointer = link->pointer();
             }
-            printWithType(true, callType, pointer, method, type_name, m_file, m_line, m_function);
+            printWithType(true, callType, pointer, method, type_name, file, line, function);
             return new MethodPrintWithTypePrivate(callType, pointer, method, type_name, file, line, function);
         }else{
             return nullptr;
@@ -358,7 +361,7 @@ public:
     }
     static MethodPrintWithTypePrivate* create(MethodPrint::Type callType, const void* pointer, const char* method, const char* type_name, const char* file, int line, const char *function){
         if(enabledMethodTracePrints() && callType!=MethodPrint::Disabled){
-            printWithType(true, callType, pointer, method, type_name, m_file, m_line, m_function);
+            printWithType(true, callType, pointer, method, type_name, file, line, function);
             return new MethodPrintWithTypePrivate(callType, pointer, method, type_name, file, line, function);
         }else{
             return nullptr;
@@ -367,11 +370,11 @@ public:
 };
 
 MethodPrintWithType::MethodPrintWithType(MethodPrint::Type callType, const char* method, const QtJambiShell* shell, const char* file, int line, const char *function) :
-    d(MethodPrintWithTypePrivate::create(callType, method, shell, file, line, function)){}
+    d(MethodPrintWithTypePrivate::create(callType, method, shell, file, line, function)){
 }
 
 MethodPrintWithType::MethodPrintWithType(MethodPrint::Type callType, const void* pointer, const char* method, const char* type_name, const char* file, int line, const char *function) :
-    d(MethodPrintWithTypePrivate::create(callType, pointer, method, type_name, file, line, function)){}
+    d(MethodPrintWithTypePrivate::create(callType, pointer, method, type_name, file, line, function)){
 }
 
 MethodPrintWithType::~MethodPrintWithType(){

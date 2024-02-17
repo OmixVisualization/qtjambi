@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -1439,14 +1439,21 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         }
                         intdataComments.add("slot["+i+"]: parameter["+(j-1)+"].arg");
                     }
-                    Parameter[] parameters = method.getParameters();
-                    for (int j = 0; j < parameters.length; j++) {
-                        if(parameters[j].isNamePresent()) {
-                            metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(parameters[j].getName()));
-                        }else {
+                    try {
+	                    Parameter[] parameters = method.getParameters();
+	                    for (int j = 0; j < parameters.length; j++) {
+	                        if(parameters[j].isNamePresent()) {
+	                            metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(parameters[j].getName()));
+	                        }else {
+	                            metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex("arg__"+(j+1)));
+	                        }
+	                        intdataComments.add("slot["+i+"]: parameter["+j+"].argName");
+	                    }
+                    }catch(java.lang.reflect.MalformedParametersException e) {
+                    	for (int j = 0; j < method.getParameterCount(); j++) {
                             metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex("arg__"+(j+1)));
-                        }
-                        intdataComments.add("slot["+i+"]: parameter["+j+"].argName");
+	                        intdataComments.add("slot["+i+"]: parameter["+(j)+"].argName");
+	                    }
                     }
                 }
                 
@@ -1476,14 +1483,21 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         }
                         intdataComments.add("constructor["+i+"]: parameter["+(j)+"].arg");
                     }
-                    Parameter[] parameters = constructor.getParameters();
-                    for (int j = 0; j < parameters.length; j++) {
-                        if(parameters[j].isNamePresent()) {
-                            metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(parameters[j].getName()));
-                        }else {
+                    try {
+	                    Parameter[] parameters = constructor.getParameters();
+	                    for (int j = 0; j < parameters.length; j++) {
+	                        if(parameters[j].isNamePresent()) {
+	                            metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(parameters[j].getName()));
+	                        }else {
+	                            metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex("arg__"+(j+1)));
+	                        }
+	                        intdataComments.add("constructor["+i+"]: parameter["+(j)+"].argName");
+	                    }
+                    }catch(java.lang.reflect.MalformedParametersException e) {
+                    	for (int j = 0; j < constructor.getParameterCount(); j++) {
                             metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex("arg__"+(j+1)));
-                        }
-                        intdataComments.add("constructor["+i+"]: parameter["+(j)+"].argName");
+	                        intdataComments.add("constructor["+i+"]: parameter["+(j)+"].argName");
+	                    }
                     }
                 }
                 

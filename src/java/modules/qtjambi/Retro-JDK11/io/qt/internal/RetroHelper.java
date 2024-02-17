@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -276,8 +276,6 @@ final class RetroHelper {
 		@Override
 		public boolean isProcessAlive(String pid) {
 			switch (LibraryUtility.operatingSystem) {
-			case Linux:
-				return new File("/proc/"+pid+"/exe").exists();
 			case MacOS:
 				try {
 					Process process = Runtime.getRuntime().exec(new String[]{"ps", "-p", pid});
@@ -293,6 +291,8 @@ final class RetroHelper {
 				}
 				break;
 			default:
+				if(LibraryUtility.operatingSystem.isUnixLike())
+					return new File("/proc/"+pid+"/exe").exists();
 				break;
 			}
 			return true; //...because unknown

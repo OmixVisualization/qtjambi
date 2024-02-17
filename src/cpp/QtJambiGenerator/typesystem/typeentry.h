@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -126,17 +126,19 @@ class TypeEntry {
             QMetaObjectType,
             QMetaObjectConnectionType,
             GlobalType,
+            NativePointerType,
             UnknownType,
         };
 
         enum CodeGeneration {
-            GenerateTargetLang      = 0x0001,
-            GenerateCpp             = 0x0002,
-            GenerateForSubclass     = 0x0004,
-            GenerateNoShell         = 0x0010,
+            GenerateTargetLang      = 0x000001,
+            GenerateCpp             = 0x000002,
+            GenerateForSubclass     = 0x000004,
+            GenerateNoShell         = 0x000010,
+            InheritedByTypeSystem   = 0x010000,
 
-            GenerateNothing         = 0,
-            GenerateAll             = 0xff0f,
+            GenerateNothing         = 0x000000,
+            GenerateAll             = 0x00ff0f,
             GenerateCode            = GenerateTargetLang | GenerateCpp
         };
 
@@ -278,6 +280,10 @@ class TypeEntry {
         }
         bool isTypeSystem() const {
             return m_type == TypeSystemType;
+        }
+
+        bool isNativePointer() const {
+            return m_type == NativePointerType;
         }
 
         virtual bool preferredConversion() const {
@@ -553,6 +559,30 @@ class AutoTypeEntry : public TypeEntry {
         }
 };
 
+class NativePointerTypeEntry : public TypeEntry {
+public:
+    NativePointerTypeEntry(const QString& name) : TypeEntry(name, NativePointerType) {
+        setCodeGeneration(GenerateNothing);
+    }
+    QString javaPackage() const override {
+        return QStringLiteral("io.qt");
+    }
+    QString jniName() const override {
+        return QStringLiteral("jobject");
+    }
+    QString targetLangName() const override {
+        return QStringLiteral("QNativePointer");
+    }
+
+    const QString& ppCondition() const override {
+        return m_pp_condition;
+    }
+    void setPPCondition(const QString &pp_condition) {
+        m_pp_condition = pp_condition;
+    }
+    QString m_pp_condition;
+};
+
 class UnknownTypeEntry : public TypeEntry {
     public:
         UnknownTypeEntry(const QString &name) : TypeEntry(name, UnknownType) {
@@ -587,7 +617,7 @@ class TemplateArgumentEntry : public TypeEntry {
 
 class ArrayTypeEntry : public TypeEntry {
     public:
-        ArrayTypeEntry(const TypeEntry *nested_type, int indirections) : TypeEntry("Array", ArrayType), m_nested_type(nested_type), m_indirections(indirections) {
+        ArrayTypeEntry(const QString& name, const TypeEntry *nested_type, int indirections) : TypeEntry(name, ArrayType), m_nested_type(nested_type), m_indirections(indirections) {
             Q_ASSERT(m_nested_type);
         }
 
@@ -1152,617 +1182,271 @@ class ComplexTypeEntry : public TypeEntry {
 
         ComplexTypeEntry(const QString &name, Type t);
 
-        bool isComplex() const override {
-            return true;
-        }
+        QString qualifiedCppName() const override;
 
-        const IncludeList& extraIncludes() const {
-            return m_extra_includes;
-        }
-        void setExtraIncludes(const IncludeList &includes) {
-            m_extra_includes = includes;
-        }
-        void addExtraInclude(const Include &include) {
-            if (!m_includes_used.value(include.name, false)) {
-                m_extra_includes << include;
-                m_includes_used[include.name] = true;
-            }
-        }
+        bool isComplex() const override;
+        const IncludeList& extraIncludes() const;
+        void setExtraIncludes(const IncludeList &includes);
+        void addExtraInclude(const Include &include);
 
         ComplexTypeEntry *copy() const;
 
-        void setLookupName(const QString &name) {
-            m_lookup_name = name;
-        }
+        void setLookupName(const QString &name);
 
-        virtual QString lookupName() const override {
-            return m_lookup_name.isEmpty() ? targetLangName() : m_lookup_name;
-        }
+        QString lookupName() const override;
 
-        QString jniName() const override {
-            return strings_jobject;
-        }
+        QString jniName() const override;
 
+        const Include& include() const;
+        void setInclude(const Include &inc);
 
-        const Include& include() const {
-            return m_include;
-        }
-        void setInclude(const Include &inc) {
-            m_include = inc;
-        }
+        void setForceAbstract();
 
-        void setForceAbstract(){
-            m_type_flags.setFlag(ForceAbstract);
-        }
+        bool isForceAbstract() const;
 
-        bool isForceAbstract() const {
-            return m_type_flags.testFlag(ForceAbstract);
-        }
+        void setThreadAffine();
 
-        void setThreadAffine(){
-            m_type_flags.setFlag(ThreadAffine);
-        }
+        bool isThreadAffine() const;
 
-        bool isThreadAffine() const {
-            return m_type_flags.testFlag(ThreadAffine);
-        }
+        void setDeprecated();
 
-        void setDeprecated(){
-            m_type_flags.setFlag(Deprecated);
-        }
+        bool isDeprecated() const;
 
-        bool isDeprecated() const {
-            return m_type_flags.testFlag(Deprecated);
-        }
+        void setForceFriendly();
 
-        void setForceFriendly(){
-            m_type_flags.setFlag(ForceFriendly);
-        }
+        bool isForceFriendly() const;
 
-        bool isForceFriendly() const {
-            return m_type_flags.testFlag(ForceFriendly);
-        }
+        void setHasNonPublicFields();
 
-        void setHasNonPublicFields(){
-            m_type_flags.setFlag(HasFields);
-            m_type_flags.setFlag(HasNonPublicFields);
-        }
+        bool hasNonPublicFields() const;
 
-        bool hasNonPublicFields() const {
-            return m_type_flags.testFlag(HasNonPublicFields);
-        }
+        void setHasFields();
 
-        void setHasFields(){
-            m_type_flags.setFlag(HasFields);
-        }
+        bool hasFields() const;
 
-        bool hasFields() const {
-            return m_type_flags.testFlag(HasFields);
-        }
+        TypeFlags typeFlags() const;
 
-        TypeFlags typeFlags() const {
-            return m_type_flags;
-        }
+        const CodeSnipList& codeSnips() const;
+        void setCodeSnips(const CodeSnipList &codeSnips);
+        void addCodeSnips(const CodeSnipList &codeSnips);
+        void addCodeSnip(const CodeSnip &codeSnip);
 
-        const CodeSnipList& codeSnips() const {
-            return m_code_snips;
-        }
-        void setCodeSnips(const CodeSnipList &codeSnips) {
-            m_code_snips = codeSnips;
-        }
-        void addCodeSnips(const CodeSnipList &codeSnips) {
-            m_code_snips << codeSnips;
-        }
-        void addCodeSnip(const CodeSnip &codeSnip) {
-            m_code_snips << codeSnip;
-        }
-
-        const FunctionModificationList& functionModifications() const {
-            return m_function_mods;
-        }
-        void setFunctionModifications(const FunctionModificationList &functionModifications) {
-            m_function_mods = functionModifications;
-        }
-        void addFunctionModifications(const FunctionModificationList &functionModifications) {
-            m_function_mods << functionModifications;
-        }
-        void addFunctionModification(const FunctionModification &functionModification) {
-            m_function_mods << functionModification;
-        }
+        const FunctionModificationList& functionModifications() const;
+        void setFunctionModifications(const FunctionModificationList &functionModifications);
+        void addFunctionModifications(const FunctionModificationList &functionModifications);
+        void addFunctionModification(const FunctionModification &functionModification);
         FunctionModificationList functionModifications(const QString &signature) const;
 
         bool hasFunctionCodeInjections(const QString &methodSignature, TS::Language language, const QSet<CodeSnip::Position>& positions) const;
 
         FieldModification fieldModification(const QString &name) const;
-        void setFieldModifications(const FieldModificationList &mods) {
-            m_field_mods = mods;
-        }
-        void addFieldModifications(const FieldModificationList &mods) {
-            m_field_mods << mods;
-        }
-        void addFieldModification(const FieldModification &mod) {
-            m_field_mods << mod;
-        }
-        const FieldModificationList& fieldModifications() const {
-            return m_field_mods;
-        }
-
-        QString javaPackage() const override {
-            return m_package;
-        }
-        void setTargetLangPackage(const QString &package) {
-            m_package = package;
-        }
-
-        QString targetTypeSystem() const override {
-            return m_target_typesystem;
-        }
-
-        void setTargetTypeSystem(const QString &qt_jambi_library) {
-            m_target_typesystem = qt_jambi_library;
-        }
-
-        bool isQObject() const {
-            return m_attributes.testFlag(IsQObject);
-        }
-        void setQObject(bool qobject) {
-            m_attributes.setFlag(IsQObject, qobject);
-        }
-        bool isQEvent() const {
-            return m_attributes.testFlag(IsQEvent);
-        }
-        void setQEvent(bool b) {
-            m_attributes.setFlag(IsQEvent, b);
-        }
-        bool isQByteArrayView() const {
-            return m_attributes.testFlag(IsQByteArrayView);
-        }
-        void setQByteArrayView(bool b) {
-            m_attributes.setFlag(IsQByteArrayView, b);
-        }
-        bool isGLsync() const {
-            return m_attributes.testFlag(IsGLsync);
-        }
-
-        bool isQWidget() const {
-            return m_attributes.testFlag(IsQWidget);
-        }
-        void setQWidget(bool qWidget) {
-            m_attributes.setFlag(IsQWidget, qWidget);
-        }
-
-        bool isQWindow() const {
-            return m_attributes.testFlag(IsQWindow);
-        }
-        void setQWindow(bool qw) {
-            m_attributes.setFlag(IsQWindow, qw);
-        }
-
-        bool isQAction() const {
-            return m_attributes.testFlag(IsQAction);
-        }
-        void setQAction(bool qw) {
-            m_attributes.setFlag(IsQAction, qw);
-        }
-
-        bool isQMediaControl() const {
-            return m_attributes.testFlag(IsQMediaControl);
-        }
-        void setQMediaControl(bool qw) {
-            m_attributes.setFlag(IsQMediaControl, qw);
-        }
-
-        bool isQCoreApplication() const {
-            return m_attributes.testFlag(IsQCoreApplication);
-        }
-        void setQCoreApplication(bool qw) {
-            m_attributes.setFlag(IsQCoreApplication, qw);
-        }
-
-        const QString& defaultSuperclass() const {
-            return m_default_superclass;
-        }
-        void setDefaultSuperclass(const QString &sc) {
-            m_default_superclass = sc;
-        }
-
-        QString qualifiedCppName() const override;
-
-        /**
-         * the class-type attribute 'implements' can be used to extend the list of interfaces used by a class
-         * @brief setImplements
-         * @param implements
-         */
-        void setImplements(const QString &implements) {
-            m_implements = implements;
-        }
-        const QString& implements() const {
-            return m_implements;
-        }
-
-        void setIsPolymorphicBase(bool on) {
-            m_attributes.setFlag(IsPolymorphicBase, on);
-        }
-        bool isPolymorphicBase() const {
-            return m_attributes.testFlag(IsPolymorphicBase);
-        }
-
-        void setPolymorphicIdValue(const QString &value) {
-            m_polymorphic_id_value = value;
-        }
-        const QString& polymorphicIdValue() const {
-            return m_polymorphic_id_value;
-        }
-
-        void addInterfacePolymorphicIdValue(const QString &iface, const QString &value) {
-            m_interface_polymorphic_id_values[iface] = value;
-        }
-        const QMap<QString,QString>& interfacePolymorphicIdValues() const {
-            return m_interface_polymorphic_id_values;
-        }
-
-        void setExpensePolicy(const ExpensePolicy &policy) {
-            m_expense_policy = policy;
-        }
-        const ExpensePolicy &expensePolicy() const {
-            return m_expense_policy;
-        }
-
-        const QString& targetType() const {
-            return m_target_type;
-        }
-        void setTargetType(const QString &code) {
-            m_target_type = code;
-        }
-
-        QString targetLangName() const override {
-            if(m_java_name.isEmpty()){
-                return TypeEntry::targetLangName();
-            }else{
-                return m_java_name;
-            }
-        }
-        void setTargetLangName(const QString &name) {
-            m_java_name = name;
-        }
-
-        bool isGenericClass() const {
-            return m_attributes.testFlag(IsGenericClass);
-        }
-        void setGenericClass(bool isGeneric) {
-            m_attributes.setFlag(IsGenericClass, isGeneric);
-        }
-
-        bool isTemplate() const {
-            return m_attributes.testFlag(IsTemplate);
-        }
-        void setTemplate(bool isTemplate) {
-            m_attributes.setFlag(IsTemplate, isTemplate);
-        }
-
-        bool isNativeInterface() const {
-            return m_attributes.testFlag(IsNativeInterface);
-        }
-        void setNativeInterface(bool isNativeInterface) {
-            m_attributes.setFlag(IsNativeInterface, isNativeInterface);
-        }
-
-        bool inhibitMetaobject() const {
-            return m_attributes.testFlag(InhibitMetaobject);
-        }
-        void setInhibitMetaobject(bool inhibitMetaobject) {
-            m_attributes.setFlag(InhibitMetaobject, inhibitMetaobject);
-        }
-
-        const QString& threadAffinity() const {
-            return m_threadAffinity;
-        }
-        void setThreadAffinity(const QString &code) {
-            m_threadAffinity = code;
-        }
-
-        const QString& ppCondition() const override {
-            return m_pp_condition;
-        }
-        void setPPCondition(const QString &pp_condition) {
-            m_pp_condition = pp_condition;
-        }
-
-        void addDelegatedBaseClass(QString baseClass, QString delegate){
-            m_delegatedBaseClasses.insert(baseClass, delegate);
-        }
-
-        const QMap<QString,QString>& delegatedBaseClasses() const{
-            return m_delegatedBaseClasses;
-        }
-
-        virtual bool isNativeIdBased() const override {
-            return m_attributes.testFlag(IsNativeIdBased);
-        }
-
-        void disableNativeIdUsage() {
-            m_attributes.setFlag(IsNativeIdBased, false);
-        }
-
-        void addInstantiation(const QStringList& instantiation, const ComplexTypeEntry* typeEntry = nullptr){
-            m_instantiations[instantiation] = typeEntry;
-        }
-
-        const QMap<QStringList,const ComplexTypeEntry*>& instantiations() const {
-            return m_instantiations;
-        }
-        void setExtendType(const QString& extendType){ m_extendType = extendType; }
-        const QString& extendType() const { return m_extendType; }
-
-        void setCustomConstructor(const CustomFunction &func, ConstructorType type = CopyConstructor) {
-            m_customConstructors[type] = func;
-        }
-        CustomFunction customConstructor(ConstructorType type = CopyConstructor) const {
-            return m_customConstructors[type];
-        }
-
-        void setCustomDestructor(const CustomFunction &func) {
-            m_customDestructor = func;
-        }
-        const CustomFunction& customDestructor() const {
-            return m_customDestructor;
-        }
-
-        bool skipMetaTypeRegistration() const {
-            return m_attributes.testFlag(SkipMetaTypeRegistration);
-        }
-
-        void setSkipMetaTypeRegistration(bool skipMetaTypeRegistration){
-            m_attributes.setFlag(SkipMetaTypeRegistration, skipMetaTypeRegistration);
-        }
-
-        void setHasPrivateConstructors(){
-            m_functionAttributes.setFlag(HasAnyPrivateConstructor);
-        }
-
-        void setHasNonPrivateConstructors(){
-            m_functionAttributes.setFlag(HasAnyNonPrivateConstructor);
-        }
-
-        bool hasPrivateConstructors() const {
-            return m_functionAttributes.testFlag(HasAnyPrivateConstructor);
-        }
-
-        bool hasNonPrivateConstructors() const {
-            return m_functionAttributes.testFlag(HasAnyNonPrivateConstructor);
-        }
-
-        bool hasJustPrivateConstructors() const {
-            return hasPrivateConstructors() && !hasNonPrivateConstructors();
-        }
-
-        bool hasPublicDefaultConstructor() const {
-            return m_functionAttributes.testFlag(HasPublicDefaultConstructor);
-        }
-
-        bool hasProtectedDefaultConstructor() const {
-            return m_functionAttributes.testFlag(HasProtectedDefaultConstructor);
-        }
-
-        bool hasPrivateDefaultConstructor() const {
-            return m_functionAttributes.testFlag(HasPrivateDefaultConstructor);
-        }
-
-        void setHasPublicDefaultConstructor(){
-            m_functionAttributes.setFlag(HasProtectedDefaultConstructor, false);
-            m_functionAttributes.setFlag(HasPrivateDefaultConstructor, false);
-            m_functionAttributes.setFlag(HasPublicDefaultConstructor);
-        }
-
-        void setHasProtectedDefaultConstructor(){
-            m_functionAttributes.setFlag(HasPublicDefaultConstructor, false);
-            m_functionAttributes.setFlag(HasPrivateDefaultConstructor, false);
-            m_functionAttributes.setFlag(HasProtectedDefaultConstructor);
-        }
-
-        void setHasPrivateDefaultConstructor(){
-            m_functionAttributes.setFlag(HasProtectedDefaultConstructor, false);
-            m_functionAttributes.setFlag(HasPublicDefaultConstructor, false);
-            m_functionAttributes.setFlag(HasPrivateDefaultConstructor);
-        }
-
-        bool hasPublicCopyConstructor() const {
-            return m_functionAttributes.testFlag(HasPublicCopyConstructor);
-        }
-
-        bool hasProtectedCopyConstructor() const {
-            return m_functionAttributes.testFlag(HasProtectedCopyConstructor);
-        }
-
-        bool hasPrivateCopyConstructor() const {
-            return m_functionAttributes.testFlag(HasPrivateCopyConstructor);
-        }
-
-        void setHasPublicCopyConstructor(){
-            m_functionAttributes.setFlag(HasProtectedCopyConstructor, false);
-            m_functionAttributes.setFlag(HasPrivateCopyConstructor, false);
-            m_functionAttributes.setFlag(HasPublicCopyConstructor);
-        }
-
-        void setHasProtectedCopyConstructor(){
-            m_functionAttributes.setFlag(HasPublicCopyConstructor, false);
-            m_functionAttributes.setFlag(HasPrivateCopyConstructor, false);
-            m_functionAttributes.setFlag(HasProtectedCopyConstructor);
-        }
-
-        void setHasPrivateCopyConstructor(){
-            m_functionAttributes.setFlag(HasProtectedCopyConstructor, false);
-            m_functionAttributes.setFlag(HasPublicCopyConstructor, false);
-            m_functionAttributes.setFlag(HasPrivateCopyConstructor);
-        }
-
-        bool hasPublicMoveConstructor() const {
-            return m_functionAttributes.testFlag(HasPublicMoveConstructor);
-        }
-
-        bool hasProtectedMoveConstructor() const {
-            return m_functionAttributes.testFlag(HasProtectedMoveConstructor);
-        }
-
-        bool hasPrivateMoveConstructor() const {
-            return m_functionAttributes.testFlag(HasPrivateMoveConstructor);
-        }
-
-        void setHasPublicMoveConstructor(){
-            m_functionAttributes.setFlag(HasProtectedMoveConstructor, false);
-            m_functionAttributes.setFlag(HasPrivateMoveConstructor, false);
-            m_functionAttributes.setFlag(HasPublicMoveConstructor);
-        }
-
-        void setHasProtectedMoveConstructor(){
-            m_functionAttributes.setFlag(HasPublicMoveConstructor, false);
-            m_functionAttributes.setFlag(HasPrivateMoveConstructor, false);
-            m_functionAttributes.setFlag(HasProtectedMoveConstructor);
-        }
-
-        void setHasPrivateMoveConstructor(){
-            m_functionAttributes.setFlag(HasProtectedMoveConstructor, false);
-            m_functionAttributes.setFlag(HasPublicMoveConstructor, false);
-            m_functionAttributes.setFlag(HasPrivateMoveConstructor);
-        }
-
-        bool hasPublicMoveAssignment() const {
-            return m_functionAttributes.testFlag(HasPublicMoveAssignment);
-        }
-
-        bool hasProtectedMoveAssignment() const {
-            return m_functionAttributes.testFlag(HasProtectedMoveAssignment);
-        }
-
-        bool hasPrivateMoveAssignment() const {
-            return m_functionAttributes.testFlag(HasPrivateMoveAssignment);
-        }
-
-        void setHasPublicMoveAssignment(){
-            m_functionAttributes.setFlag(HasPrivateMoveAssignment, false);
-            m_functionAttributes.setFlag(HasProtectedMoveAssignment, false);
-            m_functionAttributes.setFlag(HasPublicMoveAssignment);
-        }
-
-        void setHasProtectedMoveAssignment(){
-            m_functionAttributes.setFlag(HasPrivateMoveAssignment, false);
-            m_functionAttributes.setFlag(HasPublicMoveAssignment, false);
-            m_functionAttributes.setFlag(HasProtectedMoveAssignment);
-        }
-
-        void setHasPrivateMoveAssignment(){
-            m_functionAttributes.setFlag(HasPublicMoveAssignment, false);
-            m_functionAttributes.setFlag(HasProtectedMoveAssignment, false);
-            m_functionAttributes.setFlag(HasPrivateMoveAssignment);
-        }
-
-        bool hasPublicDefaultAssignment() const {
-            return m_functionAttributes.testFlag(HasPublicDefaultAssignment);
-        }
-
-        bool hasProtectedDefaultAssignment() const {
-            return m_functionAttributes.testFlag(HasProtectedDefaultAssignment);
-        }
-
-        bool hasPrivateDefaultAssignment() const {
-            return m_functionAttributes.testFlag(HasPrivateDefaultAssignment);
-        }
-
-        void setHasPublicDefaultAssignment(){
-            m_functionAttributes.setFlag(HasPrivateDefaultAssignment, false);
-            m_functionAttributes.setFlag(HasProtectedDefaultAssignment, false);
-            m_functionAttributes.setFlag(HasPublicDefaultAssignment);
-        }
-
-        void setHasProtectedDefaultAssignment(){
-            m_functionAttributes.setFlag(HasPrivateDefaultAssignment, false);
-            m_functionAttributes.setFlag(HasPublicDefaultAssignment, false);
-            m_functionAttributes.setFlag(HasProtectedDefaultAssignment);
-        }
-
-        void setHasPrivateDefaultAssignment(){
-            m_functionAttributes.setFlag(HasPublicDefaultAssignment, false);
-            m_functionAttributes.setFlag(HasProtectedDefaultAssignment, false);
-            m_functionAttributes.setFlag(HasPrivateDefaultAssignment);
-        }
-
-        void setDestructorPrivate(){
-            m_functionAttributes.setFlag(HasProtectedDestructor, false);
-            m_functionAttributes.setFlag(HasPrivateDestructor, true);
-        }
-
-        bool isDestructorPrivate() const {
-            return m_functionAttributes.testFlag(HasPrivateDestructor);
-        }
-
-        void setDestructorProtected(){
-            m_functionAttributes.setFlag(HasPrivateDestructor, false);
-            m_functionAttributes.setFlag(HasProtectedDestructor, true);
-        }
-
-        bool isDestructorProtected() const {
-            return m_functionAttributes.testFlag(HasProtectedDestructor);
-        }
-
-        void setDestructorVirtual(){
-            m_functionAttributes.setFlag(HasVirtualDestructor, true);
-        }
-
-        bool isDestructorVirtual() const {
-            return m_functionAttributes.testFlag(HasVirtualDestructor);
-        }
-
-        bool isDestructorPublic() const {
-            return !m_functionAttributes.testFlag(HasPrivateDestructor) && !m_functionAttributes.testFlag(HasProtectedDestructor);
-        }
-
-        void setHasEquals(){
-            m_functionAttributes.setFlag(HasEquals, true);
-        }
-
-        bool hasEquals() const {
-            return m_functionAttributes.testFlag(HasEquals);
-        }
-
-        void setHasHash(){
-            m_functionAttributes.setFlag(HasHash, true);
-        }
-
-        bool hasHash() const {
-            return m_functionAttributes.testFlag(HasHash);
-        }
-
-        void setHasVirtualFunctions(){
-            m_functionAttributes.setFlag(HasVirtuals, true);
-        }
-
-        bool hasVirtualFunctions() const {
-            return m_functionAttributes.testFlag(HasVirtuals);
-        }
-
-        void setHasFinalFunctions(){
-            m_functionAttributes.setFlag(HasFinals, true);
-        }
-
-        bool hasFinalFunctions() const {
-            return m_functionAttributes.testFlag(HasFinals);
-        }
-
-        bool hasPureVirtualFunctions(bool nonPrivate = true) const {
-            return m_functionAttributes.testFlag(nonPrivate ? HasPureVirtuals : HasPrivatePureVirtuals);
-        }
-
-        void setHasPureVirtualFunctions(bool nonPrivate = true){
-            m_functionAttributes.setFlag(nonPrivate ? HasPureVirtuals : HasPrivatePureVirtuals);
-        }
-
-        const QStringList& implicitCasts() const {
-            return m_implicitCasts;
-        }
-
-        void addImplicitCast(const QString& cast){
-            m_implicitCasts.append(cast);
-        }
+        void setFieldModifications(const FieldModificationList &mods);
+        void addFieldModifications(const FieldModificationList &mods);
+        void addFieldModification(const FieldModification &mod);
+        const FieldModificationList& fieldModifications() const;
+
+        QString javaPackage() const override;
+        void setTargetLangPackage(const QString &package);
+
+        QString targetTypeSystem() const override;
+
+        void setTargetTypeSystem(const QString &qt_jambi_library);
+
+        bool isQObject() const;
+        void setQObject(bool qobject);
+        bool isQEvent() const;
+        void setQEvent(bool b);
+        bool isQByteArrayView() const;
+        void setQByteArrayView(bool b);
+        bool isGLsync() const;
+
+        bool isQWidget() const;
+        void setQWidget(bool qWidget);
+
+        bool isQWindow() const;
+        void setQWindow(bool qw);
+
+        bool isQAction() const;
+        void setQAction(bool qw);
+
+        bool isQMediaControl() const;
+        void setQMediaControl(bool qw);
+
+        bool isQCoreApplication() const;
+        void setQCoreApplication(bool qw);
+
+        const QString& defaultSuperclass() const;
+        void setDefaultSuperclass(const QString &sc);
+        void setImplements(const QString &implements);
+        const QString& implements() const;
+
+        void setIsPolymorphicBase(bool on);
+        bool isPolymorphicBase() const;
+
+        void setPolymorphicIdValue(const QString &value);
+        const QString& polymorphicIdValue() const;
+
+        void addInterfacePolymorphicIdValue(const QString &iface, const QString &value);
+        const QMap<QString,QString>& interfacePolymorphicIdValues() const;
+
+        void setExpensePolicy(const ExpensePolicy &policy);
+        const ExpensePolicy &expensePolicy() const;
+
+        const QString& targetType() const;
+        void setTargetType(const QString &code);
+
+        QString targetLangName() const override;
+        void setTargetLangName(const QString &name);
+
+        bool isGenericClass() const;
+        void setGenericClass(bool isGeneric);
+
+        bool isTemplate() const;
+        void setTemplate(bool isTemplate);
+
+        bool isNativeInterface() const;
+        void setNativeInterface(bool isNativeInterface);
+
+        bool inhibitMetaobject() const;
+        void setInhibitMetaobject(bool inhibitMetaobject);
+
+        const QString& threadAffinity() const;
+        void setThreadAffinity(const QString &code);
+
+        const QString& ppCondition() const override;
+        void setPPCondition(const QString &pp_condition);
+
+        void addDelegatedBaseClass(QString baseClass, QString delegate);
+
+        const QMap<QString,QString>& delegatedBaseClasses() const;
+
+        virtual bool isNativeIdBased() const override;
+
+        void disableNativeIdUsage();
+
+        void addInstantiation(const QStringList& instantiation, const ComplexTypeEntry* typeEntry = nullptr);
+
+        const QMap<QStringList,const ComplexTypeEntry*>& instantiations() const;
+        void setExtendType(const QString& extendType);
+        const QString& extendType() const;
+
+        void setCustomConstructor(const CustomFunction &func, ConstructorType type = CopyConstructor);
+        CustomFunction customConstructor(ConstructorType type = CopyConstructor) const;
+
+        void setCustomDestructor(const CustomFunction &func);
+        const CustomFunction& customDestructor() const;
+
+        bool skipMetaTypeRegistration() const;
+
+        void setSkipMetaTypeRegistration(bool skipMetaTypeRegistration);
+
+        void setHasPrivateConstructors();
+
+        void setHasNonPrivateConstructors();
+
+        bool hasPrivateConstructors() const;
+
+        bool hasNonPrivateConstructors() const;
+
+        bool hasJustPrivateConstructors() const;
+
+        bool hasPublicDefaultConstructor() const;
+
+        bool hasProtectedDefaultConstructor() const;
+
+        bool hasPrivateDefaultConstructor() const;
+
+        void setHasPublicDefaultConstructor();
+
+        void setHasProtectedDefaultConstructor();
+
+        void setHasPrivateDefaultConstructor();
+
+        bool hasPublicCopyConstructor() const;
+
+        bool hasProtectedCopyConstructor() const;
+
+        bool hasPrivateCopyConstructor() const;
+
+        void setHasPublicCopyConstructor();
+
+        void setHasProtectedCopyConstructor();
+
+        void setHasPrivateCopyConstructor();
+
+        bool hasPublicMoveConstructor() const;
+
+        bool hasProtectedMoveConstructor() const;
+
+        bool hasPrivateMoveConstructor() const;
+
+        void setHasPublicMoveConstructor();
+
+        void setHasProtectedMoveConstructor();
+
+        void setHasPrivateMoveConstructor();
+
+        bool hasPublicMoveAssignment() const;
+
+        bool hasProtectedMoveAssignment() const;
+
+        bool hasPrivateMoveAssignment() const;
+
+        void setHasPublicMoveAssignment();
+
+        void setHasProtectedMoveAssignment();
+
+        void setHasPrivateMoveAssignment();
+
+        bool hasPublicDefaultAssignment() const;
+
+        bool hasProtectedDefaultAssignment() const;
+
+        bool hasPrivateDefaultAssignment() const;
+
+        void setHasPublicDefaultAssignment();
+
+        void setHasProtectedDefaultAssignment();
+
+        void setHasPrivateDefaultAssignment();
+
+        void setDestructorPrivate();
+
+        bool isDestructorPrivate() const;
+
+        void setDestructorProtected();
+
+        bool isDestructorProtected() const;
+
+        void setDestructorVirtual();
+
+        bool isDestructorVirtual() const;
+
+        bool isDestructorPublic() const;
+
+        void setHasEquals();
+
+        bool hasEquals() const;
+
+        void setHasHash();
+
+        bool hasHash() const;
+
+        void setHasVirtualFunctions();
+
+        bool hasVirtualFunctions() const;
+
+        void setHasFinalFunctions();
+
+        bool hasFinalFunctions() const;
+
+        bool hasPureVirtualFunctions(bool nonPrivate = true) const;
+
+        void setHasPureVirtualFunctions(bool nonPrivate = true);
+
+        const QStringList& implicitCasts() const;
+
+        void addImplicitCast(const QString& cast);
 
         template<typename Type>
         const QList<Type*>& declImplicitCasts() const {
@@ -1775,6 +1459,15 @@ class ComplexTypeEntry : public TypeEntry {
         }
         bool getNoImplicitConstructors() const;
         void setNoImplicitConstructors(bool newNoImplicitConstructors);
+
+        bool getNotAssignable() const;
+        void setNotAssignable(bool newNotAssignable);
+
+        bool getNotMoveAssignable() const;
+        void setNotMoveAssignable(bool newNotMoveAssignable);
+
+        bool getNotCloneable() const;
+        void setNotCloneable(bool newNotCloneable);
 
     protected:
         enum ComplexAttributeFlag{
@@ -1859,6 +1552,9 @@ private:
         QList<void*> m_declImplicitCasts;
         QStringList m_implicitCasts;
         bool noImplicitConstructors = false;
+        bool notAssignable = false;
+        bool notMoveAssignable = false;
+        bool notCloneable = false;
         friend GeneratorApplication;
         friend class FunctionalTypeEntry;
 };
@@ -1884,6 +1580,16 @@ class AliasTypeEntry : public ComplexTypeEntry {
         }
         virtual void setPreferredTargetLangType(bool) {
         }
+
+        bool getAsNativePointer() const;
+        void setAsNativePointer(bool newAsNativePointer);
+
+        bool getHasIndirections() const;
+        void setHasIndirections(bool newHasIndirections);
+
+    private:
+        bool asNativePointer = false;
+        bool hasIndirections = false;
 };
 
 class NamespaceTypeEntry : public ComplexTypeEntry {

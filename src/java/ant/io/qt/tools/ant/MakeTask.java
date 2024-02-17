@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -41,7 +41,7 @@ import org.apache.tools.ant.Project;
 import org.apache.tools.ant.PropertyHelper;
 import org.apache.tools.ant.Task;
 
-import io.qt.tools.ant.OSInfo.OS;
+import io.qt.tools.ant.OSInfo.OperationSystem;
 
 public class MakeTask extends Task {
 
@@ -100,7 +100,7 @@ public class MakeTask extends Task {
 	            return make_tool;
 	        }
 	
-	        if(OSInfo.crossOS()!=OSInfo.os() && OSInfo.crossOS()==OS.Android) {
+	        if(OSInfo.crossOS()!=OSInfo.os() && OSInfo.crossOS()==OperationSystem.Android) {
 	        	String ndkRoot = (String)PropertyHelper.getProperty(getProject(), "qtjambi.android.ndk");
 	        	if(ndkRoot!=null && !ndkRoot.isEmpty()) {
 	        		File nrkRootFile = new File(ndkRoot);
@@ -108,6 +108,10 @@ public class MakeTask extends Task {
 		    	        switch(OSInfo.os()) {
 		    	        case Windows:
 		    	        	return nrkRootFile.getAbsolutePath() + "\\prebuilt\\windows-x86_64\\bin\\make.exe";
+		    	        case MacOS:
+		    	        	return nrkRootFile.getAbsolutePath() + "/prebuilt/darwin-x86_64/bin/make";
+		    	        case Linux:
+		    	        	return nrkRootFile.getAbsolutePath() + "/prebuilt/linux-x86_64/bin/make";
 		    			default:
 		    				break;
 		    	        }
@@ -146,7 +150,7 @@ public class MakeTask extends Task {
         List<String> commandArray = new ArrayList<String>();
         commandArray.add(compilerName);
 
-        if(silent && OSInfo.os() != OSInfo.OS.Windows) {
+        if(silent && OSInfo.os() != OSInfo.OperationSystem.Windows) {
             commandArray.add("-s");
         }
 
@@ -196,7 +200,7 @@ public class MakeTask extends Task {
             }else {
             	String path = null;
             	Map<String, String> newEnv = null;
-            	if(OSInfo.crossOS()!=OSInfo.os() && OSInfo.crossOS()==OS.Android) {
+            	if(OSInfo.crossOS()!=OSInfo.os() && OSInfo.crossOS()==OperationSystem.Android) {
     	        	String ndkRoot = (String)PropertyHelper.getProperty(getProject(), "qtjambi.android.ndk");
     	        	if(ndkRoot!=null) {
     	        		newEnv = new TreeMap<>();
@@ -206,6 +210,12 @@ public class MakeTask extends Task {
     	    	        case Windows:
     	    	        	path = nrkRootFile.getAbsolutePath() + "\\prebuilt\\windows-x86_64\\bin;"
     	    	        			+ nrkRootFile.getAbsolutePath() + "\\toolchains\\llvm\\prebuilt\\windows-x86_64\\bin";
+		    	        case MacOS:
+    	    	        	path = nrkRootFile.getAbsolutePath() + "/prebuilt/darwin-x86_64/bin;"
+    	    	        			+ nrkRootFile.getAbsolutePath() + "/toolchains/llvm/prebuilt/darwin-x86_64/bin";
+		    	        case Linux:
+    	    	        	path = nrkRootFile.getAbsolutePath() + "/prebuilt/linux-x86_64/bin;"
+    	    	        			+ nrkRootFile.getAbsolutePath() + "/toolchains/llvm/prebuilt/linux-x86_64/bin";
     	    			default:
     	    				break;
     	    	        }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -1007,7 +1007,7 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'doClone()const' for function modification in '*' not found.*"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature '*' for function modification in 'Qt3DCore' not found.*"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Final class 'QAbstractSkeleton' set to non-final, as it is extended by other classes"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'Qt3DCore::QAspectJob::postFrame', unmatched parameter type 'Qt3DCore::QAspectManager*'"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'Qt3DCore::QAspectJob::postFrame*', unmatched parameter type 'Qt3DCore::QAspectManager*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: private virtual function 'sceneChangeEvent(*)' in 'QCameraLens'"}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type Qt3DCore::QNodeIdTypePair."}
 }

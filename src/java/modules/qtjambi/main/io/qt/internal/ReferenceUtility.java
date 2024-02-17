@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -405,7 +405,7 @@ abstract class ReferenceUtility {
 	static void removeFromMapReferenceCount(QtObjectInterface owner, Class<? extends QtObjectInterface> declaringClass, String fieldName, boolean isStatic, Object value) {
 		Object collection = null;
 		boolean got = false;
-		if (declaringClass.isInterface() && !isStatic) {
+		if (declaringClass!=null && declaringClass.isInterface() && !isStatic) {
 			NativeLink link = NativeUtility.findInterfaceLink(owner, false);
 			if (link instanceof NativeUtility.InterfaceNativeLink) {
 				collection = ((NativeUtility.InterfaceNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, null);
@@ -414,9 +414,11 @@ abstract class ReferenceUtility {
 		}
 		if (!got) {
 			Field field = null;
-			try {
-				field = declaringClass.getDeclaredField(fieldName);
-			} catch (NoSuchFieldException | SecurityException e2) {
+			if(declaringClass!=null) {
+				try {
+					field = declaringClass.getDeclaredField(fieldName);
+				} catch (NoSuchFieldException | SecurityException e2) {
+				}
 			}
 			if (field == null && owner != null) {
 				Class<?> objectClass = ClassAnalyzerUtility.getClass(owner);
@@ -440,7 +442,7 @@ abstract class ReferenceUtility {
 	static void removeFromCollectionReferenceCount(QtObjectInterface owner, Class<? extends QtObjectInterface> declaringClass, String fieldName, boolean isStatic, Object value) {
 		Object collection = null;
 		boolean got = false;
-		if (declaringClass.isInterface() && !isStatic) {
+		if (declaringClass!=null && declaringClass.isInterface() && !isStatic) {
 			NativeLink link = NativeUtility.findInterfaceLink(owner, false);
 			if (link instanceof NativeUtility.InterfaceNativeLink) {
 				collection = ((NativeUtility.InterfaceNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, null);
@@ -449,9 +451,11 @@ abstract class ReferenceUtility {
 		}
 		if (!got) {
 			Field field = null;
-			try {
-				field = declaringClass.getDeclaredField(fieldName);
-			} catch (NoSuchFieldException | SecurityException e2) {
+			if(declaringClass!=null) {
+				try {
+					field = declaringClass.getDeclaredField(fieldName);
+				} catch (NoSuchFieldException | SecurityException e2) {
+				}
 			}
 			if (field == null && owner != null) {
 				Class<?> objectClass = ClassAnalyzerUtility.getClass(owner);
@@ -476,7 +480,7 @@ abstract class ReferenceUtility {
 	static void addAllReferenceCount(QtObjectInterface owner, Class<? extends QtObjectInterface> declaringClass, String fieldName, boolean isThreadSafe, boolean isStatic, Collection<?> values) {
 		Object collection = null;
 		boolean got = false;
-		if (declaringClass.isInterface() && !isStatic) {
+		if (declaringClass!=null && declaringClass.isInterface() && !isStatic) {
 			NativeLink link = NativeUtility.findInterfaceLink(owner, false);
 			if (link instanceof NativeUtility.InterfaceNativeLink) {
 				collection = ((NativeUtility.InterfaceNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, RCList::new);
@@ -485,9 +489,11 @@ abstract class ReferenceUtility {
 		}
 		if (!got) {
 			Field field = null;
-			try {
-				field = declaringClass.getDeclaredField(fieldName);
-			} catch (NoSuchFieldException | SecurityException e2) {
+			if (declaringClass!=null){
+				try {
+					field = declaringClass.getDeclaredField(fieldName);
+				} catch (NoSuchFieldException | SecurityException e2) {
+				}
 			}
 			if (field == null && owner != null) {
 				Class<?> objectClass = ClassAnalyzerUtility.getClass(owner);
@@ -520,7 +526,7 @@ abstract class ReferenceUtility {
 	static void putReferenceCount(QtObjectInterface owner, Class<? extends QtObjectInterface> declaringClass, String fieldName, boolean isThreadSafe, boolean isStatic, Object key, Object value) {
 		Object map = null;
 		boolean got = false;
-		if (declaringClass.isInterface() && !isStatic) {
+		if (declaringClass!=null && declaringClass.isInterface() && !isStatic) {
 			NativeLink link = NativeUtility.findInterfaceLink(owner, false);
 			if (link instanceof NativeUtility.InterfaceNativeLink) {
 				map = ((NativeUtility.InterfaceNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, () -> {
@@ -535,9 +541,11 @@ abstract class ReferenceUtility {
 		}
 		if (!got) {
 			Field field = null;
-			try {
-				field = declaringClass.getDeclaredField(fieldName);
-			} catch (NoSuchFieldException | SecurityException e2) {
+			if (declaringClass!=null){
+				try {
+					field = declaringClass.getDeclaredField(fieldName);
+				} catch (NoSuchFieldException | SecurityException e2) {
+				}
 			}
 			if (field == null && owner != null) {
 				Class<?> objectClass = ClassAnalyzerUtility.getClass(owner);
@@ -569,7 +577,7 @@ abstract class ReferenceUtility {
 	static void clearReferenceCount(QtObjectInterface owner, Class<? extends QtObjectInterface> declaringClass, String fieldName, boolean isStatic) {
 		Object collection = null;
 		boolean got = false;
-		if (declaringClass.isInterface() && !isStatic) {
+		if (declaringClass!=null && declaringClass.isInterface() && !isStatic) {
 			NativeLink link = NativeUtility.findInterfaceLink(owner, false);
 			if (link instanceof NativeUtility.InterfaceNativeLink) {
 				collection = ((NativeUtility.InterfaceNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, null);
@@ -578,9 +586,11 @@ abstract class ReferenceUtility {
 		}
 		if (!got) {
 			Field field = null;
-			try {
-				field = declaringClass.getDeclaredField(fieldName);
-			} catch (NoSuchFieldException | SecurityException e2) {
+			if(declaringClass!=null) {
+				try {
+					field = declaringClass.getDeclaredField(fieldName);
+				} catch (NoSuchFieldException | SecurityException e2) {
+				}
 			}
 			if (field == null && owner != null) {
 				Class<?> objectClass = ClassAnalyzerUtility.getClass(owner);
@@ -607,7 +617,7 @@ abstract class ReferenceUtility {
 	static void addReferenceCount(QtObjectInterface owner, Class<? extends QtObjectInterface> declaringClass, String fieldName, boolean isThreadSafe, boolean isStatic, Object value) {
 		Object collection = null;
 		boolean got = false;
-		if (declaringClass.isInterface() && !isStatic) {
+		if (declaringClass!=null && declaringClass.isInterface() && !isStatic) {
 			NativeLink link = NativeUtility.findInterfaceLink(owner, false);
 			if (link instanceof NativeUtility.InterfaceNativeLink) {
 				collection = ((NativeUtility.InterfaceNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, RCList::new);
@@ -616,9 +626,11 @@ abstract class ReferenceUtility {
 		}
 		if (!got) {
 			Field field = null;
-			try {
-				field = declaringClass.getDeclaredField(fieldName);
-			} catch (NoSuchFieldException | SecurityException e2) {
+			if(declaringClass!=null) {
+				try {
+					field = declaringClass.getDeclaredField(fieldName);
+				} catch (NoSuchFieldException | SecurityException e2) {
+				}
 			}
 			if (field == null && owner != null) {
 				Class<?> objectClass = ClassAnalyzerUtility.getClass(owner);
@@ -647,6 +659,51 @@ abstract class ReferenceUtility {
 		}
 	}
 	
+	static void copyReferenceCount(QtObjectInterface owner, Class<? extends QtObjectInterface> declaringClass, String fieldName, QtObjectInterface copy) {
+		Field field = null;
+		Object newValue = null;
+		if(declaringClass!=null) {
+			if (declaringClass.isInterface()) {
+				NativeLink link = NativeUtility.findInterfaceLink(copy, true);
+				if (link instanceof NativeUtility.InterfaceNativeLink) {
+					newValue = ((NativeUtility.InterfaceNativeLink) link).getReferenceCount(declaringClass, fieldName);
+					link = NativeUtility.findInterfaceLink(owner, true);
+					if (link instanceof NativeUtility.InterfaceNativeLink) {
+						((NativeUtility.InterfaceNativeLink) link).setReferenceCount(declaringClass, fieldName, newValue);
+						return;
+					}
+				}
+			}
+			try {
+				field = declaringClass.getDeclaredField(fieldName);
+			} catch (NoSuchFieldException | SecurityException e2) {
+			}
+		}
+		if (field == null && copy != null) {
+			Class<?> objectClass = ClassAnalyzerUtility.getClass(copy);
+			do {
+				try {
+					field = objectClass.getDeclaredField(fieldName);
+				} catch (NoSuchFieldException | SecurityException e2) {
+				}
+				objectClass = objectClass.getSuperclass();
+			} while (objectClass != null && field == null);
+		}
+		if (field != null) {
+			if(newValue==null) {
+				newValue = ReflectionUtility.readField(copy, field);
+			}
+			if (declaringClass!=null && declaringClass.isInterface()) {
+				NativeLink link = NativeUtility.findInterfaceLink(owner, true);
+				if (link instanceof NativeUtility.InterfaceNativeLink) {
+					((NativeUtility.InterfaceNativeLink) link).setReferenceCount(declaringClass, fieldName, newValue);
+					return;
+				}
+			}
+			ReflectionUtility.writeField(owner, field, newValue);
+		}
+	}
+	
 	static void setReferenceCount(QtObjectInterface owner, Class<? extends QtObjectInterface> declaringClass, String fieldName, boolean threadSafe, boolean isStatic, Object newValue) {
 		if (threadSafe) {
 			synchronized (isStatic ? declaringClass : owner) {
@@ -657,19 +714,21 @@ abstract class ReferenceUtility {
 		}
 	}
 
-	static void setReferenceCount(QtObjectInterface owner, Class<? extends QtObjectInterface> declaringClass,
+	private static void setReferenceCount(QtObjectInterface owner, Class<? extends QtObjectInterface> declaringClass,
 			String fieldName, boolean isStatic, Object newValue) {
-		if (declaringClass.isInterface() && !isStatic) {
-			NativeLink link = NativeUtility.findInterfaceLink(owner, true);
-			if (link instanceof NativeUtility.InterfaceNativeLink) {
-				((NativeUtility.InterfaceNativeLink) link).setReferenceCount(declaringClass, fieldName, newValue);
-				return;
-			}
-		}
 		Field field = null;
-		try {
-			field = declaringClass.getDeclaredField(fieldName);
-		} catch (NoSuchFieldException | SecurityException e2) {
+		if(declaringClass!=null) {
+			if (declaringClass.isInterface() && !isStatic) {
+				NativeLink link = NativeUtility.findInterfaceLink(owner, true);
+				if (link instanceof NativeUtility.InterfaceNativeLink) {
+					((NativeUtility.InterfaceNativeLink) link).setReferenceCount(declaringClass, fieldName, newValue);
+					return;
+				}
+			}
+			try {
+				field = declaringClass.getDeclaredField(fieldName);
+			} catch (NoSuchFieldException | SecurityException e2) {
+			}
 		}
 		if (field == null && owner != null) {
 			Class<?> objectClass = ClassAnalyzerUtility.getClass(owner);

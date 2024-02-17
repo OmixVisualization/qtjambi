@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -61,7 +61,10 @@ TypeSystem{
         className: "QQuickGraphsItem"
         since: 6.7
     }
-    
+    Rejection{className: "QAbstract3DAxisPrivate"}
+    Rejection{className: "QAbstract3DSeriesPrivate"}
+    Rejection{className: "QAbstractDataProxyPrivate"}
+
     NamespaceType{
         name: "QtGraphs"
         ExtraIncludes{
@@ -75,21 +78,6 @@ TypeSystem{
     GlobalFunction{
         signature: "qDefaultSurfaceFormat(bool)"
         targetType: "QtGraphs"
-    }
-
-    ObjectType{
-        name: "QAbstract3DAxisPrivate"
-        generate: false
-    }
-
-    ObjectType{
-        name: "QAbstractDataProxyPrivate"
-        generate: false
-    }
-
-    ObjectType{
-        name: "QAbstract3DSeriesPrivate"
-        generate: false
     }
     
     ObjectType{
@@ -448,10 +436,6 @@ TypeSystem{
             name: "AxisType"
         }
         ModifyFunction{
-            signature: "QAbstract3DAxis(QAbstract3DAxisPrivate *, QObject *)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
             signature: "setLabels(QStringList)"
             access: Modification.NonFinal
         }
@@ -658,10 +642,6 @@ TypeSystem{
         EnumType{
             name: "SeriesType"
         }
-        ModifyFunction{
-            signature: "QAbstract3DSeries(QAbstract3DSeriesPrivate *, QObject *)"
-            remove: RemoveFlag.All
-        }
     }
     
     ObjectType{
@@ -669,10 +649,6 @@ TypeSystem{
 
         EnumType{
             name: "DataType"
-        }
-        ModifyFunction{
-            signature: "QAbstractDataProxy(QAbstractDataProxyPrivate *, QObject *)"
-            remove: RemoveFlag.All
         }
     }
     
@@ -723,6 +699,7 @@ TypeSystem{
                     ownership: Ownership.Cpp
                 }
             }
+            until: 6.6
         }
         ModifyFunction{
             signature: "addRow(QBarDataRow*,QString)"
@@ -733,6 +710,7 @@ TypeSystem{
                     ownership: Ownership.Cpp
                 }
             }
+            until: 6.6
         }
         ModifyFunction{
             signature: "insertRow(int,QBarDataRow*)"
@@ -743,6 +721,7 @@ TypeSystem{
                     ownership: Ownership.Cpp
                 }
             }
+            until: 6.6
         }
         ModifyFunction{
             signature: "insertRow(int,QBarDataRow*,QString)"
@@ -753,6 +732,7 @@ TypeSystem{
                     ownership: Ownership.Cpp
                 }
             }
+            until: 6.6
         }
         ModifyFunction{
             signature: "setRow(int,QBarDataRow*)"
@@ -763,6 +743,7 @@ TypeSystem{
                     ownership: Ownership.Cpp
                 }
             }
+            until: 6.6
         }
         ModifyFunction{
             signature: "setRow(int,QBarDataRow*,QString)"
@@ -773,6 +754,7 @@ TypeSystem{
                     ownership: Ownership.Cpp
                 }
             }
+            until: 6.6
         }
         ModifyFunction{
             signature: "resetArray()"
@@ -780,6 +762,7 @@ TypeSystem{
                 position: Position.Beginning
                 Text{content: "QtJambi_LibraryUtilities.internal.invalidateObject(__rcArray);"}
             }
+            until: 6.6
         }
         ModifyFunction{
             signature: "resetArray(QBarDataArray*)"
@@ -803,6 +786,7 @@ TypeSystem{
                     ownership: Ownership.Cpp
                 }
             }
+            until: 6.6
         }
         ModifyFunction{
             signature: "resetArray(QBarDataArray*,QStringList,QStringList)"
@@ -826,9 +810,11 @@ TypeSystem{
                     ownership: Ownership.Cpp
                 }
             }
+            until: 6.6
         }
         InjectCode{
             Text{content: "private QBarDataArray __rcArray;"}
+            until: 6.6
         }
     }
     
@@ -1112,6 +1098,7 @@ TypeSystem{
                     ownership: Ownership.Cpp
                 }
             }
+            until: 6.6
         }
         ModifyFunction{
             signature: "insertRow(int,QSurfaceDataRow*)"
@@ -1122,6 +1109,7 @@ TypeSystem{
                     ownership: Ownership.Cpp
                 }
             }
+            until: 6.6
         }
         ModifyFunction{
             signature: "setRow(int,QSurfaceDataRow*)"
@@ -1132,14 +1120,7 @@ TypeSystem{
                     ownership: Ownership.Cpp
                 }
             }
-        }
-        ModifyFunction{
-            signature: "resetArray()"
-            InjectCode{
-                position: Position.Beginning
-                Text{content: "QtJambi_LibraryUtilities.internal.invalidateObject(__rcArray);"}
-            }
-            since: 6.7
+            until: 6.6
         }
         ModifyFunction{
             signature: "resetArray(QSurfaceDataArray*)"
@@ -1163,9 +1144,11 @@ TypeSystem{
                     ownership: Ownership.Cpp
                 }
             }
+            until: 6.6
         }
         InjectCode{
             Text{content: "private QSurfaceDataArray __rcArray;"}
+            until: 6.6
         }
     }
     
@@ -1181,6 +1164,13 @@ TypeSystem{
     
     ValueType{
         name: "QSurfaceDataArray"
+        ExtraIncludes{
+            Include{
+                fileName: "hashes.h"
+                location: Include.Local
+            }
+            since: 6.7
+        }
     }
     
     ObjectType{
@@ -1240,6 +1230,7 @@ TypeSystem{
                     ownership: Ownership.Dependent
                 }
             }
+            until: 6.6
         }
         ModifyFunction{
             signature: "labelPositions()"
@@ -1250,6 +1241,7 @@ TypeSystem{
                     ownership: Ownership.Dependent
                 }
             }
+            until: 6.6
         }
         ModifyFunction{
             signature: "labelStrings()"
@@ -1260,6 +1252,7 @@ TypeSystem{
                     ownership: Ownership.Dependent
                 }
             }
+            until: 6.6
         }
         ModifyFunction{
             signature: "subGridPositions()"
@@ -1270,9 +1263,93 @@ TypeSystem{
                     ownership: Ownership.Dependent
                 }
             }
+            until: 6.6
         }
     }
+
+    ObjectType{
+        name: "QSeriesTheme"
+        EnumType{
+            name: "SeriesColorTheme"
+        }
+        /*ModifyFunction{
+            signature: "graphSeriesCount() const"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "setGraphSeriesCount(int)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "graphSeriesColor(int) const"
+            remove: RemoveFlag.All
+        }
+        Rejection{className: "CustomFlags"}*/
+        since: 6.7
+    }
+
+    ObjectType{
+        name: "QAbstractAxis"
+        EnumType{
+            name: "AxisType"
+        }
+        Rejection{fieldName: "d_ptr"}
+        since: 6.7
+    }
+
+    ObjectType{
+        name: "QAbstractBarSeries"
+        EnumType{
+            name: "LabelsPosition"
+        }
+        since: 6.7
+    }
+
+    ObjectType{
+        name: "QAbstractSeries"
+        EnumType{
+            name: "SeriesType"
+        }
+        ModifyFunction{
+            signature: "setTheme(QSeriesTheme *)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcTheme"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        Rejection{fieldName: "d_ptr"}
+        Rejection{functionName: "graph"}
+        Rejection{functionName: "setGraph"}
+        since: 6.7
+    }
+
+    ObjectType{
+        name: "QBarCategoryAxis"
+        since: 6.7
+    }
+
+    ObjectType{
+        name: "QBarSeries"
+        since: 6.7
+    }
+
+    ObjectType{
+        name: "QBarSet"
+        ModifyFunction{
+            signature: "operator<<(qreal)"
+            remove: RemoveFlag.All
+        }
+        since: 6.7
+    }
     
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: horribly broken type ''"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Final class 'QAbstractDataProxy' set to non-final, as it is extended by other classes"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Final class 'QAbstract3DSeries' set to non-final, as it is extended by other classes"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Final class 'QAbstract3DAxis' set to non-final, as it is extended by other classes"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: private virtual function '*()' in 'Q3DTheme'"}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type *Q*DataArray."}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'from*' for function modification in 'QQuick*' not found. Possible candidates: "}
 }

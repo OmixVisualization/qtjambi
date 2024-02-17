@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -35,15 +35,6 @@ TypeSystem{
     qtLibrary: "QtSvgWidgets"
     module: "qtjambi.svgwidgets"
     description: "Classes for displaying the contents of SVG files. Supports a subset of the SVG 1.2 Tiny standard."
-
-    Rejection{
-        className: "QGraphicsSvgItem"
-        enumName: "enum_1"
-    }
-    
-    EnumType{
-        name: "QGraphicsSvgItem::enum_1"
-    }
     
     ObjectType{
         name: "QSvgWidget"
@@ -51,6 +42,7 @@ TypeSystem{
     
     ObjectType{
         name: "QGraphicsSvgItem"
+        Rejection{enumName: "enum_1"}
         ExtraIncludes{
             Include{
                 fileName: "QtJambiWidgets/hashes.h"

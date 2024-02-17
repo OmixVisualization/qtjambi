@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -135,7 +135,7 @@ class Exec {
     private static void setupEnvironment(Map<String, String> env, PropertyHelper props, String path, String ldpath) {
         String s;
 
-        if(OSInfo.os()==OSInfo.OS.Linux) {
+        if(OSInfo.os().isUnixLike()) {
         	if(ldpath != null) {
                 prependEnvironmentWithPathSeparator(env, K_LD_LIBRARY_PATH, ldpath);
             } else {
@@ -143,7 +143,7 @@ class Exec {
                 if(s != null)
                     prependEnvironmentWithPathSeparator(env, K_LD_LIBRARY_PATH, s);
             }
-        }else if(OSInfo.os()==OSInfo.OS.MacOS) {
+        }else if(OSInfo.os()==OSInfo.OperationSystem.MacOS) {
         	if(ldpath != null) {
                 prependEnvironmentWithPathSeparator(env, K_DYLD_LIBRARY_PATH, ldpath);
                 prependEnvironmentWithPathSeparator(env, K_DYLD_FRAMEWORK_PATH, ldpath);

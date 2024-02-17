@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -54,7 +54,7 @@ public class TestQuickTextureVulkanQt6 extends ApplicationInitializer {
 	
 	@BeforeClass
 	public static void testInitialize() throws Exception {
-		Assume.assumeTrue("Qt build has no Vulkan support.", General.canVulkan());
+		Assume.assumeTrue("Qt build has no Vulkan support.", General.canVulkan() && General.canCreateVulkanInstance());
 		ApplicationInitializer.testInitializeWithGui();
 		Assume.assumeTrue("A screen is required to create a window.", QGuiApplication.primaryScreen()!=null);
 		io.qt.QtUtilities.loadQtLibrary("OpenGL");

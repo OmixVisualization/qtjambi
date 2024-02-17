@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -112,302 +112,122 @@ class QScxmlStateMachine___ {
     /**
      * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToState"><code>QScxmlStateMachine::connectToState(QString, Functor, Qt::ConnectionType)</code></a></p>
      */
-    public io.qt.core.QMetaObject.Connection connectToState(String scxmlStateName,
-            io.qt.core.QMetaObject.Slot0 slot, io.qt.core.Qt.ConnectionType... type){
-        int _type = 0;
-        for (io.qt.core.Qt.ConnectionType t : type) {
-            _type |= t.value();
-        }
-        io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot));
-        if(metaMethod!=null && metaMethod.isValid() && metaMethod.parameterCount()==0) {
-            io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
-            if(object!=null) {
-                switch(metaMethod.methodType()) {
-                case Signal:
-                    return connectToState(scxmlStateName, object, "2"+metaMethod.cppMethodSignature(), _type);
-                case Method:
-                case Slot:
-                    return connectToState(scxmlStateName, object, "1"+metaMethod.cppMethodSignature(), _type);
-                default:
-                    break;
-                }
-            }
-        }
-        return connectToState(QtJambi_LibraryUtilities.internal.nativeId(this), scxmlStateName, slot, _type);
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToState"><code>QScxmlStateMachine::connectToState(QString, Functor, Qt::ConnectionType)</code></a></p>
-     */
-    public io.qt.core.QMetaObject.Connection connectToState(String scxmlStateName,
-            io.qt.core.QMetaObject.Connectable0 signal, io.qt.core.Qt.ConnectionType... type){
-        int _type = 0;
-        for (io.qt.core.Qt.ConnectionType t : type) {
-            _type |= t.value();
+    public io.qt.core.QMetaObject.@NonNull Connection connectToState(@NonNull String scxmlStateName,
+            io.qt.core.QMetaObject.@StrictNonNull Connectable0 signal, io.qt.core.Qt.@NonNull ConnectionType @NonNull... type){
+        io.qt.core.QObject object = null;
+        if(signal.containingObject() instanceof io.qt.core.QObject){
+            object = (io.qt.core.QObject)signal.containingObject();
         }
         io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromSignal(java.util.Objects.requireNonNull(signal));
         if(metaMethod!=null && metaMethod.isValid() && metaMethod.parameterCount()==0) {
-            io.qt.core.QObject object = null;
-            if(signal.containingObject() instanceof io.qt.core.QObject){
-                object = (io.qt.core.QObject)signal.containingObject();
-            }
             if(object!=null) {
                 switch(metaMethod.methodType()) {
                 case Signal:
-                    return connectToState(scxmlStateName, object, "2"+metaMethod.cppMethodSignature(), _type);
+                    return connectToState(scxmlStateName, object, "2"+metaMethod.cppMethodSignature(), type);
                 case Method:
                 case Slot:
-                    return connectToState(scxmlStateName, object, "1"+metaMethod.cppMethodSignature(), _type);
+                    return connectToState(scxmlStateName, object, "1"+metaMethod.cppMethodSignature(), type);
                 default:
                     break;
                 }
             }
         }
         if(signal instanceof io.qt.core.QMetaObject.Emitable0)
-            return connectToState(QtJambi_LibraryUtilities.internal.nativeId(this), scxmlStateName, (io.qt.core.QMetaObject.Slot0)((io.qt.core.QMetaObject.Emitable0)signal)::emit, _type);
-        else return null;
+            return connectToState(scxmlStateName, object, (io.qt.core.QMetaObject.Slot0)((io.qt.core.QMetaObject.Emitable0)signal)::emit, type);
+        else return connectToState(scxmlStateName, object, (String)null, type);
     }
-    
-    /**
-     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToState"><code>QScxmlStateMachine::connectToState(QString, Functor, Qt::ConnectionType)</code></a></p>
-     */
-    public io.qt.core.QMetaObject.Connection connectToState(String scxmlStateName,
-            io.qt.core.QMetaObject.Slot1<Boolean> slot, io.qt.core.Qt.ConnectionType... type){
-        int _type = 0;
-        for (io.qt.core.Qt.ConnectionType t : type) {
-            _type |= t.value();
-        }
-        io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot));
-        if(metaMethod!=null && metaMethod.isValid()) {
-            if(metaMethod.parameterCount()!=1 || metaMethod.parameterType(0)!=io.qt.core.QMetaType.Type.Bool.value()) {
-                throw new IllegalArgumentException("Method does not take a single boolean argument: "+metaMethod.cppMethodSignature());
-            }
-            io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
-            if(object!=null) {
-                switch(metaMethod.methodType()) {
-                case Signal:
-                    return connectToState(scxmlStateName, object, "2"+metaMethod.cppMethodSignature(), _type);
-                case Method:
-                case Slot:
-                    return connectToState(scxmlStateName, object, "1"+metaMethod.cppMethodSignature(), _type);
-                default:
-                    break;
-                }
-            }
-        }
-        return connectToState(QtJambi_LibraryUtilities.internal.nativeId(this), scxmlStateName, slot, _type);
-    }
-    
+        
     /**
      * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToState"><code>QScxmlStateMachine::connectToState(QString, Functor, Qt::ConnectionType)</code></a></p>
      */
     @SuppressWarnings("unchecked")
-    public io.qt.core.QMetaObject.Connection connectToState(String scxmlStateName,
-            io.qt.core.QMetaObject.Connectable1<Boolean> signal, io.qt.core.Qt.ConnectionType... type){
-        int _type = 0;
-        for (io.qt.core.Qt.ConnectionType t : type) {
-            _type |= t.value();
+    public io.qt.core.QMetaObject.@NonNull Connection connectToState(@NonNull String scxmlStateName,
+            io.qt.core.QMetaObject.@StrictNonNull Connectable1<Boolean> signal, io.qt.core.Qt.@NonNull ConnectionType @NonNull... type){
+        io.qt.core.QObject object = null;
+        if(signal.containingObject() instanceof io.qt.core.QObject){
+            object = (io.qt.core.QObject)signal.containingObject();
         }
         io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromSignal(java.util.Objects.requireNonNull(signal));
         if(metaMethod!=null && metaMethod.isValid()) {
             if(metaMethod.parameterCount()!=1 || metaMethod.parameterType(0)!=io.qt.core.QMetaType.Type.Bool.value()) {
                 throw new IllegalArgumentException("Method does not take a single boolean argument: "+metaMethod.cppMethodSignature());
             }
-            io.qt.core.QObject object = null;
-            if(signal.containingObject() instanceof io.qt.core.QObject){
-                object = (io.qt.core.QObject)signal.containingObject();
-            }
             if(object!=null) {
                 switch(metaMethod.methodType()) {
                 case Signal:
-                    return connectToState(scxmlStateName, object, "2"+metaMethod.cppMethodSignature(), _type);
+                    return connectToState(scxmlStateName, object, "2"+metaMethod.cppMethodSignature(), type);
                 case Method:
                 case Slot:
-                    return connectToState(scxmlStateName, object, "1"+metaMethod.cppMethodSignature(), _type);
+                    return connectToState(scxmlStateName, object, "1"+metaMethod.cppMethodSignature(), type);
                 default:
                     break;
                 }
             }
         }
         if(signal instanceof io.qt.core.QMetaObject.Emitable1)
-            return connectToState(QtJambi_LibraryUtilities.internal.nativeId(this), scxmlStateName, (io.qt.core.QMetaObject.Slot1<Boolean>)((io.qt.core.QMetaObject.Emitable1<Boolean>)signal)::emit, _type);
-        else return null;
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToState"><code>QScxmlStateMachine::connectToState(QString, QObject, const char*, Qt::ConnectionType)</code></a></p>
-     */
-    public io.qt.core.QMetaObject.Connection connectToState(String scxmlStateName,
-            io.qt.core.QObject object, String member, io.qt.core.Qt.ConnectionType... type){
-        int _type = 0;
-        for (io.qt.core.Qt.ConnectionType t : type) {
-            _type |= t.value();
-        }
-        if(member!=null && !member.startsWith("1") && !member.startsWith("2")) {
-            io.qt.core.QMetaMethod method = object.metaObject().method(member);
-            if(method!=null && method.isValid()) {
-                if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
-                    member = "2" + method.cppMethodSignature();
-                else
-                    member = "1" + method.cppMethodSignature();
-            }else {
-                member = "1" + member;
-            }
-        }
-        return connectToState(scxmlStateName, object, member, _type);
-    }
-    
-    private native io.qt.core.QMetaObject.Connection connectToState(long nativeId, String scxmlStateName, io.qt.core.QMetaObject.AbstractSlot slot, int type);
-    
-    /**
-     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToEvent"><code>QScxmlStateMachine::connectToEvent(QString, Functor, Qt::ConnectionType)</code></a></p>
-     */
-    public io.qt.core.QMetaObject.Connection connectToEvent(String scxmlStateName,
-            io.qt.core.QMetaObject.Slot0 slot, io.qt.core.Qt.ConnectionType... type){
-        int _type = 0;
-        for (io.qt.core.Qt.ConnectionType t : type) {
-            _type |= t.value();
-        }
-        io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot));
-        if(metaMethod!=null && metaMethod.isValid() && metaMethod.parameterCount()==0) {
-            io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
-            if(object!=null) {
-                switch(metaMethod.methodType()) {
-                case Signal:
-                    return connectToEvent(scxmlStateName, object, "2"+metaMethod.cppMethodSignature(), _type);
-                case Method:
-                case Slot:
-                    return connectToEvent(scxmlStateName, object, "1"+metaMethod.cppMethodSignature(), _type);
-                default:
-                    break;
-                }
-            }
-        }
-        return connectToEvent(QtJambi_LibraryUtilities.internal.nativeId(this), scxmlStateName, slot, _type);
+            return connectToState(scxmlStateName, object, (io.qt.core.QMetaObject.Slot1<Boolean>)((io.qt.core.QMetaObject.Emitable1<Boolean>)signal)::emit, type);
+        else return connectToState(scxmlStateName, object, (String)null, type);
     }
     
     /**
      * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToEvent"><code>QScxmlStateMachine::connectToEvent(QString, Functor, Qt::ConnectionType)</code></a></p>
      */
-    public io.qt.core.QMetaObject.Connection connectToEvent(String scxmlStateName,
-            io.qt.core.QMetaObject.Connectable0 signal, io.qt.core.Qt.ConnectionType... type){
-        int _type = 0;
-        for (io.qt.core.Qt.ConnectionType t : type) {
-            _type |= t.value();
+    public io.qt.core.QMetaObject.@NonNull Connection connectToEvent(@NonNull String scxmlStateName,
+            io.qt.core.QMetaObject.@StrictNonNull Connectable0 signal, io.qt.core.Qt.@NonNull ConnectionType @NonNull... type){
+        io.qt.core.QObject object = null;
+        if(signal.containingObject() instanceof io.qt.core.QObject){
+            object = (io.qt.core.QObject)signal.containingObject();
         }
         io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromSignal(java.util.Objects.requireNonNull(signal));
         if(metaMethod!=null && metaMethod.isValid() && metaMethod.parameterCount()==0) {
-            io.qt.core.QObject object = null;
-            if(signal.containingObject() instanceof io.qt.core.QObject){
-                object = (io.qt.core.QObject)signal.containingObject();
-            }
             if(object!=null) {
                 switch(metaMethod.methodType()) {
                 case Signal:
-                    return connectToEvent(scxmlStateName, object, "2"+metaMethod.cppMethodSignature(), _type);
+                    return connectToEvent(scxmlStateName, object, "2"+metaMethod.cppMethodSignature(), type);
                 case Method:
                 case Slot:
-                    return connectToEvent(scxmlStateName, object, "1"+metaMethod.cppMethodSignature(), _type);
+                    return connectToEvent(scxmlStateName, object, "1"+metaMethod.cppMethodSignature(), type);
                 default:
                     break;
                 }
             }
         }
         if(signal instanceof io.qt.core.QMetaObject.Emitable0)
-            return connectToEvent(QtJambi_LibraryUtilities.internal.nativeId(this), scxmlStateName, (io.qt.core.QMetaObject.Slot0)((io.qt.core.QMetaObject.Emitable0)signal)::emit, _type);
+            return connectToEvent(scxmlStateName, object, (io.qt.core.QMetaObject.Slot0)((io.qt.core.QMetaObject.Emitable0)signal)::emit, type);
         else
-            return null;
-    }
-    
-    /**
-     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToEvent"><code>QScxmlStateMachine::connectToEvent(QString, Functor, Qt::ConnectionType)</code></a></p>
-     */
-    public io.qt.core.QMetaObject.Connection connectToEvent(String scxmlStateName,
-            io.qt.core.QMetaObject.Slot1<QScxmlEvent> slot, io.qt.core.Qt.ConnectionType... type){
-        int _type = 0;
-        for (io.qt.core.Qt.ConnectionType t : type) {
-            _type |= t.value();
-        }
-        io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot));
-        if(metaMethod!=null && metaMethod.isValid()) {
-            if(metaMethod.parameterCount()!=1 || metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QScxmlEvent.class).id()) {
-                throw new IllegalArgumentException("Method does not take a single QScxmlEvent argument: "+metaMethod.cppMethodSignature());
-            }
-            io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);
-            if(object!=null) {
-                switch(metaMethod.methodType()) {
-                case Signal:
-                    return connectToEvent(scxmlStateName, object, "2"+metaMethod.cppMethodSignature(), _type);
-                case Method:
-                case Slot:
-                    return connectToEvent(scxmlStateName, object, "1"+metaMethod.cppMethodSignature(), _type);
-                default:
-                    break;
-                }
-            }
-        }
-        return connectToEvent(QtJambi_LibraryUtilities.internal.nativeId(this), scxmlStateName, slot, _type);
+            return connectToEvent(scxmlStateName, object, (String)null, type);
     }
     
     /**
      * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToEvent"><code>QScxmlStateMachine::connectToEvent(QString, Functor, Qt::ConnectionType)</code></a></p>
      */
     @SuppressWarnings("unchecked")
-    public io.qt.core.QMetaObject.Connection connectToEvent(String scxmlStateName,
-            io.qt.core.QMetaObject.Connectable1<QScxmlEvent> signal, io.qt.core.Qt.ConnectionType... type){
-        int _type = 0;
-        for (io.qt.core.Qt.ConnectionType t : type) {
-            _type |= t.value();
+    public io.qt.core.QMetaObject.@NonNull Connection connectToEvent(@NonNull String scxmlStateName,
+            io.qt.core.QMetaObject.@StrictNonNull Connectable1<QScxmlEvent> signal, io.qt.core.Qt.@NonNull ConnectionType @NonNull... type){
+        io.qt.core.QObject object = null;
+        if(signal.containingObject() instanceof io.qt.core.QObject){
+            object = (io.qt.core.QObject)signal.containingObject();
         }
         io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromSignal(java.util.Objects.requireNonNull(signal));
         if(metaMethod!=null && metaMethod.isValid()) {
             if(metaMethod.parameterCount()!=1 || metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QScxmlEvent.class).id()) {
                 throw new IllegalArgumentException("Method does not take a single QScxmlEvent argument: "+metaMethod.cppMethodSignature());
             }
-            io.qt.core.QObject object = null;
-            if(signal.containingObject() instanceof io.qt.core.QObject){
-                object = (io.qt.core.QObject)signal.containingObject();
-            }
             if(object!=null) {
                 switch(metaMethod.methodType()) {
                 case Signal:
-                    return connectToEvent(scxmlStateName, object, "2"+metaMethod.cppMethodSignature(), _type);
+                    return connectToEvent(scxmlStateName, object, "2"+metaMethod.cppMethodSignature(), type);
                 case Method:
                 case Slot:
-                    return connectToEvent(scxmlStateName, object, "1"+metaMethod.cppMethodSignature(), _type);
+                    return connectToEvent(scxmlStateName, object, "1"+metaMethod.cppMethodSignature(), type);
                 default:
                     break;
                 }
             }
         }
         if(signal instanceof io.qt.core.QMetaObject.Emitable1)
-            return connectToEvent(QtJambi_LibraryUtilities.internal.nativeId(this), scxmlStateName, (io.qt.core.QMetaObject.Slot1<QScxmlEvent>)((io.qt.core.QMetaObject.Emitable1<QScxmlEvent>)signal)::emit, _type);
-        else return null;
+            return connectToEvent(scxmlStateName, object, (io.qt.core.QMetaObject.Slot1<QScxmlEvent>)((io.qt.core.QMetaObject.Emitable1<QScxmlEvent>)signal)::emit, type);
+        else return connectToEvent(scxmlStateName, object, (String)null, type);
     }
-    
-    /**
-     * <p>See <a href="@docRoot/qscxmlstatemachine.html#connectToEvent"><code>QScxmlStateMachine::connectToEvent(QString, QObject, const char*, Qt::ConnectionType)</code></a></p>
-     */
-    public io.qt.core.QMetaObject.Connection connectToEvent(String scxmlStateName,
-            io.qt.core.QObject object, String member, io.qt.core.Qt.ConnectionType... type){
-        int _type = 0;
-        for (io.qt.core.Qt.ConnectionType t : type) {
-            _type |= t.value();
-        }
-        if(member!=null && !member.startsWith("1") && !member.startsWith("2")) {
-            io.qt.core.QMetaMethod method = object.metaObject().method(member);
-            if(method!=null && method.isValid()) {
-                if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)
-                    member = "2" + method.cppMethodSignature();
-                else
-                    member = "1" + method.cppMethodSignature();
-            }else {
-                member = "1" + member;
-            }
-        }
-        return connectToEvent(scxmlStateName, object, member, _type);
-    }
-    
-    private native io.qt.core.QMetaObject.Connection connectToEvent(long nativeId, String scxmlStateName, io.qt.core.QMetaObject.AbstractSlot slot, int type);
 }// class
 

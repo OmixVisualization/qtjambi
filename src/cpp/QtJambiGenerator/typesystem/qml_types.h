@@ -1,3 +1,34 @@
+/****************************************************************************
+**
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** $BEGIN_LICENSE$
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** $END_LICENSE$
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************/
+
 #ifndef PRIMITIVETYPE_H
 #define PRIMITIVETYPE_H
 
@@ -135,6 +166,15 @@ public:
     bool getNoImplicitConstructors() const;
     void setNoImplicitConstructors(bool newNoImplicitConstructors);
 
+    bool getNotAssignable() const;
+    void setNotAssignable(bool newNotAssignable);
+
+    bool getNotMoveAssignable() const;
+    void setNotMoveAssignable(bool newNotMoveAssignable);
+
+    bool getNotCloneable() const;
+    void setNotCloneable(bool newNotCloneable);
+
 signals:
     void packageNameChanged();
 
@@ -174,6 +214,12 @@ signals:
 
     void noImplicitConstructorsChanged();
 
+    void notAssignableChanged();
+
+    void notMoveAssignableChanged();
+
+    void notCloneableChanged();
+
 private:
     QString packageName;
     QString implementing;
@@ -194,6 +240,9 @@ private:
     QString ppCondition;
     bool noMetaType = false;
     bool noImplicitConstructors = false;
+    bool notAssignable = false;
+    bool notMoveAssignable = false;
+    bool notCloneable = false;
     Q_PROPERTY(QString packageName READ getPackageName WRITE setPackageName NOTIFY packageNameChanged)
     Q_PROPERTY(QString implementing READ getImplementing WRITE setImplementing NOTIFY implementingChanged)
     Q_PROPERTY(QString using READ getUsing WRITE setUsing NOTIFY usingChanged)
@@ -213,6 +262,9 @@ private:
     Q_PROPERTY(QString ppCondition READ getPpCondition WRITE setPpCondition NOTIFY ppConditionChanged)
     Q_PROPERTY(bool noMetaType READ getNoMetaType WRITE setNoMetaType NOTIFY noMetaTypeChanged)
     Q_PROPERTY(bool noImplicitConstructors READ getNoImplicitConstructors WRITE setNoImplicitConstructors NOTIFY noImplicitConstructorsChanged FINAL)
+    Q_PROPERTY(bool notAssignable READ getNotAssignable WRITE setNotAssignable NOTIFY notAssignableChanged FINAL)
+    Q_PROPERTY(bool notMoveAssignable READ getNotMoveAssignable WRITE setNotMoveAssignable NOTIFY notMoveAssignableChanged FINAL)
+    Q_PROPERTY(bool notCloneable READ getNotCloneable WRITE setNotCloneable NOTIFY notCloneableChanged FINAL)
 };
 
 class ObjectType : public ComplexType
@@ -397,8 +449,39 @@ class TypeAliasType : public AbstractType
     QML_ELEMENT
 public:
     explicit TypeAliasType(QObject *parent = nullptr):AbstractType{parent}{}
+    bool getAsNativePointer() const;
+    void setAsNativePointer(bool newAsNativePointer);
+
+    QString getPpCondition() const;
+    void setPpCondition(const QString &newPpCondition);
+
 signals:
+    void asNativePointerChanged();
+
+    void ppConditionChanged();
+
 private:
+    bool asNativePointer = false;
+    QString ppCondition;
+    Q_PROPERTY(bool asNativePointer READ getAsNativePointer WRITE setAsNativePointer NOTIFY asNativePointerChanged FINAL)
+    Q_PROPERTY(QString ppCondition READ getPpCondition WRITE setPpCondition NOTIFY ppConditionChanged FINAL)
+};
+
+class NativePointerType : public AbstractType
+{
+    Q_OBJECT
+    QML_ELEMENT
+public:
+    explicit NativePointerType(QObject *parent = nullptr):AbstractType{parent}{}
+    QString getPpCondition() const;
+    void setPpCondition(const QString &newPpCondition);
+
+signals:
+    void ppConditionChanged();
+
+private:
+    QString ppCondition;
+    Q_PROPERTY(QString ppCondition READ getPpCondition WRITE setPpCondition NOTIFY ppConditionChanged FINAL)
 };
 
 class InterfaceType : public ComplexType
@@ -551,5 +634,6 @@ QML_DECLARE_TYPE(IteratorType)
 QML_DECLARE_TYPE(PrimitiveType)
 QML_DECLARE_TYPE(TemplateType)
 QML_DECLARE_TYPE(TypeAliasType)
+QML_DECLARE_TYPE(NativePointerType)
 
 #endif // PRIMITIVETYPE_H

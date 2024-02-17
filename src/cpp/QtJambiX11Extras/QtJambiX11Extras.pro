@@ -1,4 +1,4 @@
 include(../QtJambi/configure.pri)
 
 QT = core
-linux-g++*: QT += x11extras
+linux-clang* | linux-g++* | freebsd-clang* | freebsd-g++* | netbsd-clang* | netbsd-g++* | openbsd-clang* | openbsd-g++* | solaris-g++* | solaris-cc*: QT += x11extras

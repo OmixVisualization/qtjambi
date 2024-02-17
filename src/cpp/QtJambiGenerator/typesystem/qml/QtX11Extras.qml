@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -35,7 +35,7 @@ TypeSystem{
     qtLibrary: "QtX11Extras"
     module: "qtjambi.x11extras"
     description: "Provides platform-specific APIs for X11."
-    defaultPPCondition: "defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)"
+    defaultPPCondition: "(defined(Q_OS_LINUX) && !defined(Q_OS_ANDROID)) || defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD) || defined(Q_OS_SOLARIS)"
 
     RequiredLibrary{
         name: "QtGui"

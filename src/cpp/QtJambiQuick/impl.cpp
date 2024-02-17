@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -272,15 +272,10 @@ QSGTexture * qtjambi_QSGVulkanTexture_fromNative(JNIEnv *, jlong image, jint lay
     return QNativeInterface::QSGVulkanTexture::fromNative(CastHelper<VkImage>::cast(image), VkImageLayout(layout), window, size, options);
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
 QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *, jlong image, jint layout, const QSize& pixelSize, int sampleCount){
     return QQuickRenderTarget::fromVulkanImage(CastHelper<VkImage>::cast(image), VkImageLayout(layout), pixelSize, sampleCount);
 }
-
-#if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
-QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *, jlong image, jint layout, jint format, const QSize& pixelSize, int sampleCount){
-    return QQuickRenderTarget::fromVulkanImage(CastHelper<VkImage>::cast(image), VkImageLayout(layout), VkFormat(format), pixelSize, sampleCount);
-}
-#endif
 
 QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromPhysicalDevice(JNIEnv *, jlong physicalDevice){
     return QQuickGraphicsDevice::fromPhysicalDevice(VkPhysicalDevice(physicalDevice));
@@ -289,12 +284,24 @@ QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromPhysicalDevice(JNIEnv *, j
 QQuickGraphicsDevice qtjambi_QQuickGraphicsDevice_fromDeviceObjects(JNIEnv *, jlong physicalDevice, jlong device, int queueFamilyIndex, int queueIndex){
     return QQuickGraphicsDevice::fromDeviceObjects(VkPhysicalDevice(physicalDevice), VkDevice(device), queueFamilyIndex, queueIndex);
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
+QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *, jlong image, jint layout, jint format, const QSize& pixelSize, int sampleCount){
+    return QQuickRenderTarget::fromVulkanImage(CastHelper<VkImage>::cast(image), VkImageLayout(layout), VkFormat(format), pixelSize, sampleCount);
+}
+#endif
+#endif
 #endif
 
 
 namespace Java{
 namespace QtQuick{
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/quick,QQuickItem,
+)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/quick,QSGGeometry,
+)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/quick,QSGGeometry$AttributeSet,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(clone,()Lio/qt/quick/QSGGeometry$AttributeSet;)
 )
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/quick,QSGGeometry$Point2DVertexData,
                                  QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(JI))

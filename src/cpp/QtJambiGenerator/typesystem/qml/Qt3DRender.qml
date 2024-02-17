@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -240,10 +240,6 @@ TypeSystem{
     
     ValueType{
         name: "Qt3DRender::QLevelOfDetailBoundingSphere"
-        ModifyFunction{
-            signature: "operator=(const Qt3DRender::QLevelOfDetailBoundingSphere &)"
-            remove: RemoveFlag.All
-        }
     }
     
     ObjectType{
@@ -2467,6 +2463,18 @@ TypeSystem{
     
     ValueType{
         name: "Qt3DRender::QTextureImageData"
+
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/JavaAPI"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/JObjectWrapper"
+                location: Include.Global
+            }
+        }
+
         InjectCode{
             target: CodeClass.Native
             position: Position.Beginning
@@ -2476,7 +2484,60 @@ TypeSystem{
 
         FunctionalType{
             name: "DataConverter"
+            generate: false
             using: "std::function<QByteArray(QByteArray,int,int,int)>"
+            since: 6
+        }
+
+        ModifyFunction{
+            signature: "setData(const QByteArray &, std::function<QByteArray(QByteArray, int, int, int)>, bool)"
+            ModifyArgument{
+                index: 2
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "std::function<QByteArray(const QByteArray &, int, int, int)> %out;\n"+
+                                  "if(%in){\n"+
+                                  "    JObjectWrapper wrapper(%env, %in);\n"+
+                                  "    %out = [wrapper](QByteArray rawData, int layer, int face, int mipmapLevel) -> QByteArray {\n"+
+                                  "                        if(JniEnvironment env{200}){\n"+
+                                  "                            jobject _rawData = qtjambi_cast<jobject>(env, rawData);\n"+
+                                  "                            jobject result = Java::Qt3DRender::QTextureImageData$DataConverter::apply(env, wrapper.object(), _rawData, layer, face, mipmapLevel);\n"+
+                                  "                            return qtjambi_cast<QByteArray>(env, result);\n"+
+                                  "                        }\n"+
+                                  "                        return {};\n"+
+                                  "                    };\n"+
+                                  "}"}
+                }
+            }
+            since: 6
+        }
+        InjectCode{
+            target: CodeClass.Java
+            Text{content: String.raw`
+/**
+ * <p>Java wrapper for Qt callable <code>std::function&lt;QByteArray(QByteArray,int,int,int)&gt;</code></p>
+ */
+@FunctionalInterface
+public interface DataConverter{
+    public io.qt.core.@NonNull QByteArray apply(io.qt.core.@NonNull QByteArray rawData, int layer, int face, int mipmapLevel);
+}
+                `}
+            since: 6
+        }
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: String.raw`
+namespace Java{
+namespace Qt3DRender{
+QTJAMBI_REPOSITORY_DECLARE_CLASS(QTextureImageData$DataConverter,
+                                 QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(apply))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/qt3d/render,QTextureImageData$DataConverter,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(apply,(Lio/qt/core/QByteArray;III)Lio/qt/core/QByteArray;)
+                                )
+}
+}
+                `}
             since: 6
         }
         since: [5, 7]

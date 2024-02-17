@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -637,7 +637,7 @@ public class TestQmlQt6 extends ApplicationInitializer{
 		
 		Assert.assertEquals(QMetaType.fromType(CustomGadgetType.class), QVariant.fromValue(new CustomGadgetType()).metaType());
 		Assert.assertEquals(QMetaType.fromType(CustomValueType.class), QVariant.fromValue(new CustomValueType()).metaType());
-		Assert.assertEquals(QMetaType.fromName("JObjectWrapper"), QVariant.fromValue(new ObjectType()).metaType());
+		Assert.assertTrue(QVariant.fromValue(new ObjectType()).metaType().name().startsWith("JObjectWrapper<"));
 //		QMetaObject.forType(ObjectType.class).properties().forEach(p->System.out.println(p.typeName()+" "+p.name()));
 //		System.out.println(QMetaType.fromType(java.lang.Runnable.class).flags());
 //		System.out.println(QMetaObject.forType(Runnable.class).methods());
@@ -744,7 +744,7 @@ public class TestQmlQt6 extends ApplicationInitializer{
 		
 		Assert.assertEquals(QMetaType.fromType(AutoGadgetType.class), QVariant.fromValue(new AutoGadgetType()).metaType());
 		Assert.assertEquals(QMetaType.fromType(AutoGadgetValueType.class), QVariant.fromValue(new AutoGadgetValueType()).metaType());
-		Assert.assertEquals(QMetaType.fromName("JObjectWrapper"), QVariant.fromValue(new ObjectType()).metaType());
+		Assert.assertTrue(QVariant.fromValue(new ObjectType()).metaType().name().startsWith("JObjectWrapper<"));
 //		QMetaObject.forType(ObjectType.class).properties().forEach(p->System.out.println(p.typeName()+" "+p.name()));
 //		System.out.println(QMetaType.fromType(java.lang.Runnable.class).flags());
 //		System.out.println(QMetaObject.forType(Runnable.class).methods());

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -35,44 +35,44 @@ TypeSystem{
     qtLibrary: "QtSerialPort"
     module: "qtjambi.serialport"
     description: "Provides access to hardware and virtual serial ports."
-    EnumType{
-        name: "QSerialPort::DataErrorPolicy"
-    }
-    
-    EnumType{
-        name: "QSerialPort::BaudRate"
-    }
-    
-    EnumType{
-        name: "QSerialPort::DataBits"
-    }
-    
-    EnumType{
-        name: "QSerialPort::Direction"
-    }
-    
-    EnumType{
-        name: "QSerialPort::FlowControl"
-    }
-    
-    EnumType{
-        name: "QSerialPort::Parity"
-    }
-    
-    EnumType{
-        name: "QSerialPort::PinoutSignal"
-    }
-    
-    EnumType{
-        name: "QSerialPort::SerialPortError"
-    }
-    
-    EnumType{
-        name: "QSerialPort::StopBits"
-    }
     
     ObjectType{
         name: "QSerialPort"
+        EnumType{
+            name: "DataErrorPolicy"
+        }
+
+        EnumType{
+            name: "BaudRate"
+        }
+
+        EnumType{
+            name: "DataBits"
+        }
+
+        EnumType{
+            name: "Direction"
+        }
+
+        EnumType{
+            name: "FlowControl"
+        }
+
+        EnumType{
+            name: "Parity"
+        }
+
+        EnumType{
+            name: "PinoutSignal"
+        }
+
+        EnumType{
+            name: "SerialPortError"
+        }
+
+        EnumType{
+            name: "StopBits"
+        }
         ModifyFunction{
             signature: "handle()const"
             remove: RemoveFlag.All
@@ -81,6 +81,18 @@ TypeSystem{
             signature: "sendBreak(int)"
             remove: RemoveFlag.All
             until: 5
+        }
+        ModifyFunction{
+            signature: "bindableStopBits(Qt::Disambiguated_t)"
+            ModifyArgument{
+                index: 1
+                RemoveArgument{}
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "constexpr Qt::Disambiguated_t %out = Qt::Disambiguated;"}
+                }
+            }
+            since: 6.7
         }
     }
     

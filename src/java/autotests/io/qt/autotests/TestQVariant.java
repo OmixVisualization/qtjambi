@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -1772,7 +1772,7 @@ public class TestQVariant extends ApplicationInitializer {
 	    		QObject prop = new QObject();
 	    		prop.destroyed.connect(()->destroyed.set(true));
 	    		carrier.setProperty("customProperty", prop);
-	    		assertEquals("JObjectWrapper", Variants.propertyType(carrier, "customProperty").name().toString());
+	    		assertTrue(Variants.propertyType(carrier, "customProperty").name().toString().startsWith("JObjectWrapper"));
 	    		assertEquals(new QColor(), Variants.fetchColorProperty(carrier, "customProperty"));
 	    		assertEquals(prop, Variants.fetchObjectProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchEventProperty(carrier, "customProperty"));
@@ -1795,7 +1795,7 @@ public class TestQVariant extends ApplicationInitializer {
 	    		QColor prop = new QColor(0xff23ab){};
 	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed.set(true));
 	    		carrier.setProperty("customProperty", prop);
-	    		assertEquals("JObjectWrapper", Variants.propertyType(carrier, "customProperty").name().toString());
+	    		assertTrue(Variants.propertyType(carrier, "customProperty").name().toString().startsWith("JObjectWrapper"));
 	    		assertEquals(prop, Variants.fetchColorProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchObjectProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchEventProperty(carrier, "customProperty"));
@@ -1818,7 +1818,7 @@ public class TestQVariant extends ApplicationInitializer {
 	    		QEvent prop = new QEvent(QEvent.Type.ActionAdded);
 	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed.set(true));
 	    		carrier.setProperty("customProperty", prop);
-	    		assertEquals("JObjectWrapper", Variants.propertyType(carrier, "customProperty").name().toString());
+	    		assertTrue(Variants.propertyType(carrier, "customProperty").name().toString().startsWith("JObjectWrapper"));
 	    		assertEquals(new QColor(), Variants.fetchColorProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchObjectProperty(carrier, "customProperty"));
 	    		assertEquals(prop, Variants.fetchEventProperty(carrier, "customProperty"));
@@ -1841,7 +1841,7 @@ public class TestQVariant extends ApplicationInitializer {
 	    		QEvent prop = new QEvent(QEvent.Type.ActionAdded){};
 	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed.set(true));
 	    		carrier.setProperty("customProperty", prop);
-	    		assertEquals("JObjectWrapper", Variants.propertyType(carrier, "customProperty").name().toString());
+	    		assertTrue(Variants.propertyType(carrier, "customProperty").name().toString().startsWith("JObjectWrapper"));
 	    		assertEquals(new QColor(), Variants.fetchColorProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchObjectProperty(carrier, "customProperty"));
 	    		assertEquals(prop, Variants.fetchEventProperty(carrier, "customProperty"));
@@ -1874,7 +1874,7 @@ public class TestQVariant extends ApplicationInitializer {
 	    		Prop prop = new Prop();
 	    		prop.destroyed.connect(()->destroyed.set(true));
 	    		carrier.setProperty("customProperty", prop);
-	    		assertEquals("JObjectWrapper", Variants.propertyType(carrier, "customProperty").name().toString());
+	    		assertTrue(Variants.propertyType(carrier, "customProperty").name().toString().startsWith("JObjectWrapper"));
 	    		assertEquals(new QColor(), Variants.fetchColorProperty(carrier, "customProperty"));
 	    		assertEquals(prop, Variants.fetchObjectProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchEventProperty(carrier, "customProperty"));
@@ -1911,7 +1911,7 @@ public class TestQVariant extends ApplicationInitializer {
 	    		Prop prop = new Prop();
 	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed.set(true));
 	    		carrier.setProperty("customProperty", prop);
-	    		assertEquals("JObjectWrapper", Variants.propertyType(carrier, "customProperty").name().toString());
+	    		assertTrue(Variants.propertyType(carrier, "customProperty").name().toString().startsWith("JObjectWrapper"));
 	    		assertEquals(new QColor(), Variants.fetchColorProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchObjectProperty(carrier, "customProperty"));
 	    		assertEquals(prop, Variants.fetchEventProperty(carrier, "customProperty"));
@@ -1935,7 +1935,7 @@ public class TestQVariant extends ApplicationInitializer {
 	    		prop.isDisposed();
 	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed.set(true));
 	    		carrier.setProperty("customProperty", prop);
-	    		assertEquals("JObjectWrapper", Variants.propertyType(carrier, "customProperty").name().toString());
+	    		assertTrue(Variants.propertyType(carrier, "customProperty").name().toString().startsWith("JObjectWrapper"));
 	    		assertEquals(new QColor(), Variants.fetchColorProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchObjectProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchEventProperty(carrier, "customProperty"));
@@ -1959,7 +1959,7 @@ public class TestQVariant extends ApplicationInitializer {
 	    		prop.isDisposed();
 	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed.set(true));
 	    		carrier.setProperty("customProperty", prop);
-	    		assertEquals("JObjectWrapper", Variants.propertyType(carrier, "customProperty").name().toString());
+	    		assertTrue(Variants.propertyType(carrier, "customProperty").name().toString().startsWith("JObjectWrapper"));
 	    		assertEquals(new QColor(), Variants.fetchColorProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchObjectProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchEventProperty(carrier, "customProperty"));
@@ -1996,7 +1996,7 @@ public class TestQVariant extends ApplicationInitializer {
 	    		Prop prop = new Prop();
 	    		QtUtilities.getSignalOnDispose(prop).connect(()->destroyed.set(true));
 	    		carrier.setProperty("customProperty", prop);
-	    		assertEquals("JObjectWrapper", Variants.propertyType(carrier, "customProperty").name().toString());
+	    		assertTrue(Variants.propertyType(carrier, "customProperty").name().toString().startsWith("JObjectWrapper"));
 	    		assertEquals(new QColor(), Variants.fetchColorProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchObjectProperty(carrier, "customProperty"));
 	    		assertEquals(null, Variants.fetchEventProperty(carrier, "customProperty"));

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -31,6 +31,9 @@ package io.qt.autotests;
 import org.junit.Assert;
 import org.junit.Test;
 
+import io.qt.NonNull;
+import io.qt.QtInvokable;
+import io.qt.QtPrimitiveType;
 import io.qt.core.QBuffer;
 import io.qt.core.QByteArray;
 import io.qt.core.QIODevice;
@@ -66,9 +69,16 @@ public class TestScxml extends ApplicationInitializer {
     	connection = sm.connectToEvent("hello", event->{});
     	Assert.assertTrue("not connected", connection.isConnected());
     	class Receiver extends QObject{
+    		@QtInvokable
+    		Receiver(){}
     		void receive(){}
     		void receiveBoolean(boolean b){}
     		void receiveEvent(QScxmlEvent e){}
+    		@QtInvokable
+    		int invokable() {return 0;}
+    		public final Signal0 plainSignal = new Signal0();
+    		public final Signal1<@QtPrimitiveType@NonNull Boolean> booleanSignal = new Signal1<>();
+    		public final Signal1<@NonNull QScxmlEvent> eventSignal = new Signal1<>();
     	}
     	Receiver r = new Receiver();
     	connection = sm.connectToState("hello", r::receive);
@@ -83,9 +93,27 @@ public class TestScxml extends ApplicationInitializer {
     	Assert.assertTrue("not connected", connection.isConnected());
     	connection = sm.connectToState("hello", r, "receiveBoolean(boolean)");
     	Assert.assertTrue("not connected", connection.isConnected());
+    	connection = sm.connectToState("hello", r.plainSignal);
+    	Assert.assertTrue("not connected", connection.isConnected());
+    	connection = sm.connectToState("hello", r.booleanSignal);
+    	Assert.assertTrue("not connected", connection.isConnected());
     	connection = sm.connectToEvent("hello", r, "receive()");
     	Assert.assertTrue("not connected", connection.isConnected());
     	connection = sm.connectToEvent("hello", r, "receiveEvent(QScxmlEvent)");
+    	Assert.assertTrue("not connected", connection.isConnected());
+    	connection = sm.connectToEvent("hello", r.plainSignal);
+    	Assert.assertTrue("not connected", connection.isConnected());
+    	connection = sm.connectToEvent("hello", r.eventSignal);
+    	Assert.assertTrue("not connected", connection.isConnected());
+    	connection = sm.connectToState("hello", r, "invokable()");
+    	Assert.assertTrue("not connected", connection.isConnected());
+    	connection = sm.connectToEvent("hello", r, "invokable()");
+    	Assert.assertTrue("not connected", connection.isConnected());
+    	connection = sm.connectToState("hello", r::invokable);
+    	Assert.assertTrue("not connected", connection.isConnected());
+    	connection = sm.connectToEvent("hello", r::invokable);
+    	Assert.assertTrue("not connected", connection.isConnected());
+    	connection = sm.connectToEvent("hello", Receiver::new);
     	Assert.assertTrue("not connected", connection.isConnected());
     	data.close();
     }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -205,12 +205,12 @@ TypeSystem{
 
         EnumType{
             name: "RenderFlag"
-            until: [6, 3]
+            hiddenMetaobject: true
         }
 
         EnumType{
             name: "Rotation"
-            until: [6, 3]
+            hiddenMetaobject: true
         }
         until: [6, 3]
     }

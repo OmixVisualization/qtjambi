@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -67,7 +67,7 @@ typedef QList<MetaTemplateParameter *> MetaTemplateParameterList;
 enum ArgumentRemove{
     ArgumentRemove_No,
     ArgumentRemove_Remove,
-    ArgumentRemove_UseAsLength
+    ArgumentRemove_UseAsUtilArg
 };
 
 class MetaClassList : public  QList<MetaClass *> {
@@ -135,6 +135,10 @@ class MetaAttributes {
             Comment                     = 0x00800000,
 
             Override                    = 0x08000000,
+
+            BracketCall                 = 0x10000000,
+
+            IsUnion                     = 0x20000000,
 
             Final                       = FinalInTargetLang | FinalInCpp
         };
@@ -477,9 +481,12 @@ public:
     void setInstantiation(const QString &expr) { m_instantiation = expr; }
     void setImplicit(bool implicit){m_implicit = implicit;}
     bool isImplicit() const{return m_implicit;}
+    QString parameterType() const { return m_parameterType; }
+    void setParameterType(const QString &expr) { m_parameterType = expr; }
     MetaTemplateParameter *copy() const;
 private:
     QString m_instantiation;
+    QString m_parameterType;
     bool m_implicit;
 };
 
@@ -614,6 +621,9 @@ class MetaFunction : public MetaAttributes {
     const QString& originalSignature() const { return m_original_signature; }
 
     QString marshalledName() const;
+    QString marshalledArguments(int count = -1) const;
+
+    static QString marshalledArguments(const QList<MetaArgument *>& arguments, bool isConst, int count = -1);
 
     // true if one or more of the arguments are of QtObject subclasses
     bool argumentsHaveNativeId() const {
@@ -684,7 +694,9 @@ class MetaFunction : public MetaAttributes {
     }
     bool hasTemplateTypes() const{
         for(const MetaTemplateParameter *arg : m_templateParameters) {
-            if (arg->type()->isTemplateArgument() && arg->defaultType().isEmpty())
+            if (arg->type() && arg->type()->isTemplateArgument() && arg->defaultType().isEmpty())
+                return true;
+            if (!arg->type() && arg->defaultType().isEmpty())
                 return true;
         }
         return false;
@@ -732,16 +744,18 @@ class MetaFunction : public MetaAttributes {
     bool isUIThreadAffine() const;
     bool isPixmapThreadAffine() const;
 
-    int arrayOrBufferLengthIndex(int argument_index) const;
+    int utilArgumentIndex(int argument_index) const;
     QString arrayOrBufferLengthExpression(int key) const;
     int arrayOrBufferLengthMinValue(int argument_index) const;
     int arrayOrBufferLengthMaxValue(int argument_index) const;
     bool useArgumentAsDerefPointer(int key) const;
+    bool useArgumentAsSlotContext(int key) const;
+    bool useArgumentAsSlot(int key) const;
     bool useArgumentAsArray(int key) const;
     bool useArgumentAsBuffer(int key) const;
     bool useArgumentAsVarArgs(int key) const;
-    bool insertArrayOffsetArgument(int key) const;
-    bool implementPlainArrayDelegate(int key) const;
+    bool insertUtilArgument(int key) const;
+    bool implementPlainDelegate(int key) const;
     bool isNoExcept() const;
     bool isBlockExceptions() const;
     bool isRethrowExceptions() const;
@@ -966,16 +980,18 @@ class MetaFunctional : public MetaAttributes {
         const QList<MetaArgument *>& arguments() const { return m_arguments; }
         void addArgument(MetaArgument * type) { m_arguments << type; }
         ArgumentRemove argumentRemoved(int) const;
-        int arrayOrBufferLengthIndex(int key) const;
+        int utilArgumentIndex(int key) const;
         QString arrayOrBufferLengthExpression(int key) const;
         int arrayOrBufferLengthMinValue(int argument_index) const;
         int arrayOrBufferLengthMaxValue(int argument_index) const;
         bool useArgumentAsDerefPointer(int key) const;
+        bool useArgumentAsSlotContext(int key) const;
+        bool useArgumentAsSlot(int key) const;
         bool useArgumentAsArray(int key) const;
         bool useArgumentAsBuffer(int key) const;
         bool useArgumentAsVarArgs(int key) const;
-        bool insertArrayOffsetArgument(int key) const;
-        bool implementPlainArrayDelegate(int key) const;
+        bool insertUtilArgument(int key) const;
+        bool implementPlainDelegate(int key) const;
         QString typeReplaced(int argument_index, QString* jniType = nullptr) const;
         QString conversionRule(TS::Language language, int idx) const;
         bool hasConversionRule(TS::Language language, int idx) const;
@@ -1063,7 +1079,6 @@ class MetaClass : public MetaAttributes {
         void setHasJustPrivateConstructors(bool on) { m_has_justprivateconstructors = on; }
         bool hasPublicStandardConstructor() const;
         bool hasExplicitStandardConstructor() const;
-        bool hasPublicCopyConstructor() const;
         bool hasExplicitCopyConstructor() const;
         bool hasPublicAssignment() const;
         bool hasStandardConstructor() const;
@@ -1284,9 +1299,9 @@ class MetaClass : public MetaAttributes {
         void addFunctionalByUsing(QString _using, MetaFunctional* f){
             m_functionalByUsing[_using] = f;
         }
-        const QMap<QString,MetaFunctional*>& functionalByUsing(){ return m_functionalByUsing; }
+        const QMap<QString,MetaFunctional*>& functionalByUsing() const { return m_functionalByUsing; }
 
-        const QMap<QString,MetaFunction*>& functionBySignature(){ return m_functionsBySignature; }
+        const QMap<QString,MetaFunction*>& functionBySignature() const { return m_functionsBySignature; }
 
         void setDeprecatedComment(const QString &deprecatedComment) { m_deprecatedComment = deprecatedComment; }
         const QString& deprecatedComment() const { return m_deprecatedComment; }
@@ -1300,6 +1315,7 @@ class MetaClass : public MetaAttributes {
         bool usingPublicBaseConstructors() const {return m_usingPublicBaseConstructors;}
         bool hasPaintMethod() const;
         bool hasQmlListProperty() const;
+        MetaFunction* publicCopyConstructor() const;
 private:
         QSet<QString> getAllUnimplmentablePureVirtualFunctions() const;
 
@@ -1313,9 +1329,10 @@ private:
     mutable int m_has_standardconstructor : 2;
     mutable int m_has_publicstandardconstructor : 2;
     mutable int m_has_explicitstandardconstructor : 2;
-    mutable int m_has_publiccopyconstructor : 2;
+    mutable int m_publiccopyconstructor_requested : 1;
     mutable int m_has_explicitcopyconstructor : 2;
     mutable int m_has_publicassignment : 2;
+    mutable MetaFunction* m_publiccopyconstructor = nullptr;
     uint m_has_unimplmentablePureVirtualFunctions : 1;
     QSet<QString> m_unimplmentablePureVirtualFunctions;
     uint m_has_metaObject : 1;

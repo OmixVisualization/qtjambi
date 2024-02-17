@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -57,34 +57,6 @@ extern "C" Q_DECL_EXPORT bool JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_network
 #else
     return true;
 #endif
-}
-
-// QHostInfo::lookupHost(const QString & name, Functor functor)
-extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_network_QHostInfo_lookupHost)
-(JNIEnv *__jni_env,
- jclass,
- jstring name0,
- QtJambiNativeID context1,
- jobject slot)
-{
-    jint _result{0};
-    QTJAMBI_NATIVE_METHOD_CALL("QHostInfo::lookupHost(const QString & name, Functor functor)")
-    QTJAMBI_TRY{
-        if(!slot)
-            JavaException::raiseNullPointerException(__jni_env, "slot must not be null." QTJAMBI_STACKTRACEINFO );
-        const QString&  __qt_name0 = qtjambi_cast<QString>(__jni_env, name0);
-        QObject*  __qt_context1 = QtJambiAPI::objectFromNativeId<QObject>(context1);
-        JObjectWrapper objectWrapper(__jni_env, slot);
-        _result = QHostInfo::lookupHost(__qt_name0, __qt_context1, [objectWrapper](const QHostInfo& info){
-            if(JniEnvironment env{200}){
-                jobject result = qtjambi_cast<jobject>(env, info);
-                Java::QtCore::QMetaObject$Slot1::invoke(env, objectWrapper.object(), result);
-            }
-        });
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-    return _result;
 }
 
 class QHttpMultiPartIODevice{

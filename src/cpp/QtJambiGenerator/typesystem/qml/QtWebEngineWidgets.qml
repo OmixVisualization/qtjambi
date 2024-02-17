@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -379,10 +379,11 @@ TypeSystem{
                         }
                         NoNullPointer{
                         }
-                        ConversionRule{
+                        /*ConversionRule{
                             codeClass: CodeClass.Shell
                             Text{content: "%out = qtjambi_cast<jobject>(%env, &%in);"}
                         }
+                        */
                         ConversionRule{
                             codeClass: CodeClass.Native
                             Text{content: "QWebEngineFullScreenRequest& %out  = *qtjambi_cast<QWebEngineFullScreenRequest*>(%env, %in);"}
@@ -637,6 +638,8 @@ TypeSystem{
     
     ObjectType{
         name: "QWebEngineFullScreenRequest"
+        notAssignable: true
+        notMoveAssignable: true
         until: 5
     }
     
@@ -655,6 +658,12 @@ TypeSystem{
                 fileName: "QtJambi/JObjectWrapper"
                 location: Include.Global
             }
+        }
+
+        FunctionalType{
+            name: "NotificationPresenter"
+            generate: false
+            using: "std::function<void(std::unique_ptr<QWebEngineNotification>)>"
         }
         ModifyFunction{
             signature: "installUrlSchemeHandler(QByteArray,QWebEngineUrlSchemeHandler*)"
@@ -725,19 +734,6 @@ TypeSystem{
         until: 5
     }
     
-    FunctionalType{
-        name: "QWebEngineProfile::NotificationPresenter"
-        generate: false
-        using: "std::function<void(std::unique_ptr<QWebEngineNotification>)>"
-        ExtraIncludes{
-            Include{
-                fileName: "QtWebEngineCore/QWebEngineNotification"
-                location: Include.Global
-            }
-        }
-        until: 5
-    }
-    
     ObjectType{
         name: "QWebEngineScriptCollection"
         until: 5
@@ -748,49 +744,36 @@ TypeSystem{
         until: 5
     }
     
-    FunctionalType{
-        name: "QWebEngineFullScreenRequest::BooleanConsumer"
-        generate: false
-        using: "std::function<void(bool)>"
-        since: [6, 2]
-    }
-    
-    FunctionalType{
-        name: "QWebEngineView::BooleanConsumer"
-        generate: false
-        using: "std::function<void(bool)>"
-        since: [6, 2]
-    }
-    
-    FunctionalType{
-        name: "QWebEngineView::DataConsumer"
-        generate: false
-        using: "std::function<void(const QByteArray&)>"
-        since: [6, 2]
-    }
-    
-    FunctionalType{
-        name: "QWebEngineView::DataConsumer2"
-        generate: false
-        using: "std::function<void (const QByteArray&)>"
-        since: [6, 2]
-    }
-    
-    FunctionalType{
-        name: "QWebEngineView::ResultConsumer"
-        generate: false
-        using: "std::function<void(const QWebEngineFindTextResult&)>"
-        ExtraIncludes{
-            Include{
-                fileName: "QtWebEngineCore/QWebEngineFindTextResult"
-                location: Include.Global
-            }
-        }
-        since: [6, 2]
-    }
-    
     ObjectType{
         name: "QWebEngineView"
+
+        FunctionalType{
+            name: "BooleanConsumer"
+            generate: false
+            using: "std::function<void(bool)>"
+            since: [6, 2]
+        }
+
+        FunctionalType{
+            name: "DataConsumer"
+            generate: false
+            using: "std::function<void(const QByteArray&)>"
+            since: [6, 2]
+        }
+
+        FunctionalType{
+            name: "DataConsumer2"
+            generate: false
+            using: "std::function<void (const QByteArray&)>"
+            since: [6, 2]
+        }
+
+        FunctionalType{
+            name: "ResultConsumer"
+            generate: false
+            using: "std::function<void(const QWebEngineFindTextResult&)>"
+            since: [6, 2]
+        }
         ExtraIncludes{
             Include{
                 fileName: "QtWebEngineCore/QWebEngineFindTextResult"

@@ -76,6 +76,7 @@ class Parser {
         bool parse_Attribute__();
         bool parseAbstractDeclarator(DeclaratorAST *&node);
         bool parseAccessSpecifier(DeclarationAST *&node);
+        bool parseAnnotation(ExpressionAST *&annotationExpression);
         bool parseAdditiveExpression(ExpressionAST *&node);
         bool parseAndExpression(ExpressionAST *&node, bool templArgs = false);
         bool parseAsmDefinition(DeclarationAST *&node);
@@ -118,6 +119,7 @@ class Parser {
         bool parseFunctionBody(StatementAST *&node);
         bool parseFunctionSpecifier(const ListNode<std::size_t> *&node);
         bool parseDeprecatedSpecifier(const ListNode<std::size_t> *&node, StringLiteralAST *&deprecationComment);
+        bool parseExportedSpecifier(const ListNode<std::size_t> *&node);
         bool parseIfStatement(StatementAST *&node);
         bool parseInclusiveOrExpression(ExpressionAST *&node,
                                         bool templArgs = false);

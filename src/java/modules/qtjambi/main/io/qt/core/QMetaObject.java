@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -12936,8 +12936,11 @@ public final class QMetaObject {
                     List<Parameter[]> possibleMethods = new ArrayList<>();
                     while(classType!=null) {
                     	for(Method method : classType.getDeclaredMethods()) {
-                    		if(method.getParameterCount()==argumentTypes.length)
-                    			possibleMethods.add(method.getParameters());
+                    		if(method.getParameterCount()==argumentTypes.length) {
+                    			try {
+                    				possibleMethods.add(method.getParameters());
+                    			}catch(java.lang.reflect.MalformedParametersException e) {}
+                    		}
                     	}
                     	classType = classType.getSuperclass();
                     }

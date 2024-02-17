@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -265,7 +265,7 @@ QStringList QJarEntryEngine::entryList(QDir::Filters filters, const QStringList 
         if(JniEnvironment env{600}){
             Java::QtJambi::ResourceUtility$JarResource::entryList(env, m_myJarFile.object(),
                                                qtjambi_cast<jobject>(env, &result),
-                                               qtjambi_cast<jobject>(env, filters),
+                                               jint(int(filters)),
                                                qtjambi_cast<jobject>(env, filterNames),
                                                qtjambi_cast<jstring>(env, m_name));
         }
@@ -333,7 +333,9 @@ QString QJarEntryEngine::fileName(FileName file) const{
 
 QDateTime QJarEntryEngine::fileTime(FileTime t) const{
     if(JniEnvironment env{600}){
-        return qtjambi_cast<QDateTime>(env, Java::QtJambi::ResourceUtility$JarResource::fileTime(env, m_myJarFile.object(), m_entry.object(), jint(t)));
+        jlong time = Java::QtJambi::ResourceUtility$JarResource::fileTime(env, m_myJarFile.object(), m_entry.object(), t==BirthTime, t==AccessTime, t==MetadataChangeTime || t==ModificationTime);
+        if(time>=0)
+            return QDateTime::fromMSecsSinceEpoch(time);
     }
     return QDateTime();
 }

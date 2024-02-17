@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -164,6 +164,12 @@ TypeSystem{
     
     ObjectType{
         name: "QtCharts::QAreaSeries"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/JavaAPI"
+                location: Include.Global
+            }
+        }
         ModifyFunction{
             signature: "QAreaSeries(QtCharts::QLineSeries *, QtCharts::QLineSeries *)"
             ModifyArgument{

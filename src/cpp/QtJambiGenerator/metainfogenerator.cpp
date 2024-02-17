@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -43,6 +43,10 @@
 #include <QDir>
 #include <QMetaType>
 #include "typesystem/typedatabase.h"
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+#define qAsConst std::as_const
+#endif
 
 MetaInfoGenerator::MetaInfoGenerator(PriGenerator *pri):
         AbstractGenerator(),
@@ -290,14 +294,16 @@ void MetaInfoGenerator::writeCppFile() {
                 if(functional->enclosingClass()){
                     if(!(!functional->enclosingClass()->isFake()
                          && functional->enclosingClass()->typeEntry()
-                         && (functional->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp)
                          && (functional->enclosingClass()->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp))){
                         continue;
                     }
                 }
-                if(!(functional->typeEntry()->getUsing().isEmpty() || functional->typeEntry()->codeGeneration()==TypeEntry::GenerateCpp))
+                if(!(functional->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp))
                     continue;
-                stream << INDENT << "void initialize_meta_info_" << QString(functional->typeEntry()->name()).replace("::", "_").replace("<", "_").replace(">", "_") << "();" << Qt::endl;
+                if(!writtenClasses[cls->targetTypeSystem()].contains(functional->typeEntry()->name())){
+                    writtenClasses[cls->targetTypeSystem()] << functional->typeEntry()->name();
+                    stream << INDENT << "void initialize_meta_info_" << QString(functional->typeEntry()->name()).replace("::", "_").replace("<", "_").replace(">", "_") << "();" << Qt::endl;
+                }
             }
         }
     }
@@ -340,14 +346,16 @@ void MetaInfoGenerator::writeCppFile() {
                         if(functional->enclosingClass()){
                             if(!(!functional->enclosingClass()->isFake()
                                  && functional->enclosingClass()->typeEntry()
-                                 && (functional->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp)
                                  && (functional->enclosingClass()->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp))){
                                 continue;
                             }
                         }
-                        if(!(functional->typeEntry()->getUsing().isEmpty() || functional->typeEntry()->codeGeneration()==TypeEntry::GenerateCpp))
+                        if(!(functional->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp))
                             continue;
-                        stream << INDENT << "initialize_meta_info_" << QString(functional->typeEntry()->name()).replace("::", "_") << "();" << Qt::endl;
+                        if(!writtenClasses[cls->targetTypeSystem()].contains(functional->typeEntry()->name())){
+                            writtenClasses[cls->targetTypeSystem()] << functional->typeEntry()->name();
+                            stream << INDENT << "initialize_meta_info_" << QString(functional->typeEntry()->name()).replace("::", "_") << "();" << Qt::endl;
+                        }
                     }
                 }
             }
@@ -860,7 +868,7 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                                 s << INDENT << "Map<String,List<Dependency>> _dependencies = new TreeMap<>();" << Qt::endl;
                                 const QList<TypeSystemTypeEntry*> typeSystems = m_database->typeSystems();
                                 for(TypeSystemTypeEntry* ts : typeSystems){
-                                    if(ts->codeGeneration()!=TypeEntry::GenerateNothing && !m_staticLibraries.contains(ts->qtLibrary())){
+                                    if((ts->codeGeneration() & ~TypeEntry::InheritedByTypeSystem)!=TypeEntry::GenerateNothing && !m_staticLibraries.contains(ts->qtLibrary())){
                                         QString dependencyString;
                                         QSet<QString> deps{"QtCore"};
                                         {
@@ -1068,8 +1076,8 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                 const QList<TypeSystemTypeEntry*> typeSystems = m_database->typeSystems();
                 for(TypeSystemTypeEntry* ts : typeSystems){
                     if(ts
-                            && ts->codeGeneration()!=TypeEntry::GenerateForSubclass
-                            && ts->codeGeneration()!=TypeEntry::GenerateNothing){
+                        && (ts->codeGeneration() & ~TypeEntry::InheritedByTypeSystem)!=TypeEntry::GenerateForSubclass
+                        && (ts->codeGeneration() & ~TypeEntry::InheritedByTypeSystem)!=TypeEntry::GenerateNothing){
                         QString qtJambiLibrary;
                         if(ts->qtLibrary().isEmpty()){
                             qtJambiLibrary = ts->targetName();
@@ -1145,7 +1153,7 @@ void MetaInfoGenerator::writeLibraryInitializers() {
                     }
                 }
 
-                if(baseTypeSystem && baseTypeSystem->codeGeneration()!=TypeEntry::GenerateNothing){
+                if(baseTypeSystem && (baseTypeSystem->codeGeneration() & ~TypeEntry::InheritedByTypeSystem)!=TypeEntry::GenerateNothing){
                     {
                         BufferedOutputStream stream(QFileInfo(cppOutputDirectory() + "/QtJambi/QtJambiDepends"));
                         stream << "/* This file was generated by QtJambiGenerator. */" << Qt::endl

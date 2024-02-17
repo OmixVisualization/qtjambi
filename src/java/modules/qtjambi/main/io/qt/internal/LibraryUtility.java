@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -31,8 +31,10 @@ package io.qt.internal;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.JarURLConnection;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -62,9 +64,11 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import java.util.jar.JarOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -91,6 +95,97 @@ import io.qt.internal.LibraryBundle.WrongConfigurationException;
  */
 final class LibraryUtility {
 	
+	enum Architecture{
+		x86,
+		x86_64,
+		arm,
+		arm64,
+		sparc,
+		mips,
+		mips64;
+		
+	    static Architecture decideArchitecture() {
+	    	String arch = System.getProperty("os.arch").toLowerCase();
+	    	switch(arch) {
+	    	case "arm":
+	    	case "armv":
+	    	case "armv6":
+	    	case "armv7":
+	    	case "arm32":
+	    		return arm;
+	    	case "arm64":
+	    	case "aarch64":
+	    		return arm64;
+	    	case "x86_64":
+	    	case "x64":
+	    	case "amd64":
+	    		return x86_64;
+	    	case "i386":
+	    	case "x86":
+	    		return x86;
+        	case "sparc":
+        		return sparc;
+        	case "mips":
+        		return mips;
+        	case "mips64":
+        		return mips64;
+	    	default:
+	    		if(arch.startsWith("arm-"))
+	    			return arm;
+	    		else if(arch.startsWith("aarch64-"))
+	    			return arm64;
+	    		else 
+	    			return x86;
+	    	}
+	    }
+	}
+	
+	enum OperatingSystem {
+	    Windows,
+	    MacOS,
+	    Linux,
+	    Android,
+	    IOS,
+	    FreeBSD,
+	    NetBSD,
+	    OpenBSD,
+	    Solaris
+	    ;
+		final boolean isAndroid() {
+			return this==Android;
+		}
+		final boolean isUnixLike() {
+			switch (this) {
+			case FreeBSD:
+			case NetBSD:
+			case OpenBSD:
+			case Solaris:
+			case Linux:
+				return true;
+			default:
+				return false;
+			}
+		}
+
+	    static OperatingSystem decideOperatingSystem() {
+	        String osName = System.getProperty("os.name").toLowerCase();
+	        if (osName.startsWith("windows")) return Windows;
+	        else if (osName.startsWith("mac")) return MacOS;
+	        else if (osName.startsWith("ios")) return IOS;
+	        else if (osName.startsWith("freebsd")) return FreeBSD;
+	        else if (osName.startsWith("netbsd")) return NetBSD;
+	        else if (osName.startsWith("openbsd")) return OpenBSD;
+	        else if (osName.startsWith("solaris") || osName.startsWith("sunos")) return Solaris;
+	        else if (osName.startsWith("linux")) {
+	        	if(System.getProperty("java.runtime.name").toLowerCase().startsWith("android"))
+	        		return OperatingSystem.Android;
+	        	else 
+	        		return OperatingSystem.Linux;
+	        }
+	        return OperatingSystem.Linux;
+	    }
+	}
+	
 	private LibraryUtility() { throw new RuntimeException();}
 	
 	private static final String DEPLOY_XML = "!/META-INF/qtjambi-deployment.xml";
@@ -102,8 +197,8 @@ final class LibraryUtility {
     private static final List<String> jniLibdirList;
     private static boolean isMinGWBuilt = false;
     
-	static final OperatingSystem operatingSystem = decideOperatingSystem();
-	static final Architecture architecture = decideArchitecture();
+	static final OperatingSystem operatingSystem = OperatingSystem.decideOperatingSystem();
+	static final Architecture architecture = Architecture.decideArchitecture();
     static final String osArchName;
     
     private static LibraryBundle.Configuration configuration = null;
@@ -181,7 +276,11 @@ final class LibraryUtility {
         List<String> jniLibdirs = null;
         try {
             libInfix = QtJambi_LibraryUtilities.properties.getProperty("qtjambi.libinfix");
-            icuVersion = QtJambi_LibraryUtilities.properties.getProperty("qtjambi.icu.version", "56.1");
+            if(QtJambi_LibraryUtilities.qtMajorVersion>6 || (Integer.compare(QtJambi_LibraryUtilities.qtMajorVersion, 6)==0 && QtJambi_LibraryUtilities.qtMinorVersion>=7)) {
+            	icuVersion = QtJambi_LibraryUtilities.properties.getProperty("qtjambi.icu.version", "73.2");
+            }else {
+            	icuVersion = QtJambi_LibraryUtilities.properties.getProperty("qtjambi.icu.version", "56.1");
+            }
             
             SortedMap<String,String> tmpSystemLibrariesMap = new TreeMap<String,String>();
             SortedMap<String,String> tmpJniLibdirBeforeMap = new TreeMap<String,String>();
@@ -236,47 +335,17 @@ final class LibraryUtility {
         }
 
         switch (operatingSystem) {
-        case Windows:
-        	switch(architecture) {
-        	case arm:
-        		osArchName = "windows-arm"; break;
-        	case arm64:
-        		osArchName = "windows-arm64"; break;
-        	case x86_64:
-        		osArchName = "windows-x64"; break;
-        	default:
-        		osArchName = "windows-x86"; break;
-        	}
-            break;
-        case Linux:
-        	switch(architecture) {
-        	case arm:
-        		osArchName = "linux-arm"; break;
-        	case arm64:
-        		osArchName = "linux-arm64"; break;
-        	case x86_64:
-        		osArchName = "linux-x64"; break;
-        	default:
-        		osArchName = "linux-x86"; break;            	
-        	}
-            break;
-        case Android:
-        	switch(architecture) {
-        	case arm:
-        		osArchName = "android-arm"; break;
-        	case arm64:
-        		osArchName = "android-arm64"; break;
-        	case x86_64:
-        		osArchName = "android-x64"; break;
-        	default:
-        		osArchName = "android-x86"; break;
-        	}
-            break;
         case MacOS:
-            osArchName = "macos";
+        case IOS:
+            osArchName = operatingSystem.name().toLowerCase();
             break;
         default:
-            osArchName = "unknown";
+        	switch(architecture) {
+        	case x86_64:
+        		osArchName = operatingSystem.name().toLowerCase()+"-x64"; break;
+        	default:
+        		osArchName = operatingSystem.name().toLowerCase()+"-"+architecture.name().toLowerCase(); break;
+        	}
             break;
         }
         
@@ -316,19 +385,14 @@ final class LibraryUtility {
 	        File jambiLibraryDir = null;
 	        if(!loadQtJambiFromLibraryPath){
 	            List<String> libraryPaths = new ArrayList<>();
-	            if (System.getProperties().contains("io.qt.library-path-override")) {
+	            if (System.getProperties().containsKey("io.qt.library-path-override")) {
 	            	libraryPaths.addAll(javaLibraryPathOverrides.computeIfAbsent(System.getProperty("io.qt.library-path-override"), LibraryUtility::splitPath));
 	        	} else {
 	        		libraryPaths.addAll(javaLibraryPaths.computeIfAbsent(System.getProperty("java.library.path"), LibraryUtility::splitPath));
 		            switch(operatingSystem) {
-					case Linux:
-						String ldPath = System.getenv("LD_LIBRARY_PATH");
-						if(ldPath!=null)
-							libraryPaths.addAll(ldLibraryPaths.computeIfAbsent(ldPath, LibraryUtility::splitPath));
-						break;
 					case IOS:
 					case MacOS:
-						ldPath = System.getenv("DYLD_FRAMEWORK_PATH");
+						String ldPath = System.getenv("DYLD_FRAMEWORK_PATH");
 						if(ldPath!=null)
 							libraryPaths.addAll(ldLibraryPaths.computeIfAbsent(ldPath, LibraryUtility::splitPath));
 						ldPath = System.getenv("DYLD_LIBRARY_PATH");
@@ -336,6 +400,12 @@ final class LibraryUtility {
 							libraryPaths.addAll(ldLibraryPaths.computeIfAbsent(ldPath, LibraryUtility::splitPath));
 						break;
 					default:
+						if(operatingSystem.isUnixLike()) {
+							ldPath = System.getenv("LD_LIBRARY_PATH");
+							if(ldPath!=null)
+								libraryPaths.addAll(ldLibraryPaths.computeIfAbsent(ldPath, LibraryUtility::splitPath));
+							break;
+						}
 						break;
 		            }
 	    		}
@@ -508,15 +578,14 @@ final class LibraryUtility {
 		            		lib = String.format(libFormat, iter.next());
 		            	}
 		    			File f = new File(path, lib);
-		    			switch(operatingSystem) {
-		    			case Linux:
+		    			if(operatingSystem.isUnixLike()) {
 		    				// libQt5Core.so.5 could point to libQt5Core.so.5.x with x < qtMinorVersion
 		    				if(f.exists() && (
 		    						lib.endsWith(".so."+QtJambi_LibraryUtilities.qtMajorVersion)
 		    						|| lib.endsWith(".so")
 		    						) && Files.isSymbolicLink(f.toPath())) {
 		    					try {
-									File link = Files.readSymbolicLink(f.toPath()).toFile();
+									File link = f.toPath().toRealPath().toFile();
 									if(lib.endsWith(".so")) {
 										if(!link.getName().startsWith(lib+"."+QtJambi_LibraryUtilities.qtMajorVersion+"."+QtJambi_LibraryUtilities.qtMinorVersion)) {
 											f = null;
@@ -531,10 +600,7 @@ final class LibraryUtility {
 								} catch (IOException e) {
 								}
 		    				}
-		    				break;
-		    				default:
-		    					break;
-		    			}
+    					}
 			        	if (f!=null && f.exists()) {
 			        		loadQtFromLibraryPath = true;
 			        		break loop1;
@@ -558,13 +624,12 @@ final class LibraryUtility {
 		                case Windows:
 		                	tmpDir = new File(System.getProperty("user.home"), "AppData\\Local\\QtJambi");
 		                	break;
-						case Linux:
-							tmpDir = new File(System.getProperty("user.home"), ".local/share/QtJambi");
-							break;
 						case MacOS:
 							tmpDir = new File(System.getProperty("user.home"), "Library/Application Support/QtJambi");
 							break;
 						default:
+							if(operatingSystem.isUnixLike())
+								tmpDir = new File(System.getProperty("user.home"), ".local/share/QtJambi");
 							break;
 		        		}
 		        	}else if("common".equalsIgnoreCase(deploymentdir)) {
@@ -572,13 +637,12 @@ final class LibraryUtility {
 		                case Windows:
 		                	tmpDir = new File("C:\\ProgramData\\QtJambi");
 		                	break;
-						case Linux:
-							tmpDir = new File("/usr/local/share/QtJambi");
-							break;
 						case MacOS:
 							tmpDir = new File("/Library/Application Support/QtJambi");
 							break;
 						default:
+							if(operatingSystem.isUnixLike())
+								tmpDir = new File("/usr/local/share/QtJambi");
 							break;
 		        		}
 		        	}else {
@@ -594,12 +658,13 @@ final class LibraryUtility {
 		        }else {
 			        if(keepDeployment) {
 			        	switch (operatingSystem) {
-						case Linux:
-							if(!tmpDir.getAbsolutePath().startsWith(System.getProperty("user.home"))) {
-								jambiDeploymentDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + "_" + System.getProperty("user.name"));
-								break;
-							}
 						default:
+							if(operatingSystem.isUnixLike()) {
+								if(!tmpDir.getAbsolutePath().startsWith(System.getProperty("user.home"))) {
+									jambiDeploymentDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + "_" + System.getProperty("user.name"));
+									break;
+								}
+							}
 				        	jambiDeploymentDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch);
 							break;
 			        	}
@@ -633,13 +698,12 @@ final class LibraryUtility {
 			                case Windows:
 			                	tmpDir = new File(System.getProperty("user.home"), "AppData\\Local\\QtJambi");
 			                	break;
-							case Linux:
-								tmpDir = new File(System.getProperty("user.home"), ".local/share/QtJambi");
-								break;
 							case MacOS:
 								tmpDir = new File(System.getProperty("user.home"), "Library/Application Support/QtJambi");
 								break;
 							default:
+								if(operatingSystem.isUnixLike())
+									tmpDir = new File(System.getProperty("user.home"), ".local/share/QtJambi");
 								break;
 			        		}
 			        	}else if("common".equalsIgnoreCase(headersdir)) {
@@ -647,13 +711,12 @@ final class LibraryUtility {
 			                case Windows:
 			                	tmpDir = new File("C:\\ProgramData\\QtJambi");
 			                	break;
-							case Linux:
-								tmpDir = new File("/usr/local/share/QtJambi");
-								break;
 							case MacOS:
 								tmpDir = new File("/Library/Application Support/QtJambi");
 								break;
 							default:
+								if(operatingSystem.isUnixLike())
+									tmpDir = new File("/usr/local/share/QtJambi");
 								break;
 			        		}
 			        	}else {
@@ -670,12 +733,13 @@ final class LibraryUtility {
 			        		|| "temp".equalsIgnoreCase(headersdir)){
 				        if(deleteTmpDeployment) {
 				        	switch (operatingSystem) {
-							case Linux:
-								if(!tmpDir.getAbsolutePath().startsWith(System.getProperty("user.home"))) {
-									jambiHeadersDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + "_" + System.getProperty("user.name"));
-									break;
-								}
 							default:
+								if(operatingSystem.isUnixLike()) {
+									if(!tmpDir.getAbsolutePath().startsWith(System.getProperty("user.home"))) {
+										jambiHeadersDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + "_" + System.getProperty("user.name"));
+										break;
+									}
+								}
 								jambiHeadersDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch);
 								break;
 				        	}
@@ -710,13 +774,12 @@ final class LibraryUtility {
 			                case Windows:
 			                	tmpDir = new File(System.getProperty("user.home"), "AppData\\Local\\QtJambi");
 			                	break;
-							case Linux:
-								tmpDir = new File(System.getProperty("user.home"), ".local/share/QtJambi");
-								break;
 							case MacOS:
 								tmpDir = new File(System.getProperty("user.home"), "Library/Application Support/QtJambi");
 								break;
 							default:
+								if(operatingSystem.isUnixLike())
+									tmpDir = new File(System.getProperty("user.home"), ".local/share/QtJambi");
 								break;
 			        		}
 			        	}else if("common".equalsIgnoreCase(sourcesdir)) {
@@ -724,13 +787,12 @@ final class LibraryUtility {
 			                case Windows:
 			                	tmpDir = new File("C:\\ProgramData\\QtJambi");
 			                	break;
-							case Linux:
-								tmpDir = new File("/usr/local/share/QtJambi");
-								break;
 							case MacOS:
 								tmpDir = new File("/Library/Application Support/QtJambi");
 								break;
 							default:
+								if(operatingSystem.isUnixLike())
+									tmpDir = new File("/usr/local/share/QtJambi");
 								break;
 			        		}
 			        	}else {
@@ -747,12 +809,13 @@ final class LibraryUtility {
 			        		|| "temp".equalsIgnoreCase(sourcesdir)){
 				        if(deleteTmpDeployment) {
 				        	switch (operatingSystem) {
-							case Linux:
-								if(!tmpDir.getAbsolutePath().startsWith(System.getProperty("user.home"))) {
-									jambiSourcesDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + "_" + System.getProperty("user.name"));
-									break;
-								}
 							default:
+								if(operatingSystem.isUnixLike()) {
+									if(!tmpDir.getAbsolutePath().startsWith(System.getProperty("user.home"))) {
+										jambiSourcesDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch + "_" + System.getProperty("user.name"));
+										break;
+									}
+								}
 								jambiSourcesDir = new File(tmpDir, "QtJambi" + QtJambi_LibraryUtilities.qtMajorVersion + "." + QtJambi_LibraryUtilities.qtMinorVersion + "." + QtJambi_LibraryUtilities.qtJambiPatch);
 								break;
 				        	}
@@ -1317,47 +1380,6 @@ final class LibraryUtility {
         }
         return Collections.unmodifiableList(resolvedList);
     }
-    
-    private static Architecture decideArchitecture() {
-    	String arch = System.getProperty("os.arch").toLowerCase();
-    	switch(arch) {
-    	case "arm":
-    	case "armv":
-    	case "arm32":
-    		return Architecture.arm;
-    	case "arm64":
-    	case "aarch64":
-    		return Architecture.arm64;
-    	case "x86_64":
-    	case "x64":
-    	case "amd64":
-    		return Architecture.x86_64;
-    	case "i386":
-    	case "x86":
-    		return Architecture.x86;
-    	default:
-    		if(arch.startsWith("arm-"))
-    			return Architecture.arm;
-    		else if(arch.startsWith("aarch64-"))
-    			return Architecture.arm64;
-    		else 
-    			return Architecture.x86;
-    	}
-    }
-
-    private static OperatingSystem decideOperatingSystem() {
-        String osName = System.getProperty("os.name").toLowerCase();
-        if (osName.startsWith("windows")) return OperatingSystem.Windows;
-        else if (osName.startsWith("mac")) return OperatingSystem.MacOS;
-        else if (osName.startsWith("ios")) return OperatingSystem.IOS;
-        else if (osName.startsWith("linux")) {
-        	if(System.getProperty("java.runtime.name").toLowerCase().startsWith("android"))
-        		return OperatingSystem.Android;
-        	else 
-        		return OperatingSystem.Linux;
-        }
-        return OperatingSystem.Linux;
-    }
 
 	static LibraryBundle.Configuration configuration() {
 		return configuration;
@@ -1431,10 +1453,11 @@ final class LibraryUtility {
 					break;
 				}
 	        	return; // never extract on android
-	        case Linux:
-	        	libraryPlatformName = "plugins/containeraccess/lib" + library + ".so";
-	        	break;
 			default:
+				if(operatingSystem.isUnixLike()) {
+					libraryPlatformName = "plugins/containeraccess/lib" + library + ".so";
+					break;
+				}
 				return;
 	        }
 	    	LibraryBundle.deploy(libraryPlatformName);
@@ -1550,10 +1573,11 @@ final class LibraryUtility {
 				}
 	//        	libraryPlatformName = "lib" + libraryPlatformName + ".so";
 	        	break;
-	        case Linux:
-	        	libraryPlatformName = "lib" + library + ".so";
-	        	break;
 			default:
+				if(operatingSystem.isUnixLike()) {
+					libraryPlatformName = "lib" + library + ".so";
+		        	break;
+				}
 				return;
 	        }
     	}
@@ -1602,6 +1626,61 @@ final class LibraryUtility {
 				}
 			}
     	}
+    	if(!availability.isAvailable() && operatingSystem.isUnixLike() && !System.getProperties().containsKey("io.qt.library-path-override")) {
+    		String key = QtJambi_LibraryUtilities.qtMajorVersion+"."+QtJambi_LibraryUtilities.qtMinorVersion;
+    		String qtlibpath;
+    		Preferences preferences = Preferences.userNodeForPackage(LibraryUtility.class);
+    		Preferences pathsPref = preferences.node("qt.library.path");
+    		qtlibpath = pathsPref.get(key, "");
+    		boolean setPref = false;
+    		if(!qtlibpath.isEmpty()){
+    			File libDir = new File(qtlibpath);
+				if(!libDir.exists()) {
+					qtlibpath = "";
+					pathsPref.remove(key);
+				}
+    		}
+    		if(qtlibpath.isEmpty()) {
+	    		String exeName = "qmake";
+	    		if(Integer.compare(QtJambi_LibraryUtilities.qtMajorVersion, 5)==0) {
+	    			exeName += "-qt5";
+	    		}else {
+	    			exeName += QtJambi_LibraryUtilities.qtMajorVersion;
+	    		}
+	    		try {
+					Process process = Runtime.getRuntime().exec(new String[]{exeName, "-query", "QT_INSTALL_LIBS"});
+					byte[] data;
+					try(InputStream input = process.getInputStream()){
+						process.waitFor();
+						data = input.readAllBytes();
+					}
+					if(data!=null) {
+						qtlibpath = new String(data);
+						setPref = true;
+					}
+				} catch (Exception e) {
+				}
+    		}
+    		if(!qtlibpath.isEmpty()){
+    			File libDir = new File(qtlibpath);
+				if(libDir.exists()) {
+					String libPaths = System.getProperty("java.library.path");
+					if(libPaths==null)
+						libPaths = libDir.getAbsolutePath();
+					else
+						libPaths += File.pathSeparator + libDir.getAbsolutePath();
+					System.setProperty("java.library.path", libPaths);
+					if(setPref) {
+						pathsPref.put(key, libDir.getAbsolutePath());
+						try {
+							pathsPref.sync();
+							preferences.sync();
+						} catch (Exception e) {
+						}
+					}
+				}
+    		}
+    	}
         if(jambiSourcesDir!=null) {
         	switch (operatingSystem) {
         	case MacOS:
@@ -1632,7 +1711,7 @@ final class LibraryUtility {
 		}
         try{
             java.io.File qtjambiLib = loadQtJambiLibrary(LibraryUtility.class, null, "QtJambi", QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion, QtJambi_LibraryUtilities.qtJambiPatch);
-            if(LibraryUtility.operatingSystem!=LibraryUtility.OperatingSystem.Android) {
+            if(LibraryUtility.operatingSystem!=OperatingSystem.Android) {
                 List<String> paths = new ArrayList<>();
                 String path;
                 switch(LibraryUtility.operatingSystem) {
@@ -1980,8 +2059,18 @@ final class LibraryUtility {
 			availability.extractLibrary();
 			return;
 		case Optional:
-			if(!availability.isAvailable())
+			if(!availability.isAvailable()) {
+				if(library.startsWith("icu")) {
+					if(LIBINFIX==null || LIBINFIX.isEmpty()) {
+						availability = getLibraryAvailability(null, library, null, "", configuration, null);
+					}else {
+						availability = getLibraryAvailability(null, library, null, version, configuration, null);
+						if(!availability.isAvailable())
+							availability = getLibraryAvailability(null, library, null, "", configuration, null);
+					}
+				}
 				return;
+			}
 			break;
 		default:
 			break;
@@ -2170,7 +2259,7 @@ final class LibraryUtility {
     		break;
     	}
         
-        if (System.getProperties().contains("io.qt.library-path-override")) {
+        if (System.getProperties().containsKey("io.qt.library-path-override")) {
 //            reporter.report(" - using 'io.qt.library-path-override'");
         	libraryPaths.addAll(javaLibraryPathOverrides.computeIfAbsent(System.getProperty("io.qt.library-path-override"), LibraryUtility::splitPath));
         } else {
@@ -2287,7 +2376,7 @@ final class LibraryUtility {
     		        if(availability.entry!=null) {
     		        	message = String.format("Library %1$s (%2$s) was not found in %3$s", availability.libraryRawName, String.join(", ", fileNames), availability.entry.source());
     		        }else {
-	    	    		if (System.getProperties().contains("io.qt.library-path-override")) {
+	    	    		if (System.getProperties().containsKey("io.qt.library-path-override")) {
 	    	    			message = String.format("Library %1$s (%2$s) was not found in 'io.qt.library-path-override=%3$s%4$s%5$s'", availability.libraryRawName, String.join(", ", fileNames), System.getProperty("io.qt.library-path-override"), File.pathSeparator, jambiDeploymentDir);
 	    				}else {
 	    	    			message = String.format("Library %1$s (%2$s) was not found in 'java.library.path=%3$s%4$s%5$s'", availability.libraryRawName, String.join(", ", fileNames), System.getProperty("java.library.path"), File.pathSeparator, jambiDeploymentDir);
@@ -2334,7 +2423,7 @@ final class LibraryUtility {
     	    		if(availability.entry!=null) {
     	    			message = String.format("Library %1$s (%2$s) was not found in %3$s", availability.libraryRawName, libFile.getName(), availability.entry.source());
     	    		}else {
-    	    			if (System.getProperties().contains("io.qt.library-path-override")) {
+    	    			if (System.getProperties().containsKey("io.qt.library-path-override")) {
     	        			message = String.format("Library %1$s (%2$s) was not found in 'io.qt.library-path-override=%3$s'", availability.libraryRawName, libFile.getName(), System.getProperty("io.qt.library-path-override"));
     	    			}else {
     	        			message = String.format("Library %1$s (%2$s) was not found in 'java.library.path=%3$s'", availability.libraryRawName, libFile.getName(), System.getProperty("java.library.path"));
@@ -2456,19 +2545,10 @@ final class LibraryUtility {
 					}
 				}
 				break;
-			case Linux:
-				prefix = "libQt"+QtJambi_LibraryUtilities.qtMajorVersion;
-				int dot = qtLibName.indexOf('.');
-				if(dot>0) {
-					qtLibName = qtLibName.substring(0, dot);
-				}else {
-					qtLibName = null;
-				}
-				break;
 			case MacOS:
 				if(!libName.contains(".framework/")) {
 					prefix = "libQt"+QtJambi_LibraryUtilities.qtMajorVersion;
-					dot = qtLibName.indexOf('.');
+					int dot = qtLibName.indexOf('.');
 					if(dot>0) {
 						qtLibName = qtLibName.substring(0, dot);
 					}else {
@@ -2486,6 +2566,15 @@ final class LibraryUtility {
 				}
 				break;
 			default:
+				if(operatingSystem.isUnixLike()) {
+					prefix = "libQt"+QtJambi_LibraryUtilities.qtMajorVersion;
+					int dot = qtLibName.indexOf('.');
+					if(dot>0) {
+						qtLibName = qtLibName.substring(0, dot);
+					}else {
+						qtLibName = null;
+					}
+				}
 				break;
 	        }
     	}
@@ -2682,7 +2771,59 @@ final class LibraryUtility {
             	executor = new ExecutorThread(spec.module());
             	executor.start();
             }
-            
+            if(isQtLib && "qt.lib.core".equals(spec.module()) && !spec.isDebuginfo()) {
+            	switch(operatingSystem) {
+				case Android:
+				case IOS:
+				case MacOS:
+					break;
+				default:
+            			File qtConf = new File(jambiDeploymentDir, "qtconf.jar");
+            			if((jambiDeploymentDir.isDirectory() || jambiDeploymentDir.mkdirs()) && !qtConf.exists()) {
+            				File binFolder = new File(jambiDeploymentDir, "bin");
+            				binFolder.mkdirs();
+            				File confFile = new File(binFolder, "qt.conf");
+            				try {
+	            				try(PrintStream out = new PrintStream(new FileOutputStream(confFile), false, "UTF-8")){
+			            			out.println("[Paths]");
+			            			out.print("Prefix=");
+			            			if(File.separatorChar=='/')
+			            				out.println(jambiDeploymentDir.getAbsolutePath());
+			            			else
+			            				out.println(jambiDeploymentDir.getAbsolutePath().replace(File.separator, "/"));
+			            			out.println("Libraries=lib");
+			            			out.println(operatingSystem==OperatingSystem.Windows ? "LibraryExecutables=bin" : "LibraryExecutables=libexec");
+			            			out.println("Binaries=bin");
+			            			out.println("Plugins=plugins");
+			            			out.println("QmlImports=qml");
+			            			out.println("Translations=translations");
+			            			out.println("ArchData=.");
+			            			out.println("Data=.");
+			            			out.println("Headers=include");
+			            			out.flush();
+	            				}
+        					}catch(Throwable t){
+        						confFile.delete();
+        					}
+            				if(confFile.exists()) {
+	            				if(operatingSystem!=OperatingSystem.Windows) {
+	            					File libFolder = new File(jambiDeploymentDir, "libexec");
+	                				libFolder.mkdirs();
+	                				Files.copy(confFile.toPath(), new File(libFolder, "qt.conf").toPath());
+	            				}
+	            				try(JarOutputStream confJar = new JarOutputStream(new FileOutputStream(qtConf))){
+	            					confJar.putNextEntry(new ZipEntry("qt/etc/qt.conf"));
+	            					Files.copy(confFile.toPath(), confJar);
+	            					confJar.closeEntry();
+	            				}
+            				}
+            			}
+            			if(qtConf.exists()) {
+            				ResourceUtility.addSearchPath(qtConf.toURI().toURL());
+            			}
+					break;
+            	}
+            }
             try {
             	List<Library> libraries = spec.libraries();
             	if(debuginfoSpec!=null) {
@@ -3071,21 +3212,6 @@ final class LibraryUtility {
 	                    lib += "_debug";
 	            	return lib + ".framework/Versions/%1$s/"+lib;
 	        	}
-	        case Linux:
-	        	switch(version.length) {
-	        	default:
-	    			replacements.add("."+version[0]+"."+version[1]+"."+version[2]);
-	        	case 2:
-	        		replacements.add("."+version[0]+"."+version[1]);
-	        	case 1:
-	        		replacements.add("."+version[0]);
-	        	case 0: 
-	        		replacements.add("");
-	        		break;
-	        	}
-	        	if (configuration == LibraryBundle.Configuration.Debug)
-	        		return "lib" + lib + "_debug.so%1$s";
-	        	else return "lib" + lib + ".so%1$s";
 			case Android: 
 				if (configuration == LibraryBundle.Configuration.Debug)
 					switch(architecture) {
@@ -3110,6 +3236,22 @@ final class LibraryUtility {
 		        		return lib + "_x86";
 		        	}
 			default:
+				if(operatingSystem.isUnixLike()) {
+					switch(version.length) {
+		        	default:
+		    			replacements.add("."+version[0]+"."+version[1]+"."+version[2]);
+		        	case 2:
+		        		replacements.add("."+version[0]+"."+version[1]);
+		        	case 1:
+		        		replacements.add("."+version[0]);
+		        	case 0: 
+		        		replacements.add("");
+		        		break;
+		        	}
+		        	if (configuration == LibraryBundle.Configuration.Debug)
+		        		return "lib" + lib + "_debug.so%1$s";
+		        	else return "lib" + lib + ".so%1$s";
+				}
 				break;
 	        }
 	        throw new RuntimeException("Unreachable statement");
@@ -3186,31 +3328,6 @@ final class LibraryUtility {
 			                : prefix + qtXlibName + "%1$s.dylib";  // "libQtFoo.4.dylib"
 		        	}
 	        	}
-	        case Linux:
-	    		if(version!=null) {
-		        	switch(version.length) {
-		        	default:
-	        			replacements.add("."+version[0]+"."+version[1]+"."+version[2]);
-		        	case 2:
-		        		replacements.add("."+version[0]+"."+version[1]);
-		        	case 1:
-		        		replacements.add("."+version[0]);
-		        	case 0: 
-		        		replacements.add("");
-		        		break;
-		        	}
-	    		}else if(versionStrg!=null && !versionStrg.isEmpty()) {
-	    			List<String> parts = new ArrayList<>();
-	    			parts.addAll(Arrays.asList(versionStrg.split("\\.")));
-	    			while(!parts.isEmpty()) {
-	    				replacements.add("."+String.join(".", parts));
-	    				parts.remove(parts.size()-1);
-	    			}
-	    			replacements.add("");
-	    		}else {
-	    			replacements.add("");
-	    		}
-	        	return prefix + qtXlibName + ".so%1$s";
 	        case Android:
 	        	switch (architecture) {
 				case arm:
@@ -3227,6 +3344,32 @@ final class LibraryUtility {
 	            // Linux doesn't have a dedicated "debug" library since 4.2
 	            return prefix + qtXlibName + ".so";  // "libQtFoo.so.4"
 			default:
+				if(operatingSystem.isUnixLike()) {
+					if(version!=null) {
+			        	switch(version.length) {
+			        	default:
+		        			replacements.add("."+version[0]+"."+version[1]+"."+version[2]);
+			        	case 2:
+			        		replacements.add("."+version[0]+"."+version[1]);
+			        	case 1:
+			        		replacements.add("."+version[0]);
+			        	case 0: 
+			        		replacements.add("");
+			        		break;
+			        	}
+		    		}else if(versionStrg!=null && !versionStrg.isEmpty()) {
+		    			List<String> parts = new ArrayList<>();
+		    			parts.addAll(Arrays.asList(versionStrg.split("\\.")));
+		    			while(!parts.isEmpty()) {
+		    				replacements.add("."+String.join(".", parts));
+		    				parts.remove(parts.size()-1);
+		    			}
+		    			replacements.add("");
+		    		}else {
+		    			replacements.add("");
+		    		}
+		        	return prefix + qtXlibName + ".so%1$s";
+				}
 				break;
 	        }
     	}
@@ -3272,24 +3415,6 @@ final class LibraryUtility {
         }
     }
 
-    /** 
-     * Enum for defining the operation system.
-     */
-    enum OperatingSystem {
-        Windows,
-        MacOS,
-        Linux,
-        Android,
-        IOS
-    }
-    
-    enum Architecture{
-    	x86,
-    	x86_64,
-    	arm,
-    	arm64
-    }
-    
     static String qtJambiLibraryPath() {
     	synchronized(loadedNativeDeploymentUrls) {
     		return qtJambiLibraryPath;
@@ -3322,13 +3447,13 @@ final class LibraryUtility {
 
 	private static void analyzeUnsatisfiedLinkError(UnsatisfiedLinkError t, java.io.File coreLib, boolean atCoreLoad) {
 		final String architecture;
-		if(LibraryUtility.architecture==LibraryUtility.Architecture.x86) {
+		if(LibraryUtility.architecture==Architecture.x86) {
 			architecture = "i386-"+ByteOrder.nativeOrder().toString().toLowerCase();
 		}else {
 			architecture = LibraryUtility.architecture.name()+"-"+ByteOrder.nativeOrder().toString().toLowerCase();
 		}
-		final boolean canUniversalBuild = LibraryUtility.operatingSystem==LibraryUtility.OperatingSystem.MacOS
-												|| LibraryUtility.operatingSystem==LibraryUtility.OperatingSystem.IOS;
+		final boolean canUniversalBuild = LibraryUtility.operatingSystem==OperatingSystem.MacOS
+												|| LibraryUtility.operatingSystem==OperatingSystem.IOS;
 		final List<String> qtLibraryBuilds = new ArrayList<>();
 		final List<String> qtjambiLibraryBuilds = new ArrayList<>();
 		try {

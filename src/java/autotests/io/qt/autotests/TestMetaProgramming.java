@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -1952,6 +1952,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
 			Class<?> parameter = QSet.class;
 			invokableMethod = b.metaObject().method("test", parameter);
 	    	Assert.assertTrue(invokableMethod!=null);
+	    	Assert.assertEquals("test(QSet<QAbstractSpinBox*>)", invokableMethod.cppMethodSignature().toString());
 			b.invoked.set(false);
 			b.parameter = null;
 			Object value = QSet.of(new QSpinBox(), new QDoubleSpinBox());

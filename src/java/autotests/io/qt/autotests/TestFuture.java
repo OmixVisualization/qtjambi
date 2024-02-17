@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -50,6 +50,7 @@ import io.qt.core.QFutureWatcherBase;
 import io.qt.core.QLibraryInfo;
 import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
+import io.qt.core.QTimer;
 import io.qt.core.QUnhandledException;
 
 public class TestFuture extends ApplicationInitializer {
@@ -107,6 +108,7 @@ public class TestFuture extends ApplicationInitializer {
     	watcher.resultReadyAt.connect(i-> count[0] = Math.max(count[0], i));
     	watcher.resultsReadyAt.connect((a,b)-> count[0] = Math.max(count[0], b));
     	watcher.finished.connect(loop::quit);
+    	QTimer.singleShot(5000, loop::quit);
     	watcher.setFuture(FutureHandler.returnInTheFuture(Arrays.asList("testNativeQFutureWatcher1",
     																	"testNativeQFutureWatcher2",
     																	"testNativeQFutureWatcher3",
@@ -133,6 +135,7 @@ public class TestFuture extends ApplicationInitializer {
     	watcher.resultReadyAt.connect(i-> count[0] = Math.max(count[0], i));
     	watcher.resultsReadyAt.connect((a,b)-> count[0] = Math.max(count[0], b));
     	watcher.finished.connect(loop::quit);
+    	QTimer.singleShot(5000, loop::quit);
     	watcher.setFuture(FutureHandler.forward(FutureHandler.returnInTheFuture(Arrays.asList("testNativeQFutureWatcher1",
     																	"testNativeQFutureWatcher2",
     																	"testNativeQFutureWatcher3",
@@ -160,6 +163,7 @@ public class TestFuture extends ApplicationInitializer {
 	    	watcher.resultReadyAt.connect(i-> count[0] = Math.max(count[0], i));
 	    	watcher.resultsReadyAt.connect((a,b)-> count[0] = Math.max(count[0], b));
 	    	watcher.finished.connect(loop::quit);
+	    	QTimer.singleShot(5000, loop::quit);
 	    	QFuture<String> future = FutureHandler.returnInTheFuture(Arrays.asList("testNativeQFutureWatcher1",
 					"testNativeQFutureWatcher2",
 					"testNativeQFutureWatcher3",

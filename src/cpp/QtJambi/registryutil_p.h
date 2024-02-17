@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -69,7 +69,11 @@ struct OptionalBool{
 #define OptionalBool std::optional<bool>
 #endif
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 jclass getGlobalClassRef(JNIEnv *env, jclass cls, const char *className = nullptr);
+#else
+jclass getGlobalClassRef(JNIEnv *env, jclass cls, QByteArrayView className = {});
+#endif
 
 hash_type qHash(const std::type_index& idx, hash_type seed = 0) Q_DECL_NOEXCEPT;
 hash_type qHash(const char *p, hash_type seed = 0) Q_DECL_NOEXCEPT;
@@ -133,6 +137,8 @@ OptionalBool isRegisteredAsStaticType(const std::type_info& typeId);
 #else
 void registerJavaClassForCustomMetaType(JNIEnv *env, QMetaType metaType, jclass javaClass, bool isJObjectWrapped = false);
 bool isJObjectWrappedMetaType(QMetaType metaType);
+QMetaType getNativeWrapperType(const QMetaType& metaType);
+bool isNativeWrapperMetaType(QMetaType metaType);
 #endif
 
 int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isReference);
@@ -140,7 +146,7 @@ const QVector<const ConstructorInfo>* registeredConstructorInfos(const std::type
 jclass getArrayClass(JNIEnv *env, jclass cls, int arrayDepth);
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
-void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, const QString& fullJavaName, jclass clazz);
+void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, const QString& fullJavaName, jclass clazz, QMetaType nativeWrapperType = {});
 #endif
 
 void registerLambdaClass(JNIEnv *env, jclass lambdaClass, const char *className);
@@ -186,6 +192,7 @@ bool isQObject(const std::type_info& typeId);
 #endif // JOBJECT_REFCOUNT
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+
 struct JObjectValueWrapperPrivate;
 
 class JObjectValueWrapper : public JObjectWrapper{
@@ -211,6 +218,7 @@ public:
     static bool hasCustomDebugStreamOperator(QMetaType metaType);
     static JObjectValueWrapper create(JNIEnv* env, jobject object, QMetaType metaType);
 private:
+    friend JObjectValueWrapperPrivate;
     JObjectValueWrapper(const JObjectValueWrapperPrivate* methods);
     JObjectValueWrapper(JNIEnv* env, jobject object, const JObjectValueWrapperPrivate* methods);
     JObjectValueWrapper(JObjectWrapper&& object, const JObjectValueWrapperPrivate* methods);
@@ -226,7 +234,6 @@ private:
     static void dataStreamIn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, void *value);
     static void serializableDataStreamOut(const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, const void *value);
     static void serializableDataStreamIn(const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, void *value);
-    friend JObjectValueWrapperPrivate;
     const JObjectValueWrapperPrivate* p;
 };
 
@@ -248,6 +255,27 @@ QMetaType createMetaType(QByteArrayView typeName,
                                         QMetaType::TypeFlags flags,
                                         const QMetaObject *metaObject,
                                         QtPrivate::QMetaTypeInterface::MetaObjectFn metaObjectFn);
+
+struct JQObjectWrapperPrivate;
+
+class JQObjectWrapper{
+private:
+    QObject* m_qobject;
+    friend JQObjectWrapperPrivate;
+    JQObjectWrapperPrivate* p;
+public:
+    JQObjectWrapper();
+    JQObjectWrapper(JNIEnv* env, QSharedPointer<QtJambiLink>&& link);
+    ~JQObjectWrapper();
+    JQObjectWrapper(const JQObjectWrapper& other);
+    JQObjectWrapper(JQObjectWrapper&& other);
+    JQObjectWrapper& operator=(const JQObjectWrapper &wrapper);
+    JQObjectWrapper& operator=(JQObjectWrapper &&wrapper);
+    QSharedPointer<QtJambiLink> link() const;
+    jobject javaObject(JNIEnv* env) const;
+    inline QObject* qobject() const { return m_qobject; }
+};
+
 #endif
 
 #endif // REGISTRYUTIL_P_H

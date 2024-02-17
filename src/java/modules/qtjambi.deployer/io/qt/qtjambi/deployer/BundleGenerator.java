@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -431,7 +432,7 @@ final class BundleGenerator {
 								if(subdir.getName().endsWith("_64"))
 									osArchName = "windows-x64";
 								else if(subdir.getName().endsWith("_arm64"))
-									osArchName = null; // "windows-arm64";
+									osArchName = "windows-arm64";
 								else
 									osArchName = "windows-x86";
 							}else if(subdir.getName().startsWith("gcc")) {
@@ -484,7 +485,7 @@ final class BundleGenerator {
 					if(qtdir.getName().endsWith("_64"))
 						osArchName = "windows-x64";
 					else if(qtdir.getName().endsWith("_arm64"))
-						osArchName = null; // "windows-arm64";
+						osArchName = "windows-arm64";
 					else
 						osArchName = "windows-x86";
 				}else if(qtdir.getName().startsWith("gcc")) {
@@ -855,12 +856,12 @@ final class BundleGenerator {
 							plugins.put(pluginDir.getName(), pluginDir);
 					}
 				}
-			}else if(osArchName.startsWith("linux-")) {
+			}else if(osArchName.startsWith("linux-") || osArchName.startsWith("solaris-") || osArchName.contains("bsd-")) {
 				isDebug = false;
 				String prefix = "libQt" + version.majorVersion();
 				String suffix = ".so."+version;
+				String suffix2 = ".so."+version.majorVersion()+"."+version.minorVersion();
 				String prefix2 = "libicu";
-				String suffix2 = ".so.56.1";
 				for(String lib : libDir.list()) {
 					if(lib.startsWith(prefix) && lib.endsWith(suffix)) {
 						String name = lib.substring(prefix.length(), lib.length() - suffix.length()).toLowerCase();
@@ -877,7 +878,31 @@ final class BundleGenerator {
 							list.add(0, new File(libDir, lib));
 						else
 							list.add(new File(libDir, lib));
-					}else if(lib.startsWith(prefix2) && lib.endsWith(suffix2)) {
+					}else if(lib.startsWith(prefix) && lib.endsWith(suffix2)) {
+						String name = lib.substring(prefix.length(), lib.length() - suffix2.length()).toLowerCase();
+						if(name.startsWith("3d"))
+							name = "qt"+name;
+						boolean prepend = true;
+						String targetModule = findTargetModule(name);
+						if(targetModule!=null) {
+							name = targetModule;
+							prepend = false;
+						}
+						Path link = new File(libDir, lib).toPath();
+						try {
+							if(Files.isSymbolicLink(link)) {
+								File libFile = link.toRealPath().toFile();
+								if(libFile.getName().startsWith(prefix) && !libFile.getName().endsWith(suffix)) {
+									List<File> list = libraries.computeIfAbsent(name, getArrayListFactory());
+									if(prepend)
+										list.add(0, libFile);
+									else
+										list.add(libFile);									
+								}
+							}
+						} catch (IOException e) {
+						}
+					}else if(lib.startsWith(prefix2) && lib.contains(".so.") && !Files.isSymbolicLink(new File(libDir, lib).toPath())) {
 						libraries.computeIfAbsent("core", getArrayListFactory()).add(new File(libDir, lib));
 					}
 				}
@@ -1129,12 +1154,12 @@ final class BundleGenerator {
 									symlinkElement.setAttribute("target", libraryFile.getParentFile().getName()+"/"+libraryFile.getName()+"/Versions/Current/"+libName);
 									libDoc.getDocumentElement().appendChild(symlinkElement);
 								}
-							}else if(osArchName.startsWith("linux-")) {
-								libBundleJarFile.putNextEntry(new ZipEntry(libraryFile.getParentFile().getName()+"/"+libraryFile.getName()));
+							}else if(osArchName.startsWith("linux-") || osArchName.startsWith("solaris-") || osArchName.contains("bsd-")) {
+								libBundleJarFile.putNextEntry(new ZipEntry("lib/"+libraryFile.getName()));
 								Files.copy(libraryFile.toPath(), libBundleJarFile);
 								libBundleJarFile.closeEntry();
 								Element libraryElement = libDoc.createElement("library");
-								libraryElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libraryFile.getName());
+								libraryElement.setAttribute("name", "lib/"+libraryFile.getName());
 								libDoc.getDocumentElement().appendChild(libraryElement);
 								String libName = libraryFile.getName();
 								if(libName.endsWith(".so."+version)) {
@@ -1146,11 +1171,11 @@ final class BundleGenerator {
 											debugSym = new File(libraryFile.getParentFile(), _libName);
 										}
 										if(debugSym.exists()) {
-											debugJarFile.putNextEntry(new ZipEntry(libraryFile.getParentFile().getName()+"/"+debugSym.getName()));
+											debugJarFile.putNextEntry(new ZipEntry("lib/"+debugSym.getName()));
 											Files.copy(debugSym.toPath(), debugJarFile);
 											debugJarFile.closeEntry();
 											libraryElement = debugDoc.createElement("file");
-											libraryElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+debugSym.getName());
+											libraryElement.setAttribute("name", "lib/"+debugSym.getName());
 											debugDoc.getDocumentElement().appendChild(libraryElement);									
 										}
 									}
@@ -1160,8 +1185,8 @@ final class BundleGenerator {
 										int idx = libName.lastIndexOf('.');
 										libName = libName.substring(0, idx);
 										Element symlinkElement = libDoc.createElement("symlink");
-										symlinkElement.setAttribute("name", libraryFile.getParentFile().getName()+"/"+libName);
-										symlinkElement.setAttribute("target", libraryFile.getParentFile().getName()+"/"+libraryFile.getName());
+										symlinkElement.setAttribute("name", "lib/"+libName);
+										symlinkElement.setAttribute("target", "lib/"+libraryFile.getName());
 										libDoc.getDocumentElement().appendChild(symlinkElement);
 									}
 								}
@@ -1314,7 +1339,7 @@ final class BundleGenerator {
 									if(osArchName.startsWith("windows-")) {
 										path = "bin";
 										exe = new File(binDir, isDebug ? "QtWebEngineProcessd.exe" : "QtWebEngineProcess.exe");
-									}else if(osArchName.startsWith("linux-")) {
+									}else if(osArchName.startsWith("linux-") || osArchName.startsWith("solaris-") || osArchName.contains("bsd-")) {
 										path = "libexec";
 										exe = new File(libexecDir, "QtWebEngineProcess");
 									}
@@ -1905,7 +1930,7 @@ final class BundleGenerator {
 					}
 					if(isLibrary && !file.getName().endsWith(suffix))
 						continue;
-				}else if(osArchName.startsWith("linux-")) {
+				}else if(osArchName.startsWith("linux-") || osArchName.startsWith("solaris-") || osArchName.contains("bsd-")) {
 					isLibrary = file.getName().endsWith(".so");
 					if(file.getName().endsWith(".debug")) {
 						if(isForceDebugInfo) {

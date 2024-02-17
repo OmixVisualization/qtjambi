@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 ** (in parts)
 **
 ** This file is part of QtJambi.
@@ -237,7 +237,7 @@ void XmlTypeSystemReaderPrivate::parseTypeSystem(const QDomElement &element, con
                                                                  moduleName);
             entry->setNoExports(noExports);
             entry->setDescription(description);
-            entry->setCodeGeneration(m_generate);
+            entry->setCodeGeneration(m_generate | TypeEntry::InheritedByTypeSystem);
             //qDebug()<<"Adding element->entry (root)"<<element->entry->name();
             ReportHandler::debugTypes("Adding to TypeDatabase(3): " + entry->name());
             TypeDatabase::instance()->addType(entry);
@@ -1090,7 +1090,7 @@ void XmlTypeSystemReaderPrivate::parseLoadTypeSystem(const QDomElement &element)
         if (name.isEmpty()) {
             TypesystemException::raise(QString("No typesystem name specified"));
         }
-        bool generated = convertBoolean(attributeValue(attributes.removeNamedItem("generate"), "yes"), "generate", true) && !skip && m_generate==TypeEntry::GenerateAll;
+        bool generated = convertBoolean(attributeValue(attributes.removeNamedItem("generate"), "yes"), "generate", true) && !skip && (m_generate & ~TypeEntry::InheritedByTypeSystem)==TypeEntry::GenerateAll;
         bool optional = convertBoolean(attributeValue(attributes.removeNamedItem("optional"), "no"), "optional", false);
         if(attributes.count()){
             TypesystemException::raise(QString("Unexpected attribute '%2' of tag <%1> in line %3").arg(element.localName()).arg(attributes.item(0).localName()).arg(element.lineNumber()));
@@ -1144,7 +1144,7 @@ void XmlTypeSystemReaderPrivate::parsePrimitiveType(const QDomElement &element){
                 jni_name = name;
 
             PrimitiveTypeEntry *entry = new PrimitiveTypeEntry(name, m_defaultPackage);
-            entry->setCodeGeneration(m_generate);
+            entry->setCodeGeneration(m_generate | TypeEntry::InheritedByTypeSystem);
             entry->setTargetLangName(java_name);
             entry->setJniName(jni_name);
 
@@ -1209,32 +1209,32 @@ void XmlTypeSystemReaderPrivate::parseAttributesOfComplexType(const QDomElement 
     if(convertBoolean(attributeValue(attributes.removeNamedItem("is-native-interface"), "no"), "is-native-interface", false)){
         ctype->setGenericClass(convertBoolean(genericClass, "generic-class", false));
         ctype->setNativeInterface(true);
-        if(m_generate==TypeEntry::GenerateAll){
+        if((m_generate & ~TypeEntry::InheritedByTypeSystem)==TypeEntry::GenerateAll){
             if(generate=="no-shell" || convertBoolean(generate, "generate", true)){
                 ctype->setCodeGeneration(TypeEntry::GenerateNoShell | TypeEntry::GenerateAll);
             }else{
                 ctype->setCodeGeneration(TypeEntry::GenerateForSubclass);
             }
         }else
-            ctype->setCodeGeneration(m_generate);
+            ctype->setCodeGeneration(m_generate | TypeEntry::InheritedByTypeSystem);
     }else if(convertBoolean(attributeValue(attributes.removeNamedItem("template"), "no"), "template", false)){
         ctype->setTemplate(true);
         ctype->setGenericClass(true);
-        if(m_generate==TypeEntry::GenerateAll)
+        if((m_generate & ~TypeEntry::InheritedByTypeSystem)==TypeEntry::GenerateAll)
             ctype->setCodeGeneration(TypeEntry::GenerateForSubclass);
         else
-            ctype->setCodeGeneration(m_generate);
+            ctype->setCodeGeneration(m_generate | TypeEntry::InheritedByTypeSystem);
     }else{
         ctype->setGenericClass(convertBoolean(genericClass, "generic-class", false));
-        if(m_generate==TypeEntry::GenerateAll){
+        if((m_generate & ~TypeEntry::InheritedByTypeSystem)==TypeEntry::GenerateAll){
             if(generate=="no-shell"){
                 ctype->setCodeGeneration(TypeEntry::GenerateNoShell | TypeEntry::GenerateAll);
             }else if (!convertBoolean(generate, "generate", true))
                 ctype->setCodeGeneration(TypeEntry::GenerateForSubclass);
             else
-                ctype->setCodeGeneration(m_generate);
+                ctype->setCodeGeneration(m_generate | TypeEntry::InheritedByTypeSystem);
         }else
-            ctype->setCodeGeneration(m_generate);
+            ctype->setCodeGeneration(m_generate | TypeEntry::InheritedByTypeSystem);
     }
     if(attributes.count()){
         TypesystemException::raise(QString("Unexpected attribute '%2' of tag <%1> in line %3").arg(element.localName()).arg(attributes.item(0).localName()).arg(element.lineNumber()));
@@ -1673,12 +1673,12 @@ void XmlTypeSystemReaderPrivate::parseModifyArgument(const QDomElement &element,
                         QString lengthParameter = attributeValue(attributes.removeNamedItem("length-parameter"));
                         if (!lengthParameter.isEmpty()) {
                             bool ok = false;
-                            argumentModification.arrayLengthParameter = int(lengthParameter.toUInt(&ok));
+                            argumentModification.utilArgParameter = int(lengthParameter.toUInt(&ok));
                             if (!ok) {
                                 TypesystemException::raise(QString("Cannot convert length-parameter '%3' to unsigned integer in tag <%1> in line %2").arg(childElement.localName()).arg(childElement.lineNumber()).arg(lengthParameter));
                             }
                         }else{
-                            argumentModification.arrayLengthParameter = 0;
+                            argumentModification.utilArgParameter = 0;
                             QString minLength = attributeValue(attributes.removeNamedItem("min-length"));
                             if (!minLength.isEmpty()) {
                                 bool ok = false;
@@ -1703,7 +1703,7 @@ void XmlTypeSystemReaderPrivate::parseModifyArgument(const QDomElement &element,
                         }
 
                         {
-                            if(argumentModification.arrayLengthParameter<1
+                            if(argumentModification.utilArgParameter<1
                                     && argumentModification.minArrayLength<1){
                                 TypesystemException::raise(QString("Both, length-parameter and min-length must not be < 1 in tag <%1> in line %2").arg(childElement.localName()).arg(childElement.lineNumber()));
                             }
@@ -2653,15 +2653,15 @@ void XmlTypeSystemReaderPrivate::parseFunctionalType(const QDomElement &element)
                 fentry.reset(new FunctionalTypeEntry(QStringList(names.mid(0, names.size() - 1)).join("::"), names.last()));
             }
             fentry->setFunctionName(functionName);
-            if(m_generate==TypeEntry::GenerateAll){
+            if((m_generate & ~TypeEntry::InheritedByTypeSystem)==TypeEntry::GenerateAll){
                 if(generate=="no-shell"){
                     fentry->setCodeGeneration(TypeEntry::GenerateNoShell | TypeEntry::GenerateAll);
                 }else if (!convertBoolean(generate, "generate", true))
                     fentry->setCodeGeneration(TypeEntry::GenerateNothing);
                 else
-                    fentry->setCodeGeneration(m_generate);
+                    fentry->setCodeGeneration(m_generate | TypeEntry::InheritedByTypeSystem);
             }else
-                fentry->setCodeGeneration(m_generate);
+                fentry->setCodeGeneration(m_generate | TypeEntry::InheritedByTypeSystem);
 
             if (convertBoolean(disableNativeIdUsage, "disable-native-id-usage", false))
                 fentry->disableNativeIdUsage();
@@ -3025,15 +3025,15 @@ void XmlTypeSystemReaderPrivate::parseEnumType(const QDomElement &element){
             } else {
                 eentry.reset(new EnumTypeEntry(QStringList(names.mid(0, names.size() - 1)).join("::"), names.last()));
             }
-            if(m_generate==TypeEntry::GenerateAll){
+            if((m_generate & ~TypeEntry::InheritedByTypeSystem)==TypeEntry::GenerateAll){
                 if(generate=="no-shell"){
                     eentry->setCodeGeneration(TypeEntry::GenerateNoShell | TypeEntry::GenerateAll);
                 }else if (!convertBoolean(generate, "generate", true))
                     eentry->setCodeGeneration(TypeEntry::GenerateNothing);
                 else
-                    eentry->setCodeGeneration(m_generate);
+                    eentry->setCodeGeneration(m_generate | TypeEntry::InheritedByTypeSystem);
             }else
-                eentry->setCodeGeneration(m_generate);
+                eentry->setCodeGeneration(m_generate | TypeEntry::InheritedByTypeSystem);
             eentry->setTargetLangPackage(package);
             eentry->setTargetTypeSystem(m_defaultPackage);
             eentry->setUpperBound(upperBound);

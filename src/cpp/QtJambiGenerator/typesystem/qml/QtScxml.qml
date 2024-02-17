@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -463,6 +463,16 @@ TypeSystem{
     
     ObjectType{
         name: "QScxmlStateMachine"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/JavaAPI"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/JObjectWrapper"
+                location: Include.Global
+            }
+        }
         Rejection{functionName: "onExit"}
         Rejection{functionName: "onEntry"}
         ModifyFunction{
@@ -517,27 +527,685 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "connectToEvent(QString,const QObject*,const char*,Qt::ConnectionType)"
-            access: Modification.Private
             ModifyArgument{
                 index: 4
-                ReplaceType{
-                    modifiedType: "int"
+                replaceType: "io.qt.core.Qt$@NonNull ConnectionType @NonNull..."
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "Qt::ConnectionType %out = Qt::AutoConnection;\n"+
+                                  "JObjectArrayWrapper %inArray(%env, %in);\n"+
+                                  "if(%inArray.length()>0){\n"+
+                                  "for(jsize i=0, l=%inArray.length(); i<l; ++i){\n"+
+                                  "    %out = Qt::ConnectionType(%out | qtjambi_cast<Qt::ConnectionType>(%inArray.at(%env, i)));\n"+
+                                  "}\n"+
+                                  "}"}
                 }
-                RemoveDefaultExpression{
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{
+                    index: 3
+                    metaName: "slot"
                 }
+                ArgumentMap{
+                    index: 2
+                    metaName: "dest"
+                }
+                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
+                              "    io.qt.core.QMetaMethod _method = dest.metaObject().method(slot);\n"+
+                              "    if(_method!=null && _method.isValid()) {\n"+
+                              "        if(_method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
+                              "            slot = \"2\" + _method.cppMethodSignature();\n"+
+                              "        else\n"+
+                              "            slot = \"1\" + _method.cppMethodSignature();\n"+
+                              "    }\n"+
+                              "}"}
             }
         }
         ModifyFunction{
             signature: "connectToState(QString,const QObject*,const char*,Qt::ConnectionType)"
-            access: Modification.Private
             ModifyArgument{
                 index: 4
-                ReplaceType{
-                    modifiedType: "int"
-                }
-                RemoveDefaultExpression{
+                replaceType: "io.qt.core.Qt$@NonNull ConnectionType @NonNull..."
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "Qt::ConnectionType %out = Qt::AutoConnection;\n"+
+                                  "JObjectArrayWrapper %inArray(%env, %in);\n"+
+                                  "if(%inArray.length()>0){\n"+
+                                  "for(jsize i=0, l=%inArray.length(); i<l; ++i){\n"+
+                                  "    %out = Qt::ConnectionType(%out | qtjambi_cast<Qt::ConnectionType>(%inArray.at(%env, i)));\n"+
+                                  "}\n"+
+                                  "}"}
                 }
             }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{
+                    index: 3
+                    metaName: "slot"
+                }
+                ArgumentMap{
+                    index: 2
+                    metaName: "dest"
+                }
+                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
+                              "    io.qt.core.QMetaMethod _method = dest.metaObject().method(slot);\n"+
+                              "    if(_method!=null && _method.isValid()) {\n"+
+                              "        if(_method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
+                              "            slot = \"2\" + _method.cppMethodSignature();\n"+
+                              "        else\n"+
+                              "            slot = \"1\" + _method.cppMethodSignature();\n"+
+                              "    }\n"+
+                              "}"}
+            }
+        }
+        FunctionalType{
+            name: "Slot1"
+            using: "std::function<void(QScxmlEvent)>"
+            generate: false
+        }
+        FunctionalType{
+            name: "Slot1B"
+            using: "std::function<void(bool)>"
+            generate: false
+        }
+        FunctionalType{
+            name: "Slot0"
+            using: "std::function<void()>"
+            generate: false
+        }
+        ModifyFunction{
+            signature: "connectToEvent<Functor>(const QString&,const QtPrivate::ContextTypeForFunctor::ContextType<Functor>*,Functor&&,Qt::ConnectionType)"
+            ModifyArgument{
+                index: 0
+                replaceType: "io.qt.core.QMetaObject.@NonNull Connection"
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
+                }
+            }
+            ModifyArgument{
+                index: 4
+                replaceType: "io.qt.core.Qt$@NonNull ConnectionType @NonNull..."
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "Qt::ConnectionType %out = Qt::AutoConnection;\n"+
+                                  "JObjectArrayWrapper %inArray(%env, %in);\n"+
+                                  "if(%inArray.length()>0){\n"+
+                                  "    for(jsize i=0, l=%inArray.length(); i<l; ++i){\n"+
+                                  "        %out = Qt::ConnectionType(%out | qtjambi_cast<Qt::ConnectionType>(%inArray.at(%env, i)));\n"+
+                                  "    }\n"+
+                                  "}"}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QScxmlEvent)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.core.QMetaObject$Slot1<@NonNull QScxmlEvent>"
+                        contextParameter: 2
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](const QScxmlEvent& event){\n"+
+                                      "                    if(JniEnvironment env{200}){\n"+
+                                      "                        jobject _event = qtjambi_cast<jobject>(env, event);\n"+
+                                      "                        Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(), _event);\n"+
+                                      "                    }\n"+
+                                      "                };"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "scxmlEventSpec"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    ArgumentMap{
+                        index: 4
+                        metaName: "type"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    if(metaMethod.parameterCount()!=1 && metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QScxmlEvent.class).id()) {\n"+
+                                  "        throw new IllegalArgumentException(\"Method does not take a single QScxmlEvent argument: \"+metaMethod.cppMethodSignature());\n"+
+                                  "    }\n"+
+                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                                  "    if(context!=null && context==object) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            return connectToEvent(scxmlEventSpec, context, \"2\"+metaMethod.cppMethodSignature(), type);\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            return connectToEvent(scxmlEventSpec, context, \"1\"+metaMethod.cppMethodSignature(), type);\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"+
+                                  "if(context==null)\n"+
+                                  "    context = this;\n"}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void()>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.core.QMetaObject$Slot0"
+                        contextParameter: 2
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](const QScxmlEvent&){\n"+
+                                      "                    if(JniEnvironment env{200}){\n"+
+                                      "                        Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object());\n"+
+                                      "                    }\n"+
+                                      "                };"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "scxmlEventSpec"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    ArgumentMap{
+                        index: 4
+                        metaName: "type"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                                  "    if(context!=null && context==object) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            return connectToEvent(scxmlEventSpec, context, \"2\"+metaMethod.cppMethodSignature(), type);\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            return connectToEvent(scxmlEventSpec, context, \"1\"+metaMethod.cppMethodSignature(), type);\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"+
+                                  "if(context==null)\n"+
+                                  "    context = this;\n"}
+                }
+            }
+            since: 6.6
+        }
+        ModifyFunction{
+            signature: "connectToState<Functor>(const QString&,const QtPrivate::ContextTypeForFunctor::ContextType<Functor>*,Functor&&,Qt::ConnectionType)"
+            ModifyArgument{
+                index: 0
+                replaceType: "io.qt.core.QMetaObject.@NonNull Connection"
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
+                }
+            }
+            ModifyArgument{
+                index: 4
+                replaceType: "io.qt.core.Qt$@NonNull ConnectionType @NonNull..."
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "Qt::ConnectionType %out = Qt::AutoConnection;\n"+
+                                  "JObjectArrayWrapper %inArray(%env, %in);\n"+
+                                  "if(%inArray.length()>0){\n"+
+                                  "    for(jsize i=0, l=%inArray.length(); i<l; ++i){\n"+
+                                  "        %out = Qt::ConnectionType(%out | qtjambi_cast<Qt::ConnectionType>(%inArray.at(%env, i)));\n"+
+                                  "    }\n"+
+                                  "}"}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(bool)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.core.QMetaObject$Slot1<@QtPrimitiveType@NonNull Boolean>"
+                        contextParameter: 2
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](bool b){\n"+
+                                      "                    if(JniEnvironment env{200}){\n"+
+                                      "                        Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(), Java::Runtime::Boolean::valueOf(env, b));\n"+
+                                      "                    }\n"+
+                                      "                };"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "scxmlEventSpec"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    ArgumentMap{
+                        index: 4
+                        metaName: "type"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    if(metaMethod.parameterCount()!=1 && metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(boolean.class).id()) {\n"+
+                                  "        throw new IllegalArgumentException(\"Method does not take a single QScxmlEvent argument: \"+metaMethod.cppMethodSignature());\n"+
+                                  "    }\n"+
+                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                                  "    if(context!=null && context==object) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            return connectToState(scxmlEventSpec, context, \"2\"+metaMethod.cppMethodSignature(), type);\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            return connectToState(scxmlEventSpec, context, \"1\"+metaMethod.cppMethodSignature(), type);\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"+
+                                  "if(context==null)\n"+
+                                  "    context = this;\n"}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void()>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.core.QMetaObject$Slot0"
+                        contextParameter: 2
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](bool){\n"+
+                                      "                    if(JniEnvironment env{200}){\n"+
+                                      "                        Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object());\n"+
+                                      "                    }\n"+
+                                      "                };"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "scxmlEventSpec"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    ArgumentMap{
+                        index: 4
+                        metaName: "type"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                                  "    if(context!=null && context==object) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            return connectToState(scxmlEventSpec, context, \"2\"+metaMethod.cppMethodSignature(), type);\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            return connectToState(scxmlEventSpec, context, \"1\"+metaMethod.cppMethodSignature(), type);\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"+
+                                  "if(context==null)\n"+
+                                  "    context = this;\n"}
+                }
+            }
+            since: 6.6
+        }
+
+        ModifyFunction{
+            signature: "connectToEvent<Functor>(const QString&,const QObject*,Functor,Qt::ConnectionType)"
+            ModifyArgument{
+                index: 0
+                replaceType: "io.qt.core.QMetaObject.@NonNull Connection"
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
+                }
+            }
+            ModifyArgument{
+                index: 4
+                replaceType: "io.qt.core.Qt$@NonNull ConnectionType @NonNull..."
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "Qt::ConnectionType %out = Qt::AutoConnection;\n"+
+                                  "JObjectArrayWrapper %inArray(%env, %in);\n"+
+                                  "if(%inArray.length()>0){\n"+
+                                  "    for(jsize i=0, l=%inArray.length(); i<l; ++i){\n"+
+                                  "        %out = Qt::ConnectionType(%out | qtjambi_cast<Qt::ConnectionType>(%inArray.at(%env, i)));\n"+
+                                  "    }\n"+
+                                  "}"}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QScxmlEvent)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.core.QMetaObject$Slot1<@NonNull QScxmlEvent>"
+                        contextParameter: 2
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](const QScxmlEvent& event){\n"+
+                                      "                    if(JniEnvironment env{200}){\n"+
+                                      "                        jobject _event = qtjambi_cast<jobject>(env, event);\n"+
+                                      "                        Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(), _event);\n"+
+                                      "                    }\n"+
+                                      "                };"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "scxmlEventSpec"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    ArgumentMap{
+                        index: 4
+                        metaName: "type"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    if(metaMethod.parameterCount()!=1 && metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QScxmlEvent.class).id()) {\n"+
+                                  "        throw new IllegalArgumentException(\"Method does not take a single QScxmlEvent argument: \"+metaMethod.cppMethodSignature());\n"+
+                                  "    }\n"+
+                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                                  "    if(context!=null && context==object) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            return connectToEvent(scxmlEventSpec, context, \"2\"+metaMethod.cppMethodSignature(), type);\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            return connectToEvent(scxmlEventSpec, context, \"1\"+metaMethod.cppMethodSignature(), type);\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"+
+                                  "if(context==null)\n"+
+                                  "    context = this;\n"}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void()>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.core.QMetaObject$Slot0"
+                        contextParameter: 2
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](const QScxmlEvent&){\n"+
+                                      "                    if(JniEnvironment env{200}){\n"+
+                                      "                        Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object());\n"+
+                                      "                    }\n"+
+                                      "                };"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "scxmlEventSpec"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    ArgumentMap{
+                        index: 4
+                        metaName: "type"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                                  "    if(context!=null && context==object) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            return connectToEvent(scxmlEventSpec, context, \"2\"+metaMethod.cppMethodSignature(), type);\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            return connectToEvent(scxmlEventSpec, context, \"1\"+metaMethod.cppMethodSignature(), type);\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"+
+                                  "if(context==null)\n"+
+                                  "    context = this;\n"}
+                }
+            }
+            until: 6.5
+        }
+        ModifyFunction{
+            signature: "connectToState<Functor>(const QString&,const QObject*,Functor,Qt::ConnectionType)"
+            ModifyArgument{
+                index: 0
+                replaceType: "io.qt.core.QMetaObject.@NonNull Connection"
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "%out = qtjambi_cast<jobject>(%env, %in);"}
+                }
+            }
+            ModifyArgument{
+                index: 4
+                replaceType: "io.qt.core.Qt$@NonNull ConnectionType @NonNull..."
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "Qt::ConnectionType %out = Qt::AutoConnection;\n"+
+                                  "JObjectArrayWrapper %inArray(%env, %in);\n"+
+                                  "if(%inArray.length()>0){\n"+
+                                  "    for(jsize i=0, l=%inArray.length(); i<l; ++i){\n"+
+                                  "        %out = Qt::ConnectionType(%out | qtjambi_cast<Qt::ConnectionType>(%inArray.at(%env, i)));\n"+
+                                  "    }\n"+
+                                  "}"}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(bool)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.core.QMetaObject$Slot1<@QtPrimitiveType@NonNull Boolean>"
+                        contextParameter: 2
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](bool b){\n"+
+                                      "                    if(JniEnvironment env{200}){\n"+
+                                      "                        Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(), Java::Runtime::Boolean::valueOf(env, b));\n"+
+                                      "                    }\n"+
+                                      "                };"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "scxmlEventSpec"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    ArgumentMap{
+                        index: 4
+                        metaName: "type"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    if(metaMethod.parameterCount()!=1 && metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(boolean.class).id()) {\n"+
+                                  "        throw new IllegalArgumentException(\"Method does not take a single QScxmlEvent argument: \"+metaMethod.cppMethodSignature());\n"+
+                                  "    }\n"+
+                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                                  "    if(context!=null && context==object) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            return connectToState(scxmlEventSpec, context, \"2\"+metaMethod.cppMethodSignature(), type);\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            return connectToState(scxmlEventSpec, context, \"1\"+metaMethod.cppMethodSignature(), type);\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"+
+                                  "if(context==null)\n"+
+                                  "    context = this;\n"}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void()>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.core.QMetaObject$Slot0"
+                        contextParameter: 2
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](bool){\n"+
+                                      "                    if(JniEnvironment env{200}){\n"+
+                                      "                        Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object());\n"+
+                                      "                    }\n"+
+                                      "                };"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "scxmlEventSpec"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    ArgumentMap{
+                        index: 4
+                        metaName: "type"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                                  "    if(context!=null && context==object) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            return connectToState(scxmlEventSpec, context, \"2\"+metaMethod.cppMethodSignature(), type);\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            return connectToState(scxmlEventSpec, context, \"1\"+metaMethod.cppMethodSignature(), type);\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"+
+                                  "if(context==null)\n"+
+                                  "    context = this;\n"}
+                }
+            }
+            until: 6.5
         }
         InjectCode{
             target: CodeClass.Java

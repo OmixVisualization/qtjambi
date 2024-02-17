@@ -23,7 +23,7 @@ public class ModifyTestResultsTask extends Task {
     
 	@Override
     public void execute() throws BuildException {
-		String nbsp = Character.toString(160);
+		String nbsp = "_";
 		String suffix = nbsp+"("+version+","+nbsp+mode;
 		if(jdk!=null && !jdk.isEmpty())
 			suffix += ","+nbsp+jdk;
@@ -40,15 +40,17 @@ public class ModifyTestResultsTask extends Task {
 			transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
 			transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
 			loop: for(String file : directory.list()){
-				if(file.endsWith(".xml")) {
+				if(file.startsWith("TEST") && file.endsWith(".xml")) {
 					java.io.File xml = new java.io.File(directory, file);
 					Document doc;
 					try(FileInputStream fis = new FileInputStream(xml)){
 						doc = builder.parse(fis);
 					}catch(org.xml.sax.SAXParseException e) {
-						throw new org.xml.sax.SAXParseException(xml.getName()+" "+e.getMessage(), null, e);
+						System.err.println(xml.getAbsolutePath());
+						e.printStackTrace(System.err);
+						continue;
 					}catch(IOException e) {
-						throw new IOException(xml.getName()+" "+e.getMessage(), e);
+						throw new org.xml.sax.SAXParseException(xml.getName()+"; "+e.getMessage(), null, e);
 					}
 					NodeList childNodes = doc.getChildNodes();
 					for(int i=0, length=childNodes.getLength(); i<length; ++i) {

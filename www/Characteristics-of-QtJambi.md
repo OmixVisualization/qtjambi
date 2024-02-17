@@ -265,8 +265,49 @@ Here, sending a Qt container is much faster than a Java container because the ja
 
 ### QVariant
 
-The generic Qt type `QVariant` is directly mapped to `java.lang.Object` int Java.
-However, the Java class `ioqt.core.QVariant` makes type management functionalities available.
+The generic Qt type `QVariant` is directly mapped to `java.lang.Object` as a method's argument or return type for instance in `QAbstractItemModel.data(QModelIndex,int)`.
+The internal `QVariant` value is converted to the actual carried value type in Java.
+For instance, a variant carrying `QFont` (`QVariant(QFont)`) is converted to `io.qt.gui.QFont`, 
+`QVariant(QString)` is converted to `java.lang.String`, `QVariant(int)` is converted to the boxed primitive type `java.lang.Integer`
+and `QVariant(QObject*)` is converted to `io.qt..core.QObject` (which can also be `null`).
+
+The way Java objects are converted to native `QVariant` values depends on wether the type is a (cloneable) value or object type.
+Value types like `io.qt.gui.QFont` are converted to `QVariant(QFont)`, whereas the variant contains a copy of the value.
+This also applies to boxed primitives and `String`. All native object types like `QObject` (i.e. types not copyable) 
+have a pointer-based `QVariant` representation, e.g. `QVariant(QObject*)`. Here, the conversion of a Java object to native `QVariant`
+depends on wether the object is owned by Java or C++. An object is owned by Java if it has been created in Java and its life cycle
+is managed by Java. A `QObject` instance is owned by C++ if it has a parent because parents destroy all of their child objects when being deleted.
+If a Java object of pointer-based type (e.g. `QObject`) is converted to native `QVariant` it uses the direct pointer representation (e.g. `QVariant(QObject*)`).
+However, if the object is managed by Java, the variant also keeps the reference of the Java object along with the native pointer.
+This is represented by `QVariant(JObjectWrapper)` in C++. The type automatically converts to `QVariant(QObject*)` if necessary.
+
+The Java `null` always converts to invalid `QVariant`. If you need to represent `nullptr` as a result of e.g. `QAbstractItemModel.data(QModelIndex,int)`
+you need to return an instance of `QVariant` carrying a typed `nullptr`:
+
+```java
+
+@Override
+public Object data(QModelIndex index, int role){
+	switch(index.row()){
+	case 1:
+		// return (void*)nullptr
+		return new QVariant(QMetaType.Type.VoidStar, null);
+	case 2:
+		// return (QObject*)nullptr
+		return new QVariant(QMetaType.Type.ObjectStar, null);
+	case 3:
+		// return (QWidget*)nullptr
+		return new QVariant(QMetaType.fromType(QWidget.class), null);
+	default:
+		// return nullptr
+		return QVariant.nullVariant();
+		// similar to new QVariant(QMetaType.Type.Nullptr, null)
+	}
+}
+```
+If you convert cloneable pure-Java objects to native `QVariant` the original Java object is cloned.
+
+In addition to Qt API, the Java class `io.qt.core.QVariant` provides static methods for type check and conversion.
 
 ## Operator Overloads
 
@@ -1099,7 +1140,7 @@ device.close();
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.5.4.jar:qtjambi-uic-6.5.4.jar
+     -p qtjambi-6.5.5.jar:qtjambi-uic-6.5.5.jar
      -m qtjambi.uic --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -1107,7 +1148,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.5.4.jar:qtjambi-uic-6.5.4.jar
+     -cp qtjambi-6.5.5.jar:qtjambi-uic-6.5.5.jar
      io.qt.uic.Main --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -1428,7 +1469,7 @@ and *QtJambi* libraries:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.5.4.jar:qtjambi-deployer-6.5.4.jar
+     -p qtjambi-6.5.5.jar:qtjambi-deployer-6.5.5.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1440,7 +1481,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.5.4.jar:qtjambi-deployer-6.5.4.jar
+     -cp qtjambi-6.5.5.jar:qtjambi-deployer-6.5.5.jar
      io.qt.qtjambi.deployer.Main plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1467,7 +1508,7 @@ This is especially necessary on macOS (arm64).
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.5.4.jar:qtjambi-deployer-6.5.4.jar
+     -p qtjambi-6.5.5.jar:qtjambi-deployer-6.5.5.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar

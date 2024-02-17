@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -45,6 +45,8 @@ public class TestInjectedCodeQt6 extends ApplicationInitializer {
 	@Test
     public void testByteArrayView() {
 		io.qt.core.QByteArrayView bv = new io.qt.core.QByteArrayView("ByteArray\0View".getBytes());
+		for(Byte b : bv) {
+		}
 		assertEquals(new io.qt.core.QByteArray("ByteArray\0View".getBytes()), bv.toByteArray());
 		assertEquals("ByteArray\0View", bv.toString());
 		assertEquals("ByteArray\0View", new String(bv.toArray()));

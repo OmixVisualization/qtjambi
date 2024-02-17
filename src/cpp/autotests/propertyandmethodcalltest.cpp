@@ -115,7 +115,7 @@ bool PropertyAndMethodCallTest::connectSignals(QObject* sender, bool useAnnotate
         connected &= bool(QObject::connect(sender, SIGNAL(customColorPtrChanged(QColor*)), this, SLOT(receiveColorPtr(QColor*))));
     connected &= bool(QtJambiAPI::connect(sender, SIGNAL(customQtValueChanged(io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomQtValue*)), this, SLOT(receiveCustomQtValue(QGraphicsItem*))));
     connected &= bool(QtJambiAPI::connect(sender, SIGNAL(customQtInterfaceValueChanged(io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomQtInterfaceValue*)), this, SLOT(receiveCustomQtInterfaceValue(QGraphicsItem*))));
-    connected &= bool(QtJambiAPI::connect(sender, SIGNAL(customJavaTypeChanged(io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomJavaType*)), this, SLOT(receiveCustomJavaType(JObjectWrapper))));
+    connected &= bool(QtJambiAPI::connect(sender, SIGNAL(customJavaTypeChanged(JObjectWrapper<io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomJavaType>)), this, SLOT(receiveCustomJavaType(JObjectWrapper))));
     connected &= bool(QtJambiAPI::connect(sender, SIGNAL(derivedQObjectChanged(io::qt::autotests::TestPropertyAndMethodCall::TestQObject::DerivedQObject*)), this, SLOT(receiveDerivedQObject(QObject*))));
     connected &= bool(QtJambiAPI::connect(sender, SIGNAL(extendedColorChanged(io::qt::autotests::TestPropertyAndMethodCall::TestQObject::ExtendedColor)), this, SLOT(receiveExtendedColor(JObjectWrapper))));
 #else
@@ -231,7 +231,7 @@ JObjectWrapper PropertyAndMethodCallTest::receivedQtFlags(){
 }
 
 bool PropertyAndMethodCallTest::testMethodCallNumber(QObject* qobj){
-    GETMETHOD_TEST(JObjectWrapper, java::lang::Number*, Number)
+    GETMETHOD_TEST(JObjectWrapper, JObjectWrapper<java::lang::Number>, Number)
 }
 
 bool PropertyAndMethodCallTest::testMethodCallEnum(QObject* qobj){
@@ -280,7 +280,7 @@ bool PropertyAndMethodCallTest::testMethodCallCustomQtInterfaceValue(QObject* qo
 }
 
 bool PropertyAndMethodCallTest::testMethodCallCustomJavaType(QObject* qobj){
-    GETMETHOD_TEST(JObjectWrapper, io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomJavaType*, CustomJavaType)
+    GETMETHOD_TEST(JObjectWrapper, JObjectWrapper<io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomJavaType>, CustomJavaType)
 }
 
 bool PropertyAndMethodCallTest::testMethodCallCustomQtEnum2(QObject* qobj){
@@ -300,7 +300,7 @@ bool PropertyAndMethodCallTest::testMethodCallExtendedColor(QObject* qobj){
 }
 
 bool PropertyAndMethodCallTest::testFetchPropertyNumber(QObject* qobj){
-    PROPERTY_TEST(JObjectWrapper, java::lang::Number*, Number)
+    PROPERTY_TEST(JObjectWrapper, JObjectWrapper<java::lang::Number>, Number)
 }
 
 bool PropertyAndMethodCallTest::testFetchPropertyEnum(QObject* qobj){
@@ -364,7 +364,7 @@ bool PropertyAndMethodCallTest::testFetchPropertyCustomQtInterfaceValue(QObject*
 }
 
 bool PropertyAndMethodCallTest::testFetchPropertyCustomJavaType(QObject* qobj){
-    PROPERTY_TEST(JObjectWrapper, io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomJavaType*, CustomJavaType)
+    PROPERTY_TEST(JObjectWrapper, JObjectWrapper<io::qt::autotests::TestPropertyAndMethodCall::TestQObject::CustomJavaType>, CustomJavaType)
 }
 
 bool PropertyAndMethodCallTest::testFetchPropertyCustomQtEnum2(QObject* qobj){

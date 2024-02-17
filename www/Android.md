@@ -56,10 +56,10 @@ Android projects need Qt to be available as jar bundles.
 Therefore, follow the instructions [here](How-to-bundle-Qt-libraries.md) to create Qt bundles.
 Copy the required bundles to the app folder of your software project, e.g. for ABI arm64-v8a:
 
-- `qt-lib-core-native-android-arm64-6.5.4.jar`
-- `qt-lib-core-native-android-common-6.5.4.jar`
-- `qt-lib-gui-native-android-arm64-6.5.4.jar`
-- `qt-lib-widgets-native-android-arm64-6.5.4.jar`
+- `qt-lib-core-native-android-arm64-6.5.5.jar`
+- `qt-lib-core-native-android-common-6.5.5.jar`
+- `qt-lib-gui-native-android-arm64-6.5.5.jar`
+- `qt-lib-widgets-native-android-arm64-6.5.5.jar`
 
 Several libraries have a `native-android-common` component.
 
@@ -68,8 +68,8 @@ Therefore, open the file `app/build.gradle`.
 Add the following lines to the `dependencies` section (for ABI arm64-v8a):
 
 ```gradle
-    implementation 'io.qtjambi:qtjambi:6.5.4'
-    implementation 'io.qtjambi:qtjambi-native-android-arm64:6.5.4'
+    implementation 'io.qtjambi:qtjambi:6.5.5'
+    implementation 'io.qtjambi:qtjambi-native-android-arm64:6.5.5'
     implementation files('qt-lib-core-native-android-arm64-6.5.3.jar',
                          'qt-lib-core-native-android-common-6.5.3.jar',
                          'qt-lib-gui-native-android-arm64-6.5.3.jar',

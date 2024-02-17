@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -49,7 +49,7 @@
 // signature to that.
 QString CppGenerator::fixNormalizedSignatureForQt(const QString &signature) {
     QString ret = signature;
-    if (signature.contains("<") && signature.endsWith("const&")) {
+    if (signature.contains(QStringLiteral(u"<")) && signature.endsWith(QStringLiteral(u"const&"))) {
         ret = "const "
               + signature.mid(0, signature.size() - 6)
               + "&";
@@ -62,7 +62,7 @@ CppGenerator::CppGenerator(PriGenerator *_priGenerator) : AbstractGenerator(), p
 QString CppGenerator::subDirectoryForPackage(const QString &package) const {
     TypeSystemTypeEntry * typeSystemEntry = static_cast<TypeSystemTypeEntry *>(database()->findType(package));
     if(typeSystemEntry && !typeSystemEntry->qtLibrary().isEmpty()){
-        if(typeSystemEntry->qtLibrary().startsWith("Qt") && !typeSystemEntry->qtLibrary().startsWith("QtJambi")){
+        if(typeSystemEntry->qtLibrary().startsWith(QStringLiteral(u"Qt")) && !typeSystemEntry->qtLibrary().startsWith(QStringLiteral(u"QtJambi"))){
             QString libName = typeSystemEntry->qtLibrary();
             return "QtJambi" + libName.mid(2);
         }else{
@@ -71,16 +71,16 @@ QString CppGenerator::subDirectoryForPackage(const QString &package) const {
     }else if(typeSystemEntry && !typeSystemEntry->targetName().isEmpty()){
         return typeSystemEntry->targetName();
     }else
-        return QString(package).replace(".", "_");
+        return QString(package).replace(u'.', u'_');
 }
 QString CppGenerator::translateType(const MetaType *java_type, Option option) {
     if (!java_type)
-        return "void";
+        return QStringLiteral(u"void");
 
     if (java_type->hasNativeId() && (option & UseNativeIds)){
-        return "QtJambiNativeID";
+        return QStringLiteral(u"QtJambiNativeID");
     }else if (java_type->isCharString()){
-        return "jstring";
+        return QStringLiteral(u"jstring");
     }else if (java_type->isPrimitive()
             || java_type->isQChar()
             || java_type->isQString()
@@ -94,26 +94,26 @@ QString CppGenerator::translateType(const MetaType *java_type, Option option) {
             return java_type->typeEntry()->jniName();
         else{
             QString jniName = java_type->typeEntry()->jniName();
-            if(jniName=="void"
-                    || jniName=="jstring"
-                    || jniName=="jthrowable"
-                    || jniName=="jclass"
-                    || jniName=="jobject"
-                    || jniName.endsWith("Array"))
-                return "jobjectArray";
+            if(jniName==QStringLiteral(u"void")
+                || jniName==QStringLiteral(u"jstring")
+                || jniName==QStringLiteral(u"jthrowable")
+                || jniName==QStringLiteral(u"jclass")
+                || jniName==QStringLiteral(u"jobject")
+                || jniName.endsWith(QStringLiteral(u"Array")))
+                return QStringLiteral(u"jobjectArray");
             return jniName + "Array";
         }
     } else if (java_type->isInitializerList()){
         Q_ASSERT(java_type->instantiations().size()==1);
         if(java_type->instantiations().first()->isPrimitive()){
             QString jniName = java_type->instantiations().first()->typeEntry()->jniName();
-            if(jniName=="void"
-                    || jniName=="jstring"
-                    || jniName=="jthrowable"
-                    || jniName=="jclass"
-                    || jniName=="jobject"
-                    || jniName.endsWith("Array"))
-                return "jobjectArray";
+            if(jniName==QStringLiteral(u"void")
+                || jniName==QStringLiteral(u"jstring")
+                || jniName==QStringLiteral(u"jthrowable")
+                || jniName==QStringLiteral(u"jclass")
+                || jniName==QStringLiteral(u"jobject")
+                || jniName.endsWith(QStringLiteral(u"Array")))
+                return QStringLiteral(u"jobjectArray");
             return jniName + "Array";
         }else{
             return java_type->typeEntry()->jniName();
@@ -131,12 +131,12 @@ QString CppGenerator::translateType(const MetaType *java_type, Option option) {
             }
         }
         switch(size){
-        case 8: return "jbyte";
-        case 16: return "jshort";
-        case 64: return "jlong";
+        case 8: return QStringLiteral(u"jbyte");
+        case 16: return QStringLiteral(u"jshort");
+        case 64: return QStringLiteral(u"jlong");
         default: break;
         }
-        return "jint";
+        return QStringLiteral(u"jint");
     } else if (java_type->isQString()
                || java_type->isCharString()
                || java_type->isQStringRef()
@@ -145,10 +145,10 @@ QString CppGenerator::translateType(const MetaType *java_type, Option option) {
                || java_type->isQUtf8StringView()
                || java_type->isQLatin1String()
                || java_type->isQLatin1StringView()
-               || (java_type->typeEntry()->qualifiedTargetLangName()=="java.lang.String" && java_type->indirections().isEmpty())){
-        return "jstring";
+               || (java_type->typeEntry()->qualifiedTargetLangName()==QStringLiteral(u"java.lang.String") && java_type->indirections().isEmpty())){
+        return QStringLiteral(u"jstring");
     } else {
-        return "jobject";
+        return QStringLiteral(u"jobject");
     }
 }
 
@@ -182,7 +182,7 @@ void CppGenerator::writeTypeInfo(QTextStream &s, const MetaType *type, Option op
             originalTypeDescription = QMetaObject::normalizedSignature(originalTypeDescription.toLatin1().constData());
             originalTypeDescription = fixNormalizedSignatureForQt(originalTypeDescription);
         }
-        if (originalTypeDescription.contains("qreal")){ // map generator type to qreal type
+        if (originalTypeDescription.contains(QStringLiteral(u"qreal"))){ // map generator type to qreal type
             s << originalTypeDescription;
             if (!(options & SkipName))
                 s << ' ';
@@ -321,52 +321,52 @@ void CppGenerator::writeTypeInfo(QTextStream &s, const MetaType *type, Option op
         s << ' ';
 }
 
-QByteArray CppGenerator::jniName(const QString &name) const{
-    if(name=="void")
-        return "void";
-    else if(name=="int")
-        return "jint";
-    else if(name=="long")
-        return "jlong";
-    else if(name=="short")
-        return "jshort";
-    else if(name=="byte")
-        return "jbyte";
-    else if(name=="double")
-        return "jdouble";
-    else if(name=="float")
-        return "jfloat";
-    else if(name=="boolean")
-        return "jboolean";
-    else if(name=="char")
-        return "jchar";
-    else if(name=="int[]" || name=="int...")
-        return "jintArray";
-    else if(name=="long[]" || name=="long...")
-        return "jlongArray";
-    else if(name=="short[]" || name=="short...")
-        return "jshortArray";
-    else if(name=="byte[]" || name=="byte...")
-        return "jbyteArray";
-    else if(name=="double[]" || name=="double...")
-        return "jdoubleArray";
-    else if(name=="float[]" || name=="float...")
-        return "jfloatArray";
-    else if(name=="boolean[]" || name=="boolean...")
-        return "jbooleanArray";
-    else if(name=="char[]" || name=="char...")
-        return "jcharArray";
-    else if(name.endsWith("[]") || name.endsWith("..."))
-        return "jobjectArray";
-    else if(name=="java.lang.String" || name=="String")
-        return "jstring";
-    else if(name.startsWith("java.lang.Class"))
-        return "jclass";
+QString CppGenerator::jniName(const QString &name) const{
+    if(name==QStringLiteral(u"void"))
+        return QStringLiteral(u"void");
+    else if(name==QStringLiteral(u"int"))
+        return QStringLiteral(u"jint");
+    else if(name==QStringLiteral(u"long"))
+        return QStringLiteral(u"jlong");
+    else if(name==QStringLiteral(u"short"))
+        return QStringLiteral(u"jshort");
+    else if(name==QStringLiteral(u"byte"))
+        return QStringLiteral(u"jbyte");
+    else if(name==QStringLiteral(u"double"))
+        return QStringLiteral(u"jdouble");
+    else if(name==QStringLiteral(u"float"))
+        return QStringLiteral(u"jfloat");
+    else if(name==QStringLiteral(u"boolean"))
+        return QStringLiteral(u"jboolean");
+    else if(name==QStringLiteral(u"char"))
+        return QStringLiteral(u"jchar");
+    else if(name==QStringLiteral(u"int[]") || name==QStringLiteral(u"int..."))
+        return QStringLiteral(u"jintArray");
+    else if(name==QStringLiteral(u"long[]") || name==QStringLiteral(u"long..."))
+        return QStringLiteral(u"jlongArray");
+    else if(name==QStringLiteral(u"short[]") || name==QStringLiteral(u"short..."))
+        return QStringLiteral(u"jshortArray");
+    else if(name==QStringLiteral(u"byte[]") || name==QStringLiteral(u"byte..."))
+        return QStringLiteral(u"jbyteArray");
+    else if(name==QStringLiteral(u"double[]") || name==QStringLiteral(u"double..."))
+        return QStringLiteral(u"jdoubleArray");
+    else if(name==QStringLiteral(u"float[]") || name==QStringLiteral(u"float..."))
+        return QStringLiteral(u"jfloatArray");
+    else if(name==QStringLiteral(u"boolean[]") || name==QStringLiteral(u"boolean..."))
+        return QStringLiteral(u"jbooleanArray");
+    else if(name==QStringLiteral(u"char[]") || name==QStringLiteral(u"char..."))
+        return QStringLiteral(u"jcharArray");
+    else if(name.endsWith(QStringLiteral(u"[]")) || name.endsWith(QStringLiteral(u"...")))
+        return QStringLiteral(u"jobjectArray");
+    else if(name==QStringLiteral(u"java.lang.String") || name==QStringLiteral(u"String"))
+        return QStringLiteral(u"jstring");
+    else if(name.startsWith(QStringLiteral(u"java.lang.Class")))
+        return QStringLiteral(u"jclass");
     TypeEntry *entry = database()->findType(name);
     if (entry)
-        return entry->jniName().toLatin1();
+        return entry->jniName();
     else
-        return "jobject";
+        return QStringLiteral(u"jobject");
 }
 
 void CppGenerator::writeFunctionArguments(QTextStream &s,
@@ -393,21 +393,21 @@ void CppGenerator::writeFunctionArguments(QTextStream &s,
                     s << "jobject";
                 }else if(java_function->useArgumentAsArray(arg->argumentIndex() + 1)){
                     if(arg->type()->typeEntry()->isPrimitive()){
-                        if(arg->type()->typeEntry()->targetLangName()=="int"){
+                        if(arg->type()->typeEntry()->targetLangName()==QStringLiteral(u"int")){
                             s << "jintArray";
-                        }else if(arg->type()->typeEntry()->targetLangName()=="long"){
+                        }else if(arg->type()->typeEntry()->targetLangName()==QStringLiteral(u"long")){
                             s << "jlongArray";
-                        }else if(arg->type()->typeEntry()->targetLangName()=="short"){
+                        }else if(arg->type()->typeEntry()->targetLangName()==QStringLiteral(u"short")){
                             s << "jshortArray";
-                        }else if(arg->type()->typeEntry()->targetLangName()=="byte"){
+                        }else if(arg->type()->typeEntry()->targetLangName()==QStringLiteral(u"byte")){
                             s << "jbyteArray";
-                        }else if(arg->type()->typeEntry()->targetLangName()=="boolean"){
+                        }else if(arg->type()->typeEntry()->targetLangName()==QStringLiteral(u"boolean")){
                             s << "jbooleanArray";
-                        }else if(arg->type()->typeEntry()->targetLangName()=="char"){
+                        }else if(arg->type()->typeEntry()->targetLangName()==QStringLiteral(u"char")){
                             s << "jcharArray";
-                        }else if(arg->type()->typeEntry()->targetLangName()=="float"){
+                        }else if(arg->type()->typeEntry()->targetLangName()==QStringLiteral(u"float")){
                             s << "jfloatArray";
-                        }else if(arg->type()->typeEntry()->targetLangName()=="double"){
+                        }else if(arg->type()->typeEntry()->targetLangName()==QStringLiteral(u"double")){
                             s << "jdoubleArray";
                         }
                     }else if(arg->type()->typeEntry()->isQChar()){
@@ -415,7 +415,11 @@ void CppGenerator::writeFunctionArguments(QTextStream &s,
                     }else{
                         s << "jobjectArray";
                     }
-                    addArrayOffset = java_function->insertArrayOffsetArgument(arg->argumentIndex() + 1);
+                    addArrayOffset = java_function->insertUtilArgument(arg->argumentIndex() + 1);
+                }else if(java_function->useArgumentAsSlot(arg->argumentIndex() + 1)){
+                    s << "jobject";
+                }else if(java_function->useArgumentAsSlotContext(arg->argumentIndex() + 1)){
+                    s << "QtJambiNativeID";
                 }else{
                     s << translateType(arg->type(), Option(option & ~JNIProxyFunction));
                 }
@@ -425,7 +429,7 @@ void CppGenerator::writeFunctionArguments(QTextStream &s,
             }
             if(addArrayOffset){
                 s << ", ";
-                int lengthParameter = java_function->arrayOrBufferLengthIndex(arg->argumentIndex() + 1);
+                int lengthParameter = java_function->utilArgumentIndex(arg->argumentIndex() + 1);
                 if(lengthParameter>0 && lengthParameter<=arguments.size()){
                     const MetaArgument *lengthParam = arguments[lengthParameter - 1];
                     if(!lengthParam || lengthParam->argumentIndex()+1!=lengthParameter){
@@ -468,7 +472,7 @@ void CppGenerator::writeFunctionArguments(QTextStream &s,
                 s << " = ";
 
                 QString expr = arg->originalDefaultValueExpression();
-                if(expr!="{}"){
+                if(expr!=QStringLiteral(u"{}")){
                     if (arg->type()->typeEntry()->isEnum() && expr.indexOf("::") < 0)
                         s << static_cast<const EnumTypeEntry *>(arg->type()->typeEntry())->qualifier() << "::";
                     if (arg->type()->typeEntry()->isFlags() && expr.indexOf("::") < 0)
@@ -523,7 +527,7 @@ void CppGenerator::writeFunctionSignature(QTextStream &s,
         if((option & JNIProxyFunction)){
             QString typeReplaced = java_function->typeReplaced(0);
             if(!typeReplaced.isEmpty())
-                s << jniName(typeReplaced.replace("@Nullable ", "").replace("@NonNull ", "")) << " ";
+                s << jniName(annotationFreeTypeName(typeReplaced)) << " ";
             else if (function_type) {
                 s << translateType(function_type, Option(Option(option & ~JNIProxyFunction) & ~UseNativeIds));
                 s << " ";
@@ -641,57 +645,11 @@ void CppGenerator::writeFunctionSignature(QTextStream &s,
 }
 
 QString CppGenerator::marshalledArguments(const MetaFunction *java_function){
-    const MetaArgumentList& arguments = java_function->arguments();
-    QString args;
-    if (!arguments.isEmpty()) {
-        for(const MetaArgument *arg : arguments) {
-            if(arg->type()->getReferenceType()==MetaType::Reference){
-                if(arg->type()->isConstant()){
-                    args += "_cref";
-                }else{
-                    args += "_ref";
-                }
-            }else if(arg->type()->getReferenceType()==MetaType::RReference){
-                if(arg->type()->isConstant()){
-                    args += "_crval";
-                }else{
-                    args += "_rval";
-                }
-            }else{
-                if(arg->type()->isConstant()){
-                    args += "_const";
-                }
-            }
-            QString qualifiedCppName;
-            if(arg->type()->typeEntry()->isFunctional()){
-                qualifiedCppName = arg->type()->typeEntry()->name();
-            }else{
-                qualifiedCppName = arg->type()->typeEntry()->qualifiedCppName();
-            }
-            if(qualifiedCppName=="qtjamireal")
-                qualifiedCppName = "double";
-            args += "_" + qualifiedCppName
-                    .replace("::", "_")
-                    .replace("<", "_")
-                    .replace(">", "_")
-                    .replace(",", "_")
-                    .replace(".", "_")
-                    .replace("*", "_ptr")
-                    .replace("&", "_ref")
-                    .replace(" ", "_");
-            for(bool ind : arg->type()->indirections()){
-                args += ind ? "_cptr" : "_ptr";
-            }
-        }
-        if(java_function->isConstant()){
-            args += "_constfct";
-        }
-    }
-    return args;
+    return MetaFunction::marshalledArguments(java_function->arguments(), java_function->isConstant(), -1);
 }
 
 QString CppGenerator::jni_signature(const MetaFunctional *function, JNISignatureFormat format) {
-    QString returned = "(";
+    QString returned = QStringLiteral(u"(");
     const MetaArgumentList& arguments = function->arguments();
     for(const MetaArgument *argument : arguments) {
         if (function->argumentRemoved(argument->argumentIndex() + 1)==ArgumentRemove_No) {
@@ -706,22 +664,22 @@ QString CppGenerator::jni_signature(const MetaFunctional *function, JNISignature
                 }
                 MetaBuilder::decideUsagePattern(cpy.get());
                 QString singleType = jni_signature(cpy.get(), format);
-                if(singleType=="jint"){
-                    returned += jni_signature("java.nio.IntBuffer", format);
-                }else if(singleType=="jbyte"){
-                    returned += jni_signature("java.nio.ByteBuffer", format);
-                }else if(singleType=="jchar"){
-                    returned += jni_signature("java.nio.CharBuffer", format);
-                }else if(singleType=="jshort"){
-                    returned += jni_signature("java.nio.ShortBuffer", format);
-                }else if(singleType=="jlong"){
-                    returned += jni_signature("java.nio.LongBuffer", format);
-                }else if(singleType=="jfloat"){
-                    returned += jni_signature("java.nio.FloatBuffer", format);
-                }else if(singleType=="jdouble"){
-                    returned += jni_signature("java.nio.DoubleBuffer", format);
+                if(singleType==QStringLiteral(u"jint")){
+                    returned += jni_signature(QStringLiteral(u"java.nio.IntBuffer"), format);
+                }else if(singleType==QStringLiteral(u"jbyte")){
+                    returned += jni_signature(QStringLiteral(u"java.nio.ByteBuffer"), format);
+                }else if(singleType==QStringLiteral(u"jchar")){
+                    returned += jni_signature(QStringLiteral(u"java.nio.CharBuffer"), format);
+                }else if(singleType==QStringLiteral(u"jshort")){
+                    returned += jni_signature(QStringLiteral(u"java.nio.ShortBuffer"), format);
+                }else if(singleType==QStringLiteral(u"jlong")){
+                    returned += jni_signature(QStringLiteral(u"java.nio.LongBuffer"), format);
+                }else if(singleType==QStringLiteral(u"jfloat")){
+                    returned += jni_signature(QStringLiteral(u"java.nio.FloatBuffer"), format);
+                }else if(singleType==QStringLiteral(u"jdouble")){
+                    returned += jni_signature(QStringLiteral(u"java.nio.DoubleBuffer"), format);
                 }else{
-                    returned += jni_signature("java.nio.Buffer", format);
+                    returned += jni_signature(QStringLiteral(u"java.nio.Buffer"), format);
                 }
             }else if(function->useArgumentAsArray(argument->argumentIndex() + 1)){
                 QScopedPointer<MetaType> array(argument->type()->copy());
@@ -739,8 +697,8 @@ QString CppGenerator::jni_signature(const MetaFunctional *function, JNISignature
                 MetaBuilder::decideUsagePattern(cpy.get());
                 array->setArrayElementType(cpy.get());
                 returned += jni_signature(array.get(), format);
-                if(function->insertArrayOffsetArgument(argument->argumentIndex() + 1)){
-                    int lengthParameter = function->arrayOrBufferLengthIndex(argument->argumentIndex() + 1);
+                if(function->insertUtilArgument(argument->argumentIndex() + 1)){
+                    int lengthParameter = function->utilArgumentIndex(argument->argumentIndex() + 1);
                     if(lengthParameter>0 && lengthParameter<=arguments.size()){
                         const MetaArgument *lengthParam = arguments[lengthParameter - 1];
                         if(!lengthParam || lengthParam->argumentIndex()+1!=lengthParameter){
@@ -758,12 +716,16 @@ QString CppGenerator::jni_signature(const MetaFunctional *function, JNISignature
                             if (modified_type.isEmpty())
                                 returned += jni_signature(lengthParam->type(), format);
                             else if(jniType.isEmpty())
-                                returned += jni_signature(modified_type.replace("@Nullable ", "").replace("@NonNull ", ""), format);
+                                returned += jni_signature(annotationFreeTypeName(modified_type), format);
                             else
                                 returned += jni_signature(jniType, format);
                         }
                     }
                 }
+//            }else if(function->useArgumentAsSlot(argument->argumentIndex() + 1)){
+//                returned += jni_signature(QStringLiteral(u"io.qt.core.QMetaObject$Slot"), format);
+            }else if(function->useArgumentAsSlotContext(argument->argumentIndex() + 1)){
+                returned += jni_signature(QStringLiteral(u"io.qt.core.QObject"), format);
             }else{
                 QString jniType;
                 QString modified_type = function->typeReplaced(argument->argumentIndex() + 1, &jniType);
@@ -771,7 +733,7 @@ QString CppGenerator::jni_signature(const MetaFunctional *function, JNISignature
                 if (modified_type.isEmpty())
                     returned += jni_signature(argument->type(), format);
                 else if(jniType.isEmpty())
-                    returned += jni_signature(modified_type.replace("@Nullable ", "").replace("@NonNull ", ""), format);
+                    returned += jni_signature(annotationFreeTypeName(modified_type), format);
                 else
                     returned += jni_signature(jniType, format);
             }
@@ -808,7 +770,7 @@ QString CppGenerator::jni_signature(const MetaFunction *function, JNISignatureFo
         if(parameterTypesByName.contains(mod.modified_type)){
             QString t = parameterTypesByName[mod.modified_type];
             if(t.isEmpty())
-                t = "java.lang.Object";
+                t = QStringLiteral(u"java.lang.Object");
             returned += jni_signature(annotationFreeTypeName(t), format);
         }else if(mod.modified_jni_type.isEmpty())
             returned += jni_signature(annotationFreeTypeName(mod.modified_type), format);
@@ -820,22 +782,22 @@ QString CppGenerator::jni_signature(const MetaFunction *function, JNISignatureFo
         if (function->argumentRemoved(argument->argumentIndex() + 1)==ArgumentRemove_No) {
             if(function->useArgumentAsBuffer(argument->argumentIndex() + 1)){
                 QString singleType = argument->type()->fullName();
-                if(singleType=="int"){
-                    returned += jni_signature("java.nio.IntBuffer", format);
-                }else if(singleType=="byte"){
-                    returned += jni_signature("java.nio.ByteBuffer", format);
-                }else if(singleType=="char"){
-                    returned += jni_signature("java.nio.CharBuffer", format);
-                }else if(singleType=="short"){
-                    returned += jni_signature("java.nio.ShortBuffer", format);
-                }else if(singleType=="long"){
-                    returned += jni_signature("java.nio.LongBuffer", format);
-                }else if(singleType=="float"){
-                    returned += jni_signature("java.nio.FloatBuffer", format);
-                }else if(singleType=="double"){
-                    returned += jni_signature("java.nio.DoubleBuffer", format);
+                if(singleType==QStringLiteral(u"int")){
+                    returned += jni_signature(QStringLiteral(u"java.nio.IntBuffer"), format);
+                }else if(singleType==QStringLiteral(u"byte")){
+                    returned += jni_signature(QStringLiteral(u"java.nio.ByteBuffer"), format);
+                }else if(singleType==QStringLiteral(u"char")){
+                    returned += jni_signature(QStringLiteral(u"java.nio.CharBuffer"), format);
+                }else if(singleType==QStringLiteral(u"short")){
+                    returned += jni_signature(QStringLiteral(u"java.nio.ShortBuffer"), format);
+                }else if(singleType==QStringLiteral(u"long")){
+                    returned += jni_signature(QStringLiteral(u"java.nio.LongBuffer"), format);
+                }else if(singleType==QStringLiteral(u"float")){
+                    returned += jni_signature(QStringLiteral(u"java.nio.FloatBuffer"), format);
+                }else if(singleType==QStringLiteral(u"double")){
+                    returned += jni_signature(QStringLiteral(u"java.nio.DoubleBuffer"), format);
                 }else{
-                    returned += jni_signature("java.nio.Buffer", format);
+                    returned += jni_signature(QStringLiteral(u"java.nio.Buffer"), format);
                 }
             }else if(function->useArgumentAsArray(argument->argumentIndex() + 1)){
                 QScopedPointer<MetaType> array(argument->type()->copy());
@@ -853,8 +815,8 @@ QString CppGenerator::jni_signature(const MetaFunction *function, JNISignatureFo
                 MetaBuilder::decideUsagePattern(cpy.get());
                 array->setArrayElementType(cpy.get());
                 returned += jni_signature(array.get(), format);
-                if(function->insertArrayOffsetArgument(argument->argumentIndex() + 1)){
-                    int lengthParameter = function->arrayOrBufferLengthIndex(argument->argumentIndex() + 1);
+                if(function->insertUtilArgument(argument->argumentIndex() + 1)){
+                    int lengthParameter = function->utilArgumentIndex(argument->argumentIndex() + 1);
                     if(lengthParameter>0 && lengthParameter<=arguments.size()){
                         const MetaArgument *lengthParam = arguments[lengthParameter - 1];
                         if(!lengthParam || lengthParam->argumentIndex()+1!=lengthParameter){
@@ -872,12 +834,16 @@ QString CppGenerator::jni_signature(const MetaFunction *function, JNISignatureFo
                             if (modified_type.isEmpty())
                                 returned += jni_signature(lengthParam->type(), format);
                             else if(jniType.isEmpty())
-                                returned += jni_signature(modified_type.replace("@Nullable ", "").replace("@NonNull ", ""), format);
+                                returned += jni_signature(annotationFreeTypeName(modified_type), format);
                             else
                                 returned += jni_signature(jniType, format);
                         }
                     }
                 }
+//            }else if(function->useArgumentAsSlot(argument->argumentIndex() + 1)){
+//                returned += jni_signature(QStringLiteral(u"io.qt.core.QMetaObject$Slot"), format);
+            }else if(function->useArgumentAsSlotContext(argument->argumentIndex() + 1)){
+                returned += jni_signature(QStringLiteral(u"io.qt.core.QObject"), format);
             }else{
                 QString jniType;
                 QString modified_type = function->typeReplaced(argument->argumentIndex() + 1, &jniType);
@@ -887,7 +853,7 @@ QString CppGenerator::jni_signature(const MetaFunction *function, JNISignatureFo
                     if(parameterTypesByName.contains(modified_type)){
                         QString t = parameterTypesByName[modified_type];
                         if(t.isEmpty())
-                            t = "java.lang.Object";
+                            t = QStringLiteral(u"java.lang.Object");
                         returned += jni_signature(annotationFreeTypeName(t), format);
                     }else if(jniType.isEmpty())
                         returned += jni_signature(annotationFreeTypeName(modified_type), format);
@@ -902,7 +868,7 @@ QString CppGenerator::jni_signature(const MetaFunction *function, JNISignatureFo
             if(parameterTypesByName.contains(mod.modified_type)){
                 QString t = parameterTypesByName[mod.modified_type];
                 if(t.isEmpty())
-                    t = "java.lang.Object";
+                    t = QStringLiteral(u"java.lang.Object");
                 returned += jni_signature(annotationFreeTypeName(t), format);
             }else if(mod.modified_jni_type.isEmpty())
                 returned += jni_signature(annotationFreeTypeName(mod.modified_type), format);
@@ -916,7 +882,7 @@ QString CppGenerator::jni_signature(const MetaFunction *function, JNISignatureFo
         if(parameterTypesByName.contains(mod.modified_type)){
             QString t = parameterTypesByName[mod.modified_type];
             if(t.isEmpty())
-                t = "java.lang.Object";
+                t = QStringLiteral(u"java.lang.Object");
             returned += jni_signature(annotationFreeTypeName(t), format);
         }else if(mod.modified_jni_type.isEmpty())
             returned += jni_signature(annotationFreeTypeName(mod.modified_type), format);
@@ -934,7 +900,7 @@ QString CppGenerator::jni_signature(const MetaFunction *function, JNISignatureFo
         else
             returned += jni_signature(function->type(), JNISignatureFormat(format | ReturnType | NoQContainers));
     }else{
-        modified_type = modified_type.replace("@Nullable ", "").replace("@NonNull ", "");
+        modified_type = annotationFreeTypeName(modified_type);
         if(parameterTypesByName.contains(modified_type)){
             QString t = parameterTypesByName[modified_type];
             if(t.isEmpty())
@@ -952,30 +918,30 @@ QString CppGenerator::jni_signature(const QString &_full_name, JNISignatureForma
     QString signature;
     QString full_name = _full_name;
 
-    if (full_name.endsWith("...")) {
+    if (full_name.endsWith(QStringLiteral(u"..."))) {
         full_name.chop(3);
         full_name = full_name.trimmed();
-        signature = "[";
+        signature = QStringLiteral(u"[");
     }
-    while(full_name.endsWith("[]")) {
+    while(full_name.endsWith(QStringLiteral(u"[]"))) {
         full_name.chop(2);
         full_name = full_name.trimmed();
-        signature = "[";
+        signature = QStringLiteral(u"[");
     }
 
     decltype(QString().length()) start = 0, end = -1;
-    while ((start = full_name.indexOf("<")) >= 0 && (end = full_name.indexOf(">")) >= 0) {
+    while ((start = full_name.indexOf(u'<')) >= 0 && (end = full_name.indexOf(u'>')) >= 0) {
         full_name.remove(start, end - start + 1);
     }
 
-    static QMap<QString, QString> table{        {"boolean", "Z"},
-                                                {"byte", "B"},
-                                                {"char", "C"},
-                                                {"short", "S"},
-                                                {"int", "I"},
-                                                {"long", "J"},
-                                                {"float", "F"},
-                                                {"double", "D"}};
+    static QMap<QString, QString> table{        {QStringLiteral(u"boolean"), QStringLiteral(u"Z")},
+                                                {QStringLiteral(u"byte"), QStringLiteral(u"B")},
+                                                {QStringLiteral(u"char"), QStringLiteral(u"C")},
+                                                {QStringLiteral(u"short"), QStringLiteral(u"S")},
+                                                {QStringLiteral(u"int"), QStringLiteral(u"I")},
+                                                {QStringLiteral(u"long"), QStringLiteral(u"J")},
+                                                {QStringLiteral(u"float"), QStringLiteral(u"F")},
+                                                {QStringLiteral(u"double"), QStringLiteral(u"D")}};
 
     if ((format & Underscores) == Underscores)
         signature.replace("[", "_3");
@@ -983,13 +949,13 @@ QString CppGenerator::jni_signature(const QString &_full_name, JNISignatureForma
     if (table.contains(full_name)) {
         signature += table[full_name];
     } else if ((format & Underscores) == Underscores) {
-        signature.replace("[", "_3");
+        signature.replace(QStringLiteral(u"["), QStringLiteral(u"_3"));
         signature += "L";
-        signature += QString(full_name).replace("_", "_1").replace('.', '_').replace("$", "_00024");
+        signature += QString(full_name).replace(QStringLiteral(u"_"), QStringLiteral(u"_1")).replace(u'.', u'_').replace(QStringLiteral(u"$"), QStringLiteral(u"_00024"));
         signature += "_2";
     } else {
         signature += "L";
-        signature += QString(full_name).replace('.', '/');
+        signature += QString(full_name).replace(u'.', u'/');
         signature += ";";
     }
 
@@ -1218,7 +1184,6 @@ bool CppGenerator::shouldGenerate(const MetaFunctional *functional) const {
              && (functional->enclosingClass()->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp))){
             return false;
         }
-        return functional->typeEntry()->getUsing().isEmpty() && (functional->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp);
     }
     return (functional->typeEntry()->codeGeneration() & TypeEntry::GenerateCpp);
 }
@@ -1237,11 +1202,11 @@ QString CppGenerator::shellClassName(const MetaClass *java_class) {
 QString CppGenerator::shellClassName(const MetaFunctional *java_class) {
     QString _shellClassName;
     if(java_class->enclosingClass() && !java_class->enclosingClass()->isFake()){
-        _shellClassName = shellClassName(java_class->enclosingClass());
-        if(_shellClassName.endsWith("_shell")){
-            _shellClassName = _shellClassName.chopped(6);
+        if(java_class->enclosingClass()->typeEntry()->designatedInterface() && java_class->enclosingClass()->enclosingClass()){
+            _shellClassName = java_class->enclosingClass()->enclosingClass()->name() + "_";
+        }else{
+            _shellClassName = java_class->enclosingClass()->name() + "_";
         }
-        _shellClassName += "$";
     }
     return _shellClassName + java_class->name() + "_shell";
     //return java_class->enclosingClass()

@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -97,7 +97,7 @@ public:
     static QString jni_signature(const MetaType *java_type, JNISignatureFormat format);
     inline TS::TypeDatabase* database() const {return priGenerator->database();}
 protected:
-    QByteArray jniName(const QString &name) const;
+    QString jniName(const QString &name) const;
     PriGenerator *priGenerator;
     QString m_cpp_out_dir;
 };

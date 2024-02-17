@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -40,8 +40,23 @@
 #include "qtjambi_cast.h"
 
 Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gPointerLock, (QReadWriteLock::Recursive))
-typedef QHash<quintptr, QList<JObjectWrapper>> ObjectsByFunctionPointer;
+typedef QHash<quintptr, QList<jobject>> ObjectsByFunctionPointer;
 Q_GLOBAL_STATIC(ObjectsByFunctionPointer, gObjectsByFunctionPointer)
+
+void clearObjectsByFunctionPointerAtShutdown(JNIEnv* env){
+    ObjectsByFunctionPointer objectsByFunctionPointer;
+    if(!gObjectsByFunctionPointer.isDestroyed()){
+        QWriteLocker locker(gPointerLock());
+        gObjectsByFunctionPointer->swap(objectsByFunctionPointer);
+    }
+    if(env){
+        for(QList<jobject>& objects : objectsByFunctionPointer){
+            for(jobject o : objects){
+                env->DeleteGlobalRef(o);
+            }
+        }
+    }
+}
 
 static int MAX_NARGS = 256;
 
@@ -200,7 +215,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                         );
                     {
                         QWriteLocker locker(gPointerLock());
-                        (*gObjectsByFunctionPointer())[quintptr(ptr)] << JObjectWrapper(__jni_env, val);
+                        (*gObjectsByFunctionPointer())[quintptr(ptr)] << __jni_env->NewGlobalRef(val);
                     }
                     Java::QtCore::QFunctionPointerUtil$CppToJavaInvocationHandler::set_peer(__jni_env, ih, peer);
                     Java::QtCore::QFunctionPointerUtil::registerCleanup(__jni_env, val, ih);
@@ -1745,7 +1760,7 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
         __ffi_type.elements = &element;
         void* ptr;
         bool isAllocated = false;
-#ifdef Q_OS_WINDOWS
+#if defined(Q_OS_WINDOWS)// && !defined(Q_PROCESSOR_ARM_64) && !defined(Q_PROCESSOR_ARM_32)
         __ffi_type.size += (__ffi_type.size % 8) + 1;
         ptr = operator new(__ffi_type.size);
         isAllocated = true;
@@ -1826,10 +1841,10 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
                     {
                         QReadLocker locker(gPointerLock());
                         if(gObjectsByFunctionPointer->contains(quintptr(fp))){
-                            QList<JObjectWrapper>& objects = (*gObjectsByFunctionPointer())[quintptr(fp)];
-                            for(JObjectWrapper& wrapper : objects){
-                                if(__jni_env->IsInstanceOf(wrapper.object(), returnClassType)){
-                                    result = __jni_env->NewLocalRef(wrapper.object());
+                            QList<jobject>& objects = (*gObjectsByFunctionPointer())[quintptr(fp)];
+                            for(jobject o : objects){
+                                if(__jni_env->IsInstanceOf(o, returnClassType)){
+                                    result = __jni_env->NewLocalRef(o);
                                     resolved = true;
                                 }
                             }
@@ -1848,7 +1863,7 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
                                 QtJambiLink::Ownership::Java
                             );
                         QWriteLocker locker(gPointerLock());
-                        (*gObjectsByFunctionPointer())[quintptr(fp)] << JObjectWrapper(__jni_env, result);
+                        (*gObjectsByFunctionPointer())[quintptr(fp)] << __jni_env->NewGlobalRef(result);
                     }
                 }else{
                     void* _ptr = ptr;
@@ -2153,7 +2168,7 @@ jobject CoreAPI::convertFunctionPointerReturn(JNIEnv * __jni_env, jobject return
                     );
                 {
                     QWriteLocker locker(gPointerLock());
-                    (*gObjectsByFunctionPointer())[quintptr(fp)] << JObjectWrapper(__jni_env, result);
+                    (*gObjectsByFunctionPointer())[quintptr(fp)] << __jni_env->NewGlobalRef(result);
                 }
                 Java::QtCore::QFunctionPointerUtil$CppToJavaInvocationHandler::set_peer(__jni_env, ih, peer);
                 Java::QtCore::QFunctionPointerUtil::registerCleanup(__jni_env, result, ih);
@@ -2956,10 +2971,10 @@ void CoreAPI::convertFunctionPointerParameters(JNIEnv * __jni_env, jobjectArray 
                         {
                             QReadLocker locker(gPointerLock());
                             if(gObjectsByFunctionPointer->contains(quintptr(fp))){
-                                QList<JObjectWrapper>& objects = (*gObjectsByFunctionPointer())[quintptr(fp)];
-                                for(JObjectWrapper& wrapper : objects){
-                                    if(__jni_env->IsInstanceOf(wrapper.object(), argClassType)){
-                                        convertedValue = __jni_env->NewLocalRef(wrapper.object());
+                                QList<jobject>& objects = (*gObjectsByFunctionPointer())[quintptr(fp)];
+                                for(jobject o : objects){
+                                    if(__jni_env->IsInstanceOf(o, argClassType)){
+                                        convertedValue = __jni_env->NewLocalRef(o);
                                         resolved = true;
                                     }
                                 }
@@ -2978,7 +2993,7 @@ void CoreAPI::convertFunctionPointerParameters(JNIEnv * __jni_env, jobjectArray 
                                     QtJambiLink::Ownership::Java
                                 );
                             QWriteLocker locker(gPointerLock());
-                            (*gObjectsByFunctionPointer())[quintptr(fp)] << JObjectWrapper(__jni_env, convertedValue);
+                            (*gObjectsByFunctionPointer())[quintptr(fp)] << __jni_env->NewGlobalRef(convertedValue);
                         }
                     }else{
                         void* _ptr = ptr;
@@ -3171,16 +3186,16 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
                                             {
                                                 QReadLocker locker(gPointerLock());
                                                 if(gObjectsByFunctionPointer->contains(quintptr(ptr))){
-                                                    QList<JObjectWrapper>& objects = (*gObjectsByFunctionPointer())[quintptr(ptr)];
-                                                    for(JObjectWrapper& wrapper : objects){
-                                                        if(env->IsInstanceOf(wrapper.object(), functionalInterface))
-                                                            return env->NewLocalRef(wrapper.object());
+                                                    QList<jobject>& objects = (*gObjectsByFunctionPointer())[quintptr(ptr)];
+                                                    for(jobject o : objects){
+                                                        if(env->IsInstanceOf(o, functionalInterface))
+                                                            return env->NewLocalRef(o);
                                                     }
                                                 }
                                             }
                                             jobject result = QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &ptr, *targetTypeId);
                                             QWriteLocker locker(gPointerLock());
-                                            (*gObjectsByFunctionPointer())[quintptr(ptr)] << JObjectWrapper(env, result);
+                                            (*gObjectsByFunctionPointer())[quintptr(ptr)] << env->NewGlobalRef(result);
                                             return result;
                                         }else{
                                             Java::Runtime::ClassCastException::throwNew(env, QStringLiteral("Unable to convert object of type %1 to function pointer.").arg(QtJambiAPI::getObjectClassName(env, function)) QTJAMBI_STACKTRACEINFO );
@@ -3214,10 +3229,10 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
                                     {
                                         QReadLocker locker(gPointerLock());
                                         if(gObjectsByFunctionPointer->contains(quintptr(ptr))){
-                                            QList<JObjectWrapper>& objects = (*gObjectsByFunctionPointer())[quintptr(ptr)];
-                                            for(JObjectWrapper& wrapper : objects){
-                                                if(env->IsInstanceOf(wrapper.object(), functionalInterface))
-                                                    return env->NewLocalRef(wrapper.object());
+                                            QList<jobject>& objects = (*gObjectsByFunctionPointer())[quintptr(ptr)];
+                                            for(jobject o : objects){
+                                                if(env->IsInstanceOf(o, functionalInterface))
+                                                    return env->NewLocalRef(o);
                                             }
                                         }
                                     }
@@ -3240,7 +3255,7 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
                                             QtJambiLink::Ownership::Java
                                         );
                                     QWriteLocker locker(gPointerLock());
-                                    (*gObjectsByFunctionPointer())[quintptr(ptr)] << JObjectWrapper(env, result);
+                                    (*gObjectsByFunctionPointer())[quintptr(ptr)] << env->NewGlobalRef(result);
                                     return result;
                                 }
                             }else{
@@ -3268,10 +3283,10 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
                             {
                                 QReadLocker locker(gPointerLock());
                                 if(gObjectsByFunctionPointer->contains(quintptr(*ptr))){
-                                    QList<JObjectWrapper>& objects = (*gObjectsByFunctionPointer())[quintptr(*ptr)];
-                                    for(JObjectWrapper& wrapper : objects){
-                                        if(env->IsInstanceOf(wrapper.object(), functionalInterface))
-                                            return env->NewLocalRef(wrapper.object());
+                                    QList<jobject>& objects = (*gObjectsByFunctionPointer())[quintptr(*ptr)];
+                                    for(jobject o : objects){
+                                        if(env->IsInstanceOf(o, functionalInterface))
+                                            return env->NewLocalRef(o);
                                     }
                                 }
                             }
@@ -3294,7 +3309,7 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
                                     QtJambiLink::Ownership::Java
                                 );
                             QWriteLocker locker(gPointerLock());
-                            (*gObjectsByFunctionPointer())[quintptr(*ptr)] << JObjectWrapper(env, result);
+                            (*gObjectsByFunctionPointer())[quintptr(*ptr)] << env->NewGlobalRef(result);
                             return result;
                         }
                     }

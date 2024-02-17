@@ -2,7 +2,7 @@
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
 ** Copyright 2005 Roberto Raggi <roberto@kdevelop.org>
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -425,6 +425,8 @@ namespace rpp {
                 return first;
             }
 
+            QFileInfo handle_include(bool skip_current_path, QString filename, int quote);
+
             template <typename _InputIterator, typename _OutputIterator>
             _InputIterator handle_include(bool skip_current_path, _InputIterator first, _InputIterator last,
                                           _OutputIterator result) {
@@ -453,14 +455,8 @@ namespace rpp {
                 }
 
                 QString filename = QString::fromStdString(std::string(first, end_name));
-                QFileInfo fileInfo = find_include_file(filename, quote == '>' ?
-                                             INCLUDE_GLOBAL : INCLUDE_LOCAL, skip_current_path);
-
-#if defined (PP_HOOK_ON_FILE_INCLUDED)
-                PP_HOOK_ON_FILE_INCLUDED(env.current_file, fp ? filepath : filename, fp);
-#endif
-
-                if (fileInfo.isFile()) {
+                QFileInfo fileInfo = handle_include(skip_current_path, filename, quote);
+                if(fileInfo.isFile()){
                     QFileInfo old_file = env.current_file;
                     env.current_file = fileInfo;
                     int __saved_lines = env.current_line;
@@ -476,114 +472,7 @@ namespace rpp {
 
                     // sync the buffer
                     _PP_internal::output_line(env.current_file, env.current_line, result);
-                } else {
-#ifdef PP_OS_WIN
-                    std::replace(filename.begin(), filename.end(), '\\', '/');
-#endif
-                    static QStringList ignoredFiles{
-                            "type_traits",
-                            "cstddef",
-                            "utility",
-                            "assert.h",
-                            "stddef.h",
-                            "algorithm",
-                            "initializer_list",
-                            "new",
-                            "string.h",
-                            "stdarg.h",
-                            "string",
-                            "string_view",
-                            "iterator",
-                            "list",
-                            "stdlib.h",
-                            "limits.h",
-                            "vector",
-                            "map",
-                            "stdio.h",
-                            "limits",
-                            "exception",
-                            "cmath",
-                            "random",
-                            "future",
-                            "ctype.h",
-                            "GLES2/gl2.h",
-                            "AppKit/NSOpenGL.h",
-                            "X11/Xlib.h",
-                            "GL/glx.h",
-                            "GL/gl.h",
-                            "wingdi.h",
-                            "float.h",
-                            "set",
-                            "numeric",
-                            "functional",
-                            "windows.h",
-                            "Windows.h",
-                            "xcb/xcb.h",
-                            "qpa/qplatformscreen.h",
-                            "CoreFoundation/CoreFoundation.h",
-                            "qplatformdefs.h",
-                            "QtAxContainer/QtAxContainer",
-                            "QtActiveQt/QtActiveQtDepends",
-                            "QtMacExtras/QtMacExtrasDepends",
-                            "QtX11Extras/QtX11ExtrasDepends",
-                            "QtWinExtras/QtWinExtrasDepends",
-                            "ActiveQt/ActiveQtDepends",
-                            "QtGui/qopengles2ext.h",
-                            "time.h",
-                            "inttypes.h",
-                            "typeinfo",
-                            "memory",
-                            "mutex",
-                            "atomic",
-                            "array",
-                            "filesystem",
-                            "optional",
-                            "variant",
-                            "private/qlibrary_p.h",
-                            "private/qobject_p.h",
-                            "sys/types.h",
-                            "unistd.h",
-                            "GLES3/gl32.h",
-                            "qopengl.h",
-                            "cstring",
-                            "tuple",
-                            "vulkan/vulkan.h",
-                            "QObject",
-                            "qpromise.h",
-                            "QScopedPointer",
-                            "QtGlobal",
-                            "QPointer",
-                            "QAbstractListModel",
-                            "QRectF",
-                            "QLocale",
-                            "QInputMethodEvent",
-                            "QInputMethod",
-                            "QVariant",
-                            "QPointF",
-                            "qanimationclipdata.h",
-                            "qchannel.h",
-                            "QStringList",
-                            "cstdint",
-                            "cstdlib",
-                            "chrono",
-                            "stdbool.h",
-                            "climits",
-                            "QtCore/qjnitypes.h"
-                        };
-                    if((verbose & DEBUGLOG_INCLUDE_ERRORS) != 0) {
-                        QString current_file(env.current_file.absoluteFilePath());
-                        if(!current_file.contains("private/")
-                                && !current_file.endsWith("_p.h")
-                                && !ignoredFiles.contains(filename)){
-                            QString message = QString("No such file or directory: %1%2%3")
-                                    .arg(quote != '>' ? '"' : '<')
-                                    .arg(filename)
-                                    .arg(quote != '>' ? '"' : '>');
-                            env.log(message.toStdString());
-                        }
-                    }
                 }
-
                 return first;
             }
 
@@ -683,7 +572,11 @@ namespace rpp {
                     definition = "1";
                 }else if(macroName.startsWith("QTJAMBI_FEATURE_")){
                     QByteArray feature("QT");
+#if QT_VERSION >= QT_VERSION_CHECK(6,0,0) || QT_VERSION < QT_VERSION_CHECK(6,5,0)
+                    feature.append(macro_name->begin()+7, macro_name->size()-7);
+#else
                     feature.append(macroName.mid(7));
+#endif
                     pp_fast_string _macro_name(feature.constBegin(), feature.size());
                     if(rpp::pp_macro * macro = env.resolve(&_macro_name)){
                         env.unbind(macro->name);
@@ -768,6 +661,9 @@ namespace rpp {
                 return first;
             }
 
+            long eval_has_include(const QString& incl, bool next);
+
+            long eval_has_x(const QString& attr, bool isHasAttribute, bool isHasCppAttribute, bool isHasBuiltin, bool isHasFeature);
 
             template <typename _InputIterator>
             _InputIterator eval_primary(_InputIterator __first, _InputIterator __last, Value *result) {
@@ -776,6 +672,10 @@ namespace rpp {
                 __first = next_token(__first, __last, &token);
                 bool isHasInclude = false;
                 bool isHasCppAttribute = false;
+                bool isHasBuiltin = false;
+                bool isHasFeature = false;
+                bool isHasAttribute = false;
+                bool isHasIncludeNext = false;
 
                 switch (token) {
                     case TOKEN_NUMBER:
@@ -830,6 +730,10 @@ namespace rpp {
                     case TOKEN_IDENTIFIER: {
                         isHasInclude = _M_current_text==std::string("__has_include");
                         isHasCppAttribute = _M_current_text==std::string("__has_cpp_attribute");
+                        isHasBuiltin = _M_current_text==std::string("__has_builtin");
+                        isHasFeature = _M_current_text==std::string("__has_feature");
+                        isHasAttribute = _M_current_text==std::string("__has_attribute");
+                        isHasIncludeNext = _M_current_text==std::string("__has_include_next");
                         result->set_long(0);
                         int _token;
                         _InputIterator ___first = next_token(__first, __last, &_token);
@@ -847,7 +751,7 @@ namespace rpp {
                                 }
                             }
                         }else{
-							if(rpp::pp_macro * macro = env.resolve(_M_current_text.c_str(), _M_current_text.size())){
+                            if(rpp::pp_macro * macro = env.resolve(_M_current_text.c_str(), _M_current_text.size())){
                                 if(macro->definition && !QLatin1String(macro->definition->begin(), macro->definition->size()).contains(QLatin1String(_M_current_text.c_str(), _M_current_text.size()))){
                                     std::string previous_text(_M_current_text);
                                     _M_current_text = std::string(macro->definition->begin(), macro->definition->end());
@@ -860,7 +764,7 @@ namespace rpp {
                     }
                     Q_FALLTHROUGH();
                     case '(':{
-                        if(isHasInclude){
+                        if(isHasInclude || isHasIncludeNext){
                             int _token;
                             _InputIterator ___first = next_token(__first, __last, &_token);
                             if(_token=='<'){
@@ -869,6 +773,7 @@ namespace rpp {
                                     ___first = next_token(___first, __last, &_token);
                                     if(_token=='>'){
                                         token = _token;
+                                        _M_current_text = std::string(__first, ___first);
                                         __first = ___first;
                                         isHasInclude = true;
                                         break;
@@ -876,22 +781,24 @@ namespace rpp {
                                 }while(true);
                             }
                         }
-                        if(isHasCppAttribute){
+                        if(isHasCppAttribute || isHasBuiltin || isHasFeature || isHasAttribute){
                             __first = eval_constant_expression(__first, __last, result);
                             next_token(__first, __last, &token);
-                            result->set_long(1);
+                            result->set_long(eval_has_x(QString::fromStdString(_M_current_text), isHasAttribute, isHasCppAttribute, isHasBuiltin, isHasFeature));
                         }else{
-                            if(!isHasInclude)
+                            if(!isHasInclude && !isHasIncludeNext)
                                 __first = eval_constant_expression(__first, __last, result);
                             next_token(__first, __last, &token);
 
-                            if(!isHasInclude){
+                            if(!isHasInclude && !isHasIncludeNext){
                                 while(token == ','){
                                     __first = next_token(__first, __last, &token);
                                     __first = eval_constant_expression(__first, __last, result);
                                     next_token(__first, __last, &token);
                                 }
                             }
+                            if(isHasInclude || isHasIncludeNext)
+                                result->set_long(eval_has_include(QString::fromStdString(_M_current_text), isHasIncludeNext));
                         }
 
                         if (token != ')') {

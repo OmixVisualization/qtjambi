@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -285,7 +285,7 @@ TypeSystem{
     }
 
     ObjectType{
-        name: "QWebEngineWebAuthUXRequest"
+        name: "QWebEngineWebAuthUxRequest"
         EnumType{
             name: "WebAuthUXState"
         }
@@ -647,30 +647,13 @@ TypeSystem{
             name: "PersistentCookiesPolicy"
         }
 
-        FunctionalType{
-            name: "IconAvailableCallback3"
-            using: "std::function<void(const QIcon&,const QUrl&,const QUrl&)>"
-            ExtraIncludes{
-                Include{
-                    fileName: "QtWebEngineCore/QWebEngineNotification"
-                    location: Include.Global
-                }
-            }
-        }
-
-        FunctionalType{
-            name: "IconAvailableCallback2"
-            using: "std::function<void(const QIcon&,const QUrl&)>"
-            ExtraIncludes{
-                Include{
-                    fileName: "QtWebEngineCore/QWebEngineNotification"
-                    location: Include.Global
-                }
-            }
-        }
         ExtraIncludes{
             Include{
                 fileName: "QtWebEngineCore/QWebEngineNotification"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtGui/QIcon"
                 location: Include.Global
             }
             Include{
@@ -734,6 +717,89 @@ TypeSystem{
                                   "}"}
                 }
             }
+        }
+
+        FunctionalType{
+            name: "IconAvailableCallback2"
+            generate: false
+            using: "std::function<void(const QIcon&,const QUrl&)>"
+        }
+        ModifyFunction{
+            signature: "requestIconForIconURL(const QUrl &, int, std::function<void(const QIcon &, const QUrl &)>) const"
+            ModifyArgument{
+                index: 3
+                ReplaceType{
+                    modifiedType: "java.util.function.@Nullable BiConsumer<io.qt.gui.@NonNull QIcon, io.qt.core.@NonNull QUrl>"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "std::function<void(const QIcon &, const QUrl &)> %out;\n"+
+                                  "if(%in){\n"+
+                                  "    JObjectWrapper wrapper(%env, %in);\n"+
+                                  "    %out = [wrapper](const QIcon & icon, const QUrl & url){\n"+
+                                  "                        if(JniEnvironment env{200}){\n"+
+                                  "                            jobject _icon = qtjambi_cast<jobject>(env, icon);\n"+
+                                  "                            jobject _url = qtjambi_cast<jobject>(env, url);\n"+
+                                  "                            Java::Runtime::BiConsumer::accept(env, wrapper.object(), _icon, _url);\n"+
+                                  "                        }\n"+
+                                  "                    };\n"+
+                                  "}"}
+                }
+            }
+        }
+
+        FunctionalType{
+            name: "IconAvailableCallback"
+            generate: false
+            using: "std::function<void(const QIcon&,const QUrl&,const QUrl&)>"
+        }
+        ModifyFunction{
+            signature: "requestIconForPageURL(const QUrl &, int, std::function<void(const QIcon &, const QUrl &, const QUrl &)>) const"
+            ModifyArgument{
+                index: 3
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "std::function<void(const QIcon &, const QUrl &, const QUrl &)> %out;\n"+
+                                  "if(%in){\n"+
+                                  "    JObjectWrapper wrapper(%env, %in);\n"+
+                                  "    %out = [wrapper](const QIcon & icon, const QUrl & url, const QUrl & url2){\n"+
+                                  "                        if(JniEnvironment env{200}){\n"+
+                                  "                            jobject _icon = qtjambi_cast<jobject>(env, icon);\n"+
+                                  "                            jobject _url = qtjambi_cast<jobject>(env, url);\n"+
+                                  "                            jobject _url2 = qtjambi_cast<jobject>(env, url2);\n"+
+                                  "                            Java::QtWebEngineCore::QWebEngineProfile$IconAvailableCallback::accept(env, wrapper.object(), _icon, _url, _url2);\n"+
+                                  "                        }\n"+
+                                  "                    };\n"+
+                                  "}"}
+                }
+            }
+        }
+        InjectCode{
+            target: CodeClass.Java
+            Text{content: String.raw`
+/**
+ * <p>Java wrapper for Qt callable <code>std::function&lt;void(const QIcon&amp;,const QUrl&amp;,const QUrl&amp;)&gt;</code></p>
+ */
+@FunctionalInterface
+public interface IconAvailableCallback {
+    public void accept(io.qt.gui.@NonNull QIcon icon, io.qt.core.@NonNull QUrl url1, io.qt.core.@NonNull QUrl url2);
+}
+                `}
+        }
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: String.raw`
+namespace Java{
+namespace QtWebEngineCore{
+QTJAMBI_REPOSITORY_DECLARE_CLASS(QWebEngineProfile$IconAvailableCallback,
+                                 QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(accept))
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/webengine/core,QWebEngineProfile$IconAvailableCallback,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(accept,(Lio/qt/gui/QIcon;Lio/qt/core/QUrl;Lio/qt/core/QUrl;)V)
+                                )
+}
+}
+                `}
         }
         since: [6, 2]
     }
@@ -930,6 +996,35 @@ TypeSystem{
             }
         }
         since: [6, 2]
+    }
+
+    ObjectType{
+        name: "QWebEngineDesktopMediaRequest"
+        since: 6.7
+    }
+    ObjectType{
+        name: "QWebEngineMediaSourceModel"
+        since: 6.7
+    }
+    ObjectType{
+        name: "QWebEngineWebAuthPinRequest"
+        since: 6.7
+    }
+    ObjectType{
+        name: "QWebEngineWebAuthUxRequest"
+        EnumType{
+            name: "WebAuthUxState"
+        }
+        EnumType{
+            name: "PinEntryReason"
+        }
+        EnumType{
+            name: "PinEntryError"
+        }
+        EnumType{
+            name: "RequestFailureReason"
+        }
+        since: 6.7
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QWebEngineClientCertificateStore::QWebEngineClientCertificateStore', unmatched parameter type 'QtWebEngineCore::ClientCertificateStoreData*'"}

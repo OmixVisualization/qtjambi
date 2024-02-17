@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -59,6 +59,14 @@ TypeSystem{
     
     Rejection{
         className: "QQmlTriviallyDestructibleDebuggingEnabler"
+    }
+
+    Rejection{
+        className: "QJSListForInIterator"
+    }
+
+    Rejection{
+        className: "QJSListForOfIterator"
     }
     
     Rejection{
@@ -407,6 +415,11 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "constData()const"
+            remove: RemoveFlag.All
+            since: [6, 6]
+        }
+        ModifyFunction{
+            signature: "to<type>()const"
             remove: RemoveFlag.All
             since: [6, 6]
         }

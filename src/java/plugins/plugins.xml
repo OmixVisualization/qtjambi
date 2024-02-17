@@ -1,3 +1,33 @@
+<!--===============================================================================================
+==
+== Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+==
+== This file is part of Qt Jambi.
+==
+== $BEGIN_LICENSE$
+==
+== GNU Lesser General Public License Usage
+== This file may be used under the terms of the GNU Lesser
+== General Public License version 2.1 as published by the Free Software
+== Foundation and appearing in the file LICENSE.LGPL included in the
+== packaging of this file.  Please review the following information to
+== ensure the GNU Lesser General Public License version 2.1 requirements
+== will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+==
+== GNU General Public License Usage
+== Alternatively, this file may be used under the terms of the GNU
+== General Public License version 3.0 as published by the Free Software
+== Foundation and appearing in the file LICENSE.GPL included in the
+== packaging of this file.  Please review the following information to
+== ensure the GNU General Public License version 3.0 requirements will be
+== met: http://www.gnu.org/copyleft/gpl.html.
+==
+== $END_LICENSE$
+==
+== This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+== WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+==
+================================================================================================-->
 <project default="build">
     <target name="build">
         <if>
@@ -126,9 +156,10 @@
 			<then>
 				<trycatch>
 					<try>
+						<delete dir="${outputDir}/${qtjambi.osname}/tmp" failonerror="false"/>
 						<java fork="true" jvm="${tools.jvm}" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
 							<jvmarg value="-Djava.library.path=${librarypath}"/>
-							<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/tmp"/>
+							<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/${qtjambi.osname}/tmp"/>
 							<jvmarg value="${XstartOnFirstThread}"/>
 							<!--jvmarg value="-Xint"/>
 							<jvmarg value="-Xrs"/>
@@ -150,7 +181,7 @@
 						</java>
 					</try>
 					<finally>
-						<delete dir="${outputDir}/tmp"/>
+						<delete dir="${outputDir}/${qtjambi.osname}/tmp" failonerror="false"/>
 					</finally>
 				</trycatch>
 				<qmake recursive="true"
@@ -160,12 +191,7 @@
 					  qmakebinary="${qtjambi.qt.qmake.abspath}"/>
 				<make dir="${plugins.builddir}/${module}" target="${qtjambi.qmake.target.default}"/>
 				<if>
-					<or>
-						<equals arg1="${qtjambi.osname}" arg2="windows-x64"/>
-						<equals arg1="${qtjambi.osname}" arg2="windows-x86"/>
-						<equals arg1="${qtjambi.osname}" arg2="windows-arm"/>
-						<equals arg1="${qtjambi.osname}" arg2="windows-arm64"/>
-					</or>
+					<equals arg1="${qtjambi.osplatform}" arg2="windows"/>
 					<then>
 						<if>
 							<istrue value="${isdebug}"/>
@@ -179,21 +205,13 @@
 					</then>
 				</if>
 				<if>
-					<or>
-						<equals arg1="${qtjambi.osname}" arg2="mac"/>
-						<equals arg1="${qtjambi.osname}" arg2="macos"/>
-					</or>
+					<equals arg1="${qtjambi.osplatform}" arg2="macos"/>
 					<then>
 						<move file="${plugins.builddir}/${module}/lib/lib${module}.dylib" todir="${plugindestdir}/plugins/${plugin-subdir}"/>
 					</then>
 				</if>
 				<if>
-					<or>
-						<equals arg1="${qtjambi.osname}" arg2="linux-x86"/>
-						<equals arg1="${qtjambi.osname}" arg2="linux-x64"/>
-						<equals arg1="${qtjambi.osname}" arg2="linux-arm"/>
-						<equals arg1="${qtjambi.osname}" arg2="linux-arm64"/>
-					</or>
+					<istrue value="${qtjambi.osplatform.islinuxorunix}"/>
 					<then>
 						<if>
 							<istrue value="${isdebug}"/>
@@ -212,9 +230,10 @@
 			<else>
 				<trycatch>
 					<try>
+						<delete dir="${outputDir}/${qtjambi.osname}/tmp" failonerror="false"/>
 						<java fork="true" jvm="${tools.jvm}" classname="io.qt.qtjambi.deployer.Main" failonerror="true">
 							<jvmarg value="-Djava.library.path=${librarypath}"/>
-							<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/tmp"/>
+							<jvmarg value="-Dio.qt.deploymentdir=${outputDir}/${qtjambi.osname}/tmp"/>
 							<jvmarg value="${XstartOnFirstThread}"/>
 							<jvmarg value="-Dqtjambi.verbose-loading=true"/>
 							<!--jvmarg value="-Xint"/>
@@ -234,18 +253,13 @@
 						</java>
 					</try>
 					<finally>
-						<delete dir="${outputDir}/tmp"/>
+						<delete dir="${outputDir}/${qtjambi.osname}/tmp" failonerror="false"/>
 					</finally>
 				</trycatch>
 			</else>
 		</if>
 		<if>
-			<or>
-				<equals arg1="${qtjambi.osname}" arg2="android-arm"/>
-				<equals arg1="${qtjambi.osname}" arg2="android-arm64"/>
-				<equals arg1="${qtjambi.osname}" arg2="android-x64"/>
-				<equals arg1="${qtjambi.osname}" arg2="android-x86"/>
-			</or>
+			<equals arg1="${qtjambi.osplatform}" arg2="android"/>
 			<then>
 				<if>
 					<istrue value="${qtjambi.testbuild}"/>
@@ -280,10 +294,7 @@
 				<not>
 					<istrue value="${qtjambi.testbuild}"/>
 				</not>
-				<equals arg1="${qtjambi.osname}" arg2="android-arm"/>
-				<equals arg1="${qtjambi.osname}" arg2="android-arm64"/>
-				<equals arg1="${qtjambi.osname}" arg2="android-x64"/>
-				<equals arg1="${qtjambi.osname}" arg2="android-x86"/>
+				<equals arg1="${qtjambi.osplatform}" arg2="android"/>
 			</or>
 			<then>
 				<if>
@@ -462,12 +473,8 @@
 		<jar destfile="${plugindeploymentdir}/${module}.jar" excludes="${jar.excludes}">
 			<manifest>
 				<attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
-<!--                <attribute name="Bundle-Activator"       value="io.qt.qtjambi.${qtjambi.osplatform}.${qtjambi.configuration}.osgi.Activator"/> -->
 				<attribute name="Bundle-Description"      value="QtJambi Plugin ${module}"/>
-				<!-- TODO: qtjambi.png -->
-				<!-- <attribute name="Bundle-Icon"             value="qtjambi.png"/> -->
 				<attribute name="Bundle-License"          value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999 with Nokia Qt LGPL Exception version 1.0"/>
-<!--                <attribute name="Bundle-Localization"    value="plugin"/> -->
 				<attribute name="Bundle-ManifestVersion"  value="2"/>
 				<attribute name="Bundle-Name"             value="QtJambi Plugin ${module}"/>
 				<attribute name="Bundle-RequiredExecutionEnvironment" value="${minimum.java.version}"/>

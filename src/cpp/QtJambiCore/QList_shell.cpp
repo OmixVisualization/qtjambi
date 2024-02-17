@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -955,7 +955,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QL
 
 // new QItemSelection(QItemSelection)
 #if QT_CONFIG(itemmodel)
-void __qt_construct_QItemSelection_3(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments)
+void __qt_construct_QItemSelection_QItemSelection(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QItemSelection(const QModelIndex & topLeft, const QModelIndex & bottomRight)")
     Q_ASSERT(__java_arguments);
@@ -982,7 +982,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QI
 #if QT_CONFIG(itemmodel)
         jvalue arguments;
         arguments.l = other;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QItemSelection_3, sizeof(QItemSelection), typeid(QItemSelection), false, QtJambiPrivate::QListAccess<QItemSelectionRange>::newInstance(), &arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QItemSelection_QItemSelection, sizeof(QItemSelection), typeid(QItemSelection), false, QtJambiPrivate::QListAccess<QItemSelectionRange>::newInstance(), &arguments);
 #else
         Q_UNUSED(__jni_object)
         Q_UNUSED(__jni_class)

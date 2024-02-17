@@ -316,7 +316,8 @@ void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_
         updateItemPosition(fun->toItem(), node);
         fun->setAccessPolicy(_M_current_access);
         fun->setFunctionType(_M_current_function_type);
-        fun->setName(decl_cc.id().split("::").last());
+        QStringList functionName = decl_cc.id().split("::");
+        fun->setName(functionName.takeLast());
         fun->setAbstract(false);
         if(init_declarator->initializer){
             if(init_declarator->initializer->initializer_clause
@@ -359,10 +360,12 @@ void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_
         if(_M_current_is_template){
             fun->setTemplateInstantiations(name_cc.templateArgumentTypes());
         }
-        applyStorageSpecifiers(node->storage_specifiers, model_static_cast<MemberModelItem>(fun));
+        applyStorageSpecifiers(node->storage_specifiers, model_static_cast<MemberModelItem>(fun), [](MemberModelItem item, bool value){model_static_cast<FunctionModelItem>(item)->setDllExported(value);});
         applyFunctionSpecifiers(node->function_specifiers, fun);
         if(!fun->isDeprecated() && node->annotationExpression)
             fun->setDeprecated(isDeprecated(node->annotationExpression, node->deprecationComment));
+        if(!fun->isDllExported() && node->annotationExpression)
+            fun->setDllExported(isDllExported(node->annotationExpression));
         if(fun->isDeprecated() && node->deprecationComment){
             if(node->deprecationComment->literals){
                 QString comment;
@@ -432,7 +435,11 @@ void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_
             }
         }
 
-        fun->setScope(symbolScope->qualifiedName());
+        if(fun->isFriend()){
+            fun->setScope(functionName);
+        }else{
+            fun->setScope(symbolScope->qualifiedName());
+        }
         symbolScope->addFunction(fun);
     } else {
         VariableModelItem var = model()->create<VariableModelItem>();
@@ -649,7 +656,8 @@ void Binder::visitFunctionDefinition(FunctionDefinitionAST *node) {
     _M_current_function->setHasBody(node->function_body);
 
     applyStorageSpecifiers(node->storage_specifiers,
-                           model_static_cast<MemberModelItem>(_M_current_function));
+                           model_static_cast<MemberModelItem>(_M_current_function),
+                           [](MemberModelItem item, bool value){model_static_cast<FunctionDefinitionModelItem>(item)->setDllExported(value);});
     if(_M_current_function->isFriend()){
         _M_current_function->setAccessPolicy(CodeModel::Public);
     }
@@ -740,29 +748,30 @@ void Binder::visitTemplateDeclaration(TemplateDeclarationAST *node) {
             TypeParameterAST *type_parameter = parameter->type_parameter;
 
             QString defaultType;
-            NameAST *name;
+            NameAST *name{nullptr};
+            QString parameterType;
+            TypeInfo parameterTypeInfo;
             bool isVariadic = false;
             if (!type_parameter) {
-                // A hacky hack to work around missing support for parameter declarations in
-                // templates. We just need the to get the name of the variable, since we
-                // aren't actually compiling these anyway. We are still not supporting much
-                // more, but we are refusing to fail for a few more declarations
-                if (parameter->parameter_declaration == nullptr ||
-                        parameter->parameter_declaration->declarator == nullptr ||
-                        parameter->parameter_declaration->declarator->id == nullptr) {
-                    changeTemplateParameters(savedTemplateParameters);
-                    return;
-
-                }
-
-                isVariadic = parameter->parameter_declaration->declarator->ellipsis!=0 && parameter->parameter_declaration->declarator->ellipsis!=std::numeric_limits<std::size_t>::max();
-                name = parameter->parameter_declaration->declarator->id;
-                if(parameter->parameter_declaration->expression){
-                    defaultType = parameter->parameter_declaration->expression->toString(this->tokenStream());
+                if(parameter->parameter_declaration){
+                    if(parameter->parameter_declaration->declarator){
+                        isVariadic = parameter->parameter_declaration->declarator->ellipsis!=0 && parameter->parameter_declaration->declarator->ellipsis!=std::numeric_limits<std::size_t>::max();
+                        name = parameter->parameter_declaration->declarator->id;
+                    }
+                    if(parameter->parameter_declaration->expression){
+                        defaultType = parameter->parameter_declaration->expression->toString(this->tokenStream()).trimmed();
+                    }
+                    if(parameter->parameter_declaration->type_specifier){
+                        parameterType = parameter->parameter_declaration->type_specifier->toString(this->tokenStream()).trimmed();
+                        parameterTypeInfo = CompilerUtils::typeDescription(parameter->parameter_declaration->type_specifier,
+                                                       parameter->parameter_declaration->declarator,
+                                                       this);
+                    }
                 }
             } else {
                 int tk = decode_token(type_parameter->type);
                 if (tk != Token_typename && tk != Token_class) {
+                    // don't accept Token_template
                     return;
                 }
                 assert(tk == Token_typename || tk == Token_class);
@@ -779,6 +788,7 @@ void Binder::visitTemplateDeclaration(TemplateDeclarationAST *node) {
             TemplateParameterModelItem p = model()->create<TemplateParameterModelItem>();
             name_cc.run(name);
             p->setName(name_cc.name());
+            p->setParameterType(parameterType);
             p->setIsVaradic(isVariadic);
             p->setDefaultValue(defaultType);
 
@@ -968,6 +978,44 @@ bool Binder::isDeprecated(ExpressionAST *annotationExpression, StringLiteralAST 
     return false;
 }
 
+bool Binder::isDllExported(ExpressionAST *annotationExpression){
+    if(annotationExpression){
+        class DllExportedBinder: protected DefaultVisitor {
+            DllExportedBinder(Binder* binder)
+                : DefaultVisitor(),
+                m_isCurrentExport(false),
+                m_isExport(false),
+                m_binder(binder){}
+
+            void visitPostfixExpression(PostfixExpressionAST *node) {
+                if(!m_isCurrentExport)
+                    DefaultVisitor::visitPostfixExpression(node);
+                m_isCurrentExport = false;
+            }
+            void visitSimpleTypeSpecifier(SimpleTypeSpecifierAST *node) {
+                m_binder->name_cc.run(node->name);
+                if(m_binder->name_cc.name()=="declexport"){
+                    m_isExport = true;
+                    m_isCurrentExport = true;
+                }
+            }
+            void visitName(NameAST *node) {
+                m_binder->name_cc.run(node);
+                if(m_binder->name_cc.name()=="declexport"){
+                    m_isExport = true;
+                }
+            }
+            bool m_isCurrentExport;
+            bool m_isExport;
+            Binder* m_binder;
+            friend Binder;
+        } b(this);
+        b.visit(annotationExpression);
+        return b.m_isExport;
+    }
+    return false;
+}
+
 void Binder::visitClassSpecifier(ClassSpecifierAST *node) {
     class_cc.run(node);
     if (class_cc.name().isEmpty()) {
@@ -989,7 +1037,10 @@ void Binder::visitClassSpecifier(ClassSpecifierAST *node) {
     thisClass->setDeclFinal(node->is_final);
     if(!node->is_deprecated && node->annotationExpression)
         node->is_deprecated = isDeprecated(node->annotationExpression, node->deprecationComment);
+    if(!node->is_dllExported && node->annotationExpression)
+        node->is_dllExported = isDllExported(node->annotationExpression);
     thisClass->setDeclDeprecated(node->is_deprecated);
+    thisClass->setDllExported(node->is_dllExported);
     thisClass->setAccessPolicy(_M_current_access);
     if(node->deprecationComment)
         thisClass->setDeclDeprecatedComment(node->deprecationComment->toString(tokenStream()));
@@ -1250,7 +1301,7 @@ void Binder::visitQProperty(QPropertyAST *node) {
     _M_current_class->addPropertyDeclaration(property);
 }
 
-void Binder::applyStorageSpecifiers(const ListNode<std::size_t> *it, MemberModelItem item) {
+void Binder::applyStorageSpecifiers(const ListNode<std::size_t> *it, MemberModelItem item, void(*setDllExported)(MemberModelItem item, bool value)) {
     if (it == nullptr)
         return;
 
@@ -1273,6 +1324,10 @@ void Binder::applyStorageSpecifiers(const ListNode<std::size_t> *it, MemberModel
                 break;
             case Token_constexpr:
                 item->setConstExpr(true);
+                break;
+            case Token_QTJAMBI_EXPORT:
+                if(setDllExported)
+                    setDllExported(item, true);
                 break;
             case Token_QTJAMBI_DEPRECATED:
                 item->setDeprecated(true);
@@ -1321,6 +1376,10 @@ void Binder::applyFunctionSpecifiers(const ListNode<std::size_t> *it, FunctionMo
 
             case Token_Q_INVOKABLE:
                 item->setInvokable(true);
+                break;
+
+            case Token_QTJAMBI_EXPORT:
+                item->setDllExported(true);
                 break;
 
             case Token_QTJAMBI_DEPRECATED:

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -40,7 +40,11 @@ namespace QmlAPI{
 
 typedef void (*QmlReportDestruction)(QObject * obj);
 
+typedef bool (*QmlIsJavaScriptOwnership)(QObject * obj);
+
 QTJAMBI_EXPORT void setQmlReportDestruction(QmlReportDestruction fct);
+
+QTJAMBI_EXPORT void setQmlIsJavaScriptOwnership(QmlIsJavaScriptOwnership fct);
 
 typedef QObject* (* CreateQmlErrorDummyObject) (const QMetaObject* metaObject, void* placement, int vsCast, int viCast);
 

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -37,6 +37,8 @@ QT_WARNING_DISABLE_DEPRECATED
 #include <QtCore/QEvent>
 #include <QtCore/QThread>
 #include <QtCore/private/qcoreapplication_p.h>
+#include <QtCore/private/qmetaobject_p.h>
+#include <QtCore/private/qmetaobjectbuilder_p.h>
 
 #include <typeindex>
 #include <typeinfo>
@@ -53,6 +55,7 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "typemanager_p.h"
 #include "utils_p.h"
 #include "qmlapi.h"
+#include "qtjambilink_p.h"
 #include "supertypeinfo_p.h"
 #include "qtjambi_cast.h"
 
@@ -118,6 +121,10 @@ Q_GLOBAL_STATIC(DeleterHash, gDeleterHash)
 typedef QHash<const QtPrivate::QMetaTypeInterface *, jclass> MetaTypeJavaTypeHash;
 typedef QMultiHash<QByteArray,QMetaType> JavaTypeMetaTypesHash;
 typedef QSet<const QtPrivate::QMetaTypeInterface *> JObjectWrappedMetaTypeHash;
+typedef QHash<int, const QtPrivate::QMetaTypeInterface *> JObjectNativeWrappedMetaTypeHash;
+typedef QHash<const QtPrivate::QMetaTypeInterface *, const QtPrivate::QMetaTypeInterface *> JObjectNativeWrappedMetaTypeReverseHash;
+Q_GLOBAL_STATIC(JObjectNativeWrappedMetaTypeHash, gJObjectNativeWrapperMetaTypes)
+Q_GLOBAL_STATIC(JObjectNativeWrappedMetaTypeReverseHash, gMetaTypesForJObjectNativeWrappers)
 #else
 typedef QHash<int, jclass> MetaTypeJavaTypeHash;
 typedef QMultiHash<QByteArray,int> JavaTypeMetaTypesHash;
@@ -971,10 +978,14 @@ void registerMetaTypeID(const std::type_info& typeId, const std::type_info& nonP
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 void registerMetaObjectByMetaTypeInterface(const QtPrivate::QMetaTypeInterface* iface, const QMetaObject* mo){
+    QWriteLocker locker(gLock());
+    Q_UNUSED(locker)
     gMetaTypeMetaObjectHash->insert(iface, mo);
 }
 
 const QMetaObject* metaobjectByMetaTypeInterface(const QtPrivate::QMetaTypeInterface* iface){
+    QReadLocker locker(gLock());
+    Q_UNUSED(locker)
     return gMetaTypeMetaObjectHash->value(iface);
 }
 #endif
@@ -1067,6 +1078,12 @@ int QmlAPI::registerQmlMetaType(JNIEnv *env, jclass clazz,
     return metaType.id();
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6,5,0)
+#define QMetaTypeInterface_CurrentRevision 0
+#else
+#define QMetaTypeInterface_CurrentRevision QtPrivate::QMetaTypeInterface::CurrentRevision
+#endif
+
 QMetaType createMetaType(QByteArrayView typeName,
                          bool copyName,
                          QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr,
@@ -1086,7 +1103,7 @@ QMetaType createMetaType(QByteArrayView typeName,
                          const QMetaObject *metaObject,
                          QtPrivate::QMetaTypeInterface::MetaObjectFn metaObjectFn){
     QtPrivate::QMetaTypeInterface* metaTypeInterface = new QtPrivate::QMetaTypeInterface{
-            /*.revision=*/ 0,
+            /*.revision=*/ QMetaTypeInterface_CurrentRevision,
             /*.alignment=*/ align,
             /*.size=*/ size,
             /*.flags=*/ uint(flags),
@@ -2069,6 +2086,8 @@ FunctionalResolver registeredFunctionalResolver(const std::type_info& typeId){
 
 static QmlAPI::QmlReportDestruction qmlReportDestructionFunction = nullptr;
 
+static QmlAPI::QmlIsJavaScriptOwnership qmlIsJavaScriptOwnership = nullptr;
+
 void QtJambiPrivate::reportDeclarativeObjectDestruction(QObject * obj){
     if(qmlReportDestructionFunction)
         qmlReportDestructionFunction(obj);
@@ -2077,6 +2096,15 @@ void QtJambiPrivate::reportDeclarativeObjectDestruction(QObject * obj){
 void QmlAPI::setQmlReportDestruction(QmlReportDestruction fct){
     if(!qmlReportDestructionFunction)
         qmlReportDestructionFunction = fct;
+}
+
+void QmlAPI::setQmlIsJavaScriptOwnership(QmlIsJavaScriptOwnership fct){
+    if(!qmlIsJavaScriptOwnership)
+        qmlIsJavaScriptOwnership = fct;
+}
+
+bool isQmlJavaScriptOwnership(QObject * obj){
+    return qmlIsJavaScriptOwnership && qmlIsJavaScriptOwnership(obj);
 }
 
 void RegistryAPI::registerMediaControlInfo(const std::type_info& typeId, const char *media_control_iid){
@@ -2131,7 +2159,12 @@ void registerJavaClassForCustomMetaType(JNIEnv *env, QMetaType metaType, jclass 
     QWriteLocker locker(gLock());
     Q_UNUSED(locker)
     QByteArray javaName = QtJambiAPI::getClassName(env, javaClass).toLatin1().replace('.', '/');
-    gMetaTypeJavaTypeHash->insert(iface, getGlobalClassRef(env, javaClass, javaName));
+    if(Java::Runtime::Class::isSynthetic(env,javaClass)){
+        javaClass = JavaAPI::resolveClass(env, javaName);
+    }else{
+        javaClass = getGlobalClassRef(env, javaClass, javaName);
+    }
+    gMetaTypeJavaTypeHash->insert(iface, javaClass);
     gJavaTypeMetaTypesHash->insert(javaName, metaType);
     if(isJObjectWrapped)
         gJObjectWrappedMetaTypes->insert(iface);
@@ -2140,6 +2173,227 @@ void registerJavaClassForCustomMetaType(JNIEnv *env, QMetaType metaType, jclass 
 bool isJObjectWrappedMetaType(QMetaType metaType){
     QReadLocker locker(gLock());
     return gJObjectWrappedMetaTypes->contains(metaType.iface());
+}
+
+bool isNativeWrapperMetaType(QMetaType metaType){
+    QReadLocker locker(gLock());
+    return gMetaTypesForJObjectNativeWrappers->contains(metaType.iface());
+}
+
+const QtPrivate::QMetaTypeInterface * getOriginalForNativeWrapperMetaType(const QtPrivate::QMetaTypeInterface *iface){
+    const QtPrivate::QMetaTypeInterface *original{nullptr};
+    {
+        QReadLocker locker(gLock());
+        original = (*gMetaTypesForJObjectNativeWrappers)[iface];
+    }
+    return original;
+}
+
+QMetaType getNativeWrapperType(const QMetaType& metaType){
+    const QtPrivate::QMetaTypeInterface * nativeWrapperType{nullptr};
+    if(metaType.flags().testFlags(QMetaType::IsPointer)){
+        {
+            QReadLocker locker(gLock());
+            nativeWrapperType = (*gJObjectNativeWrapperMetaTypes)[metaType.id()];
+        }
+        if(!nativeWrapperType){
+            bool isQObject = metaType.flags().testFlag(QMetaType::PointerToQObject);
+            const QtPrivate::QMetaTypeInterface *original{QMetaType(metaType).iface()};
+            QByteArray typeName = QByteArray("JObjectWrapper<") + QByteArray(metaType.name()) + ">";
+            const char* name = registerMetaTypeName(typeName);
+            QtPrivate::QMetaTypeInterface* metaTypeInterface;
+            const QMetaObject *originalMetaObject{nullptr};
+            if(isQObject){
+                uint flags = QtPrivate::QMetaTypeTypeFlags<JQObjectWrapper>::Flags;
+                flags |= QMetaType::PointerToQObject;
+                if(metaType.flags().testFlag(QMetaType::IsConst))
+                    flags |= QMetaType::IsConst;
+                metaTypeInterface = new QtPrivate::QMetaTypeInterface{
+                    /*.revision=*/ QMetaTypeInterface_CurrentRevision,
+                    /*.alignment=*/ alignof(JQObjectWrapper),
+                    /*.size=*/ sizeof(JQObjectWrapper),
+                    /*.flags=*/ flags,
+                    /*.typeId=*/ QMetaType::UnknownType,
+                    /*.metaObject=*/ original->metaObjectFn,
+                    /*.name=*/ name,
+                    /*.defaultCtr=*/ QtPrivate::QMetaTypeForType<JQObjectWrapper>::getDefaultCtr(),
+                    /*.copyCtr=*/ QtPrivate::QMetaTypeForType<JQObjectWrapper>::getCopyCtr(),
+                    /*.moveCtr=*/ QtPrivate::QMetaTypeForType<JQObjectWrapper>::getMoveCtr(),
+                    /*.dtor=*/ QtPrivate::QMetaTypeForType<JQObjectWrapper>::getDtor(),
+                    /*.equals=*/ [](const QtPrivate::QMetaTypeInterface *, const void *value1, const void *value2) -> bool{
+                        const JQObjectWrapper* _value1 = reinterpret_cast<const JQObjectWrapper*>(value1);
+                        const JQObjectWrapper* _value2 = reinterpret_cast<const JQObjectWrapper*>(value2);
+                        return _value1->qobject()==_value2->qobject();
+                    },
+                    /*.lessThan=*/ [](const QtPrivate::QMetaTypeInterface *, const void *value1, const void *value2) -> bool{
+                        const JQObjectWrapper* _value1 = reinterpret_cast<const JQObjectWrapper*>(value1);
+                        const JQObjectWrapper* _value2 = reinterpret_cast<const JQObjectWrapper*>(value2);
+                        return _value1->qobject()<_value2->qobject();
+                    },
+                    /*.debugStream=*/ original->debugStream ? [](const QtPrivate::QMetaTypeInterface *iface, QDebug &d, const void *value){
+                        if(const QtPrivate::QMetaTypeInterface *original = getOriginalForNativeWrapperMetaType(iface)){
+                            const JQObjectWrapper* _value = reinterpret_cast<const JQObjectWrapper*>(value);
+                            original->debugStream(original, d, _value->qobject());
+                        }
+                    } : QtPrivate::QMetaTypeInterface::DebugStreamFn(nullptr),
+                    /*.dataStreamOutFn=*/ original->dataStreamOut ? [](const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, const void *value){
+                        if(const QtPrivate::QMetaTypeInterface *original = getOriginalForNativeWrapperMetaType(iface)){
+                            const JQObjectWrapper* _value = reinterpret_cast<const JQObjectWrapper*>(value);
+                            original->dataStreamOut(original, d, _value->qobject());
+                        }
+                    } : QtPrivate::QMetaTypeInterface::DataStreamOutFn(nullptr),
+                    /*.dataStreamInFn=*/ original->dataStreamIn ? [](const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, void *value){
+                        if(const QtPrivate::QMetaTypeInterface *original = getOriginalForNativeWrapperMetaType(iface)){
+                            JQObjectWrapper* _value = reinterpret_cast<JQObjectWrapper*>(value);
+                            original->dataStreamIn(original, d, _value->qobject());
+                        }
+                    } : QtPrivate::QMetaTypeInterface::DataStreamInFn(nullptr),
+                    /*.legacyRegisterOp=*/ nullptr
+                };
+            }else{
+                if(original->metaObjectFn)
+                    originalMetaObject = original->metaObjectFn(original);
+                uint flags = QtPrivate::QMetaTypeTypeFlags<JObjectWrapper>::Flags;
+                if(originalMetaObject)
+                    flags |= QMetaType::IsGadget;
+                if(metaType.flags().testFlag(QMetaType::IsConst))
+                    flags |= QMetaType::IsConst;
+                metaTypeInterface = new QtPrivate::QMetaTypeInterface{
+                    /*.revision=*/ QMetaTypeInterface_CurrentRevision,
+                    /*.alignment=*/ alignof(JObjectWrapper),
+                    /*.size=*/ sizeof(JObjectWrapper),
+                    /*.flags=*/ flags,
+                    /*.typeId=*/ QMetaType::UnknownType,
+                    /*.metaObject=*/ originalMetaObject ? &metaobjectByMetaTypeInterface : nullptr,
+                    /*.name=*/ name,
+                    /*.defaultCtr=*/ QtPrivate::QMetaTypeForType<JObjectWrapper>::getDefaultCtr(),
+                    /*.copyCtr=*/ QtPrivate::QMetaTypeForType<JObjectWrapper>::getCopyCtr(),
+                    /*.moveCtr=*/ QtPrivate::QMetaTypeForType<JObjectWrapper>::getMoveCtr(),
+                    /*.dtor=*/ QtPrivate::QMetaTypeForType<JObjectWrapper>::getDtor(),
+                    /*.equals=*/ [](const QtPrivate::QMetaTypeInterface *, const void *value1, const void *value2) -> bool{
+                        const JObjectWrapper* _value1 = reinterpret_cast<const JObjectWrapper*>(value1);
+                        const JObjectWrapper* _value2 = reinterpret_cast<const JObjectWrapper*>(value2);
+                        if(JniEnvironment env{200}){
+                            if (QSharedPointer<QtJambiLink> link1 = QtJambiLink::findLinkForJavaInterface(env, _value1->object())){
+                                if (QSharedPointer<QtJambiLink> link2 = QtJambiLink::findLinkForJavaInterface(env, _value2->object())){
+                                    return link1->pointer()==link2->pointer();
+                                }
+                            }
+                        }
+                        return false;
+                    },
+                    /*.lessThan=*/ [](const QtPrivate::QMetaTypeInterface *, const void *value1, const void *value2) -> bool{
+                        const JObjectWrapper* _value1 = reinterpret_cast<const JObjectWrapper*>(value1);
+                        const JObjectWrapper* _value2 = reinterpret_cast<const JObjectWrapper*>(value2);
+                        if(JniEnvironment env{200}){
+                            if (QSharedPointer<QtJambiLink> link1 = QtJambiLink::findLinkForJavaInterface(env, _value1->object())){
+                                if (QSharedPointer<QtJambiLink> link2 = QtJambiLink::findLinkForJavaInterface(env, _value2->object())){
+                                    return link1->pointer()<link2->pointer();
+                                }
+                            }
+                        }
+                        return false;
+                    },
+                    /*.debugStream=*/ original->debugStream ? [](const QtPrivate::QMetaTypeInterface *iface, QDebug &d, const void *value){
+                        if(const QtPrivate::QMetaTypeInterface *original = getOriginalForNativeWrapperMetaType(iface)){
+                            const JObjectWrapper* _value = reinterpret_cast<const JObjectWrapper*>(value);
+                            if(JniEnvironment env{200}){
+                                if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, _value->object())){
+                                    original->debugStream(original, d, link->pointer());
+                                }
+                            }
+                        }
+                    } : QtPrivate::QMetaTypeInterface::DebugStreamFn(nullptr),
+                    /*.dataStreamOutFn=*/ original->dataStreamOut ? [](const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, const void *value){
+                        if(const QtPrivate::QMetaTypeInterface *original = getOriginalForNativeWrapperMetaType(iface)){
+                            const JObjectWrapper* _value = reinterpret_cast<const JObjectWrapper*>(value);
+                            if(JniEnvironment env{200}){
+                                if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, _value->object())){
+                                    original->dataStreamOut(original, d, link->pointer());
+                                }
+                            }
+                        }
+                    } : QtPrivate::QMetaTypeInterface::DataStreamOutFn(nullptr),
+                    /*.dataStreamInFn=*/ original->dataStreamIn ? [](const QtPrivate::QMetaTypeInterface *iface, QDataStream &d, void *value){
+                        if(const QtPrivate::QMetaTypeInterface *original = getOriginalForNativeWrapperMetaType(iface)){
+                            JObjectWrapper* _value = reinterpret_cast<JObjectWrapper*>(value);
+                            if(JniEnvironment env{200}){
+                                if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, _value->object())){
+                                    original->dataStreamIn(original, d, link->pointer());
+                                }
+                            }
+                        }
+                    } : QtPrivate::QMetaTypeInterface::DataStreamInFn(nullptr),
+                    /*.legacyRegisterOp=*/ nullptr
+                };
+            }
+            {
+                QWriteLocker locker(gLock());
+                if(const QtPrivate::QMetaTypeInterface * iface = (*gJObjectNativeWrapperMetaTypes)[metaType.id()]){
+                    delete metaTypeInterface;
+                    nativeWrapperType = iface;
+                }else{
+                    (*gJObjectNativeWrapperMetaTypes)[metaType.id()] = metaTypeInterface;
+                    (*gMetaTypesForJObjectNativeWrappers)[metaTypeInterface] = original;
+                    if(originalMetaObject){
+                        QMetaObjectBuilder builder;
+                        builder.setClassName(name);
+                        for(int i=0, l=originalMetaObject->methodCount(); i<l; ++i){
+                            QMetaMethod method = originalMetaObject->method(i);
+                            builder.addMethod(method);
+                        }
+                        for(int i=0, l=originalMetaObject->constructorCount(); i<l; ++i){
+                            QMetaMethod constructor = originalMetaObject->constructor(i);
+                            builder.addConstructor(constructor);
+                        }
+                        for(int i=0, l=originalMetaObject->propertyCount(); i<l; ++i){
+                            QMetaProperty property = originalMetaObject->property(i);
+                            builder.addProperty(property);
+                        }
+                        if(isQObject){
+                                builder.setFlags(PropertyAccessInStaticMetaCall);
+                                builder.setStaticMetacallFunction([](QObject *gadget, QMetaObject::Call call, int argc, void **argv){
+                                    JObjectWrapper* wrapper = reinterpret_cast<JObjectWrapper*>(gadget);
+                                    if(JniEnvironment env{200}){
+                                        if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, wrapper->object())){
+                                            Q_ASSERT(link->isQObject());
+                                            link->qobject()->qt_metacall(call, argc, argv);
+                                        }
+                                    }
+                                });
+                        }else if(originalMetaObject->d.static_metacall){
+                            builder.setFlags(PropertyAccessInStaticMetaCall);
+                            builder.setStaticMetacallFunction([](QObject *gadget, QMetaObject::Call call, int argc, void **argv){
+                                JObjectWrapper* wrapper = reinterpret_cast<JObjectWrapper*>(gadget);
+                                if(JniEnvironment env{200}){
+                                    if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, wrapper->object())){
+                                        QMetaType metaType;
+                                        if(PointerToObjectLink* plink = dynamic_cast<PointerToObjectLink*>(link.get())){
+                                            metaType = plink->metaType();
+                                        }else if(jclass object_class = env->GetObjectClass(wrapper->object())){
+                                            QString qtName = QtJambiTypeManager::getInternalTypeName(env, object_class, false);
+                                            metaType = QMetaType::fromName(qPrintable(qtName));
+                                        }
+                                        if(metaType.metaObject() && metaType.metaObject()->d.static_metacall)
+                                            metaType.metaObject()->d.static_metacall(reinterpret_cast<QObject*>(link->pointer()), call, argc, argv);
+                                    }
+                                }
+                            });
+                        }
+                        QMetaObject* mo = builder.toMetaObject();
+                        mo->d.superdata.direct = nullptr;
+#ifdef QT_NO_DATA_RELOCATION
+                        mo->d.superdata.indirect = nullptr;
+#endif
+                        gMetaTypeMetaObjectHash->insert(metaTypeInterface, mo);
+                    }
+                    nativeWrapperType = metaTypeInterface;
+                    (void)QMetaType(nativeWrapperType).id();
+                }
+            }
+        }
+    }
+    return QMetaType(nativeWrapperType);
 }
 
 jclass registeredJavaClassForCustomMetaType(const QtPrivate::QMetaTypeInterface * metaType){
@@ -2378,13 +2632,17 @@ jclass findClass(JNIEnv *env, const char *qualifiedName, jobject classLoader = n
     return returned;
 }
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 jclass getGlobalClassRef(JNIEnv *env, jclass cls, const char *className){
+#else
+jclass getGlobalClassRef(JNIEnv *env, jclass cls, QByteArrayView className){
+#endif
 #ifndef QTJAMBI_NOCACHE
     hash_type key;
 #ifdef QTJAMBI_LOG_CLASSNAMES
     QString classNameStrg;
 #endif
-    if(className){
+    if(className!=nullptr){
 #ifdef QTJAMBI_LOG_CLASSNAMES
         classNameStrg = QLatin1String(className);
 #endif
@@ -2393,7 +2651,7 @@ jclass getGlobalClassRef(JNIEnv *env, jclass cls, const char *className){
 #ifndef QTJAMBI_LOG_CLASSNAMES
         QString
 #endif
-                classNameStrg = QtJambiAPI::getClassName(env, cls).replace(".", "/");
+            classNameStrg = qtjambi_cast<QString>(env, Java::Runtime::Class::getName(env, cls)).replace(".", "/");
         key = qHash(qPrintable(classNameStrg));
     }
     {
@@ -3266,6 +3524,156 @@ void JObjectValueWrapper::serializableDataStreamIn(const QtPrivate::QMetaTypeInt
     }
 }
 
+struct JQObjectWrapperPrivate{
+    JQObjectWrapperPrivate(QObject*& object, JNIEnv* env, QSharedPointer<QtJambiLink>&& link);
+    void unref(QObject*& pointer);
+    void ref(QObject*& pointer);
+    void exchange(QObject*& pointer, QObject*& byPointer);
+    QSharedPointer<QtJambiLink> m_link;
+    QMutex m_mutex;
+    QSet<QObject**> m_pointers;
+private:
+    ~JQObjectWrapperPrivate();
+};
+
+JQObjectWrapperPrivate::JQObjectWrapperPrivate(QObject*& object, JNIEnv* env, QSharedPointer<QtJambiLink>&& link)
+    : m_link(std::move(link)), m_mutex(), m_pointers() {
+    Q_ASSERT(!m_link.isNull());
+    Q_ASSERT(m_link->ownership()==QtJambiLink::Ownership::Java);
+    m_link->setCppOwnership(env);
+    m_pointers.insert(&object);
+    if(DependencyManagerUserData* dm = DependencyManagerUserData::instance(object)){
+        dm->addFinalization(this,
+            [](JNIEnv*, void* data){
+                JQObjectWrapperPrivate* p = reinterpret_cast<JQObjectWrapperPrivate*>(data);
+                QSet<QObject**> pointers;
+                {
+                    QMutexLocker<QMutex> locker(&p->m_mutex);
+                    p->m_pointers.swap(pointers);
+                }
+                for(QObject** pointer : pointers){
+                    *pointer = nullptr;
+                }
+            }, nullptr);
+    }
+}
+
+void JQObjectWrapperPrivate::unref(QObject*& pointer){
+    bool isEmpty;
+    {
+        QMutexLocker<QMutex> locker(&m_mutex);
+        m_pointers.remove(&pointer);
+        isEmpty = m_pointers.isEmpty();
+    }
+    if(isEmpty)
+        delete this;
+}
+
+void JQObjectWrapperPrivate::ref(QObject*& pointer){
+    {
+        QMutexLocker<QMutex> locker(&m_mutex);
+        m_pointers.insert(&pointer);
+    }
+}
+
+void JQObjectWrapperPrivate::exchange(QObject*& pointer, QObject*& byPointer){
+    {
+        QMutexLocker<QMutex> locker(&m_mutex);
+        m_pointers.remove(&pointer);
+        m_pointers.insert(&byPointer);
+    }
+}
+
+JQObjectWrapperPrivate::~JQObjectWrapperPrivate(){
+    try{
+        if(QObject* object = m_link->qobject()){
+            JniEnvironment env{200};
+            try{
+                if(DependencyManagerUserData* dm = DependencyManagerUserData::instance(object, false)){
+                    dm->removeFinalization(env, this);
+                }
+                if(!isQmlJavaScriptOwnership(object) && env)
+                    m_link->setJavaOwnership(env);
+            }catch(const JavaException& exn){
+                exn.report(env);
+            }
+        }
+    }catch(...){
+    }
+}
+
+JQObjectWrapper::JQObjectWrapper()
+    : m_qobject(nullptr), p(nullptr) {
+}
+
+JQObjectWrapper::JQObjectWrapper(JNIEnv* env, QSharedPointer<QtJambiLink>&& link)
+    : m_qobject(link->qobject()), p(new JQObjectWrapperPrivate(m_qobject, env, std::move(link))){
+}
+
+JQObjectWrapper::~JQObjectWrapper(){
+    if(p)
+        p->unref(m_qobject);
+    m_qobject = nullptr;
+    p = nullptr;
+}
+
+JQObjectWrapper::JQObjectWrapper(const JQObjectWrapper& other)
+    : m_qobject(other.m_qobject), p(other.p){
+    if(p)
+        p->ref(m_qobject);
+}
+
+JQObjectWrapper::JQObjectWrapper(JQObjectWrapper&& other)
+    : m_qobject(other.m_qobject), p(other.p){
+    if(p)
+        p->exchange(other.m_qobject, m_qobject);
+    other.p = nullptr;
+    other.m_qobject = nullptr;
+}
+
+JQObjectWrapper& JQObjectWrapper::operator=(const JQObjectWrapper &other){
+    if(other.p!=p){
+        if(p)
+            p->unref(m_qobject);
+        m_qobject = other.m_qobject;
+        p = other.p;
+        if(p){
+            p->ref(m_qobject);
+        }
+    }
+    return *this;
+}
+
+JQObjectWrapper& JQObjectWrapper::operator=(JQObjectWrapper &&other){
+    if(other.p!=p){
+        if(p)
+            p->unref(m_qobject);
+        m_qobject = other.m_qobject;
+        p = other.p;
+        if(p){
+            p->exchange(other.m_qobject, m_qobject);
+        }
+        other.p = nullptr;
+        other.m_qobject = nullptr;
+    }
+    return *this;
+}
+
+QSharedPointer<QtJambiLink> JQObjectWrapper::link() const{
+    if(p)
+        return  p->m_link;
+    else
+        return {};
+}
+
+jobject JQObjectWrapper::javaObject(JNIEnv* env) const{
+    if(p)
+        return  p->m_link->getJavaObjectLocalRef(env);
+    else
+        return nullptr;
+}
+
+
 int QmlAPI::registerMetaType(JNIEnv *env, SequentialContainerType containerType, const QMetaType& elementType){
     int result = 0;
     AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(AbstractContainerAccess::create(env, containerType, elementType));
@@ -3347,7 +3755,7 @@ int qtjambi_register_enum_meta_type(JNIEnv *env, jclass clazz, const QString& ja
     typedef typename std::conditional<isQtEnum0OrFlag1==1,QFlags<E>,E>::type EnumOrFlags;
     typedef typename std::conditional<isQtEnum0OrFlag1==1,JObjectWrapper,JEnumWrapper>::type Wrapper;
     QtPrivate::QMetaTypeInterface* metaTypeInterface = new QtPrivate::QMetaTypeInterface{
-            /*.revision=*/ 0,
+            /*.revision=*/ QMetaTypeInterface_CurrentRevision,
             /*.alignment=*/ alignof(EnumOrFlags),
             /*.size=*/ sizeof(EnumOrFlags),
             /*.flags=*/ uint(QtPrivate::QMetaTypeTypeFlags<EnumOrFlags>::Flags),
@@ -3823,7 +4231,8 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
             }else{
                 const SuperTypeInfos& superTypes = SuperTypeInfos::fromClass(env, clazz);
                 QByteArray metaTypeName = javaClassName.toUtf8().replace("/", "::").replace("$", "::");
-                if(superTypes.isEmpty()){
+                if(superTypes.isEmpty())
+                {
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                     int id;
                     if(Java::QtJambi::QtShortEnumerator::isAssignableFrom(env, clazz)
@@ -3898,7 +4307,7 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                             uint flags = QtPrivate::QMetaTypeTypeFlags<JObjectValueWrapper>::Flags;
                             flags |= QMetaType::IsGadget;
                             QtPrivate::QMetaTypeInterface* metaTypeInterface = new QtPrivate::QMetaTypeInterface{
-                                    /*.revision=*/ 0,
+                                    /*.revision=*/ QMetaTypeInterface_CurrentRevision,
                                     /*.alignment=*/ alignof(JObjectValueWrapper),
                                     /*.size=*/ sizeof(JObjectValueWrapper),
                                     /*.flags=*/ flags,
@@ -3971,7 +4380,8 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                         }else if(Java::Runtime::Map::isAssignableFrom(env, clazz)){
                             return QMetaType::fromType<JMapWrapper>().id();
                         }
-                        QMetaType metaType = createMetaType(metaTypeName+"*",
+                        metaTypeName = "JObjectWrapper<" + metaTypeName + ">";
+                        QMetaType metaType = createMetaType(metaTypeName,
                                                             true,
                                                             /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::defaultCtr,
                                                             /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::copyCtr,
@@ -3993,34 +4403,7 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                                                             nullptr, &findWrappersMetaObject);
                         int result = metaType.id();
                         registerJavaClassForCustomMetaType(env, metaType, clazz, true);
-                        if(!QMetaType::hasRegisteredConverterFunction(metaType, QMetaType::fromType<JObjectWrapper>())){
-                            QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
-                                if(src){
-                                    new (target)JObjectWrapper(*reinterpret_cast<const JObjectWrapper*>(src));
-                                }else{
-                                    new (target)JObjectWrapper();
-                                }
-                                return true;
-                            }, metaType, QMetaType::fromType<JObjectWrapper>());
-                        }
-                        if(!QMetaType::hasRegisteredConverterFunction(QMetaType::fromType<JObjectWrapper>(), metaType)){
-                            JObjectWrapper classWrapper(env, clazz);
-                            QMetaType::registerConverterFunction([classWrapper](const void *src, void *target) -> bool {
-                                if(src){
-                                    jobject value = reinterpret_cast<const JObjectWrapper*>(src)->object();
-                                    if(value!=nullptr){
-                                        if(JniEnvironment env{200}){
-                                            if(!env->IsInstanceOf(value, jclass(classWrapper.object())))
-                                                return false;
-                                        }
-                                    }
-                                    new (target)JObjectWrapper(*reinterpret_cast<const JObjectWrapper*>(src));
-                                }else{
-                                    new (target)JObjectWrapper();
-                                }
-                                return true;
-                            }, QMetaType::fromType<JObjectWrapper>(), metaType);
-                        }
+                        registerConverterVariant(env, metaType, QLatin1String(metaTypeName), javaClassName, clazz);
                         return result;
                     }
 #endif
@@ -4034,7 +4417,7 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                     if(id!=QMetaType::UnknownType){
                         QMetaType superMetaType(id);
                         if(superMetaType.flags() & QMetaType::IsPointer){
-                            metaTypeName += "*";
+                            metaTypeName = metaTypeName + "*";
                             QMetaType metaType = createMetaType(metaTypeName,
                                                                 true,
                                                                 /*.defaultCtr=*/ superMetaType.iface()->defaultCtr,
@@ -4094,7 +4477,7 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                                 uint flags = QtPrivate::QMetaTypeTypeFlags<JObjectValueWrapper>::Flags;
                                 flags |= QMetaType::IsGadget;
                                 QtPrivate::QMetaTypeInterface* metaTypeInterface = new QtPrivate::QMetaTypeInterface{
-                                        /*.revision=*/ 0,
+                                        /*.revision=*/ QMetaTypeInterface_CurrentRevision,
                                         /*.alignment=*/ alignof(JObjectValueWrapper),
                                         /*.size=*/ sizeof(JObjectValueWrapper),
                                         /*.flags=*/ flags,
@@ -4167,7 +4550,8 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                             }else if(Java::Runtime::Map::isAssignableFrom(env, clazz)){
                                 return QMetaType::fromType<JMapWrapper>().id();
                             }
-                            QMetaType metaType = createMetaType(metaTypeName+"*",
+                            metaTypeName = "JObjectWrapper<" + metaTypeName + ">";
+                            QMetaType metaType = createMetaType(metaTypeName,
                                                                 true,
                                                                 /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::defaultCtr,
                                                                 /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::copyCtr,
@@ -4189,34 +4573,7 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                                                                 nullptr, &findWrappersMetaObject);
                             int result = metaType.id();
                             registerJavaClassForCustomMetaType(env, metaType, clazz, true);
-                            if(!QMetaType::hasRegisteredConverterFunction(metaType, QMetaType::fromType<JObjectWrapper>())){
-                                QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
-                                    if(src){
-                                        new (target)JObjectWrapper(*reinterpret_cast<const JObjectWrapper*>(src));
-                                    }else{
-                                        new (target)JObjectWrapper();
-                                    }
-                                    return true;
-                                }, metaType, QMetaType::fromType<JObjectWrapper>());
-                            }
-                            if(!QMetaType::hasRegisteredConverterFunction(QMetaType::fromType<JObjectWrapper>(), metaType)){
-                                JObjectWrapper classWrapper(env, clazz);
-                                QMetaType::registerConverterFunction([classWrapper](const void *src, void *target) -> bool {
-                                    if(src){
-                                        jobject value = reinterpret_cast<const JObjectWrapper*>(src)->object();
-                                        if(value!=nullptr){
-                                            if(JniEnvironment env{200}){
-                                                if(!env->IsInstanceOf(value, jclass(classWrapper.object())))
-                                                    return false;
-                                            }
-                                        }
-                                        new (target)JObjectWrapper(*reinterpret_cast<const JObjectWrapper*>(src));
-                                    }else{
-                                        new (target)JObjectWrapper();
-                                    }
-                                    return true;
-                                }, QMetaType::fromType<JObjectWrapper>(), metaType);
-                            }
+                            registerConverterVariant(env, metaType, QLatin1String(metaTypeName), javaClassName, clazz);
                             return result;
                         }
                     }else{
@@ -4225,7 +4582,8 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                         }else if(Java::Runtime::Map::isAssignableFrom(env, clazz)){
                             return QMetaType::fromType<JMapWrapper>().id();
                         }
-                        QMetaType metaType = createMetaType(metaTypeName+"*",
+                        metaTypeName = "JObjectWrapper<" + metaTypeName + ">";
+                        QMetaType metaType = createMetaType(metaTypeName,
                                                             true,
                                                             /*.defaultCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::defaultCtr,
                                                             /*.copyCtr=*/ QtJambiPrivate::QMetaTypeInterfaceFunctions<JObjectWrapper>::copyCtr,
@@ -4247,34 +4605,7 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                                                             nullptr, &findWrappersMetaObject);
                         int result = metaType.id();
                         registerJavaClassForCustomMetaType(env, metaType, clazz, true);
-                        if(!QMetaType::hasRegisteredConverterFunction(metaType, QMetaType::fromType<JObjectWrapper>())){
-                            QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
-                                if(src){
-                                    new (target)JObjectWrapper(*reinterpret_cast<const JObjectWrapper*>(src));
-                                }else{
-                                    new (target)JObjectWrapper();
-                                }
-                                return true;
-                            }, metaType, QMetaType::fromType<JObjectWrapper>());
-                        }
-                        if(!QMetaType::hasRegisteredConverterFunction(QMetaType::fromType<JObjectWrapper>(), metaType)){
-                            JObjectWrapper classWrapper(env, clazz);
-                            QMetaType::registerConverterFunction([classWrapper](const void *src, void *target) -> bool {
-                                if(src){
-                                    jobject value = reinterpret_cast<const JObjectWrapper*>(src)->object();
-                                    if(value!=nullptr){
-                                        if(JniEnvironment env{200}){
-                                            if(!env->IsInstanceOf(value, jclass(classWrapper.object())))
-                                                return false;
-                                        }
-                                    }
-                                    new (target)JObjectWrapper(*reinterpret_cast<const JObjectWrapper*>(src));
-                                }else{
-                                    new (target)JObjectWrapper();
-                                }
-                                return true;
-                            }, QMetaType::fromType<JObjectWrapper>(), metaType);
-                        }
+                        registerConverterVariant(env, metaType, QLatin1String(metaTypeName), javaClassName, clazz);
                         return result;
                     }
 #endif

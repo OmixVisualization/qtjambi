@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -612,9 +612,13 @@ struct RunFunctorInvoker<9,PromisePolicy::TypedPromise> : Java::QtConcurrent::Qt
 };
 #endif
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && (defined(Q_OS_ANDROID) /*|| defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD) || defined(Q_OS_SOLARIS)*/)
+#define HANDLE_EXCEPTION
+#endif
+
 template<typename ...Args>
 struct RunFunctorInvocationDecider : RunFunctorInvoker<sizeof...(Args),PromisePolicy::NoPromise>{
-#if defined(Q_OS_ANDROID) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if defined(HANDLE_EXCEPTION)
     static void handleException(QSharedPointer<QFutureInterfaceBase>& future, std::exception_ptr exception, Args...){
         while(!future->isValid())
             QThread::msleep(50);
@@ -626,7 +630,7 @@ struct RunFunctorInvocationDecider : RunFunctorInvoker<sizeof...(Args),PromisePo
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 template<typename ...Args>
 struct RunFunctorInvocationDecider<QPromise<void>&, Args...> : RunFunctorInvoker<sizeof...(Args),PromisePolicy::VoidPromise>{
-#ifdef Q_OS_ANDROID
+#if defined(HANDLE_EXCEPTION)
     static void handleException(QSharedPointer<QFutureInterfaceBase>&, std::exception_ptr exception, QPromise<void>& promise, Args...){
         QFutureInterfaceBase& future = reinterpret_cast<QFutureInterfaceBase&>(promise);
         future.reportException(exception);
@@ -636,7 +640,7 @@ struct RunFunctorInvocationDecider<QPromise<void>&, Args...> : RunFunctorInvoker
 
 template<typename T, typename ...Args>
 struct RunFunctorInvocationDecider<QPromise<T>&, Args...> : RunFunctorInvoker<sizeof...(Args),PromisePolicy::TypedPromise>{
-#ifdef Q_OS_ANDROID
+#if defined(HANDLE_EXCEPTION)
     static void handleException(QSharedPointer<QFutureInterfaceBase>&, std::exception_ptr exception, QPromise<T>& promise, Args...){
         QFutureInterfaceBase& future = reinterpret_cast<QFutureInterfaceBase&>(promise);
         future.reportException(exception);
@@ -660,11 +664,11 @@ public:
         if(JniEnvironment env{200}){
             if(jobject functor = toLocalRef(env, m_functor)){
                 QtJambiScope scope;
-#if defined(Q_OS_ANDROID) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if defined(HANDLE_EXCEPTION)
                 try {
 #endif
                     RunFunctorInvocationDecider<Args...>::run(env, functor, qtjambi_cast<jobject>(env, scope, args)...);
-#if defined(Q_OS_ANDROID) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if defined(HANDLE_EXCEPTION)
                 } catch (const JavaException& exn) {
                     RunFunctorInvocationDecider<Args...>::handleException(future, std::make_exception_ptr(QUnhandledException(std::make_exception_ptr(exn))), args...);
                 } catch (...) {
@@ -746,11 +750,11 @@ public:
             if(jobject functor = toLocalRef(env, m_functor)){
                 jobject javaResult = nullptr;
                 QtJambiScope scope;
-#if defined(Q_OS_ANDROID) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if defined(HANDLE_EXCEPTION)
                 try {
 #endif
                     javaResult = CallableFunctorInvoker<sizeof...(Args)>::call(env, functor, qtjambi_cast<jobject>(env, scope, args)...);
-#if defined(Q_OS_ANDROID) && QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if defined(HANDLE_EXCEPTION)
                 } catch (const JavaException& exn) {
                     RunFunctorInvocationDecider<Args...>::handleException(future, std::make_exception_ptr(QUnhandledException(std::make_exception_ptr(exn))), args...);
                 } catch (...) {

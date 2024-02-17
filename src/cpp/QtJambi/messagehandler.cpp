@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -37,7 +37,7 @@
 
 Q_GLOBAL_STATIC(QReadWriteLock, gMessageHandlerLock)
 Q_GLOBAL_STATIC(QSet<QtMsgType>, gEnabledMessages)
-Q_GLOBAL_STATIC(JObjectWrapper, gMessageHandler)
+Q_GLOBAL_STATIC(jobject, gMessageHandler)
 static bool messageHandlerInstalled = false;
 
 void qtjambi_messagehandler_proxy(QtMsgType type, const QMessageLogContext & context, const QString & message)
@@ -51,7 +51,7 @@ void qtjambi_messagehandler_proxy(QtMsgType type, const QMessageLogContext & con
                     jobject msgType = qtjambi_cast<jobject>(env, type);
                     jobject _context = qtjambi_cast<jobject>(env, &context);
                     jobject msg = qtjambi_cast<jstring>(env, message);
-                    Java::QtCore::QtMessageHandler::accept(env, gMessageHandler->object(), msgType, _context, msg);
+                    Java::QtCore::QtMessageHandler::accept(env, *gMessageHandler, msgType, _context, msg);
                     InvalidateAfterUse::invalidate(env, _context);
                 }catch(const JavaException& exn){
                     __exnHandler.handle(env, exn, nullptr);
@@ -91,7 +91,7 @@ jobject CoreAPI::installMessageHandler(JNIEnv *env, jobject supportedMessageType
     }
     messageHandlerInstalled = handler!=nullptr;
     QtMessageHandler oldHandler;
-    jobject result;
+    jobject result{nullptr};
     if(gEnabledMessages->size()==5){
         QtMessageHandler messageHandler = qtjambi_cast<QtMessageHandler>(env, handler, "QtMessageHandler");
         oldHandler = qInstallMessageHandler(messageHandler);
@@ -102,20 +102,26 @@ jobject CoreAPI::installMessageHandler(JNIEnv *env, jobject supportedMessageType
                 link->setCppOwnership(env);
         }
         if(oldHandler==&qtjambi_messagehandler_proxy){
-            result = env->NewLocalRef(gMessageHandler->object());
-            *gMessageHandler = JObjectWrapper();
+            if(*gMessageHandler){
+                result = env->NewLocalRef(*gMessageHandler);
+                env->DeleteGlobalRef(*gMessageHandler);
+                *gMessageHandler = nullptr;
+            }
         }else{
             result = qtjambi_cast<jobject>(env, oldHandler);
         }
     }else{
-        *gMessageHandler = JObjectWrapper(env, handler);
+        if(*gMessageHandler){
+            env->DeleteGlobalRef(*gMessageHandler);
+            *gMessageHandler = nullptr;
+        }
+        *gMessageHandler = env->NewGlobalRef(handler);
         oldHandler = qInstallMessageHandler(&qtjambi_messagehandler_proxy);
         if(oldHandler==&qtjambi_messagehandler_proxy){
-            result = env->NewLocalRef(gMessageHandler->object());
+            result = handler;
         }else{
             result = qtjambi_cast<jobject>(env, oldHandler);
         }
-        *gMessageHandler = JObjectWrapper(env, handler);
     }
     if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, result)) {
         if(link->isShell() && link->ownership()!=QtJambiLink::Ownership::Java)
@@ -131,12 +137,15 @@ void clearMessageHandlerAtShutdown(JNIEnv *env){
         gEnabledMessages->clear();
         QtMessageHandler oldHandler = qInstallMessageHandler(nullptr);
         if(oldHandler==&qtjambi_messagehandler_proxy){
-            jobject result = env->NewLocalRef(gMessageHandler->object());
-            *gMessageHandler = JObjectWrapper();
             messageHandlerInstalled = false;
-            if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, result)) {
-                if(link->isShell() && link->ownership()!=QtJambiLink::Ownership::Java)
-                    link->setJavaOwnership(env);
+            if(*gMessageHandler){
+                jobject result = env->NewLocalRef(*gMessageHandler);
+                env->DeleteGlobalRef(*gMessageHandler);
+                *gMessageHandler = nullptr;
+                if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, result)) {
+                    if(link->isShell() && link->ownership()!=QtJambiLink::Ownership::Java)
+                        link->setJavaOwnership(env);
+                }
             }
         }
     }

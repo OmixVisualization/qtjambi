@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -752,21 +752,24 @@ hash_type qHash(const QColorTransform &value, hash_type seed = 0);
 #define QMATRIX(M,N) QMatrix##M##x##N
 
 #define QTJAMBI_MATRIX_CONTENT(M,N)\
-    public:\
-        QTJAMBIMATRIX(M,N)();\
-        QTJAMBIMATRIX(M,N)(const QMATRIX(M,N)& other);\
-        explicit QTJAMBIMATRIX(M,N)(const float *values);\
-        QMATRIX(M,N)& operator/=(float divisor);
-
-#define QTJAMBI_MATRIX_EXTRACONTENT(M,N)\
-    float& operator ()(int row, int column);\
-    const float& operator ()(int row, int column) const;\
+public:\
+    QTJAMBIMATRIX(M,N)();\
+    QTJAMBIMATRIX(M,N)(const QMATRIX(M,N)& other);\
+    explicit QTJAMBIMATRIX(M,N)(const float *values);\
     bool isIdentity() const;\
     void setToIdentity();\
     void fill(float value);\
+    float& operator ()(int row, int column);\
+    const float& operator ()(int row, int column) const;\
+    QMATRIX(M,N)& operator=(const QMATRIX(M,N)& other);\
     QMATRIX(M,N)& operator+=(const QMATRIX(M,N)& other);\
     QMATRIX(M,N)& operator-=(const QMATRIX(M,N)& other);\
     QMATRIX(M,N)& operator*=(float factor);\
+    QMATRIX(M,N)& operator/=(float divisor);\
+    QMATRIX(M,N) operator+(const QMATRIX(M,N)& other);\
+    QMATRIX(M,N) operator-(const QMATRIX(M,N)& other);\
+    QMATRIX(M,N) operator*(float factor);\
+    QMATRIX(M,N) operator/(float factor);\
     bool operator==(const QMATRIX(M,N)& other) const;\
     QMATRIX(N,M) transposed() const;\
     void copyDataTo(float *values) const;\
@@ -777,7 +780,6 @@ hash_type qHash(const QColorTransform &value, hash_type seed = 0);
 #define QTJAMBI_MATRIX(M,N)\
     class QTJAMBIMATRIX(M,N){\
     QTJAMBI_MATRIX_CONTENT(M,N)\
-    QTJAMBI_MATRIX_EXTRACONTENT(M,N)\
     };\
     hash_type qHash(const QTJAMBIMATRIX(M,N) &);
 QTJAMBI_MATRIX(2,2)

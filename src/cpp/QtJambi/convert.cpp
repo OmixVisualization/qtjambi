@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -148,12 +148,12 @@ void *QtJambiAPI::convertQNativePointerToNative(JNIEnv *env, jobject java_object
     if (!java_object)
         return nullptr;
     Q_ASSERT(Java::QtJambi::QNativePointer::isInstanceOf(env, java_object));  // check the java object is right type
-    int object_indirections = Java::QtJambi::QNativePointer::indirections(env, java_object);
+    /*int object_indirections = Java::QtJambi::QNativePointer::indirections(env, java_object);
     // What is this != test doing ?
     if (object_indirections != indirections) {
         JavaException::raiseIllegalArgumentException(env, "Illegal number of indirections" QTJAMBI_STACKTRACEINFO );
         return nullptr;
-    }
+    }*/
     return reinterpret_cast<void *>(Java::QtJambi::QNativePointer::pointer(env,java_object));
 }
 
@@ -413,7 +413,12 @@ jobject QtJambiAPI::convertQVariantToJavaObject(JNIEnv *env, const QVariant &qt_
     } else if (metaType == QMetaType::fromType<JIteratorWrapper>()) {
          JIteratorWrapper wrapper = qt_variant.value<JIteratorWrapper>();
          return env->NewLocalRef(wrapper.object());
-     } else {
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    } else if (isNativeWrapperMetaType(metaType)) {
+         JObjectWrapper wrapper = qt_variant.value<JObjectWrapper>();
+         return env->NewLocalRef(wrapper.object());
+#endif
+    } else {
         QString qtType = QLatin1String(metaType.name());
         QString javaType = QtJambiTypeManager::getExternalTypeName(env, qtType, metaType);
         // Find usage pattern
@@ -708,7 +713,7 @@ bool trivialConverter(const void *src, void *target) {
     return true;
 };
 
-void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, const QString& fullJavaName, jclass clazz){
+void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, const QString& fullJavaName, jclass clazz, QMetaType nativeWrapperType){
     QMetaType jObjectWrapperType = QMetaType::fromType<JObjectWrapper>();
     if(metaType.isValid() && metaType!=jObjectWrapperType){
         if(Java::QtCore::QObject::isAssignableFrom(env, clazz)){
@@ -741,100 +746,219 @@ void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, c
                 QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
                                                          if(JniEnvironment env{200}){
                                                              jobject object = QtJambiAPI::convertQObjectToJavaObject(env, *reinterpret_cast<QObject* const*>(src));
-                                                             new (target)JObjectWrapper(env, object);
+                                                             *reinterpret_cast<JObjectWrapper*>(target) = JObjectWrapper(env, object);
                                                              return true;
                                                          }
                                                          return false;
                                                      }, metaType, jObjectWrapperType);
         }else{
-            if(!QMetaType::hasRegisteredConverterFunction(jObjectWrapperType, metaType)){
-                ExternalToInternalConverter converter = QtJambiTypeManager::tryGetExternalToInternalConverter(env, clazz, qtName, metaType);
-                clazz = getGlobalClassRef(env, clazz);
-                if(converter){
-                    QMetaType::registerConverterFunction([clazz, metaType, converter](const void *src, void *target) -> bool {
+            if(isJObjectWrappedMetaType(metaType)){
+                if(!QMetaType::hasRegisteredConverterFunction(jObjectWrapperType, metaType)){
+                    JObjectWrapper classWrapper(env, clazz);
+                    QMetaType::registerConverterFunction([classWrapper](const void *src, void *target) -> bool {
                         if(src){
-                            if(JniEnvironment env{500}){
-                                const JObjectWrapper * wrapper = reinterpret_cast<const JObjectWrapper *>(src);
-                                if(!wrapper->object() || env->IsInstanceOf(wrapper->object(), clazz)){
-                                    if(!target)
-                                        metaType.construct(target, nullptr);
-                                    if(!wrapper->object()){
-                                        return true;
-                                    }else{
-                                        JniLocalFrame __jniLocalFrame(env, 200);
-                                        jvalue val;
-                                        val.l = wrapper->object();
-                                        return converter(env, nullptr, val, target, jValueType::l);
-                                    }
+                            jobject value = reinterpret_cast<const JObjectWrapper*>(src)->object();
+                            if(value!=nullptr){
+                                if(JniEnvironment env{200}){
+                                    if(!env->IsInstanceOf(value, jclass(classWrapper.object())))
+                                        return false;
                                 }
                             }
+                            new (target)JObjectWrapper(*reinterpret_cast<const JObjectWrapper*>(src));
+                        }else{
+                            new (target)JObjectWrapper();
                         }
-                        return false;
-                    }, jObjectWrapperType, metaType);
-                }else{
-                    QMetaType::registerConverterFunction([clazz, metaType, qtName, converter](const void *src, void *target) mutable -> bool {
-                        if(src){
-                            if(JniEnvironment env{500}){
-                                if(!converter){
-                                    converter = QtJambiTypeManager::getExternalToInternalConverter(env, clazz, qtName, metaType);
-                                    Q_ASSERT(converter);
-                                }
-                                const JObjectWrapper * wrapper = reinterpret_cast<const JObjectWrapper *>(src);
-                                if(!wrapper->object() || env->IsInstanceOf(wrapper->object(), clazz)){
-                                    if(!target)
-                                        metaType.construct(target, nullptr);
-                                    if(!wrapper->object()){
-                                        return true;
-                                    }else{
-                                        JniLocalFrame __jniLocalFrame(env, 200);
-                                        jvalue val;
-                                        val.l = wrapper->object();
-                                        return converter(env, nullptr, val, target, jValueType::l);
-                                    }
-                                }
-                            }
-                        }
-                        return false;
+                        return true;
                     }, jObjectWrapperType, metaType);
                 }
-            }
-            if(!QMetaType::hasRegisteredConverterFunction(metaType, jObjectWrapperType)){
-                InternalToExternalConverter converter = QtJambiTypeManager::tryGetInternalToExternalConverter(env, qtName, metaType, clazz);
-                if(converter){
-                    QMetaType::registerConverterFunction([converter](const void *src, void *target) -> bool {
-                        if(!src){
+                if(!QMetaType::hasRegisteredConverterFunction(metaType, jObjectWrapperType)){
+                    QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
+                        if(src){
+                            new (target)JObjectWrapper(*reinterpret_cast<const JObjectWrapper*>(src));
+                        }else{
                             new (target)JObjectWrapper();
-                            return true;
-                        }else if(JniEnvironment env{500}){
-                            jvalue val;
-                            val.l = nullptr;
-                            if(converter(env, nullptr, src, val, true)){
-                                new (target)JObjectWrapper(env, val.l);
-                                return true;
-                            }
                         }
-                        return false;
+                        return true;
                     }, metaType, jObjectWrapperType);
-                }else{
+                }
+                if(!QMetaType::hasRegisteredConverterFunction(metaType, QMetaType::fromType<QString>()))
+                    QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
+                        const JObjectWrapper* wrapper = reinterpret_cast<const JObjectWrapper*>(src);
+                        *reinterpret_cast<QString*>(target) = wrapper->toString();
+                        return true;
+                    }, metaType, QMetaType::fromType<QString>());
+            }else{
+                if(!QMetaType::hasRegisteredConverterFunction(jObjectWrapperType, metaType)){
+                    ExternalToInternalConverter converter = QtJambiTypeManager::tryGetExternalToInternalConverter(env, clazz, qtName, metaType);
                     clazz = getGlobalClassRef(env, clazz);
-                    QMetaType::registerConverterFunction([converter, qtName, metaType, clazz](const void *src, void *target) mutable -> bool {
-                        if(!src){
-                            new (target)JObjectWrapper();
-                            return true;
-                        }else if(JniEnvironment env{500}){
-                            if(!converter){
-                                converter = QtJambiTypeManager::getInternalToExternalConverter(env, qtName, metaType, clazz);
-                                Q_ASSERT(converter);
+                    if(converter){
+                        QMetaType::registerConverterFunction([clazz, metaType, converter](const void *src, void *target) -> bool {
+                            if(src){
+                                if(JniEnvironment env{500}){
+                                    const JObjectWrapper * wrapper = reinterpret_cast<const JObjectWrapper *>(src);
+                                    if(!wrapper->object() || env->IsInstanceOf(wrapper->object(), clazz)){
+                                        if(!target)
+                                            metaType.construct(target, nullptr);
+                                        if(!wrapper->object()){
+                                            return true;
+                                        }else{
+                                            JniLocalFrame __jniLocalFrame(env, 200);
+                                            jvalue val;
+                                            val.l = wrapper->object();
+                                            return converter(env, nullptr, val, target, jValueType::l);
+                                        }
+                                    }
+                                }
                             }
-                            jvalue val;
-                            val.l = nullptr;
-                            if(converter(env, nullptr, src, val, true)){
-                                new (target)JObjectWrapper(env, val.l);
+                            return false;
+                        }, jObjectWrapperType, metaType);
+                    }else{
+                        QMetaType::registerConverterFunction([clazz, metaType, qtName, converter](const void *src, void *target) mutable -> bool {
+                            if(src){
+                                if(JniEnvironment env{500}){
+                                    if(!converter){
+                                        converter = QtJambiTypeManager::getExternalToInternalConverter(env, clazz, qtName, metaType);
+                                        Q_ASSERT(converter);
+                                    }
+                                    const JObjectWrapper * wrapper = reinterpret_cast<const JObjectWrapper *>(src);
+                                    if(!wrapper->object() || env->IsInstanceOf(wrapper->object(), clazz)){
+                                        if(!target)
+                                            metaType.construct(target, nullptr);
+                                        if(!wrapper->object()){
+                                            return true;
+                                        }else{
+                                            JniLocalFrame __jniLocalFrame(env, 200);
+                                            jvalue val;
+                                            val.l = wrapper->object();
+                                            return converter(env, nullptr, val, target, jValueType::l);
+                                        }
+                                    }
+                                }
+                            }
+                            return false;
+                        }, jObjectWrapperType, metaType);
+                    }
+                }
+                if(!QMetaType::hasRegisteredConverterFunction(metaType, jObjectWrapperType)){
+                    InternalToExternalConverter converter = QtJambiTypeManager::tryGetInternalToExternalConverter(env, qtName, metaType, clazz);
+                    if(converter){
+                        QMetaType::registerConverterFunction([converter](const void *src, void *target) -> bool {
+                            if(!src){
+                                *reinterpret_cast<JObjectWrapper*>(target) = JObjectWrapper();
                                 return true;
+                            }else if(JniEnvironment env{500}){
+                                jvalue val;
+                                val.l = nullptr;
+                                if(converter(env, nullptr, src, val, true)){
+                                    *reinterpret_cast<JObjectWrapper*>(target) = JObjectWrapper(env, val.l);
+                                    return true;
+                                }
                             }
+                            return false;
+                        }, metaType, jObjectWrapperType);
+                    }else{
+                        clazz = getGlobalClassRef(env, clazz);
+                        QMetaType::registerConverterFunction([converter, qtName, metaType, clazz](const void *src, void *target) mutable -> bool {
+                            if(!src){
+                                *reinterpret_cast<JObjectWrapper*>(target) = JObjectWrapper();
+                                return true;
+                            }else if(JniEnvironment env{500}){
+                                if(!converter){
+                                    converter = QtJambiTypeManager::getInternalToExternalConverter(env, qtName, metaType, clazz);
+                                    Q_ASSERT(converter);
+                                }
+                                jvalue val;
+                                val.l = nullptr;
+                                if(converter(env, nullptr, src, val, true)){
+                                    *reinterpret_cast<JObjectWrapper*>(target) = JObjectWrapper(env, val.l);
+                                    return true;
+                                }
+                            }
+                            return false;
+                        }, metaType, jObjectWrapperType);
+                    }
+                }
+            }
+        }
+        if(nativeWrapperType.isValid()){
+            if(nativeWrapperType.flags().testFlag(QMetaType::PointerToQObject)){
+                if(!QMetaType::hasRegisteredConverterFunction(nativeWrapperType, jObjectWrapperType))
+                    QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
+                        const JQObjectWrapper* wrapper = reinterpret_cast<const JQObjectWrapper*>(src);
+                        if(JniEnvironment env{200}){
+                            *reinterpret_cast<JObjectWrapper*>(target) = wrapper->javaObject(env);
+                            return true;
                         }
                         return false;
-                    }, metaType, jObjectWrapperType);
+                    }, nativeWrapperType, jObjectWrapperType);
+                if(!QMetaType::hasRegisteredConverterFunction(nativeWrapperType, QMetaType::fromType<QString>()))
+                    QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
+                        const JQObjectWrapper* wrapper = reinterpret_cast<const JQObjectWrapper*>(src);
+                        *reinterpret_cast<QString*>(target) = QVariant::fromValue(wrapper->qobject()).toString();
+                        return true;
+                    }, nativeWrapperType, QMetaType::fromType<QString>());
+                if(!QMetaType::hasRegisteredConverterFunction(nativeWrapperType, metaType)){
+                    if(Java::Runtime::Class::isInterface(env, clazz)){
+                        if(const std::type_info* interfaceTypeId = getTypeByJavaName(fullJavaName)){
+                            QMetaType::registerConverterFunction([interfaceTypeId](const void *src, void *target) -> bool {
+                                const JQObjectWrapper* wrapper = reinterpret_cast<const JQObjectWrapper*>(src);
+                                if(QSharedPointer<QtJambiLink> link = wrapper->link()){
+                                    *reinterpret_cast<void**>(target) = link->typedPointer(*interfaceTypeId);
+                                    return true;
+                                }
+                                return false;
+                            }, nativeWrapperType, metaType);
+                        }
+                    }else{
+                        QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
+                            const JQObjectWrapper* wrapper = reinterpret_cast<const JQObjectWrapper*>(src);
+                            *reinterpret_cast<void**>(target) = wrapper->qobject();
+                            return true;
+                        }, nativeWrapperType, metaType);
+                    }
+                }
+            }else{
+                if(!QMetaType::hasRegisteredConverterFunction(nativeWrapperType, jObjectWrapperType))
+                    QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
+                        const JObjectWrapper* wrapper = reinterpret_cast<const JObjectWrapper*>(src);
+                        *reinterpret_cast<JObjectWrapper*>(target) = *wrapper;
+                        return true;
+                    }, nativeWrapperType, jObjectWrapperType);
+                if(!QMetaType::hasRegisteredConverterFunction(nativeWrapperType, QMetaType::fromType<QString>()))
+                    QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
+                        const JObjectWrapper* wrapper = reinterpret_cast<const JObjectWrapper*>(src);
+                        bool ok = false;
+                        *reinterpret_cast<QString*>(target) = wrapper->toString(&ok);
+                        return ok;
+                    }, nativeWrapperType, QMetaType::fromType<QString>());
+                if(!QMetaType::hasRegisteredConverterFunction(nativeWrapperType, metaType) && metaType.flags().testFlag(QMetaType::IsPointer)){
+                    if(Java::Runtime::Class::isInterface(env, clazz)){
+                        if(const std::type_info* interfaceTypeId = getTypeByJavaName(fullJavaName)){
+                            QMetaType::registerConverterFunction([interfaceTypeId](const void *src, void *target) -> bool {
+                                const JObjectWrapper* wrapper = reinterpret_cast<const JObjectWrapper*>(src);
+                                if(JniEnvironment env{200}){
+                                    if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, wrapper->object())){
+                                        *reinterpret_cast<void**>(target) = link->typedPointer(*interfaceTypeId);
+                                        return true;
+                                    }
+                                }
+                                return false;
+                            }, nativeWrapperType, metaType);
+                        }
+                    }else{
+                        const QSharedPointer<QtJambiLink>& (*findLinkForJavaObject)(JNIEnv*,jobject)
+                            = Java::QtJambi::NativeUtility$Object::isAssignableFrom(env, clazz) ? QtJambiLink::findLinkForJavaObject : QtJambiLink::findLinkForJavaInterface;
+                        QMetaType::registerConverterFunction([findLinkForJavaObject](const void *src, void *target) -> bool {
+                            const JObjectWrapper* wrapper = reinterpret_cast<const JObjectWrapper*>(src);
+                            if(JniEnvironment env{200}){
+                                if (QSharedPointer<QtJambiLink> link = findLinkForJavaObject(env, wrapper->object())){
+                                    *reinterpret_cast<void**>(target) = link->pointer();
+                                    return true;
+                                }
+                            }
+                            return false;
+                        }, nativeWrapperType, metaType);
+                    }
                 }
             }
         }
@@ -857,14 +981,12 @@ void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, c
                     }
                 }
                 if(!_metaType.isValid() && _qtName.endsWith("*") && interfaceTypeId){
-                    _metaType = qtjambiRegisterMetaType(env, clazz, _qtName.toUtf8(), registeredOriginalMetaObject(*interfaceTypeId), false);
+                    _metaType = qtjambiRegisterMetaType(env, interfaceClass, _qtName.toUtf8(), registeredOriginalMetaObject(*interfaceTypeId), false);
                 }
                 if(_metaType.isValid()){
                     if(!QMetaType::hasRegisteredConverterFunction(metaType, _metaType)){
                         if(metaType==jObjectWrapperType
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                                 || JObjectValueWrapper::isValueType(metaType)
-#endif
                                 || isJObjectWrappedMetaType(metaType)){
                             interfaceClass = getGlobalClassRef(env, interfaceClass);
                             const QSharedPointer<QtJambiLink>& (*findLinkForJavaObject)(JNIEnv*,jobject)
@@ -925,21 +1047,21 @@ void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, c
                             }
                         }
                     }
-                    registerConverterVariant(env, _metaType, _qtName, _fullJavaName, interfaceClass);
+                    registerConverterVariant(env, _metaType, _qtName, _fullJavaName, interfaceClass, nativeWrapperType);
                 }
             }
         }
     }
     if(!Java::Runtime::Class::isInterface(env, clazz)){
-        if(jclass _clazz = env->GetSuperclass(clazz)){
-            if(!Java::QtJambi::QtObject::isSameClass(env, _clazz)
-                    && !Java::Runtime::Object::isSameClass(env, _clazz)
-                    && env->GetArrayLength(Java::Runtime::Class::getTypeParameters(env, _clazz))==0){
-                QString _fullJavaName = QtJambiAPI::getClassName(env, _clazz).replace(".", "/");
-                QString _qtName = QtJambiTypeManager::getInternalTypeName(env, _clazz, false);
+        if(jclass superClazz = env->GetSuperclass(clazz)){
+            if(!Java::QtJambi::QtObject::isSameClass(env, superClazz)
+                    && !Java::Runtime::Object::isSameClass(env, superClazz)
+                    && env->GetArrayLength(Java::Runtime::Class::getTypeParameters(env, superClazz))==0){
+                QString _fullJavaName = QtJambiAPI::getClassName(env, superClazz).replace(".", "/");
+                QString _qtName = QtJambiTypeManager::getInternalTypeName(env, superClazz, false);
                 QMetaType _metaType = QMetaType::fromName(_qtName.toLatin1());
                 if(!_metaType.isValid()){
-                    if(jclass _object_class = JavaAPI::resolveClosestQtSuperclass(env, _clazz)){
+                    if(jclass _object_class = JavaAPI::resolveClosestQtSuperclass(env, superClazz)){
                         _fullJavaName = QtJambiAPI::getClassName(env, _object_class).replace(".", "/");
                         QString __fullJavaName = QtJambiAPI::getClassName(env, _object_class).replace(".", "/");
                         QString __qtName = QtJambiTypeManager::getInternalTypeName(env, _object_class, false);
@@ -952,31 +1074,29 @@ void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, c
                 }
                 const std::type_info* superTypeId = getTypeByJavaName(_fullJavaName);
                 if(!superTypeId){
-                    if(jclass _object_class = JavaAPI::resolveClosestQtSuperclass(env, _clazz)){
-                        _clazz = _object_class;
+                    if(jclass _object_class = JavaAPI::resolveClosestQtSuperclass(env, superClazz)){
+                        superClazz = _object_class;
                         _fullJavaName = QtJambiAPI::getClassName(env, _object_class).replace(".", "/");
                         superTypeId = getTypeByJavaName(_fullJavaName);
                     }
                 }
-                if(!_metaType.isValid() && _qtName.endsWith("*") && !superTypeId){
-                    _metaType = qtjambiRegisterMetaType(env, clazz, _qtName.toUtf8(), registeredOriginalMetaObject(*superTypeId), Java::QtCore::QObject::isAssignableFrom(env, _clazz));
+                if(!_metaType.isValid() && _qtName.endsWith("*") && superTypeId){
+                    _metaType = qtjambiRegisterMetaType(env, superClazz, _qtName.toUtf8(), registeredOriginalMetaObject(*superTypeId), Java::QtCore::QObject::isAssignableFrom(env, superClazz));
                 }
                 if(_metaType.isValid()){
                     if(!QMetaType::hasRegisteredConverterFunction(metaType, _metaType)){
                         if(metaType==jObjectWrapperType
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                                 || JObjectValueWrapper::isValueType(metaType)
-#endif
                                 || isJObjectWrappedMetaType(metaType)){
-                            _clazz = getGlobalClassRef(env, _clazz);
+                            superClazz = getGlobalClassRef(env, superClazz);
                             const QSharedPointer<QtJambiLink>& (*findLinkForJavaObject)(JNIEnv*,jobject)
-                                    = Java::QtJambi::NativeUtility$Object::isAssignableFrom(env, _clazz) ? QtJambiLink::findLinkForJavaObject : QtJambiLink::findLinkForJavaInterface;
+                                    = Java::QtJambi::NativeUtility$Object::isAssignableFrom(env, superClazz) ? QtJambiLink::findLinkForJavaObject : QtJambiLink::findLinkForJavaInterface;
                             if(_qtName.endsWith("*")){
-                                QMetaType::registerConverterFunction([_clazz, findLinkForJavaObject](const void *src, void *target) -> bool {
+                                QMetaType::registerConverterFunction([superClazz, findLinkForJavaObject](const void *src, void *target) -> bool {
                                     if(JniEnvironment env{200}){
                                         if(src){
                                             const JObjectWrapper* wrapper = reinterpret_cast<const JObjectWrapper*>(src);
-                                            if(!wrapper->object() || env->IsInstanceOf(wrapper->object(), _clazz)){
+                                            if(!wrapper->object() || env->IsInstanceOf(wrapper->object(), superClazz)){
                                                 void* object = nullptr;
                                                 if(QSharedPointer<QtJambiLink> link = findLinkForJavaObject(env, wrapper->object()))
                                                     object = link->pointer();
@@ -990,11 +1110,11 @@ void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, c
                                     return false;
                                 }, metaType, _metaType);
                             }else{
-                                QMetaType::registerConverterFunction([_clazz, findLinkForJavaObject, _metaType](const void *src, void *target) -> bool {
+                                QMetaType::registerConverterFunction([superClazz, findLinkForJavaObject, _metaType](const void *src, void *target) -> bool {
                                     if(JniEnvironment env{200}){
                                         if(src){
                                             const JObjectWrapper* wrapper = reinterpret_cast<const JObjectWrapper*>(src);
-                                            if(env->IsInstanceOf(wrapper->object(), _clazz)){
+                                            if(env->IsInstanceOf(wrapper->object(), superClazz)){
                                                 void* object = nullptr;
                                                 if(QSharedPointer<QtJambiLink> link = findLinkForJavaObject(env, wrapper->object()))
                                                     object = link->pointer();
@@ -1013,7 +1133,7 @@ void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, c
                             QMetaType::registerConverterFunction(&trivialConverter, metaType, _metaType);
                         }
                     }
-                    registerConverterVariant(env, _metaType, _qtName, _fullJavaName, _clazz);
+                    registerConverterVariant(env, _metaType, _qtName, _fullJavaName, superClazz, nativeWrapperType);
                 }
             }
         }
@@ -1034,9 +1154,7 @@ void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, c
                         if(_metaType.isValid()){
                             if(!QMetaType::hasRegisteredConverterFunction(metaType, _metaType)){
                                 if(metaType==jObjectWrapperType
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
                                         || JObjectValueWrapper::isValueType(metaType)
-#endif
                                         || isJObjectWrappedMetaType(metaType)){
                                     if(_qtName.endsWith("*")){
                                         interfaceClass = getGlobalClassRef(env, interfaceClass);
@@ -1617,6 +1735,11 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
 
     // Do the slightly slower fallback...
     QString fullJavaName = QtJambiAPI::getClassName(env, object_class).replace(".", "/");
+    if(Java::Runtime::Class::isSynthetic(env, object_class)){
+        object_class = JavaAPI::resolveClass(env, qPrintable(fullJavaName));
+    }else{
+        object_class = getGlobalClassRef(env, object_class, fullJavaName.toLatin1());
+    }
 
     // may it allow enum and flags?
     QString qtName = QtJambiTypeManager::getInternalTypeName(env, object_class, false);
@@ -1675,12 +1798,21 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
     }
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     QMetaType type = QMetaType::fromName(qPrintable(qtName));
-    if(!type.isValid() && qtName.endsWith("*")){
-        const std::type_info* typeId = getTypeByJavaName(fullJavaName);
-        type = qtjambiRegisterMetaType(env, object_class, qtName.toUtf8(),
-                                       typeId ? registeredOriginalMetaObject(*typeId) : nullptr,
-                                       Java::QtCore::QObject::isAssignableFrom(env, object_class));
-    }else if(type.isValid() && isJObjectWrappedMetaType(type)){
+    if(!type.isValid()){
+        if(qtName.endsWith("*")){
+            const std::type_info* typeId = getTypeByJavaName(fullJavaName);
+            type = qtjambiRegisterMetaType(env, object_class, qtName.toUtf8(),
+                                           typeId ? registeredOriginalMetaObject(*typeId) : nullptr,
+                                           Java::QtCore::QObject::isAssignableFrom(env, object_class));
+        }else if(qtName.isEmpty()){
+            //const SuperTypeInfos& infos = SuperTypeInfos::fromClass(env, object_class);
+            //if(!infos.isEmpty()){
+                type = QMetaType(CoreAPI::registerMetaType(env, object_class, nullptr));
+                qtName = type.name();
+            //}
+        }
+    }
+    if(type.isValid() && isJObjectWrappedMetaType(type)){
         JObjectWrapper wrapper(env, java_object);
         return QVariant(type, &wrapper);
     }
@@ -1702,8 +1834,28 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
         bool findConverter = !qtName.endsWith("*") || !convert;
         if(!findConverter){
             if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, java_object)){
-                if(link->ownership()!=QtJambiLink::Ownership::Java)
+                switch(link->ownership()){
+                case QtJambiLink::Ownership::Java:
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                    if(convert){
+                        QMetaType ntype = getNativeWrapperType(type);
+                        if(ntype.isValid()){
+                            registerConverterVariant(env, type, qtName, fullJavaName, object_class, ntype);
+                            if(type.flags().testFlag(QMetaType::PointerToQObject)){
+                                JQObjectWrapper wrapper(env, std::move(link));
+                                return QVariant(FROM_META_TYPE(ntype), &wrapper);
+                            }else{
+                                JObjectWrapper wrapper(env, java_object);
+                                return QVariant(FROM_META_TYPE(ntype), &wrapper);
+                            }
+                        }
+                    }
+#endif
+                    break;
+                default:
                     findConverter = true;
+                    break;
+                }
             }else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, java_object)){
                 Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, java_object).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
             }

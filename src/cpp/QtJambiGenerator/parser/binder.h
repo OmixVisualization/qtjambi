@@ -101,6 +101,7 @@ class Binder: protected DefaultVisitor {
         void visitQObject(QObjectAST *) override;
     private:
         bool isDeprecated(ExpressionAST *annotationExpression, StringLiteralAST *&deprecationComment);
+        bool isDllExported(ExpressionAST *annotationExpression);
         int decode_token(std::size_t index) const;
         const NameSymbol *decode_symbol(std::size_t index) const;
         CodeModel::AccessPolicy decode_access_policy(std::size_t index) const;
@@ -117,7 +118,7 @@ class Binder: protected DefaultVisitor {
 
         void declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_declarator);
 
-        void applyStorageSpecifiers(const ListNode<std::size_t> *storage_specifiers, MemberModelItem item);
+        void applyStorageSpecifiers(const ListNode<std::size_t> *storage_specifiers, MemberModelItem item, void(*setDllExported)(MemberModelItem item, bool value) = nullptr);
         void applyFunctionSpecifiers(const ListNode<std::size_t> *it, FunctionModelItem item);
 
         void updateItemPosition(CodeModelItem item, AST *node);

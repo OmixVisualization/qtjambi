@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -371,13 +371,11 @@ QFutureInterfaceBase& QtJambiAPI::getQFutureInterfaceFromQFuture(const QFuture<v
 bool isVariantFuture(QSharedPointer<QFutureInterfaceBase>& sourceFuture){
     if(dynamic_cast<QFutureInterface<QVariant>*>(sourceFuture.get()))
         return true;
-#if defined(Q_OS_ANDROID)
     QFutureInterfaceBase* sourceObject = sourceFuture.get();
     QByteArray sourceFutureTypeName = QtJambiAPI::typeName(typeid(*sourceObject));
     if(sourceFutureTypeName=="QFutureInterface<QVariant>"
             || sourceFutureTypeName=="QFutureInterface_shell<QVariant>")
         return true;
-#endif
     return false;
 }
 

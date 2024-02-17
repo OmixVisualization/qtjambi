@@ -14,6 +14,8 @@ public class AidlTask extends Task {
 		String buildtools = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.android.buildtools").split("\\,")[0];
 		String platforms = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.android.platform.dir");
 		String qtdir = AntUtil.getPropertyAsString(propertyHelper, "qtjambi.qtdir");
+		System.out.println("qtjambi.android.buildtools="+buildtools);
+		System.out.println("qtjambi.android.platform.dir="+platforms);
 		java.io.File buildtoolsDir, platformsDir;
 		if(buildtools!=null 
 				&& !buildtools.isEmpty() 
@@ -21,7 +23,7 @@ public class AidlTask extends Task {
 				&& platforms!=null 
 				&& !platforms.isEmpty() 
 				&& (platformsDir = new java.io.File(platforms)).isDirectory()) {
-			java.io.File aidlPath = new java.io.File(buildtoolsDir, OSInfo.os()==OSInfo.OS.Windows ? "aidl.exe" : "aidl");
+			java.io.File aidlPath = new java.io.File(buildtoolsDir, OSInfo.os()==OSInfo.OperationSystem.Windows ? "aidl.exe" : "aidl");
 			java.io.File frameworkPath = new java.io.File(platformsDir, "framework.aidl");
 			java.io.File f1 = new java.io.File(qtdir, "src/android/java/src/org/kde/necessitas/ministro/IMinistroCallback.aidl");
 			java.io.File f2 = new java.io.File(qtdir, "src/android/java/src/org/kde/necessitas/ministro/IMinistro.aidl");

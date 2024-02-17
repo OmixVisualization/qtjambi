@@ -1,7 +1,7 @@
 /****************************************************************************
  **
  ** Copyright (C) 1992-2009 Nokia. All rights reserved.
- ** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+ ** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
  **
  ** This file is part of Qt Jambi.
  **
@@ -10013,7 +10013,6 @@ class QMutex___ extends QMutex {
 }// class
 
 class QTimer___ extends QTimer {
-
     /**
      * <p>See <a href="@docRoot/qtimer.html#callOnTimeout"><code>QTimer::callOnTimeout(Args&amp;&amp;...)</code></a></p>
      */
@@ -10034,317 +10033,7 @@ class QTimer___ extends QTimer {
     public final QMetaObject.@NonNull Connection callOnTimeout(@Nullable QObject receiver, @NonNull String method, Qt.@NonNull ConnectionType @NonNull... type){
         return timeout.connect(receiver, method, type);
     }
-    
-    private static class QSingleShotTimer extends QObject {
-        int timerId;
-        public final Signal0 timeout = new Signal0();
-        private final QObject receiver;
-        private final QMetaObject.Slot0 slot;
 
-        QSingleShotTimer(QObject obj, String method) {
-            super(QAbstractEventDispatcher.instance());
-            this.slot = null;
-            this.receiver = null;
-            if(QAbstractEventDispatcher.instance()==null){
-                dispose();
-                return;
-            }
-            QtJambi_LibraryUtilities.internal.setCppOwnership(this);
-            timeout.connect(obj, method);
-        }
-
-        QSingleShotTimer(QObject obj, QMetaObject.Slot0 slot) {
-            super(QAbstractEventDispatcher.instance());
-            QMetaObject.Connection connection = timeout.connect(slot);
-            if(!connection.isConnected() || (obj!=null && connection.receiver()!=obj)) {
-                this.slot = slot;
-                this.receiver = obj;
-            }else {
-                this.slot = null;
-                this.receiver = null;
-            }
-            if(obj!=null && thread()!=obj.thread()) {
-                QCoreApplication.instance().aboutToQuit.connect(this::disposeLater);
-                setParent(null);
-                this.moveToThread(obj.thread());
-            }else if(QAbstractEventDispatcher.instance()==null){
-                dispose();
-                return;
-            }
-            QtJambi_LibraryUtilities.internal.setCppOwnership(this);
-        }
-
-        QSingleShotTimer(int msec, Qt.TimerType timeType, QObject obj, String method) {
-            this(obj, method);
-            if(!isDisposed())
-                timerId = startTimer(msec, timeType);
-        }
-
-        QSingleShotTimer(int msec, Qt.TimerType timeType, QObject obj, QMetaObject.Slot0 slot) {
-            this(obj, slot);
-            if(!isDisposed())
-                timerId = startTimer(msec, timeType);
-        }
-
-        @Override
-        protected void timerEvent(QTimerEvent e) {
-            if (timerId > 0)
-                killTimer(timerId);
-            timerId = -1;
-            if(slot!=null) {
-                if(receiver==null || !receiver.isDisposed()) {
-                    try {
-                        slot.invoke();
-                    } catch (Throwable e1) {
-                    }
-                }
-            }else {
-                timeout.emit();
-            }
-            disposeLater();
-        }
-    }
-
-    /**
-     * This static function calls a slot after a given time interval.
-     * 
-     * It is very convenient to use this function because you do not need
-     * to bother with a timerEvent or create a local QTimer object.
-     * 
-     * The receiver is the receiving object and the member is the slot. The
-     * time interval is msec milliseconds.
-     * 
-     * @see #start()
-     * @see <a href="@docRoot/qtimer.html#singleShot"><code>QTimer::singleShot(Duration,const QObject*,const char *)</code></a>
-     */
-     public static void singleShot(int msec, @Nullable QObject obj, @NonNull String method) {
-        singleShot(msec, defaultTypeFor(msec), obj, method);
-    }
-
-    /**
-     * This static function calls slot after a given time interval.
-     * 
-     * It is very convenient to use this function because you do not need
-     * to bother with a timerEvent or create a local QTimer object.
-     * 
-     * The time interval is msec milliseconds.
-     * 
-     * If context is destroyed before the interval occurs, the method will not be called.
-     * The function will be run in the thread of context. The context's thread must have
-     * a running Qt event loop.
-     * 
-     * @see #start()
-     * @since 5.4
-     * @see <a href="@docRoot/qtimer.html#singleShot-6"><code>QTimer::singleShot(Duration,const QObject*,Functor)</code></a>
-     */    
-    public static void singleShot(int msec, @Nullable QObject context, QMetaObject.@NonNull Slot0 slot) {
-        singleShot(msec, defaultTypeFor(msec), context, slot);
-    }
-
-    /**
-     * This static function calls a slot after a given time interval.
-     * 
-     * It is very convenient to use this function because you do not need
-     * to bother with a timerEvent or create a local QTimer object.
-     * 
-     * The receiver is the receiving object and the member is the slot. The
-     * time interval is msec milliseconds. The timerType affects the
-     * accuracy of the timer.
-     * 
-     * @see #start()
-     * @see <a href="@docRoot/qtimer.html#singleShot-1"><code>QTimer::singleShot(Duration,Qt::TimerType,const QObject*,const char *)</code></a>
-     */
-    public static void singleShot(int msec, Qt.@NonNull TimerType timeType, @Nullable QObject obj, @NonNull String method) {
-        new QSingleShotTimer(msec, timeType, obj, method);
-    }
-
-    /**
-     * This static function calls slot after a given time interval.
-     * 
-     * It is very convenient to use this function because you do not need
-     * to bother with a timerEvent or
-     * create a local QTimer object.
-     * 
-     * The time interval is msec milliseconds.
-     * 
-     * @see #start()
-     * @since 5.4
-     * @see <a href="@docRoot/qtimer.html#singleShot-2"><code>QTimer::singleShot(Duration,Qt::TimerType,PointerToMemberFunction)</code></a>
-     */
-    public static void singleShot(int msec, QMetaObject.@NonNull Slot0 slot) {
-        singleShot(msec, defaultTypeFor(msec), null, slot);
-    }
-
-    /**
-     * This static function calls slot after a given time interval.
-     * 
-     * It is very convenient to use this function because you do not need
-     * to bother with a timerEvent or
-     * create a local QTimer object.
-     * 
-     * The time interval is msec milliseconds. The timerType affects the
-     * accuracy of the timer.
-     * 
-     * @see #start()
-     * @since 5.4
-     * @see <a href="@docRoot/qtimer.html#singleShot-3"><code>QTimer::singleShot(Duration,Qt::TimerType,PointerToMemberFunction)</code></a>
-     */
-    public static void singleShot(int msec, Qt.@NonNull TimerType timeType, QMetaObject.@NonNull Slot0 slot) {
-        singleShot(msec, timeType, null, slot);
-    }
-
-    /**
-     * This static function calls slot after a given time interval.
-     * 
-     * It is very convenient to use this function because you do not need
-     * to bother with a timerEvent or
-     * create a local QTimer object.
-     * 
-     * The time interval is msec milliseconds. The timerType affects the
-     * accuracy of the timer.
-     * 
-     * If context is destroyed before the interval occurs, the method will not be called.
-     * The function will be run in the thread of context. The context's thread must have
-     * a running Qt event loop.
-     * 
-     * @see #start()
-     * @since 5.4
-     * @see <a href="@docRoot/qtimer.html#singleShot-7"><code>QTimer::singleShot(Duration,Qt::TimerType,const QObject*,Functor)</code></a>
-     */
-    public static void singleShot(int msec, Qt.@NonNull TimerType timeType, @Nullable QObject context, QMetaObject.@NonNull Slot0 slot) {
-        new QSingleShotTimer(msec, timeType, context, slot);
-    }
-
-    private static Qt.TimerType defaultTypeFor(int msecs){
-        return msecs >= 2000 ? Qt.TimerType.CoarseTimer : Qt.TimerType.PreciseTimer;
-    }
-
-}// class
-
-class QTimer_6__ extends QTimer {
-
-    private static class QSingleShotChronoTimer extends QSingleShotTimer {
-        QSingleShotChronoTimer(java.time.temporal.TemporalAmount time, Qt.TimerType timeType, QObject obj, String method) {
-            super(obj, method);
-            if(!isDisposed())
-                timerId = startTimer(time, timeType);
-        }
-
-        QSingleShotChronoTimer(java.time.temporal.TemporalAmount time, Qt.TimerType timeType, QObject obj, QMetaObject.Slot0 slot) {
-            super(obj, slot);
-            if(!isDisposed())
-                timerId = startTimer(time, timeType);
-        }
-    }
-
-    /**
-     * This static function calls a slot after a given time interval.
-     *
-     * It is very convenient to use this function because you do not need
-     * to bother with a timerEvent or create a local QTimer object.
-     *
-     * The receiver is the receiving object and the member is the slot.
-     *
-     * @see #start()
-     * @see <a href="@docRoot/qtimer.html#singleShot"><code>QTimer::singleShot(Duration,const QObject*,const char *)</code></a>
-     */
-     public static void singleShot(java.time.temporal.@NonNull TemporalAmount time, @Nullable QObject obj, @NonNull String method) {
-        singleShot(time, defaultTypeFor(time), obj, method);
-    }
-
-    /**
-     * This static function calls slot after a given time interval.
-     *
-     * It is very convenient to use this function because you do not need
-     * to bother with a timerEvent or create a local QTimer object.
-     *
-     * If context is destroyed before the interval occurs, the method will not be called.
-     * The function will be run in the thread of context. The context's thread must have
-     * a running Qt event loop.
-     *
-     * @see #start()
-     * @since 5.4
-     * @see <a href="@docRoot/qtimer.html#singleShot-6"><code>QTimer::singleShot(Duration,const QObject*,Functor)</code></a>
-     */
-    public static void singleShot(java.time.temporal.@NonNull TemporalAmount time, @Nullable QObject context, QMetaObject.@NonNull Slot0 slot) {
-        singleShot(time, defaultTypeFor(time), context, slot);
-    }
-
-    /**
-     * This static function calls a slot after a given time interval.
-     *
-     * It is very convenient to use this function because you do not need
-     * to bother with a timerEvent or create a local QTimer object.
-     *
-     * The receiver is the receiving object and the member is the slot.
-     * The timerType affects the accuracy of the timer.
-     *
-     * @see #start()
-     * @see <a href="@docRoot/qtimer.html#singleShot-1"><code>QTimer::singleShot(Duration,Qt::TimerType,const QObject*,const char *)</code></a>
-     */
-    public static void singleShot(java.time.temporal.@NonNull TemporalAmount time, Qt.@NonNull TimerType timeType, @Nullable QObject obj, @NonNull String method) {
-        new QSingleShotChronoTimer(time, timeType, obj, method);
-    }
-
-    /**
-     * This static function calls slot after a given time interval.
-     *
-     * It is very convenient to use this function because you do not need
-     * to bother with a timerEvent or
-     * create a local QTimer object.
-     *
-     * @see #start()
-     * @since 5.4
-     * @see <a href="@docRoot/qtimer.html#singleShot-2"><code>QTimer::singleShot(Duration,Qt::TimerType,PointerToMemberFunction)</code></a>
-     */
-    public static void singleShot(java.time.temporal.@NonNull TemporalAmount time, QMetaObject.@NonNull Slot0 slot) {
-        singleShot(time, defaultTypeFor(time), null, slot);
-    }
-
-    /**
-     * This static function calls slot after a given time interval.
-     *
-     * It is very convenient to use this function because you do not need
-     * to bother with a timerEvent or
-     * create a local QTimer object.
-     *
-     * The timerType affects the
-     * accuracy of the timer.
-     *
-     * @see #start()
-     * @since 5.4
-     * @see <a href="@docRoot/qtimer.html#singleShot-3"><code>QTimer::singleShot(Duration,Qt::TimerType,PointerToMemberFunction)</code></a>
-     */
-    public static void singleShot(java.time.temporal.@NonNull TemporalAmount time, Qt.@NonNull TimerType timeType, QMetaObject.@NonNull Slot0 slot) {
-        singleShot(time, timeType, null, slot);
-    }
-
-    /**
-     * This static function calls slot after a given time interval.
-     *
-     * It is very convenient to use this function because you do not need
-     * to bother with a timerEvent or
-     * create a local QTimer object.
-     *
-     * The timerType affects the
-     * accuracy of the timer.
-     *
-     * If context is destroyed before the interval occurs, the method will not be called.
-     * The function will be run in the thread of context. The context's thread must have
-     * a running Qt event loop.
-     *
-     * @see #start()
-     * @since 5.4
-     * @see <a href="@docRoot/qtimer.html#singleShot-7"><code>QTimer::singleShot(Duration,Qt::TimerType,const QObject*,Functor)</code></a>
-     */
-    public static void singleShot(java.time.temporal.@NonNull TemporalAmount time, Qt.@NonNull TimerType timeType, @Nullable QObject context, QMetaObject.@NonNull Slot0 slot) {
-        new QSingleShotChronoTimer(time, timeType, context, slot);
-    }
-
-    private static Qt.TimerType defaultTypeFor(java.time.temporal.@NonNull TemporalAmount time){
-        return (time instanceof java.time.Duration ? (java.time.Duration)time : java.time.Duration.from(time)).toMillis() >= 2000 ? Qt.TimerType.CoarseTimer : Qt.TimerType.PreciseTimer;
-    }
-    
 }// class
 
 class QCoreApplication___ extends QCoreApplication {
@@ -11761,6 +11450,14 @@ class QDate___ extends QDate {
 
 class QByteArray___ extends QByteArray {
 
+    /**
+     * <p>Java wrapper for Qt callable <code>std::function&lt;bool(char)&gt;</code></p>
+     */
+    @FunctionalInterface
+    public interface Predicate {
+        public boolean test(byte b);
+    }
+
     private static byte[] getBytes(String s) {
         if(s==null)
             return new byte[0];
@@ -13128,16 +12825,6 @@ class QMetaType___ extends QMetaType {
     }
     
     /**
-     * Returns the type name associated with this <code>QMetaType</code> as {@link String}.
-     * @return type name
-     */
-    @Override
-    @QtUninvokable
-    public final @NonNull String toString() {
-        return ""+name();
-    }
-    
-    /**
      * @deprecated Use {@link #qRegisterMetaType(Class, QMetaType...)} instead.
      */
     @Deprecated
@@ -13730,6 +13417,18 @@ class QMetaType___ extends QMetaType {
     }
 }// class
 
+class QMetaType_toString__ extends QMetaType {
+/**
+ * Returns the type name associated with this <code>QMetaType</code> as {@link String}.
+ * @return type name
+ */
+@Override
+@QtUninvokable
+public final @NonNull String toString() {
+    return String.format("QMetaType(%1$s)", name());
+}
+}// class
+
 class QVariant_5__ {    
     /**
      * @deprecated Use {@link QDataStream#writeObject(Object)} instead.
@@ -14084,7 +13783,14 @@ class QVariant_6__ {
 }// class
 
 class QVariant___ {
-    
+
+    /**
+     * Create a variant for the native nullptr type.
+     */
+    public static QVariant nullVariant() {
+        return new QVariant(QMetaType.Type.Nullptr);
+    }
+
     static Class<?> getComplexType(Class<?> primitiveType) {
         if (primitiveType == int.class)
             return Integer.class;
@@ -15066,6 +14772,80 @@ class QPartialOrdering___ {
     public static final int Unordered = -127;
 }// class
 
+class QPartialOrdering_67__ {
+    /**
+     * <p>See <a href="@docRoot/qpartialordering.html#Equivalent-var"><code>QPartialOrdering::equivalent</code></a></p>
+     */
+    public static final int equivalent = 0;
+    /**
+     * <p>See <a href="@docRoot/qpartialordering.html#Less-var"><code>QPartialOrdering::less</code></a></p>
+     */
+    public static final int greater = 1;
+    /**
+     * <p>See <a href="@docRoot/qpartialordering.html#Greater-var"><code>QPartialOrdering::greater</code></a></p>
+     */
+    public static final int less = -1;
+    /**
+     * <p>See <a href="@docRoot/qpartialordering.html#Unordered-var"><code>QPartialOrdering::unordered</code></a></p>
+     */
+    public static final int unordered = -127;
+}// class
+
+class partial_ordering___ {
+    /**
+     * <p>See <a href="@docRoot/qpartialordering.html#Equivalent-var"><code>partial_ordering::equivalent</code></a></p>
+     */
+    public static final int equivalent = 0;
+    /**
+     * <p>See <a href="@docRoot/qpartialordering.html#Less-var"><code>partial_ordering::less</code></a></p>
+     */
+    public static final int greater = 1;
+    /**
+     * <p>See <a href="@docRoot/qpartialordering.html#Greater-var"><code>partial_ordering::greater</code></a></p>
+     */
+    public static final int less = -1;
+    /**
+     * <p>See <a href="@docRoot/qpartialordering.html#Unordered-var"><code>partial_ordering::unordered</code></a></p>
+     */
+    public static final int unordered = unordered();
+
+    private static native int unordered();
+}// class
+
+class weak_ordering___ {
+    /**
+     * <p>See <a href="@docRoot/qpartialordering.html#Equivalent-var"><code>weak_ordering::equivalent</code></a></p>
+     */
+    public static final int equivalent = 0;
+    /**
+     * <p>See <a href="@docRoot/qpartialordering.html#Less-var"><code>weak_ordering::less</code></a></p>
+     */
+    public static final int greater = 1;
+    /**
+     * <p>See <a href="@docRoot/qpartialordering.html#Greater-var"><code>weak_ordering::greater</code></a></p>
+     */
+    public static final int less = -1;
+}// class
+
+class strong_ordering___ {
+    /**
+     * <p>See <a href="@docRoot/qpartialordering.html#Equivalent-var"><code>strong_ordering::equivalent</code></a></p>
+     */
+    public static final int equivalent = 0;
+    /**
+     * <p>See <a href="@docRoot/qpartialordering.html#Equivalent-var"><code>strong_ordering::equal</code></a></p>
+     */
+    public static final int equal = 0;
+    /**
+     * <p>See <a href="@docRoot/qpartialordering.html#Less-var"><code>strong_ordering::less</code></a></p>
+     */
+    public static final int greater = 1;
+    /**
+     * <p>See <a href="@docRoot/qpartialordering.html#Greater-var"><code>strong_ordering::greater</code></a></p>
+     */
+    public static final int less = -1;
+}// class
+
 class QMetaMethod___ {
     private Class<?> returnClassType;
     private java.util.List<Class<?>> parameterClassTypes;
@@ -15402,8 +15182,10 @@ class QMetaMethod___ {
     
     private static QMetaMethod fromMethodImpl(QMetaObject.AbstractSlot method) {
         io.qt.internal.ClassAnalyzerUtility.LambdaInfo info = io.qt.internal.ClassAnalyzerUtility.lambdaInfo(method);
-        if(info!=null && info.lambdaArgs.isEmpty()) {
-            if(info.owner instanceof QMetaObject.Signal && info.reflectiveMethod.getName().equals("emit"))
+        if(info!=null) {
+            if(info.owner instanceof QMetaObject.Signal
+                && info.reflectiveMethod!=null
+                && info.reflectiveMethod.getName().equals("emit"))
                 return fromSignal((QMetaObject.Signal)info.owner);
             if(info.reflectiveMethod!=null)
                 return fromReflectedMethod(info.reflectiveMethod);
@@ -17166,7 +16948,7 @@ class QThread___{
     private final Thread javaThread = null;
     
     /**
-     * Returns the {@link Thread} instance repüresenting this {@link QThread}.
+     * Returns the {@link Thread} instance representing this {@link QThread}.
      */
     public final @Nullable Thread javaThread() { return javaThread==null ? __qt_javaThread() : javaThread; }
     
@@ -17842,6 +17624,14 @@ class QString__{
      */
     @QtUninvokable
     public static native @NonNull QByteArray toLocal8Bit(CharSequence string);
+
+    /**
+     * <p>Java wrapper for Qt callable <code>std::function&lt;bool(QChar)&gt;</code></p>
+     */
+    @FunctionalInterface
+    public interface Predicate {
+        public boolean test(char character);
+    }
 }// class
 
 class QtGlobal_5_ {

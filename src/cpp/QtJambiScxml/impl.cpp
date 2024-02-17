@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -32,83 +32,6 @@
 #include <QtJambi/JavaAPI>
 #include <QtJambi/JObjectWrapper>
 #include <QtJambi/qtjambi_cast.h>
-
-// QScxmlStateMachine::connectToState(const QString &scxmlStateName, Functor functor, Qt::ConnectionType type = Qt::AutoConnection)
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_scxml_QScxmlStateMachine_connectToState)
-(JNIEnv *__jni_env,
- jobject __this,
- QtJambiNativeID __this_nativeId,
- jstring scxmlStateName0,
- jobject slot1,
- jint type2)
-{
-    Q_UNUSED(__this)
-    jobject _result{nullptr};
-    QTJAMBI_TRY{
-        QScxmlStateMachine *__qt_this = QtJambiAPI::objectFromNativeId<QScxmlStateMachine>(__this_nativeId);
-        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QScxmlStateMachine::connectToState(const QString &scxmlStateName, Functor functor, Qt::ConnectionType type = Qt::AutoConnection)", __qt_this)
-        const QString&  __qt_scxmlStateName0 = qtjambi_cast<QString>(__jni_env, scxmlStateName0);
-        JObjectWrapper pointer(__jni_env, slot1);
-        QMetaObject::Connection connection;
-        if(Java::QtCore::QMetaObject$Slot1::isInstanceOf(__jni_env, slot1)){
-            connection = __qt_this->connectToState(__qt_scxmlStateName0, [pointer](bool isEnteringState){
-                if(JniEnvironment env{300}){
-                    Java::QtCore::QMetaObject$Slot1::invoke(env, pointer.object(), QtJambiAPI::toJavaBooleanObject(env, isEnteringState));
-                }
-            }, Qt::ConnectionType(type2));
-        }else{
-            connection = __qt_this->connectToState(__qt_scxmlStateName0, [pointer](bool){
-                if(JniEnvironment env{300}){
-                    Java::QtCore::QMetaObject$Slot0::invoke(env, pointer.object());
-                }
-            }, Qt::ConnectionType(type2));
-        }
-        _result = qtjambi_cast<jobject>(__jni_env, connection);
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-    return _result;
-}
-
-// QScxmlStateMachine::connectToEvent(const QString &scxmlStateName, Functor functor, Qt::ConnectionType type = Qt::AutoConnection)
-extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_scxml_QScxmlStateMachine_connectToEvent)
-(JNIEnv *__jni_env,
- jobject __this,
- QtJambiNativeID __this_nativeId,
- jstring scxmlStateName0,
- jobject slot1,
- jint type2)
-{
-    Q_UNUSED(__this)
-    jobject _result{nullptr};
-    QTJAMBI_TRY{
-        QScxmlStateMachine *__qt_this = QtJambiAPI::objectFromNativeId<QScxmlStateMachine>(__this_nativeId);
-        QtJambiAPI::checkNullPointer(__jni_env, __qt_this);
-        QTJAMBI_NATIVE_INSTANCE_METHOD_CALL("QScxmlStateMachine::connectToEvent(const QString &scxmlStateName, Functor functor, Qt::ConnectionType type = Qt::AutoConnection)", __qt_this)
-        const QString&  __qt_scxmlStateName0 = qtjambi_cast<QString>(__jni_env, scxmlStateName0);
-        JObjectWrapper pointer(__jni_env, slot1);
-        QMetaObject::Connection connection;
-        if(Java::QtCore::QMetaObject$Slot1::isInstanceOf(__jni_env, slot1)){
-            connection = __qt_this->connectToEvent(__qt_scxmlStateName0, [pointer](const QScxmlEvent &event){
-                if(JniEnvironment env{300}){
-                    Java::QtCore::QMetaObject$Slot1::invoke(env, pointer.object(), qtjambi_cast<jobject>(env, event));
-                }
-            }, Qt::ConnectionType(type2));
-        }else{
-            connection = __qt_this->connectToEvent(__qt_scxmlStateName0, [pointer](const QScxmlEvent &){
-                if(JniEnvironment env{300}){
-                    Java::QtCore::QMetaObject$Slot0::invoke(env, pointer.object());
-                }
-            }, Qt::ConnectionType(type2));
-        }
-
-        _result = qtjambi_cast<jobject>(__jni_env, connection);
-    }QTJAMBI_CATCH(const JavaException& exn){
-        exn.raiseInJava(__jni_env);
-    }QTJAMBI_TRY_END
-    return _result;
-}
 
 #if QT_VERSION < QT_VERSION_CHECK(5,12,0)
 #include <qscxmldatamodel.h>

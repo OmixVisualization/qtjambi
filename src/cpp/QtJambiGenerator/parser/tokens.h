@@ -170,6 +170,7 @@ enum TOKEN_KIND {
     Token_QT_REQUIRE_CONFIG,
     Token_QTJAMBI_DEPRECATED,
     Token_QTJAMBI_DEPRECATED_X,
+    Token_QTJAMBI_EXPORT,
     Token_decltype,
     Token_alignas,
     Token_alignof,

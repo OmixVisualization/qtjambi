@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -1562,7 +1562,6 @@ struct qtjambi_jnitype_template1_cast<false, has_scope,
                         JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast QFutureWatcher<void> to %1.").arg(QLatin1String(QtJambiAPI::typeName(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
                     }else{
                         QString baseType = QLatin1String(QtJambiAPI::typeName(typeid(*base)));
-#if defined(Q_OS_ANDROID)
                         if(baseType==QLatin1String("QFutureInterface<QVariant>")
                                 || baseType==QLatin1String("QFutureInterface_shell<QVariant>")){
                             QFutureInterface<QVariant>* futureInterface = reinterpret_cast<QFutureInterface<QVariant>*>(base);
@@ -1577,9 +1576,7 @@ struct qtjambi_jnitype_template1_cast<false, has_scope,
                             NativeType* _watcher = new NativeType(watcher);
                             _watcher->setFuture(QFuture<T>(futureInterface));
                             return _watcher;
-                        }else
-#endif
-                        if(baseType==QLatin1String("QFutureInterfaceBase")
+                        }else if(baseType==QLatin1String("QFutureInterfaceBase")
                                 || baseType==QLatin1String("QFutureInterfaceBase_shell")){
                             JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast QFutureWatcher<void> to %1.").arg(QLatin1String(QtJambiAPI::typeName(typeid(NativeType)))) QTJAMBI_STACKTRACEINFO );
                         }else if(baseType.startsWith(QLatin1String("QFutureInterface<"))){
@@ -1667,7 +1664,6 @@ struct qtjambi_jnitype_template1_cast<false, has_scope,
                 return *promise;
             }else if(base){
                 QString baseType = QLatin1String(QtJambiAPI::typeName(typeid(*base)));
-#if defined(Q_OS_ANDROID)
                 if(baseType==QLatin1String("QFutureInterface<QVariant>")
                         || baseType==QLatin1String("QFutureInterface_shell<QVariant>")){
                     QFutureInterface<QVariant>* futureInterface = reinterpret_cast<QFutureInterface<QVariant>*>(base);
@@ -1680,9 +1676,7 @@ struct qtjambi_jnitype_template1_cast<false, has_scope,
                     return *promise;
                 }else if(baseType==QString("QFutureInterface<%1>").arg(QLatin1String(QtJambiAPI::typeName(typeid(T))))){
                     return *reinterpret_cast<QPromise<T>*>(promisePtr);
-                }else
-#endif
-                if(baseType==QLatin1String("QFutureInterfaceBase")
+                }else if(baseType==QLatin1String("QFutureInterfaceBase")
                         || baseType==QLatin1String("QFutureInterfaceBase_shell")){
                     JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast QPromise<void> to %1.").arg(QLatin1String(QtJambiAPI::typeName(typeid(QPromise<T>)))) QTJAMBI_STACKTRACEINFO );
                 }else if(baseType.startsWith(QLatin1String("QFutureInterface<"))){
@@ -1719,7 +1713,6 @@ struct qtjambi_jnitype_template1_cast<false, has_scope,
                         return *promise;
                     }else{
                         QString baseType = QLatin1String(QtJambiAPI::typeName(typeid(*base)));
-#if defined(Q_OS_ANDROID)
                         if(baseType==QLatin1String("QFutureInterface<QVariant>")
                                 || baseType==QLatin1String("QFutureInterface_shell<QVariant>")){
                             QFutureInterface<QVariant>* futureInterface = reinterpret_cast<QFutureInterface<QVariant>*>(base);
@@ -1736,9 +1729,7 @@ struct qtjambi_jnitype_template1_cast<false, has_scope,
                             QFutureInterface<T>* promiseContent = reinterpret_cast<QFutureInterface<T>*>(promise);
                             scope->addDeletion(promiseContent);
                             return *promise;
-                        }else
-#endif
-                        if(baseType==QLatin1String("QFutureInterfaceBase")
+                        }else if(baseType==QLatin1String("QFutureInterfaceBase")
                                 || baseType==QLatin1String("QFutureInterfaceBase_shell")){
                             JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast QPromise<void> to %1.").arg(QLatin1String(QtJambiAPI::typeName(typeid(QPromise<T>)))) QTJAMBI_STACKTRACEINFO );
                         }else if(baseType.startsWith(QLatin1String("QFutureInterface<"))){
@@ -1905,7 +1896,6 @@ struct qtjambi_jnitype_template1_cast<false, has_scope,
         jobject futureInterface = QtJambiAPI::getQFutureInterfaceFromQFuture(env, in);
         QFutureInterfaceBase* base = qtjambi_scoped_cast<has_scope,QFutureInterfaceBase*,jobject>::cast(env, futureInterface, nullptr, scope);
         QFutureInterface<QVariant>* future = dynamic_cast<QFutureInterface<QVariant>*>(base);
-#if defined(Q_OS_ANDROID)
         if(!future){
             QString baseType = QLatin1String(QtJambiAPI::typeName(typeid(*base)));
             if(baseType==QLatin1String("QFutureInterface<QVariant>")
@@ -1913,7 +1903,6 @@ struct qtjambi_jnitype_template1_cast<false, has_scope,
                 future = reinterpret_cast<QFutureInterface<QVariant>*>(base);
             }
         }
-#endif
         QFutureInterface<T> tpromise = convert_future_interface<T>(future, "QFuture");
         QFuture<T> ft = tpromise.future();
         return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, &ft);

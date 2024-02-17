@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -36,6 +36,13 @@
 #include "pp-environment.h"
 
 void rpp::pp_environment::bind(pp_fast_string const *__name, pp_macro const &__macro) {
+    if(std::string(__name->begin())==std::string("__has_include")
+        || std::string(__name->begin())==std::string("__has_include_next")
+        || std::string(__name->begin())==std::string("__has_builtin")
+        || std::string(__name->begin())==std::string("__has_feature")
+        || std::string(__name->begin())==std::string("__has_attribute")
+        || std::string(__name->begin())==std::string("__has_cpp_attribute"))
+        return;
     _M_featureRegistry(std::string(__name->begin()), __macro.definition ? std::string(__macro.definition->begin()) : std::string(), current_file, true);
     std::size_t h = hash_code(*__name) % _M_hash_size;
     pp_macro *m = new pp_macro(__macro);
@@ -49,13 +56,13 @@ void rpp::pp_environment::bind(pp_fast_string const *__name, pp_macro const &__m
     if (_M_macros.size() == _M_hash_size)
         rehash();
 #ifdef DEBUG_DEFUNDEF
-    std::string x__name = std::string();
-    std::string x__macro = std::string();
+    QString x__name = QLatin1String(__name->begin(), __name->size());
+    QString x__macro;
     if(__macro.definition)
-        x__macro.assign(__macro.definition->begin(), __macro.definition->size());
+        x__macro = QLatin1String(__macro.definition->begin(), __macro.definition->size());
     else
         x__macro = "<nul>";
-    std::cerr << "** DEFINE " << x__name.assign(__name->begin(), __name->size()) << " " << x__macro << " ** in " << qPrintable(current_file.absoluteFilePath()) << std::endl;
+    std::cerr << "** DEFINE " << qPrintable(__name) << " " << qPrintable(x__macro.trimmed()) << " ** in " << qPrintable(current_file.absoluteFilePath()) << ":" << current_line << std::endl;
 #endif
 }
 
@@ -67,8 +74,8 @@ bool rpp::pp_environment::unbind(pp_fast_string const *__name) {
         result = true;
     }
 #ifdef DEBUG_DEFUNDEF
-    std::string x__name = std::string((const char *)__name);
-    std::cerr << "** UNDEF " << x__name.assign(__name->begin(), __name->size()) << " ** in " << qPrintable(current_file.absoluteFilePath()) << std::endl;
+    QString x__name = QLatin1String(__name->begin(), __name->size());
+    std::cerr << "** UNDEF " << qPrintable(__name) << " ** in " << qPrintable(current_file.absoluteFilePath()) << ":" << current_line << std::endl;
 #endif
     return result;
 }

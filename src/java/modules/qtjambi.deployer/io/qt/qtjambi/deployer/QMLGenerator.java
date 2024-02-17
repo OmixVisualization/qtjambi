@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -36,6 +36,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.AbstractMap.SimpleEntry;
@@ -138,7 +139,7 @@ final class QMLGenerator {
                 }else if(libinfo[0].endsWith("_armeabi-v7a.so")) {
                     os = "android-arm";
 				}else if(libinfo[0].endsWith(".so")) {
-					os = "linux";
+					os = "linux_unix";
 				}
 				if(os!=null) {
 					File libFile = new File(libinfo[0]);
@@ -171,7 +172,7 @@ final class QMLGenerator {
                     }else if(entry.equals("libjarimport_debug_armeabi-v7a.so") || entry.equals("libjarimport_armeabi-v7a.so")) {
                         os = "android-arm";
                     }else if(entry.equals("libjarimport_debug.so") || entry.equals("libjarimport.so")) {
-                        os = "linux";
+                        os = "linux_unix";
                     }
                 }else{
                     if(entry.equals("jarimport.dll")) {
@@ -187,7 +188,7 @@ final class QMLGenerator {
                     }else if(entry.equals("libjarimport_armeabi-v7a.so")) {
                         os = "android-arm";
                     }else if(entry.equals("libjarimport.so")) {
-                        os = "linux";
+                        os = "linux_unix";
                     }
                 }
                 if(os!=null && entry.contains("jarimport")) {
@@ -284,18 +285,20 @@ final class QMLGenerator {
 			for(Map.Entry<String,URL> entry : libraries) {
 				String os = entry.getKey();
 				boolean isAndroid = false;
-				if(os!=null && (platform==null || platform.startsWith(os))) {
+				if(os!=null && (platform==null || isCompatible(platform, os))) {
 					File targetLibFile;
 					URL debuginfoURL = null;
 					File targetDebuginfoFile = null;
-                    switch(os.toLowerCase()) {
+					String _os = os.toLowerCase();
+					if(os.contains("bsd-") || os.startsWith("solaris-") || os.startsWith("linux-")) {
+						_os = "linux_unix";
+					}else if(os.startsWith("windows-")) {
+						_os = "windows";
+					}
+                    switch(_os) {
 					case "win32":
 					case "win64":
 					case "windows":
-					case "windows-aarch64":
-					case "windows-arm64":
-					case "windows-x86":
-					case "windows-x64":
                         if(isDebug==null){
 							targetLibFile = new File(dir, "jarimport" + (entry.getValue().toExternalForm().endsWith("d.dll") ? "d.dll" : ".dll"));
 						}else{
@@ -441,13 +444,7 @@ final class QMLGenerator {
 							}
                         }
 						break;
-					case "linux":
-					case "linux32":
-					case "linux64":
-					case "linux-arm64":
-					case "linux-aarch64":
-					case "linux-x86":
-					case "linux-x64":
+					case "linux_unix":
 						targetLibFile = new File(dir, "libjarimport.so");
 						if(Boolean.FALSE.equals(isDebug)) {
 							URL url = entry.getValue();
@@ -529,7 +526,7 @@ final class QMLGenerator {
                     		}
                     	}
                     }
-                    try(PrintWriter writer = new PrintWriter(new File(dir, "qmldir"))){
+                    try(PrintWriter writer = new PrintWriter(new File(dir, "qmldir"), StandardCharsets.UTF_8)){
                     	writer.print("module ");
                     	writer.println(packageName.replace('/', '.'));
                     	if(isAndroid) {
@@ -550,5 +547,22 @@ final class QMLGenerator {
 		}else {
 			throw new Error(String.format("Unable to create directory %1$s.", dir.getAbsolutePath()));
 		}
+	}
+
+	static boolean isCompatible(String platform, String os) {
+		os = os.toLowerCase();
+		platform = platform.toLowerCase();
+		if(platform.startsWith(os)) {
+			return true;
+		}else if(os.equals("linux_unix")){
+			if(platform.contains("bsd-") || platform.startsWith("solaris-") || platform.startsWith("linux-")) {
+				return true;
+			}
+		}else if(platform.equals("linux_unix")){
+			if(os.contains("bsd-") || os.startsWith("solaris-") || os.startsWith("linux-")) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -65,68 +65,86 @@ TypeSystem{
                 fileName: "utils_p.h"
                 location: Include.Local
             }
+            Include{
+                fileName: "QtJambi/JavaAPI"
+                location: Include.Global
+                since: 6.6
+            }
+            Include{
+                fileName: "QtJambi/JObjectWrapper"
+                location: Include.Global
+                since: 6.6
+            }
+        }
+
+        FunctionalType{
+            name: "Prototype2"
+            using: "std::function<void(QAudioFormat, QByteArray)>"
+            generate: false
+            since: 6.6
+        }
+
+        FunctionalType{
+            name: "Prototype1"
+            using: "std::function<void(QAudioBuffer)>"
+            generate: false
+            since: 6.6
         }
 
         ModifyFunction{
+            signature: "synthesize<Functor>(const QString&,const QtPrivate::ContextTypeForFunctor::ContextType<Functor>*,Functor&&)"
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QAudioFormat, QByteArray)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.core.QMetaObject$Slot2<io.qt.multimedia.@NonNull QAudioFormat, io.qt.core.@NonNull QByteArray>"
+                        contextParameter: 2
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](const QAudioFormat& format, const QByteArray& buffer){\n"+
+                                      "                    if(JniEnvironment env{200}){\n"+
+                                      "                        jobject _format = QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &format, Java::QtMultimedia::QAudioFormat::getClass(env));\n"+
+                                      "                        jobject _buffer = qtjambi_cast<jobject>(env, buffer);\n"+
+                                      "                        Java::QtCore::QMetaObject$Slot2::invoke(env, slot.object(), _format, _buffer);\n"+
+                                      "                    }\n"+
+                                      "                };"}
+                    }
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QAudioBuffer)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.core.QMetaObject$Slot1<io.qt.multimedia.@NonNull QAudioBuffer>"
+                        contextParameter: 2
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = [slot = JObjectWrapper(%env, %in)](const QAudioBuffer& buffer){\n"+
+                                      "                    if(JniEnvironment env{200}){\n"+
+                                      "                        jobject _buffer = QtJambiAPI::convertNativeToJavaObjectAsCopy(env, &buffer, Java::QtMultimedia::QAudioBuffer::getClass(env));\n"+
+                                      "                        Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(), _buffer);\n"+
+                                      "                    }\n"+
+                                      "                };"}
+                    }
+                }
+            }
+            since: 6.6
+        }
+        ModifyFunction{
             signature: "synthesize<Functor>(QString,Functor&&)"
-            Instantiation{
-                Argument{
-                    type: "QAudioBuffer"
-                }
-                proxyCall: "qtjambi_synthesize1"
-                ModifyArgument{
-                    index: 2
-                    NoNullPointer{}
-                    ReplaceType{
-                        modifiedType: "io.qt.core.QMetaObject$Slot1<io.qt.multimedia.@NonNull QAudioBuffer>"
-                    }
-                    ConversionRule{
-                        codeClass: CodeClass.Native
-                        Text{content: "jobject %out = %in;"}
-                    }
-                }
-                InjectCode{
-                    target: CodeClass.Java
-                    position: Position.Beginning
-                    ArgumentMap{metaName: "func"; index: 2}
-                    Text{content: String.raw`if(context==null)
-    context = QtJambi_LibraryUtilities.internal.lambdaContext(func);`}
-                }
-                AddArgument{
-                    index: 2
-                    name: "context"
-                    type: "io.qt.core.QObject"
-                }
-            }
-            Instantiation{
-                Argument{
-                    type: "QAudioFormat"
-                }
-                proxyCall: "qtjambi_synthesize2"
-                ModifyArgument{
-                    index: 2
-                    NoNullPointer{}
-                    ReplaceType{
-                        modifiedType: "io.qt.core.QMetaObject$Slot2<io.qt.multimedia.@NonNull QAudioFormat, io.qt.core.@NonNull QByteArray>"
-                    }
-                    ConversionRule{
-                        codeClass: CodeClass.Native
-                        Text{content: "jobject %out = %in;"}
-                    }
-                }
-                InjectCode{
-                    target: CodeClass.Java
-                    position: Position.Beginning
-                    ArgumentMap{metaName: "func"; index: 2}
-                    Text{content: String.raw`if(context==null)
-    context = QtJambi_LibraryUtilities.internal.lambdaContext(func);`}
-                }
-                AddArgument{
-                    index: 2
-                    name: "context"
-                    type: "io.qt.core.QObject"
-                }
-            }
+            remove: RemoveFlag.All
             since: 6.6
         }
         ModifyFunction{
@@ -139,26 +157,6 @@ TypeSystem{
             position: Position.End
             since: 6.6
             Text{content: String.raw`
-/**
- * <p>Overloaded function for {@link #synthesize(String, io.qt.core.QObject, io.qt.core.QMetaObject.Slot1)}
- *  with <code>context = null</code>.</p>
- */
-@SuppressWarnings("exports")
-@QtUninvokable
-public final void synthesize(java.lang.@NonNull String text, io.qt.core.QMetaObject.@StrictNonNull Slot1<io.qt.multimedia.@NonNull QAudioBuffer> func){
-    synthesize(text, null, func);
-}
-
-/**
- * <p>Overloaded function for {@link #synthesize(String, io.qt.core.QObject, io.qt.core.QMetaObject.Slot2)}
- *  with <code>context = null</code>.</p>
- */
-@SuppressWarnings("exports")
-@QtUninvokable
-public final void synthesize(java.lang.@NonNull String text, io.qt.core.QMetaObject.@StrictNonNull Slot2<io.qt.multimedia.@NonNull QAudioFormat, io.qt.core.@NonNull QByteArray> func){
-    synthesize(text, null, func);
-}
-
 /**
  * <p>See <code><a href="https://doc.qt.io/qt/qtexttospeech.html#findVoices">QTextToSpeech::<wbr/>findVoices&lt;Args...&gt;(Args...)</a></code></p>
  */

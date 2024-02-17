@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -227,13 +227,24 @@ public abstract class ClassAnalyzerUtility {
 					builder.append(' ');
 					builder.append(method.getName());
 					builder.append('(');
-					Parameter[] ptypes = method.getParameters();
-					for (int i = 0; i < ptypes.length; i++) {
-						if (i > 0)
-							builder.append(',');
-						builder.append(ptypes[i].getType().getName().replace('$', '.'));
-						builder.append(' ');
-						builder.append(ptypes[i].getName());
+					try {
+						Parameter[] ptypes = method.getParameters();
+						for (int i = 0; i < ptypes.length; i++) {
+							if (i > 0)
+								builder.append(',');
+							builder.append(ptypes[i].getType().getName().replace('$', '.'));
+							builder.append(' ');
+							builder.append(ptypes[i].getName());
+						}
+					}catch(java.lang.reflect.MalformedParametersException e) {
+						Class<?>[] ptypes = method.getParameterTypes();
+						for (int i = 0; i < ptypes.length; i++) {
+							if (i > 0)
+								builder.append(',');
+							builder.append(ptypes[i].getName().replace('$', '.'));
+							builder.append(' ');
+							builder.append("arg__"+(i+1));
+						}
 					}
 					builder.append(')');
 					return new Throwing(new QMissingVirtualOverridingException(String.format(
@@ -255,13 +266,24 @@ public abstract class ClassAnalyzerUtility {
 						builder.append(' ');
 						builder.append(method.getName());
 						builder.append('(');
-						Parameter[] ptypes = method.getParameters();
-						for (int i = 0; i < ptypes.length; i++) {
-							if (i > 0)
-								builder.append(',');
-							builder.append(ptypes[i].getType().getName().replace('$', '.'));
-							builder.append(' ');
-							builder.append(ptypes[i].getName());
+						try {
+							Parameter[] ptypes = method.getParameters();
+							for (int i = 0; i < ptypes.length; i++) {
+								if (i > 0)
+									builder.append(',');
+								builder.append(ptypes[i].getType().getName().replace('$', '.'));
+								builder.append(' ');
+								builder.append(ptypes[i].getName());
+							}
+						}catch(java.lang.reflect.MalformedParametersException e) {
+							Class<?>[] ptypes = method.getParameterTypes();
+							for (int i = 0; i < ptypes.length; i++) {
+								if (i > 0)
+									builder.append(',');
+								builder.append(ptypes[i].getName().replace('$', '.'));
+								builder.append(' ');
+								builder.append("arg__"+(i+1));
+							}
 						}
 						builder.append(')');
 					}
@@ -283,13 +305,24 @@ public abstract class ClassAnalyzerUtility {
 					builder.append(' ');
 					builder.append(method.getName());
 					builder.append('(');
-					Parameter[] ptypes = method.getParameters();
-					for (int i = 0; i < ptypes.length; i++) {
-						if (i > 0)
-							builder.append(',');
-						builder.append(ptypes[i].getType().getName().replace('$', '.'));
-						builder.append(' ');
-						builder.append(ptypes[i].getName());
+					try {
+						Parameter[] ptypes = method.getParameters();
+						for (int i = 0; i < ptypes.length; i++) {
+							if (i > 0)
+								builder.append(',');
+							builder.append(ptypes[i].getType().getName().replace('$', '.'));
+							builder.append(' ');
+							builder.append(ptypes[i].getName());
+						}
+					}catch(java.lang.reflect.MalformedParametersException e) {
+						Class<?>[] ptypes = method.getParameterTypes();
+						for (int i = 0; i < ptypes.length; i++) {
+							if (i > 0)
+								builder.append(',');
+							builder.append(ptypes[i].getName().replace('$', '.'));
+							builder.append(' ');
+							builder.append("arg__"+(i+1));
+						}
 					}
 					builder.append(')');
 					return new Throwing(new QNonVirtualOverridingException(String.format(
@@ -312,13 +345,24 @@ public abstract class ClassAnalyzerUtility {
 						builder.append(' ');
 						builder.append(method.getName());
 						builder.append('(');
-						Parameter[] ptypes = method.getParameters();
-						for (int i = 0; i < ptypes.length; i++) {
-							if (i > 0)
-								builder.append(',');
-							builder.append(ptypes[i].getType().getName().replace('$', '.'));
-							builder.append(' ');
-							builder.append(ptypes[i].getName());
+						try {
+							Parameter[] ptypes = method.getParameters();
+							for (int i = 0; i < ptypes.length; i++) {
+								if (i > 0)
+									builder.append(',');
+								builder.append(ptypes[i].getType().getName().replace('$', '.'));
+								builder.append(' ');
+								builder.append(ptypes[i].getName());
+							}
+						}catch(java.lang.reflect.MalformedParametersException e) {
+							Class<?>[] ptypes = method.getParameterTypes();
+							for (int i = 0; i < ptypes.length; i++) {
+								if (i > 0)
+									builder.append(',');
+								builder.append(ptypes[i].getName().replace('$', '.'));
+								builder.append(' ');
+								builder.append("arg__"+(i+1));
+							}
 						}
 						builder.append(')');
 					}
@@ -340,13 +384,24 @@ public abstract class ClassAnalyzerUtility {
 					builder.append(' ');
 					builder.append(method.getName());
 					builder.append('(');
-					Parameter[] ptypes = method.getParameters();
-					for (int i = 0; i < ptypes.length; i++) {
-						if (i > 0)
-							builder.append(',');
-						builder.append(ptypes[i].getType().getName().replace('$', '.'));
-						builder.append(' ');
-						builder.append(ptypes[i].getName());
+					try {
+						Parameter[] ptypes = method.getParameters();
+						for (int i = 0; i < ptypes.length; i++) {
+							if (i > 0)
+								builder.append(',');
+							builder.append(ptypes[i].getType().getName().replace('$', '.'));
+							builder.append(' ');
+							builder.append(ptypes[i].getName());
+						}
+					}catch(java.lang.reflect.MalformedParametersException e) {
+						Class<?>[] ptypes = method.getParameterTypes();
+						for (int i = 0; i < ptypes.length; i++) {
+							if (i > 0)
+								builder.append(',');
+							builder.append(ptypes[i].getName().replace('$', '.'));
+							builder.append(' ');
+							builder.append("arg__"+(i+1));
+						}
 					}
 					builder.append(')');
 					return new Throwing(new QNonVirtualOverridingException(
@@ -370,13 +425,24 @@ public abstract class ClassAnalyzerUtility {
 						builder.append(' ');
 						builder.append(method.getName());
 						builder.append('(');
-						Parameter[] ptypes = method.getParameters();
-						for (int i = 0; i < ptypes.length; i++) {
-							if (i > 0)
-								builder.append(',');
-							builder.append(ptypes[i].getType().getName().replace('$', '.'));
-							builder.append(' ');
-							builder.append(ptypes[i].getName());
+						try {
+							Parameter[] ptypes = method.getParameters();
+							for (int i = 0; i < ptypes.length; i++) {
+								if (i > 0)
+									builder.append(',');
+								builder.append(ptypes[i].getType().getName().replace('$', '.'));
+								builder.append(' ');
+								builder.append(ptypes[i].getName());
+							}
+						}catch(java.lang.reflect.MalformedParametersException e) {
+							Class<?>[] ptypes = method.getParameterTypes();
+							for (int i = 0; i < ptypes.length; i++) {
+								if (i > 0)
+									builder.append(',');
+								builder.append(ptypes[i].getName().replace('$', '.'));
+								builder.append(' ');
+								builder.append("arg__"+(i+1));
+							}
 						}
 						builder.append(')');
 					}
@@ -641,6 +707,20 @@ public abstract class ClassAnalyzerUtility {
 						return new LambdaInfo(ownerClass, owner, qobject, false, methodHandle, reflectiveMethod,
 								reflectiveConstructor, lambdaArgsList == Collections.emptyList() ? lambdaArgsList
 										: Collections.unmodifiableList(lambdaArgsList));
+					} else if(reflectiveConstructor!=null 
+							&& serializedLambda.getCapturedArgCount() > 0
+							&& (
+								(ownerClass.getEnclosingClass()!=null && ownerClass.getEnclosingClass().isInstance(serializedLambda.getCapturedArg(0)))
+							 || (ownerClass.getDeclaringClass()!=null && ownerClass.getDeclaringClass().isInstance(serializedLambda.getCapturedArg(0)))
+								)
+							) {
+						lambdaArgsList = new ArrayList<>();
+						for (int i = 0; i < serializedLambda.getCapturedArgCount(); i++) {
+							lambdaArgsList.add(serializedLambda.getCapturedArg(i));
+						}
+						return new LambdaInfo(ownerClass, owner, qobject, false, methodHandle, reflectiveMethod,
+								reflectiveConstructor, lambdaArgsList == Collections.emptyList() ? lambdaArgsList
+										: Collections.unmodifiableList(lambdaArgsList));
 					}
 				}
 			}
@@ -814,9 +894,18 @@ public abstract class ClassAnalyzerUtility {
 			Class<?> returnType = lamdaInfo.reflectiveMethod.getReturnType();
 			Type genericReturnType = lamdaInfo.reflectiveMethod.getGenericReturnType();
 			metaTypes[0] = MetaTypeUtility.registerMetaType(returnType, genericReturnType, rt, false, false);
-			Parameter[] parameters = lamdaInfo.reflectiveMethod.getParameters();
-			for (int i = 0; i < parameters.length; i++) {
-				metaTypes[i+1] = MetaTypeUtility.registerMetaType(parameters[i]);
+			try {
+				Parameter[] parameters = lamdaInfo.reflectiveMethod.getParameters();
+				for (int i = 0; i < parameters.length; i++) {
+					metaTypes[i+1] = MetaTypeUtility.registerMetaType(parameters[i]);
+				}
+			}catch(java.lang.reflect.MalformedParametersException e) {
+				for (int i = 0; i < lamdaInfo.reflectiveMethod.getParameterCount(); i++) {
+					AnnotatedElement annotatedParameterType = null;
+			    	if(useAnnotatedType)
+			    		annotatedParameterType = lamdaInfo.reflectiveMethod.getAnnotatedParameterTypes()[i];
+					metaTypes[i+1] = MetaTypeUtility.registerMetaType(lamdaInfo.reflectiveMethod.getParameterTypes()[i], lamdaInfo.reflectiveMethod.getGenericParameterTypes()[i], annotatedParameterType, false, false);
+				}
 			}
 			return metaTypes;
 		}else {
@@ -856,9 +945,18 @@ public abstract class ClassAnalyzerUtility {
 								Type genericReturnType = mtd.getGenericReturnType();
 								metaTypes[0] = MetaTypeUtility.registerMetaType(returnType, genericReturnType, ae, false, false);
 							}
-							Parameter[] params = mtd.getParameters();
-							for (int i = 0; i < params.length; i++) {
-								metaTypes[i+1] = MetaTypeUtility.registerMetaType(params[i]);
+							try {
+								Parameter[] parameters = mtd.getParameters();
+								for (int i = 0; i < parameters.length; i++) {
+									metaTypes[i+1] = MetaTypeUtility.registerMetaType(parameters[i]);
+								}
+							}catch(java.lang.reflect.MalformedParametersException e) {
+								for (int i = 0; i < mtd.getParameterCount(); i++) {
+									AnnotatedElement annotatedParameterType = null;
+							    	if(useAnnotatedType)
+							    		annotatedParameterType = mtd.getAnnotatedParameterTypes()[i];
+									metaTypes[i+1] = MetaTypeUtility.registerMetaType(mtd.getParameterTypes()[i], mtd.getGenericParameterTypes()[i], annotatedParameterType, false, false);
+								}
 							}
 							return metaTypes;
 						}
@@ -875,10 +973,12 @@ public abstract class ClassAnalyzerUtility {
 		if (lamdaInfo!=null && lamdaInfo.reflectiveMethod != null) {
 			Class<?>[] classTypes = new Class[1+lamdaInfo.reflectiveMethod.getParameterCount()];
 			classTypes[0] = lamdaInfo.reflectiveMethod.getReturnType();
-			Parameter[] parameters = lamdaInfo.reflectiveMethod.getParameters();
-			for (int i = 0; i < parameters.length; i++) {
-				classTypes[i+1] = parameters[i].getType();
-			}
+			try {
+				Class<?>[] parameters = lamdaInfo.reflectiveMethod.getParameterTypes();
+				for (int i = 0; i < parameters.length; i++) {
+					classTypes[i+1] = parameters[i];
+				}
+			}catch(java.lang.reflect.MalformedParametersException e) {}
 			return classTypes;
 		}else {
 			Class<?> objectType = ClassAnalyzerUtility.getClass(lambdaExpression);
@@ -911,9 +1011,9 @@ public abstract class ClassAnalyzerUtility {
 							}else {
 								classTypes[0] = mtd.getReturnType();
 							}
-							Parameter[] params = mtd.getParameters();
+							Class<?>[] params = mtd.getParameterTypes();
 							for (int i = 0; i < params.length; i++) {
-								classTypes[i+1] = params[i].getType();
+								classTypes[i+1] = params[i];
 							}
 							return classTypes;
 						}

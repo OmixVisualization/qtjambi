@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -57,6 +57,7 @@ import io.qt.core.QOperatingSystemVersion.OSType;
 import io.qt.core.QRect;
 import io.qt.core.QRectF;
 import io.qt.core.QStringList;
+import io.qt.core.QSysInfo;
 import io.qt.core.Qt;
 import io.qt.gui.QColor;
 import io.qt.gui.QFont;
@@ -69,7 +70,6 @@ public class TestQFunctionPointer extends ApplicationInitializer{
 		List<QEasingCurve.EasingFunction> list = new ArrayList<>();
 		
 		QEasingCurve c = new QEasingCurve();
-		c.setType(QEasingCurve.Type.Custom);
 		for (int i = 0; i < 5; ++i) {
 			int _i = i;
 			QEasingCurve.EasingFunction f = d->d/(_i+1);
@@ -244,14 +244,16 @@ public class TestQFunctionPointer extends ApplicationInitializer{
 	
 	@Test
     public void testReturningFunctions_QChar() throws Throwable {
-		Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
+		Assume.assumeFalse("Cannot run on Android", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
+		Assume.assumeFalse("Cannot run on Windows arm64", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows) && QSysInfo.buildCpuArchitecture().equals("arm64"));
 		QFunctionPointer fp = FunctionalTest.getFunction(25);
     	Assert.assertEquals((Object)'W', fp.invoke(char.class, 'W'));    	
 	}
 	
 	@Test
     public void testReturningFunctions_flags() throws Throwable {
-		Assume.assumeFalse(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
+		Assume.assumeFalse("Cannot run on Android", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android));
+		Assume.assumeFalse("Cannot run on Windows arm64", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows) && QSysInfo.buildCpuArchitecture().equals("arm64"));
     	QFunctionPointer fp = FunctionalTest.getFunction(45);
     	Assert.assertEquals(Qt.AlignmentFlag.AlignVCenter.combined(Qt.AlignmentFlag.AlignJustify), fp.invoke(Qt.Alignment.class));
     	fp = FunctionalTest.getFunction(32);
@@ -289,6 +291,7 @@ public class TestQFunctionPointer extends ApplicationInitializer{
 	@Test
     public void testStructReturningFunctions() throws Throwable {
 		Assume.assumeTrue("Windows only", QOperatingSystemVersion.current().isAnyOfType(OSType.Windows));
+		Assume.assumeFalse("Cannot run on Windows arm64", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows) && QSysInfo.buildCpuArchitecture().equals("arm64"));
 		QFunctionPointer fp = FunctionalTest.getFunction(34);
     	Object variant = new Object();
     	Assert.assertEquals(variant, fp.invoke(QGenericArgument.<Object>returning(new QMetaType(QMetaType.Type.QVariant)), QGenericArgument.of(variant).as(new QMetaType(QMetaType.Type.QVariant)).asConstRef()));
@@ -445,6 +448,7 @@ public class TestQFunctionPointer extends ApplicationInitializer{
 	@Test
     public void testStructReturningFunctionPointerCast() throws Throwable {
 		Assume.assumeTrue("Windows only", QOperatingSystemVersion.current().isAnyOfType(OSType.Windows));
+		Assume.assumeFalse("Cannot run on Windows arm64", QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows) && QSysInfo.buildCpuArchitecture().equals("arm64"));
     	QObject obj = new QObject();
     	obj.setObjectName("QObject Test");
     	

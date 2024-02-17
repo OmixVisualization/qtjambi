@@ -1,3 +1,34 @@
+/****************************************************************************
+**
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** $BEGIN_LICENSE$
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** $END_LICENSE$
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************/
+
 #ifndef MODIFYARGUMENT_H
 #define MODIFYARGUMENT_H
 
@@ -335,6 +366,44 @@ private:
     Q_PROPERTY(bool noOffset READ getNoOffset WRITE setNoOffset NOTIFY noOffsetChanged FINAL)
     Q_PROPERTY(bool addPlainDelegate READ getAddPlainDelegate WRITE setAddPlainDelegate NOTIFY addPlainDelegateChanged FINAL)
     Q_PROPERTY(QString lengthExpression READ getLengthExpression WRITE setLengthExpression NOTIFY lengthExpressionChanged FINAL)
+};
+
+class AsSlot : public AbstractObject
+{
+    Q_OBJECT
+    QML_ELEMENT
+public:
+    explicit AsSlot(QObject *parent = nullptr):AbstractObject{parent}{}
+    int getContextParameter() const;
+    void setContextParameter(int newContextParameter);
+
+    bool getNoContext() const;
+    void setNoContext(bool newNoContext);
+
+    bool getAddPlainDelegate() const;
+    void setAddPlainDelegate(bool newAddPlainDelegate);
+
+    QString getTargetType() const;
+    void setTargetType(const QString &newTargetType);
+
+signals:
+    void contextParameterChanged();
+
+    void noContextChanged();
+
+    void addPlainDelegateChanged();
+
+    void targetTypeChanged();
+
+private:
+    QString targetType;
+    int contextParameter = 0;
+    bool noContext = false;
+    bool addPlainDelegate = true;
+    Q_PROPERTY(int contextParameter READ getContextParameter WRITE setContextParameter NOTIFY contextParameterChanged FINAL)
+    Q_PROPERTY(bool noContext READ getNoContext WRITE setNoContext NOTIFY noContextChanged FINAL)
+    Q_PROPERTY(bool addPlainDelegate READ getAddPlainDelegate WRITE setAddPlainDelegate NOTIFY addPlainDelegateChanged FINAL)
+    Q_PROPERTY(QString targetType READ getTargetType WRITE setTargetType NOTIFY targetTypeChanged FINAL)
 };
 
 class ReplaceType : public AbstractObject
@@ -1178,6 +1247,7 @@ QML_DECLARE_TYPE(AddTypeParameter)
 QML_DECLARE_TYPE(Argument)
 QML_DECLARE_TYPE(AsArray)
 QML_DECLARE_TYPE(AsBuffer)
+QML_DECLARE_TYPE(AsSlot)
 QML_DECLARE_TYPE(ConversionRule)
 QML_DECLARE_TYPE(CustomConstructor)
 QML_DECLARE_TYPE(CustomDestructor)

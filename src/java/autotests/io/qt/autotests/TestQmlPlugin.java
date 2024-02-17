@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -43,6 +43,7 @@ import io.qt.core.QObject;
 import io.qt.core.QUrl;
 import io.qt.qml.QQmlComponent;
 import io.qt.qml.QQmlEngine;
+import io.qt.qml.QtQml;
 
 public class TestQmlPlugin extends ApplicationInitializer{
 	
@@ -92,6 +93,7 @@ public class TestQmlPlugin extends ApplicationInitializer{
 			QObject wheel = (QObject)wheelsList.at(i);
 			Assert.assertEquals(53., wheel.property("radius"));
 		}
+		QtQml.qmlClearTypeRegistrations();
 	}
 	
 	@Test
@@ -141,5 +143,6 @@ public class TestQmlPlugin extends ApplicationInitializer{
 			QObject wheel = (QObject)wheelsList.at(i);
 			Assert.assertEquals(53., wheel.property("radius"));
 		}
+		QtQml.qmlClearTypeRegistrations();
 	}
 }

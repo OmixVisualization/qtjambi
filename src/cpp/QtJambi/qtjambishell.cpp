@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -724,7 +724,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                 }
                 *reinterpret_cast<QtJambiShell**>(quintptr(ptr) + offset) = shell;
                 try{
-                    constructorFunction(ptr, env, object, arguments);
+                    constructorFunction(ptr, env, object, arguments, false);
                 }catch(...){
                     if(QSharedPointer<QtJambiLink> link = shell->link()){
                         link->invalidate(env);
@@ -749,7 +749,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                     return;
                 }else{
                     try{
-                        constructorFunction(ptr, env, object, arguments);
+                        constructorFunction(ptr, env, object, arguments, false);
                     }catch(...){
                         if(link){
                             link->invalidate(env);
@@ -788,7 +788,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                     }
                     *reinterpret_cast<QtJambiShell**>(quintptr(ptr) + offset) = shell;
                     try{
-                        constructorFunction(ptr, env, object, arguments);
+                        constructorFunction(ptr, env, object, arguments, false);
                     }catch(...){
                         if(QSharedPointer<QtJambiLink> link = shell->link()){
                             link->invalidate(env);
@@ -812,7 +812,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                         ocurredException.raise();
                     }else{
                         try{
-                            constructorFunction(ptr, env, object, arguments);
+                            constructorFunction(ptr, env, object, arguments, false);
                         }catch(...){
                             if(link){
                                 link->invalidate(env);
@@ -887,7 +887,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                             const SuperTypeInfo& info = superTypeInfos[i];
                             jvalue* args = i==0 ? arguments : nullptr;
                             void* iptr = reinterpret_cast<void*>(quintptr(ptr) + info.offset());
-                            constructorFunctions.at(i)(iptr, env, object, args);
+                            constructorFunctions.at(i)(iptr, env, object, args, constructorFunction!=constructorFunctions.at(i));
                             if(!info.hasShell())
                                 shell->constructed(info.typeId());
                         }
@@ -949,7 +949,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                 }
                 *reinterpret_cast<QtJambiShell**>(quintptr(ptr) + offset) = shell;
                 try{
-                    constructorFunction(ptr, env, object, arguments);
+                    constructorFunction(ptr, env, object, arguments, false);
                 }catch(...){
                     if(QSharedPointer<QtJambiLink> link = shell->link()){
                         link->invalidate(env);
@@ -974,7 +974,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                     return;
                 }else{
                     try{
-                        constructorFunction(ptr, env, object, arguments);
+                        constructorFunction(ptr, env, object, arguments, false);
                     }catch(...){
                         if(link){
                             link->invalidate(env);
@@ -1013,7 +1013,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                     }
                     *reinterpret_cast<QtJambiShell**>(quintptr(ptr) + offset) = shell;
                     try{
-                        constructorFunction(ptr, env, object, arguments);
+                        constructorFunction(ptr, env, object, arguments, false);
                     }catch(...){
                         if(QSharedPointer<QtJambiLink> link = shell->link()){
                             link->invalidate(env);
@@ -1038,7 +1038,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                         return;
                     }else{
                         try{
-                            constructorFunction(ptr, env, object, arguments);
+                            constructorFunction(ptr, env, object, arguments, false);
                         }catch(...){
                             if(link){
                                 link->invalidate(env);
@@ -1113,7 +1113,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                             const SuperTypeInfo& info = superTypeInfos[i];
                             jvalue* args = i==0 ? arguments : nullptr;
                             void* iptr = reinterpret_cast<void*>(quintptr(ptr) + info.offset());
-                            constructorFunctions.at(i)(iptr, env, object, args);
+                            constructorFunctions.at(i)(iptr, env, object, args, constructorFunction!=constructorFunctions.at(i));
                             if(!info.hasShell())
                                 shell->constructed(info.typeId());
                         }
@@ -1197,7 +1197,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                 }
                 *reinterpret_cast<QtJambiShell**>(quintptr(ptr) + offset) = shell;
                 try{
-                    constructorFunction(ptr, env, object, arguments);
+                    constructorFunction(ptr, env, object, arguments, false);
                 }catch(...){
                     if(QSharedPointer<QtJambiLink> link = shell->link()){
                         link->invalidate(env);
@@ -1221,7 +1221,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                     ocurredException.raise();
                 }else{
                     try{
-                        constructorFunction(ptr, env, object, arguments);
+                        constructorFunction(ptr, env, object, arguments, false);
                     }catch(...){
                         if(link){
                             link->invalidate(env);
@@ -1260,7 +1260,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                     }
                     *reinterpret_cast<QtJambiShell**>(quintptr(ptr) + offset) = shell;
                     try{
-                        constructorFunction(ptr, env, object, arguments);
+                        constructorFunction(ptr, env, object, arguments, false);
                     }catch(...){
                         if(QSharedPointer<QtJambiLink> link = shell->link()){
                             link->invalidate(env);
@@ -1284,7 +1284,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                         ocurredException.raise();
                     }else{
                         try{
-                            constructorFunction(ptr, env, object, arguments);
+                            constructorFunction(ptr, env, object, arguments, false);
                         }catch(...){
                             if(link){
                                 link->invalidate(env);
@@ -1359,7 +1359,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                             const SuperTypeInfo& info = superTypeInfos[i];
                             jvalue* args = i==0 ? arguments : nullptr;
                             void* iptr = reinterpret_cast<void*>(quintptr(ptr) + info.offset());
-                            constructorFunctions.at(i)(iptr, env, object, args);
+                            constructorFunctions.at(i)(iptr, env, object, args, constructorFunction!=constructorFunctions.at(i));
                             if(!info.hasShell())
                                 shell->constructed(info.typeId());
                         }
@@ -1441,7 +1441,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                 }
                 *reinterpret_cast<QtJambiShell**>(quintptr(ptr) + offset) = shell;
                 try{
-                    constructorFunction(ptr, env, object, arguments);
+                    constructorFunction(ptr, env, object, arguments, false);
                 }catch(...){
                     if(QSharedPointer<QtJambiLink> link = shell->link()){
                         link->invalidate(env);
@@ -1465,7 +1465,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                     ocurredException.raise();
                 }else{
                     try{
-                        constructorFunction(ptr, env, object, arguments);
+                        constructorFunction(ptr, env, object, arguments, false);
                     }catch(...){
                         if(link){
                             link->invalidate(env);
@@ -1504,7 +1504,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                     }
                     *reinterpret_cast<QtJambiShell**>(quintptr(ptr) + offset) = shell;
                     try{
-                        constructorFunction(ptr, env, object, arguments);
+                        constructorFunction(ptr, env, object, arguments, false);
                     }catch(...){
                         if(QSharedPointer<QtJambiLink> link = shell->link()){
                             link->invalidate(env);
@@ -1528,7 +1528,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                         ocurredException.raise();
                     }else{
                         try{
-                            constructorFunction(ptr, env, object, arguments);
+                            constructorFunction(ptr, env, object, arguments, false);
                         }catch(...){
                             if(link){
                                 link->invalidate(env);
@@ -1603,7 +1603,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                             const SuperTypeInfo& info = superTypeInfos[i];
                             jvalue* args = i==0 ? arguments : nullptr;
                             void* iptr = reinterpret_cast<void*>(quintptr(ptr) + info.offset());
-                            constructorFunctions.at(i)(iptr, env, object, args);
+                            constructorFunctions.at(i)(iptr, env, object, args, constructorFunction!=constructorFunctions.at(i));
                             if(!info.hasShell())
                                 shell->constructed(info.typeId());
                         }
@@ -1685,7 +1685,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                 }
                 *reinterpret_cast<QtJambiShell**>(quintptr(ptr) + offset) = shell;
                 try{
-                    constructorFunction(ptr, env, object, arguments);
+                    constructorFunction(ptr, env, object, arguments, false);
                 }catch(...){
                     if(QSharedPointer<QtJambiLink> link = shell->link()){
                         link->invalidate(env);
@@ -1709,7 +1709,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                     ocurredException.raise();
                 }else{
                     try{
-                        constructorFunction(ptr, env, object, arguments);
+                        constructorFunction(ptr, env, object, arguments, false);
                     }catch(...){
                         if(link){
                             link->invalidate(env);
@@ -1748,7 +1748,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                     }
                     *reinterpret_cast<QtJambiShell**>(quintptr(ptr) + offset) = shell;
                     try{
-                        constructorFunction(ptr, env, object, arguments);
+                        constructorFunction(ptr, env, object, arguments, false);
                     }catch(...){
                         if(QSharedPointer<QtJambiLink> link = shell->link()){
                             link->invalidate(env);
@@ -1772,7 +1772,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                         ocurredException.raise();
                     }else{
                         try{
-                            constructorFunction(ptr, env, object, arguments);
+                            constructorFunction(ptr, env, object, arguments, false);
                         }catch(...){
                             if(link){
                                 link->invalidate(env);
@@ -1847,7 +1847,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                             const SuperTypeInfo& info = superTypeInfos[i];
                             jvalue* args = i==0 ? arguments : nullptr;
                             void* iptr = reinterpret_cast<void*>(quintptr(ptr) + info.offset());
-                            constructorFunctions.at(i)(iptr, env, object, args);
+                            constructorFunctions.at(i)(iptr, env, object, args, constructorFunction!=constructorFunctions.at(i));
                             if(!info.hasShell())
                                 shell->constructed(info.typeId());
                         }
@@ -1907,7 +1907,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                 }
                 *reinterpret_cast<QtJambiShell**>(quintptr(ptr) + offset) = shell;
                 try{
-                    constructorFunction(ptr, env, object, arguments);
+                    constructorFunction(ptr, env, object, arguments, false);
                 }catch(...){
                     if(QSharedPointer<QtJambiLink> link = shell->link()){
                         link->invalidate(env);
@@ -1931,7 +1931,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                     ocurredException.raise();
                 }else{
                     try{
-                        constructorFunction(ptr, env, object, arguments);
+                        constructorFunction(ptr, env, object, arguments, false);
                     }catch(...){
                         if(link){
                             link->invalidate(env);
@@ -1970,7 +1970,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                     }
                     *reinterpret_cast<QtJambiShell**>(quintptr(ptr) + offset) = shell;
                     try{
-                        constructorFunction(ptr, env, object, arguments);
+                        constructorFunction(ptr, env, object, arguments, false);
                     }catch(...){
                         if(QSharedPointer<QtJambiLink> link = shell->link()){
                             link->invalidate(env);
@@ -1994,7 +1994,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                         ocurredException.raise();
                     }else{
                         try{
-                            constructorFunction(ptr, env, object, arguments);
+                            constructorFunction(ptr, env, object, arguments, false);
                         }catch(...){
                             if(link){
                                 link->invalidate(env);
@@ -2069,7 +2069,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                             const SuperTypeInfo& info = superTypeInfos[i];
                             jvalue* args = i==0 ? arguments : nullptr;
                             void* iptr = reinterpret_cast<void*>(quintptr(ptr) + info.offset());
-                            constructorFunctions.at(i)(iptr, env, object, args);
+                            constructorFunctions.at(i)(iptr, env, object, args, constructorFunction!=constructorFunctions.at(i));
                             if(!info.hasShell())
                                 shell->constructed(info.typeId());
                         }
@@ -2129,7 +2129,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                 }
                 *reinterpret_cast<QtJambiShell**>(quintptr(ptr) + offset) = shell;
                 try{
-                    constructorFunction(ptr, env, object, arguments);
+                    constructorFunction(ptr, env, object, arguments, false);
                 }catch(...){
                     if(QSharedPointer<QtJambiLink> link = shell->link()){
                         link->invalidate(env);
@@ -2153,7 +2153,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                     ocurredException.raise();
                 }else{
                     try{
-                        constructorFunction(ptr, env, object, arguments);
+                        constructorFunction(ptr, env, object, arguments, false);
                     }catch(...){
                         if(link){
                             link->invalidate(env);
@@ -2192,7 +2192,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                     }
                     *reinterpret_cast<QtJambiShell**>(quintptr(ptr) + offset) = shell;
                     try{
-                        constructorFunction(ptr, env, object, arguments);
+                        constructorFunction(ptr, env, object, arguments, false);
                     }catch(...){
                         if(QSharedPointer<QtJambiLink> link = shell->link()){
                             link->invalidate(env);
@@ -2216,7 +2216,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                         ocurredException.raise();
                     }else{
                         try{
-                            constructorFunction(ptr, env, object, arguments);
+                            constructorFunction(ptr, env, object, arguments, false);
                         }catch(...){
                             if(link){
                                 link->invalidate(env);
@@ -2291,7 +2291,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                             const SuperTypeInfo& info = superTypeInfos[i];
                             jvalue* args = i==0 ? arguments : nullptr;
                             void* iptr = reinterpret_cast<void*>(quintptr(ptr) + info.offset());
-                            constructorFunctions.at(i)(iptr, env, object, args);
+                            constructorFunctions.at(i)(iptr, env, object, args, constructorFunction!=constructorFunctions.at(i));
                             if(!info.hasShell())
                                 shell->constructed(info.typeId());
                         }
@@ -2349,7 +2349,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
             }
             *reinterpret_cast<QtJambiShell**>(quintptr(ptr) + offset) = shell;
             try{
-                constructorFunction(ptr, env, object, nullptr);
+                constructorFunction(ptr, env, object, nullptr, false);
             }catch(...){
                 if(QSharedPointer<QtJambiLink> link = shell->link()){
                     link->invalidate(env);
@@ -2384,7 +2384,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                     }
                     *reinterpret_cast<QtJambiShell**>(quintptr(ptr) + offset) = shell;
                     try{
-                        constructorFunction(ptr, env, object, nullptr);
+                        constructorFunction(ptr, env, object, nullptr, false);
                     }catch(...){
                         if(QSharedPointer<QtJambiLink> link = shell->link()){
                             link->invalidate(env);
@@ -2456,7 +2456,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object,
                         for(; i>=0; --i){
                             const SuperTypeInfo& info = superTypeInfos[i];
                             void* iptr = reinterpret_cast<void*>(quintptr(ptr) + info.offset());
-                            constructorFunctions.at(i)(iptr, env, object, nullptr);
+                            constructorFunctions.at(i)(iptr, env, object, nullptr, constructorFunction!=constructorFunctions.at(i));
                             if(!info.hasShell())
                                 shell->constructed(info.typeId());
                         }
@@ -2520,7 +2520,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object, 
                     *reinterpret_cast<QtJambiShell**>(quintptr(ptr) + offset) = shell;
                     QtJambiLink::registerQObjectInitialization(ptr, shell->link());
                     try{
-                        constructorFunction(ptr, env, object, arguments);
+                        constructorFunction(ptr, env, object, arguments, false);
                         QtJambiLink::unregisterQObjectInitialization(ptr);
                     }catch(...){
                         QtJambiLink::unregisterQObjectInitialization(ptr);
@@ -2554,7 +2554,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object, 
                     }else{
                         try{
                             QtJambiLink::registerQObjectInitialization(ptr, link);
-                            constructorFunction(ptr, env, object, arguments);
+                            constructorFunction(ptr, env, object, arguments, false);
                             QtJambiLink::unregisterQObjectInitialization(ptr);
                         }catch(...){
                             QtJambiLink::unregisterQObjectInitialization(ptr);
@@ -2612,7 +2612,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object, 
                         *reinterpret_cast<QtJambiShell**>(quintptr(ptr) + offset) = shell;
                         try{
                             QtJambiLink::registerQObjectInitialization(ptr, shell->link());
-                            constructorFunction(ptr, env, object, arguments);
+                            constructorFunction(ptr, env, object, arguments, false);
                             QtJambiLink::unregisterQObjectInitialization(ptr);
                         }catch(...){
                             QtJambiLink::unregisterQObjectInitialization(ptr);
@@ -2645,7 +2645,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object, 
                         }else{
                             try{
                                 QtJambiLink::registerQObjectInitialization(ptr, link);
-                                constructorFunction(ptr, env, object, arguments);
+                                constructorFunction(ptr, env, object, arguments, false);
                                 QtJambiLink::unregisterQObjectInitialization(ptr);
                             }catch(...){
                                 QtJambiLink::unregisterQObjectInitialization(ptr);
@@ -2731,7 +2731,7 @@ void QtJambiShell::initialize(JNIEnv *env, jclass callingClass, jobject object, 
                                 const SuperTypeInfo& info = superTypeInfos[i];
                                 jvalue* args = i==0 ? arguments : nullptr;
                                 void* iptr = reinterpret_cast<void*>(quintptr(ptr) + info.offset());
-                                constructorFunctions.at(i)(iptr, env, object, args);
+                                constructorFunctions.at(i)(iptr, env, object, args, constructorFunction!=constructorFunctions.at(i));
                                 if(!info.hasShell())
                                     shell->constructed(info.typeId());
                             }
@@ -2969,7 +2969,7 @@ void QtJambiShellImpl::initializeNativeInterface(JNIEnv *env, jclass callingClas
                 for(; i>=0; --i){
                     const SuperTypeInfo& info = superTypeInfos[i];
                     void* iptr = reinterpret_cast<void*>(quintptr(ptr) + info.offset());
-                    constructorFunctions.at(i)(iptr, env, object, constructorArguments[i].data());
+                    constructorFunctions.at(i)(iptr, env, object, constructorArguments[i].data(), true);
                     if(!info.hasShell())
                         shell->constructed(info.typeId());
                 }

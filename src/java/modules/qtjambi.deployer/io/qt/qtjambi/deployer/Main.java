@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -88,78 +88,75 @@ public class Main {
 	
 	public static void main(String[] args) throws InterruptedException, IOException {
 		if(args.length>0) {
-			try {
-				boolean doInit = QCoreApplication.instance()==null;
-				if(doInit) {
-					QCoreApplication.setApplicationName("deployer "+args[0]);
-					QCoreApplication.setApplicationVersion(QtUtilities.qtjambiVersion().toString());
-					QCoreApplication.initialize(args);
-					QCoreApplication.setApplicationName("deployer");
+			boolean doInit = QCoreApplication.instance()==null;
+			if(doInit) {
+				QCoreApplication.setApplicationName("deployer "+args[0]);
+				QCoreApplication.setApplicationVersion(QtUtilities.qtjambiVersion().toString());
+				QCoreApplication.initialize(args);
+				QCoreApplication.setApplicationName("deployer");
+			}
+			try(QScopeGuard guard = new QScopeGuard(QCoreApplication::shutdown)){
+				if(!doInit)
+					guard.dismiss();
+				QCommandLineParser parser = new QCommandLineParser();
+				parser.setSingleDashWordOptionMode(QCommandLineParser.SingleDashWordOptionMode.ParseAsLongOptions);
+				parser.setApplicationDescription(String.format("QtJambi Deployer version %1$s", QtUtilities.qtjambiVersion().toString()));
+			    parser.addHelpOption();
+			    parser.addVersionOption();
+				//common
+			    QCommandLineOption platformOption = new QCommandLineOption(QList.of("platform"), "Target platform", "platform");
+			    QCommandLineOption dirOption = new QCommandLineOption(QList.of("d", "dir", "target-directory"), "Target directory", "dir");
+			    QCommandLineOption classPathOption = new QCommandLineOption(QList.of("cp", "class-path"), "Class path for plugin/app execution", "path");
+			    QCommandLineOption configurationOption = new QCommandLineOption(QList.of("c", "configuration"), "Library configuration", "debug|release", "release");
+				switch(args[0]) {
+				case "plugin":
+				case "pluginlib":
+					PluginGenerator.generate(parser, 
+											args,
+											platformOption,
+											dirOption,
+								    		classPathOption,
+											configurationOption);
+					break;
+				case "qml":
+				case "qmllib":
+					QMLGenerator.generate(parser, 
+											args,
+											platformOption,
+											dirOption,
+								    		classPathOption,
+											configurationOption);
+					break;
+				case "app":
+				case "application":
+					AppGenerator.generate(parser, 
+											args,
+											platformOption,
+											dirOption,
+								    		classPathOption,
+											configurationOption);
+					break;
+				case "qt":
+				case "qtlib":
+				case "qtbundles":
+					BundleGenerator.generate(parser, 
+											args,
+											platformOption,
+											dirOption,
+											configurationOption);
+					break;
+				case "container":
+				case "containeraccess":
+				case "ca":
+					ContainerAccessGenerator.generate(parser, 
+							args,
+							dirOption);
+					break;
+				default:
+					System.err.println("QtJambi Deployer, illegal argument: "+args[0]+", expected: one of plugin|qml|application|qtbundles|containeraccess");
+					System.exit(-1);
+					break;
 				}
-				try(QScopeGuard guard = new QScopeGuard(QCoreApplication::shutdown)){
-					if(!doInit)
-						guard.dismiss();
-					QCommandLineParser parser = new QCommandLineParser();
-					parser.setSingleDashWordOptionMode(QCommandLineParser.SingleDashWordOptionMode.ParseAsLongOptions);
-					parser.setApplicationDescription(String.format("QtJambi Deployer version %1$s", QtUtilities.qtjambiVersion().toString()));
-				    parser.addHelpOption();
-				    parser.addVersionOption();
-					//common
-				    QCommandLineOption platformOption = new QCommandLineOption(QList.of("platform"), "Target platform", "platform");
-				    QCommandLineOption dirOption = new QCommandLineOption(QList.of("d", "dir", "target-directory"), "Target directory", "dir");
-				    QCommandLineOption classPathOption = new QCommandLineOption(QList.of("cp", "class-path"), "Class path for plugin/app execution", "path");
-				    QCommandLineOption configurationOption = new QCommandLineOption(QList.of("c", "configuration"), "Library configuration", "debug|release", "release");
-					switch(args[0]) {
-					case "plugin":
-					case "pluginlib":
-						PluginGenerator.generate(parser, 
-												args,
-												platformOption,
-												dirOption,
-									    		classPathOption,
-												configurationOption);
-						break;
-					case "qml":
-					case "qmllib":
-						QMLGenerator.generate(parser, 
-												args,
-												platformOption,
-												dirOption,
-									    		classPathOption,
-												configurationOption);
-						break;
-					case "app":
-					case "application":
-						AppGenerator.generate(parser, 
-												args,
-												platformOption,
-												dirOption,
-									    		classPathOption,
-												configurationOption);
-						break;
-					case "qt":
-					case "qtlib":
-					case "qtbundles":
-						BundleGenerator.generate(parser, 
-												args,
-												platformOption,
-												dirOption,
-												configurationOption);
-						break;
-					case "container":
-					case "containeraccess":
-					case "ca":
-						ContainerAccessGenerator.generate(parser, 
-								args,
-								dirOption);
-						break;
-						default: 
-							throw new Error("QtJambi Deployer, illegal argument: "+args[0]+", expected: one of plugin|qml|application|qtbundles|containeraccess");
-					}
-				}
-			} catch (Error e) {
-				System.err.println(e.getMessage());
-				System.exit(-1);
 			}
 		}else{
 			String version = QtUtilities.qtjambiVersion().toString();

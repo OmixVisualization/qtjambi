@@ -121,3 +121,7 @@ Q_ENUM(ENUM)
 
 #define Q_ASSERT(a) static_cast<void>(0)
 #define Q_ASSERT_X(a) static_cast<void>(0)
+
+#define QT_SHARED
+#define Q_DECL_IMPORT QTJAMBI_EXPORT
+#define Q_DECL_EXPORT QTJAMBI_EXPORT

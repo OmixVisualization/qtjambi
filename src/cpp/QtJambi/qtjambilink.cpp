@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -2861,7 +2861,7 @@ DependencyManagerUserData::DependencyManagerUserData() : QtJambiObjectData() {
 
 DependencyManagerUserData::~DependencyManagerUserData(){
     QSet<QWeakPointer<QtJambiLink>> dependentObjects;
-    QList<std::function<void(JNIEnv*)>> finalizations;
+    QHash<void*,QPair<FinalizationExecutor,FinalizationDeleter>> finalizations;
     {
         QWriteLocker locker(QtJambiLinkUserData::lock());
         dependentObjects.swap(m_dependentObjects);
@@ -2876,7 +2876,7 @@ DependencyManagerUserData::~DependencyManagerUserData(){
 
 void DependencyManagerUserData::clear(JNIEnv* env){
     QSet<QWeakPointer<QtJambiLink>> dependentObjects;
-    QList<std::function<void(JNIEnv*)>> finalizations;
+    QHash<void*,QPair<FinalizationExecutor,FinalizationDeleter>> finalizations;
     {
         QWriteLocker locker(QtJambiLinkUserData::lock());
         dependentObjects.swap(m_dependentObjects);
@@ -2885,15 +2885,17 @@ void DependencyManagerUserData::clear(JNIEnv* env){
     clear(env, dependentObjects, finalizations);
 }
 
-void DependencyManagerUserData::clear(JNIEnv* env, QSet<QWeakPointer<QtJambiLink>>& dependentObjects, QList<std::function<void(JNIEnv*)>>& finalizations){
+void DependencyManagerUserData::clear(JNIEnv* env, QSet<QWeakPointer<QtJambiLink>>& dependentObjects, QHash<void*,QPair<FinalizationExecutor,FinalizationDeleter>>& finalizations){
     for(const QWeakPointer<QtJambiLink>& weakLink : qAsConst(dependentObjects)){
         if(QSharedPointer<QtJambiLink> link = weakLink.toStrongRef()){
             link->invalidate(env);
         }
     }
     dependentObjects.clear();
-    for(const std::function<void(JNIEnv*)>& f : qAsConst(finalizations)){
-        f(env);
+    for(auto iter = finalizations.constKeyValueBegin(); iter!=finalizations.constKeyValueEnd(); ++iter){
+        iter->second.first(env, iter->first);
+        if(iter->second.second)
+            iter->second.second(env, iter->first);
     }
     finalizations.clear();
 }
@@ -2928,8 +2930,15 @@ void DependencyManagerUserData::removeDependentObject(const QSharedPointer<QtJam
     }
 }
 
-void DependencyManagerUserData::addFinalization(std::function<void(JNIEnv*)>&& finalization){
-    m_finalizations << std::move(finalization);
+void DependencyManagerUserData::addFinalization(void* data, FinalizationExecutor executor, FinalizationDeleter deleter){
+    m_finalizations[data] = {executor, deleter};
+}
+
+void DependencyManagerUserData::removeFinalization(JNIEnv* env, void* data){
+    QPair<FinalizationExecutor,FinalizationDeleter> fun = m_finalizations[data];
+    if(m_finalizations.remove(data) && fun.second){
+        fun.second(env, data);
+    }
 }
 
 bool DependencyManagerUserData::hasDependencies() const{
@@ -2954,7 +2963,7 @@ DependencyManagerUserData* DependencyManagerUserData::instance(const QObject* ob
 Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gDependencyLock, (QReadWriteLock::Recursive))
 typedef QMultiHash<QSharedPointer<QtJambiLink>, QWeakPointer<QtJambiLink>> DependencyHash;
 Q_GLOBAL_STATIC(DependencyHash, gDependencies)
-typedef QMultiHash<QSharedPointer<QtJambiLink>, std::function<void(JNIEnv*)>> FinalizationHash;
+typedef QHash<QSharedPointer<QtJambiLink>, QHash<void*,QPair<FinalizationExecutor,FinalizationDeleter>>> FinalizationHash;
 Q_GLOBAL_STATIC(FinalizationHash, gFinalizations)
 
 void QtJambiLink::registerDependentObject(const QObject* object, const QSharedPointer<QtJambiLink>& link){
@@ -2981,23 +2990,24 @@ void QtJambiLink::unregisterDependentObject(const QObject* object, const QShared
     }
 }
 
-void QtJambiLink::addFinalization(const QObject* object, std::function<void(JNIEnv*)>&& finalization){
+void QtJambiLink::addFinalization(const QObject* object, void* data, FinalizationExecutor executor, FinalizationDeleter deleter){
     if(object){
         if(DependencyManagerUserData* dm = DependencyManagerUserData::instance(object)){
-            dm->addFinalization(std::move(finalization));
+            dm->addFinalization(data, executor, deleter);
         }
     }
 }
 
-void QtJambiLink::addFinalization(std::function<void(JNIEnv*)>&& finalization){
+void QtJambiLink::addFinalization(void* data, FinalizationExecutor executor, FinalizationDeleter deleter){
     if(isQObject()){
-        addFinalization(qobject(), std::move(finalization));
+        addFinalization(qobject(), data, executor, deleter);
     }else{
         if(!m_flags.testFlag(Flag::HasDependencies))
             m_flags.setFlag(Flag::HasDependencies);
         QWriteLocker locker(gDependencyLock());
         Q_UNUSED(locker)
-        gFinalizations->insert(m_this, std::move(finalization));
+        QHash<void*,QPair<FinalizationExecutor,FinalizationDeleter>>& container = (*gFinalizations)[m_this];
+        container[data] = {executor, deleter};
     }
 }
 
@@ -3049,13 +3059,13 @@ void QtJambiLink::invalidateDependentObjects(JNIEnv *env)
     }else{
         if(m_flags.testFlag(Flag::HasDependencies)){
             QList<QWeakPointer<QtJambiLink>> dependentObjects;
-            QList<std::function<void(JNIEnv*)>> finalizations;
+            QHash<void*,QPair<FinalizationExecutor,FinalizationDeleter>> finalizations;
             {
                 QWriteLocker locker(gDependencyLock());
                 Q_UNUSED(locker)
                 dependentObjects = gDependencies->values(m_this);
                 gDependencies->remove(m_this);
-                finalizations = gFinalizations->values(m_this);
+                finalizations = (*gFinalizations)[m_this];
                 gFinalizations->remove(m_this);
             }
             for(const QWeakPointer<QtJambiLink>& weakLink : qAsConst(dependentObjects)){
@@ -3063,8 +3073,10 @@ void QtJambiLink::invalidateDependentObjects(JNIEnv *env)
                     link->invalidate(env);
                 }
             }
-            for(const std::function<void(JNIEnv*)>& f : qAsConst(finalizations)){
-                f(env);
+            for(auto iter = finalizations.constKeyValueBegin(); iter!=finalizations.constKeyValueEnd(); ++iter){
+                iter->second.first(env, iter->first);
+                if(iter->second.second)
+                    iter->second.second(env, iter->first);
             }
         }
     }

@@ -67,7 +67,7 @@ public class TestDesignerHelp extends ApplicationInitializer {
     		lib = "plugins/"+lib;
     	QPluginLoader pluginLoader = new QPluginLoader(lib);
     	if(!pluginLoader.load())
-    		Assert.assertTrue(pluginLoader.errorString()+" "+lib, false);
+    		Assert.assertTrue(pluginLoader.errorString()+" "+lib+" in "+QCoreApplication.libraryPaths(), false);
     	else{
     		QObject servicePlugin = pluginLoader.instance();
     		Assert.assertTrue(servicePlugin != null);

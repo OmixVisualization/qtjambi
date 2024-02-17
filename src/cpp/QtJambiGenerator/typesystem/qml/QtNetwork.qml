@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -706,38 +706,101 @@ TypeSystem{
         ModifyFunction{
             signature: "get(QNetworkRequest)"
             threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
         }
         ModifyFunction{
             signature: "head(QNetworkRequest)"
             threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
         }
         ModifyFunction{
             signature: "post(QNetworkRequest,QIODevice*)"
             threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
         }
         ModifyFunction{
             signature: "post(QNetworkRequest,QByteArray)"
             threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
         }
         ModifyFunction{
             signature: "post(QNetworkRequest,QHttpMultiPart*)"
             threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
         }
         ModifyFunction{
             signature: "put(QNetworkRequest,QByteArray)"
             threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
         }
         ModifyFunction{
             signature: "put(QNetworkRequest,QIODevice*)"
             threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
         }
         ModifyFunction{
             signature: "put(QNetworkRequest,QHttpMultiPart*)"
             threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
         }
         ModifyFunction{
             signature: "deleteResource(QNetworkRequest)"
             threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
         }
         ModifyFunction{
             signature: "connectToHostEncrypted(const QString &, quint16, const QSslConfiguration &)"
@@ -833,6 +896,16 @@ TypeSystem{
                 }
             }
         }
+        ModifyFunction{
+            signature: "setTransferTimeout(std::chrono::milliseconds)"
+            ModifyArgument{
+                index: 1
+                ReplaceDefaultExpression{
+                    expression: "java.time.Duration.ofMillis(io.qt.network.QNetworkRequest.TransferTimeoutConstant.DefaultTransferTimeoutConstant.value())"
+                }
+            }
+            since: 6.7
+        }
     }
     
     ObjectType{
@@ -847,16 +920,25 @@ TypeSystem{
     
     ObjectType{
         name: "QNetworkReply"
-        InjectCode{
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiNetwork.java"
-                quoteAfterLine: "class QNetworkReply___"
-                quoteBeforeLine: "}// class"
-            }
-        }
 
         EnumType{
             name: "NetworkError"
+        }
+        ModifyFunction{
+            signature: "hasRawHeader(const QByteArray &) const"
+            ModifyArgument{
+                index: 1
+                AddImplicitCall{type: "java.lang.@NonNull String"}
+            }
+            until: 6.6
+        }
+        ModifyFunction{
+            signature: "rawHeader(const QByteArray &) const"
+            ModifyArgument{
+                index: 1
+                AddImplicitCall{type: "java.lang.@NonNull String"}
+            }
+            until: 6.6
         }
         ModifyFunction{
             signature: "sslConfigurationImplementation(QSslConfiguration&) const"
@@ -939,10 +1021,29 @@ TypeSystem{
         name: "QHostInfo"
         ExtraIncludes{
             Include{
+                fileName: "QtJambi/JavaAPI"
+                location: Include.Global
+            }
+            Include{
                 fileName: "QtJambi/JObjectWrapper"
                 location: Include.Global
             }
         }
+
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: "auto convertSlot(JNIEnv* _env, jobject _slot){\n"+
+                          "    JObjectWrapper slot(_env, _slot);\n"+
+                          "    return [slot](const QHostInfo& info){\n"+
+                          "                    if(JniEnvironment env{200}){\n"+
+                          "                        jobject _info = qtjambi_cast<jobject>(env, info);\n"+
+                          "                        Java::QtCore::QMetaObject$Slot1::invoke(env, slot.object(), _info);\n"+
+                          "                    }\n"+
+                          "                };\n"+
+                          "}"}
+        }
+
         InjectCode{
             target: CodeClass.Java
             ImportFile{
@@ -979,6 +1080,157 @@ TypeSystem{
                               "    }\n"+
                               "}"}
             }
+            until: 6.6
+        }
+
+        ModifyFunction{
+            signature: "lookupHost(QString, const QObject*, const char*)"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{
+                    index: 3
+                    metaName: "slot"
+                }
+                ArgumentMap{
+                    index: 2
+                    metaName: "dest"
+                }
+                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
+                              "    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);\n"+
+                              "    if(method!=null && method.isValid()) {\n"+
+                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
+                              "            slot = \"2\" + method.cppMethodSignature();\n"+
+                              "        else\n"+
+                              "            slot = \"1\" + method.cppMethodSignature();\n"+
+                              "    }\n"+
+                              "}"}
+            }
+            since: 6.7
+        }
+
+        FunctionalType{
+            name: "Slot"
+            using: "std::function<void(QHostInfo)>"
+            generate: false
+        }
+
+        ModifyFunction{
+            signature: "lookupHost<Func>(const QString&,const QtPrivate::FunctionPointer::Object<Func>*,Func)"
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QHostInfo)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 0
+                    replaceType: "int"
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "%out = %in;"}
+                    }
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.core.QMetaObject$Slot1<@NonNull QHostInfo>"
+                        contextParameter: 2
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, %in);"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "name"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    if(metaMethod.parameterCount()!=1 && metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QHostInfo.class).id()) {\n"+
+                                  "        throw new IllegalArgumentException(\"Method does not take a single QHostInfo argument: \"+metaMethod.cppMethodSignature());\n"+
+                                  "    }\n"+
+                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                                  "    if(context!=null && context==object) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            return lookupHost(name, context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            return lookupHost(name, context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
+            }
+            until: 6.5
+        }
+
+        ModifyFunction{
+            signature: "lookupHost<Functor>(const QString&,const QtPrivate::ContextTypeForFunctor::ContextType<Functor>*,Functor&&)"
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QHostInfo)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.core.QMetaObject$Slot1<@NonNull QHostInfo>"
+                        contextParameter: 2
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, %in);"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    if(metaMethod.parameterCount()!=1 && metaMethod.parameterType(0)!=io.qt.core.QMetaType.fromType(QHostInfo.class).id()) {\n"+
+                                  "        throw new IllegalArgumentException(\"Method does not take a single QHostInfo argument: \"+metaMethod.cppMethodSignature());\n"+
+                                  "    }\n"+
+                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                                  "    if(context!=null && context==object) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            return lookupHost(name, context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            return lookupHost(name, context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
+            }
+            since: 6.6
         }
         ModifyFunction{
             signature: "lookupHost<Functor>(QString,Functor&&)"
@@ -1080,13 +1332,6 @@ TypeSystem{
                               "    throw new ArrayIndexOutOfBoundsException(index);"}
             }
         }
-        InjectCode{
-            target: CodeClass.Java
-            Text{content: "public QIPv6Address(byte[] c){\n"+
-                          "    this();\n"+
-                          "    setC(c);\n"+
-                          "}"}
-        }
     }
     
     ValueType{
@@ -1112,7 +1357,7 @@ TypeSystem{
             since: [6, 1]
         }
         ModifyFunction{
-            signature: "parseCookies(QByteArray)"
+            signature: "parseCookies(QByteArrayView)"
             ModifyArgument{
                 index: 1
                 noImplicitCalls: true
@@ -1171,6 +1416,23 @@ TypeSystem{
                     action: ReferenceCount.Ignore
                 }
             }
+        }
+
+        InjectCode{
+            Text{
+                content: "public final static int DefaultTransferTimeout = TransferTimeoutConstant.DefaultTransferTimeoutConstant.value();"
+            }
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "setTransferTimeout(std::chrono::milliseconds)"
+            ModifyArgument{
+                index: 1
+                ReplaceDefaultExpression{
+                    expression: "java.time.Duration.ofMillis(io.qt.network.QNetworkRequest.TransferTimeoutConstant.DefaultTransferTimeoutConstant.value())"
+                }
+            }
+            since: 6.7
         }
     }
     
@@ -1582,6 +1844,1225 @@ TypeSystem{
         since: [6, 5]
     }
     
+    ObjectType{
+        name: "QRestReply"
+        since: 6.7
+    }
+
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: template baseclass 'QtPrivate::ContextTypeForFunctor::ContextType<Functor>' of '' is not known"}
+    Template{
+        name: "rest.comsumer.function"
+        Text{content: "JObjectWrapper wrapper(%env, %in);\n"+
+                      "auto %out = [wrapper](QRestReply* reply){\n"+
+                      "                    if(JniEnvironment env{200}){\n"+
+                      "                        jobject _reply = qtjambi_cast<jobject>(env, reply);\n"+
+                      "                        Java::Runtime::Consumer::accept(env, wrapper.object(), _reply);\n"+
+                      "                    }\n"+
+                      "                };"}
+    }
+
+    ObjectType{
+        name: "QRestAccessManager"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/JavaAPI"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/JObjectWrapper"
+                location: Include.Global
+            }
+        }
+
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: "auto convertConsumer(JNIEnv* _env, jobject _consumer){\n"+
+                          "    JObjectWrapper consumer(_env, _consumer);\n"+
+                          "    return [consumer](QRestReply& reply){\n"+
+                          "                    if(JniEnvironment env{200}){\n"+
+                          "                        jobject _reply = qtjambi_cast<jobject>(env, &reply);\n"+
+                          "                        InvalidateAfterUse inv(env, _reply);\n"+
+                          "                        Java::Runtime::Consumer::accept(env, consumer.object(), _reply);\n"+
+                          "                    }\n"+
+                          "                };\n"+
+                          "}"}
+        }
+
+        InjectCode{
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiNetwork.java"
+                quoteAfterLine: "class QRestAccessManager___"
+                quoteBeforeLine: "}// class"
+            }
+        }
+
+        FunctionalType{
+            name: "Callback"
+            using: "std::function<void(QRestReply&)>"
+            generate: false
+        }
+
+        ModifyFunction{
+            signature: "sendCustomRequest(const QNetworkRequest&, const QByteArray &, const QByteArray &)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "sendCustomRequest(const QNetworkRequest&, const QByteArray &, QIODevice *)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "sendCustomRequest(const QNetworkRequest&, const QByteArray &, QHttpMultiPart *)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "deleteResource(const QNetworkRequest&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "head(const QNetworkRequest&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "get(const QNetworkRequest&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "get(const QNetworkRequest&,QIODevice*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "get(const QNetworkRequest&,const QByteArray&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "get(const QNetworkRequest&,const QJsonDocument&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "post(const QNetworkRequest&,const QMap<QString,QVariant> &)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "post(const QNetworkRequest&,QHttpMultiPart*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "post(const QNetworkRequest&,QIODevice*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "post(const QNetworkRequest&,const QByteArray&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "post(const QNetworkRequest&,const QJsonDocument&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "put(const QNetworkRequest&,const QMap<QString,QVariant> &)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "put(const QNetworkRequest&,QHttpMultiPart*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "put(const QNetworkRequest&,QIODevice*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "put(const QNetworkRequest&,const QByteArray&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "put(const QNetworkRequest&,const QJsonDocument&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "patch(const QNetworkRequest&,const QMap<QString,QVariant>&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "patch(const QNetworkRequest&,QIODevice*)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "patch(const QNetworkRequest&,const QByteArray&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "patch(const QNetworkRequest&,const QJsonDocument&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "deleteResource<Functor,true>(const QNetworkRequest&,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 2
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "head<Functor,true>(const QNetworkRequest&,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 2
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "get<Functor,true>(const QNetworkRequest&,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 2
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "get<Functor,true>(const QNetworkRequest&,QIODevice*,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "get<Functor,true>(const QNetworkRequest&,const QByteArray&,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "get<Functor,true>(const QNetworkRequest&,const QJsonDocument&,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "patch<Functor,true>(const QNetworkRequest&,QIODevice*,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "patch<Functor,true>(const QNetworkRequest&,const QByteArray&,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "patch<Functor,true>(const QNetworkRequest&,const QJsonArray&,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "patch<Functor,true>(const QNetworkRequest&,const QJsonDocument&,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "patch<Functor,true>(const QNetworkRequest&,const QVariantMap&,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "patch<Functor,true>(QNetworkRequest,QMap<QString,QVariant>,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "post<Functor,true>(const QNetworkRequest&,QHttpMultiPart*,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "post<Functor,true>(const QNetworkRequest&,QIODevice*,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "post<Functor,true>(const QNetworkRequest&,const QByteArray&,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "post<Functor,true>(const QNetworkRequest&,const QJsonArray&,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "post<Functor,true>(const QNetworkRequest&,const QJsonDocument&,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "post<Functor,true>(const QNetworkRequest&,const QVariantMap&,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "post<Functor,true>(QNetworkRequest,QMap<QString,QVariant>,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "put<Functor,true>(const QNetworkRequest&,QHttpMultiPart*,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "put<Functor,true>(const QNetworkRequest&,QIODevice*,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "put<Functor,true>(const QNetworkRequest&,const QByteArray&,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "put<Functor,true>(const QNetworkRequest&,const QJsonArray&,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "put<Functor,true>(const QNetworkRequest&,const QJsonDocument&,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "put<Functor,true>(const QNetworkRequest&,const QVariantMap&,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "put<Functor,true>(QNetworkRequest,QMap<QString,QVariant>,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "sendCustomRequest<Functor,true>(const QNetworkRequest&,const QByteArray&,QHttpMultiPart*,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 5
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 4
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "sendCustomRequest<Functor,true>(const QNetworkRequest&,const QByteArray&,QIODevice*,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 5
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 4
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+
+        ModifyFunction{
+            signature: "sendCustomRequest<Functor,true>(const QNetworkRequest&,const QByteArray&,const QByteArray&,const QRestAccessManager::ContextTypeForFunctor<Functor>*,Functor&&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::function<void(QRestReply&)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 5
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.network.QRestAccessManager$Callback"
+                        contextParameter: 4
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertConsumer(%env, %in);"}
+                    }
+                }
+            }
+        }
+        since: 6.7
+    }
+
+    ObjectType{
+        name: "QNetworkRequestFactory"
+        since: 6.7
+    }
+
+    ObjectType{
+        name: "QHttpHeaders"
+        EnumType{
+            name: "WellKnownHeader"
+        }
+        since: 6.7
+    }
     
     SuppressedWarning{text: "*unmatched parameter type 'const sockaddr*"}
     

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -716,6 +716,18 @@ public final %ITERATOR_TYPE iterator() {
 
     Rejection{
         className: "QSequentialConstIterator"
+    }
+
+    Rejection{
+        className: "QAtomicScopedValueRollback"
+    }
+
+    Rejection{
+        className: "QStaticLatin1StringMatcher"
+    }
+
+    Rejection{
+        className: "QSpan"
     }
 
     Rejection{
@@ -2685,6 +2697,7 @@ public final %ITERATOR_TYPE iterator() {
         Rejection{functionName: "uppercasebase"}
         Rejection{functionName: "uppercasedigits"}
         Rejection{functionName: "ws"}
+        Rejection{functionName: "compareThreeWay"}
         Rejection{fieldName: "Disambiguated"}
 
         EnumType{
@@ -3184,6 +3197,187 @@ public final %ITERATOR_TYPE iterator() {
                 quoteBeforeLine: "}// class"
             }
         }
+
+        ObjectType{
+            name: "partial_ordering"
+            targetType: "final class"
+            generate: "no-shell"
+            /*ModifyFunction{
+                signature: "partial_ordering()"
+                remove: RemoveFlag.All
+            }*/
+            ModifyFunction{
+                signature: "partial_ordering(Qt::partial_ordering)"
+                remove: RemoveFlag.All
+            }
+            ModifyFunction{
+                signature: "operator==(Qt::partial_ordering)"
+                remove: RemoveFlag.All
+            }
+            ModifyFunction{
+                signature: "operator!=(Qt::partial_ordering)"
+                remove: RemoveFlag.All
+            }
+            ModifyField{
+                name: "less"
+                read: false
+                write: false
+            }
+            ModifyField{
+                name: "equivalent"
+                read: false
+                write: false
+            }
+            ModifyField{
+                name: "greater"
+                read: false
+                write: false
+            }
+            ModifyField{
+                name: "unordered"
+                read: false
+                write: false
+            }
+            InjectCode{
+                ImportFile{
+                    name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                    quoteAfterLine: "class partial_ordering___"
+                    quoteBeforeLine: "}// class"
+                }
+            }
+            since: 6.7
+        }
+
+        ObjectType{
+            name: "strong_ordering"
+            targetType: "final class"
+            generate: "no-shell"
+            /*ModifyFunction{
+                signature: "strong_ordering()"
+                remove: RemoveFlag.All
+            }*/
+            ModifyFunction{
+                signature: "strong_ordering(Qt::strong_ordering)"
+                remove: RemoveFlag.All
+            }
+            ModifyFunction{
+                signature: "operator==(Qt::strong_ordering)"
+                remove: RemoveFlag.All
+            }
+            ModifyFunction{
+                signature: "operator!=(Qt::strong_ordering)"
+                remove: RemoveFlag.All
+            }
+            ModifyFunction{
+                signature: "operator==(Qt::partial_ordering)"
+                remove: RemoveFlag.All
+            }
+            ModifyFunction{
+                signature: "operator!=(Qt::partial_ordering)"
+                remove: RemoveFlag.All
+            }
+            ModifyFunction{
+                signature: "operator==(Qt::weak_ordering)"
+                remove: RemoveFlag.All
+            }
+            ModifyFunction{
+                signature: "operator!=(Qt::weak_ordering)"
+                remove: RemoveFlag.All
+            }
+            ModifyFunction{
+                signature: "operator weak_ordering()const"
+                remove: RemoveFlag.All
+            }
+            ModifyFunction{
+                signature: "operator partial_ordering()const"
+                remove: RemoveFlag.All
+            }
+            ModifyField{
+                name: "less"
+                read: false
+                write: false
+            }
+            ModifyField{
+                name: "equivalent"
+                read: false
+                write: false
+            }
+            ModifyField{
+                name: "greater"
+                read: false
+                write: false
+            }
+            ModifyField{
+                name: "equal"
+                read: false
+                write: false
+            }
+            InjectCode{
+                ImportFile{
+                    name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                    quoteAfterLine: "class strong_ordering___"
+                    quoteBeforeLine: "}// class"
+                }
+            }
+            since: 6.7
+        }
+
+        ObjectType{
+            name: "weak_ordering"
+            targetType: "final class"
+            generate: "no-shell"
+            /*ModifyFunction{
+                signature: "weak_ordering()"
+                remove: RemoveFlag.All
+            }*/
+            ModifyFunction{
+                signature: "weak_ordering(Qt::weak_ordering)"
+                remove: RemoveFlag.All
+            }
+            ModifyFunction{
+                signature: "operator==(Qt::weak_ordering)"
+                remove: RemoveFlag.All
+            }
+            ModifyFunction{
+                signature: "operator!=(Qt::weak_ordering)"
+                remove: RemoveFlag.All
+            }
+            ModifyFunction{
+                signature: "operator==(Qt::partial_ordering)"
+                remove: RemoveFlag.All
+            }
+            ModifyFunction{
+                signature: "operator!=(Qt::partial_ordering)"
+                remove: RemoveFlag.All
+            }
+            ModifyFunction{
+                signature: "operator partial_ordering()const"
+                remove: RemoveFlag.All
+            }
+            ModifyField{
+                name: "less"
+                read: false
+                write: false
+            }
+            ModifyField{
+                name: "equivalent"
+                read: false
+                write: false
+            }
+            ModifyField{
+                name: "greater"
+                read: false
+                write: false
+            }
+            InjectCode{
+                ImportFile{
+                    name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                    quoteAfterLine: "class weak_ordering___"
+                    quoteBeforeLine: "}// class"
+                }
+            }
+            since: 6.7
+        }
     }// namespace Qt
     
     NamespaceType{
@@ -3498,7 +3692,19 @@ public final %ITERATOR_TYPE iterator() {
         }
         ModifyFunction{
             signature: "QByteArrayMatcher(const char*,int)"
-            remove: RemoveFlag.All
+            ModifyArgument{
+                index: 1
+                NoNullPointer{
+                }
+                AsBuffer{
+                    lengthParameter: 2
+                    AsArray{}
+                }
+                ReferenceCount{
+                    variableName: "__rcData"
+                    action: ReferenceCount.Set
+                }
+            }
             until: 5
         }
         ModifyFunction{
@@ -3540,12 +3746,27 @@ public final %ITERATOR_TYPE iterator() {
             ModifyArgument{
                 index: 1
                 noImplicitCalls: true
-                ReferenceCount{
-                    variableName: "__rcData"
-                    action: ReferenceCount.Set
-                }
             }
-            since: 6
+        }
+        ModifyFunction{
+            signature: "QByteArrayMatcher(QByteArrayMatcher)"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "__rcData = %1.__rcData;"}
+            }
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Position5
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "Java::QtJambi::ReferenceUtility::copyReferenceCount(__jni_env, __jni_object, nullptr, __jni_env->NewStringUTF(\"__rcData\"), %1);"}
+            }
+        }
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Clone
+            Text{content: "clone.__rcData = __rcData;"}
         }
         ModifyFunction{
             signature: "indexIn(const char*,int,int)const"
@@ -3590,6 +3811,17 @@ public final %ITERATOR_TYPE iterator() {
             signature: "toString(QStringView,QCalendar)const"
             remove: RemoveFlag.All
             since: [5, 14]
+            until: 6.6
+        }
+        ModifyFunction{
+            signature: "toString(QString)const"
+            remove: RemoveFlag.All
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "toString(QString,QCalendar)const"
+            remove: RemoveFlag.All
+            since: 6.7
         }
         ModifyFunction{
             signature: "fromString(QString,Qt::DateFormat)"
@@ -3605,6 +3837,45 @@ public final %ITERATOR_TYPE iterator() {
             signature: "fromString(QString,QString,QCalendar)"
             remove: RemoveFlag.All
             since: 6
+        }
+        ModifyFunction{
+            signature: "fromString(QString,QStringView,int)"
+            ModifyArgument{
+                index: 3
+                ReplaceDefaultExpression{
+                    expression: "QLocale.DefaultTwoDigitBaseYear"
+                }
+            }
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "fromString(QString,QStringView,int,QCalendar)"
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "fromString(QStringView,QStringView,int)"
+            remove: RemoveFlag.All
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "fromString(QStringView,QStringView,int,QCalendar)"
+            remove: RemoveFlag.All
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "fromString(const QString &, QStringView, QCalendar)"
+            remove: RemoveFlag.All
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "fromString(QString,QString,int,QCalendar)"
+            remove: RemoveFlag.All
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "fromString(QString,QString,int)"
+            remove: RemoveFlag.All
+            since: 6.7
         }
         ExtraIncludes{
             Include{
@@ -3653,6 +3924,20 @@ public final %ITERATOR_TYPE iterator() {
             remove: RemoveFlag.All
             since: [5, 9]
         }
+        /*ModifyFunction{
+            signature: "compareThreeWay(QDate,QDate)"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "int"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "%out = jint(QtPrivate::CompareUnderlyingType(%in));"}
+                }
+            }
+            since: 6.7
+        }*/
     }
     
     ValueType{
@@ -3660,6 +3945,13 @@ public final %ITERATOR_TYPE iterator() {
         EnumType{
             name: "YearRange"
             since: [5, 14]
+        }
+        EnumType{
+            name: "TransitionResolution"
+            RejectEnumValue{
+                name: "LegacyBehavior"
+            }
+            since: 6.7
         }
 
         Rejection{
@@ -3679,6 +3971,17 @@ public final %ITERATOR_TYPE iterator() {
             signature: "toString(QStringView,QCalendar) const"
             remove: RemoveFlag.All
             since: [5, 15]
+            until: 6.6
+        }
+        ModifyFunction{
+            signature: "toString(QString)const"
+            remove: RemoveFlag.All
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "toString(QString,QCalendar)const"
+            remove: RemoveFlag.All
+            since: 6.7
         }
         ModifyFunction{
             signature: "fromString(const QString &, Qt::DateFormat)"
@@ -3694,6 +3997,45 @@ public final %ITERATOR_TYPE iterator() {
             signature: "fromString(QStringView, QStringView, QCalendar)"
             remove: RemoveFlag.All
             since: 6
+        }
+        ModifyFunction{
+            signature: "fromString(const QString &, QStringView, QCalendar)"
+            remove: RemoveFlag.All
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "fromString(const QString &, const QString &, int, QCalendar)"
+            remove: RemoveFlag.All
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "fromString(QStringView, QStringView, int, QCalendar)"
+            remove: RemoveFlag.All
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "fromString(const QString &, const QString &, int)"
+            remove: RemoveFlag.All
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "fromString(QStringView, QStringView, int)"
+            remove: RemoveFlag.All
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "fromString(QString,QStringView,int,QCalendar)"
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "fromString(QString,QStringView,int)"
+            ModifyArgument{
+                index: 3
+                ReplaceDefaultExpression{
+                    expression: "QLocale.DefaultTwoDigitBaseYear"
+                }
+            }
+            since: 6.7
         }
         ModifyFunction{
             signature: "operator+=(std::chrono::milliseconds)"
@@ -4047,6 +4389,12 @@ public final %ITERATOR_TYPE iterator() {
             signature: "toString(QStringView) const"
             remove: RemoveFlag.All
             since: [5, 10]
+            until: 6.6
+        }
+        ModifyFunction{
+            signature: "toString(QString) const"
+            remove: RemoveFlag.All
+            since: 6.7
         }
         ModifyFunction{
             signature: "fromString(QStringView,QStringView)"
@@ -4063,6 +4411,20 @@ public final %ITERATOR_TYPE iterator() {
             remove: RemoveFlag.All
             since: 6
         }
+        /*ModifyFunction{
+            signature: "compareThreeWay(QTime,QTime)"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "int"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "%out = jint(QtPrivate::CompareUnderlyingType(%in));"}
+                }
+            }
+            since: 6.7
+        }*/
     }
     
     ValueType{
@@ -5172,8 +5534,29 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             rename: "or"
         }
         ModifyFunction{
+            signature: "operator&(QBitArray&&)"
+            remove: RemoveFlag.All
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "operator|(QBitArray&&)"
+            remove: RemoveFlag.All
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "operator^(QBitArray&&)"
+            remove: RemoveFlag.All
+            since: 6.7
+        }
+        ModifyFunction{
             signature: "operator~()const"
             rename: "inverted"
+            until: 6.6
+        }
+        ModifyFunction{
+            signature: "operator~(QBitArray)"
+            rename: "inverted"
+            since: 6.7
         }
         ModifyFunction{
             signature: "bits()const"
@@ -5766,7 +6149,12 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
 
         ObjectType{
             name: "StringResult<QVariant>"
+            targetType: "final class"
             isGeneric: true
+            ModifyFunction{
+                signature: "StringResult(QCborStreamReader::StringResult<QVariant>)"
+                remove: RemoveFlag.All
+            }
             since: [5, 12]
         }
 
@@ -7379,11 +7767,41 @@ if(destinationChildV<0)
         TypeAliasType{
             name: "pointer"
         }
+        TypeAliasType{
+            name: "const_pointer"
+        }
+        TypeAliasType{
+            name: "value_type"
+        }
         ImplicitCast{from: "io.qt.core.@NonNull QByteArray"}
         ImplicitCast{from: "java.nio.@NonNull ByteBuffer"}
         ImplicitCast{from: "byte @NonNull[]"}
         ModifyFunction{
             signature: "QByteArrayView(std::nullptr_t)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "QByteArrayView<Byte,true>(const Byte*,qsizetype)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "QByteArrayView<Byte,true>(const Byte*,const Byte*)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "QByteArrayView<Pointer,true>(Pointer)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "QByteArrayView<ByteArray,true>(ByteArray)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "QByteArrayView<Container,true>(Container)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "fromArray<Byte,Size,true>(Byte)"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -7673,6 +8091,13 @@ if(destinationChildV<0)
         Rejection{className: "DataPointer"}
 
         ImplicitCast{from: "byte @NonNull[]"}
+
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/JObjectWrapper"
+                location: Include.Global
+            }
+        }
 
         EnumType{
             name: "Base64Option"
@@ -8267,6 +8692,7 @@ if(destinationChildV<0)
         }
         FunctionalType{
             name: "Predicate"
+            generate: false
             using: "std::function<bool(char)>"
         }
         ModifyFunction{
@@ -8274,6 +8700,15 @@ if(destinationChildV<0)
             Instantiation{
                 Argument{
                     type: "std::function<bool(char)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = std::bind(Java::QtCore::QByteArray$Predicate::test, %env, %in, std::placeholders::_1);"}
+                    }
                 }
             }
         }
@@ -8997,6 +9432,10 @@ if(destinationChildV<0)
                 quoteAfterLine: "class QItemSelection___"
                 quoteBeforeLine: "}// class"
             }
+        }
+        ModifyFunction{
+            signature: "QItemSelection(QItemSelection)"
+            remove: RemoveFlag.All
         }
         ModifyFunction{
             signature: "split(QItemSelectionRange,QItemSelectionRange,QItemSelection*)"
@@ -10301,22 +10740,6 @@ if(destinationChildV<0)
                 ReplaceType{
                     modifiedType: "int"
                 }
-                /*
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "qint64 %out = qint64(%in);\n"+
-                                  "while(%2 > std::numeric_limits<jsize>::max() && %in == std::numeric_limits<jsize>::max()){\n"+
-                                  "    %2 -= std::numeric_limits<jsize>::max();\n"+
-                                  "    %1 = &%1[std::numeric_limits<jsize>::max()];\n"+
-                                  "    CharPointerArray %1_buffer2(%env, %1, jsize(qMin(qint64(std::numeric_limits<jsize>::max()), %2)));\n"+
-                                  "    %in = %env->CallIntMethod(__java_this, method_id, %1_buffer2.array());\n"+
-                                  "    %out += %in;\n"+
-                                  "}"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = jint(%in);"}
-                }*/
             }
             ModifyArgument{
                 index: 1
@@ -10333,23 +10756,6 @@ if(destinationChildV<0)
                 ReplaceType{
                     modifiedType: "int"
                 }
-                /*
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "qint64 %out = qint64(%in);\n"+
-                                  "while(%2 > std::numeric_limits<jsize>::max() && %in == std::numeric_limits<jsize>::max()){\n"+
-                                  "    %2 -= std::numeric_limits<jsize>::max();\n"+
-                                  "    %1 = &%1[std::numeric_limits<jsize>::max()];\n"+
-                                  "    CharPointerArray %1_buffer2(%env, %1, jsize(qMin(qint64(std::numeric_limits<jsize>::max()), %2)));\n"+
-                                  "    %in = %env->CallIntMethod(__java_this, method_id, %1_buffer2.array());\n"+
-                                  "    %out += %in;\n"+
-                                  "}"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = jint(%in);"}
-                }
-                */
             }
             ModifyArgument{
                 index: 1
@@ -10366,23 +10772,6 @@ if(destinationChildV<0)
                 ReplaceType{
                     modifiedType: "int"
                 }
-                /*
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "qint64 %out = qint64(%in);\n"+
-                                  "while(%2 > std::numeric_limits<jsize>::max() && %in == std::numeric_limits<jsize>::max()){\n"+
-                                  "    %2 -= std::numeric_limits<jsize>::max();\n"+
-                                  "    %1 = &%1[std::numeric_limits<jsize>::max()];\n"+
-                                  "    CharPointerArray %1_buffer2(%env, %1, jsize(qMin(qint64(std::numeric_limits<jsize>::max()), %2)));\n"+
-                                  "    %in = %env->CallIntMethod(__java_this, method_id, %1_buffer2.array());\n"+
-                                  "    %out += %in;\n"+
-                                  "}"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = jint(%in);"}
-                }
-                */
             }
             ModifyArgument{
                 index: 1
@@ -10399,24 +10788,6 @@ if(destinationChildV<0)
                 ReplaceType{
                     modifiedType: "int"
                 }
-                /*
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "qint64 %out = qint64(%in);\n"+
-                                  "while(%2 > std::numeric_limits<jsize>::max() && %in == std::numeric_limits<jsize>::max()){\n"+
-                                  "    %2 -= std::numeric_limits<jsize>::max();\n"+
-                                  "    %1 = &%1[std::numeric_limits<jsize>::max()];\n"+
-                                  "    j%2 = jsize(qMin(qint64(std::numeric_limits<jsize>::max()), %2));\n"+
-                                  "    ConstCharPointerArray __%1(%env, %1, j%2);\n"+
-                                  "    %in = %env->CallIntMethod(__java_this, method_id, __%1.array());\n"+
-                                  "    %out += %in;\n"+
-                                  "}"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "%out = jint(%in);"}
-                }
-                */
             }
             ModifyArgument{
                 index: 1
@@ -10433,23 +10804,6 @@ if(destinationChildV<0)
                 ReplaceType{
                     modifiedType: "int"
                 }
-                /*
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "qint64 %out = qint64(%in);\n"+
-                                  "while(%2 > std::numeric_limits<jsize>::max() && %in == std::numeric_limits<jsize>::max()){\n"+
-                                  "    %2 -= std::numeric_limits<jsize>::max();\n"+
-                                  "    %1 = &%1[std::numeric_limits<jsize>::max()];\n"+
-                                  "    CharPointerArray %1_buffer2(%env, %1, jsize(qMin(qint64(std::numeric_limits<jsize>::max()), %2)));\n"+
-                                  "    %in = %env->CallIntMethod(__java_this, method_id, %1_buffer2.array());\n"+
-                                  "    %out += %in;\n"+
-                                  "}"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jint %out = jint(%in);"}
-                }
-                */
             }
             ModifyArgument{
                 index: 1
@@ -10465,24 +10819,6 @@ if(destinationChildV<0)
                 ReplaceType{
                     modifiedType: "int"
                 }
-                /*
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "qint64 %out = qint64(%in);\n"+
-                                  "while(%2 > std::numeric_limits<jsize>::max() && %in == std::numeric_limits<jsize>::max()){\n"+
-                                  "    %2 -= std::numeric_limits<jsize>::max();\n"+
-                                  "    %1 = &%1[std::numeric_limits<jsize>::max()];\n"+
-                                  "    jsize j%2 = jsize(qMin(qint64(std::numeric_limits<jsize>::max()), %2));\n"+
-                                  "    ConstCharPointerArray __%1(%env, %1, j%2);\n"+
-                                  "    %in = %env->CallIntMethod(__java_this, method_id, __%1.array());\n"+
-                                  "    %out += %in;\n"+
-                                  "}"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jint %out = jint(%in);"}
-                }
-                */
             }
             ModifyArgument{
                 index: 1
@@ -10498,23 +10834,6 @@ if(destinationChildV<0)
                 ReplaceType{
                     modifiedType: "int"
                 }
-                /*
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "qint64 %out = qint64(%in);\n"+
-                                  "while(%2 > std::numeric_limits<jsize>::max() && %in == std::numeric_limits<jsize>::max()){\n"+
-                                  "    %2 -= std::numeric_limits<jsize>::max();\n"+
-                                  "    %1 = &%1[std::numeric_limits<jsize>::max()];\n"+
-                                  "    CharPointerArray %1_buffer2(%env, %1, jsize(qMin(qint64(std::numeric_limits<jsize>::max()), %2)));\n"+
-                                  "    %in = %env->CallIntMethod(__java_this, method_id, %1_buffer2.array());\n"+
-                                  "    %out += %in;\n"+
-                                  "}"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jint %out = jint(%in);"}
-                }
-                */
             }
             ModifyArgument{
                 index: 1
@@ -10920,6 +11239,13 @@ if(destinationChildV<0)
             name: "ConversionFlag"
             until: [5, 16]
         }
+        ObjectType{
+            name: "ConverterState"
+            Include{
+                fileName: "QTextCodec"
+                location: Include.Global
+            }
+        }
         ModifyFunction{
             signature: "setCodecForLocale(QTextCodec*)"
             ModifyArgument{
@@ -11174,16 +11500,13 @@ if(destinationChildV<0)
     }
     
     ObjectType{
-        name: "QTextCodec::ConverterState"
-        Include{
-            fileName: "QTextCodec"
-            location: Include.Global
-        }
-        until: 5
-    }
-    
-    ObjectType{
         name: "QBuffer"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/JavaAPI"
+                location: Include.Global
+            }
+        }
         ModifyFunction{
             signature: "buffer()"
             Remove{
@@ -11240,12 +11563,497 @@ if(destinationChildV<0)
     ObjectType{
         name: "QTimer"
 
-        Rejection{functionName: "singleShot"}
-        Rejection{functionName: "singleShot<Duration,Functor>"}
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/JavaAPI"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/JObjectWrapper"
+                location: Include.Global
+            }
+        }
+
         ModifyFunction{
             signature: "callOnTimeout<Args...>(Args&&)"
             remove: RemoveFlag.All
         }
+        ModifyFunction{
+            signature: "singleShot(int, const QObject*, const char*)"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{
+                    index: 3
+                    metaName: "slot"
+                }
+                ArgumentMap{
+                    index: 2
+                    metaName: "dest"
+                }
+                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
+                              "    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);\n"+
+                              "    if(method!=null && method.isValid()) {\n"+
+                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
+                              "            slot = \"2\" + method.cppMethodSignature();\n"+
+                              "        else\n"+
+                              "            slot = \"1\" + method.cppMethodSignature();\n"+
+                              "    }\n"+
+                              "}"}
+            }
+        }
+        ModifyFunction{
+            signature: "singleShot(int, Qt::TimerType, const QObject*, const char*)"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{
+                    index: 4
+                    metaName: "slot"
+                }
+                ArgumentMap{
+                    index: 3
+                    metaName: "dest"
+                }
+                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
+                              "    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);\n"+
+                              "    if(method!=null && method.isValid()) {\n"+
+                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
+                              "            slot = \"2\" + method.cppMethodSignature();\n"+
+                              "        else\n"+
+                              "            slot = \"1\" + method.cppMethodSignature();\n"+
+                              "    }\n"+
+                              "}"}
+            }
+        }
+        ModifyFunction{
+            signature: "singleShot(std::chrono::milliseconds, const QObject*, const char*)"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{
+                    index: 3
+                    metaName: "slot"
+                }
+                ArgumentMap{
+                    index: 2
+                    metaName: "dest"
+                }
+                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
+                              "    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);\n"+
+                              "    if(method!=null && method.isValid()) {\n"+
+                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
+                              "            slot = \"2\" + method.cppMethodSignature();\n"+
+                              "        else\n"+
+                              "            slot = \"1\" + method.cppMethodSignature();\n"+
+                              "    }\n"+
+                              "}"}
+            }
+            ppCondition: "__has_include(<chrono>)"
+        }
+        ModifyFunction{
+            signature: "singleShot(std::chrono::milliseconds, Qt::TimerType, const QObject*, const char*)"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{
+                    index: 4
+                    metaName: "slot"
+                }
+                ArgumentMap{
+                    index: 3
+                    metaName: "dest"
+                }
+                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
+                              "    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);\n"+
+                              "    if(method!=null && method.isValid()) {\n"+
+                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
+                              "            slot = \"2\" + method.cppMethodSignature();\n"+
+                              "        else\n"+
+                              "            slot = \"1\" + method.cppMethodSignature();\n"+
+                              "    }\n"+
+                              "}"}
+            }
+            ppCondition: "__has_include(<chrono>)"
+        }
+
+        FunctionalType{
+            name: "Slot"
+            using: "std::function<void()>"
+            generate: false
+        }
+
+        ModifyFunction{
+            signature: "singleShot<Duration,Functor>(Duration,const QtPrivate::ContextTypeForFunctor::ContextType<Functor>*,Functor&&)"
+            Instantiation{
+                Argument{
+                    type: "int"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void()>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.core.QMetaObject$Slot0"
+                        contextParameter: 2
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, %in);"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                                  "    if(context!=null && context==object) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            singleShot(dur, context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            singleShot(dur, context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::chrono::milliseconds"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void()>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.core.QMetaObject$Slot0"
+                        contextParameter: 2
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, %in);"}
+                    }
+                }
+                ppCondition: "__has_include(<chrono>)"
+            }
+            since: 6.6
+        }
+
+        ModifyFunction{
+            signature: "singleShot<Duration,Functor>(Duration,Qt::TimerType,const QtPrivate::ContextTypeForFunctor::ContextType<Functor>*,Functor&&)"
+            Instantiation{
+                Argument{
+                    type: "int"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void()>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.core.QMetaObject$Slot0"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, %in);"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "tt"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 4
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                                  "    if(context!=null && context==object) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            singleShot(dur, tt, context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            singleShot(dur, tt, context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::chrono::milliseconds"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void()>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.core.QMetaObject$Slot0"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, %in);"}
+                    }
+                }
+                ppCondition: "__has_include(<chrono>)"
+            }
+            since: 6.6
+        }
+        ModifyFunction{
+            signature: "singleShot<Duration,Functor>(Duration,Functor&&)"
+            remove: RemoveFlag.All
+            since: 6.6
+        }
+        ModifyFunction{
+            signature: "singleShot<Duration,Functor>(Duration,Qt::TimerType,Functor&&)"
+            remove: RemoveFlag.All
+            since: 6.6
+        }
+
+        ModifyFunction{
+            signature: "singleShot<Duration,Func1>(Duration,const QObject*,Func1)"
+            ModifyArgument{
+                index: 0
+                replaceType: "void"
+            }
+            Instantiation{
+                Argument{
+                    type: "int"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void()>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.core.QMetaObject$Slot0"
+                        contextParameter: 2
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, %in);"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                                  "    if(context!=null && context==object) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            singleShot(dur, context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            singleShot(dur, context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::chrono::milliseconds"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void()>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 3
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.core.QMetaObject$Slot0"
+                        contextParameter: 2
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, %in);"}
+                    }
+                }
+                ppCondition: "__has_include(<chrono>)"
+            }
+            until: 6.5
+        }
+
+        ModifyFunction{
+            signature: "singleShot<Duration,Func1>(Duration,Qt::TimerType,const QObject*,Func1)"
+            ModifyArgument{
+                index: 0
+                replaceType: "void"
+            }
+            Instantiation{
+                Argument{
+                    type: "int"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void()>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.core.QMetaObject$Slot0"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, %in);"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "dur"
+                    }
+                    ArgumentMap{
+                        index: 2
+                        metaName: "tt"
+                    }
+                    ArgumentMap{
+                        index: 3
+                        metaName: "context"
+                    }
+                    ArgumentMap{
+                        index: 4
+                        metaName: "slot"
+                    }
+                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                                  "    if(context!=null && context==object) {\n"+
+                                  "        switch(metaMethod.methodType()) {\n"+
+                                  "        case Signal:\n"+
+                                  "            singleShot(dur, tt, context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        case Method:\n"+
+                                  "        case Slot:\n"+
+                                  "            singleShot(dur, tt, context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                                  "            return;\n"+
+                                  "        default:\n"+
+                                  "            break;\n"+
+                                  "        }\n"+
+                                  "    }\n"+
+                                  "}\n"}
+                }
+            }
+            Instantiation{
+                Argument{
+                    type: "std::chrono::milliseconds"
+                    isImplicit: true
+                }
+                Argument{
+                    type: "std::function<void()>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 4
+                    NoNullPointer{}
+                    AsSlot{
+                        targetType: "io.qt.core.QMetaObject$Slot0"
+                        contextParameter: 3
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = convertSlot(%env, %in);"}
+                    }
+                }
+                ppCondition: "__has_include(<chrono>)"
+            }
+            until: 6.5
+        }
+
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: "auto convertSlot(JNIEnv* _env, jobject _slot){\n"+
+                          "    JObjectWrapper slot(_env, _slot);\n"+
+                          "    return [slot](){\n"+
+                          "                    if(JniEnvironment env{200}){\n"+
+                          "                        Java::QtCore::QMetaObject$Slot0::invoke(env, slot.object());\n"+
+                          "                    }\n"+
+                          "                };\n"+
+                          "}"}
+        }
+
         InjectCode{
             target: CodeClass.Java
             ImportFile{
@@ -11253,15 +12061,6 @@ if(destinationChildV<0)
                 quoteAfterLine: "class QTimer___"
                 quoteBeforeLine: "}// class"
             }
-        }
-        InjectCode{
-            target: CodeClass.Java
-            ImportFile{
-                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
-                quoteAfterLine: "class QTimer_6__"
-                quoteBeforeLine: "}// class"
-            }
-            since: 6
         }
     }
     
@@ -12138,6 +12937,26 @@ if(destinationChildV<0)
                               "    return;\n"+
                               "}"}
             }
+            until: 6.6
+        }
+        ModifyFunction{
+            signature: "moveToThread(QThread*)"
+            threadAffinity: false
+            since: 7
+        }
+        ModifyFunction{
+            signature: "moveToThread(QThread*,Qt::Disambiguated_t)"
+            threadAffinity: false
+            ModifyArgument{
+                index: 2
+                RemoveArgument{}
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "constexpr Qt::Disambiguated_t %out = Qt::Disambiguated;"}
+                }
+            }
+            since: 6.7
+            until: 7
         }
         ModifyFunction{
             signature: "receivers(const char*)const"
@@ -12248,6 +13067,7 @@ if(destinationChildV<0)
                     }
                 }
             }
+            until: 6.6
         }
         ModifyFunction{
             signature: "findChildren<T>(QString, Qt::FindChildOptions) const"
@@ -12285,6 +13105,84 @@ if(destinationChildV<0)
                     }
                 }
             }
+            until: 6.6
+        }
+        ModifyFunction{
+            signature: "findChild<T>(QAnyStringView, Qt::FindChildOptions) const"
+            Instantiation{
+                proxyCall: "qtjambi_findChild"
+                Argument{
+                    type: "QTimer*"
+                }
+                ModifyArgument{
+                    index: 0
+                    ReplaceType{
+                        modifiedType: "T"
+                        modifiedJniType: "jobject"
+                    }
+                }
+                AddTypeParameter{
+                    name: "T"
+                    extending: "io.qt.core.@Nullable QObject"
+                }
+                AddArgument{
+                    index: 1
+                    defaultExpression: "io.qt.core.QObject.class"
+                    name: "type"
+                    type: "java.lang.Class<T>"
+                }
+            }
+            Instantiation{
+                proxyCall: "qtjambi_findChild"
+                Argument{
+                    type: "QObject*"
+                }
+                ModifyArgument{
+                    index: 0
+                    ReplaceType{
+                        modifiedType: "io.qt.core.@Nullable QObject"
+                    }
+                }
+            }
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "findChildren<T>(QAnyStringView, Qt::FindChildOptions) const"
+            Instantiation{
+                proxyCall: "qtjambi_findChildren"
+                Argument{
+                    type: "QTimer*"
+                }
+                ModifyArgument{
+                    index: 0
+                    ReplaceType{
+                        modifiedType: "io.qt.core.@NonNull QList<T>"
+                    }
+                }
+                AddTypeParameter{
+                    name: "T"
+                    extending: "io.qt.core.@Nullable QObject"
+                }
+                AddArgument{
+                    index: 1
+                    defaultExpression: "io.qt.core.QObject.class"
+                    name: "type"
+                    type: "java.lang.Class<T>"
+                }
+            }
+            Instantiation{
+                proxyCall: "qtjambi_findChildren"
+                Argument{
+                    type: "QObject*"
+                }
+                ModifyArgument{
+                    index: 0
+                    ReplaceType{
+                        modifiedType: "io.qt.core.@NonNull QList<io.qt.core.@Nullable QObject>"
+                    }
+                }
+            }
+            since: 6.7
         }
         ModifyFunction{
             signature: "findChildren<T>(QRegularExpression, Qt::FindChildOptions) const"
@@ -12394,6 +13292,43 @@ if(destinationChildV<0)
                 }
             }
             until: [5, 15]
+        }
+        ModifyFunction{
+            signature: "findChild<T>(Qt::FindChildOptions) const"
+            Instantiation{
+                proxyCall: "qtjambi_findChild"
+                Argument{
+                    type: "QTimer*"
+                }
+                ModifyArgument{
+                    index: 0
+                    ReplaceType{
+                        modifiedType: "io.qt.core.@NonNull QList<T>"
+                    }
+                }
+                AddTypeParameter{
+                    name: "T"
+                    extending: "io.qt.core.@Nullable QObject"
+                }
+                AddArgument{
+                    index: 1
+                    name: "type"
+                    type: "java.lang.Class<T>"
+                }
+            }
+            Instantiation{
+                proxyCall: "qtjambi_findChild"
+                Argument{
+                    type: "QObject*"
+                }
+                ModifyArgument{
+                    index: 0
+                    ReplaceType{
+                        modifiedType: "io.qt.core.@NonNull QList<io.qt.core.@Nullable QObject>"
+                    }
+                }
+            }
+            since: 6.7
         }
     }
     
@@ -13238,10 +14173,6 @@ if(destinationChildV<0)
                 since: [6, 5]
             }
             RejectEnumValue{
-                name: "Qt_6_7"
-                since: [6, 7]
-            }
-            RejectEnumValue{
                 name: "Qt_DefaultCompiledVersion"
             }
         }
@@ -13332,8 +14263,19 @@ if(destinationChildV<0)
             remove: RemoveFlag.All
         }
         ModifyFunction{
+            signature: "readBytes(char&*,qint64&)"
+            remove: RemoveFlag.All
+            since: 6.7
+        }
+        ModifyFunction{
             signature: "writeBytes(const char*,uint)"
             remove: RemoveFlag.All
+            until: 6.6
+        }
+        ModifyFunction{
+            signature: "writeBytes(const char*,qint64)"
+            remove: RemoveFlag.All
+            since: 6.7
         }
         Import{
             template: "Stream"
@@ -13630,6 +14572,7 @@ if(destinationChildV<0)
                     AsArray{}
                 }
             }
+            until: 6.6
         }
         ModifyFunction{
             signature: "writeRawData(const char*,int)"
@@ -13644,6 +14587,37 @@ if(destinationChildV<0)
                     AsArray{}
                 }
             }
+            until: 6.6
+        }
+        ModifyFunction{
+            signature: "readRawData(char*,qint64)"
+            Delegate{
+                name: "readBytes"
+                deprecated: true
+            }
+            ModifyArgument{
+                index: 1
+                AsBuffer{
+                    lengthParameter: 2
+                    AsArray{}
+                }
+            }
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "writeRawData(const char*,qint64)"
+            Delegate{
+                name: "writeBytes"
+                deprecated: true
+            }
+            ModifyArgument{
+                index: 1
+                AsBuffer{
+                    lengthParameter: 2
+                    AsArray{}
+                }
+            }
+            since: 6.7
         }
         InjectCode{
             ImportFile{
@@ -14188,7 +15162,27 @@ if(destinationChildV<0)
         }
 
         ModifyFunction{
-            signature: "connect<Sender,Signal,>(Sender*,Signal)"
+            signature: "connect<Sender,Signal,QtPrivate::EnableIfInvocable<Sender,Signal>>(Sender*,Signal)"
+            remove: RemoveFlag.All
+        }
+
+        ModifyFunction{
+            signature: "whenAll<OutputSequence,InputIt,ValueType,0>(InputIt,InputIt)"
+            remove: RemoveFlag.All
+        }
+
+        ModifyFunction{
+            signature: "whenAll<OutputSequence,Futures...,0>(Futures&&)"
+            remove: RemoveFlag.All
+        }
+
+        ModifyFunction{
+            signature: "whenAny<InputIt,ValueType,0>(InputIt,InputIt)"
+            remove: RemoveFlag.All
+        }
+
+        ModifyFunction{
+            signature: "whenAny<Futures...,0>(Futures&&)"
             remove: RemoveFlag.All
         }
 
@@ -14491,6 +15485,42 @@ if(%1!=null){
                 fileName: "utils_p.h"
                 location: Include.Global
             }
+        }
+        FunctionalType{
+            name: "Callable"
+            using: "std::function<void()>"
+            generate: false
+        }
+        ModifyFunction{
+            signature: "start(std::function<void()>,int)"
+            remove: RemoveFlag.All
+            until: 6.5
+        }
+        ModifyFunction{
+            signature: "tryStart(std::function<void()>)"
+            remove: RemoveFlag.All
+            until: 6.5
+        }
+        ModifyFunction{
+            signature: "startOnReservedThread(std::function<void()>)"
+            remove: RemoveFlag.All
+            since: 6.3
+            until: 6.5
+        }
+        ModifyFunction{
+            signature: "start<Callable,true>(Callable&&,int)"
+            remove: RemoveFlag.All
+            since: 6.6
+        }
+        ModifyFunction{
+            signature: "tryStart<Callable,true>(Callable&&)"
+            remove: RemoveFlag.All
+            since: 6.6
+        }
+        ModifyFunction{
+            signature: "startOnReservedThread<Callable,true>(Callable&&)"
+            remove: RemoveFlag.All
+            since: 6.6
         }
         ModifyFunction{
             signature: "start(QRunnable *, int)"
@@ -15188,48 +16218,6 @@ if(%1!=null){
                     modifiedType: "int"
                 }
             }
-            /*
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "int"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "qint64 %out = qint64(%in);\n"+
-                                  "while(%2 > std::numeric_limits<jsize>::max() && %in == std::numeric_limits<jsize>::max()){\n"+
-                                  "    %2 -= std::numeric_limits<jsize>::max();\n"+
-                                  "    %1 = &%1[std::numeric_limits<jsize>::max()];\n"+
-                                  "    CharPointerArray %1_buffer2(%env, %1, jsize(qMin(qint64(std::numeric_limits<jsize>::max()), %2)));\n"+
-                                  "    %in = %env->CallIntMethod(__java_this, method_id, %1_buffer2.array());\n"+
-                                  "    %out += %in;\n"+
-                                  "}"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jint %out = jint(%in);"}
-                }
-            }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "byte @Nullable[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jbyteArray %out = qtjambi_array_cast<jbyteArray>(%env, %scope, %in, jsize(qMin(qint64(std::numeric_limits<jsize>::max()), %2)));"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %2 = 0;\n"+
-                                  "char * %out = qtjambi_array_cast<char *>(%env, %scope, jbyteArray(%in), %2);"}
-                }
-            }
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-            }*/
         }
         ModifyFunction{
             signature: "readLine(char *, qint64)"
@@ -15246,49 +16234,6 @@ if(%1!=null){
                     modifiedType: "int"
                 }
             }
-            /*
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "int"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "qint64 %out = qint64(%in);\n"+
-                                  "while(%2 > std::numeric_limits<jsize>::max() && %in == std::numeric_limits<jsize>::max()){\n"+
-                                  "    %2 -= std::numeric_limits<jsize>::max();\n"+
-                                  "    %1 = &%1[std::numeric_limits<jsize>::max()];\n"+
-                                  "    CharPointerArray __%1(%env, %1, jsize(qMin(qint64(std::numeric_limits<jsize>::max()), %2)));\n"+
-                                  "    %in = %env->CallIntMethod(__java_this, method_id, __%1.array());\n"+
-                                  "    %out += %in;\n"+
-                                  "}"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jint %out = jint(%in);"}
-                }
-            }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "byte @Nullable[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jbyteArray %out = qtjambi_array_cast<jbyteArray>(%env, %scope, %in, jsize(qMin(qint64(std::numeric_limits<jsize>::max()), %2)));"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %2 = 0;\n"+
-                                  "char * %out = qtjambi_array_cast<char *>(%env, %scope, jbyteArray(%in), %2);"}
-                }
-            }
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-            }
-            */
         }
         ModifyFunction{
             signature: "write(const char *, qint64)"
@@ -15305,51 +16250,6 @@ if(%1!=null){
                     modifiedType: "int"
                 }
             }
-            /*
-            ModifyArgument{
-                index: 0
-                ReplaceType{
-                    modifiedType: "int"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "qint64 %out = qint64(%in);\n"+
-                                  "while(%2 > std::numeric_limits<jsize>::max() && %in == std::numeric_limits<jsize>::max()){\n"+
-                                  "    %2 -= std::numeric_limits<jsize>::max();\n"+
-                                  "    %1 = &%1[std::numeric_limits<jsize>::max()];\n"+
-                                  "    j%2 = jsize(qMin(qint64(std::numeric_limits<jsize>::max()), %2));\n"+
-                                  "    ConstCharPointerArray __%1(%env, %1, j%2);\n"+
-                                  "    %in = %env->CallIntMethod(__java_this, method_id, __%1.array());\n"+
-                                  "    %out += %in;\n"+
-                                  "}"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jint %out = jint(%in);"}
-                }
-            }
-            ModifyArgument{
-                index: 1
-                ReplaceType{
-                    modifiedType: "byte @Nullable[]"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Shell
-                    Text{content: "jsize j%2 = jsize(qMin(qint64(std::numeric_limits<jsize>::max()), %2));\n"+
-                                  "jbyteArray %out = qtjambi_array_cast<jbyteArray>(%env, %scope, %in, j%2);"}
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "jsize %2 = 0;\n"+
-                                  "char * %out = qtjambi_array_cast<char *>(%env, %scope, jbyteArray(%in), %2);"}
-                }
-            }
-            ModifyArgument{
-                index: 2
-                RemoveArgument{
-                }
-            }
-            */
         }
     }
     
@@ -15565,6 +16465,11 @@ if(%1!=null){
             name: "OSType"
         }
         defaultSuperClass: "QtObject"
+        ModifyFunction{
+            signature: "QOperatingSystemVersion(QOperatingSystemVersionBase)"
+            remove: RemoveFlag.All
+            since: 6
+        }
         CustomConstructor{
             Text{content: "if(copy){\n"+
                           "    return new(placement) QOperatingSystemVersion(*copy);\n"+
@@ -15774,6 +16679,13 @@ if(%1!=null){
         Rejection{
             className: "Null"
             until: [5, 15]
+        }
+
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/JObjectWrapper"
+                location: Include.Global
+            }
         }
 
         EnumType{
@@ -17344,6 +18256,7 @@ if(%1!=null){
         }
         FunctionalType{
             name: "Predicate"
+            generate: false
             using: "std::function<bool(QChar)>"
         }
         ModifyFunction{
@@ -17351,6 +18264,15 @@ if(%1!=null){
             Instantiation{
                 Argument{
                     type: "std::function<bool(QChar)>"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = std::bind(Java::QtCore::QString$Predicate::test, %env, %in, std::placeholders::_1);"}
+                    }
                 }
             }
         }
@@ -17767,21 +18689,23 @@ if(%1!=null){
                 quoteAfterLine: "class QMetaType___"
                 quoteBeforeLine: "}// class"
             }
-        }
-        InjectCode{
-            until: 5
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
                 quoteAfterLine: "class QMetaType_5__"
                 quoteBeforeLine: "}// class"
+                until: 5
             }
-        }
-        InjectCode{
-            since: 6
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QMetaType_toString__"
+                quoteBeforeLine: "}// class"
+                until: 6.4
+            }
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
                 quoteAfterLine: "class QMetaType_6__"
                 quoteBeforeLine: "}// class"
+                since: 6
             }
         }
         ModifyFunction{
@@ -18410,6 +19334,7 @@ if(%1!=null){
         Rejection{functionName: "view<T>"}
         Rejection{functionName: "canView"}
         Rejection{functionName: "canView<T>"}
+        Rejection{functionName: "emplace"}
         Rejection{className: "Handler"}
         Rejection{className: "Private"}
         Rejection{className: "PrivateShared"}
@@ -18488,9 +19413,20 @@ if(%1!=null){
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "setValue<T,>(T&&)"
+            signature: "setValue<T,std::enable_if_t<!std::is_same_v<std::decay_t<T>,QVariant>>>(T&&)"
             remove: RemoveFlag.All
             since: 6
+        }
+        ModifyFunction{
+            signature: "fromValue<T>(T&&)"
+            remove: RemoveFlag.All
+            since: 6
+            until: 6.4
+        }
+        ModifyFunction{
+            signature: "fromValue<T,true>(T&&)"
+            remove: RemoveFlag.All
+            since: 6.6
         }
         ModifyFunction{
             signature: "setValue<T>(T)"
@@ -18581,6 +19517,33 @@ if(%1!=null){
                 }
             }
             since: 6
+        }
+        ModifyFunction{
+            signature: "fromMetaType(QMetaType,const void*)"
+            ModifyArgument{
+                index: 1
+                AddImplicitCall{type: "io.qt.core.QMetaType.@NonNull Type"}
+            }
+            ModifyArgument{
+                index: 2
+                ReplaceType{
+                    modifiedType: "java.lang.@Nullable Object"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "QVariant* variant = new QVariant(CoreAPI::convertCheckedObjectToQVariant(%env, %in, __qt_%1));\n"+
+                                  "#if 0"}
+                }
+            }
+            ModifyArgument{
+                index: 0
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "#endif\n"+
+                                  "%out = QtJambiAPI::convertQVariantToJavaVariant(%env, variant); // taking ownership of variant"}
+                }
+            }
+            since: 6.7
         }
         ModifyFunction{
             signature: "toBool()const"
@@ -18870,8 +19833,38 @@ if(%1!=null){
             remove: RemoveFlag.All
         }
         ModifyFunction{
+            signature: "QPartialOrdering(Qt::partial_ordering)"
+            remove: RemoveFlag.All
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "QPartialOrdering(Qt::strong_ordering)"
+            remove: RemoveFlag.All
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "QPartialOrdering(Qt::weak_ordering)"
+            remove: RemoveFlag.All
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "operator Qt::partial_ordering()const"
+            remove: RemoveFlag.All
+            since: 6.7
+        }
+        ModifyFunction{
             signature: "operator==(QPartialOrdering)"
             remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "operator==(Qt::partial_ordering)"
+            remove: RemoveFlag.All
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "operator!=(Qt::partial_ordering)"
+            remove: RemoveFlag.All
+            since: 6.7
         }
         ModifyFunction{
             signature: "operator!=(QPartialOrdering)"
@@ -18897,11 +19890,41 @@ if(%1!=null){
             read: false
             write: false
         }
+        ModifyField{
+            name: "equivalent"
+            read: false
+            write: false
+            since: 6.7
+        }
+        ModifyField{
+            name: "greater"
+            read: false
+            write: false
+            since: 6.7
+        }
+        ModifyField{
+            name: "less"
+            read: false
+            write: false
+            since: 6.7
+        }
+        ModifyField{
+            name: "unordered"
+            read: false
+            write: false
+            since: 6.7
+        }
         InjectCode{
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
                 quoteAfterLine: "class QPartialOrdering___"
                 quoteBeforeLine: "}// class"
+            }
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QPartialOrdering_67__"
+                quoteBeforeLine: "}// class"
+                since: 6.7
             }
         }
         since: 6
@@ -19403,8 +20426,14 @@ if(%1!=null){
             }
         }
         ModifyFunction{
-            signature: "setSource<Property,>(Property)"
+            signature: "setSource<Property,typename Property::InheritsQUntypedPropertyData>(Property)"
             remove: RemoveFlag.All
+            until: 6.6
+        }
+        ModifyFunction{
+            signature: "setSource<Property,true>(Property)"
+            remove: RemoveFlag.All
+            since: 6.7
         }
         ModifyFunction{
             signature: "setSource(QtPrivate::QPropertyBindingData)"
@@ -19432,11 +20461,9 @@ if(%1!=null){
     
     ValueType{
         name: "QPropertyBindingError"
-        since: 6
-    }
-    
-    EnumType{
-        name: "QPropertyBindingError::Type"
+        EnumType{
+            name: "Type"
+        }
         since: 6
     }
     
@@ -19732,8 +20759,17 @@ if(%1!=null){
         ModifyFunction{
             signature: "QDebug(QDebug)"
             InjectCode{
-                Text{content: "this.__rcDevice = o.__rcDevice;\n"
-                            + "this.disabled = o.disabled;"}
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "this.__rcDevice = %1.__rcDevice;\n"
+                            + "this.disabled = %1.disabled;"}
+            }
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Position5
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "Java::QtJambi::ReferenceUtility::copyReferenceCount(__jni_env, __jni_object, nullptr, __jni_env->NewStringUTF(\"__rcDevice\"), %1);"}
             }
         }
         ModifyFunction{
@@ -22337,17 +23373,26 @@ if(%1!=null){
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'qHash(QPartialOrdering)' for function modification in 'QPartialOrdering' not found. Possible candidates:"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: class 'QSequentialConstIterator' inherits from unknown base class 'QByteArrayView::pointer'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: template baseclass 'QList<QString>' of 'QStringList' is not known"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QVariant::fromValue<>', unmatched parameter type 'const std::monostate&'"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QVariant::fromValue<>*', unmatched parameter type 'const std::monostate&'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method operator<<<T1,T2>(std::pair<T1,T2>)"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method operator>><T1,T2>(std::pair<T1,T2>&)"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping field 'QSequentialConstIterator::i' with unmatched type '*::Node*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QCoreApplication::requestPermission<*>', unmatched parameter type 'const QPermission&'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: namespace 'io.qt.core.Q*Permission' for enum '*' is not declared"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QDebug::operator<<<Args...>', unmatched parameter type 'const std::basic_string<*>&'"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QDebug::operator<<<Args...>*', unmatched parameter type 'const std::basic_string<*>&'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'QPartialOrdering(QPartialOrdering)' for function modification in 'QPartialOrdering' not found. Possible candidates: "}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method QShortcut::QShortcut<Func1>(QKeySequence,QWidget*,Func1,Qt::ShortcutContext)"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'QBasicMutex(QBasicMutex)' for function modification in 'QBasicMutex' not found. Possible candidates: QBasicMutex() in QBasicMutex"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QString*coder::*', unmatched return type 'QString*coder::*codedData<*>'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: class '' inherits from unknown base class 'QByteArrayView::value_type*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: class 'QSequentialConstIterator' inherits from unknown base class 'QByteArrayView::const_pointer'"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature '*_ordering(Qt::*_ordering)' for function modification in 'Qt::*_ordering' not found. Possible candidates: "}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*::get<*, true, true>', unmatched return type 'DECL_TYPE'"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method QFile::*<T,0>*"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method QFileInfo::*<T,0>*"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method QDir::*<T,0>*"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method *::assign<InputIterator,true>(InputIterator,InputIterator)"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method *::nativeInterface<NativeInterface,TypeInfo,BaseType,true>()const"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method QRandomGenerator::fillRange<*"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Missing instantiations for template method QStringList::QStringList<InputIterator,true>(InputIterator,InputIterator)"}
 }

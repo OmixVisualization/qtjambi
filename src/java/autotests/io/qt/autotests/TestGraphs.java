@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -195,6 +195,7 @@ public class TestGraphs extends ApplicationInitializer {
     
     @Test
     public void testQBarDataProxy(){
+    	Assume.assumeTrue(QLibraryInfo.version().compareTo(new QVersionNumber(6,6,0))<=0);
     	QBarDataProxy proxy = new QBarDataProxy();
     	QBarDataArray array = new QBarDataArray();
     	proxy.resetArray(array);
@@ -210,6 +211,7 @@ public class TestGraphs extends ApplicationInitializer {
     
     @Test
     public void testQSurfaceDataProxy(){
+    	Assume.assumeTrue(QLibraryInfo.version().compareTo(new QVersionNumber(6,6,0))<=0);
     	QSurfaceDataProxy proxy = new QSurfaceDataProxy();
     	QSurfaceDataArray array = new QSurfaceDataArray();
     	proxy.resetArray(array);

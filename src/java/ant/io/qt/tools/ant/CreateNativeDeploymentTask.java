@@ -121,20 +121,28 @@ public class CreateNativeDeploymentTask extends Task {
 			String abi = null;
 			switch(OSInfo.crossOS()) {
 			case Android:
-				OSInfo.setCrossOSArchName(AntUtil.getPropertyAsString(propertyHelper, Constants.OSNAME));
-				switch(OSInfo.crossOSArchName()) {
-	        	case OSInfo.K_ANDROID_ARM32:
+				switch(AntUtil.getPropertyAsString(propertyHelper, Constants.OSNAME)) {
+	        	case "android-arm":
+	        		OSInfo.setCrossCompilation(OSInfo.OperationSystem.Android, OSInfo.Architecture.arm);
 	        		abi = "armeabi-v7a"; 
 	        		break;
-	        	case OSInfo.K_ANDROID_ARM64:
+	        	case "android-x64":
+	        		OSInfo.setCrossCompilation(OSInfo.OperationSystem.Android, OSInfo.Architecture.arm64);
 	        		abi = "arm64-v8a"; 
 	        		break;
-	        	case OSInfo.K_ANDROID_X86:
+	        	case "android-x86":
+	        		OSInfo.setCrossCompilation(OSInfo.OperationSystem.Android, OSInfo.Architecture.x86);
 	        		abi = "x86";
 	        		break;
-	        	default: //case OSInfo.K_ANDROID_X64:
+	        	case "android-arm64":
+	        		OSInfo.setCrossCompilation(OSInfo.OperationSystem.Android, OSInfo.Architecture.x86_64);
 	        		abi = "x86_64";
 	        		break;
+	        	case "android-riscv64":
+	        		OSInfo.setCrossCompilation(OSInfo.OperationSystem.Android, OSInfo.Architecture.riscv64);
+	        		abi = "riscv64";
+	        		break;
+	        	default:break;
 	        	}
 				switch(moduleName) {
 				case "qtjambi":
@@ -152,23 +160,39 @@ public class CreateNativeDeploymentTask extends Task {
 								libcdir = new java.io.File(ndkdir, "toolchains");
 								libcdir = new java.io.File(libcdir, "llvm");
 								libcdir = new java.io.File(libcdir, "prebuilt");
-								libcdir = new java.io.File(libcdir, "windows-x86_64");
+								switch(OSInfo.os()) {
+								case Windows:
+									libcdir = new java.io.File(libcdir, "windows-x86_64");
+									break;
+								case MacOS:
+									libcdir = new java.io.File(libcdir, "darwin-x86_64");
+									break;
+								case Linux:
+									libcdir = new java.io.File(libcdir, "linux-x86_64");
+									break;
+								default: 
+									break;
+								}
 								libcdir = new java.io.File(libcdir, "sysroot");
 								libcdir = new java.io.File(libcdir, "usr");
 								libcdir = new java.io.File(libcdir, "lib");
-								switch(OSInfo.crossOSArchName()) {
-					        	case OSInfo.K_ANDROID_ARM32:
+								switch(OSInfo.crossArch()) {
+					        	case arm:
 					        		libcdir = new java.io.File(libcdir, "arm-linux-androideabi");
 					        		break;
-					        	case OSInfo.K_ANDROID_ARM64:
+					        	case arm64:
 					        		libcdir = new java.io.File(libcdir, "aarch64-linux-android");
 					        		break;
-					        	case OSInfo.K_ANDROID_X86:
+					        	case x86:
 					        		libcdir = new java.io.File(libcdir, "i686-linux-android");
 					        		break;
-					        	default: //case OSInfo.K_ANDROID_X64:
+					        	case x86_64:
 					        		libcdir = new java.io.File(libcdir, "x86_64-linux-android");
 					        		break;
+					        	case riscv64:
+					        		libcdir = new java.io.File(libcdir, "riscv64-linux-android");
+					        		break;
+					        	default: break;
 					        	}
 								libc_for_android = new java.io.File(libcdir, "libc++_shared.so");
 							}
@@ -246,11 +270,6 @@ public class CreateNativeDeploymentTask extends Task {
 								_libraries.add(f);
 							}
 							break;
-						case Linux:
-							if(f.endsWith(".so")) {
-								_libraries.add(f);
-							}
-							break;
 						case MacOS:
 							if(f.endsWith(".dylib")) {
 								_libraries.add(f);
@@ -258,25 +277,31 @@ public class CreateNativeDeploymentTask extends Task {
 							break;
 						case Android:
 							String suffix = ".so";
-							switch(OSInfo.crossOSArchName()) {
-				        	case OSInfo.K_ANDROID_ARM32:
+							switch(OSInfo.crossArch()) {
+				        	case arm:
 				        		targetLibDir = new java.io.File(new java.io.File(directory, "lib"), "arm32");
 				        		suffix = "_armeabi-v7a.so"; break;
-				        	case OSInfo.K_ANDROID_ARM64:
+				        	case arm64:
 				        		targetLibDir = new java.io.File(new java.io.File(directory, "lib"), "arm64");
 				        		suffix = "_arm64-v8a.so"; break;
-				        	case OSInfo.K_ANDROID_X86:
+				        	case x86:
 				        		targetLibDir = new java.io.File(new java.io.File(directory, "lib"), "x86");
 				        		suffix = "_x86.so"; break;
-				        	case OSInfo.K_ANDROID_X64:
+				        	case x86_64:
 				        		targetLibDir = new java.io.File(new java.io.File(directory, "lib"), "x86_64");
 				        		suffix = "_x86_64.so"; break;
+			        		default: break;
 				        	}
 							if(f.endsWith(suffix)) {
 								_libraries.add(f);
 							}
 							break;
 						default:
+							if(OSInfo.crossOS().isUnixLike()) {
+								if(f.endsWith(".so")) {
+									_libraries.add(f);
+								}
+							}
 							break;
 						}
 					}
@@ -342,21 +367,24 @@ public class CreateNativeDeploymentTask extends Task {
 							}
 						}
 						continue;
-					}else if(OSInfo.crossOS()==OSInfo.OS.MacOS && useFrameworks) {
+					}else if(OSInfo.crossOS()==OSInfo.OperationSystem.MacOS && useFrameworks) {
 						libName = name + (debug ? "_debug.framework" : ".framework");
 						isMacBundle = true;
 					}else {
 						libName = formatQtJambiName(name, debug, qtMajorVersion, qtMinorVersion, qtjambiPatchlevelVersion);
-						switch(OSInfo.crossOSArchName()) {
-			        	case OSInfo.K_ANDROID_ARM32:
-			        		jarpath += "/armeabi-v7a"; break;
-			        	case OSInfo.K_ANDROID_ARM64:
-			        		jarpath += "/arm64-v8a"; break;
-			        	case OSInfo.K_ANDROID_X86:
-			        		jarpath += "/x86"; break;
-			        	case OSInfo.K_ANDROID_X64:
-			        		jarpath += "/x86_64"; break;
-			        	}
+						if(OSInfo.crossOS()==OSInfo.OperationSystem.Android) {
+							switch(OSInfo.crossArch()) {
+				        	case arm:
+				        		jarpath += "/armeabi-v7a"; break;
+				        	case arm64:
+				        		jarpath += "/arm64-v8a"; break;
+				        	case x86:
+				        		jarpath += "/x86"; break;
+				        	case x86_64:
+				        		jarpath += "/x86_64"; break;
+			        		default: break;
+				        	}
+						}
 					}
 					break;
 				}
@@ -587,16 +615,19 @@ public class CreateNativeDeploymentTask extends Task {
 						noSymlinks = true;
 						break;
 					default:
-						switch(OSInfo.crossOSArchName()) {
-			        	case OSInfo.K_ANDROID_ARM32:
-							_libdir += "/armeabi-v7a"; break;
-			        	case OSInfo.K_ANDROID_ARM64:
-			        		_libdir += "/arm64-v8a"; break;
-			        	case OSInfo.K_ANDROID_X86:
-			        		_libdir += "/x86"; break;
-			        	case OSInfo.K_ANDROID_X64:
-			        		_libdir += "/x86_64"; break;
-			        	}
+						if(OSInfo.crossOS()==OSInfo.OperationSystem.Android) {
+							switch(OSInfo.crossArch()) {
+				        	case arm:
+								_libdir += "/armeabi-v7a"; break;
+				        	case arm64:
+				        		_libdir += "/arm64-v8a"; break;
+				        	case x86:
+				        		_libdir += "/x86"; break;
+				        	case x86_64:
+				        		_libdir += "/x86_64"; break;
+				        		default: break;
+				        	}
+						}
 						break;
 		        	}
 		        	if(debug || !forceDebugInfo) {
@@ -669,7 +700,7 @@ public class CreateNativeDeploymentTask extends Task {
 								if(!Files.isSymbolicLink(link)){
 		    						create = true;
 		    					}else {
-		    						Path targetPath = Files.readSymbolicLink(link);
+		    						Path targetPath = link.toRealPath();
 		    						if(!Path.of(target.getName()).equals(targetPath)) {
 		    							create = true;
 		    						}
@@ -697,7 +728,7 @@ public class CreateNativeDeploymentTask extends Task {
 								if(!Files.isSymbolicLink(link)){
 		    						create = true;
 		    					}else {
-		    						Path targetPath = Files.readSymbolicLink(link);
+		    						Path targetPath = link.toRealPath();
 		    						if(!Path.of(target.getName()).equals(targetPath)) {
 		    							create = true;
 		    						}
@@ -725,7 +756,7 @@ public class CreateNativeDeploymentTask extends Task {
 								if(!Files.isSymbolicLink(link)){
 		    						create = true;
 		    					}else {
-		    						Path targetPath = Files.readSymbolicLink(link);
+		    						Path targetPath = link.toRealPath();
 		    						if(!Path.of(target.getName()).equals(targetPath)) {
 		    							create = true;
 		    						}
@@ -852,7 +883,7 @@ public class CreateNativeDeploymentTask extends Task {
 	    				File destFile = new File(destDir, content.getName());
 	    				Path target = null;
 	    				try {
-	    					target = Files.readSymbolicLink(content.toPath());
+	    					target = content.toPath().toRealPath();
 	    					if(target.isAbsolute())
 	    						target = srcDir.toPath().relativize(target);
 	    					if(!Files.exists(destFile.toPath())) {
@@ -895,21 +926,28 @@ public class CreateNativeDeploymentTask extends Task {
                     return "lib" + name + ".dylib";
                 }
             case Android:
-            	switch(OSInfo.crossOSArchName()) {
-            	case OSInfo.K_ANDROID_ARM32:
-            		return "lib" + name + "_armeabi-v7a.so";
-            	case OSInfo.K_ANDROID_ARM64:
-            		return "lib" + name + "_arm64-v8a.so";
-            	case OSInfo.K_ANDROID_X86:
-            		return "lib" + name + "_x86.so";
-            	case OSInfo.K_ANDROID_X64:
+            	if(OSInfo.crossArch()==null) {
             		return "lib" + name + "_x86_64.so";
+            	}else {
+	            	switch(OSInfo.crossArch()) {
+	            	case arm:
+	            		return "lib" + name + "_armeabi-v7a.so";
+	            	case arm64:
+	            		return "lib" + name + "_arm64-v8a.so";
+	            	case x86:
+	            		return "lib" + name + "_x86.so";
+	            	case x86_64:
+	            		return "lib" + name + "_x86_64.so";
+	            	case riscv64:
+	            		return "lib" + name + "_riscv64.so";
+	        		default: break;
+	            	}
             	}
-            case Linux:
-                return "lib" + name + ".so";
             case IOS:
                 return "lib" + name + "_debug.a";
 			default:
+				if(OSInfo.crossOS().isUnixLike())
+					return "lib" + name + ".so";
 				break;
             }
         } else {
@@ -919,21 +957,28 @@ public class CreateNativeDeploymentTask extends Task {
             case MacOS:
                 return "lib" + name + ".dylib";
             case Android:
-            	switch(OSInfo.crossOSArchName()) {
-            	case OSInfo.K_ANDROID_ARM32:
-            		return "lib" + name + "_armeabi-v7a.so";
-            	case OSInfo.K_ANDROID_ARM64:
-            		return "lib" + name + "_arm64-v8a.so";
-            	case OSInfo.K_ANDROID_X86:
-            		return "lib" + name + "_x86.so";
-            	case OSInfo.K_ANDROID_X64:
+            	if(OSInfo.crossArch()==null) {
             		return "lib" + name + "_x86_64.so";
+            	}else {
+	            	switch(OSInfo.crossArch()) {
+	            	case arm:
+	            		return "lib" + name + "_armeabi-v7a.so";
+	            	case arm64:
+	            		return "lib" + name + "_arm64-v8a.so";
+	            	case x86:
+	            		return "lib" + name + "_x86.so";
+	            	case x86_64:
+	            		return "lib" + name + "_x86_64.so";
+	            	case riscv64:
+	            		return "lib" + name + "_riscv64.so";
+	            	default: break;
+	            	}
             	}
-            case Linux:
-                return "lib" + name + ".so";
             case IOS:
                 return "lib" + name + ".a";
 			default:
+				if(OSInfo.crossOS().isUnixLike())
+					return "lib" + name + ".so";
 				break;
             }
         }
@@ -949,19 +994,27 @@ public class CreateNativeDeploymentTask extends Task {
                     return "lib" + name + "_debug.dylib";
                 else return "lib" + name + ".dylib";
             case Android:
-            	switch(OSInfo.crossOSArchName()) {
-            	case OSInfo.K_ANDROID_ARM32:
-            		return "lib" + name + "_armeabi-v7a.so";
-            	case OSInfo.K_ANDROID_ARM64:
-            		return "lib" + name + "_arm64-v8a.so";
-            	case OSInfo.K_ANDROID_X86:
-            		return "lib" + name + "_x86.so";
-            	case OSInfo.K_ANDROID_X64:
+            	if(OSInfo.crossArch()==null) {
             		return "lib" + name + "_x86_64.so";
+            	}else {
+            		switch(OSInfo.crossArch()) {
+	            	case arm:
+	            		return "lib" + name + "_armeabi-v7a.so";
+	            	case arm64:
+	            		return "lib" + name + "_arm64-v8a.so";
+	            	case x86:
+	            		return "lib" + name + "_x86.so";
+	            	case x86_64:
+	            		return "lib" + name + "_x86_64.so";
+	            	case riscv64:
+	            		return "lib" + name + "_riscv64.so";
+	            	default: break;
+	            	}
             	}
-            case Linux: return "lib" + name + ".so";
             case IOS: return "lib" + name + "_debug.a";
 			default:
+				if(OSInfo.crossOS().isUnixLike())
+					return "lib" + name + ".so";
 				break;
             }
         } else {
@@ -969,19 +1022,27 @@ public class CreateNativeDeploymentTask extends Task {
             case Windows: return name + ".dll";
             case MacOS: return "lib" + name + ".dylib";
             case Android:
-            	switch(OSInfo.crossOSArchName()) {
-            	case OSInfo.K_ANDROID_ARM32:
-            		return "lib" + name + "_armeabi-v7a.so";
-            	case OSInfo.K_ANDROID_ARM64:
-            		return "lib" + name + "_arm64-v8a.so";
-            	case OSInfo.K_ANDROID_X86:
-            		return "lib" + name + "_x86.so";
-            	case OSInfo.K_ANDROID_X64:
+            	if(OSInfo.crossArch()==null) {
             		return "lib" + name + "_x86_64.so";
+            	}else {
+            		switch(OSInfo.crossArch()) {
+	            	case arm:
+	            		return "lib" + name + "_armeabi-v7a.so";
+	            	case arm64:
+	            		return "lib" + name + "_arm64-v8a.so";
+	            	case x86:
+	            		return "lib" + name + "_x86.so";
+	            	case x86_64:
+	            		return "lib" + name + "_x86_64.so";
+	            	case riscv64:
+	            		return "lib" + name + "_riscv64.so";
+	            	default: break;
+	            	}
             	}
-            case Linux: return "lib" + name + ".so";
             case IOS: return "lib" + name + ".a";
 			default:
+				if(OSInfo.crossOS().isUnixLike())
+					return "lib" + name + ".so";
 				break;
             }
         }
@@ -1051,24 +1112,34 @@ public class CreateNativeDeploymentTask extends Task {
                 }else{
                     return libPrefix + name + infix + tmpDotVersionString + ".dylib";
                 }
-            case Linux:
-                return libPrefix + name + infix + ".so" + tmpDotVersionString;
             case Android:
             	if(infix==null || infix.isEmpty()) {
-	            	switch(OSInfo.crossOSArchName()) {
-	            	case OSInfo.K_ANDROID_ARM32:
-	            		return libPrefix + name + infix + "_armeabi-v7a.so";
-	            	case OSInfo.K_ANDROID_ARM64:
-	            		return libPrefix + name + infix + "_arm64-v8a.so";
-	            	case OSInfo.K_ANDROID_X86:
-	            		return libPrefix + name + infix + "_x86.so";
-	            	case OSInfo.K_ANDROID_X64:
-	            		return libPrefix + name + infix + "_x86_64.so";
-	            	}
+                	if(OSInfo.crossArch()==null) {
+                		if(infix.isEmpty())
+                			return libPrefix + name + infix + "_x86_64.so";
+                		else
+                			return libPrefix + name + infix + ".so";
+                	}else {
+		            	switch(OSInfo.crossArch()) {
+		            	case arm:
+		            		return libPrefix + name + infix + "_armeabi-v7a.so";
+		            	case arm64:
+		            		return libPrefix + name + infix + "_arm64-v8a.so";
+		            	case x86:
+		            		return libPrefix + name + infix + "_x86.so";
+		            	case x86_64:
+		            		return libPrefix + name + infix + "_x86_64.so";
+		            	case riscv64:
+		            		return libPrefix + name + infix + "_riscv64.so";
+		         		default: break;
+		            	}
+                	}
             	}
                 return libPrefix + name + infix + ".so";
             case IOS: return "lib" + name + infix + "_debug.a";
 			default:
+				if(OSInfo.crossOS().isUnixLike())
+	                return libPrefix + name + infix + ".so" + tmpDotVersionString;
 				break;
             }
         } else {
@@ -1091,22 +1162,32 @@ public class CreateNativeDeploymentTask extends Task {
                 return name + infix + tmpVersionString + ".dll";
             case MacOS:
                 return libPrefix + name + infix + tmpDotVersionString + ".dylib";
-            case Linux:
-                return libPrefix + name + infix + ".so" + tmpDotVersionString;
             case Android:
-            	switch(OSInfo.crossOSArchName()) {
-            	case OSInfo.K_ANDROID_ARM32:
-            		return libPrefix + name + infix + "_armeabi-v7a.so";
-            	case OSInfo.K_ANDROID_ARM64:
-            		return libPrefix + name + infix + "_arm64-v8a.so";
-            	case OSInfo.K_ANDROID_X86:
-            		return libPrefix + name + infix + "_x86.so";
-            	case OSInfo.K_ANDROID_X64:
-            		return libPrefix + name + infix + "_x86_64.so";
+            	if(OSInfo.crossArch()==null) {
+            		if(infix.isEmpty())
+            			return libPrefix + name + infix + "_x86_64.so";
+            		else
+            			return libPrefix + name + infix + ".so";
+            	}else {
+	            	switch(OSInfo.crossArch()) {
+	            	case arm:
+	            		return libPrefix + name + infix + "_armeabi-v7a.so";
+	            	case arm64:
+	            		return libPrefix + name + infix + "_arm64-v8a.so";
+	            	case x86:
+	            		return libPrefix + name + infix + "_x86.so";
+	            	case x86_64:
+	            		return libPrefix + name + infix + "_x86_64.so";
+	            	case riscv64:
+	            		return libPrefix + name + infix + "_riscv64.so";
+	         		default: break;
+	            	}
             	}
                 return libPrefix + name + infix + ".so";
             case IOS: return "lib" + name + infix + ".a";
 			default:
+				if(OSInfo.crossOS().isUnixLike())
+	                return libPrefix + name + infix + ".so" + tmpDotVersionString;
 				break;
             }
         }
@@ -1144,19 +1225,26 @@ public class CreateNativeDeploymentTask extends Task {
                     return "lib" + name + infix + ".prl";
                 else return "lib" + name + infix + tmpDebugSuffix + ".prl";
             case Android:
-            	switch(OSInfo.crossOSArchName()) {
-            	case OSInfo.K_ANDROID_ARM32:
-            		return "lib" + name + infix + "_armeabi-v7a.prl";
-            	case OSInfo.K_ANDROID_ARM64:
-            		return "lib" + name + infix + "_arm64-v8a.prl";
-            	case OSInfo.K_ANDROID_X86:
-            		return "lib" + name + infix + "_x86.prl";
-            	case OSInfo.K_ANDROID_X64:
-            		return "lib" + name + infix + "_x86_64.prl";
+            	if(OSInfo.crossArch()==null) {
+            		return "lib" + name + infix + "_x86_64.so";
+            	}else {
+	            	switch(OSInfo.crossArch()) {
+	            	case arm:
+	            		return "lib" + name + infix + "_armeabi-v7a.prl";
+	            	case arm64:
+	            		return "lib" + name + infix + "_arm64-v8a.prl";
+	            	case x86:
+	            		return "lib" + name + infix + "_x86.prl";
+	            	case x86_64:
+	            		return "lib" + name + infix + "_x86_64.prl";
+	            	case riscv64:
+	            		return "lib" + name + infix + "_riscv64.prl";
+	         		default: break;
+	            	}
             	}
-            case Linux:
-                return "lib" + name + infix + ".prl";
 			default:
+				if(OSInfo.crossOS().isUnixLike())
+	                return "lib" + name + infix + ".prl";
 				break;
             }
         } else {
@@ -1167,19 +1255,26 @@ public class CreateNativeDeploymentTask extends Task {
             case IOS:
                 return "lib" + name + infix + ".prl";
             case Android:
-            	switch(OSInfo.crossOSArchName()) {
-            	case OSInfo.K_ANDROID_ARM32:
-            		return "lib" + name + infix + "_armeabi-v7a.prl";
-            	case OSInfo.K_ANDROID_ARM64:
-            		return "lib" + name + infix + "_arm64-v8a.prl";
-            	case OSInfo.K_ANDROID_X86:
-            		return "lib" + name + infix + "_x86.prl";
-            	case OSInfo.K_ANDROID_X64:
-            		return "lib" + name + infix + "_x86_64.prl";
+            	if(OSInfo.crossArch()==null) {
+            		return "lib" + name + infix + "_x86_64.so";
+            	}else {
+	            	switch(OSInfo.crossArch()) {
+	            	case arm:
+	            		return "lib" + name + infix + "_armeabi-v7a.prl";
+	            	case arm64:
+	            		return "lib" + name + infix + "_arm64-v8a.prl";
+	            	case x86:
+	            		return "lib" + name + infix + "_x86.prl";
+	            	case x86_64:
+	            		return "lib" + name + infix + "_x86_64.prl";
+	            	case riscv64:
+	            		return "lib" + name + infix + "_riscv64.prl";
+	         		default: break;
+	            	}
             	}
-            case Linux:
-                return "lib" + name + infix + ".prl";
 			default:
+				if(OSInfo.crossOS().isUnixLike())
+	                return "lib" + name + infix + ".prl";
 				break;
             }
         }
@@ -1197,21 +1292,28 @@ public class CreateNativeDeploymentTask extends Task {
                     return "lib" + name + tmpDebugSuffix + ".dylib";
                 else return "lib" + name + ".dylib";
             case Android:
-            	switch(OSInfo.crossOSArchName()) {
-            	case OSInfo.K_ANDROID_ARM32:
-            		return "lib" + name + "_armeabi-v7a.so";
-            	case OSInfo.K_ANDROID_ARM64:
-            		return "lib" + name + "_arm64-v8a.so";
-            	case OSInfo.K_ANDROID_X86:
-            		return "lib" + name + "_x86.so";
-            	case OSInfo.K_ANDROID_X64:
+            	if(OSInfo.crossArch()==null) {
             		return "lib" + name + "_x86_64.so";
+            	}else {
+	            	switch(OSInfo.crossArch()) {
+	            	case arm:
+	            		return "lib" + name + "_armeabi-v7a.so";
+	            	case arm64:
+	            		return "lib" + name + "_arm64-v8a.so";
+	            	case x86:
+	            		return "lib" + name + "_x86.so";
+	            	case x86_64:
+	            		return "lib" + name + "_x86_64.so";
+	            	case riscv64:
+	            		return "lib" + name + "_riscv64.so";
+	         		default: break;
+	            	}
             	}
-            case Linux:
-                return "lib" + name + ".so";
             case IOS:
                 return "lib" + name + ".a";
 			default:
+				if(OSInfo.crossOS().isUnixLike())
+	                return "lib" + name + ".so";
 				break;
             }
         } else {
@@ -1221,21 +1323,28 @@ public class CreateNativeDeploymentTask extends Task {
             case MacOS:
                 return "lib" + name + ".dylib";
             case Android:
-            	switch(OSInfo.crossOSArchName()) {
-            	case OSInfo.K_ANDROID_ARM32:
-            		return "lib" + name + "_armeabi-v7a.so";
-            	case OSInfo.K_ANDROID_ARM64:
-            		return "lib" + name + "_arm64-v8a.so";
-            	case OSInfo.K_ANDROID_X86:
-            		return "lib" + name + "_x86.so";
-            	case OSInfo.K_ANDROID_X64:
+            	if(OSInfo.crossArch()==null) {
             		return "lib" + name + "_x86_64.so";
+            	}else {
+	            	switch(OSInfo.crossArch()) {
+	            	case arm:
+	            		return "lib" + name + "_armeabi-v7a.so";
+	            	case arm64:
+	            		return "lib" + name + "_arm64-v8a.so";
+	            	case x86:
+	            		return "lib" + name + "_x86.so";
+	            	case x86_64:
+	            		return "lib" + name + "_x86_64.so";
+	            	case riscv64:
+	            		return "lib" + name + "_riscv64.so";
+	         		default: break;
+	            	}
             	}
-            case Linux:
-                return "lib" + name + ".so";
             case IOS:
                 return "lib" + name + ".a";
 			default:
+				if(OSInfo.crossOS().isUnixLike())
+	                return "lib" + name + ".so";
 				break;
             }
         }
@@ -1266,21 +1375,28 @@ public class CreateNativeDeploymentTask extends Task {
             case MacOS:
         		return "lib" + name + tmpDebugSuffix + tmpDotVersionString + ".jnilib";
             case Android:
-            	switch(OSInfo.crossOSArchName()) {
-            	case OSInfo.K_ANDROID_ARM32:
-            		return "lib" + name + tmpDebugSuffix + "_armeabi-v7a.so";
-            	case OSInfo.K_ANDROID_ARM64:
-            		return "lib" + name + tmpDebugSuffix + "_arm64-v8a.so";
-            	case OSInfo.K_ANDROID_X86:
-            		return "lib" + name + tmpDebugSuffix + "_x86.so";
-            	case OSInfo.K_ANDROID_X64:
+            	if(OSInfo.crossArch()==null) {
             		return "lib" + name + tmpDebugSuffix + "_x86_64.so";
+            	}else {
+	            	switch(OSInfo.crossArch()) {
+	            	case arm:
+	            		return "lib" + name + tmpDebugSuffix + "_armeabi-v7a.so";
+	            	case arm64:
+	            		return "lib" + name + tmpDebugSuffix + "_arm64-v8a.so";
+	            	case x86:
+	            		return "lib" + name + tmpDebugSuffix + "_x86.so";
+	            	case x86_64:
+	            		return "lib" + name + tmpDebugSuffix + "_x86_64.so";
+	            	case riscv64:
+	            		return "lib" + name + tmpDebugSuffix + "_riscv64.so";
+	            	default: break;
+	            	}
             	}
                 return "lib" + name + tmpDebugSuffix + ".so";
-            case Linux:
-                return "lib" + name + tmpDebugSuffix + ".so" + tmpDotVersionString;
             case IOS: return "lib" + name + tmpDebugSuffix + ".a";
 			default:
+				if(OSInfo.crossOS().isUnixLike())
+	                return "lib" + name + tmpDebugSuffix + ".so" + tmpDotVersionString;
 				break;
             }
         } else {
@@ -1290,21 +1406,28 @@ public class CreateNativeDeploymentTask extends Task {
             case MacOS:
         		return "lib" + name + tmpDotVersionString + ".jnilib";
             case Android:
-            	switch(OSInfo.crossOSArchName()) {
-            	case OSInfo.K_ANDROID_ARM32:
-            		return "lib" + name + "_armeabi-v7a.so";
-            	case OSInfo.K_ANDROID_ARM64:
-            		return "lib" + name + "_arm64-v8a.so";
-            	case OSInfo.K_ANDROID_X86:
-            		return "lib" + name + "_x86.so";
-            	case OSInfo.K_ANDROID_X64:
+            	if(OSInfo.crossArch()==null) {
             		return "lib" + name + "_x86_64.so";
+            	}else {
+	            	switch(OSInfo.crossArch()) {
+	            	case arm:
+	            		return "lib" + name + "_armeabi-v7a.so";
+	            	case arm64:
+	            		return "lib" + name + "_arm64-v8a.so";
+	            	case x86:
+	            		return "lib" + name + "_x86.so";
+	            	case x86_64:
+	            		return "lib" + name + "_x86_64.so";
+	            	case riscv64:
+	            		return "lib" + name + "_riscv64.so";
+	            	default: break;
+	            	}
             	}
                 return "lib" + name + ".so";
-            case Linux:
-                return "lib" + name + ".so" + tmpDotVersionString;
             case IOS: return "lib" + name + ".a";
 			default:
+				if(OSInfo.crossOS().isUnixLike())
+	                return "lib" + name + ".so" + tmpDotVersionString;
 				break;
             }
         }
@@ -1318,21 +1441,28 @@ public class CreateNativeDeploymentTask extends Task {
             case MacOS:
                 return "lib" + name + "_debug.dylib";
             case Android:
-            	switch(OSInfo.crossOSArchName()) {
-            	case OSInfo.K_ANDROID_ARM32:
-            		return "lib" + name + "_armeabi-v7a.so";
-            	case OSInfo.K_ANDROID_ARM64:
-            		return "lib" + name + "_arm64-v8a.so";
-            	case OSInfo.K_ANDROID_X86:
-            		return "lib" + name + "_x86.so";
-            	case OSInfo.K_ANDROID_X64:
+            	if(OSInfo.crossArch()==null) {
             		return "lib" + name + "_x86_64.so";
+            	}else {
+	            	switch(OSInfo.crossArch()) {
+	            	case arm:
+	            		return "lib" + name + "_armeabi-v7a.so";
+	            	case arm64:
+	            		return "lib" + name + "_arm64-v8a.so";
+	            	case x86:
+	            		return "lib" + name + "_x86.so";
+	            	case x86_64:
+	            		return "lib" + name + "_x86_64.so";
+	            	case riscv64:
+	            		return "lib" + name + "_riscv64.so";
+	         		default: break;
+	            	}
             	}
-            case Linux:
-                return "lib" + name + "_debug.so";
             case IOS:
                 return "lib" + name + "_debug.a";
 			default:
+				if(OSInfo.crossOS().isUnixLike())
+	                return "lib" + name + "_debug.so";
 				break;
             }
         } else {
@@ -1342,21 +1472,28 @@ public class CreateNativeDeploymentTask extends Task {
             case MacOS:
                 return "lib" + name + ".dylib";
             case Android:
-            	switch(OSInfo.crossOSArchName()) {
-            	case OSInfo.K_ANDROID_ARM32:
-            		return "lib" + name + "_armeabi-v7a.so";
-            	case OSInfo.K_ANDROID_ARM64:
-            		return "lib" + name + "_arm64-v8a.so";
-            	case OSInfo.K_ANDROID_X86:
-            		return "lib" + name + "_x86.so";
-            	case OSInfo.K_ANDROID_X64:
+            	if(OSInfo.crossArch()==null) {
             		return "lib" + name + "_x86_64.so";
+            	}else {
+	            	switch(OSInfo.crossArch()) {
+	            	case arm:
+	            		return "lib" + name + "_armeabi-v7a.so";
+	            	case arm64:
+	            		return "lib" + name + "_arm64-v8a.so";
+	            	case x86:
+	            		return "lib" + name + "_x86.so";
+	            	case x86_64:
+	            		return "lib" + name + "_x86_64.so";
+	            	case riscv64:
+	            		return "lib" + name + "_riscv64.so";
+	         		default: break;
+	            	}
             	}
-            case Linux:
-                return "lib" + name + ".so";
             case IOS:
                 return "lib" + name + ".a";
 			default:
+				if(OSInfo.crossOS().isUnixLike())
+	                return "lib" + name + ".so";
 				break;
             }
         }
@@ -1373,20 +1510,27 @@ public class CreateNativeDeploymentTask extends Task {
              case MacOS:
                 return "lib" + name + tmpDebugSuffix + ".dylib";
              case Android:
-             	switch(OSInfo.crossOSArchName()) {
-             	case OSInfo.K_ANDROID_ARM32:
-             		return "lib" + name + "_armeabi-v7a.so";
-             	case OSInfo.K_ANDROID_ARM64:
-             		return "lib" + name + "_arm64-v8a.so";
-             	case OSInfo.K_ANDROID_X86:
-             		return "lib" + name + "_x86.so";
-             	case OSInfo.K_ANDROID_X64:
-             		return "lib" + name + "_x86_64.so";
-             	}
-             case Linux:
-                return "lib" + name + tmpDebugSuffix + ".so";
+             	if(OSInfo.crossArch()==null) {
+            		return "lib" + name + "_x86_64.so";
+            	}else {
+	             	switch(OSInfo.crossArch()) {
+	             	case arm:
+	             		return "lib" + name + "_armeabi-v7a.so";
+	             	case arm64:
+	             		return "lib" + name + "_arm64-v8a.so";
+	             	case x86:
+	             		return "lib" + name + "_x86.so";
+	             	case x86_64:
+	             		return "lib" + name + "_x86_64.so";
+	            	case riscv64:
+	            		return "lib" + name + "_riscv64.so";
+	         		default: break;
+	             	}
+            	}
              case IOS: return "lib" + name + tmpDebugSuffix + ".a";
  			default:
+				if(OSInfo.crossOS().isUnixLike())
+					return "lib" + name + tmpDebugSuffix + ".so";
 				break;
              }
          } else {
@@ -1396,20 +1540,27 @@ public class CreateNativeDeploymentTask extends Task {
              case MacOS:
                 return "lib" + name + ".dylib";
              case Android:
-             	switch(OSInfo.crossOSArchName()) {
-             	case OSInfo.K_ANDROID_ARM32:
-             		return "lib" + name + "_armeabi-v7a.so";
-             	case OSInfo.K_ANDROID_ARM64:
-             		return "lib" + name + "_arm64-v8a.so";
-             	case OSInfo.K_ANDROID_X86:
-             		return "lib" + name + "_x86.so";
-             	case OSInfo.K_ANDROID_X64:
-             		return "lib" + name + "_x86_64.so";
-             	}
-             case Linux:
-                return "lib" + name + ".so";
+             	if(OSInfo.crossArch()==null) {
+            		return "lib" + name + "_x86_64.so";
+            	}else {
+	             	switch(OSInfo.crossArch()) {
+	             	case arm:
+	             		return "lib" + name + "_armeabi-v7a.so";
+	             	case arm64:
+	             		return "lib" + name + "_arm64-v8a.so";
+	             	case x86:
+	             		return "lib" + name + "_x86.so";
+	             	case x86_64:
+	             		return "lib" + name + "_x86_64.so";
+	            	case riscv64:
+	            		return "lib" + name + "_riscv64.so";
+	         		default: break;
+	             	}
+            	}
              case IOS: return "lib" + name + ".a";
  			default:
+				if(OSInfo.crossOS().isUnixLike())
+					return "lib" + name + ".so";
 				break;
              }
          }

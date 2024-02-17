@@ -2,7 +2,7 @@
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
 ** Copyright (C) 2002-2005 Roberto Raggi <roberto@kdevelop.org>
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -349,6 +349,14 @@ void _ClassModelItem::setDeclDeprecated(bool declDeprecated) {
     _M_declDeprecated = declDeprecated;
 }
 
+bool _ClassModelItem::isDllExported() const {
+    return _M_dllExported;
+}
+
+void _ClassModelItem::setDllExported(bool dllExported) {
+    _M_dllExported = dllExported;
+}
+
 CodeModel::AccessPolicy _ClassModelItem::accessPolicy() const {
     return _M_accessPolicy;
 }
@@ -675,6 +683,14 @@ void _FunctionModelItem::setDeclDefault(bool d) {
     _M_flags.setFlag(IsDeclDefault, d);
 }
 
+bool _FunctionModelItem::isDllExported() const {
+    return _M_flags.testFlag(IsDllExported);
+}
+
+void _FunctionModelItem::setDllExported(bool d) {
+    _M_flags.setFlag(IsDllExported, d);
+}
+
 bool _FunctionModelItem::isVariadics() const {
     return _M_flags.testFlag(IsVariadics);
 }
@@ -832,6 +848,23 @@ bool _TemplateParameterModelItem::isVaradic() const {
 
 void _TemplateParameterModelItem::setIsVaradic(bool isVaradic) {
     _M_isVaradic = isVaradic;
+}
+
+
+const QString& _TemplateParameterModelItem::parameterType() const{
+    return _M_parameterType;
+}
+
+void _TemplateParameterModelItem::setParameterType(const QString &parameterType){
+    _M_parameterType = parameterType;
+}
+
+const TypeInfo& _TemplateParameterModelItem::parameterTypeInfo() const{
+    return _M_parameterTypeInfo;
+}
+
+void _TemplateParameterModelItem::setParameterTypeInfo(const TypeInfo &parameterTypeInfo){
+    _M_parameterTypeInfo = parameterTypeInfo;
 }
 
 ClassModelItem _TemplateParameterModelItem::ownerClass() const {

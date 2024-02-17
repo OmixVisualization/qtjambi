@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -41,20 +41,6 @@ TypeSystem{
 
     Rejection{className: "QRhiImplementation"}
 
-    PrimitiveType{
-        name: "MTLCommandBuffer"
-        javaName: "io.qt.QNativePointer"
-        jniName: "jobject"
-        preferredConversion: false
-    }
-
-    PrimitiveType{
-        name: "MTLRenderCommandEncoder"
-        javaName: "io.qt.QNativePointer"
-        jniName: "jobject"
-        preferredConversion: false
-    }
-
     ObjectType{
         name: "QRhi"
         EnumType{
@@ -80,6 +66,42 @@ TypeSystem{
         }
         FunctionalType{
             name: "CleanupCallback"
+        }
+        ModifyFunction{
+            signature: "addCleanupCallback(const void *, const QRhi::CleanupCallback &)"
+            Remove{ // remove for compatibility with Qt 6.6.0
+                codeClass: RemoveFlag.All
+                until: 6.6
+            }
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "long"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "const void * %out = reinterpret_cast<const void *>(%in);"}
+                }
+                since: 6.7
+            }
+        }
+        ModifyFunction{
+            signature: "removeCleanupCallback(const void *)"
+            Remove{ // remove for compatibility with Qt 6.6.0
+                codeClass: RemoveFlag.All
+                until: 6.6
+            }
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "long"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "const void * %out = reinterpret_cast<const void *>(%in);"}
+                }
+                since: 6.7
+            }
         }
         ModifyFunction{
             signature: "beginOffscreenFrame(QRhiCommandBuffer **, QRhi::BeginFrameFlags)"
@@ -523,6 +545,10 @@ if(%out_buffer.size()<array.size()*4)
     }
     ObjectType{
         name: "QRhiReadbackResult"
+        FunctionalType{
+            name: "CompletedFunction"
+            using: "std::function<void()>"
+        }
     }
     ObjectType{
         name: "QShader"
@@ -1074,8 +1100,6 @@ if(%out_buffer.size()<array.size()*4)
     ObjectType{
         name: "QRhiMetalNativeHandles"
         ppCondition: "defined(Q_OS_MACOS)"
-        Rejection{fieldName: "dev"}
-        Rejection{fieldName: "cmdQueue"}
     }
     ObjectType{
         name: "QRhiReadbackDescription"
@@ -1089,9 +1113,6 @@ if(%out_buffer.size()<array.size()*4)
                 }
             }
         }
-    }
-    ObjectType{
-        name: "QRhiReadbackResult"
     }
     ObjectType{
         name: "QRhiResourceUpdateBatch"
@@ -1127,7 +1148,49 @@ if(%out_buffer.size()<array.size()*4)
     }
     ObjectType{
         name: "QRhiSwapChainHdrInfo"
-        Rejection{fieldName: "*"}
+        ModifyField{
+            name: "limits"
+            read: true
+            write: true
+            NoNullPointer{}
+            ReplaceType{
+                modifiedType: "float[]"
+                modifiedJniType: "jfloatArray"
+            }
+            ConversionRule{
+                codeClass: CodeClass.NativeGetter
+                Text{content: String.raw`
+%out = %env->NewFloatArray(2);
+%env->SetFloatArrayRegion(%out, 0, 2, *reinterpret_cast<float*const*const>(&%in));`
+                }
+            }
+            ConversionRule{
+                codeClass: CodeClass.NativeSetter
+                Text{content: String.raw`
+decltype(std::declval<QRhiSwapChainHdrInfo>().limits) %out{};
+if(%env->GetArrayLength(%in)!=2)
+    JavaException::raiseIllegalArgumentException(%env, "Array of length 2 expected" QTJAMBI_STACKTRACEINFO );
+%env->GetFloatArrayRegion(%in, 0, 2, *reinterpret_cast<float**>(&%out));`
+                }
+            }
+        }
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.End
+            Text{content: String.raw`
+@QtUninvokable
+public final void setColorComponentValue(float maxColorComponentValue, float maxPotentialColorComponentValue) {
+    setLimits(new float[] {maxColorComponentValue, maxPotentialColorComponentValue});
+    setLimitsType(LimitsType.ColorComponentValue);
+}
+
+@QtUninvokable
+public final void setLuminanceInNits(float minLuminance, float maxLuminance) {
+    setLimits(new float[] {minLuminance, maxLuminance});
+    setLimitsType(LimitsType.LuminanceInNits);
+}`
+            }
+        }
     }
     ObjectType{
         name: "QRhiSwapChainProxyData"

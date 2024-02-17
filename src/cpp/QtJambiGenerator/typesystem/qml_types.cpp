@@ -1,3 +1,34 @@
+/****************************************************************************
+**
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** $BEGIN_LICENSE$
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** $END_LICENSE$
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************/
+
 #include "qml_types.h"
 
 const QString &PrimitiveType::getJavaName() const
@@ -526,6 +557,45 @@ void ComplexType::setNoImplicitConstructors(bool newNoImplicitConstructors)
     emit noImplicitConstructorsChanged();
 }
 
+bool ComplexType::getNotAssignable() const
+{
+    return notAssignable;
+}
+
+void ComplexType::setNotAssignable(bool newNotAssignable)
+{
+    if (notAssignable == newNotAssignable)
+        return;
+    notAssignable = newNotAssignable;
+    emit notAssignableChanged();
+}
+
+bool ComplexType::getNotMoveAssignable() const
+{
+    return notMoveAssignable;
+}
+
+void ComplexType::setNotMoveAssignable(bool newNotMoveAssignable)
+{
+    if (notMoveAssignable == newNotMoveAssignable)
+        return;
+    notMoveAssignable = newNotMoveAssignable;
+    emit notMoveAssignableChanged();
+}
+
+bool ComplexType::getNotCloneable() const
+{
+    return notCloneable;
+}
+
+void ComplexType::setNotCloneable(bool newNotCloneable)
+{
+    if (notCloneable == newNotCloneable)
+        return;
+    notCloneable = newNotCloneable;
+    emit notCloneableChanged();
+}
+
 bool ValueType::getIsPolymorphicBase() const
 {
     return isPolymorphicBase;
@@ -747,4 +817,43 @@ void NamespaceType::setHasMetaObject(bool newHasMetaObject)
         return;
     m_hasMetaObject = newHasMetaObject;
     emit hasMetaObjectChanged();
+}
+
+bool TypeAliasType::getAsNativePointer() const
+{
+    return asNativePointer;
+}
+
+void TypeAliasType::setAsNativePointer(bool newAsNativePointer)
+{
+    if (asNativePointer == newAsNativePointer)
+        return;
+    asNativePointer = newAsNativePointer;
+    emit asNativePointerChanged();
+}
+
+QString TypeAliasType::getPpCondition() const
+{
+    return ppCondition;
+}
+
+void TypeAliasType::setPpCondition(const QString &newPpCondition)
+{
+    if (ppCondition == newPpCondition)
+        return;
+    ppCondition = newPpCondition;
+    emit ppConditionChanged();
+}
+
+QString NativePointerType::getPpCondition() const
+{
+    return ppCondition;
+}
+
+void NativePointerType::setPpCondition(const QString &newPpCondition)
+{
+    if (ppCondition == newPpCondition)
+        return;
+    ppCondition = newPpCondition;
+    emit ppConditionChanged();
 }

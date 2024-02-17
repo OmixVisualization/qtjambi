@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -203,19 +203,34 @@ public class FindCompiler {
      * check if trying to mix 32 bit vm with 64 bit compiler and other way around
      */
     void checkCompilerBits() {
-        if(OSInfo.os() == OSInfo.OS.Windows) {
-            boolean vmx64 = OSInfo.osArchName().equals(OSInfo.K_WIN_X64);
-            boolean compiler64 = compiler == Compiler.MSVC2005_x64 || compiler == Compiler.MSVC2008_x64 || compiler == Compiler.MSVC2010_x64 || compiler == Compiler.MSVC2012_x64 || compiler == Compiler.MSVC2013_x64 || compiler == Compiler.MSVC2015_x64 || compiler == Compiler.MSVC2017_x64;
-            if(vmx64 != compiler64) {
-                // This is allowed and is not an outright build failure, but warn the user.
-                if(vmx64)
-                    System.err.println("WARNING: You are not building for 64-bit on a 64-bit operating system with MSVC compiler...");
-                else
-                    System.err.println("WARNING: You are not building for 32-bit on a 32-bit operating system with MSVC compiler...");
-                if(compilerDetectionLine != null)
-                    System.err.println("         decideCompiler(): " + compilerDetectionLine);
-            }
-        }
+    	if(OSInfo.crossOS()==null) {
+	        if(OSInfo.os() == OSInfo.OperationSystem.Windows) {
+	        	switch(OSInfo.arch()) {
+	        	case x86:
+	        		if(compiler!=null && compiler.name.endsWith("64")) {
+	        			System.err.println("WARNING: You are not building for x86 with "+compiler+" compiler...");
+		                if(compilerDetectionLine != null)
+		                    System.err.println("         decideCompiler(): " + compilerDetectionLine);
+	        		}
+	        		break;
+	        	case x86_64:
+	        		if(compiler!=null && !compiler.name.endsWith("x64")) {
+	        			System.err.println("WARNING: You are not building for x86_64 with "+compiler+" compiler...");
+		                if(compilerDetectionLine != null)
+		                    System.err.println("         decideCompiler(): " + compilerDetectionLine);
+	        		}
+	        		break;
+	        	case arm64:
+	        		if(compiler!=null && !compiler.name.endsWith("arm64")) {
+	        			System.err.println("WARNING: You are not building for arm64 with "+compiler+" compiler...");
+		                if(compilerDetectionLine != null)
+		                    System.err.println("         decideCompiler(): " + compilerDetectionLine);
+	        		}
+	        		break;
+	        		default: break;
+	        	}
+	        }
+    	}
     }
 
     private void checkWindowsCompilers(boolean isTools) {
@@ -284,6 +299,11 @@ public class FindCompiler {
         	compiler = testForCLANG();
             break;
 		default:
+			if(OSInfo.crossOS().isUnixLike()) {
+	        	compiler = testForCLANG();
+	            if(compiler==null)
+		            compiler = testForGCC();
+			}
 			break;
         }
         
@@ -308,6 +328,11 @@ public class FindCompiler {
                 	compiler = testForCLANG();
                     break;
         		default:
+        			if(OSInfo.crossOS().isUnixLike()) {
+        	        	compiler = testForCLANG();
+        	            if(compiler==null)
+        		            compiler = testForGCC();
+        			}
         			break;
                 }
     		}catch(BuildException e) {
@@ -338,7 +363,7 @@ public class FindCompiler {
         try {
             List<String> cmdAndArgs = new ArrayList<String>();
             String cmd = "gcc";
-            if(OSInfo.os()==OSInfo.OS.Windows)
+            if(OSInfo.os()==OSInfo.OperationSystem.Windows)
             	cmd += ".exe";
             if(compilerPathValue!=null)
             	cmd = compilerPathValue+File.separator+cmd;

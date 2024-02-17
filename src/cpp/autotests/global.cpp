@@ -47,6 +47,9 @@
 #include <QtCore/QDebug>
 #include <QtCore/QtCore>
 #include <QtGui/QtGui>
+#if QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)
+#include <QtGui/QVulkanInstance>
+#endif
 #ifndef QTJAMBI_NO_QUICK
 #include <QtQuick/QQuickItem>
 #endif
@@ -95,6 +98,32 @@ void General::callPaintCellNull(QCalendarWidget *w) {
     static_cast<CalendarWidgetAccessor *>(w)->paintCellAccess(nullptr);
 }
 #endif
+
+bool General::canVulkan(){
+#if QT_CONFIG(vulkan)
+    return true;
+#else
+    return false;
+#endif
+}
+
+bool General::hasVulkanInstance(QWindow* window){
+#if QT_CONFIG(vulkan)
+    return window->vulkanInstance();
+#else
+    Q_UNUSED(window)
+    return false;
+#endif
+}
+
+bool General::canCreateVulkanInstance(){
+#if QT_CONFIG(vulkan) && __has_include(<vulkan/vulkan.h>)
+    QVulkanInstance inst;
+    return inst.create();
+#else
+    return false;
+#endif
+}
 
 class Runner : public QThread{
 public: void runMe(){run();}

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -63,6 +63,10 @@
 #include "metainfogenerator.h"
 #include <jni.h>
 #include <QtCore/QCommandLineOption>
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+#define qAsConst std::as_const
+#endif
 
 Q_DECL_EXPORT int execute_generator(int argc, char *argv[]) {
     GeneratorApplication app(argc, argv);

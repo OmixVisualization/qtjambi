@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -651,7 +651,7 @@ public class TestInjectedCode extends ApplicationInitializer {
     	lockFile.unlock();
     	lockFile.removeStaleLockFile();
     	assertEquals(QCoreApplication.applicationPid(), info.pid);
-    	if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+    	if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android) && !QCoreApplication.applicationFilePath().isEmpty()) {
 	    	QFileInfo applicationFilePath = new QFileInfo(QCoreApplication.applicationFilePath());
 	    	String fileName = applicationFilePath.fileName();
 	    	if(fileName.endsWith(".exe")) {
@@ -1725,6 +1725,8 @@ public class TestInjectedCode extends ApplicationInitializer {
     @Test
     public void testByteArray() {
 		io.qt.core.QByteArray bv = new io.qt.core.QByteArray("Byte\0Array");
+		for(Byte b : bv) {
+		}
 		assertArrayEquals("Byte\0Array".getBytes(), bv.toArray());
 		assertEquals("Byte\0Array", new String(bv.toArray()));
 		bv.dispose();

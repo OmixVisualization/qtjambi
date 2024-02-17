@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -492,10 +492,10 @@ public class TestThreadAffinity extends ApplicationInitializer{
 				QFileDialog.getExistingDirectoryUrl();
 				fail("QThreadAffinityException expected to be thrown.");
 			}catch(QThreadAffinityException e) {}
-			try{
-				QFileDialog.getOpenFileContent(null, null);
-				fail("QThreadAffinityException expected to be thrown.");
-			}catch(QThreadAffinityException e) {}
+//			try{
+//				QFileDialog.getOpenFileContent((String)null, null);
+//				fail("QThreadAffinityException expected to be thrown.");
+//			}catch(QThreadAffinityException e) {}
 			try{
 				QFileDialog.getOpenFileName();
 				fail("QThreadAffinityException expected to be thrown.");

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -43,12 +43,9 @@ import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Enumeration;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -63,12 +60,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 
 import io.qt.NativeAccess;
-import io.qt.core.QDate;
-import io.qt.core.QDateTime;
 import io.qt.core.QDir;
 import io.qt.core.QLocale;
-import io.qt.core.QTime;
-import io.qt.core.internal.QAbstractFileEngine;
 
 /**
  * @hidden
@@ -127,6 +120,8 @@ final class ResourceUtility {
 		final URL url;
 		final File file;
     }
+
+	private static final Function<String, Set<String>> newSetFactory = s -> new HashSet<>();
 
 	private final static JarCache cache = new JarCache();
     
@@ -684,13 +679,14 @@ final class ResourceUtility {
         }
         
         @NativeAccess
-        private void entryList(List<String> result, QDir.Filters filters, Collection<String> filterNames, String mentryName){
+        private void entryList(List<String> result, int _filters, Collection<String> filterNames, String mentryName){
             if (!mentryName.endsWith("/") && mentryName.length() > 0)
                 mentryName = mentryName + "/";
 
             Enumeration<JarEntry> entries = entries();
 
             HashSet<String> used = new HashSet<String>();
+            QDir.Filters filters = new QDir.Filters(_filters);
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
 
@@ -741,36 +737,22 @@ final class ResourceUtility {
         }
         
         @NativeAccess
-        private QDateTime fileTime(ZipEntry ze, int f) throws IOException {
+        private long fileTime(ZipEntry ze, boolean creationTime, boolean lastAccessTime, boolean lastModified) throws IOException {
         	FileTime fileTime = null;
         	if(ze!=null) {
-	        	switch(QAbstractFileEngine.FileTime.resolve(f)){
-				case AccessTime:
-					fileTime = ze.getLastAccessTime();
-					break;
-				case MetadataChangeTime:
-				case ModificationTime:
-					fileTime = ze.getLastModifiedTime();
-					break;
-				default:
+				if(creationTime)
 					fileTime = ze.getCreationTime();
-					break;
-	        	}
+				else if(lastAccessTime)
+					fileTime = ze.getLastAccessTime();
+				else if(lastModified)
+					fileTime = ze.getLastModifiedTime();
+				else
+					fileTime = ze.getCreationTime();
         	}else if(fileToJarFile!=null){
-        		switch(QAbstractFileEngine.FileTime.resolve(f)){
-				case AccessTime:
-					fileTime = Files.getLastModifiedTime(fileToJarFile.toPath());
-					break;
-				case MetadataChangeTime:
-				case ModificationTime:
-					fileTime = Files.getLastModifiedTime(fileToJarFile.toPath());
-					break;
-				default:
-					break;
-	        	}
+				fileTime = Files.getLastModifiedTime(fileToJarFile.toPath());
         	}
         	if(fileTime!=null) {
-        		return QDateTime.fromMSecsSinceEpoch(fileTime.toMillis());
+        		return fileTime.toMillis();
         	}else {
             	long tm = -1;
         		if(ze!=null){
@@ -778,20 +760,8 @@ final class ResourceUtility {
             	}else if(fileToJarFile!=null){
             		tm = fileToJarFile.lastModified();
             	}
-        		if (tm != -1) {
-		            Calendar calendar = new GregorianCalendar();
-		            calendar.setTime(new Date(tm));
-		
-		            return new QDateTime(new QDate(calendar.get(Calendar.YEAR),
-		                                           calendar.get(Calendar.MONTH) + 1,
-		                                           calendar.get(Calendar.DAY_OF_MONTH)),
-		                                 new QTime(calendar.get(Calendar.HOUR_OF_DAY),
-		                                           calendar.get(Calendar.MINUTE),
-		                                           calendar.get(Calendar.SECOND),
-		                                           calendar.get(Calendar.MILLISECOND)));
-	            }
+	            return tm;
         	}
-            return new QDateTime();  // the current time
         }
     }
     
@@ -861,8 +831,6 @@ final class ResourceUtility {
     
     private final static class JarCache {
     	
-    	private static final Function<String, Set<String>> newSetFactory = s -> new HashSet<>();
-
         Collection<String> pathToJarFiles(String entry) {
         	synchronized(cache) {
 	        	Set<String> result = cache.get(entry);

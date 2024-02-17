@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -177,6 +177,12 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QPropertyChangeHandler,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QPropertyNotifier,
                                  QTJAMBI_REPOSITORY_DEFINE_METHOD(invoke,()V))
 #endif
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QString$Predicate,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(test,(C)Z)
+                                )
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QByteArray$Predicate,
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(test,(B)Z)
+                                )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QCborStreamReader$StringResult,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Ljava/lang/Object;Lio/qt/core/QCborStreamReader$StringResultCode;)

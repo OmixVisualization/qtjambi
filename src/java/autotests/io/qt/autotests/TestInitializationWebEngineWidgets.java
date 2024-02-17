@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -32,22 +32,22 @@ package io.qt.autotests;
 import org.junit.Assert;
 import org.junit.Test;
 
-import io.qt.core.QCoreApplication;
-import io.qt.core.Qt;
+import io.qt.core.*;
 import io.qt.webengine.core.*;
 import io.qt.webengine.widgets.*;
-import io.qt.widgets.QApplication;
+import io.qt.widgets.*;
 
 public class TestInitializationWebEngineWidgets extends UnitTestInitializer {
     @Test
     public void initialize() {
-    	Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.webengine.widgets"));
+		Assert.assertTrue(io.qt.QtUtilities.initializePackage("io.qt.webengine.widgets"));
         QCoreApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts);
     	QApplication.initialize(new String[0]);
     	QWebEngineProfile.defaultProfile().settings().setAttribute(QWebEngineSettings.WebAttribute.PluginsEnabled, true);
         QWebEngineProfile.defaultProfile().settings().setAttribute(QWebEngineSettings.WebAttribute.DnsPrefetchEnabled, true);
         QWebEngineProfile.defaultProfile().setPersistentCookiesPolicy(QWebEngineProfile.PersistentCookiesPolicy.AllowPersistentCookies);
     	QWebEngineView window = new QWebEngineView();
+    	window.setUrl("http://info.cern.ch");
     	window.show();
     	QApplication.processEvents();
     	window.hide();

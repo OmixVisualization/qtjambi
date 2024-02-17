@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -28,6 +28,8 @@
 **
 ****************************************************************************/
 package io.qt.qtjambi.deployer;
+
+import static io.qt.qtjambi.deployer.QMLGenerator.isCompatible;
 
 import java.io.File;
 import java.io.IOException;
@@ -208,7 +210,7 @@ final class PluginGenerator {
                 }else if(libinfo[0].endsWith("_armeabi-v7a.so")) {
                     os = "android-arm";
 				}else if(libinfo[0].endsWith(".so")) {
-					os = "linux";
+					os = "linux_unix";
 				}
 				if(os!=null) {
 					File libFile = new File(libinfo[0]);
@@ -235,32 +237,32 @@ final class PluginGenerator {
                         os = "windows";
                     }else if(entry.getName().equals("libQtJambiPlugin_debug.dylib")) {
                         os = "macos";
-                    }else if(entry.getName().equals("libjarimport_debug_x86_64.so") || entry.getName().equals("libjarimport_x86_64.so")) {
+                    }else if(entry.getName().equals("libQtJambiPlugin_debug_x86_64.so") || entry.getName().equals("libQtJambiPlugin_x86_64.so")) {
                         os = "android-x64";
-                    }else if(entry.getName().equals("libjarimport_debug_x86.so") || entry.getName().equals("libjarimport_x86.so")) {
+                    }else if(entry.getName().equals("libQtJambiPlugin_debug_x86.so") || entry.getName().equals("libQtJambiPlugin_x86.so")) {
                         os = "android-x86";
-                    }else if(entry.getName().equals("libjarimport_debug_arm64-v8a.so") || entry.getName().equals("libjarimport_arm64-v8a.so")) {
+                    }else if(entry.getName().equals("libQtJambiPlugin_debug_arm64-v8a.so") || entry.getName().equals("libQtJambiPlugin_arm64-v8a.so")) {
                         os = "android-arm64";
-                    }else if(entry.getName().equals("libjarimport_debug_armeabi-v7a.so") || entry.getName().equals("libjarimport_armeabi-v7a.so")) {
+                    }else if(entry.getName().equals("libQtJambiPlugin_debug_armeabi-v7a.so") || entry.getName().equals("libQtJambiPlugin_armeabi-v7a.so")) {
                         os = "android-arm";
                     }else if(entry.getName().equals("libQtJambiPlugin_debug.so")) {
-                        os = "linux";
+                        os = "linux_unix";
                     }
                 }else{
                     if(entry.getName().equals("QtJambiPlugin.dll")) {
                         os = "windows";
                     }else if(entry.getName().equals("libQtJambiPlugin.dylib")) {
                         os = "macos";
-                    }else if(entry.getName().equals("libjarimport_x86_64.so")) {
+                    }else if(entry.getName().equals("libQtJambiPlugin_x86_64.so")) {
                         os = "android-x64";
-                    }else if(entry.getName().equals("libjarimport_x86.so")) {
+                    }else if(entry.getName().equals("libQtJambiPlugin_x86.so")) {
                         os = "android-x86";
-                    }else if(entry.getName().equals("libjarimport_arm64-v8a.so")) {
+                    }else if(entry.getName().equals("libQtJambiPlugin_arm64-v8a.so")) {
                         os = "android-arm64";
-                    }else if(entry.getName().equals("libjarimport_armeabi-v7a.so")) {
+                    }else if(entry.getName().equals("libQtJambiPlugin_armeabi-v7a.so")) {
                         os = "android-arm";
                     }else if(entry.getName().equals("libQtJambiPlugin.so")) {
-                        os = "linux";
+                        os = "linux_unix";
                     }
                 }
                 if(os!=null && entry.getName().contains("QtJambiPlugin")) {
@@ -452,7 +454,7 @@ final class PluginGenerator {
 			cborValue.setValue(/*QtPluginMetaDataKeys::IID*/ 2, new QCborValue(iid));
 			cborValue.setValue(/*QtPluginMetaDataKeys::ClassName*/ 3, new QCborValue(className.replace(".", "::")));
 			cborValue.setValue(/*QtPluginMetaDataKeys::MetaData*/ 4, new QCborValue(QCborMap.fromJsonObject(metaData)));
-			cborValue.setValue(0x0_CAFEBABE_0L, new QCborValue(pluginName));
+			cborValue.setValue(0x0_CAFE_0L, new QCborValue(pluginName));
 			QByteArray cborData = cborValue.toCborValue().toCbor();
 			System.gc();
 			if(generateSource) {
@@ -506,9 +508,13 @@ final class PluginGenerator {
 				
 				for(Map.Entry<String,URL> entry : libraries) {
 					String os = entry.getKey();
-					if(os!=null && (platform==null || platform.startsWith(os))) {
+					if(os!=null && (platform==null || isCompatible(platform, os))) {
 						File newFile;
-						if(os.toLowerCase().startsWith("android-")) {
+						String _os = os.toLowerCase();
+						if(os.contains("bsd-") || os.startsWith("solaris-")) {
+							_os = "linux_unix";
+						}
+						if(_os.startsWith("android-")) {
 							subdirectory = dir;
 						}else {
 							if(subdir!=null) {
@@ -517,7 +523,7 @@ final class PluginGenerator {
 							} else
 								subdirectory = dir;
 						}
-	                    switch(os.toLowerCase()) {
+	                    switch(_os) {
 						case "win32":
 						case "win64":
 						case "windows":
@@ -543,6 +549,7 @@ final class PluginGenerator {
 //	                        }
 							newFile = new File(subdirectory, "lib" + pluginName + ".dylib");
 	                        break;
+						case "linux_unix":
 						case "linux":
 						case "linux32":
 						case "linux64":

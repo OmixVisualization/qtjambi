@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -46,7 +46,7 @@ bool isLessThan(const QMetaType& keyMetaType, const void * ptr, const void* ptr2
 bool isEquals(const QMetaType& keyMetaType, const void * ptr, const void* ptr2);
 #endif
 
-#ifdef Q_OS_ANDROID
+#if defined(Q_OS_ANDROID) || defined(Q_OS_FREEBSD)
 #define unique_id(id) qHash(QLatin1String((id).name()))
 #define typeid_equals(t1, t2) unique_id(t1)==unique_id(t2)
 #define typeid_not_equals(t1, t2) unique_id(t1)!=unique_id(t2)

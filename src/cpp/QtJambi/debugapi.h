@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -111,8 +111,8 @@ DebugAPI::MethodPrint __debug_method_print(DebugAPI::MethodPrint::ConstructorCal
 namespace DebugAPI{
 class QTJAMBI_EXPORT MethodPrintWithType {
 public:
-    MethodPrintWithType(Type callType, const char* method, const QtJambiShell* shell, const char* file, int line, const char *function);
-    MethodPrintWithType(Type callType, const void* pointer, const char* method, const char* type_name, const char* file, int line, const char *function);
+    MethodPrintWithType(MethodPrint::Type callType, const char* method, const QtJambiShell* shell, const char* file, int line, const char *function);
+    MethodPrintWithType(MethodPrint::Type callType, const void* pointer, const char* method, const char* type_name, const char* file, int line, const char *function);
     ~MethodPrintWithType();
 private:
     class MethodPrintWithTypePrivate* d;

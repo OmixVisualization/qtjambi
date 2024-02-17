@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -35,21 +35,6 @@ TypeSystem{
     qtLibrary: "QtNetworkAuth"
     module: "qtjambi.networkauth"
     description: "Provides support for OAuth-based authorization to online services."
-    EnumType{
-        name: "QAbstractOAuth::Status"
-    }
-    
-    EnumType{
-        name: "QAbstractOAuth::Stage"
-    }
-    
-    EnumType{
-        name: "QAbstractOAuth::Error"
-    }
-    
-    EnumType{
-        name: "QAbstractOAuth::ContentType"
-    }
     
     EnumType{
         name: "QOAuth1::SignatureMethod"
@@ -65,6 +50,30 @@ TypeSystem{
     
     ObjectType{
         name: "QAbstractOAuth"
+        FunctionalType{
+            name: "ModifyParametersFunction"
+            ExtraIncludes{
+                Include{
+                    fileName: "QtCore/QVariantMap"
+                    location: Include.Global
+                }
+            }
+        }
+        EnumType{
+            name: "Status"
+        }
+
+        EnumType{
+            name: "Stage"
+        }
+
+        EnumType{
+            name: "Error"
+        }
+
+        EnumType{
+            name: "ContentType"
+        }
         ModifyFunction{
             signature: "setNetworkAccessManager(QNetworkAccessManager*)"
             ModifyArgument{
@@ -92,6 +101,81 @@ TypeSystem{
                 invalidateAfterUse: true
             }
             since: 6
+        }
+        ModifyFunction{
+            signature: "get(QUrl,const QMap<QString,QVariant>&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Shell
+                    ownership: Ownership.Cpp
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "head(QUrl,const QMap<QString,QVariant>&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Shell
+                    ownership: Ownership.Cpp
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "post(QUrl,const QMap<QString,QVariant>&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Shell
+                    ownership: Ownership.Cpp
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "put(QUrl,const QMap<QString,QVariant>&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Shell
+                    ownership: Ownership.Cpp
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "deleteResource(QUrl,const QMap<QString,QVariant>&)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Shell
+                    ownership: Ownership.Cpp
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
         }
     }
     
@@ -126,16 +210,6 @@ TypeSystem{
     
     ObjectType{
         name: "QOAuthOobReplyHandler"
-    }
-    
-    FunctionalType{
-        name: "QAbstractOAuth::ModifyParametersFunction"
-        ExtraIncludes{
-            Include{
-                fileName: "QtCore/QVariantMap"
-                location: Include.Global
-            }
-        }
     }
     
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QOAuth1Signature."}

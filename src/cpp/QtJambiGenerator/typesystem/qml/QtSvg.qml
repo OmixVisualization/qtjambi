@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -35,24 +35,12 @@ TypeSystem{
     qtLibrary: "QtSvg"
     module: "qtjambi.svg"
     description: "Classes for displaying the contents of SVG files. Supports a subset of the SVG 1.2 Tiny standard."
-    Rejection{
-        className: "QGraphicsSvgItem"
-        enumName: "enum_1"
-        until: 5
-    }
-    
     NamespaceType{
-        name: "QSvg"
-    }
-
-    EnumType{
-        name: "QSvgGenerator::SvgVersion"
-        since: [6,5]
-    }
-    
-    EnumType{
-        name: "QGraphicsSvgItem::enum_1"
-        until: 5
+        name: "QtSvg"
+        EnumType{
+            name: "Option"
+        }
+        since: 6.7
     }
     
     ObjectType{
@@ -60,26 +48,11 @@ TypeSystem{
     }
     
     ObjectType{
-        name: "QSvgWidget"
-        ExtraIncludes{
-            Include{
-                fileName: "QByteArray"
-                location: Include.Global
-            }
-            Include{
-                fileName: "QSvgRenderer"
-                location: Include.Global
-            }
-            Include{
-                fileName: "QSize"
-                location: Include.Global
-            }
-        }
-        until: 5
-    }
-    
-    ObjectType{
         name: "QSvgGenerator"
+        EnumType{
+            name: "SvgVersion"
+            since: [6,5]
+        }
         ModifyFunction{
             signature: "setOutputDevice(QIODevice*)"
             ModifyArgument{
@@ -98,6 +71,7 @@ TypeSystem{
     
     ObjectType{
         name: "QGraphicsSvgItem"
+        Rejection{enumName: "enum_1"}
         ExtraIncludes{
             Include{
                 fileName: "QtJambiWidgets/hashes.h"
@@ -173,6 +147,25 @@ TypeSystem{
                     metaName: "%2"
                 }
                 Text{content: "if (%2 != null) QtJambi_LibraryUtilities.internal.setCppOwnership(this);"}
+            }
+        }
+        until: 5
+    }
+
+    ObjectType{
+        name: "QSvgWidget"
+        ExtraIncludes{
+            Include{
+                fileName: "QByteArray"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QSvgRenderer"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QSize"
+                location: Include.Global
             }
         }
         until: 5

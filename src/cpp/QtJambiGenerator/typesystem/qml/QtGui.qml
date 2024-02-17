@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -4144,10 +4144,6 @@ TypeSystem{
     }
     
     EnumType{
-        name: "QColor::NameFormat"
-    }
-    
-    EnumType{
         name: "QTextCharFormat::FontPropertiesInheritanceBehavior"
     }
     
@@ -6035,6 +6031,9 @@ TypeSystem{
         EnumType{
             name: "Spec"
         }
+        EnumType{
+            name: "NameFormat"
+        }
         ModifyFunction{
             signature: "QColor(QColor::Spec)"
             isForcedExplicit: true
@@ -7185,6 +7184,14 @@ TypeSystem{
             since: [5, 12]
             until: 5
         }
+        ValueType{
+            name: "Tag"
+            ModifyFunction{
+                signature: "toString()const"
+                rename: "toByteArray"
+            }
+            since: 6.7
+        }
     }
     
     ValueType{
@@ -7222,6 +7229,11 @@ TypeSystem{
         CustomConstructor{
             type: CustomConstructor.Default
             Text{content: "new(placement) QFontMetricsF(QFont());"}
+        }
+        ModifyFunction{
+            signature: "QFontMetricsF<0>(const QFont &, const QPaintDevice *)"
+            remove: RemoveFlag.All
+            until: 5
         }
         ModifyFunction{
             signature: "boundingRect(QRectF,int,QString,int,int*)const"
@@ -7277,6 +7289,11 @@ TypeSystem{
         CustomConstructor{
             type: CustomConstructor.Default
             Text{content: "new(placement) QFontMetrics(QFont());"}
+        }
+        ModifyFunction{
+            signature: "QFontMetrics<0>(const QFont &, const QPaintDevice *)"
+            remove: RemoveFlag.All
+            until: 5
         }
         ModifyFunction{
             signature: "boundingRect(int,int,int,int,int,QString,int,int*)const"
@@ -11525,14 +11542,6 @@ TypeSystem{
     }
     
     ValueType{
-        name: "QTextLayout::FormatRange"
-        Include{
-            fileName: "QTextLayout"
-            location: Include.Global
-        }
-    }
-    
-    ValueType{
         name: "QTextTableCell"
         ExtraIncludes{
             Include{
@@ -11598,11 +11607,27 @@ TypeSystem{
     
     ObjectType{
         name: "QTextLayout"
+        ValueType{
+            name: "FormatRange"
+            Include{
+                fileName: "QTextLayout"
+                location: Include.Global
+            }
+        }
+        EnumType{
+            name: "GlyphRunRetrievalFlag"
+            since: [6,5]
+        }
         ExtraIncludes{
             Include{
                 fileName: "QTextOption"
                 location: Include.Global
             }
+        }
+        ModifyFunction{
+            signature: "QTextLayout<0>(const QString &, const QFont &, const QPaintDevice *)"
+            remove: RemoveFlag.All
+            until: 5
         }
         ModifyFunction{
             signature: "draw(QPainter *, const QPointF &, const QVector<QTextLayout::FormatRange> &, const QRectF &) const"
@@ -11630,11 +11655,6 @@ TypeSystem{
             }
             since: 6
         }
-    }
-
-    EnumType{
-        name: "QTextLayout::GlyphRunRetrievalFlag"
-        since: [6,5]
     }
     
     InterfaceType{
@@ -11811,6 +11831,7 @@ TypeSystem{
     ValueType{
         name: "QTransform"
         Rejection{functionName: "asAffineMatrix"}
+        Rejection{className: "Affine"}
         EnumType{
             name: "TransformationType"
         }
@@ -12551,6 +12572,12 @@ TypeSystem{
     
     ObjectType{
         name: "QRasterWindow"
+        ModifyFunction{
+            signature: "resizeEvent(QResizeEvent *)"
+            remove: RemoveFlag.All // remove for compatibility with Qt 6.6.0
+            since: 6.6
+            until: 6.6
+        }
     }
     
     ObjectType{
@@ -13424,6 +13451,10 @@ TypeSystem{
     
     ValueType{
         name: "QEventPoint"
+        EnumType{
+            name: "State"
+            since: 6
+        }
         ModifyFunction{
             signature: "operator=(QEventPoint)"
             Delegate{
@@ -13770,10 +13801,10 @@ TypeSystem{
         }
         since: 6
     }
-    
-    EnumType{
-        name: "QEventPoint::State"
-        since: 6
+
+    ObjectType{
+        name: "QChildWindowEvent"
+        since: 6.7
     }
     
     Rejection{
@@ -16969,11 +17000,27 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "setUniformValue(int, Array)"
+            signature: "setUniformValue(int, const GLfloat[2][2])"
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "setUniformValue(const char*, Array)"
+            signature: "setUniformValue(int, const GLfloat[3][3])"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "setUniformValue(int, const GLfloat[4][4])"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "setUniformValue(const char*, const GLfloat[2][2])"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "setUniformValue(const char*, const GLfloat[3][3])"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "setUniformValue(const char*, const GLfloat[4][4])"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -17429,31 +17476,26 @@ TypeSystem{
     
     ObjectType{
         name: "QOpenGLVertexArrayObject"
-        until: 5
-    }
-    
-    ObjectType{
-        name: "QOpenGLVertexArrayObject::Binder"
-        implementing: "AutoCloseable"
-        InjectCode{
-            target: CodeClass.Java
-            Text{content: "@Override\n"+
-                          "@QtUninvokable\n"+
-                          "public final void close(){\n"+
-                          "    dispose();\n"+
-                          "}"}
+        ObjectType{
+            name: "Binder"
+            implementing: "AutoCloseable"
+            InjectCode{
+                target: CodeClass.Java
+                Text{content: "@Override\n"+
+                              "@QtUninvokable\n"+
+                              "public final void close(){\n"+
+                              "    dispose();\n"+
+                              "}"}
+            }
         }
-        until: 5
-    }
-    
-    EnumType{
-        name: "QOpenGLTextureBlitter::Origin"
-        since: [5, 8]
         until: 5
     }
     
     ObjectType{
         name: "QOpenGLTextureBlitter"
+        EnumType{
+            name: "Origin"
+        }
         since: [5, 8]
         until: 5
     }
@@ -17674,66 +17716,55 @@ TypeSystem{
     SuppressedWarning{text: "skipping function 'QWindowsMimeConverter::*', unmatched *type '*IDataObject*'"; since: 6.5}
     SuppressedWarning{text: "Unimplementable pure virtual function: QWindowsMimeConverter::*"; since: 6.5}
     
-    ValueType{
-        name: "HWND__"
-        generate: false
-        since: [6, 2]
-    }
-    
-    ValueType{
-        name: "HGLRC__"
-        generate: false
-        since: [6, 2]
-    }
-    
-    ValueType{
-        name: "HMODULE__"
-        generate: false
-        since: [6, 2]
-    }
-    
-    ValueType{
-        name: "__GLXcontextRec"
-        generate: false
-        since: [6, 2]
-    }
-    
-    ValueType{
+    TypeAliasType{
         name: "ANativeWindow"
-        generate: false
+        asNativePointer: true
         since: [6, 2]
+    }
+
+    NativePointerType{
+        name: "__GLXcontextRec"
     }
     
     TypeAliasType{
         name: "GLXContext"
+        asNativePointer: true
     }
     
     TypeAliasType{
         name: "EGLContext"
+        asNativePointer: true
     }
     
     TypeAliasType{
         name: "EGLDisplay"
+        asNativePointer: true
+    }
+
+    TypeAliasType{
+        name: "EGLConfig"
+        asNativePointer: true
     }
     
     TypeAliasType{
         name: "NSOpenGLContext"
+        asNativePointer: true
     }
     
-    TypeAliasType{
-        name: "HMODULE"
+    NativePointerType{
+        name: "HGLRC__"
     }
-    
     TypeAliasType{
         name: "HGLRC"
+        asNativePointer: true
     }
     
+    NativePointerType{
+        name: "HWND__"
+    }
     TypeAliasType{
         name: "HWND"
-    }
-    
-    TypeAliasType{
-        name: "HINSTANCE"
+        asNativePointer: true
     }
     
     InterfaceType{
@@ -17855,6 +17886,11 @@ TypeSystem{
             Include{
                 fileName: "QtGui/QOpenGLContext"
                 location: Include.Global
+            }
+            Include{
+                fileName: "QtGui/qwindowdefs_win.h"
+                location: Include.Global
+                suppressed: true
             }
         }
         ModifyFunction{
@@ -18006,23 +18042,22 @@ TypeSystem{
                 fileName: "QtGui/QGuiApplication"
                 location: Include.Global
             }
+            Include{
+                fileName: "QtGui/qwindowdefs_win.h"
+                location: Include.Global
+                suppressed: true
+            }
         }
         since: [6, 2]
     }
 
-    PrimitiveType{
+    NativePointerType{
         name: "xcb_connection_t"
-        javaName: "io.qt.QNativePointer"
-        jniName: "jobject"
-        preferredConversion: false
         since: [6, 2]
     }
 
-    PrimitiveType{
+    NativePointerType{
         name: "Display"
-        javaName: "io.qt.QNativePointer"
-        jniName: "jobject"
-        preferredConversion: false
         since: [6, 2]
     }
     
@@ -18179,52 +18214,137 @@ TypeSystem{
         since: [6, 2]
     }
 
-    PrimitiveType{
+    InterfaceType{
+        name: "QNativeInterface::QWaylandScreen"
+        packageName: "io.qt.gui.nativeinterface"
+        javaName: "QWaylandScreen"
+        ppCondition: "QT_CONFIG(wayland)"
+        isNativeInterface: true
+        Rejection{
+            className: "TypeInfo"
+        }
+        ModifyFunction{
+            signature: "QWaylandScreen()"
+            remove: RemoveFlag.All
+        }
+        ExtraIncludes{
+            Include{
+                fileName: "QtGui/QScreen"
+                location: Include.Global
+            }
+        }
+        since: 6.7
+    }
+
+    InterfaceType{
+        name: "QNativeInterface::QAndroidScreen"
+        packageName: "io.qt.gui.nativeinterface"
+        javaName: "QAndroidScreen"
+        ppCondition: "defined(Q_OS_ANDROID)"
+        isNativeInterface: true
+        Rejection{
+            className: "TypeInfo"
+        }
+        ModifyFunction{
+            signature: "QAndroidScreen()"
+            remove: RemoveFlag.All
+        }
+        ExtraIncludes{
+            Include{
+                fileName: "QtGui/QScreen"
+                location: Include.Global
+            }
+        }
+        since: 6.7
+    }
+
+    InterfaceType{
+        name: "QNativeInterface::QWindowsScreen"
+        packageName: "io.qt.gui.nativeinterface"
+        javaName: "QWindowsScreen"
+        ppCondition: "defined(Q_OS_WIN32)"
+        isNativeInterface: true
+        Rejection{
+            className: "TypeInfo"
+        }
+        ModifyFunction{
+            signature: "QWindowsScreen()"
+            remove: RemoveFlag.All
+        }
+        ExtraIncludes{
+            Include{
+                fileName: "QtGui/QScreen"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtGui/qwindowdefs_win.h"
+                location: Include.Global
+                suppressed: true
+            }
+        }
+        since: 6.7
+    }
+
+    NativePointerType{
+        name: "HMONITOR__"
+        ppCondition: "defined(Q_OS_WIN)"
+    }
+    TypeAliasType{
+        name: "HMONITOR"
+        asNativePointer: true
+        ppCondition: "defined(Q_OS_WIN)"
+        since: [6, 2]
+    }
+
+    NativePointerType{
+        name: "HINSTANCE__"
+        ppCondition: "defined(Q_OS_WIN)"
+    }
+    TypeAliasType{
+        name: "HINSTANCE"
+        asNativePointer: true
+        ppCondition: "defined(Q_OS_WIN)"
+        since: [6, 2]
+    }
+    TypeAliasType{
+        name: "HMODULE"
+        ppCondition: "defined(Q_OS_WIN)"
+        since: [6, 2]
+    }
+
+    NativePointerType{
         name: "wl_seat"
-        javaName: "io.qt.QNativePointer"
-        jniName: "jobject"
-        preferredConversion: false
         since: [6, 2]
     }
 
-    PrimitiveType{
+    NativePointerType{
         name: "wl_keyboard"
-        javaName: "io.qt.QNativePointer"
-        jniName: "jobject"
-        preferredConversion: false
         since: [6, 2]
     }
 
-    PrimitiveType{
+    NativePointerType{
         name: "wl_display"
-        javaName: "io.qt.QNativePointer"
-        jniName: "jobject"
-        preferredConversion: false
         since: [6, 2]
     }
 
-    PrimitiveType{
+    NativePointerType{
         name: "wl_pointer"
-        javaName: "io.qt.QNativePointer"
-        jniName: "jobject"
-        preferredConversion: false
         since: [6, 2]
     }
 
-    PrimitiveType{
+    NativePointerType{
         name: "wl_compositor"
-        javaName: "io.qt.QNativePointer"
-        jniName: "jobject"
-        preferredConversion: false
         since: [6, 2]
     }
 
-    PrimitiveType{
+    NativePointerType{
         name: "wl_touch"
-        javaName: "io.qt.QNativePointer"
-        jniName: "jobject"
-        preferredConversion: false
         since: [6, 2]
+    }
+
+    NativePointerType{
+        name: "wl_output"
+        since: 6.7
     }
 
     InterfaceType{
@@ -18475,6 +18595,49 @@ TypeSystem{
         targetType: "QVector4D"
         until: [5, 15]
     }
+
+    NativePointerType{
+        name: "VkFormat"
+        since: [6, 4]
+    }
+
+    NativePointerType{
+        name: "MTLTexture"
+        since: [6, 2]
+    }
+
+    NativePointerType{
+        name: "MTLDevice"
+        since: [6, 2]
+    }
+
+    NativePointerType{
+        name: "MTLCommandQueue"
+        since: [6, 2]
+    }
+
+    NativePointerType{
+        name: "MTLCommandBuffer"
+    }
+
+    NativePointerType{
+        name: "MTLRenderCommandEncoder"
+    }
+
+    ObjectType{
+        name: "id"
+        template: true
+        TemplateArguments{
+            arguments: ["MTLTexture"]
+        }
+        since: [6, 2]
+    }
+
+    ObjectType{
+        name: "id<MTLTexture>"
+        generate: false
+        since: [6, 2]
+    }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: unsupported default value '0., 0., 1000000000., 1000000000.' of argument in function 'update', class 'QAbstractTextDocumentLayout'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type '*QImageTextKeyLang*'"}
@@ -18571,4 +18734,5 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: class 'Display' inherits from unknown base class '_XDisplay'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'QPaintEngineState(*)' for function modification in 'QPaintEngineState' not found. Possible candidates: "}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QRhi*'"; until: 6.6}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QFont::Tag::Tag<N>*', unmatched parameter type 'const char[N]'"; since: 6.7}
 }

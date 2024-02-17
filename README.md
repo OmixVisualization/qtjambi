@@ -20,6 +20,7 @@ would simply add the corresponding Java libraries (.jar files) to their Java pro
 QtJambi is available for Java 8 or 11 and higher using Qt5.15 and Qt6 in Java on Windows, Android Linux and macOS. 
 Most Qt modules are available as QtJambi module as [listed here](www/Modules.md). All modules are published as Maven Artifact.
 **The native components for Windows available on Maven require Qt binaries for MSVC (msvc2019_64). Mingw Qt is not compatible with QtJambi unless you build it from scratch with Mingw.**
+**By default, the native components of only essential modules are made available on Maven. Please make a request via [/issues](Issues) if you require native components not yet available.**
 
 ## Support
 
@@ -43,6 +44,7 @@ Make yourself familiar with [developing applications with QtJambi](www/How-to-de
 * XCode command line tools (macOS only)
 
 When building for Android all required SDK and NDK components are downloaded automatically.
+QtJambi build system has been tested on Linux (Ubuntu x64 and arm64, OpenSUSE x64, Fedora x64), Windows (with MSVC2022 for x64 and amd64), macOS (x64 and amd64) and FreeBSD (x64).
 
 ### Building QtJambi
 
@@ -143,7 +145,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `5.15.18`, by `6.5.4` or by `6.6.1`).
+(exchange `$VERSION` either by `5.15.19`, by `6.5.5` or by `6.6.2`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 
@@ -163,7 +165,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.5.4.jar Test.java
+javac -cp qtjambi-6.5.5.jar Test.java
 ```
 
 ### Execute Example
@@ -181,15 +183,15 @@ By default, on Windows Qt libraries are located in `bin` directory and on Linux 
 
 The example program can be executed this way on Windows:
 ``` powershell
-java -cp qtjambi-6.5.4.jar;. -Djava.library.path=C:\Qt\6.5.3\msvc2019_64\bin Test
+java -cp qtjambi-6.5.5.jar;. -Djava.library.path=C:\Qt\6.5.3\msvc2019_64\bin Test
 ```
 On Linux it looks this way:
 ``` bash
-java -cp qtjambi-6.5.4.jar:. -Djava.library.path=<path to>/Qt/6.5.3/gcc_64/lib Test
+java -cp qtjambi-6.5.5.jar:. -Djava.library.path=<path to>/Qt/6.5.3/gcc_64/lib Test
 ```
 On macOS you additionally need to use the start parameter `-XstartOnFirstThread`:
 ``` bash
-java -cp qtjambi-6.5.4.jar:. -Djava.library.path=<path to>/Qt/6.5.3/macos/lib -XstartOnFirstThread Test
+java -cp qtjambi-6.5.5.jar:. -Djava.library.path=<path to>/Qt/6.5.3/macos/lib -XstartOnFirstThread Test
 ```
 
 On Linux of your distribution provides Qt (of correct version) as system library you don't need to specify library path at all.
@@ -209,7 +211,7 @@ Instead of starting your program with a java command as shown above you can depl
             GNU LESSER GENERAL PUBLIC LICENSE
 
  QtJambi is Copyright (C) 1992-2009 Nokia. All rights reserved.
-            Copyright (C) 2009-2023 Dr. Peter Droste, 
+            Copyright (C) 2009-2024 Dr. Peter Droste, 
                                     Omix Visualization GmbH & Co. KG. 
                                     All rights reserved.
 
@@ -221,7 +223,7 @@ Instead of starting your program with a java command as shown above you can depl
             GNU GENERAL PUBLIC LICENSE
 
  QtJambi is Copyright (C) 1992-2009 Nokia. All rights reserved.
-            Copyright (C) 2009-2023 Dr. Peter Droste, 
+            Copyright (C) 2009-2024 Dr. Peter Droste, 
                                     Omix Visualization GmbH & Co. KG. 
                                     All rights reserved.
 

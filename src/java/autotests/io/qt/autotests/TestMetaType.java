@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -73,14 +73,14 @@ public class TestMetaType extends ApplicationInitializer {
 	@Test
 	public void testFromClassLoader() throws Exception {
 		Assume.assumeTrue("Qt version >= 6.0", QLibraryInfo.version().compareTo(new QVersionNumber(6,0))>=0);
-		Assume.assumeTrue("no qtjambi.antcontrib set", System.getProperties().containsKey("qtjambi.antcontrib"));
+		Assume.assumeTrue("no qtjambi.antcontrib set", System.getProperties().stringPropertyNames().contains("qtjambi.antcontrib"));
 		try(URLClassLoader cl = new URLClassLoader(new URL[]{new File(System.getProperty("qtjambi.antcontrib", ".")).toURI().toURL()})){
 			Class<?> cls2 = cl.loadClass("org.apache.tools.ant.taskdefs.Echo");
 			QtUtilities.usePackageContentAsGadgets(cls2.getPackage().getName());
 			QtUtilities.usePackageContentAsGadgets("org.apache.tools.ant");
 			QMetaObject mo2 = QMetaObject.forType(cls2);
 			QMetaProperty location = mo2.property("location");
-			assertEquals("org::apache::tools::ant::Location*", location.typeName());
+			assertEquals("JObjectWrapper<org::apache::tools::ant::Location>", location.typeName());
 //			mo2.properties().forEach(p->System.out.println(p.typeName()+" "+p.name()+" ("+p.userType()+" "+p.classType()+")"));
 		}
 	}

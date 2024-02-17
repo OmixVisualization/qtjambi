@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -473,6 +473,26 @@ TypeSystem{
                     }
                 }
             }
+            ModifyArgument{
+                index: 2
+                ReplaceDefaultExpression{
+                    expression: "new io.qt.core.QDeadlineTimer(java.time.Duration.ofSeconds(5))"
+                }
+            }
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "qWaitForWindowFocused(QWindow*,QDeadlineTimer)"
+            ModifyArgument{
+                index: 2
+                ReplaceDefaultExpression{
+                    expression: "new io.qt.core.QDeadlineTimer(java.time.Duration.ofSeconds(5))"
+                }
+            }
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "qWaitForWindowFocused(QWidget*,QDeadlineTimer)"
             ModifyArgument{
                 index: 2
                 ReplaceDefaultExpression{
@@ -1060,6 +1080,30 @@ TypeSystem{
             Include{
                 fileName: "utils_p.h"
                 location: Include.Local
+            }
+        }
+        ModifyFunction{
+            signature: "QSignalSpy(const QObject*, const char*)"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{
+                    index: 2
+                    metaName: "slot"
+                }
+                ArgumentMap{
+                    index: 1
+                    metaName: "dest"
+                }
+                Text{content: "if(slot!=null && !slot.startsWith(\"1\") && !slot.startsWith(\"2\")) {\n"+
+                              "    io.qt.core.QMetaMethod method = dest.metaObject().method(slot);\n"+
+                              "    if(method!=null && method.isValid()) {\n"+
+                              "        if(method.methodType()==io.qt.core.QMetaMethod.MethodType.Signal)\n"+
+                              "            slot = \"2\" + method.cppMethodSignature();\n"+
+                              "        else\n"+
+                              "            slot = \"1\" + method.cppMethodSignature();\n"+
+                              "    }\n"+
+                              "}"}
             }
         }
         ModifyFunction{

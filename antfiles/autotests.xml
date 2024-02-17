@@ -1,7 +1,33 @@
-<!--
-    TODO:
-    - We work the target names into "tests.*" namespace "compile.java" => "tests.compile.java".
--->
+<!--===============================================================================================
+==
+== Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+==
+== This file is part of Qt Jambi.
+==
+== $BEGIN_LICENSE$
+==
+== GNU Lesser General Public License Usage
+== This file may be used under the terms of the GNU Lesser
+== General Public License version 2.1 as published by the Free Software
+== Foundation and appearing in the file LICENSE.LGPL included in the
+== packaging of this file.  Please review the following information to
+== ensure the GNU Lesser General Public License version 2.1 requirements
+== will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+==
+== GNU General Public License Usage
+== Alternatively, this file may be used under the terms of the GNU
+== General Public License version 3.0 as published by the Free Software
+== Foundation and appearing in the file LICENSE.GPL included in the
+== packaging of this file.  Please review the following information to
+== ensure the GNU General Public License version 3.0 requirements will be
+== met: http://www.gnu.org/copyleft/gpl.html.
+==
+== $END_LICENSE$
+==
+== This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+== WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+==
+================================================================================================-->
 <project default="all" basedir=".">
 
     <target name="load-properties">
@@ -15,7 +41,16 @@
                 </not>
             </and>
         </condition>
-        <condition property="qtjambi.isqt65" value="true">
+        <condition property="less.qt63" value="true">
+			<or>
+				<less arg1="6" arg2="${qtjambi.soname.version.major}"/>
+				<and>
+					<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+					<less arg1="3" arg2="${qtjambi.soname.version.minor}"/>
+				</and>
+			</or>
+        </condition>
+        <condition property="less.qt65" value="true">
 			<or>
 				<less arg1="6" arg2="${qtjambi.soname.version.major}"/>
 				<and>
@@ -24,12 +59,23 @@
 				</and>
 			</or>
         </condition>
+        <condition property="less.qt66" value="true">
+			<or>
+				<less arg1="6" arg2="${qtjambi.soname.version.major}"/>
+				<and>
+					<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+					<less arg1="5" arg2="${qtjambi.soname.version.minor}"/>
+				</and>
+			</or>
+        </condition>
 		<property name="qtjambi.isqt${qtjambi.soname.version.major}" value="true"/>
         <fileset id="qtjambi.autotest.classes" dir="${java.srcdir}/autotests">
             <include name="io/qt/**/Test${test.includes}.java"/>
             <exclude name="io/qt/**/Test*Qt5.java" unless="${qtjambi.isqt5}"/>
             <exclude name="io/qt/**/Test*Qt6.java" unless="${qtjambi.isqt6}"/>
-            <exclude name="io/qt/**/Test*Qt65.java" unless="${qtjambi.isqt65}"/>
+            <exclude name="io/qt/**/Test*Qt63.java" unless="${less.qt63}"/>
+            <exclude name="io/qt/**/Test*Qt65.java" unless="${less.qt65}"/>
+            <exclude name="io/qt/**/Test*Qt66.java" unless="${less.qt66}"/>
             <exclude name="io/qt/**/Test*Qml.java" unless="${qtjambi.qml.any.true}"/>
             <exclude name="io/qt/**/Test*ActiveX.java" unless="${qtjambi.activex.any.true}"/>
             <exclude name="io/qt/**/Test*OpenGL.java" unless="${qtjambi.opengl.any.true}"/>
@@ -143,6 +189,9 @@
             <exclude name="io/qt/**/TestQuick*.java" unless="${qtjambi.quick.any.true}"/>
             <exclude name="io/qt/**/TestLocation*.java" unless="${qtjambi.location.any.true}"/>
             <exclude name="io/qt/**/TestRemoteObjects*.java" unless="${qtjambi.remoteobjects.any.true}"/>
+            <exclude name="io/qt/**/TestRemoteObjectsInjectedCodeQt5.java" unless="${qtjambi.remoteobjects.privateheaders.true}"/>
+            <exclude name="io/qt/**/TestQmlVariantQt6.java" unless="${qtjambi.qml.any.true}"/>
+            <exclude name="io/qt/**/TestQmlVariantQt6.java" unless="${qtjambi.location.any.true}"/>
             <exclude name="io/qt/**/TestQtjambiCast*.java" unless="${qtjambi.qml.any.true}"/>
             <exclude name="io/qt/**/TestTestlib*.java" unless="${qtjambi.test.any.true}"/>
 			<exclude name="io/qt/**/TestHttpServer*.java" unless="${qtjambi.httpserver.any.true}"/>
@@ -378,7 +427,7 @@
     <target name="compile.java.impl" depends="load-properties">
         <delete dir="${test.java.outdir}" failonerror="no"/>
         <mkdir dir="${test.java.outdir}"/>
-        <delete dir="${test.java.srcoutdir}"/>
+        <delete dir="${test.java.srcoutdir}" failonerror="false"/>
         <mkdir dir="${test.java.srcoutdir}"/>
         <copy todir="${test.java.srcoutdir}">
             <fileset refid="qtjambi.autotest.classes"/>
@@ -414,12 +463,8 @@
 		<jar destfile="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-${qtjambi.jar.version}.jar">
 			<manifest>
 				<attribute name="Built-By"                value="${qtjambi.user.name} &lt;${qtjambi.user.email}> - ${TODAY}"/>
-<!--                <attribute name="Bundle-Activator"       value="io.qt.qtjambi.${qtjambi.osplatform}.${qtjambi.configuration}.osgi.Activator"/> -->
 				<attribute name="Bundle-Description"      value="QtJambi Autotests"/>
-				<!-- TODO: qtjambi.png -->
-				<!-- <attribute name="Bundle-Icon"             value="qtjambi.png"/> -->
 				<attribute name="Bundle-License"          value="GNU LESSER GENERAL PUBLIC LICENSE Version 2.1 February 1999 with Nokia Qt LGPL Exception version 1.0"/>
-<!--                <attribute name="Bundle-Localization"    value="plugin"/> -->
 				<attribute name="Bundle-ManifestVersion"  value="2"/>
 				<attribute name="Bundle-Name"             value="QtJambi Autotests"/>
 				<attribute name="Bundle-RequiredExecutionEnvironment" value="${minimum.java.version}"/>
@@ -673,7 +718,7 @@
 								<isset property="test"/>
 							</not>
 							<then>
-								<delete dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}" />
+								<delete dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}" failonerror="false"/>
 							</then>
 						</if>
 						<condition property="Xcheck_jni" value="-Xcheck:jni" else="-Dx">
@@ -905,7 +950,7 @@
     </target>
     
     <target name="tests.report.impl">
-        <delete dir="${basedir}/TestResults"/>
+        <delete dir="${basedir}/TestResults" failonerror="false"/>
         <mkdir dir="${basedir}/TestResults"/>
         <junitreport todir="${basedir}/TestResults">
             <fileset dir="${basedir}">

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -56,7 +56,7 @@
 // emitting (writeSignalFunction)
 // emitting (writeConstructors)
 // new QDBusReply(const QDBusError & dbusError)
-void __qt_construct_QDBusReply_0(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue*)
+void __qt_construct_QDBusReply(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue*, bool)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QDBusReply(const QDBusError & dbusError)")
     QDBusReply<QVariant> *__qt_this = new(__qtjambi_ptr) QDBusReply<QVariant>();
@@ -64,7 +64,7 @@ void __qt_construct_QDBusReply_0(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue*)
 }
 
 // new QDBusReply(const QDBusError & dbusError)
-void __qt_construct_QDBusReply_1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue* __java_arguments)
+void __qt_construct_QDBusReply_QDBusError(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue* __java_arguments, bool)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QDBusReply(const QDBusError & dbusError)")
     jobject dbusError0 = __java_arguments[0].l;
@@ -86,7 +86,7 @@ struct DBusReply{
 };
 
 // new QDBusReply(const QDBusMessage & reply)
-void __qt_construct_QDBusReply_2(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments)
+void __qt_construct_QDBusReply_QDBusMessage(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QDBusReply(const QDBusMessage & reply)")
     jobject reply0 = __java_arguments[0].l;
@@ -98,7 +98,7 @@ void __qt_construct_QDBusReply_2(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject
 }
 
 // new QDBusReply(const QDBusPendingCall & pcall)
-void __qt_construct_QDBusReply_3(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments)
+void __qt_construct_QDBusReply_QDBusPendingCall(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QDBusReply(const QDBusPendingCall & pcall)")
     jobject pcall0 = __java_arguments[0].l;
@@ -130,7 +130,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QD
     QTJAMBI_TRY{
         jvalue arguments;
         arguments.l = dbusError0;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QDBusReply_1, sizeof(QDBusReply<QVariant>), typeid(QDBusReply<QVariant>), false, &arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QDBusReply_QDBusError, sizeof(QDBusReply<QVariant>), typeid(QDBusReply<QVariant>), false, &arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -150,7 +150,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QD
         jvalue arguments[2];
         arguments[0].l = reply0;
         arguments[1].l = metaType;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QDBusReply_2, sizeof(QDBusReply<QVariant>), typeid(QDBusReply<QVariant>), false, arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QDBusReply_QDBusMessage, sizeof(QDBusReply<QVariant>), typeid(QDBusReply<QVariant>), false, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -170,7 +170,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QD
         jvalue arguments[2];
         arguments[0].l = pcall0;
         arguments[1].l = metaType;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QDBusReply_3, sizeof(QDBusReply<QVariant>), typeid(QDBusReply<QVariant>), false, arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QDBusReply_QDBusPendingCall, sizeof(QDBusReply<QVariant>), typeid(QDBusReply<QVariant>), false, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -608,10 +608,10 @@ void initialize_meta_info_QtDBus()
     QMetaType::registerNormalizedTypedef("QDBusReply", QMetaType(metaTypeID));
 #endif
     registerConstructorInfos(typeId, &__qt_destruct_QDBusReply, {
-        ConstructorInfo(&__qt_construct_QDBusReply_0, nullptr)
-       ,ConstructorInfo(&__qt_construct_QDBusReply_1, "Lio/qt/dbus/QDBusError;")
-       ,ConstructorInfo(&__qt_construct_QDBusReply_2, "Lio/qt/dbus/QDBusMessage;")
-       ,ConstructorInfo(&__qt_construct_QDBusReply_3, "Lio/qt/dbus/QDBusPendingCall;")
+        ConstructorInfo(&__qt_construct_QDBusReply, nullptr)
+       ,ConstructorInfo(&__qt_construct_QDBusReply_QDBusError, "Lio/qt/dbus/QDBusError;")
+       ,ConstructorInfo(&__qt_construct_QDBusReply_QDBusMessage, "Lio/qt/dbus/QDBusMessage;")
+       ,ConstructorInfo(&__qt_construct_QDBusReply_QDBusPendingCall, "Lio/qt/dbus/QDBusPendingCall;")
     });
     QDBusMetaType::MarshallFunction mf = [](QDBusArgument &arg, const void *t) {
         if(const JObjectWrapper* objectWrapper = reinterpret_cast<const JObjectWrapper*>(t)){

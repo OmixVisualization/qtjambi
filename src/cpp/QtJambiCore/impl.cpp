@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -1481,11 +1481,27 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QObject_metaObject)
     return _result;
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_Qt_00024partial_1ordering_unordered)
+    (JNIEnv *, jclass)
+{
+    return jint(QtPrivate::Uncomparable::Unordered);
+}
+#endif
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+QObject* qtjambi_findChild(JNIEnv *, const QObject *__qt_this, QAnyStringView aName, Qt::FindChildOptions options){
+#else
 QObject* qtjambi_findChild(JNIEnv *, const QObject *__qt_this, const QString& aName, Qt::FindChildOptions options){
+#endif
     return qt_qFindChild_helper(__qt_this, aName, QObject::staticMetaObject, options);
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+QObject* qtjambi_findChild(JNIEnv *env, const QObject *__qt_this, jclass type, QAnyStringView aName, Qt::FindChildOptions options){
+#else
 QObject* qtjambi_findChild(JNIEnv *env, const QObject *__qt_this, jclass type, const QString& aName, Qt::FindChildOptions options){
+#endif
     const QMetaObject *metaObject = CoreAPI::metaObjectForClass(env, type);
     QtJambiAPI::checkNullPointer(env, metaObject);
     return qt_qFindChild_helper(__qt_this, aName, *metaObject, options);
@@ -1494,7 +1510,11 @@ QObject* qtjambi_findChild(JNIEnv *env, const QObject *__qt_this, jclass type, c
 #if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
 QList<QObject*> qtjambi_findChildren(JNIEnv *, const QObject *__qt_this, Qt::FindChildOptions options){
     QList<QObject *> list;
-    qt_qFindChildren_helper(__qt_this, QObject::staticMetaObject, reinterpret_cast<QList<void*>*>(&list), options);
+    qt_qFindChildren_helper(__qt_this,
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+                            QAnyStringView(),
+#endif
+                            QObject::staticMetaObject, reinterpret_cast<QList<void*>*>(&list), options);
     return list;
 }
 
@@ -1502,18 +1522,42 @@ QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, jcla
     const QMetaObject *metaObject = CoreAPI::metaObjectForClass(env, type);
     QtJambiAPI::checkNullPointer(env, metaObject);
     QList<QObject *> list;
-    qt_qFindChildren_helper(__qt_this, *metaObject, reinterpret_cast<QList<void*>*>(&list), options);
+    qt_qFindChildren_helper(__qt_this,
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+                            QAnyStringView(),
+#endif
+                            *metaObject, reinterpret_cast<QList<void*>*>(&list), options);
     return list;
 }
 #endif
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+QObject* qtjambi_findChild(JNIEnv *, const QObject *__qt_this, Qt::FindChildOptions options){
+    return qt_qFindChild_helper(__qt_this, {}, QObject::staticMetaObject, options);
+}
+
+QObject* qtjambi_findChild(JNIEnv *env, const QObject *__qt_this, jclass type, Qt::FindChildOptions options){
+    const QMetaObject *metaObject = CoreAPI::metaObjectForClass(env, type);
+    QtJambiAPI::checkNullPointer(env, metaObject);
+    return qt_qFindChild_helper(__qt_this, {}, *metaObject, options);
+}
+#endif
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+QList<QObject*> qtjambi_findChildren(JNIEnv *, const QObject *__qt_this, QAnyStringView aName, Qt::FindChildOptions options){
+#else
 QList<QObject*> qtjambi_findChildren(JNIEnv *, const QObject *__qt_this, const QString& aName, Qt::FindChildOptions options){
+#endif
     QList<QObject *> list;
     qt_qFindChildren_helper(__qt_this, aName, QObject::staticMetaObject, reinterpret_cast<QList<void*>*>(&list), options);
     return list;
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, jclass type, QAnyStringView aName, Qt::FindChildOptions options){
+#else
 QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, jclass type, const QString& aName, Qt::FindChildOptions options){
+#endif
     const QMetaObject *metaObject = CoreAPI::metaObjectForClass(env, type);
     QtJambiAPI::checkNullPointer(env, metaObject);
     QList<QObject *> list;
@@ -2974,7 +3018,7 @@ public:
 };
 
 // new QUntypedPropertyBinding(QMetaType, const BindingFunctionVTable *, void *, const QPropertyBindingSourceLocation &)
-void __qt_construct_QUntypedPropertyBinding_2(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments)
+void __qt_construct_QUntypedPropertyBinding_QMetaType_BindingFunctionVTable_QPropertyBindingSourceLocation(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool)
 {
     static_assert (alignof(JObjectWrapper) <= alignof(std::max_align_t), "Bindings do not support overaligned functors!");
     QTJAMBI_NATIVE_METHOD_CALL("construct QUntypedPropertyBinding(const QUntypedPropertyBinding & other)")
@@ -3046,7 +3090,7 @@ void __qt_construct_QUntypedPropertyBinding_2(void* __qtjambi_ptr, JNIEnv* __jni
 }
 
 // new QUntypedPropertyBinding(QPropertyBindingPrivate *)
-void __qt_construct_QUntypedPropertyBinding_3(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments)
+void __qt_construct_QUntypedPropertyBinding_QPropertyBindingPrivate(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QUntypedPropertyBinding(QPropertyBindingPrivate *)")
     jobject data0 = __java_arguments[0].l;
@@ -3111,7 +3155,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QU
             typeId = &typeid(QUntypedPropertyBinding);
         }
 
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QUntypedPropertyBinding_2, sizeof(QUntypedPropertyBinding), *typeId, false, arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QUntypedPropertyBinding_QMetaType_BindingFunctionVTable_QPropertyBindingSourceLocation, sizeof(QUntypedPropertyBinding), *typeId, false, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -3159,13 +3203,13 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QU
         }else{
             typeId = &typeid(QUntypedPropertyBinding);
         }
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QUntypedPropertyBinding_3, sizeof(QUntypedPropertyBinding), *typeId, false, &arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QUntypedPropertyBinding_QPropertyBindingPrivate, sizeof(QUntypedPropertyBinding), *typeId, false, &arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
 }
 
-void __qt_construct_QUntypedPropertyBinding_1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments);
+void __qt_construct_QUntypedPropertyBinding_cref_QUntypedPropertyBinding(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool);
 
 // QUntypedPropertyBinding::QUntypedPropertyBinding(QUntypedPropertyBinding)
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QUntypedPropertyBinding_initialize_1native__Lio_qt_core_QUntypedPropertyBinding_2Lio_qt_core_QUntypedPropertyBinding_2)
@@ -3210,17 +3254,14 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QU
         }else{
             typeId = &typeid(QUntypedPropertyBinding);
         }
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QUntypedPropertyBinding_1, sizeof(QUntypedPropertyBinding), *typeId, false, &arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QUntypedPropertyBinding_cref_QUntypedPropertyBinding, sizeof(QUntypedPropertyBinding), *typeId, false, &arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
 }
 
-void __qt_construct_QUntypedBindable_1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments);
 #if QT_VERSION >= QT_VERSION_CHECK(6,5,0)
-void __qt_construct_QUntypedBindable_2(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments);
-#define BINDABLE_CONSTRUCT __qt_construct_QUntypedBindable_2
-
+void __qt_construct_QUntypedBindable_QObject_ptr_cref_QMetaProperty_const_QtPrivate_QBindableInterface_ptr(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool);
 
 // QUntypedBindable::QUntypedBindable(QObject*,QMetaProperty,const QtPrivate::QBindableInterface*)
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QUntypedBindable_initialize_1native__Lio_qt_core_QUntypedBindable_2Lio_qt_core_QObject_2Lio_qt_core_QMetaProperty_2Lio_qt_core_QBindableInterface_2)
@@ -3268,15 +3309,15 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QU
         arguments[0].l = obj0;
         arguments[1].l = property1;
         arguments[2].l = i2;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QUntypedBindable_1, sizeof(QUntypedBindable), *typeId, true, arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QUntypedBindable_QObject_ptr_cref_QMetaProperty_const_QtPrivate_QBindableInterface_ptr, sizeof(QUntypedBindable), *typeId, true, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
 
 }
-#else
-#define BINDABLE_CONSTRUCT __qt_construct_QUntypedBindable_1
 #endif
+
+void __qt_construct_QUntypedBindable_QUntypedPropertyData_ptr_const_QtPrivate_QBindableInterface_ptr(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool);
 
 // QUntypedBindable::QUntypedBindable(QUntypedPropertyData * d, const QtPrivate::QBindableInterface * i)
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QUntypedBindable_initialize_1native__Lio_qt_core_QUntypedBindable_2Lio_qt_core_QUntypedPropertyData_2Lio_qt_core_QBindableInterface_2)
@@ -3322,7 +3363,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QU
         }else{
             typeId = &typeid(QUntypedBindable);
         }
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &BINDABLE_CONSTRUCT, sizeof(QUntypedBindable), *typeId, true, arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QUntypedBindable_QUntypedPropertyData_ptr_const_QtPrivate_QBindableInterface_ptr, sizeof(QUntypedBindable), *typeId, true, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -4590,10 +4631,10 @@ size_t sizeof_QPropertyObserver_shell();
 void __qt_destruct_QPropertyObserver(void* ptr);
 size_t sizeof_QPropertyObserver_shell();
 void __qt_construct_QPropertyObserver_with_ChangeHandler(void* __qtjambi_ptr, void (*changeHandler)(QPropertyObserver*, QUntypedPropertyData *));
-void __qt_construct_QPropertyObserver_1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments);
+void __qt_construct_QPropertyObserver_QUntypedPropertyData_ptr(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool);
 void deleter_QPropertyObserver(void *ptr, bool);
 
-void __qt_construct_QPropertyChangeHandler(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue*)
+void __qt_construct_QPropertyChangeHandler(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue*, bool)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QPropertyChangeHandler()")
     __qt_construct_QPropertyObserver_with_ChangeHandler(__qtjambi_ptr, [](QPropertyObserver* self, QUntypedPropertyData *){
@@ -4613,7 +4654,7 @@ void __qt_construct_QPropertyChangeHandler(void* __qtjambi_ptr, JNIEnv*, jobject
         });
 }
 
-void __qt_construct_QPropertyNotifier(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue*)
+void __qt_construct_QPropertyNotifier(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue*, bool)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QPropertyNotifier()")
     __qt_construct_QPropertyObserver_with_ChangeHandler(__qtjambi_ptr, [](QPropertyObserver* self, QUntypedPropertyData *){
@@ -4675,7 +4716,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QA
         }else{
             typeId = &typeid(QPropertyObserver);
         }
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QPropertyObserver_1, sizeof_QPropertyObserver_shell(), *typeId, true, &deleter_QPropertyObserver, &arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QPropertyObserver_QUntypedPropertyData_ptr, sizeof_QPropertyObserver_shell(), *typeId, true, &deleter_QPropertyObserver, &arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -4724,7 +4765,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_Q#
     args.jvalMember = val;\
     QTJAMBI_TRY{\
         QtJambiShell::initialize(__jni_env, __jni_class, __jni_object,\
-                                         [](void* __qtjambi_ptr, JNIEnv*, jobject, jvalue* __java_arguments){\
+                                         [](void* __qtjambi_ptr, JNIEnv*, jobject, jvalue* __java_arguments, bool){\
                                             Q_ASSERT(__java_arguments);\
                                             new(__qtjambi_ptr) QPropertyData<primitive>(__java_arguments->jvalMember);\
                                          },\
@@ -4799,7 +4840,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QP
         QMetaType& metaType = qtjambi_cast<QMetaType&>(__jni_env, __metaType);
         if(metaType.flags() & QMetaType::IsPointer){
             QtJambiShell::initialize(__jni_env, __jni_class, __jni_object,
-                                             [](void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue* __java_arguments){
+                                             [](void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue* __java_arguments, bool){
                                                 Q_ASSERT(__java_arguments);
                                                 void* _result;
                                                 if(__java_arguments[1].l){
@@ -4821,7 +4862,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QP
                                             }, args);
         }else{
             QtJambiShell::initialize(__jni_env, __jni_class, __jni_object,
-                                             [](void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue* __java_arguments){
+                                             [](void* __qtjambi_ptr, JNIEnv* env, jobject, jvalue* __java_arguments, bool){
                                                 Q_ASSERT(__java_arguments);
                                                 QMetaType& metaType = qtjambi_cast<QMetaType&>(env, __java_arguments[0].l);
                                                 if(__java_arguments[1].l){
@@ -5405,7 +5446,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QM
 }
 
 // new QByteArrayView(QByteArray)
-void __qt_construct_QByteArrayView_1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments)
+void __qt_construct_QByteArrayView_QByteArray(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QByteArrayView(QByteArray)")
     const QByteArray& data = qtjambi_cast<const QByteArray&>(__jni_env, __java_arguments->l);
@@ -5426,14 +5467,14 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QB
     QTJAMBI_TRY{
         jvalue argument;
         argument.l = data;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QByteArrayView_1, sizeof(QByteArrayView), typeid(QByteArrayView), false, &argument);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QByteArrayView_QByteArray, sizeof(QByteArrayView), typeid(QByteArrayView), false, &argument);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
 }
 
 // new QByteArrayView(Buffer)
-void __qt_construct_QByteArrayView_2(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments)
+void __qt_construct_QByteArrayView_Buffer(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QByteArrayView(Buffer)")
     void* address = __jni_env->GetDirectBufferAddress(__java_arguments[0].l);
@@ -5459,14 +5500,14 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QB
         argument[0].l = data;
         argument[1].j = offset;
         argument[2].j = length;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QByteArrayView_2, sizeof(QByteArrayView), typeid(QByteArrayView), false, argument);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QByteArrayView_Buffer, sizeof(QByteArrayView), typeid(QByteArrayView), false, argument);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
 }
 
 // new QByteArrayView(Buffer,qsizetype)
-void __qt_construct_QByteArrayView_3(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments)
+void __qt_construct_QByteArrayView_Buffer_qsizetype(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QByteArrayView(Buffer)")
     JBufferConstData* bufferData = new JBufferConstData(__jni_env, __java_arguments[0].l);
@@ -5494,7 +5535,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QB
         jvalue argument[2];
         argument[0].l = data;
         argument[1].l = pointerOut;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QByteArrayView_3, sizeof(QByteArrayView), typeid(QByteArrayView), false, argument);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QByteArrayView_Buffer_qsizetype, sizeof(QByteArrayView), typeid(QByteArrayView), false, argument);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -5512,7 +5553,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QB
 }
 
 // new QByteArrayView(String)
-void __qt_construct_QByteArrayView_4(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments)
+void __qt_construct_QByteArrayView_String(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QByteArrayView(String)")
     J2CStringBuffer* bufferData = new J2CStringBuffer(__jni_env, jstring(__java_arguments[0].l));
@@ -5540,7 +5581,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QB
         jvalue argument[2];
         argument[0].l = data;
         argument[1].l = pointerOut;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QByteArrayView_4, sizeof(QByteArrayView), typeid(QByteArrayView), false, argument);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QByteArrayView_String, sizeof(QByteArrayView), typeid(QByteArrayView), false, argument);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -5558,7 +5599,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QB
 }
 
 // new QByteArrayView(byte[],int)
-void __qt_construct_QByteArrayView_5(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments)
+void __qt_construct_QByteArrayView_byte_array_int(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QByteArrayView(byte[])")
     JByteArrayPointer* bufferData = new JByteArrayPointer(__jni_env, jbyteArray(__java_arguments[0].l));
@@ -5588,7 +5629,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QB
         argument[1].i = offset;
         argument[2].i = length;
         argument[3].l = pointerOut;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QByteArrayView_5, sizeof(QByteArrayView), typeid(QByteArrayView), false, argument);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QByteArrayView_byte_array_int, sizeof(QByteArrayView), typeid(QByteArrayView), false, argument);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END

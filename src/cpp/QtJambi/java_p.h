@@ -1,3 +1,34 @@
+/****************************************************************************
+**
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** $BEGIN_LICENSE$
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** $END_LICENSE$
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************/
+
 #ifndef JAVA_P_H
 #define JAVA_P_H
 
@@ -319,7 +350,7 @@ namespace Java{
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_LONG_METHOD(nativeIdInterface)
                                  )
         QTJAMBI_REPOSITORY_DECLARE_CLASS(NativeUtility$Object,
-                      QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(nativeLink))
+                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_FIELD(nativeLink))
         QTJAMBI_REPOSITORY_DECLARE_CLASS(MetaTypeUtility,
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(debugObject)
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(writeSerializableJavaObject)
@@ -367,7 +398,7 @@ namespace Java{
         QTJAMBI_REPOSITORY_DECLARE_CLASS(ResourceUtility$JarResource,
                                          QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getJarEntry)
                                          QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(getInputStream)
-                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(fileTime)
+                                         QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(fileTime)
                                          QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getName)
                                          QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(getOrReopen)
                                          QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(put)

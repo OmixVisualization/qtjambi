@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -92,6 +92,8 @@ enum class AquireSources : quint8 {
 #define LINK_NAME_META_TYPE_ARG(META_TYPE)
 #endif
 
+typedef void (*FinalizationExecutor)(JNIEnv* env, void* data);
+typedef void (*FinalizationDeleter)(JNIEnv* env, void* data);
 
 class SuperTypeInfos;
 
@@ -131,16 +133,17 @@ struct DependencyManagerUserData : public QtJambiObjectData
     ~DependencyManagerUserData() override;
     void addDependentObject(const QSharedPointer<QtJambiLink>& dependent);
     void removeDependentObject(const QSharedPointer<QtJambiLink>& dependent);
-    void addFinalization(std::function<void(JNIEnv*)>&& finalization);
+    void addFinalization(void* data, FinalizationExecutor executor, FinalizationDeleter deleter);
+    void removeFinalization(JNIEnv* env, void* data);
     bool hasDependencies() const;
     void clear(JNIEnv* env);
     static DependencyManagerUserData* instance(const QObject* object, bool forceConstruction = true);
     QTJAMBI_OBJECTUSERDATA_ID_DECL
 private:
     Q_DISABLE_COPY_MOVE(DependencyManagerUserData)
-    void clear(JNIEnv* env, QSet<QWeakPointer<QtJambiLink>>& dependentObjects, QList<std::function<void(JNIEnv*)>>& finalizations);
+    void clear(JNIEnv* env, QSet<QWeakPointer<QtJambiLink>>& dependentObjects, QHash<void*,QPair<FinalizationExecutor,FinalizationDeleter>>& finalizations);
     QSet<QWeakPointer<QtJambiLink>> m_dependentObjects;
-    QList<std::function<void(JNIEnv*)>> m_finalizations;
+    QHash<void*,QPair<FinalizationExecutor,FinalizationDeleter>> m_finalizations;
 };
 
 class DependentLink{
@@ -471,11 +474,13 @@ public:
 
     virtual void* typedPointer(const std::type_info& qtType) const;
     void registerDependentObject(const QSharedPointer<QtJambiLink>& link);
-    void addFinalization(std::function<void(JNIEnv*)>&& finalization);
+    void addFinalization(void* data, FinalizationExecutor executor, FinalizationDeleter deleter);
+    void removeFinalization(void* data);
     void unregisterDependentObject(const QSharedPointer<QtJambiLink>& link);
     static void registerDependentObject(const QObject* object, const QSharedPointer<QtJambiLink>& link);
     static void unregisterDependentObject(const QObject* object, const QSharedPointer<QtJambiLink>& link);
-    static void addFinalization(const QObject* object, std::function<void(JNIEnv*)>&& finalization);
+    static void addFinalization(const QObject* object, void* data, FinalizationExecutor executor, FinalizationDeleter deleter);
+    static void removeFinalization(const QObject* object, void* data);
 
 #if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME) || !defined(QT_NO_DEBUG)
     const char* qtTypeName() const;

@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -1261,11 +1261,11 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,ResourceUtility,
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,ResourceUtility$JarResource,
         QTJAMBI_REPOSITORY_DEFINE_METHOD(getJarEntry,(Ljava/lang/String;)Ljava/util/jar/JarEntry;)
         QTJAMBI_REPOSITORY_DEFINE_METHOD(getInputStream,(Ljava/util/zip/ZipEntry;)Ljava/io/InputStream;)
-        QTJAMBI_REPOSITORY_DEFINE_METHOD(fileTime,(Ljava/util/zip/ZipEntry;I)Lio/qt/core/QDateTime;)
+        QTJAMBI_REPOSITORY_DEFINE_METHOD(fileTime,(Ljava/util/zip/ZipEntry;ZZZ)J)
         QTJAMBI_REPOSITORY_DEFINE_METHOD(getName,()Ljava/lang/String;)
         QTJAMBI_REPOSITORY_DEFINE_METHOD(getOrReopen,()I)
         QTJAMBI_REPOSITORY_DEFINE_METHOD(put,()V)
-        QTJAMBI_REPOSITORY_DEFINE_METHOD(entryList,(Ljava/util/List;Lio/qt/core/QDir$Filters;Ljava/util/Collection;Ljava/lang/String;)V)
+        QTJAMBI_REPOSITORY_DEFINE_METHOD(entryList,(Ljava/util/List;ILjava/util/Collection;Ljava/lang/String;)V)
 )
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,LibraryUtility,
@@ -1280,6 +1280,13 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,EnumUtility,
     QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(getEnumForQFlags,(Ljava/lang/Class;)Ljava/lang/Class;)
 )
 
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,ReferenceUtility,
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(copyReferenceCount,(Lio/qt/QtObjectInterface;Ljava/lang/Class;Ljava/lang/String;Lio/qt/QtObjectInterface;)V)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(setReferenceCount,(Lio/qt/QtObjectInterface;Ljava/lang/Class;Ljava/lang/String;ZZLjava/lang/Object;)V)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(addAllReferenceCount,(Lio/qt/QtObjectInterface;Ljava/lang/Class;Ljava/lang/String;ZZLjava/util/Collection;)V)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(addReferenceCount,(Lio/qt/QtObjectInterface;Ljava/lang/Class;Ljava/lang/String;ZZLjava/lang/Object;)V)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(putReferenceCount,(Lio/qt/QtObjectInterface;Ljava/lang/Class;Ljava/lang/String;ZZLjava/lang/Object;Ljava/lang/Object;)V)
+                                 )
 QTJAMBI_REPOSITORY_DEFINE_CLASS_SC(io/qt/internal,ReferenceUtility$RCList)
 QTJAMBI_REPOSITORY_DEFINE_CLASS_SC(io/qt/internal,ReferenceUtility$RCSet)
 QTJAMBI_REPOSITORY_DEFINE_CLASS_SC(io/qt/internal,ReferenceUtility$RCMap)

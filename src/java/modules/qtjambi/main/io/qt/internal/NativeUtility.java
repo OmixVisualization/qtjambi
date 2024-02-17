@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -282,6 +282,14 @@ public abstract class NativeUtility {
 			Map<String, java.lang.Object> referenceCountsVariables = referenceCounts.computeIfAbsent(declaringClass,
 					c -> Collections.synchronizedMap(new HashMap<>()));
 			referenceCountsVariables.put(fieldName, newValue);
+		}
+		
+		public java.lang.Object getReferenceCount(Class<? extends QtObjectInterface> declaringClass, String fieldName) {
+			if (referenceCounts != null) {
+				Map<String, java.lang.Object> referenceCountsVariables = referenceCounts.get(declaringClass);
+				if(referenceCountsVariables!=null)
+					return referenceCountsVariables.get(fieldName);
+			}return null;
 		}
 
 		public java.lang.Object getReferenceCountCollection(Class<? extends QtObjectInterface> declaringClass, String fieldName,

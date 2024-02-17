@@ -1,3 +1,34 @@
+/****************************************************************************
+**
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+**
+** This file is part of Qt Jambi.
+**
+** $BEGIN_LICENSE$
+**
+** GNU Lesser General Public License Usage
+** This file may be used under the terms of the GNU Lesser
+** General Public License version 2.1 as published by the Free Software
+** Foundation and appearing in the file LICENSE.LGPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU Lesser General Public License version 2.1 requirements
+** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+**
+** GNU General Public License Usage
+** Alternatively, this file may be used under the terms of the GNU
+** General Public License version 3.0 as published by the Free Software
+** Foundation and appearing in the file LICENSE.GPL included in the
+** packaging of this file.  Please review the following information to
+** ensure the GNU General Public License version 3.0 requirements will be
+** met: http://www.gnu.org/copyleft/gpl.html.
+**
+** $END_LICENSE$
+**
+** This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+**
+****************************************************************************/
+
 #include "qtjambiapi.h"
 #include <QtCore/QReadWriteLock>
 #include <QtCore/QMap>
@@ -1918,66 +1949,6 @@ void AutoListAccess::detachAndGrow(QArrayDataPointer<char>* p, QArrayData::Growt
     reallocateAndGrow(p, where, n, old);
 }
 
-QArrayDataPointer<char> AutoListAccess::allocateGrow(const QArrayDataPointer<char> &from, qsizetype n, QArrayData::GrowthPosition position)
-{
-    // calculate new capacity. We keep the free capacity at the side that does not have to grow
-    // to avoid quadratic behavior with mixed append/prepend cases
-
-    // use qMax below, because constAllocatedCapacity() can be 0 when using fromRawData()
-    qsizetype minimalCapacity = qMax(from.size, from.constAllocatedCapacity()) + n;
-    // subtract the free space at the side we want to allocate. This ensures that the total size requested is
-    // the existing allocation at the other side + size + n.
-    minimalCapacity -= (position == QArrayData::GrowsAtEnd) ? freeSpaceAtEnd(&from) : freeSpaceAtBegin(&from);
-    qsizetype capacity = from.detachCapacity(minimalCapacity);
-    const bool grows = capacity > from.constAllocatedCapacity();
-    QArrayData *header;
-    void *dataPtr = QArrayData::allocate(&header, m_elementMetaType.sizeOf(),
-                                         qMax<size_t>(m_elementMetaType.alignOf(), alignof(QArrayData)),
-                                         capacity,
-                                         grows ? QArrayData::Grow : QArrayData::KeepSize);
-#if !defined(Q_OS_ANDROID) && __has_builtin(__builtin_assume_aligned)
-    switch(m_elementMetaType.alignOf()){
-    case 1:
-        dataPtr = __builtin_assume_aligned(dataPtr, qMax(size_t(1), Q_ALIGNOF(QArrayData)));
-        break;
-    case 2:
-        dataPtr = __builtin_assume_aligned(dataPtr, qMax(size_t(2), Q_ALIGNOF(QArrayData)));
-        break;
-    case 3:
-        dataPtr = __builtin_assume_aligned(dataPtr, qMax(size_t(3), Q_ALIGNOF(QArrayData)));
-        break;
-    case 4:
-        dataPtr = __builtin_assume_aligned(dataPtr, qMax(size_t(4), Q_ALIGNOF(QArrayData)));
-        break;
-    case 8:
-        dataPtr = __builtin_assume_aligned(dataPtr, qMax(size_t(8), Q_ALIGNOF(QArrayData)));
-        break;
-    }
-#endif
-    const bool valid = header != nullptr && dataPtr != nullptr;
-    if (!valid)
-        return QArrayDataPointer<char>(reinterpret_cast<QTypedArrayData<char>*>(header), reinterpret_cast<char*>(dataPtr));
-
-    // Idea: * when growing backwards, adjust pointer to prepare free space at the beginning
-    //       * when growing forward, adjust by the previous data pointer offset
-    char* cdataPtr = reinterpret_cast<char*>(dataPtr);
-    cdataPtr += ((position == QArrayData::GrowsAtBeginning)
-            ? n + qMax(0, (header->alloc - from.size - n) / 2)
-            : freeSpaceAtBegin(&from)) * m_offset;
-    dataPtr = cdataPtr;
-    header->flags = from.flags();
-    return QArrayDataPointer<char>(reinterpret_cast<QTypedArrayData<char>*>(header), reinterpret_cast<char*>(dataPtr));
-}
-
-void AutoListAccess::reallocate(QArrayDataPointer<char>* p, qsizetype capacity, QArrayData::AllocationOption option){
-    QPair<QArrayData *, void *> pair =
-            QArrayData::reallocateUnaligned(p->d, p->ptr, m_elementMetaType.sizeOf(), capacity, option);
-    Q_CHECK_PTR(pair.second);
-    Q_ASSERT(pair.first != nullptr);
-    p->d = reinterpret_cast<QTypedArrayData<char>*>(pair.first);
-    p->ptr = reinterpret_cast<char*>(pair.second);
-}
-
 void AutoListAccess::reallocateAndGrow(QArrayDataPointer<char>* p, QArrayData::GrowthPosition where, qsizetype n, QArrayDataPointer<char> *old)
 {
     if(m_elementMetaType.flags() & QMetaType::RelocatableType && size_t(m_elementMetaType.alignOf()) <= alignof(std::max_align_t)) {
@@ -2042,6 +2013,79 @@ void AutoListAccess::reallocateAndGrow(QArrayDataPointer<char>* p, QArrayData::G
     dp.ptr = nullptr;
 }
 
+QArrayDataPointer<char> AutoListAccess::allocateGrow(const QArrayDataPointer<char> &from, qsizetype n, QArrayData::GrowthPosition position)
+{
+    // calculate new capacity. We keep the free capacity at the side that does not have to grow
+    // to avoid quadratic behavior with mixed append/prepend cases
+
+    // use qMax below, because constAllocatedCapacity() can be 0 when using fromRawData()
+    qsizetype minimalCapacity = qMax(from.size, from.constAllocatedCapacity()) + n;
+    // subtract the free space at the side we want to allocate. This ensures that the total size requested is
+    // the existing allocation at the other side + size + n.
+    minimalCapacity -= (position == QArrayData::GrowsAtEnd) ? freeSpaceAtEnd(&from) : freeSpaceAtBegin(&from);
+    qsizetype capacity = from.detachCapacity(minimalCapacity);
+    const bool grows = capacity > from.constAllocatedCapacity();
+    QArrayData *header;
+    void *dataPtr = QArrayData::allocate(&header, m_elementMetaType.sizeOf(),
+                                         qMax<size_t>(m_elementMetaType.alignOf(), alignof(QArrayData)),
+                                         capacity,
+                                         grows ? QArrayData::Grow : QArrayData::KeepSize);
+#if __has_builtin(__builtin_assume_aligned)
+    switch(m_elementMetaType.alignOf()){
+    case 1:
+        if constexpr (Q_ALIGNOF(QArrayData)>1){
+            dataPtr = __builtin_assume_aligned(dataPtr, Q_ALIGNOF(QArrayData));
+        }else{
+            dataPtr = __builtin_assume_aligned(dataPtr, 1);
+        }
+        break;
+    case 2:
+        if constexpr (Q_ALIGNOF(QArrayData)>2){
+            dataPtr = __builtin_assume_aligned(dataPtr, Q_ALIGNOF(QArrayData));
+        }else{
+            dataPtr = __builtin_assume_aligned(dataPtr, 2);
+        }
+        break;
+    case 4:
+        if constexpr (Q_ALIGNOF(QArrayData)>4){
+            dataPtr = __builtin_assume_aligned(dataPtr, Q_ALIGNOF(QArrayData));
+        }else{
+            dataPtr = __builtin_assume_aligned(dataPtr, 4);
+        }
+        break;
+    case 8:
+        if constexpr (Q_ALIGNOF(QArrayData)>8){
+            dataPtr = __builtin_assume_aligned(dataPtr, Q_ALIGNOF(QArrayData));
+        }else{
+            dataPtr = __builtin_assume_aligned(dataPtr, 8);
+        }
+        break;
+    }
+#endif
+    const bool valid = header != nullptr && dataPtr != nullptr;
+    if (!valid)
+        return QArrayDataPointer<char>(reinterpret_cast<QTypedArrayData<char>*>(header), reinterpret_cast<char*>(dataPtr));
+
+    // Idea: * when growing backwards, adjust pointer to prepare free space at the beginning
+    //       * when growing forward, adjust by the previous data pointer offset
+    char* cdataPtr = reinterpret_cast<char*>(dataPtr);
+    cdataPtr += ((position == QArrayData::GrowsAtBeginning)
+                     ? n + qMax(0, (header->alloc - from.size - n) / 2)
+                     : freeSpaceAtBegin(&from)) * m_offset;
+    dataPtr = cdataPtr;
+    header->flags = from.flags();
+    return QArrayDataPointer<char>(reinterpret_cast<QTypedArrayData<char>*>(header), reinterpret_cast<char*>(dataPtr));
+}
+
+void AutoListAccess::reallocate(QArrayDataPointer<char>* p, qsizetype capacity, QArrayData::AllocationOption option){
+    QPair<QArrayData *, void *> pair =
+        QArrayData::reallocateUnaligned(p->d, p->ptr, m_elementMetaType.sizeOf(), capacity, option);
+    Q_CHECK_PTR(pair.second);
+    Q_ASSERT(pair.first != nullptr);
+    p->d = reinterpret_cast<QTypedArrayData<char>*>(pair.first);
+    p->ptr = reinterpret_cast<char*>(pair.second);
+}
+
 void AutoListAccess::detach(QArrayDataPointer<char>* p, QArrayDataPointer<char> *old)
 {
     if(p->needsDetach())
@@ -2071,22 +2115,35 @@ QArrayDataPointer<char> AutoListAccess::allocate(qsizetype capacity, QArrayData:
                                          qMax<size_t>(m_elementMetaType.alignOf(), alignof(QArrayData)),
                                          capacity,
                                          option);
-#if !defined(Q_OS_ANDROID) && __has_builtin(__builtin_assume_aligned)
+#if __has_builtin(__builtin_assume_aligned)
     switch(m_elementMetaType.alignOf()){
     case 1:
-        dataPtr = __builtin_assume_aligned(dataPtr, qMax(size_t(1), Q_ALIGNOF(QArrayData)));
+        if constexpr (Q_ALIGNOF(QArrayData)>1){
+            dataPtr = __builtin_assume_aligned(dataPtr, Q_ALIGNOF(QArrayData));
+        }else{
+            dataPtr = __builtin_assume_aligned(dataPtr, 1);
+        }
         break;
     case 2:
-        dataPtr = __builtin_assume_aligned(dataPtr, qMax(size_t(2), Q_ALIGNOF(QArrayData)));
-        break;
-    case 3:
-        dataPtr = __builtin_assume_aligned(dataPtr, qMax(size_t(3), Q_ALIGNOF(QArrayData)));
+        if constexpr (Q_ALIGNOF(QArrayData)>2){
+            dataPtr = __builtin_assume_aligned(dataPtr, Q_ALIGNOF(QArrayData));
+        }else{
+            dataPtr = __builtin_assume_aligned(dataPtr, 2);
+        }
         break;
     case 4:
-        dataPtr = __builtin_assume_aligned(dataPtr, qMax(size_t(4), Q_ALIGNOF(QArrayData)));
+        if constexpr (Q_ALIGNOF(QArrayData)>4){
+            dataPtr = __builtin_assume_aligned(dataPtr, Q_ALIGNOF(QArrayData));
+        }else{
+            dataPtr = __builtin_assume_aligned(dataPtr, 4);
+        }
         break;
     case 8:
-        dataPtr = __builtin_assume_aligned(dataPtr, qMax(size_t(8), Q_ALIGNOF(QArrayData)));
+        if constexpr (Q_ALIGNOF(QArrayData)>8){
+            dataPtr = __builtin_assume_aligned(dataPtr, Q_ALIGNOF(QArrayData));
+        }else{
+            dataPtr = __builtin_assume_aligned(dataPtr, 8);
+        }
         break;
     }
 #endif

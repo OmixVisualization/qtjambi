@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -9831,22 +9831,22 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "addAction<Args...,>(QIcon,QString,QKeySequence,Args&&)"
+            signature: "addAction<Args...,compatible_action_slot_args<Args...>>(QIcon,QString,QKeySequence,Args&&)"
             remove: RemoveFlag.All
             since: 6.3
         }
         ModifyFunction{
-            signature: "addAction<Args...,>(QString,QKeySequence,Args&&)"
+            signature: "addAction<Args...,compatible_action_slot_args<Args...>>(QString,QKeySequence,Args&&)"
             remove: RemoveFlag.All
             since: 6.3
         }
         ModifyFunction{
-            signature: "addAction<Args...,>(QIcon,QString,Args&&)"
+            signature: "addAction<Args...,compatible_action_slot_args<Args...>>(QIcon,QString,Args&&)"
             remove: RemoveFlag.All
             since: 6.3
         }
         ModifyFunction{
-            signature: "addAction<Args...,>(QString,Args&&)"
+            signature: "addAction<Args...,compatible_action_slot_args<Args...>>(QString,Args&&)"
             remove: RemoveFlag.All
             since: 6.3
         }
@@ -10793,6 +10793,38 @@ TypeSystem{
                                   "}"}
                 }
             }
+            until: 6.6
+        }
+        ModifyFunction{
+            signature: "getOpenFileContent(QString, std::function<void(const QString&,const QByteArray&)>, QWidget*)"
+            threadAffinity: Affinity.UI
+            ModifyArgument{
+                index: 2
+                ReplaceType{
+                    modifiedType: "java.util.function.BiConsumer<@NonNull String,io.qt.core.@NonNull QByteArray>"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "std::function<void(const QString&,const QByteArray&)> %out;\n"+
+                                  "if(%in){\n"+
+                                  "    JObjectWrapper wrapper(%env, %in);\n"+
+                                  "    %out = [wrapper](const QString& value1,const QByteArray& value2){\n"+
+                                  "                        if(JniEnvironment env{200}){\n"+
+                                  "                            jstring _value1 = qtjambi_cast<jstring>(env, value1);\n"+
+                                  "                            jobject _value2 = qtjambi_cast<jobject>(env, value2);\n"+
+                                  "                            Java::Runtime::BiConsumer::accept(env, wrapper.object(), _value1, _value2);\n"+
+                                  "                        }\n"+
+                                  "                    };\n"+
+                                  "}"}
+                }
+            }
+            ModifyArgument{
+                index: 3
+                ReplaceDefaultExpression{
+                    expression: "null"
+                }
+            }
+            since: 6.7
         }
         ModifyFunction{
             signature: "setIconProvider(QAbstractFileIconProvider *)"
@@ -14223,6 +14255,15 @@ TypeSystem{
     
     ObjectType{
         name: "QScroller"
+        EnumType{
+            name: "Input"
+        }
+        EnumType{
+            name: "ScrollerGestureType"
+        }
+        EnumType{
+            name: "State"
+        }
         ModifyFunction{
             signature: "scroller(const QObject *)"
             remove: RemoveFlag.All
@@ -14232,42 +14273,36 @@ TypeSystem{
     ObjectType{
         name: "QAccessibleWidget"
     }
-    
-    EnumType{
-        name: "QScroller::Input"
-    }
-    
-    EnumType{
-        name: "QScroller::ScrollerGestureType"
-    }
-    
-    EnumType{
-        name: "QScroller::State"
+
+    ObjectType{
+        name: "QRhiWidget"
+        EnumType{
+            name: "Api"
+        }
+        EnumType{
+            name: "TextureFormat"
+        }
+        since: 6.7
     }
     
     ValueType{
         name: "QScrollerProperties"
-    }
-    
-    EnumType{
-        name: "QScrollerProperties::FrameRates"
-    }
-    
-    EnumType{
-        name: "QScrollerProperties::OvershootPolicy"
-    }
-    
-    EnumType{
-        name: "QScrollerProperties::ScrollMetric"
-    }
-    
-    EnumType{
-        name: "QOpenGLWidget::UpdateBehavior"
-        until: 5
+        EnumType{
+            name: "FrameRates"
+        }
+        EnumType{
+            name: "OvershootPolicy"
+        }
+        EnumType{
+            name: "ScrollMetric"
+        }
     }
     
     ObjectType{
         name: "QOpenGLWidget"
+        EnumType{
+            name: "UpdateBehavior"
+        }
         ModifyFunction{
             signature: "paintGL()"
             isPaintMethod: true
@@ -14522,4 +14557,5 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'hasEditFocus()const' for function modification in 'QWidget' not found. Possible candidates: "}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'setEditFocus(bool)' for function modification in 'QWidget' not found. Possible candidates: "}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QTreeWidgetItem."}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping field 'QMessageBox::static_assert' with unmatched type ''"}
 }

@@ -3,6 +3,7 @@ package io.qt.tools.ant;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.PropertyHelper;
@@ -12,6 +13,7 @@ public class CreateFunctionPointerQrcTask extends Task {
 	
 	@Override
 	public void execute() throws BuildException {
+//		System.out.println("Initialize...");
 		PropertyHelper propertyHelper = PropertyHelper.getPropertyHelper(getProject());
 		int qtMajorVersion = Integer.parseInt(AntUtil.getPropertyAsString(propertyHelper, Constants.QT_VERSION_MAJOR));
 		int qtMinorVersion = Integer.parseInt(AntUtil.getPropertyAsString(propertyHelper, Constants.QT_VERSION_MINOR));
@@ -19,6 +21,7 @@ public class CreateFunctionPointerQrcTask extends Task {
 		if("qtjambi".equals(module)) {
 			String dlibFormat = "%1$sd.dll";
 			String libFormat = "%1$s.dll";
+//			System.out.println("OS: "+OSInfo.crossOS());
 			switch(OSInfo.crossOS()) {
 			case Windows:
 				dlibFormat = "%1$sd.dll";
@@ -31,10 +34,6 @@ public class CreateFunctionPointerQrcTask extends Task {
 			case MacOS:
 				dlibFormat = "lib%1$s_debug.dylib";
 				libFormat = "lib%1$s.dylib";
-				break;
-			case Linux:
-				dlibFormat = "lib%1$s_debug.so";
-				libFormat = "lib%1$s.so";
 				break;
 			case Android:
 				if(qtMajorVersion<6) {
@@ -55,25 +54,35 @@ public class CreateFunctionPointerQrcTask extends Task {
 					write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "release-x86_64")), libFormat, qtMajorVersion, qtMinorVersion);
 					write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "debug-x86_64")), dlibFormat, qtMajorVersion, qtMinorVersion);
 					return;
-				}else {
-					switch(OSInfo.crossOSArchName()) {
-		        	case OSInfo.K_ANDROID_ARM32:
+				}else if(OSInfo.crossArch()!=null){
+					switch(OSInfo.crossArch()) {
+		        	case arm:
 		        		dlibFormat = "lib%1$s_debug_armeabi-v7a.so"; 
 		        		libFormat = "lib%1$s_armeabi-v7a.so"; break;
-		        	case OSInfo.K_ANDROID_ARM64:
+		        	case arm64:
 		        		dlibFormat = "lib%1$s_debug_arm64-v8a.so"; 
 		        		libFormat = "lib%1$s_arm64-v8a.so"; break;
-		        	case OSInfo.K_ANDROID_X86:
+		        	case x86:
 		        		dlibFormat = "lib%1$s_debug_x86.so"; 
 		        		libFormat = "lib%1$s_x86.so"; break;
-		        	case OSInfo.K_ANDROID_X64:
+		        	case x86_64:
 		        		dlibFormat = "lib%1$s_debug_x86_64.so"; 
 		        		libFormat = "lib%1$s_x86_64.so"; break;
+		        	case riscv64:
+		        		dlibFormat = "lib%1$s_debug_riscv64.so"; 
+		        		libFormat = "lib%1$s_riscv64.so"; break;
+		        		default: break;
 		        	}
 					break;
-				}
+				}else return;
 			default:
-				return;
+				if(OSInfo.crossOS().isUnixLike()) {
+					dlibFormat = "lib%1$s_debug.so";
+					libFormat = "lib%1$s.so";
+				}else {
+					return;
+				}
+				break;
 			}
 			write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "debug")), dlibFormat, qtMajorVersion, qtMinorVersion);
 			write(new java.io.File(new java.io.File(new java.io.File(dir), "QtJambi"), String.format(fileName, "release")), libFormat, qtMajorVersion, qtMinorVersion);
@@ -81,9 +90,10 @@ public class CreateFunctionPointerQrcTask extends Task {
 	}
 	
 	private void write(java.io.File file, String libFormat, int qtMajorVersion, int qtMinorVersion) {
+//		System.out.println("Creating "+file.getAbsolutePath());
 		file.getParentFile().mkdirs();
 		try(FileOutputStream fos = new FileOutputStream(file);
-				PrintWriter stream = new PrintWriter(fos)){
+				PrintWriter stream = new PrintWriter(fos, false, StandardCharsets.UTF_8)){
 			stream.println("<RCC>");
 			stream.println("    <qresource prefix=\"/io/qt/qtjambi/functionpointers\">");
 //			stream.append("        <file alias=\"void(QObject*,QMetaObject::Call,int,void**)\">").append(String.format(libFormat, "StaticMetaCallFunction"));

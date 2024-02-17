@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -100,12 +100,9 @@ class CppImplGenerator : public CppGenerator {
         void writeArgumentConversion(QTextStream &s, const MetaFunction *signal, QStringList& converterFunctions, QSet<QString> &forwardDeclarations);
         void writeTypeConversion(QTextStream &s, const MetaFunction *function, MetaType *type, int index, const QString& metaTypeId, QStringList& converterFunctions, QSet<QString> &forwardDeclarations);
         void writeMetaInfo(QTextStream &s, const MetaClass *java_class,
-                           const QMultiMap<int,MetaFunction *>& availabeConstructors,
                            const QList<const MetaFunction *>& signalsInTargetLang,
-                           const QList<QString>& signalNames,
-                           const QMap<QString,QList<const MetaFunction*>>& sortedSignals,
                            bool isInterface);
-        void writeMetaInfo(QTextStream &s, const MetaClass *owner, const MetaEnum *java_class, bool ownerIsPublic);
+        void writeMetaInfo(QTextStream &s, const MetaEnum *java_enum);
         void writeMetaInfo(QTextStream &s, const MetaFunctional *java_class);
         void writeShellFunction(QTextStream &s, const MetaFunction *java_function,
                                 const MetaClass *implementor, int pos);
@@ -130,7 +127,7 @@ class CppImplGenerator : public CppGenerator {
         void writeFunctionCallArguments(QTextStream &s, const MetaFunction *java_function,
                                         const QString &prefix = QString(), Option option = NoOption);
         void writeFunctionCallArguments(QTextStream &s, const MetaFunction *java_function,
-                                        const QList<const MetaArgument*>& arguments,
+                                        const QList<MetaArgument*>& arguments,
                                         const QString &prefix = QString(), Option option = NoOption);
         void writeFunctionCallArguments(QTextStream &s, const MetaFunctional *java_function,
                                         const QString &prefix = QString(), Option option = NoOption);
@@ -152,14 +149,14 @@ class CppImplGenerator : public CppGenerator {
 
         void writeConstructor(QTextStream &s,
                                 const MetaFunction *java_function,
-                                const QList<const MetaArgument *>& arguments,
-                                const MetaClass *java_class, int counter);
+                                const QList<MetaArgument *>& arguments,
+                                const MetaClass *java_class, bool isDeclarative);
         void writeFinalFunction(QTextStream &s,
                                 const MetaFunction *java_function,
                                 const MetaClass *java_class);
         void writeFinalConstructor(QTextStream &s,
                                 const MetaFunction *java_function,
-                                const MetaClass *java_class, const QHash<const MetaFunction *,uint>& constructorIndexes = QHash<const MetaFunction *,uint>());
+                                const MetaClass *java_class);
         void writeFinalFunctionArguments(QTextStream &s,
                                                 const MetaFunction *java_function,
                                                 const QString &java_object_name) const;
@@ -251,11 +248,18 @@ class CppImplGenerator : public CppGenerator {
         bool shouldGenerate(const MetaClass *java_class) const override;
         QString default_return_statement_qt(const MetaType *java_type, AbstractGenerator::Option options = AbstractGenerator::NoOption);
         void setContainerBaseClasses(const QMap<TypeSystemTypeEntry *,QList<QPair<TypeInfo,bool>>>& containerBaseClasses);
+        void writeReferenceCount(QTextStream &s, const ReferenceCount &refCount, const MetaArgument* argument, int argumentIndex, const MetaFunction *java_function, const QString &__jni_env = "__jni_env", const QString &thisName = QLatin1String("__jni_object"));
     private:
-        QByteArray callXxxMethod(const QString &name) const;
-        QByteArray callXxxMethod(const MetaType *java_type) const;
+        QString callXxxMethod(const QString &name) const;
+        QString callXxxMethod(const MetaType *java_type) const;
         QMap<QString,QMap<QString,const MetaClass*>> nativeToJavaConverterInfos;
         QMap<QString,QMap<QString,const MetaClass*>> javaToNativeConverterInfos;
+        struct ArgumentList{
+            QList<MetaArgument *> arguments;
+            QString marshalledArguments;
+            QString jniSignature;
+        };
+        QHash<const MetaFunction*,QList<ArgumentList>> m_nativeConstructorNames;
 };
 
 #endif // CPPIMPLGENERATOR_H

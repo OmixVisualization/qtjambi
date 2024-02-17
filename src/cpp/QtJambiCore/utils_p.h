@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -48,20 +48,32 @@ struct BigIntegerValue{
 BigIntegerValue fromBigInteger(JNIEnv* env, jobject object);
 jobject toBigInteger(JNIEnv* env, quint64 value, bool isNegative);
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+QObject* qtjambi_findChild(JNIEnv *env, const QObject *__qt_this, Qt::FindChildOptions options);
+QObject* qtjambi_findChild(JNIEnv *env, const QObject *__qt_this, jclass type, Qt::FindChildOptions options);
+QObject* qtjambi_findChild(JNIEnv *env, const QObject *__qt_this, QAnyStringView aName, Qt::FindChildOptions options);
+QObject* qtjambi_findChild(JNIEnv *env, const QObject *__qt_this, jclass type, QAnyStringView aName, Qt::FindChildOptions options);
+QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, QAnyStringView aName, Qt::FindChildOptions options);
+QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, jclass type, QAnyStringView aName, Qt::FindChildOptions options);
+#else
 QObject* qtjambi_findChild(JNIEnv *env, const QObject *__qt_this, const QString& aName, Qt::FindChildOptions options);
 QObject* qtjambi_findChild(JNIEnv *env, const QObject *__qt_this, jclass type, const QString& aName, Qt::FindChildOptions options);
+QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, const QString& aName, Qt::FindChildOptions options);
+QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, jclass type, const QString& aName, Qt::FindChildOptions options);
+#endif
+
 #if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
 QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, Qt::FindChildOptions options);
 QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, jclass type, Qt::FindChildOptions options);
 #endif
-QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, const QString& aName, Qt::FindChildOptions options);
-QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, jclass type, const QString& aName, Qt::FindChildOptions options);
 QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, const QRegularExpression& regexp, Qt::FindChildOptions options);
 QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, jclass type, const QRegularExpression& regexp, Qt::FindChildOptions options);
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, const QRegExp& regexp, Qt::FindChildOptions options);
 QList<QObject*> qtjambi_findChildren(JNIEnv *env, const QObject *__qt_this, jclass type, const QRegExp& regexp, Qt::FindChildOptions options);
 #endif
+
+const std::type_info& typeid_QFutureInterfaceBase_shell();
 
 namespace Java{
 namespace QtCore
@@ -249,6 +261,10 @@ namespace QtCore
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QPropertyNotifier,
                                      QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(invoke))
 #endif
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QString$Predicate,
+                                     QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(test))
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QByteArray$Predicate,
+                                     QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(test))
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,2,0)

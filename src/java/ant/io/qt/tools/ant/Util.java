@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -46,6 +46,14 @@ import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 
 abstract class Util {
+	
+	public static File TRY_LOCATE_EXEC(String name, String prepend, String append) {
+		try {
+			return LOCATE_EXEC(name, prepend, append);
+		} catch (BuildException e) {
+			return null;
+		}
+	}
 
     public static File LOCATE_EXEC(String name, String prepend, String append) {
         String searchPath = "";
@@ -207,10 +215,10 @@ abstract class Util {
         //System.out.println("library path is: " + libraryPath);
 
         // Make /usr/lib an implicit part of library path
-        if(OSInfo.os() == OSInfo.OS.Linux) {
-            String archName = OSInfo.crossOSArchName();
+        if(OSInfo.os().isUnixLike()) {
             boolean match = false;
-            if(archName.equals(OSInfo.K_LINUX_X86)) {
+            switch(OSInfo.arch()) {
+            case x86:
                 // (some non-FHS) Linux 32bit might have lib32 directory most Linux
                 //  distros (FHS compliant) will not have a /usr/lib32.
                 File lib32Dir = new File("/usr/lib32");
@@ -218,10 +226,14 @@ abstract class Util {
                     libraryPath += File.pathSeparator + lib32Dir.getAbsolutePath();
                     match = true;
                 }
-            } else if(archName.equals(OSInfo.K_LINUX_X64)) {
+                break;
+            case x86_64:
+            case arm64:
                 // Linux 64bit
                 libraryPath += File.pathSeparator + "/usr/lib64";
                 match = true;
+                break;
+                default:
             }
             if(!match) {
                 // Normal Unix

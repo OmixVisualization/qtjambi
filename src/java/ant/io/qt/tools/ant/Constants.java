@@ -1,7 +1,7 @@
 /****************************************************************************
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -297,7 +297,6 @@ public abstract class Constants {
     public static final String QML_QTGRAPHICALEFFECTS = "qtjambi.QtGraphicalEffects";
     public static final String QML_QTAUDIOENGINE_DECLARATIVE_AUDIOENGINE = "qtjambi.QtAudioEngine.declarative_audioengine";
     
-    public static final String QTJAMBI_CONFIG_ISMACOSX      = "qtjambi.config.ismacosx";
     public static final String QTJAMBI_MACOSX_QTMENUNIB_DIR = "qtjambi.macosx.qtmenunib.dir";
     public static final String QTJAMBI_MACOSX_MAC_SDK       = "qtjambi.macosx.macsdk";
 

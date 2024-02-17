@@ -1,3 +1,34 @@
+###################################################################################################
+##
+## Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+##
+## This file is part of Qt Jambi.
+##
+## $BEGIN_LICENSE$
+##
+## GNU Lesser General Public License Usage
+## This file may be used under the terms of the GNU Lesser
+## General Public License version 2.1 as published by the Free Software
+## Foundation and appearing in the file LICENSE.LGPL included in the
+## packaging of this file.  Please review the following information to
+## ensure the GNU Lesser General Public License version 2.1 requirements
+## will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
+##
+## GNU General Public License Usage
+## Alternatively, this file may be used under the terms of the GNU
+## General Public License version 3.0 as published by the Free Software
+## Foundation and appearing in the file LICENSE.GPL included in the
+## packaging of this file.  Please review the following information to
+## ensure the GNU General Public License version 3.0 requirements will be
+## met: http://www.gnu.org/copyleft/gpl.html.
+##
+## $END_LICENSE$
+##
+## This file is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE
+## WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+##
+###################################################################################################
+
 TEMPLATE = lib
 
 TARGET = QtJambiGenerator
@@ -48,6 +79,7 @@ mac:CONFIG -= app_bundle
 INCLUDEPATH += $$PWD/. $$PWD/typesystem
 
 RESOURCES += generator.qrc
+QMAKE_RESOURCE_FLAGS += -no-compress
 
 include(parser/rxx.pri)
 
@@ -180,24 +212,27 @@ macx:{
         greaterThan(QT_MAJOR_VERSION, 6) | greaterThan(QT_MINOR_VERSION, 1):{
             QMAKE_APPLE_DEVICE_ARCHS = x86_64 arm64
         }
+    }else{
+        CONFIG += c++17
     }
 }
 
-linux-g++* | freebsd-g++* | win32-g++* {
+linux-clang* | linux-g++* | freebsd-clang* | freebsd-g++* | netbsd-clang* | netbsd-g++* | openbsd-clang* | openbsd-g++* | solaris-g++* | solaris-cc* | win32-g++* {
     QMAKE_CXXFLAGS_WARN_OFF += -Wdollar-in-identifier-extension -Woverloaded-virtual
     QMAKE_CXXFLAGS_WARN_ON += -Wno-unused-function
     QMAKE_LFLAGS_NOUNDEF   += -Wl,--no-undefined
     QMAKE_LFLAGS += $$QMAKE_LFLAGS_NOUNDEF
+    lessThan(QT_MAJOR_VERSION, 6):{
+        QMAKE_CXXFLAGS += -fno-sized-deallocation
+    }else{
+        CONFIG += c++17
+    }
 }
 
 contains(QMAKE_CXX, "g++") | contains(QMAKE_CXX, "clang++") : {
     SOURCES_BASE = $$clean_path($$dirname(_PRO_FILE_))
     QMAKE_CXXFLAGS_DEBUG += -g -fdebug-prefix-map=$$SOURCES_BASE=../sources/QtJambiGenerator
     QMAKE_CXXFLAGS_RELEASE_WITH_DEBUGINFO += -g -fdebug-prefix-map=$$SOURCES_BASE=../sources/QtJambiGenerator
-}
-
-linux-g++* : lessThan(QT_MAJOR_VERSION, 6):{
-    QMAKE_CXXFLAGS += -fno-sized-deallocation
 }
 
 JAVA_HOME_TARGET = $$(JAVA_HOME_TARGET)
@@ -228,13 +263,19 @@ macx | ios:{
     win32 {
         INCLUDEPATH += $$quote($$JAVA_HOME_TARGET/include/win32)
     }
-    solaris-g++ | solaris-cc {
-        INCLUDEPATH += $$quote($$JAVA_HOME_TARGET/include/solaris)
-    }
-    linux-g++* {
+    linux-* {
         INCLUDEPATH += $$quote($$JAVA_HOME_TARGET/include/linux)
     }
-    freebsd-g++* {
+    freebsd-* {
         INCLUDEPATH += $$quote($$JAVA_HOME_TARGET/include/freebsd)
+    }
+    netbsd-* {
+        INCLUDEPATH += $$quote($$JAVA_HOME_TARGET/include/netbsd)
+    }
+    openbsd-* {
+        INCLUDEPATH += $$quote($$JAVA_HOME_TARGET/include/openbsd)
+    }
+    solaris-* {
+        INCLUDEPATH += $$quote($$JAVA_HOME_TARGET/include/solaris)
     }
 }

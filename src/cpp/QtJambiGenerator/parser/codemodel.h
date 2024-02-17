@@ -2,7 +2,7 @@
 **
 ** Copyright (C) 1992-2009 Nokia. All rights reserved.
 ** Copyright (C) 2002-2005 Roberto Raggi <roberto@kdevelop.org>
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -372,6 +372,8 @@ class _ClassModelItem: public _ScopeModelItem {
         void setDeclFinal(bool declFinal);
         bool isDeclDeprecated() const;
         void setDeclDeprecated(bool declDeprecated);
+        bool isDllExported() const;
+        void setDllExported(bool dllExported);
         const QString& declDeprecatedComment() const;
         void setDeclDeprecatedComment(const QString& comment);
         CodeModel::AccessPolicy accessPolicy() const;
@@ -379,7 +381,7 @@ class _ClassModelItem: public _ScopeModelItem {
     protected:
         _ClassModelItem(CodeModelPtr model, int kind = __node_kind)
                 : _ScopeModelItem(model, kind), m_has_Q_GADGET(false), m_has_Q_OBJECT(false), _M_classType(CodeModel::Class),
-                  _M_declFinal(false), _M_declDeprecated(false), _M_isTemplate(false),
+            _M_declFinal(false), _M_declDeprecated(false), _M_isTemplate(false), _M_dllExported(false),
                   _M_accessPolicy(CodeModel::Public),
                   _M_usingBaseConstructors(CodeModel::AccessPolicy::Private){}
 
@@ -394,6 +396,7 @@ class _ClassModelItem: public _ScopeModelItem {
         bool _M_declFinal;
         bool _M_declDeprecated;
         bool _M_isTemplate;
+        bool _M_dllExported;
         QString _M_declDeprecatedComment;
         CodeModel::AccessPolicy _M_accessPolicy;
         CodeModel::AccessPolicy _M_usingBaseConstructors;
@@ -547,6 +550,7 @@ class _MemberModelItem: public _CodeModelItem {
             IsDeprecated = 0x080,
             IsConstExpr = 0x100,
             IsTemplate = 0x200,
+            IsDllExported = 0x400,
         };
 
         TemplateParameterList _M_templateParameters;
@@ -657,6 +661,8 @@ class _FunctionModelItem: public _MemberModelItem {
         void setDeleted(bool deleted);
         bool isDeclDefault() const;
         void setDeclDefault(bool d);
+        bool isDllExported() const;
+        void setDllExported(bool d);
         OperatorType operatorType() const;
         void setOperatorType(OperatorType op);
 
@@ -683,7 +689,8 @@ class _FunctionModelItem: public _MemberModelItem {
             IsDeclFinal = 0x040,
             HasBody = 0x080,
             IsDeleted = 0x100,
-            IsDeclDefault = 0x200
+            IsDeclDefault = 0x200,
+            IsDllExported = 0x400
         };
         ArgumentList _M_arguments;
         CodeModel::FunctionType _M_functionType;
@@ -837,6 +844,10 @@ class _TemplateParameterModelItem: public _CodeModelItem {
         bool isVaradic() const;
         void setOwnerClass(const ClassModelItem& ownerClass);
         ClassModelItem ownerClass() const;
+        const QString& parameterType() const;
+        void setParameterType(const QString &parameterType);
+        const TypeInfo& parameterTypeInfo() const;
+        void setParameterTypeInfo(const TypeInfo &parameterTypeInfo);
 
     protected:
         _TemplateParameterModelItem(CodeModelPtr model, int kind = __node_kind)
@@ -845,6 +856,8 @@ class _TemplateParameterModelItem: public _CodeModelItem {
     private:
         QString _M_defaultValue;
         bool _M_isVaradic;
+        QString _M_parameterType;
+        TypeInfo _M_parameterTypeInfo;
         ClassModelItem _M_ownerClass;
 
     private:

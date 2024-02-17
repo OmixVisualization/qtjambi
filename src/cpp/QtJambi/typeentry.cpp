@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -88,11 +88,32 @@ QtJambiTypeEntryPtr get_type_entry(JNIEnv* env, const std::type_info& typeId, bo
     }
     QtJambiTypeEntryPtr result;
     const char *qt_name = nullptr;
+    const char *java_name = nullptr;
     EntryTypes entryType = getEntryType(typeId);
+    switch(entryType){
+    case EntryTypes::Unspecific:
+        if(qtName && (java_name = getJavaNameByFunctional(qtName))){
+            qt_name = qtName;
+            entryType = EntryTypes::FunctionalTypeInfo;
+        }
+        break;
+    case EntryTypes::FunctionalTypeInfo:
+        qt_name = getQtName(typeId);
+        if(qtName){
+            if(QLatin1String(qtName)!=QLatin1String(qt_name)){
+                qt_name = qtName;
+            }
+        }
+        java_name = getJavaNameByFunctional(qt_name);
+        break;
+    default:
+        qt_name = getQtName(typeId);
+        java_name = getJavaName(typeId);
+        break;
+    }
+
     if(entryType!=EntryTypes::Unspecific){
         QTJAMBI_JNI_LOCAL_FRAME(env, 512);
-        qt_name = getQtName(typeId);
-        const char *java_name = getJavaName(typeId);
         if(qtName && entryType==EntryTypes::FunctionalTypeInfo){
             if(QLatin1String(qtName)!=QLatin1String(qt_name)){
                 qt_name = qtName;
@@ -101,7 +122,10 @@ QtJambiTypeEntryPtr get_type_entry(JNIEnv* env, const std::type_info& typeId, bo
         }
         jclass java_class = JavaAPI::resolveClass(env, java_name);
         if(!java_class){
-            JavaException::raiseError(env, QLatin1String("class %1 cannot be found").arg(QString(java_name).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+            if(java_name)
+                JavaException::raiseError(env, QLatin1String("class %1 cannot be found").arg(QString(java_name).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
+            else
+                JavaException::raiseError(env, QLatin1String("class %1 cannot be found").arg(qtName) QTJAMBI_STACKTRACEINFO );
             return QtJambiTypeEntryPtr();
         }
 
@@ -3816,9 +3840,14 @@ QtJambiTypeEntry::NativeToJavaResult FunctionalTypeEntry::convertToJava(JNIEnv *
     if(javaType!=jValueType::l)
         JavaException::raiseIllegalArgumentException(env, "Cannot convert functional type" QTJAMBI_STACKTRACEINFO );
     if(m_registered_functional_resolver){
-        output.l = m_registered_functional_resolver(env, m_is_std_function ? qt_object : &qt_object);
-        if(output.l)
+        bool ok{false};
+        output.l = m_registered_functional_resolver(env, m_is_std_function ? qt_object : &qt_object, &ok);
+        if(ok || output.l)
             return true;
+    }
+    if(!qt_object){
+        output.l = nullptr;
+        return true;
     }
     output.l = env->NewObject(creatableClass(), creatorMethod(), nullptr);
     JavaException::check(env QTJAMBI_STACKTRACEINFO );

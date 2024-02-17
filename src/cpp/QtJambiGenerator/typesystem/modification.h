@@ -49,11 +49,18 @@ enum class AsArrayType{
     NoOffset = 0x008,
     AddPlainDelegate = 0x010
 };
+enum class AsSlotType{
+    No = 0,
+    Yes = 0x001,
+    NoContext = 0x008,
+    AddPlainDelegate = 0x010
+};
 enum class AsBufferType{
     No = 0,
     Yes = 0x001,
     Deref = 0x002,
 };
+typedef QFlags<AsSlotType> AsSlotTypes;
 typedef QFlags<AsArrayType> AsArrayTypes;
 typedef QFlags<AsBufferType> AsBufferTypes;
 
@@ -82,7 +89,8 @@ struct ArgumentModification {
             thread_affine(ThreadAffinity::None),
             index(std::numeric_limits<int>::max()),
             useAsArrayType(AsArrayType::No),
-            arrayLengthParameter(-1),
+            useAsSlotType(AsSlotType::No),
+            utilArgParameter(-1),
             minArrayLength(-1),
             maxArrayLength(-1)
     {}
@@ -97,7 +105,8 @@ struct ArgumentModification {
             thread_affine(ThreadAffinity::None),
             index(idx),
             useAsArrayType(AsArrayType::No),
-            arrayLengthParameter(-1),
+            useAsSlotType(AsSlotType::No),
+            utilArgParameter(-1),
             minArrayLength(-1),
             maxArrayLength(-1)
     {}
@@ -142,7 +151,8 @@ struct ArgumentModification {
 
     AsArrayTypes useAsArrayType;
     AsBufferTypes useAsBufferType;
-    int arrayLengthParameter;
+    AsSlotTypes useAsSlotType;
+    int utilArgParameter;
     int minArrayLength;
     int maxArrayLength;
     QString arrayLengthExpression;
@@ -189,7 +199,7 @@ struct Modification {
     };
 
     Modification() : modifiers(0) { }
-    Modification(const Modification&) = default;
+    //Modification(const Modification&) = default;
 
     bool isAccessModifier() const { return modifiers & AccessModifierMask; }
     Modifiers accessModifier() const { return Modifiers(modifiers & AccessModifierMask); }
@@ -244,7 +254,7 @@ struct Delegate{
 
 struct AbstractFunctionModification: public Modification {
     AbstractFunctionModification() = default;
-    AbstractFunctionModification(const AbstractFunctionModification&) = default;
+    //AbstractFunctionModification(const AbstractFunctionModification&) = default;
     bool isCodeInjection() const { return modifiers & CodeInjection; }
     QString ppCondition;
     QString throws;
@@ -265,7 +275,7 @@ struct Parameter{
 
 struct TemplateInstantiation: public AbstractFunctionModification {
     TemplateInstantiation() = default;
-    TemplateInstantiation(const TemplateInstantiation&) = default;
+    //TemplateInstantiation(const TemplateInstantiation&) = default;
     QList<Parameter> arguments;
 };
 
@@ -273,7 +283,7 @@ typedef QList<TemplateInstantiation> TemplateInstantiationList;
 
 struct FunctionModification: public AbstractFunctionModification {
     FunctionModification() : AbstractFunctionModification(), removal(TS::NoLanguage) { }
-    FunctionModification(const FunctionModification&) = default;
+    //FunctionModification(const FunctionModification&) = default;
     bool isRemoveModifier() const { return removal != TS::NoLanguage; }
     QString toString() const;
     TS::Language removal;

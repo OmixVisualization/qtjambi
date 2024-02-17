@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of QtJambi.
 **
@@ -352,6 +352,14 @@ TypeSystem{
         name: "QCameraControl::PropertyChangeType"
         until: 5
     }
+
+    NamespaceType{
+        name: "QtVideo"
+        EnumType{
+            name: "Rotation"
+        }
+        since: 6.7
+    }
     
     ValueType{
         name: "QVideoFrame"
@@ -638,7 +646,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "mapPlanes(QAbstractVideoBuffer::MapMode, int *, Array, Array)"
+            signature: "mapPlanes(QAbstractVideoBuffer::MapMode, int *, int[4], uchar*[4])"
             ModifyArgument{
                 index: 2
                 RemoveArgument{
@@ -725,7 +733,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "map(QAbstractVideoBuffer::MapMode, int *, Array, Array)"
+            signature: "map(QAbstractVideoBuffer::MapMode, int *, int[4],uchar*[4])"
             rename: "mapPlanesImpl"
             ModifyArgument{
                 index: 2
@@ -2693,7 +2701,7 @@ TypeSystem{
         since: [6, 6]
     }
     
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QAudioBuffer::QAudioBuffer', unmatched parameter type 'QAbstractAudioBuffer*'"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched parameter type 'QAbstractAudioBuffer*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QMediaService::requestControl', unmatched return type 'T'"}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QAudioBuffer."}
     SuppressedWarning{

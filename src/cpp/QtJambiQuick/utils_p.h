@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2009-2023 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
+** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
 **
@@ -36,6 +36,12 @@
 namespace Java{
 namespace QtQuick {
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QQuickItem,)
+
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QSGGeometry,)
+
+    QTJAMBI_REPOSITORY_DECLARE_CLASS(QSGGeometry$AttributeSet,
+                                     QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(clone)
+                                     )
 
     QTJAMBI_REPOSITORY_DECLARE_CLASS(QSGGeometry$Point2DVertexData,
                                      QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
