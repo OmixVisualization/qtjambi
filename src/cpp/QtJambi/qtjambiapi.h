@@ -448,9 +448,9 @@ namespace QNativePointer{
 
 namespace QtJambiAPI{
 
-QTJAMBI_EXPORT void *convertQNativePointerToNative(JNIEnv *env, jobject java_object, int indirections);
+QTJAMBI_EXPORT void *convertQNativePointerToNative(JNIEnv *env, jobject java_object, int* size = nullptr, int* indirections = nullptr);
 
-QTJAMBI_EXPORT jobject convertNativeToQNativePointer(JNIEnv *env, const void *qt_pointer, QNativePointer::Type type_id, int indirections);
+QTJAMBI_EXPORT jobject convertNativeToQNativePointer(JNIEnv *env, const void *qt_pointer, QNativePointer::Type type_id, quint64 size, uint indirections);
 
 QTJAMBI_EXPORT QString getClassName(JNIEnv *env, jclass java_class);
 QTJAMBI_EXPORT QString getObjectClassName(JNIEnv *env, jobject java_object);

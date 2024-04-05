@@ -434,6 +434,7 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
 
         // Predefined containers...
         addType(new ContainerTypeEntry("std::vector", ContainerTypeEntry::std_vector));
+        addType(new ContainerTypeEntry("std::array", ContainerTypeEntry::std_array));
         {
             ContainerTypeEntry* entry = new ContainerTypeEntry("QList", ContainerTypeEntry::ListContainer);
             entry->setInclude(Include(Include::IncludePath, "QtCore/QList"));

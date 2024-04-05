@@ -28,6 +28,8 @@
 ****************************************************************************/
 package io.qt.autotests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.lang.ref.WeakReference;
@@ -36,18 +38,24 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.QNoNativeResourcesException;
 import io.qt.QThreadAffinityException;
 import io.qt.QtArgument;
 import io.qt.QtUtilities;
+import io.qt.core.QCoreApplication;
 import io.qt.core.QEventLoop;
+import io.qt.core.QLibraryInfo;
 import io.qt.core.QList;
 import io.qt.core.QObject;
 import io.qt.core.QPoint;
 import io.qt.core.QRectF;
 import io.qt.core.QThread;
+import io.qt.core.QVariantAnimation;
+import io.qt.core.QVersionNumber;
 import io.qt.core.Qt;
 import io.qt.core.Qt.CursorShape;
 import io.qt.gui.*;
@@ -629,6 +637,146 @@ public class TestThreadAffinity extends ApplicationInitializer{
 			instances.add(new WeakReference<>(jthread));
 		}
 	}
+	
+	public void testQThreadAffinityExceptionOnMoveToThread() throws InterruptedException{
+		Assume.assumeTrue(QLibraryInfo.version().compareTo(new QVersionNumber(6,7,0))<0);
+		AtomicReference<QObject> object = new AtomicReference<>();
+		QThread jthread = QThread.create(()->{
+			object.set(new QObject());
+			try {
+				synchronized(TestQThread.class) {
+					TestQThread.class.wait();
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		});
+		try {
+			jthread.start();
+			while(object.get()==null) {
+				Thread.sleep(50);
+			}
+			object.get().moveToThread(QThread.currentThread());
+			Assert.fail("QThreadAffinityException expected to be thrown");
+		}catch(QThreadAffinityException e) {
+		}finally {
+			synchronized(TestQThread.class) {
+				TestQThread.class.notifyAll();
+			}
+			instances.add(new WeakReference<>(jthread));
+		}
+	}
+	
+    public void run_affinity_breach()
+    {
+    	Assume.assumeTrue(QLibraryInfo.version().compareTo(new QVersionNumber(6,7,0))<0);
+    	QObject object = new QObject();
+    	QThread thread = new QThread();
+    	try {
+	    	object.moveToThread(thread);
+	    	object.startTimer(90);
+			fail("QThreadAffinityException expected to be thrown.");
+		}catch(QThreadAffinityException e) {
+    	}
+    }
+    
+    public void run_affinity_breach_parent()
+    {
+    	QObject object = new QObject();
+    	QThread thread = new QThread();
+    	try {
+	    	object.moveToThread(thread);
+	    	new QObject(object);
+			fail("QThreadAffinityException expected to be thrown.");
+		}catch(QThreadAffinityException e) {
+    	}
+    }
+    
+    public void run_widget_affinity_breach()
+    {
+    	QThreadAffinityException[] exn = {null};
+    	QThread thread = QThread.create(()->{
+    		try {
+				new QWidget();
+			} catch (QThreadAffinityException e) {
+				exn[0] = e;
+			}
+    	});
+    	thread.start();
+    	thread.join();
+    	assertTrue(exn[0] instanceof QThreadAffinityException);
+    }
+    
+    public void run_affinity_breach_no_native() throws Exception
+    {
+    	QObject object = new QObject();
+    	QThread thread = new QThread();
+    	object.moveToThread(thread);
+    	object.dispose();
+    	try{
+	    	object.setObjectName("test");
+			fail("QNoNativeResourcesException expected to be thrown.");
+		}catch(QNoNativeResourcesException e) {
+	    }
+    }
+    
+    @Test
+    public void test_thread_affinity()
+    {
+    	QVariantAnimation parent = new QVariantAnimation();
+    	QVariantAnimation child = new QVariantAnimation();
+    	parent.valueChanged.connect(child.valueChanged);
+    	Object[] result = {null};
+    	child.valueChanged.connect(o->result[0] = o);
+    	Throwable[] t = {null};
+    	QThread thread = QThread.create(()->{
+    		parent.valueChanged.emit("TEST");
+    		try {
+				parent.setProperty("", "");
+			} catch (Throwable e) {
+				t[0] = e;
+			}
+    	});
+    	thread.start();
+    	thread.join();
+    	QCoreApplication.sendPostedEvents();
+    	assertTrue(t[0] instanceof QThreadAffinityException);
+    	assertEquals("TEST", result[0]);
+    }
+    
+    @Test
+    public void run_affinity_breach_exceptionhandling() {
+    	QObject obj = new QObject();
+    	QThread thread = new QThread(){
+    		@Override
+    		protected void run() {
+    			obj.startTimer(0);
+    		}
+    	};
+    	Throwable[] occurred = {null};
+    	thread.setUncaughtExceptionHandler((t,e)->{occurred[0] = e;});
+    	thread.start();
+    	thread.join();
+    	Assert.assertTrue(occurred[0] instanceof QThreadAffinityException);
+    	occurred[0] = null;
+    	thread = QThread.create(()->{
+			obj.startTimer(0);
+		});
+    	thread.setUncaughtExceptionHandler((t,e)->{occurred[0] = e;});
+    	thread.start();
+    	thread.join();
+    	Assert.assertTrue(occurred[0] instanceof QThreadAffinityException);
+    	occurred[0] = null;
+    	
+    	thread = QThread.create(()->{
+			obj.startTimer(0);
+		});
+    	thread.setUncaughtExceptionHandler((t,e)->{occurred[0] = e;});
+    	thread.start();
+    	thread.join();
+    	Assert.assertTrue(occurred[0] instanceof QThreadAffinityException);
+    	occurred[0] = null;
+    }
 
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestThreadAffinity.class.getName());

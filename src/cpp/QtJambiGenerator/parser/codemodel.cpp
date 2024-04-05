@@ -125,6 +125,11 @@ CodeModelItem CodeModel::findItem(const QStringList &qualifiedName, CodeModelIte
 // ---------------------------------------------------------------------------
 TypeInfo TypeInfo::combine(const TypeInfo &__lhs, const TypeInfo &__rhs) {
     TypeInfo __result = __lhs;
+    if(__lhs.isArray()){
+        __result = __lhs.arrayType();
+    }else{
+        __result = __lhs;
+    }
 
     __result.setConstant(__result.isConstant() || __rhs.isConstant());
     __result.setVolatile(__result.isVolatile() || __rhs.isVolatile());
@@ -137,11 +142,22 @@ TypeInfo TypeInfo::combine(const TypeInfo &__lhs, const TypeInfo &__rhs) {
         }
     }
     __result.setIndirections(__result.indirections() + __rhs.indirections());
-    __result.setArrayElements(__result.arrayElements() + __rhs.arrayElements());
+    if(__rhs.isArray()){
+        __result.setArray(true);
+        __result.setArrayElements(__rhs.arrayElements());
+        __result.setArrayType(__rhs.arrayType());
+    }
     if(!__rhs.arguments().isEmpty()){
         for(auto l = qMin(__rhs.arguments().size(), __lhs.arguments().size()), i = decltype(l)(0); i<l; ++i){
             __result.m_arguments[i] = __rhs.m_arguments[i];
         }
+    }
+    if(__lhs.isArray()){
+        TypeInfo _result;
+        _result.setArrayType(__result);
+        _result.setArray(true);
+        _result.setArrayElements(__lhs.arrayElements());
+        __result = _result;
     }
     return __result;
 }
@@ -182,68 +198,105 @@ TypeInfo TypeInfo::resolveType(TypeInfo const &__type, CodeModelItem __scope) {
 
 QString TypeInfo::toString() const {
     QString tmp;
-
-    if(isFunctionPointer()){
+    if(isExpression()){
+        tmp = m_expression;
+    }else if(isArray()){
+        Q_ASSERT(!m_arrayType.isEmpty());
+        tmp += m_arrayType[0].toString();
+        QString pointerRef;
+        for (int i=0; i<indirections().size(); i++){
+            if(indirections()[i]){
+                pointerRef += QStringLiteral(u"*const");
+            }else{
+                pointerRef += QChar(u'*');
+            }
+        }
+        if (getReferenceType()==TypeInfo::Reference)
+            pointerRef += QChar(u'&');
+        if (getReferenceType()==TypeInfo::RReference)
+            pointerRef += QStringLiteral(u"&&");
+        if(!pointerRef.isEmpty()){
+            tmp += QStringLiteral(u"(");
+            tmp += pointerRef;
+            tmp += QStringLiteral(u")");
+        }
+        for(const QString& elt : arrayElements()) {
+            tmp += QStringLiteral(u"[");
+            tmp += elt;
+            tmp += QStringLiteral(u"]");
+        }
+    }else if(isFunctionPointer()){
         if(!m_functionalReturnType.isEmpty())
             tmp += m_functionalReturnType[0].toString();
-        tmp += QLatin1String("(*)(");
+        QString pointerRef;
+        for (int i=0; i<indirections().size(); i++){
+            if(indirections()[i]){
+                pointerRef += QStringLiteral(u"*const");
+            }else{
+                pointerRef += QChar(u'*');
+            }
+        }
+        if (getReferenceType()==TypeInfo::Reference)
+            pointerRef += QChar(u'&');
+        if (getReferenceType()==TypeInfo::RReference)
+            pointerRef += QStringLiteral(u"&&");
+        if(!pointerRef.isEmpty()){
+            tmp += QStringLiteral(u"(");
+            tmp += pointerRef;
+            tmp += QStringLiteral(u")");
+        }
+        tmp += QChar(u'(');
         for (int i = 0; i < m_functionalArgumentTypes.count(); ++i) {
             if (i != 0)
-                tmp += QLatin1String(",");
+                tmp += QChar(u',');
 
             tmp += m_functionalArgumentTypes.at(i).toString();
         }
-        tmp += QLatin1String(")");
+        tmp += QChar(u')');
     }else{
         if (isConstant())
-            tmp += QLatin1String("const ");
+            tmp += QStringLiteral(u"const ");
 
         if (isVolatile())
-            tmp += QLatin1String("volatile ");
+            tmp += QStringLiteral(u"volatile ");
 
-        tmp += m_qualifiedName.join("::");
+        tmp += m_qualifiedName.join(QStringLiteral(u"::"));
         if(!m_arguments.isEmpty()){
-            tmp += QLatin1String("<");
+            tmp += QStringLiteral(u"<");
             for (int i = 0; i < m_arguments.count(); ++i) {
                 if (i != 0)
-                    tmp += QLatin1String(",");
+                    tmp += QStringLiteral(u",");
 
                 tmp += m_arguments.at(i).toString();
             }
-            tmp += QLatin1String(">");
+            tmp += QStringLiteral(u">");
         }else if(!m_functionalReturnType.isEmpty()){
-            tmp += QLatin1String("<");
+            tmp += QStringLiteral(u"<");
             tmp += m_functionalReturnType[0].toString();
-            tmp += QLatin1String("(");
+            tmp += QStringLiteral(u"(");
             for (int i = 0; i < m_functionalArgumentTypes.count(); ++i) {
                 if (i != 0)
-                    tmp += QLatin1String(",");
+                    tmp += QStringLiteral(u",");
 
                 tmp += m_functionalArgumentTypes.at(i).toString();
             }
-            tmp += QLatin1String(")>");
+            tmp += QStringLiteral(u")>");
         }
         if(isVariadic()){
-            tmp += "...";
+            tmp += QStringLiteral(u"...");
         }
 
         for (int i=0; i<indirections().size(); i++){
             if(indirections()[i]){
-                tmp += QLatin1String("*const");
+                tmp += QStringLiteral(u"*const");
             }else{
-                tmp += QLatin1Char('*');
+                tmp += QChar(u'*');
             }
         }
         if (getReferenceType()==TypeInfo::Reference)
-            tmp += QLatin1Char('&');
+            tmp += QChar(u'&');
         if (getReferenceType()==TypeInfo::RReference)
-            tmp += QLatin1String("&&");
-
-        for(const QString& elt : arrayElements()) {
-            tmp += QLatin1String("[");
-            tmp += elt;
-            tmp += QLatin1String("]");
-        }
+            tmp += QStringLiteral(u"&&");
     }
     return tmp;
 }
@@ -848,15 +901,6 @@ bool _TemplateParameterModelItem::isVaradic() const {
 
 void _TemplateParameterModelItem::setIsVaradic(bool isVaradic) {
     _M_isVaradic = isVaradic;
-}
-
-
-const QString& _TemplateParameterModelItem::parameterType() const{
-    return _M_parameterType;
-}
-
-void _TemplateParameterModelItem::setParameterType(const QString &parameterType){
-    _M_parameterType = parameterType;
 }
 
 const TypeInfo& _TemplateParameterModelItem::parameterTypeInfo() const{

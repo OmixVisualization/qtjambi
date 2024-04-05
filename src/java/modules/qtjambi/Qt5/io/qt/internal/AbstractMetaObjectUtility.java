@@ -76,12 +76,6 @@ class AbstractMetaObjectUtility {
         return null;
     }
     
-    static <PropertyInfo> PropertyInfo analyzeProperty(QObject object, QtObject property, Class<PropertyInfo> propertyInfoClass) {
-        return null;
-    }
-    
-    static void registerPropertyField(QMetaProperty metaProperty, Field field){}
-    
     static boolean isListType(Class<?> cls) {
         return cls==QList.class
                 || cls==QQueue.class

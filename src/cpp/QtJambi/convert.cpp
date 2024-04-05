@@ -143,23 +143,21 @@ jobject QtJambiAPI::convertQFlagsToJavaObject(JNIEnv *env, int qt_flags, jclass 
     return obj;
 }
 
-void *QtJambiAPI::convertQNativePointerToNative(JNIEnv *env, jobject java_object, int indirections)
+void *QtJambiAPI::convertQNativePointerToNative(JNIEnv *env, jobject java_object, int* size, int* indirections)
 {
     if (!java_object)
         return nullptr;
     Q_ASSERT(Java::QtJambi::QNativePointer::isInstanceOf(env, java_object));  // check the java object is right type
-    /*int object_indirections = Java::QtJambi::QNativePointer::indirections(env, java_object);
-    // What is this != test doing ?
-    if (object_indirections != indirections) {
-        JavaException::raiseIllegalArgumentException(env, "Illegal number of indirections" QTJAMBI_STACKTRACEINFO );
-        return nullptr;
-    }*/
+    if(size)
+        *size = Java::QtJambi::QNativePointer::knownSize(env, java_object);
+    if(indirections)
+        *indirections = Java::QtJambi::QNativePointer::indirections(env, java_object);
     return reinterpret_cast<void *>(Java::QtJambi::QNativePointer::pointer(env,java_object));
 }
 
-jobject QtJambiAPI::convertNativeToQNativePointer(JNIEnv *env, const void *qt_object, QNativePointer::Type type, int indirections)
+jobject QtJambiAPI::convertNativeToQNativePointer(JNIEnv *env, const void *qt_object, QNativePointer::Type type, quint64 size, uint indirections)
 {
-    return Java::QtJambi::QNativePointer::fromNative(env, reinterpret_cast<jlong>(qt_object), int(type), jlong(-1), indirections, false);
+    return Java::QtJambi::QNativePointer::fromNative(env, reinterpret_cast<jlong>(qt_object), int(type), jlong(size), jint(indirections), false);
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -220,7 +218,7 @@ jobject QtJambiAPI::convertQCharToJavaObject(JNIEnv *env, QChar *strg)
                 strg,
                 LINK_NAME_ARG("QChar")
                 false,
-                false, [](void * ptr,bool){delete reinterpret_cast<QChar*>(ptr);}, QtJambiLink::Ownership::None)) {
+                false, [](void * ptr,bool){delete reinterpret_cast<QChar*>(ptr);}, QtJambiLink::Ownership::Cpp)) {
         returned = nullptr;
     }
     return returned;
@@ -252,7 +250,7 @@ jobject QtJambiAPI::convertQVariantToJavaVariant(JNIEnv *env, QVariant *variant)
                 variant,
                 LINK_NAME_ARG("QVariant")
                 false,
-                false, [](void * ptr,bool){delete reinterpret_cast<QVariant*>(ptr);}, QtJambiLink::Ownership::None)) {
+                false, [](void * ptr,bool){delete reinterpret_cast<QVariant*>(ptr);}, QtJambiLink::Ownership::Cpp)) {
         returned = nullptr;
     }
     return returned;
@@ -284,7 +282,7 @@ jobject QtJambiAPI::convertQStringToJavaObject(JNIEnv *env, QString *strg)
                 strg,
                 LINK_NAME_ARG("QString")
                 false,
-                false, [](void * ptr,bool){delete reinterpret_cast<QString*>(ptr);}, QtJambiLink::Ownership::None)) {
+                false, [](void * ptr,bool){delete reinterpret_cast<QString*>(ptr);}, QtJambiLink::Ownership::Cpp)) {
         returned = nullptr;
     }
     return returned;

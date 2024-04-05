@@ -675,6 +675,9 @@ public:
     bool getIsImplicit() const;
     void setIsImplicit(bool newIsImplicit);
 
+    QString getValue() const;
+    void setValue(const QString &newValue);
+
 signals:
     void typeChanged();
 
@@ -684,15 +687,19 @@ signals:
 
     void isImplicitChanged();
 
+    void valueChanged();
+
 private:
     QString type;
     QString parameter;
     QString extending;
     bool isImplicit = false;
+    QString value;
     Q_PROPERTY(QString type READ getType WRITE setType NOTIFY typeChanged)
     Q_PROPERTY(QString parameter READ getParameter WRITE setParameter NOTIFY parameterChanged)
     Q_PROPERTY(QString extending READ getExtending WRITE setExtending NOTIFY extendingChanged)
     Q_PROPERTY(bool isImplicit READ getIsImplicit WRITE setIsImplicit NOTIFY isImplicitChanged)
+    Q_PROPERTY(QString value READ getValue WRITE setValue NOTIFY valueChanged FINAL)
 };
 
 class Rename : public AbstractObject

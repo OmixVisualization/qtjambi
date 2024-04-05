@@ -593,7 +593,7 @@ class UnknownTypeEntry : public TypeEntry {
 class TemplateArgumentEntry : public TypeEntry {
     public:
         TemplateArgumentEntry(const QString &name)
-                : TypeEntry(name, TemplateArgumentType), m_ordinal(0) {
+            : TypeEntry(name, TemplateArgumentType), m_ordinal(0), m_variadic(false) {
         }
 
         int ordinal() const {
@@ -629,13 +629,16 @@ class ArrayTypeEntry : public TypeEntry {
         }
 
         QString targetLangName() const override {
-            if(m_indirections==0)
-                return m_nested_type->targetLangName() + "[]";
-            else
-                return "QNativePointer[]";
+            QString targetLangName = m_nested_type->targetLangName();
+            if(!targetLangName.endsWith("QNativePointer")){
+                for(int i=0; i<m_indirections; ++i){
+                    targetLangName += "[]";
+                }
+            }
+            return targetLangName;
         }
         QString jniName() const override {
-            if (m_nested_type->isPrimitive() && m_nested_type->jniName()!="void" && m_indirections==0)
+            if (m_nested_type->isPrimitive() && m_nested_type->jniName()!="void" && m_indirections==1)
                 return m_nested_type->jniName() + "Array";
             else
                 return "jobjectArray";
@@ -1469,6 +1472,9 @@ class ComplexTypeEntry : public TypeEntry {
         bool getNotCloneable() const;
         void setNotCloneable(bool newNotCloneable);
 
+        bool getPushUpStatics() const;
+        void setPushUpStatics(bool newPushUpStatics);
+
     protected:
         enum ComplexAttributeFlag{
             IsQObject = 0x01,
@@ -1555,6 +1561,7 @@ private:
         bool notAssignable = false;
         bool notMoveAssignable = false;
         bool notCloneable = false;
+        bool pushUpStatics = false;
         friend GeneratorApplication;
         friend class FunctionalTypeEntry;
 };
@@ -1880,6 +1887,7 @@ class ContainerTypeEntry : public ComplexTypeEntry {
             std_atomic,
             std_optional,
             std_vector,
+            std_array,
             std_chrono,
             std_chrono_template
         };

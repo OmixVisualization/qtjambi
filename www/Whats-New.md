@@ -1,15 +1,23 @@
-# What's new in QtJambi 6.6.2
+# What's new in QtJambi 6.7.0
 
 ## Bugfixes
 
 Solved issue:
-* [Issue 185](../../../issues/185): QtJambi build from scratch on windows has missing opengl classes
-* Java-written `QObject`s wrapped as native `QVariant` can be now used in Qml/JavaScript.
+* Bugfix in detecting unreadable meta properties
+* Bugfix in handling lightweight Java types in Qt containers
+* Bugfix in deployer
+* `QObject.findChild` now having the correct return type
+* Meta object auto-detection now skips methods if property of same name is also available. This led to access errors in QML/JavaScript.
+* Improved the API of several `QDBusArgument` extraction methods.
 
 ## Further Changes
 
-* QtJambi's build system is now able to run on Windows arm64 and FreeBSD.
-* Java-based QML plugins now survive a reset by `qmlClearTypeRegistrations()` without crash
-* QVariant-wrapped QObject pointers can now be used in QML/JavaScript even when they are Java-owned
-* binary compatibility to Qt 6.6.2
-* ready for Qt 6.7
+* Improved error message when trying to use QtJambi with mismatching Qt build
+* Improvement of `QMetaObject.invokeMethod` implementation.
+* Providing `QMetaObject.writeProperty` and readProperty doing thread-affine access to `QProperty`.
+* Providing `QMetaProperty.fromProperty` giving the `QMetaProperty` of a `QProperty`.
+* Generator is now able to map c++ array types and `std::array`.
+* Generator is now able to treat int-based template parameters.
+* Added `QIconEngine.virtual_hook`
+
+This will be the last release with Maven-published binaries for Qt 5.15 and Qt 6.6.

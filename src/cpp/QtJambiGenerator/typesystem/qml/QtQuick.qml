@@ -576,6 +576,17 @@ TypeSystem{
     
     ObjectType{
         name: "QQuickTextDocument"
+        ModifyFunction{
+            signature: "setTextDocument(QTextDocument*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcTextDocument"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: 6.7
+        }
     }
     
     ObjectType{
@@ -1266,6 +1277,61 @@ TypeSystem{
 
     ObjectType{
         name: "QSGTextNode"
+        ModifyFunction{
+            signature: "addTextDocument(QPointF,QTextDocument*,int,int)"
+            ModifyArgument{
+                index: 2
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                ArgumentMap{index: 2; metaName: "%2"}
+                Text{content: "addRC(%2);"}
+            }
+        }
+        ModifyFunction{
+            signature: "addTextLayout(QPointF,QTextLayout*,int,int,int,int)"
+            ModifyArgument{
+                index: 2
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                ArgumentMap{index: 2; metaName: "%2"}
+                Text{content: "addRC(%2);"}
+            }
+        }
+        ModifyFunction{
+            signature: "clear()"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                Text{content: "__rcTextElements.clear();"}
+            }
+        }
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.End
+            Text{content: "void addRC(Object obj){}"}
+        }
+        InjectCode{
+            target: CodeClass.JavaConctreteWrapper
+            position: Position.End
+            Text{content: String.raw`
+@QtPropertyMember(enabled=false)
+private java.util.Collection<Object> __rcTextElements;
+
+void addRC(Object obj){
+    __rcTextElements.add(obj);
+}
+                `}
+        }
         since: 6.7
     }
     
@@ -3132,7 +3198,7 @@ if(%1.count()<=0)
                 replaceType: "io.qt.@Nullable QNativePointer"
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobject %out = QtJambiAPI::convertNativeToQNativePointer(%env, %in, QNativePointer::Type::Pointer, 1);"}
+                    Text{content: "jobject %out = QtJambiAPI::convertNativeToQNativePointer(%env, %in, QNativePointer::Type::Pointer, -1, 1);"}
                 }
             }
         }
@@ -3151,7 +3217,7 @@ if(%1.count()<=0)
                 replaceType: "io.qt.@Nullable QNativePointer"
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "void* %out = QtJambiAPI::convertQNativePointerToNative(%env, %in, 0);"}
+                    Text{content: "void* %out = QtJambiAPI::convertQNativePointerToNative(%env, %in);"}
                 }
             }
         }
@@ -3255,6 +3321,20 @@ if(%1.count()<=0)
         name: "QQuickRhiItem"
         EnumType{
             name: "TextureFormat"
+        }
+        ModifyFunction{
+            signature: "createRenderer()"
+            ModifyArgument{
+                index: "return"
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Shell
+                    ownership: Ownership.Cpp
+                }
+            }
         }
         since: 6.7
     }

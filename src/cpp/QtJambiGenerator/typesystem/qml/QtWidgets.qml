@@ -285,12 +285,6 @@ TypeSystem{
     }
     
     Rejection{
-        className: "QActionGroup"
-        functionName: "selected"
-        until: 5
-    }
-    
-    Rejection{
         className: "QGraphicsEffect"
         functionName: "source"
     }
@@ -755,21 +749,6 @@ TypeSystem{
     
     EnumType{
         name: "QMdiSubWindow::SubWindowOption"
-    }
-    
-    EnumType{
-        name: "QAction::ActionEvent"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QAction::MenuRole"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QAction::Priority"
-        until: 5
     }
     
     EnumType{
@@ -2644,6 +2623,13 @@ TypeSystem{
     
     ObjectType{
         name: "QActionGroup"
+        Rejection{
+            functionName: "selected"
+        }
+        EnumType{
+            name: "ExclusionPolicy"
+            since: [5, 14]
+        }
         ModifyFunction{
             signature: "addAction(QAction*)"
             threadAffinity: true
@@ -2683,12 +2669,6 @@ TypeSystem{
                 Text{content: "QtJambi_LibraryUtilities.internal.setReferenceCount(%1, QAction.class, \"__rcActionGroup\", false, false, null);"}
             }
         }
-        until: 5
-    }
-    
-    EnumType{
-        name: "QActionGroup::ExclusionPolicy"
-        since: [5, 14]
         until: 5
     }
     
@@ -12008,6 +11988,15 @@ TypeSystem{
     
     ObjectType{
         name: "QAction"
+        EnumType{
+            name: "ActionEvent"
+        }
+        EnumType{
+            name: "MenuRole"
+        }
+        EnumType{
+            name: "Priority"
+        }
         ModifyFunction{
             signature: "setMenu(QMenu*)"
             threadAffinity: true
@@ -14497,6 +14486,60 @@ TypeSystem{
             index: 8
             valueAsPointer: true
         }
+    }
+
+    GlobalFunction{
+        signature: "qDrawPlainRoundedRect(QPainter*,const QRect&,qreal,qreal,const QColor&,int,const QBrush*)"
+        targetType: "QtDrawUtil"
+        ModifyArgument{
+            index: 1
+            NoNullPointer{
+            }
+        }
+        ModifyArgument{
+            index: 7
+            valueAsPointer: true
+        }
+    }
+
+    GlobalFunction{
+        signature: "qDrawPlainRoundedRect(QPainter*,int,int,int,int,qreal,qreal,const QColor&,int,const QBrush*)"
+        targetType: "QtDrawUtil"
+        ModifyArgument{
+            index: 1
+            NoNullPointer{
+            }
+        }
+        ModifyArgument{
+            index: 10
+            valueAsPointer: true
+        }
+    }
+
+    GlobalFunction{
+        signature: "qt_qscrollbarStyleOption(QScrollBar*)"
+        targetType: "QScrollBar"
+        ModifyArgument{
+            index: 1
+            NoNullPointer{}
+        }
+        remove: RemoveFlag.All // is internal
+    }
+
+    GlobalFunction{
+        signature: "qt_qsliderStyleOption(QSlider*)"
+        targetType: "QSlider"
+        ModifyArgument{
+            index: 1
+            NoNullPointer{}
+        }
+        remove: RemoveFlag.All // is internal
+    }
+
+    GlobalFunction{
+        signature: "qRequireVersion(int,char*[],QAnyStringView)"
+        targetType: "QMessageBox"
+        remove: RemoveFlag.All // is internal
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: private virtual function 'eventFilter(QObject * receiver, QEvent * event)' in 'QPanGesture'"}

@@ -11,7 +11,7 @@ QtJambi is available for Qt5 and Qt6. All modules are published as Maven Artifac
   <version>$VERSION</version>
 </dependency>
 ```
-Here, exchange `$VERSION` either by `5.15.19`, by `6.5.5` or by `6.6.2`. Exchange `$MODULE` by *QtJambi* module name as listed below.
+Here, exchange `$VERSION` either by `5.15.20`, by `6.5.6`, by `6.6.3` or by `6.7.0`. Exchange `$MODULE` by *QtJambi* module name as listed below.
 
 Alternatively, you can download corresponding QtJambi modules as JAR file from [Maven Central Repository](https://search.maven.org/search?q=io.qtjambi).
 
@@ -22,20 +22,23 @@ Debug info for native debugging is avaiable for Windows, Linux and macOS.
 ## Requirements and Compatibility
 
 **The native components for Windows available on Maven require Qt binaries for MSVC (msvc2019_64). Mingw Qt is not compatible with QtJambi unless you build it from scratch with Mingw.**
-**The native components for Linux could be incompatible with distribution-specific Qt. Maven-published binaries have been compiled with Qt available from Qt installer.**
+**The native components for Linux might be incompatible with distribution-specific Qt. Maven-published binaries have been compiled with Qt available from Qt installer.**
 
 Search for qtjambi modules by name in Maven repository. Each java module requires the corresponding platform bundle. Therefore search for either 
-**<module>-native-windows-x64**, **<module>-native-linux-x64**, **<module>-native-macos** or **<module>-native-android**. 
-Info files for native debugging can be found in **<module>-debuginfo-windows-x64**, **<module>-debuginfo-linux-x64** and **<module>-debuginfo-macos**.
+**<module>-native-windows**, **<module>-native-linux**, **<module>-native-macos** or **<module>-native-android**. 
+Info files for native debugging can be found in **<module>-debuginfo-windows**, **<module>-debuginfo-linux** and **<module>-debuginfo-macos**.
 **By default, the native components of only essential modules are made available on Maven. Please make a request via [/issues](Issues) if you require native components not yet available.**
 
-QtJambi 6.6.2 requires Qt 6.6.x whereas x can be any patch version.
-This release has been built with Qt 6.6.2. On some platforms these QtJambi binaries might be incompatible to Qt 6.6.0.
+QtJambi 6.7.0 requires Qt 6.7.x whereas x can be any patch version.
+This release has been built with Qt 6.7.0. Compatibility to higher versions is unknown.
 
-QtJambi 6.5.5 requires Qt 6.5.x whereas x can be any patch version.
+QtJambi 6.6.3 requires Qt 6.6.x whereas x can be any patch version.
+This release has been built with Qt 6.6.3. On some platforms these QtJambi binaries might be incompatible to Qt 6.6.0.
+
+QtJambi 6.5.6 requires Qt 6.5.x whereas x can be any patch version.
 This release has been built with Qt 6.5.3. Compatibility to higher versions is unknown.
 
-QtJambi 5.15.19 requires Qt 5.15.x whereas x can be any patch version.
+QtJambi 5.15.20 requires Qt 5.15.x whereas x can be any patch version.
 This release has been built with Qt 5.15.2. Compatibility to higher versions is unknown.
 
 In any case, **qtjambi-activex** native binaries are only compatible to the exact Qt version they have been built with.
@@ -45,18 +48,19 @@ In any case, **qtjambi-activex** native binaries are only compatible to the exac
 Following Qt modules are provided by QtJambi:
 
 * [QtCore](https://doc.qt.io/qt-6/qtcore-index.html), [QtGui](https://doc.qt.io/qt-6/qtgui-index.html) and [QtWidgets](https://doc.qt.io/qt-6/qtwidgets-index.html) in module **qtjambi**:
-    * [**qtjambi-6.5.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi/6.5.5/jar)
-    * [**qtjambi-native-windows-x64-6.5.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-windows-x64/6.5.5/jar)
-    * [**qtjambi-native-windows-arm64-6.5.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-windows-arm64/6.5.5/jar)
-    * [**qtjambi-debuginfo-windows-x64-6.5.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-debuginfo-windows-x64/6.5.5/jar)
-    * [**qtjambi-native-linux-x64-6.5.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-linux-x64/6.5.5/jar)
-    * [**qtjambi-debuginfo-linux-x64-6.5.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-debuginfo-linux-x64/6.5.5/jar)
-    * [**qtjambi-native-macos-6.5.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-macos/6.5.5/jar)
-    * [**qtjambi-debuginfo-macos-6.5.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-debuginfo-macos/6.5.5/jar)
-    * [**qtjambi-native-android-x86-6.5.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-android-x86/6.5.5/jar)
-    * [**qtjambi-native-android-x64-6.5.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-android-x64/6.5.5/jar)
-    * [**qtjambi-native-android-arm-6.5.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-android-arm/6.5.5/jar)
-    * [**qtjambi-native-android-arm64-6.5.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-android-arm64/6.5.5/jar)
+    * [**qtjambi-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi/6.5.6/jar)
+    * [**qtjambi-native-windows-x64-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-windows-x64/6.5.6/jar)
+    * [**qtjambi-debuginfo-windows-x64-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-debuginfo-windows-x64/6.5.6/jar)
+    * [**qtjambi-native-windows-arm64-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-windows-arm64/6.5.6/jar)
+    * [**qtjambi-debuginfo-windows-arm64-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-debuginfo-windows-arm64/6.5.6/jar)
+    * [**qtjambi-native-linux-x64-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-linux-x64/6.5.6/jar)
+    * [**qtjambi-debuginfo-linux-x64-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-debuginfo-linux-x64/6.5.6/jar)
+    * [**qtjambi-native-macos-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-macos/6.5.6/jar)
+    * [**qtjambi-debuginfo-macos-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-debuginfo-macos/6.5.6/jar)
+    * [**qtjambi-native-android-x86-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-android-x86/6.5.6/jar)
+    * [**qtjambi-native-android-x64-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-android-x64/6.5.6/jar)
+    * [**qtjambi-native-android-arm-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-android-arm/6.5.6/jar)
+    * [**qtjambi-native-android-arm64-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-android-arm64/6.5.6/jar)
 * [QtDBus](https://doc.qt.io/qt-6/qtdbus-index.html) in module **qtjambi-dbus**:
 * [QtNetwork](https://doc.qt.io/qt-6/qtnetwork-index.html) in module **qtjambi-network**:
 * [QtQml](https://doc.qt.io/qt-6/qtqml-index.html) in module **qtjambi-qml**:
@@ -123,24 +127,24 @@ Following Qt modules are provided by QtJambi:
 ## QtJambi Plugins
 
 * JDBC Sql Plugin:
-    * [**qtjambi-plugin-qsqljdbc-windows-x64-6.5.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-windows-x64/6.5.5/jar)
-    * [**qtjambi-plugin-qsqljdbc-linux-x64-6.5.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-linux-x64/6.5.5/jar)
-    * [**qtjambi-plugin-qsqljdbc-macos-6.5.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-macos/6.5.5/jar)
-    * [**qtjambi-plugin-qsqljdbc-native-android-common-6.5.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-native-android-common/6.5.5/jar)
-    * [**qtjambi-plugin-qsqljdbc-native-android-x86-6.5.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-native-android-x86/6.5.5/jar)
-    * [**qtjambi-plugin-qsqljdbc-native-android-x86-6.5.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-native-android-x86/6.5.5/jar)
-    * [**qtjambi-plugin-qsqljdbc-native-android-x64-6.5.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-native-android-x64/6.5.5/jar)
-    * [**qtjambi-plugin-qsqljdbc-native-android-arm-6.5.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-native-android-arm/6.5.5/jar)
-    * [**qtjambi-plugin-qsqljdbc-native-android-arm64-6.5.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-native-android-arm64/6.5.5/jar)
+    * [**qtjambi-plugin-qsqljdbc-windows-x64-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-windows-x64/6.5.6/jar)
+    * [**qtjambi-plugin-qsqljdbc-linux-x64-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-linux-x64/6.5.6/jar)
+    * [**qtjambi-plugin-qsqljdbc-macos-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-macos/6.5.6/jar)
+    * [**qtjambi-plugin-qsqljdbc-native-android-common-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-native-android-common/6.5.6/jar)
+    * [**qtjambi-plugin-qsqljdbc-native-android-x86-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-native-android-x86/6.5.6/jar)
+    * [**qtjambi-plugin-qsqljdbc-native-android-x86-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-native-android-x86/6.5.6/jar)
+    * [**qtjambi-plugin-qsqljdbc-native-android-x64-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-native-android-x64/6.5.6/jar)
+    * [**qtjambi-plugin-qsqljdbc-native-android-arm-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-native-android-arm/6.5.6/jar)
+    * [**qtjambi-plugin-qsqljdbc-native-android-arm64-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-plugin-qsqljdbc-native-android-arm64/6.5.6/jar)
 
 ## QtJambi Tools
 
 * [QtJambi User Interface Compiler (UIC)](https://doc.qt.io/qt-6/designer-using-a-ui-file.html#compile-time-form-processing):
-    * [**qtjambi-uic-6.5.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-uic/6.5.5/jar)
-    * patform bundles for **windows-x64**, **linux-x64** and **macos**
+    * [**qtjambi-uic-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-uic/6.5.6/jar)
+    * patform bundles for **Windows**, **Linux** and **macOS**
 * QtJambi Deployer:
-    * [**qtjambi-deployer-6.5.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-deployer/6.5.5/jar)
-    * patform bundles for **windows-x64**, **linux-x64**, **macos** and **android**
+    * [**qtjambi-deployer-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-deployer/6.5.6/jar)
+    * patform bundles for **Windows**, **Linux**, **macOS** and **Android**
 * QtJambi Generator:
-    * [**qtjambi-generator-6.5.5.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-generator/6.5.5/jar)
-    * patform bundles for **windows-x64**, **linux-x64** and **macos**
+    * [**qtjambi-generator-6.5.6.jar**](https://search.maven.org/artifact/io.qtjambi/qtjambi-generator/6.5.6/jar)
+    * patform bundles for **Windows**, **Linux** and **macOS**

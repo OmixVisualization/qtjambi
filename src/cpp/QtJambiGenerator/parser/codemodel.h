@@ -132,6 +132,11 @@ class TypeInfo {
 
         bool isFunctionPointer() const { return m_flags.testFlag(IsFunctionPointer) || (m_qualifiedName.isEmpty() && !m_functionalReturnType.isEmpty()); }
         void setFunctionPointer(bool is) { m_flags.setFlag(IsFunctionPointer, is); }
+        bool isArray() const { return m_flags.testFlag(IsArray) || (m_qualifiedName.isEmpty() && !m_arrayType.isEmpty()); }
+        void setArray(bool is) { m_flags.setFlag(IsArray, is); }
+        bool isExpression() const { return m_flags.testFlag(IsExpression) || (m_qualifiedName.isEmpty() && !m_expression.isEmpty()); }
+        const QString& expression() const { return m_expression; }
+        void setExpression(const QString expression) { m_flags.setFlag(IsExpression, !m_expression.isEmpty()); m_expression = expression; }
         //bool isFunctionDecl() const { return m_flags.testFlag(IsFunctionDecl); }
         //void setFunctionDecl(bool is) { m_flags.setFlag(IsFunctionDecl, is); }
 
@@ -158,17 +163,19 @@ class TypeInfo {
 
         static TypeInfo combine(const TypeInfo &__lhs, const TypeInfo &__rhs);
         static TypeInfo resolveType(TypeInfo const &__type, CodeModelItem __scope);
+        TypeInfo arrayType() const { return m_arrayType.isEmpty() ? TypeInfo() : m_arrayType.first(); }
         TypeInfo functionalReturnType() const { return m_functionalReturnType.isEmpty() ? TypeInfo() : m_functionalReturnType.first(); }
         const QList<TypeInfo>& functionalArgumentTypes() const { return m_functionalArgumentTypes; }
         const QList<QString>& functionalArgumentNames() const { return m_functionalArgumentNames; }
+        void setArrayType(const TypeInfo& s) { m_arrayType.clear(); if(s) m_arrayType << s; }
         void setFunctionalReturnType(const TypeInfo& s) { m_functionalReturnType.clear(); if(s) m_functionalReturnType << s; }
         void setFunctionalArgumentTypes(const QList<TypeInfo>& l) { m_functionalArgumentTypes = l; }
         void setFunctionalArgumentNames(const QList<QString>& l) { m_functionalArgumentNames = l; }
         void addFunctionalArgumentType(const TypeInfo& l) { m_functionalArgumentTypes << l; }
         void addFunctionalArgumentName(const QString& l) { m_functionalArgumentNames << l; }
 
-        bool operator!()const{return m_qualifiedName.isEmpty() && m_functionalReturnType.isEmpty();}
-        operator bool()const{return !m_qualifiedName.isEmpty() || !m_functionalReturnType.isEmpty();}
+        bool operator!()const{return m_qualifiedName.isEmpty() && m_functionalReturnType.isEmpty() && m_arrayType.isEmpty() && m_expression.isEmpty();}
+        operator bool()const{return !operator!();}
 
     private:
         enum Flag{
@@ -176,8 +183,10 @@ class TypeInfo {
             IsConst = 0x01,
             IsVolatile = 0x02,
             IsFunctionPointer = 0x04,
+            IsArray = 0x20,
             IsFunctionDecl = 0x08,
             IsVariadic = 0x10,
+            IsExpression = 0x40,
         };
         QFlags<Flag> m_flags;
 
@@ -192,9 +201,11 @@ class TypeInfo {
         QStringList m_arrayElements;
         QList<TypeInfo> m_arguments;
         QList<QString> m_argumentNames;
+        QList<TypeInfo> m_arrayType;
         QList<TypeInfo> m_functionalReturnType;
         QList<TypeInfo> m_functionalArgumentTypes;
         QList<QString> m_functionalArgumentNames;
+        QString m_expression;
 };
 
 class _CodeModelItem: public QSharedData {
@@ -844,8 +855,6 @@ class _TemplateParameterModelItem: public _CodeModelItem {
         bool isVaradic() const;
         void setOwnerClass(const ClassModelItem& ownerClass);
         ClassModelItem ownerClass() const;
-        const QString& parameterType() const;
-        void setParameterType(const QString &parameterType);
         const TypeInfo& parameterTypeInfo() const;
         void setParameterTypeInfo(const TypeInfo &parameterTypeInfo);
 
@@ -856,7 +865,6 @@ class _TemplateParameterModelItem: public _CodeModelItem {
     private:
         QString _M_defaultValue;
         bool _M_isVaradic;
-        QString _M_parameterType;
         TypeInfo _M_parameterTypeInfo;
         ClassModelItem _M_ownerClass;
 

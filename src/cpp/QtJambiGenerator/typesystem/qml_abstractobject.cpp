@@ -70,6 +70,8 @@ QVersionNumber toVersion(const QVariant &v, int fill){
         }
     }else if(v.userType()==QMetaType::fromType<QString>().id()){
         version = QVersionNumber::fromString(v.toString());
+    }else if(v.userType()==QMetaType::fromType<QVersionNumber>().id()){
+        version = v.value<QVersionNumber>();
     }else{
         ReportHandler::warning(QString("Cannot interpret version. Type is %1").arg(QLatin1String(QMetaType(v.userType()).name())));
     }

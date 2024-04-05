@@ -38,7 +38,6 @@ namespace GuiAPI{
 
 typedef bool(*ThreadedPixmapsChecker)();
 QTJAMBI_EXPORT void installThreadedPixmapsChecker(ThreadedPixmapsChecker threadedPixmapsChecker);
-
 }
 
 #endif // QTJAMBI_GUIAPI_H

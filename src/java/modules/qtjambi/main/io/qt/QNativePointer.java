@@ -525,7 +525,7 @@ public final class QNativePointer {
      *
      * @return the value of the pointer.
      */
-    public String stringValue() {
+    public @NonNull String stringValue() {
         return stringAt(0);
     }
 
@@ -535,7 +535,7 @@ public final class QNativePointer {
      *
      * @return the values of the pointer.
      */
-    public String[] stringArray() {
+    public @NonNull String @NonNull[] stringArray() {
         verifyAccess(Type.String, 0);
     	if(this.data.m_knownSize>Integer.MAX_VALUE) {
     		throw new IndexOutOfBoundsException("The pointer's size exceeds allowed array size.");
@@ -633,7 +633,7 @@ public final class QNativePointer {
      *
      * @param value the value to which the pointer is set.
      */
-    public void setPointerValue(QNativePointer value) {
+    public void setPointerValue(@NonNull QNativePointer value) {
         setPointerAt(0, value);
     }
 
@@ -653,7 +653,7 @@ public final class QNativePointer {
      *
      * @param value the value to which the pointer is set.
      */
-    public void setStringValue(String value) {
+    public void setStringValue(@NonNull String value) {
         setStringAt(0, value);
     }
 
@@ -753,37 +753,37 @@ public final class QNativePointer {
         return readDouble(data.m_ptr, pos);
     }
     
-    public ByteBuffer byteBuffer() {
+    public @NonNull ByteBuffer byteBuffer() {
         verifyAccess(Type.Byte, 0);
         return toByteBuffer(data.m_ptr, data.m_knownSize, data.m_isReadonly);
     }
     
-    public CharBuffer charBuffer() {
+    public @NonNull CharBuffer charBuffer() {
         verifyAccess(Type.Char, 0);
         return toByteBuffer(data.m_ptr, data.m_knownSize, data.m_isReadonly).asCharBuffer();
     }
     
-    public ShortBuffer shortBuffer() {
+    public @NonNull ShortBuffer shortBuffer() {
         verifyAccess(Type.Short, 0);
         return toByteBuffer(data.m_ptr, data.m_knownSize, data.m_isReadonly).asShortBuffer();
     }
     
-    public IntBuffer intBuffer() {
+    public @NonNull IntBuffer intBuffer() {
         verifyAccess(Type.Int, 0);
         return toByteBuffer(data.m_ptr, data.m_knownSize, data.m_isReadonly).asIntBuffer();
     }
     
-    public LongBuffer longBuffer() {
+    public @NonNull LongBuffer longBuffer() {
         verifyAccess(Type.Long, 0);
         return toByteBuffer(data.m_ptr, data.m_knownSize, data.m_isReadonly).asLongBuffer();
     }
     
-    public FloatBuffer floatBuffer() {
+    public @NonNull FloatBuffer floatBuffer() {
         verifyAccess(Type.Float, 0);
         return toByteBuffer(data.m_ptr, data.m_knownSize, data.m_isReadonly).asFloatBuffer();
     }
     
-    public DoubleBuffer doubleBuffer() {
+    public @NonNull DoubleBuffer doubleBuffer() {
         verifyAccess(Type.Double, 0);
         return toByteBuffer(data.m_ptr, data.m_knownSize, data.m_isReadonly).asDoubleBuffer();
     }
@@ -795,7 +795,7 @@ public final class QNativePointer {
      *
      * @param pos the array index
      */
-    public QNativePointer pointerAt(long pos) {
+    public @NonNull QNativePointer pointerAt(long pos) {
         verifyAccess(Type.Pointer, pos);
         long ptr = readPointer(data.m_ptr, pos);
         return fromNative(ptr, data.m_type, -1, data.m_indirections - 1, data.m_isReadonly);
@@ -810,7 +810,7 @@ public final class QNativePointer {
      * 
      * @return the value of the pointer.
      */
-    public <T extends QtObjectInterface> T objectAt(Class<T> valueType, long pos) {
+    public <T extends QtObjectInterface> T objectAt(@NonNull Class<T> valueType, long pos) {
     	if(data.m_knownSize>1 && pos>0) {
     		verifyAccess(Type.Byte, pos);
     	}else {
@@ -941,7 +941,7 @@ public final class QNativePointer {
      *  @param pos the array index
      *  @param value the value to set the index to
      */
-    public void setPointerAt(long pos, QNativePointer value) {
+    public void setPointerAt(long pos, @Nullable QNativePointer value) {
         verifyWriteAccess(Type.Pointer, pos);
         if(value != null)
             value.setAutoDeleteMode(AutoDeleteMode.None);
@@ -972,7 +972,7 @@ public final class QNativePointer {
      *  @param pos the array index
      *  @param value the value to set the index to
      */
-    public void setStringAt(long pos, String value) {
+    public void setStringAt(long pos, @NonNull String value) {
         verifyWriteAccess(Type.String, pos);
         writeString(data.m_ptr, pos, value);
     }
@@ -999,16 +999,16 @@ public final class QNativePointer {
         return data.m_knownSize;
     }
     
+    private native long pointerSize();
+    
     @NativeAccess
     private long byteSize() {
-    	if(data.m_knownSize==-1 && data.m_indirections==1 && data.m_type==Type.Pointer) {
-    		return -1;
-    	}
-    	if(data.m_indirections>1 && data.m_type==Type.Pointer) {
-    		if(data.m_knownSize>0)
-    			return data.m_knownSize * 8;
-    		else
-    			return -1;
+    	if(data.m_type==Type.Pointer) {
+    		if(data.m_knownSize<=0) {
+    			return pointerSize();
+    		}else {
+    			return data.m_knownSize;
+    		}
     	}
     	if(data.m_knownSize>0 && data.m_indirections==1) {
 	    	switch(data.m_type) {
@@ -1024,7 +1024,7 @@ public final class QNativePointer {
 			case Double:
 			case Long:
 			case Pointer:
-				return data.m_knownSize * 8;
+				return data.m_knownSize * pointerSize();
 			case String:
 				return -1;
 			default:
@@ -1048,7 +1048,7 @@ public final class QNativePointer {
      *
      * @return the auto-delete mode of this QNativePointer
      */
-    public AutoDeleteMode autoDeleteMode() {
+    public @NonNull AutoDeleteMode autoDeleteMode() {
         return data.m_autodelete;
     }
 
@@ -1062,8 +1062,8 @@ public final class QNativePointer {
      *
      * @param autodelete the new auto delete mode.
      */
-    public void setAutoDeleteMode(AutoDeleteMode autodelete) {
-    	data.m_autodelete = autodelete;
+    public void setAutoDeleteMode(@NonNull AutoDeleteMode autodelete) {
+    	data.m_autodelete = autodelete==null ? AutoDeleteMode.None : autodelete;
     }
 
     /**
@@ -1120,7 +1120,7 @@ public final class QNativePointer {
      * @param ptr the void * value of the pointer.
      * @return a QNativePointer object with ptr as the native pointer
      */
-    public static QNativePointer fromNative(long ptr) {
+    public static @NonNull QNativePointer fromNative(long ptr) {
         QNativePointer nativePointer = new QNativePointer();
         nativePointer.data.m_ptr = ptr;
         nativePointer.data.m_knownSize = -1;
@@ -1142,7 +1142,7 @@ public final class QNativePointer {
      * @param indirections the number of pointer indirections
      * @return a QNativePointer object with ptr as the native pointer
      */
-    public static QNativePointer fromNative(long ptr, Type type, long size, int indirections, boolean readOnly) {
+    public static @NonNull QNativePointer fromNative(long ptr, Type type, long size, int indirections, boolean readOnly) {
         QNativePointer nativePointer = new QNativePointer();
         nativePointer.data.m_ptr = ptr;
         nativePointer.data.m_knownSize = size;
@@ -1153,7 +1153,7 @@ public final class QNativePointer {
     }
     
     @SafeVarargs
-	public static <T extends QtObjectInterface> QNativePointer fromArray(T... array) {
+	public static <T extends QtObjectInterface> @Nullable QNativePointer fromArray(T... array) {
     	Class<?> arrayClass = QtJambi_LibraryUtilities.internal.getClass(array);
     	Class<?> componentType = arrayClass.getComponentType();
     	return fromArray(componentType, array);
@@ -1165,51 +1165,51 @@ public final class QNativePointer {
 	
 	public static native QNativePointer fromBuffer(Buffer buffer);
 
-    public static QNativePointer fromArray(int data[]) {
+    public static @NonNull QNativePointer fromArray(int data[]) {
         QNativePointer np = new QNativePointer(QNativePointer.Type.Int, data.length);
         copyFromI(np.data.m_ptr, data);
         return np;
     }
 
-    public static QNativePointer fromArray(byte data[]) {
+    public static @NonNull QNativePointer fromArray(byte data[]) {
         QNativePointer np = new QNativePointer(QNativePointer.Type.Byte, data.length);
         copyFromB(np.data.m_ptr, data);
         return np;
     }
     
-    public static QNativePointer fromArray(float data[]) {
+    public static @NonNull QNativePointer fromArray(float data[]) {
         QNativePointer np = new QNativePointer(QNativePointer.Type.Float, data.length);
         copyFromF(np.data.m_ptr, data);
         return np;
     }
 
-    public static QNativePointer fromArray(double data[]) {
+    public static @NonNull QNativePointer fromArray(double data[]) {
         QNativePointer np = new QNativePointer(QNativePointer.Type.Double, data.length);
         copyFromD(np.data.m_ptr, data);
         return np;
     }
 
-    public static QNativePointer fromArray(boolean data[]) {
+    public static @NonNull QNativePointer fromArray(boolean data[]) {
         QNativePointer np = new QNativePointer(QNativePointer.Type.Boolean, data.length);
         for (int i=0; i<data.length; ++i)
             np.setBooleanAt(i, data[i]);
         return np;
     }
 
-    public static QNativePointer fromArray(char data[]) {
+    public static @NonNull QNativePointer fromArray(char data[]) {
         QNativePointer np = new QNativePointer(QNativePointer.Type.Char, data.length);
         for (int i=0; i<data.length; ++i)
             np.setCharAt(i, data[i]);
         return np;
     }
 
-    public static QNativePointer fromArray(long data[]) {
+    public static @NonNull QNativePointer fromArray(long data[]) {
         QNativePointer np = new QNativePointer(QNativePointer.Type.Long, data.length);
         copyFromJ(np.data.m_ptr, data);
         return np;
     }
 
-    public static QNativePointer fromArray(short data[]) {
+    public static @NonNull QNativePointer fromArray(short data[]) {
         QNativePointer np = new QNativePointer(QNativePointer.Type.Short, data.length);
         copyFromS(np.data.m_ptr, data);
         return np;
@@ -1228,63 +1228,63 @@ public final class QNativePointer {
     private static native void copyBackD(long ptr, double[] array);
     private static native void copyBackF(long ptr, float[] array);
 
-    public static QNativePointer fromArray(Integer data[]) {
+    public static @NonNull QNativePointer fromArray(Integer data[]) {
         QNativePointer np = new QNativePointer(QNativePointer.Type.Int, data.length);
         for (int i=0; i<data.length; ++i)
         	if(data[i]!=null) np.setIntAt(i, data[i]);
         return np;
     }
 
-    public static QNativePointer fromArray(Byte data[]) {
+    public static @NonNull QNativePointer fromArray(Byte data[]) {
         QNativePointer np = new QNativePointer(QNativePointer.Type.Byte, data.length);
         for (int i=0; i<data.length; ++i)
         	if(data[i]!=null) np.setByteAt(i, data[i]);
         return np;
     }
 
-    public static QNativePointer fromArray(Float data[]) {
+    public static @NonNull QNativePointer fromArray(Float data[]) {
         QNativePointer np = new QNativePointer(QNativePointer.Type.Float, data.length);
         for (int i=0; i<data.length; ++i)
         	if(data[i]!=null) np.setFloatAt(i, data[i]);
         return np;
     }
 
-    public static QNativePointer fromArray(Double data[]) {
+    public static @NonNull QNativePointer fromArray(Double data[]) {
         QNativePointer np = new QNativePointer(QNativePointer.Type.Double, data.length);
         for (int i=0; i<data.length; ++i)
         	if(data[i]!=null) np.setDoubleAt(i, data[i]);
         return np;
     }
 
-    public static QNativePointer fromArray(Boolean data[]) {
+    public static @NonNull QNativePointer fromArray(Boolean data[]) {
         QNativePointer np = new QNativePointer(QNativePointer.Type.Boolean, data.length);
         for (int i=0; i<data.length; ++i)
         	if(data[i]!=null) np.setBooleanAt(i, data[i]);
         return np;
     }
 
-    public static QNativePointer fromArray(Character data[]) {
+    public static @NonNull QNativePointer fromArray(Character data[]) {
         QNativePointer np = new QNativePointer(QNativePointer.Type.Char, data.length);
         for (int i=0; i<data.length; ++i)
         	if(data[i]!=null) np.setCharAt(i, data[i]);
         return np;
     }
 
-    public static QNativePointer fromArray(Long data[]) {
+    public static @NonNull QNativePointer fromArray(Long data[]) {
         QNativePointer np = new QNativePointer(QNativePointer.Type.Long, data.length);
         for (int i=0; i<data.length; ++i)
         	if(data[i]!=null) np.setLongAt(i, data[i]);
         return np;
     }
 
-    public static QNativePointer fromArray(Short data[]) {
+    public static @NonNull QNativePointer fromArray(Short data[]) {
         QNativePointer np = new QNativePointer(QNativePointer.Type.Short, data.length);
         for (int i=0; i<data.length; ++i)
             if(data[i]!=null) np.setShortAt(i, data[i]);
         return np;
     }
 
-    public static QNativePointer fromArray(String data[]) {
+    public static @NonNull QNativePointer fromArray(@NonNull String data @StrictNonNull[]) {
         QNativePointer np = new QNativePointer(QNativePointer.Type.String, data.length);
         for (int i=0; i<data.length; ++i)
             np.setStringAt(i, data[i]);
@@ -1332,9 +1332,7 @@ public final class QNativePointer {
      * @param strings the input strings
      * @return a char **
      */
-    public static QNativePointer createCharPointerPointer(String strings[]) {
-        if (strings == null)
-            return null;
+    public static @NonNull QNativePointer createCharPointerPointer(@NonNull String strings @StrictNonNull []) {
         QNativePointer ptrs = new QNativePointer(Type.Byte, strings.length + 1, 2);
         for (int j = 0; j < strings.length; ++j) {
             String string = strings[j];
@@ -1350,9 +1348,9 @@ public final class QNativePointer {
      * @param string The input string
      * @return The char*
      */
-    public static QNativePointer createCharPointer(String string) {
-        if (string == null)
-            return null;
+    public static @NonNull QNativePointer createCharPointer(@NonNull String string) {
+    	if(string==null)
+    		string = "";
         byte[] data = string.getBytes();
         QNativePointer s = new QNativePointer(QNativePointer.Type.Byte, data.length + 1);
         copyFromB(s.data.m_ptr, data);
@@ -1391,11 +1389,11 @@ public final class QNativePointer {
         }
     }
     
-    public QIODevice openAsDevice(QIODevice.OpenModeFlag... openMode) {
+    public @Nullable QIODevice openAsDevice(QIODevice.@NonNull OpenModeFlag @NonNull... openMode) {
     	return openAsDevice(new QIODevice.OpenMode(openMode));
     }
     
-    public QIODevice openAsDevice(QIODevice.OpenMode openMode) {
+    public @Nullable QIODevice openAsDevice(QIODevice.@NonNull OpenMode openMode) {
     	if(data.m_isInvalid)
     		throw new IllegalStateException();
         if (isNull())
@@ -1405,7 +1403,7 @@ public final class QNativePointer {
         		throw new ReadOnlyNativePointerException();
         	}
     	}
-    	QIODevice ioDevice = ioDevice();
+    	QIODevice ioDevice = ioDevice(data.m_indirections, byteSize(), data.m_ptr, data.m_isReadonly);
     	if(ioDevice.open(openMode)) {
     		return ioDevice;
     	}else {
@@ -1413,7 +1411,7 @@ public final class QNativePointer {
     	}
     }
     
-    private native QIODevice ioDevice();
+    private native QIODevice ioDevice(int indirections, long byteSize, long pointer, boolean readOnly);
 
     private static native boolean readBoolean(long ptr, long pos);
     private static native byte readByte(long ptr, long pos);

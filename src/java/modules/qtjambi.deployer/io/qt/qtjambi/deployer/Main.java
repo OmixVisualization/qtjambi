@@ -207,7 +207,7 @@ public class Main {
 	    					foundURLs.add(nativeFileURL);
 	    				}
 	    			}
-	    			if(foundURLs.isEmpty()) {
+	    			if(foundURLs.isEmpty() && new File(directory, "native").isDirectory()) {
 	    				for(String jar : new File(directory, "native").list()) {
 		    				if(jar.startsWith(fileName) && jar.endsWith(suffix)) {
 		    					File nativeFile = new File(new File(directory, "native"), jar);

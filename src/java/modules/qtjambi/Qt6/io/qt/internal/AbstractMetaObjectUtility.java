@@ -40,7 +40,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 
+import io.qt.Nullable;
 import io.qt.QPropertyDeclarationException;
 import io.qt.QtObject;
 import io.qt.QtPointerType;
@@ -363,7 +365,7 @@ abstract class AbstractMetaObjectUtility {
     
     private final static Map<Class<?>, List<PropertyIndex>> propertyFieldsByClasses = Collections.synchronizedMap(new HashMap<>());
     
-    static <PI> PI analyzeProperty(QObject containingObject, QtObject property, Class<PI> propertyInfoClass) {
+    static <PI> PI analyzeProperty(QObject containingObject, QtObject property, BiFunction<Field, QMetaType, PI> fun1, BiFunction<Field, QMetaProperty, PI> fun2) {
 		List<PropertyIndex> propertyFields = propertyFieldsByClasses.computeIfAbsent(ClassAnalyzerUtility.getClass(containingObject), cls->{
 			List<PropertyIndex> fields = Collections.emptyList();
 			while (QObject.class.isAssignableFrom(cls)) {
@@ -372,7 +374,7 @@ abstract class AbstractMetaObjectUtility {
 	                if (!Modifier.isStatic(field.getModifiers())
             			&& AbstractMetaObjectUtility.isValidQProperty(field)) {
 	                	QMetaProperty metaProperty = getPropertyForField(metaObject, field);
-	                	PropertyIndex info = new PropertyIndex(field, metaProperty.isValid() ? metaProperty.propertyIndex() : -1);
+	                	PropertyIndex info = new PropertyIndex(field, metaProperty!=null ? metaProperty.propertyIndex() : -1);
 						if(fields.isEmpty()) {
 	        				fields = Collections.singletonList(info);
 	        			} else {
@@ -407,7 +409,7 @@ abstract class AbstractMetaObjectUtility {
                     			throw new QPropertyDeclarationException(String.format("Missing modifier 'final' at property field %1$s.%2$s.", info.field.getDeclaringClass().getSimpleName(), info.field.getName()));
                     		}
             			}
-	    				return propertyInfoClass.cast(new io.qt.internal.PropertyInfo(info.field, metaProperty));
+	    				return fun2.apply(info.field, metaProperty);
 					}else {
 						foundField = info.field;
 					}
@@ -426,7 +428,7 @@ abstract class AbstractMetaObjectUtility {
 				pinfo.annotatedPropertyType,
 				pinfo.isPointer,
 				pinfo.isReference);
-		return propertyInfoClass.cast(new io.qt.internal.PropertyInfo(foundField, new QMetaType(t)));
+		return fun1.apply(foundField, new QMetaType(t));
     }
     
     static void registerPropertyField(QMetaProperty metaProperty, java.lang.reflect.Field field) {
@@ -435,7 +437,7 @@ abstract class AbstractMetaObjectUtility {
     
     private static native void registerPropertyField(long metaPropertyId, java.lang.reflect.Field field);
     
-    private static native QMetaProperty getPropertyForField(QMetaObject metaObject, Field field);
+    private static native @Nullable QMetaProperty getPropertyForField(QMetaObject metaObject, Field field);
     
     static boolean isListType(Class<?> cls) {
     	return cls==QList.class

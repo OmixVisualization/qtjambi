@@ -48,7 +48,7 @@
 #include <qdebug.h>
 
 DeclaratorCompiler::DeclaratorCompiler(Binder *binder)
-        : _M_binder(binder), _M_token_stream(binder->tokenStream()), _M_operatorType(OperatorType::None) {
+        : _M_binder(binder), _M_token_stream(binder->tokenStream()) {
 }
 
 void DeclaratorCompiler::run(DeclaratorAST *node) {
@@ -57,8 +57,10 @@ void DeclaratorCompiler::run(DeclaratorAST *node) {
     _M_array.clear();
     _M_function = false;
     _M_reference_type = DeclaratorCompiler::NoReference;
+    _M_sub_reference_type = DeclaratorCompiler::NoReference;
     _M_variadics = false;
     _M_indirection.clear();
+    _M_sub_indirection.clear();
 
     if (node) {
         NameCompiler name_cc(_M_binder);
@@ -78,6 +80,12 @@ void DeclaratorCompiler::run(DeclaratorAST *node) {
             _M_variadics = true;
 
         visitNodes(this, node->ptr_ops);
+        if(decl!=node){
+            DeclaratorCompiler decl_cc(_M_binder);
+            visitNodes(&decl_cc, decl->ptr_ops);
+            _M_sub_reference_type = decl_cc._M_reference_type;
+            _M_sub_indirection = decl_cc._M_indirection;
+        }
         visit(node->parameter_declaration_clause);
 
         if (const ListNode<ExpressionAST*> *it = node->array_dimensions) {
@@ -94,7 +102,7 @@ void DeclaratorCompiler::run(DeclaratorAST *node) {
                                              int(end_token.position - start_token.position)).trimmed();
                 }
 
-                _M_array.append(elt);
+                _M_array.prepend(elt);
 
                 it = it->next;
             } while (it != end);

@@ -614,7 +614,11 @@ void CppImplGenerator::write(QTextStream &s, const MetaFunctional *java_function
 
                                             if (java_functional->resetObjectAfterUse(argument->argumentIndex() + 1)){
                                                 if (argument->type()->isContainer()){
-                                                    s << INDENT << "QTJAMBI_INVALIDATE_CONTAINER_AFTER_USE(env, __java_" << argument->indexedName() << ");" << Qt::endl;
+                                                    if(static_cast<const ContainerTypeEntry *>(argument->type()->typeEntry())->type()==ContainerTypeEntry::std_array){
+                                                        s << INDENT << "QTJAMBI_INVALIDATE_ARRAY_AFTER_USE(env, __java_" << argument->indexedName() << ");" << Qt::endl;
+                                                    }else{
+                                                        s << INDENT << "QTJAMBI_INVALIDATE_CONTAINER_AFTER_USE(env, __java_" << argument->indexedName() << ");" << Qt::endl;
+                                                    }
                                                 }else if (argument->type()->isArray()){
                                                     s << INDENT << "QTJAMBI_INVALIDATE_ARRAY_AFTER_USE(env, __java_" << argument->indexedName() << ");" << Qt::endl;
                                                 }else{
@@ -1266,7 +1270,7 @@ void CppImplGenerator::write(QTextStream &s, const MetaClass *java_class, int) {
     QList<const MetaFunction *> signalsInTargetLang;
 
     for(const MetaFunction* signal : java_class->cppSignalFunctions()){
-        if (!signal->hasTemplateArgumentTypes() && signal->declaringClass() == java_class)
+        if (!signal->hasUnresolvedTemplateTypes() && signal->declaringClass() == java_class)
             signalsInTargetLang << signal;
     }
 
@@ -1342,7 +1346,7 @@ void CppImplGenerator::write(QTextStream &s, const MetaClass *java_class, int) {
         if (
             !function->isConstructor()
             && !function->isEmptyFunction()
-            && !function->hasTemplateArgumentTypes()
+            && !function->hasUnresolvedTemplateTypes()
             )
             functionsInTargetLang << function;
     }
@@ -1350,7 +1354,7 @@ void CppImplGenerator::write(QTextStream &s, const MetaClass *java_class, int) {
                                                                        | MetaClass::AbstractFunctions
                                                                        | MetaClass::NotRemovedFromTargetLang)) {
         if (function->implementingClass() != java_class &&
-                !function->hasTemplateArgumentTypes() ) {
+                !function->hasUnresolvedTemplateTypes() ) {
             functionsInTargetLang << function;
         }
     }
@@ -1366,7 +1370,7 @@ void CppImplGenerator::write(QTextStream &s, const MetaClass *java_class, int) {
             for(MetaFunction *function : java_class->functions()) {
                 if (function->isConstructor() &&
                         !function->isPrivate() &&
-                        !function->hasTemplateArgumentTypes()){
+                        !function->hasUnresolvedTemplateTypes()){
                     writeShellConstructor(s, isInterface, function, SkipRemovedArguments);
                 }
             }
@@ -1391,7 +1395,7 @@ void CppImplGenerator::write(QTextStream &s, const MetaClass *java_class, int) {
         MetaFunctionList virtualFunctions = java_class->virtualFunctions();
         for (int pos = 0; pos < virtualFunctions.size(); ++pos) {
             const MetaFunction *function = virtualFunctions.at(pos);
-            if(!function->hasTemplateArgumentTypes() && (!function->wasPrivate() || function->isAbstract()))
+            if(!function->hasUnresolvedTemplateTypes() && (!function->wasPrivate() || function->isAbstract()))
                 writeShellFunction(s, function, java_class, pos);
         }
 
@@ -1400,7 +1404,7 @@ void CppImplGenerator::write(QTextStream &s, const MetaClass *java_class, int) {
         MetaFunctionList shellFunctions = java_class->nonVirtualShellFunctions();
         for (int i = 0; i < shellFunctions.size(); ++i) {
             const MetaFunction *function = shellFunctions.at(i);
-            if(!function->hasTemplateArgumentTypes())
+            if(!function->hasUnresolvedTemplateTypes())
                 writeShellFunction(s, function, java_class, -1);
         }
 
@@ -1416,7 +1420,7 @@ void CppImplGenerator::write(QTextStream &s, const MetaClass *java_class, int) {
         // Write virtual function overries used to decide on static/virtual calls
         s << "// emitting Virtual Override Functions (virtualOverrideFunctions)" << Qt::endl;
         for(MetaFunction *function : java_class->virtualOverrideFunctions()) {
-            if(!function->hasTemplateArgumentTypes()
+            if(!function->hasUnresolvedTemplateTypes()
                     && (function->implementingClass()==java_class
                         || function->implementingClass()==java_class->extractInterface()
                         || ( (java_class->isAbstract() || java_class->isInterface()) && function->isAbstract() ))
@@ -1440,7 +1444,7 @@ void CppImplGenerator::write(QTextStream &s, const MetaClass *java_class, int) {
                                                                        | (java_class->isInterface() ? 0 : MetaClass::ClassImplements)
                                                                        | (java_class->isFinal() ? MetaClass::WasPublic : 0))){
             if(!function->isEmptyFunction()
-                && !function->hasTemplateArgumentTypes()){
+                && !function->hasUnresolvedTemplateTypes()){
                 writeFinalConstructor(s, function, java_class);
                 if (!function->isModifiedRemoved(TS::NativeCode)
                     && !function->isPrivate()
@@ -2967,7 +2971,11 @@ void CppImplGenerator::writeShellFunction(QTextStream &s, const MetaFunction *ja
 
                                             if (java_function->resetObjectAfterUse(argument->argumentIndex() + 1)){
                                                 if (argument->type()->isContainer()){
-                                                    s << INDENT << "QTJAMBI_INVALIDATE_CONTAINER_AFTER_USE(__jni_env, __java_" << argument->indexedName() << ");" << Qt::endl;
+                                                    if(static_cast<const ContainerTypeEntry *>(argument->type()->typeEntry())->type()==ContainerTypeEntry::std_array){
+                                                        s << INDENT << "QTJAMBI_INVALIDATE_ARRAY_AFTER_USE(__jni_env, __java_" << argument->indexedName() << ");" << Qt::endl;
+                                                    }else{
+                                                        s << INDENT << "QTJAMBI_INVALIDATE_CONTAINER_AFTER_USE(__jni_env, __java_" << argument->indexedName() << ");" << Qt::endl;
+                                                    }
                                                 }else if (argument->type()->isArray()){
                                                     s << INDENT << "QTJAMBI_INVALIDATE_ARRAY_AFTER_USE(__jni_env, __java_" << argument->indexedName() << ");" << Qt::endl;
                                                 }else{
@@ -3596,24 +3604,32 @@ bool CppImplGenerator::writeBaseClassFunctionCall(QTextStream &s,
         }
         s << java_function->originalName();
         if(!java_function->templateParameters().isEmpty()){
-            QString tmpl;
-            for(int i=0; i<java_function->templateParameters().size(); i++){
-                MetaTemplateParameter* param = java_function->templateParameters()[i];
+            QStringList templateParameters;
+            for(MetaTemplateParameter* param : java_function->templateParameters()){
                 if(!param->isImplicit()){
-                    if(param->type()){
-                        if(!tmpl.isEmpty()){
-                            tmpl += ", ";
+                    if(!param->instantiation().isEmpty()){
+                        if(param->instantiationType()){
+                            QString str;
+                            QTextStream _s(&str);
+                            writeTypeInfo(_s, param->instantiationType());
+                            templateParameters << str;
+                        }else
+                            templateParameters << param->instantiation();
+                    }else if(param->type()){
+                        if(param->defaultType().isEmpty()){
+                            QString str;
+                            QTextStream _s(&str);
+                            writeTypeInfo(_s, param->type());
+                            templateParameters << str;
                         }
-                        QTextStream _s(&tmpl);
-                        writeTypeInfo(_s, param->type());
                     }else if(param->defaultType().isEmpty()){
-                        tmpl.clear();
+                        templateParameters.clear();
                         break;
                     }
                 }
             }
-            if(!tmpl.isEmpty()){
-                s << "<" << tmpl.trimmed() << ">";
+            if(!templateParameters.isEmpty()){
+                s << '<' << templateParameters.join(QStringLiteral(u"::")) << '>';
             }
         }
         s << "(";
@@ -4980,6 +4996,35 @@ void CppImplGenerator::writeConstructor(QTextStream &s, const MetaFunction *java
                 s << shellClassName(cls);
             }else{
                 s << cls->fullQualifiedCppName();
+                QStringList templateParameters;
+                for(MetaTemplateParameter* param : java_function->templateParameters()){
+                    if(!param->isImplicit()){
+                        if(!param->instantiation().isEmpty()){
+                            if(param->instantiationType()){
+                                QString str;
+                                QTextStream _s(&str);
+                                writeTypeInfo(_s, param->instantiationType());
+                                if(!str.trimmed().isEmpty())
+                                    templateParameters << str;
+                            }else
+                                templateParameters << param->instantiation();
+                        }else if(param->type()){
+                            if(param->defaultType().isEmpty()){
+                                QString str;
+                                QTextStream _s(&str);
+                                writeTypeInfo(_s, param->type());
+                                if(!str.trimmed().isEmpty())
+                                    templateParameters << str;
+                            }
+                        }else if(param->defaultType().isEmpty()){
+                            templateParameters.clear();
+                            break;
+                        }
+                    }
+                }
+                if(!templateParameters.isEmpty()){
+                    s << '<' << templateParameters.join(QStringLiteral(u", ")) << '>';
+                }
             }
         }
         if(java_function->attributes() & MetaAttributes::BracketCall){
@@ -5730,11 +5775,62 @@ void CppImplGenerator::writeFinalFunction(QTextStream &s, const MetaFunction *ja
 }
 
 void CppImplGenerator::writeAssignment(QTextStream &s, const QString &destName, const QString &srcName,
+                                       const MetaFunction *java_function,
                                        const MetaType *java_type) {
     if (java_type->isArray()) {
-        for (int i = 0; i < java_type->arrayElementCount(); ++i) {
-            writeAssignment(s, destName + "[" + QString::number(i) + "]",
-                            srcName + "[" + QString::number(i) + "]", java_type->arrayElementType());
+        const QMap<QString,QString>& arrayConversions = m_arrayConversions[quintptr(java_function)];
+        QList<QList<int>> allEntries;
+        for(int i=0; i<java_type->arrayElementCounts().size(); ++i){
+            const QPair<int,QString>& pair = java_type->arrayElementCounts()[i];
+            if(allEntries.isEmpty()){
+                for(int j=0; j<pair.first; ++j){
+                    allEntries << QList<int>({j});
+                }
+            }else{
+                QList<QList<int>> nextEntries;
+                for(const QList<int>& entries : allEntries){
+                    for(int j=0; j<pair.first; ++j){
+                        nextEntries << (QList<int>(entries) << j);
+                    }
+                }
+                allEntries = nextEntries;
+            }
+        }
+        for(const QList<int>& entries : allEntries){
+            QString braces;
+            for(int idx : entries){
+                braces += "[" + QString::number(idx) + "]";
+            }
+            if(arrayConversions.contains(srcName + braces))
+                s << INDENT << destName << braces << " = " << arrayConversions[srcName + braces] << ";" << Qt::endl;
+        }
+    } else if(java_type->isContainer() && static_cast<const ContainerTypeEntry *>(java_type->typeEntry())->type()==ContainerTypeEntry::std_array){
+        const QMap<QString,QString>& arrayConversions = m_arrayConversions[quintptr(java_function)];
+        QList<QList<int>> allEntries;
+        {
+            int arrayElementCounts = java_type->instantiations()[1]->typeEntry()->name().toInt();
+            const QPair<int,QString>& pair = {arrayElementCounts, java_type->instantiations()[1]->typeEntry()->name()};
+            if(allEntries.isEmpty()){
+                for(int j=0; j<pair.first; ++j){
+                    allEntries << QList<int>({j});
+                }
+            }else{
+                QList<QList<int>> nextEntries;
+                for(const QList<int>& entries : allEntries){
+                    for(int j=0; j<pair.first; ++j){
+                        nextEntries << (QList<int>(entries) << j);
+                    }
+                }
+                allEntries = nextEntries;
+            }
+        }
+        for(const QList<int>& entries : allEntries){
+            QString braces;
+            for(int idx : entries){
+                braces += "[" + QString::number(idx) + "]";
+            }
+            if(arrayConversions.contains(srcName + braces))
+                s << INDENT << destName << braces << " = " << arrayConversions[srcName + braces] << ";" << Qt::endl;
         }
     } else {
         s << INDENT << destName << " = ";
@@ -5811,7 +5907,7 @@ void CppImplGenerator::writeFieldAccessors(QTextStream &s, const MetaField *java
                         src = argument->indexedName();
                     else
                         src = "__qt_" + argument->indexedName();
-                    writeAssignment(s, thisRef + java_field->name(), src, argument->type());
+                    writeAssignment(s, thisRef + java_field->name(), src, setter, argument->type());
                 }
                 if(lines.contains("__qtjambi_scope")){
                     s << INDENT << "QtJambiScope __qtjambi_scope" << (setter->isStatic() ? "" : (cls->typeEntry()->isNativeIdBased() ? "(__this_nativeId)" : "(__jni_env, __this)" ) ) << ";" << Qt::endl;
@@ -5904,7 +6000,7 @@ void CppImplGenerator::writeFieldAccessors(QTextStream &s, const MetaField *java
                             src = argument->indexedName();
                         else
                             src = "__qt_" + argument->indexedName();
-                        writeAssignment(s, dest + java_field->name(), src, argument->type());
+                        writeAssignment(s, dest + java_field->name(), src, setter, argument->type());
                     }else{
                         s << INDENT;
                         if (setter->isStatic())
@@ -6055,7 +6151,7 @@ void CppImplGenerator::writeFieldAccessors(QTextStream &s, const MetaField *java
                         //const QString java_return_value = "__java_return_value";
                         QString qt_return_value;
                         if (getter->isStatic())
-                            qt_return_value = shellClassName(getter->ownerClass()) + "::";
+                            qt_return_value = java_field->enclosingClass()->qualifiedCppName() + "::";
                         else
                             qt_return_value = "__qt_this->";
                         qt_return_value += java_field->name();
@@ -6067,8 +6163,6 @@ void CppImplGenerator::writeFieldAccessors(QTextStream &s, const MetaField *java
                         s << INDENT << "__java_return_value = ";
                         if (getter->isStatic())
                             s << shellClassName(getter->ownerClass()) + "::";
-                        else if(getter->wasPublic())
-                            s << "__qt_this->";
                         else{
                             const QString& name = getter->ownerClass()->typeEntry()->designatedInterface() ? getter->ownerClass()->extractInterface()->name() : cls->name();
                             s << QString("static_cast<%1*>(__qt_this)->").arg(name + "_access");
@@ -7564,28 +7658,303 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
                 || (!java_type->isConstant() && java_type->actualIndirections()>0))
             s << qtjambi_scope << ", ";
         s << java_name << ")";
-    } else if (java_type->isArray()) {
+    } else if (java_type->isArray() && java_type->arrayElementCounts().size()>0) {
         MetaType *elementType = java_type->arrayElementType();
-        if(elementType->isPrimitive()){
-            // ### Don't assert on wrong array lengths
-            s << INDENT << "Q_ASSERT(" << __jni_env << "->GetArrayLength(jarray(" << java_name << ")) >= " << java_type->arrayElementCount() << ");" << Qt::endl;
+        Q_ASSERT(elementType);
+        QString argumentName = java_name;
+        if(argument_index>0){
+            if(java_function){
+                argumentName = java_function->arguments()[argument_index-1]->argumentName();
+            }else if(java_functional){
+                argumentName = java_functional->arguments()[argument_index-1]->argumentName();
+            }
+        }
+        if(java_type->getReferenceType()==MetaType::Reference && java_type->arrayElementCounts().size()==1){
+            if(elementType->isNativePointer()){
+                s << INDENT << "int " << java_name << "_array_size{0};" << Qt::endl
+                  << INDENT;
+                writeTypeInfo(s, elementType);
+                for(int i=0; i<java_type->arrayElementCounts().size(); ++i){
+                    s << "*";
+                }
+                s << " " << java_name << "_array = reinterpret_cast<";
+                writeTypeInfo(s, elementType, Option(option | SkipName));
+                for(int i=0; i<java_type->arrayElementCounts().size(); ++i){
+                    s << "*";
+                }
+                s << ">(QtJambiAPI::convertQNativePointerToNative(" << __jni_env << ", " << java_name << ", &" << java_name << "_array_size)));" << Qt::endl
+                  << INDENT << "if(" << java_name << "_array_size > 0 && " << java_name << "_array_size != " << java_type->arrayElementCounts()[0].first << ")" << Qt::endl
+                  << INDENT << "    JavaException::raiseIllegalArgumentException(" << __jni_env << ", QString(\"Argument '" << argumentName << "': Wrong number of elements in array. Found: %1, expected: " << java_type->arrayElementCounts()[0].first << "\").arg(" << java_name << "_array_size) QTJAMBI_STACKTRACEINFO);" << Qt::endl;
+            }else{
+                s << INDENT << "jsize " << java_name << "_array_size{0};" << Qt::endl
+                  << INDENT << "if((" << java_name << "_array_size = " << __jni_env << "->GetArrayLength(jarray(" << java_name << "))) != " << java_type->arrayElementCounts()[0].first << ")" << Qt::endl
+                  << INDENT << "    JavaException::raiseIllegalArgumentException(" << __jni_env << ", QString(\"Argument '" << argumentName << "': Wrong number of elements in array. Found: %1, expected: " << java_type->arrayElementCounts()[0].first << "\").arg(" << java_name << "_array_size) QTJAMBI_STACKTRACEINFO);" << Qt::endl
+                  << INDENT;
+                writeTypeInfo(s, elementType);
+                for(int i=0; i<java_type->arrayElementCounts().size(); ++i){
+                    s << "*";
+                }
+                s << " " << java_name << "_array = qtjambi_array_cast<";
+                writeTypeInfo(s, elementType, Option(option | SkipName));
+                for(int i=0; i<java_type->arrayElementCounts().size(); ++i){
+                    s << "*";
+                }
+                s << ">(" << __jni_env << ", ";
+                if((option & OptionalScope) == OptionalScope)
+                    s << "*";
+                s << qtjambi_scope << ", " << java_name << ", " << java_type->arrayElementCounts()[0].first << ");" << Qt::endl;
+            }
             s << INDENT;
             writeTypeInfo(s, elementType);
-            s << "* " << qt_name << " = qtjambi_array_cast<";
+            s << " (&" << qt_name << ")";
+            for(int i=0; i<java_type->arrayElementCounts().size(); ++i){
+                const QPair<int,QString>& pair = java_type->arrayElementCounts()[i];
+                if(pair.second.isEmpty())
+                    s << "[" << pair.first << "]";
+                else
+                    s << "[" << pair.second << "]";
+            }
+            s << " = *reinterpret_cast<";
             writeTypeInfo(s, elementType, Option(option | SkipName));
-            s << "*>(" << __jni_env << ", ";
-            if((option & OptionalScope) == OptionalScope)
-                s << "*";
-            s << qtjambi_scope << ", " << java_name << ", " << java_type->arrayElementCount() << ");" << Qt::endl;
+            s << "(*)";
+            for(int i=0; i<java_type->arrayElementCounts().size(); ++i){
+                const QPair<int,QString>& pair = java_type->arrayElementCounts()[i];
+                if(pair.second.isEmpty())
+                    s << "[" << pair.first << "]";
+                else
+                    s << "[" << pair.second << "]";
+            }
+            s << ">(" << java_name << "_array);" << Qt::endl;
         }else{
-            s << INDENT << "Q_ASSERT(" << __jni_env << "->GetArrayLength(jarray(" << java_name << ")) >= " << java_type->arrayElementCount() << ");" << Qt::endl;
-            s << INDENT;
-            writeTypeInfo(s, elementType);
-            s << qt_name << "[" << java_type->arrayElementCount() << "];" << Qt::endl;
+            QMap<QString,QString> arrayElements;
+            {
+                QList<QPair<QString,QList<int>>> ids{{java_name,{}}};
+                for(int i=0, l=java_type->arrayElementCounts().size(); i<l; ++i){
+                    const QPair<int,QString>& pair = java_type->arrayElementCounts()[i];
+                    QList<QPair<QString,QList<int>>> oldIDs = ids;
+                    ids.clear();
+                    if(i<l-1){
+                        for(int m=0; m<oldIDs.size(); ++m){
+                            const QString& id = oldIDs[m].first;
+                            QString braces;
+                            for(int idx : oldIDs[m].second){
+                                braces += "[" + QString::number(idx) + "]";
+                            }
+                            s << INDENT << "jsize " << java_name << "_array_size{0};" << Qt::endl
+                              << INDENT << "if((" << java_name << "_array_size = " << __jni_env << "->GetArrayLength(jarray(" << id << "))) != " << pair.first << ")" << Qt::endl
+                              << INDENT << "    JavaException::raiseIllegalArgumentException(" << __jni_env << ", QString(\"Argument '" << argumentName << braces << "': Wrong number of elements in array. Found: %1, expected: " << pair.first << "\").arg(" << java_name << "_array_size) QTJAMBI_STACKTRACEINFO);" << Qt::endl;
+                            for(int j=0; j<pair.first; ++j){
+                                s << INDENT << "jobjectArray " << id << "_" << QString::number(j) << " = " << __jni_env << "->GetObjectArrayElement(" << id << ", " << QString::number(j) << ");" << Qt::endl;
+                                ids << QPair<QString,QList<int>>(id + "_" + QString::number(j), QList<int>() << oldIDs[m].second << j);
+                            }
+                        }
+                    }else{
+                        for(int m=0; m<oldIDs.size(); ++m){
+                            const QString& id = oldIDs[m].first;
+                            QString braces;
+                            for(int idx : oldIDs[m].second){
+                                braces += "[" + QString::number(idx) + "]";
+                            }
+                            if(elementType->isNativePointer()){
+                                s << INDENT << "int " << java_name << "_array_size{0};" << Qt::endl
+                                  << INDENT;
+                                writeTypeInfo(s, elementType);
+                                for(int i=0; i<java_type->arrayElementCounts().size(); ++i){
+                                    s << "*";
+                                }
+                                s << " " << java_name << "_array = reinterpret_cast<";
+                                writeTypeInfo(s, elementType, Option(option | SkipName));
+                                for(int i=0; i<java_type->arrayElementCounts().size(); ++i){
+                                    s << "*";
+                                }
+                                s << ">(QtJambiAPI::convertQNativePointerToNative(" << __jni_env << ", " << java_name << ", " << oldIDs[m].second.size() << ", &" << java_name << "_array_size));" << Qt::endl
+                                  << INDENT << "if(" << java_name << "_array_size > 0 && " << java_name << "_array_size != " << pair.first << ")" << Qt::endl
+                                  << INDENT << "    JavaException::raiseIllegalArgumentException(" << __jni_env << ", QString(\"Argument '" << argumentName << braces << "': Wrong number of elements in array. Found: %1, expected: " << pair.first << "\").arg(" << java_name << "_array_size) QTJAMBI_STACKTRACEINFO);" << Qt::endl;
+                            }else{
+                                s << INDENT << "jsize " << java_name << "_array_size{0};" << Qt::endl
+                                  << INDENT << "if((" << java_name << "_array_size = " << __jni_env << "->GetArrayLength(jarray(" << java_name << "))) != " << pair.first << ")" << Qt::endl
+                                  << INDENT << "    JavaException::raiseIllegalArgumentException(" << __jni_env << ", QString(\"Argument '" << argumentName << braces << "': Wrong number of elements in array. Found: %1, expected: " << pair.first << "\").arg(" << java_name << "_array_size) QTJAMBI_STACKTRACEINFO);" << Qt::endl
+                                  << INDENT;
+                                writeTypeInfo(s, elementType);
+                                s << "* " << id << "_array = qtjambi_array_cast<";
+                                writeTypeInfo(s, elementType, Option(option | SkipName));
+                                s << "*>(" << __jni_env << ", ";
+                                if((option & OptionalScope) == OptionalScope)
+                                    s << "*";
+                                s << qtjambi_scope << ", " << id << ", " << QString::number(pair.first) << ");" << Qt::endl;
+                            }
+                            for(int j=0; j<pair.first; ++j){
+                                arrayElements[qt_name + braces + QChar(u'[') + QString::number(j) + QChar(u']')] = id + QStringLiteral(u"_array[") + QString::number(j) + QChar(u']');
+                            }
+                        }
+                    }
+                }
+                struct Appender{
+                    static QVariantList append(const QString& variable, int number){
+                        QVariantList result;
+                        for(int i=0; i<number; ++i){
+                            result.append(QVariant::fromValue<QString>(variable+"["+QString::number(i)+"]"));
+                        }
+                        return result;
+                    }
 
-            for (int i = 0; i < java_type->arrayElementCount(); ++i) {
-                writeJavaToQt(s, elementType, qt_name + "[" + QString::number(i) + "]",
-                               __jni_env + "->GetObjectArrayElement(" + java_name + ", " + QString::number(i) + ")", nullptr, nullptr, -1, Option(option | NoTmpVariable), __jni_env);
+                    static QVariantList append(const QVariantList& variable, int number){
+                        QVariantList result;
+                        for(int i=0; i<variable.size(); ++i){
+                            const QVariant& variant = variable.at(i);
+                            QVariantList vlist;
+                            if(variant.userType()==QMetaType::QString){
+                                vlist = append(variant.toString(), number);
+                            }else if(variant.userType()==QMetaType::QVariantList){
+                                vlist = append(variant.toList(), number);
+                            }
+                            if(!vlist.isEmpty())
+                                result.append(QVariant::fromValue<QVariantList>(vlist));
+                        }
+                        return result;
+                    }
+
+                    static void stream(QTextStream& s, const QMap<QString,QString> &arrayElements, const QVariantList& variable){
+                        s << "{";
+                        for(int i=0; i<variable.size(); ++i){
+                            if(i>0)
+                                s << ", ";
+                            const QVariant& variant = variable.at(i);
+                            if(variant.userType()==QMetaType::QString){
+                                s << arrayElements[variant.toString()];
+                            }else if(variant.userType()==QMetaType::QVariantList){
+                                stream(s, arrayElements, variant.toList());
+                            }
+                        }
+                        s << "}";
+                    }
+                };
+
+                QVariantList entries = Appender::append(qt_name, java_type->arrayElementCounts()[0].first);
+                for(int i=1, l=java_type->arrayElementCounts().size(); i<l; ++i){
+                    const QPair<int,QString>& pair = java_type->arrayElementCounts()[i];
+                    QVariantList oldEntries = entries;
+                    entries = Appender::append(oldEntries, pair.first);
+                }
+                if(java_function && (java_function->attributes() & MetaAttributes::SetterFunction) == MetaAttributes::SetterFunction){
+                    m_arrayConversions[quintptr(java_function)] = arrayElements;
+                }else{
+                    QTextStream s(&m_arrayConversions[java_function ? quintptr(java_function) : quintptr(java_functional)][qt_name]);
+                    Appender::stream(s, arrayElements, entries);
+                }
+            }
+        }
+        semiRequired = false;
+    } else if(java_type->isContainer() && static_cast<const ContainerTypeEntry *>(java_type->typeEntry())->type()==ContainerTypeEntry::std_array){
+        const MetaType *elementType = java_type->instantiations()[0];
+        Q_ASSERT(elementType);
+        QString argumentName = java_name;
+        if(argument_index>0){
+            if(java_function){
+                argumentName = java_function->arguments()[argument_index-1]->argumentName();
+            }else if(java_functional){
+                argumentName = java_functional->arguments()[argument_index-1]->argumentName();
+            }
+        }
+        QMap<QString,QString> arrayElements;
+        {
+            QList<QPair<QString,QList<int>>> ids{{java_name,{}}};
+            {
+                int arrayElementCounts = java_type->instantiations()[1]->typeEntry()->name().toInt();
+                const QPair<int,QString>& pair = {arrayElementCounts, java_type->instantiations()[1]->typeEntry()->name()};
+                QList<QPair<QString,QList<int>>> oldIDs = ids;
+                ids.clear();
+                for(int m=0; m<oldIDs.size(); ++m){
+                    const QString& id = oldIDs[m].first;
+                    QString braces;
+                    for(int idx : oldIDs[m].second){
+                        braces += "[" + QString::number(idx) + "]";
+                    }
+                    if(elementType->isNativePointer()){
+                        s << INDENT << "int " << java_name << "_array_size{0};" << Qt::endl
+                          << INDENT;
+                        writeTypeInfo(s, elementType);
+                        for(int i=0; i<java_type->arrayElementCounts().size(); ++i){
+                            s << "*";
+                        }
+                        s << " " << java_name << "_array = reinterpret_cast<";
+                        writeTypeInfo(s, elementType, Option(option | SkipName));
+                        for(int i=0; i<java_type->arrayElementCounts().size(); ++i){
+                            s << "*";
+                        }
+                        s << ">(QtJambiAPI::convertQNativePointerToNative(" << __jni_env << ", " << java_name << ", " << oldIDs[m].second.size() << ", &" << java_name << "_array_size));" << Qt::endl
+                          << INDENT << "if(" << java_name << "_array_size > 0 && " << java_name << "_array_size != " << pair.first << ")" << Qt::endl
+                          << INDENT << "    JavaException::raiseIllegalArgumentException(" << __jni_env << ", QString(\"Argument '" << argumentName << braces << "': Wrong number of elements in array. Found: %1, expected: " << pair.first << "\").arg(" << java_name << "_array_size) QTJAMBI_STACKTRACEINFO);" << Qt::endl;
+                    }else{
+                        s << INDENT << "jsize " << java_name << "_array_size{0};" << Qt::endl
+                          << INDENT << "if((" << java_name << "_array_size = " << __jni_env << "->GetArrayLength(jarray(" << java_name << "))) != " << pair.first << ")" << Qt::endl
+                          << INDENT << "    JavaException::raiseIllegalArgumentException(" << __jni_env << ", QString(\"Argument '" << argumentName << braces << "': Wrong number of elements in array. Found: %1, expected: " << pair.first << "\").arg(" << java_name << "_array_size) QTJAMBI_STACKTRACEINFO);" << Qt::endl
+                          << INDENT;
+                        writeTypeInfo(s, elementType);
+                        s << "* " << id << "_array = qtjambi_array_cast<";
+                        writeTypeInfo(s, elementType, Option(option | SkipName));
+                        s << "*>(" << __jni_env << ", ";
+                        if((option & OptionalScope) == OptionalScope)
+                            s << "*";
+                        s << qtjambi_scope << ", " << id << ", " << QString::number(pair.first) << ");" << Qt::endl;
+                    }
+                    for(int j=0; j<pair.first; ++j){
+                        arrayElements[qt_name + braces + QChar(u'[') + QString::number(j) + QChar(u']')] = id + QStringLiteral(u"_array[") + QString::number(j) + QChar(u']');
+                    }
+                }
+            }
+            struct Appender{
+                static QVariantList append(const QString& variable, int number){
+                    QVariantList result;
+                    for(int i=0; i<number; ++i){
+                        result.append(QVariant::fromValue<QString>(variable+"["+QString::number(i)+"]"));
+                    }
+                    return result;
+                }
+
+                static QVariantList append(const QVariantList& variable, int number){
+                    QVariantList result;
+                    for(int i=0; i<variable.size(); ++i){
+                        const QVariant& variant = variable.at(i);
+                        QVariantList vlist;
+                        if(variant.userType()==QMetaType::QString){
+                            vlist = append(variant.toString(), number);
+                        }else if(variant.userType()==QMetaType::QVariantList){
+                            vlist = append(variant.toList(), number);
+                        }
+                        if(!vlist.isEmpty())
+                            result.append(QVariant::fromValue<QVariantList>(vlist));
+                    }
+                    return result;
+                }
+
+                static void stream(QTextStream& s, const QMap<QString,QString> &arrayElements, const QVariantList& variable){
+                    s << "{";
+                    for(int i=0; i<variable.size(); ++i){
+                        if(i>0)
+                            s << ", ";
+                        const QVariant& variant = variable.at(i);
+                        if(variant.userType()==QMetaType::QString){
+                            s << arrayElements[variant.toString()];
+                        }else if(variant.userType()==QMetaType::QVariantList){
+                            stream(s, arrayElements, variant.toList());
+                        }
+                    }
+                    s << "}";
+                }
+            };
+
+            QVariantList entries = Appender::append(qt_name, java_type->arrayElementCounts()[0].first);
+            for(int i=1, l=java_type->arrayElementCounts().size(); i<l; ++i){
+                const QPair<int,QString>& pair = java_type->arrayElementCounts()[i];
+                QVariantList oldEntries = entries;
+                entries = Appender::append(oldEntries, pair.first);
+            }
+            if(java_function && (java_function->attributes() & MetaAttributes::SetterFunction) == MetaAttributes::SetterFunction){
+                m_arrayConversions[quintptr(java_function)] = arrayElements;
+            }else{
+                QTextStream s(&m_arrayConversions[java_function ? quintptr(java_function) : quintptr(java_functional)][qt_name]);
+                Appender::stream(s, arrayElements, entries);
             }
         }
         semiRequired = false;
@@ -8208,8 +8577,7 @@ bool CppImplGenerator::writeJavaToQt(QTextStream &s,
                 }
                 s << "QtJambiAPI::convertQNativePointerToNative("
                   << __jni_env << ", "
-                  << java_name << ", "
-                  << java_type->actualIndirections() << "))";
+                  << java_name << "))";
             } else if (java_type->isPointerContainer()) {
                 bool done = false;
                 const PointerContainerTypeEntry* pentry = static_cast<const PointerContainerTypeEntry*>(java_type->typeEntry());
@@ -8694,7 +9062,30 @@ bool CppImplGenerator::writeQtToJava(QTextStream &s,
     if (java_type->isArray()) { // jniTypeName(java_type)
         MetaType *elementType = java_type->arrayElementType();
         Q_ASSERT(elementType);
-        if(elementType->isPrimitive()){
+        if(elementType->isNativePointer()){
+            s << INDENT;
+            if((option & DirectReturn) == DirectReturn){
+                s << "return ";
+            }else if((option & NoTmpVariable) == NoTmpVariable){
+                if(!java_name.isEmpty())
+                    s << java_name << " = ";
+            }else{
+                s << translateType(elementType, option) << " " << java_name << " = ";
+            }
+            s << "QtJambiAPI::convertNativeToQNativePointer(" << __jni_env << ", ";
+            if (elementType->getReferenceType()==MetaType::Reference)
+                s << "&";
+            int actualIndirections = elementType->actualIndirections() + java_type->arrayElementCounts().size();
+            if(actualIndirections==0 && elementType->typeEntry()->isAlias() && static_cast<const TS::AliasTypeEntry*>(elementType->typeEntry())->getHasIndirections()){
+                ++actualIndirections;
+            }
+            s << qt_name << ", " << nativePointerTypeString(elementType) << ", ";
+            if(java_type->arrayElementCounts()[0].first==0)
+                s << java_type->arrayElementCounts()[0].second;
+            else
+                s << java_type->arrayElementCounts()[0].first;
+            s << ", " << actualIndirections << ")";
+        }else if(elementType->isPrimitive() && java_type->arrayElementCounts().size()==1){
             s << INDENT;
             if((option & DirectReturn) == DirectReturn){
                 s << "return ";
@@ -8710,8 +9101,11 @@ bool CppImplGenerator::writeQtToJava(QTextStream &s,
                 arrayType[1] = arrayType[1].toUpper();
             }
             s << "QtJambiAPI::to" << arrayType << "(" << __jni_env << ", reinterpret_cast<"
-              << translateType(elementType, option) << " *>("
-              << qt_name << "), " << java_type->arrayElementCount() << ")";
+              << translateType(elementType, option);
+            for(int i=0; i<java_type->arrayElementCounts().size(); ++i){
+                s << "*";
+            }
+            s << ">(" << qt_name << "), " << java_type->arrayElementCounts()[0].first << ")";
         }else{
             s << INDENT;
             if((option & DirectReturn) == DirectReturn){
@@ -8730,23 +9124,189 @@ bool CppImplGenerator::writeQtToJava(QTextStream &s,
             if(qualifiedTargetLangName=="void"){
                 qualifiedTargetLangName = "io/qt/QNativePointer";
             }
+            for(int i=1; i<java_type->arrayElementCounts().size(); ++i){
+                if(qualifiedTargetLangName.startsWith("[")){
+                    qualifiedTargetLangName = "["+qualifiedTargetLangName;
+                }else{
+                    if(qualifiedTargetLangName=="int")
+                        qualifiedTargetLangName = "[I";
+                    else if(qualifiedTargetLangName=="byte")
+                        qualifiedTargetLangName = "[B";
+                    else if(qualifiedTargetLangName=="short")
+                        qualifiedTargetLangName = "[S";
+                    else if(qualifiedTargetLangName=="long")
+                        qualifiedTargetLangName = "[J";
+                    else if(qualifiedTargetLangName=="double")
+                        qualifiedTargetLangName = "[D";
+                    else if(qualifiedTargetLangName=="float")
+                        qualifiedTargetLangName = "[F";
+                    else if(qualifiedTargetLangName=="char")
+                        qualifiedTargetLangName = "[C";
+                    else if(qualifiedTargetLangName=="boolean")
+                        qualifiedTargetLangName = "[Z";
+                    else
+                        qualifiedTargetLangName = "[L"+qualifiedTargetLangName+";";
+                }
+            }
+            const MetaType* newArrayType = elementType;
+            std::unique_ptr<TS::ArrayTypeEntry> arrayTypeEntry;
+            std::unique_ptr<MetaType> arrayType;
+            std::unique_ptr<MetaType> pointerType{elementType->copy()};
+            if(java_type->arrayElementCounts().size()>1){
+                arrayType.reset(java_type->copy());
+                QList<QPair<int,QString>> arrayElementCounts = arrayType->arrayElementCounts();
+                arrayElementCounts.takeFirst();
+                arrayType->setArrayElementCounts(arrayElementCounts);
+                arrayTypeEntry.reset(new ArrayTypeEntry("", elementType->typeEntry(), int(arrayElementCounts.size())));
+                arrayType->setTypeEntry(arrayTypeEntry.get());
+                MetaBuilder::decideUsagePattern(arrayType.get());
+                newArrayType = arrayType.get();
+                QList<bool> indirections = pointerType->indirections();
+                for(QPair<int,QString>& c : arrayElementCounts){
+                    Q_UNUSED(c)
+                    indirections << false;
+                }
+                pointerType->setIndirections(indirections);
+                MetaBuilder::decideUsagePattern(pointerType.get());
+            }
             s << "QtJambiAPI::toJObjectArray<";
-            if(elementType->indirections().isEmpty())
-                writeTypeInfo(s, elementType, Option(ForceValueType));
+            if(pointerType->indirections().isEmpty())
+                writeTypeInfo(s, pointerType.get(), Option(ForceValueType));
             else
-                writeTypeInfo(s, elementType, Option(NoOption));
+                writeTypeInfo(s, pointerType.get(), Option(NoOption));
             s << ">(" << __jni_env
               << ", \"" << qualifiedTargetLangName << "\""
               << ", " << qt_name
-              << ", jsize(" << java_type->arrayElementCount() << "), [](JNIEnv * " << __jni_env << ", ";
-            writeTypeInfo(s, elementType, Option(ForceConstReference));
+              << ", jsize(" << java_type->arrayElementCounts()[0].first << "), [](JNIEnv * " << __jni_env << ", ";
+            writeTypeInfo(s, pointerType.get(), Option(ForceConstReference));
             s << " __element) -> jobject {" << Qt::endl;
             {
                 INDENTATION(INDENT)
                 quint32 option2 = quint32(option);
                 option2 |= DirectReturn;
                 option2 |= NoTmpVariable;
-                writeQtToJava(s, elementType, "__element", "", nullptr, nullptr, -1, Option(option2), __jni_env, "");
+                writeQtToJava(s, newArrayType, "__element", "", nullptr, nullptr, -1, Option(option2), __jni_env, "");
+            }
+            s << ";" << Qt::endl << INDENT << "}";
+            s << ")";
+        }
+    } else if(java_type->isContainer() && static_cast<const ContainerTypeEntry *>(java_type->typeEntry())->type()==ContainerTypeEntry::std_array){
+        const MetaType *elementType = java_type->instantiations()[0];
+        QString sizeExpression = java_type->instantiations()[1]->typeEntry()->name();
+        Q_ASSERT(elementType);
+        if(elementType->isNativePointer()){
+            s << INDENT;
+            if((option & DirectReturn) == DirectReturn){
+                s << "return ";
+            }else if((option & NoTmpVariable) == NoTmpVariable){
+                if(!java_name.isEmpty())
+                    s << java_name << " = ";
+            }else{
+                s << translateType(elementType, option) << " " << java_name << " = ";
+            }
+            s << "QtJambiAPI::convertNativeToQNativePointer(" << __jni_env << ", ";
+            int actualIndirections = elementType->actualIndirections() + 1;
+            if(actualIndirections==0 && elementType->typeEntry()->isAlias() && static_cast<const TS::AliasTypeEntry*>(elementType->typeEntry())->getHasIndirections()){
+                ++actualIndirections;
+            }
+            s << qt_name << ".data(), " << nativePointerTypeString(elementType) << ", " << sizeExpression << ", " << actualIndirections << ")";
+        }else if(elementType->isPrimitive()){
+            s << INDENT;
+            if((option & DirectReturn) == DirectReturn){
+                s << "return ";
+            }else if((option & NoTmpVariable) == NoTmpVariable){
+                if(!java_name.isEmpty())
+                    s << java_name << " = ";
+            }else{
+                s << translateType(elementType, option) << "Array " << java_name << " = ";
+            }
+            QString arrayType = translateType(elementType, Option(option | ForceValueType));
+            QString _arrayType = arrayType;
+            if(arrayType.length()>1){
+                arrayType[0] = arrayType[0].toUpper();
+                arrayType[1] = arrayType[1].toUpper();
+            }
+            s << "QtJambiAPI::to" << arrayType << "Array(" << __jni_env << ", reinterpret_cast<const " << _arrayType << "*>(" << qt_name << ".data()), " << sizeExpression << ")";
+        }else{
+            s << INDENT;
+            if((option & DirectReturn) == DirectReturn){
+                s << "return ";
+            }else if((option & NoTmpVariable) == NoTmpVariable){
+                if(!java_name.isEmpty())
+                    s << java_name << " = ";
+            }else{
+                s << "jobjectArray " << java_name << " = ";
+            }
+            QString qualifiedTargetLangName = elementType->fullName();
+            if(!elementType->package().isEmpty()){
+                qualifiedTargetLangName = qualifiedTargetLangName.mid(elementType->package().length()+1).replace(".", "$");
+                qualifiedTargetLangName = elementType->package().replace(".", "/") + "/" + qualifiedTargetLangName;
+            }
+            if(qualifiedTargetLangName=="void"){
+                qualifiedTargetLangName = "io/qt/QNativePointer";
+            }
+            for(int i=1; i<java_type->arrayElementCounts().size(); ++i){
+                if(qualifiedTargetLangName.startsWith("[")){
+                    qualifiedTargetLangName = "["+qualifiedTargetLangName;
+                }else{
+                    if(qualifiedTargetLangName=="int")
+                        qualifiedTargetLangName = "[I";
+                    else if(qualifiedTargetLangName=="byte")
+                        qualifiedTargetLangName = "[B";
+                    else if(qualifiedTargetLangName=="short")
+                        qualifiedTargetLangName = "[S";
+                    else if(qualifiedTargetLangName=="long")
+                        qualifiedTargetLangName = "[J";
+                    else if(qualifiedTargetLangName=="double")
+                        qualifiedTargetLangName = "[D";
+                    else if(qualifiedTargetLangName=="float")
+                        qualifiedTargetLangName = "[F";
+                    else if(qualifiedTargetLangName=="char")
+                        qualifiedTargetLangName = "[C";
+                    else if(qualifiedTargetLangName=="boolean")
+                        qualifiedTargetLangName = "[Z";
+                    else
+                        qualifiedTargetLangName = "[L"+qualifiedTargetLangName+";";
+                }
+            }
+            const MetaType* newArrayType = elementType;
+            std::unique_ptr<TS::ArrayTypeEntry> arrayTypeEntry;
+            std::unique_ptr<MetaType> arrayType;
+            std::unique_ptr<MetaType> pointerType{elementType->copy()};
+            if(java_type->arrayElementCounts().size()>1){
+                arrayType.reset(java_type->copy());
+                QList<QPair<int,QString>> arrayElementCounts = arrayType->arrayElementCounts();
+                arrayElementCounts.takeFirst();
+                arrayType->setArrayElementCounts(arrayElementCounts);
+                arrayTypeEntry.reset(new ArrayTypeEntry("", elementType->typeEntry(), int(arrayElementCounts.size())));
+                arrayType->setTypeEntry(arrayTypeEntry.get());
+                MetaBuilder::decideUsagePattern(arrayType.get());
+                newArrayType = arrayType.get();
+                QList<bool> indirections = pointerType->indirections();
+                for(QPair<int,QString>& c : arrayElementCounts){
+                    Q_UNUSED(c)
+                    indirections << false;
+                }
+                pointerType->setIndirections(indirections);
+                MetaBuilder::decideUsagePattern(pointerType.get());
+            }
+            s << "QtJambiAPI::toJObjectArray<";
+            if(pointerType->indirections().isEmpty())
+                writeTypeInfo(s, pointerType.get(), Option(ForceValueType));
+            else
+                writeTypeInfo(s, pointerType.get(), Option(NoOption));
+            s << ">(" << __jni_env
+              << ", \"" << qualifiedTargetLangName << "\""
+              << ", " << qt_name
+              << ".data(), jsize(" << sizeExpression << "), [](JNIEnv * " << __jni_env << ", ";
+            writeTypeInfo(s, pointerType.get(), Option(ForceConstReference));
+            s << " __element) -> jobject {" << Qt::endl;
+            {
+                INDENTATION(INDENT)
+                quint32 option2 = quint32(option);
+                option2 |= DirectReturn;
+                option2 |= NoTmpVariable;
+                writeQtToJava(s, newArrayType, "__element", "", nullptr, nullptr, -1, Option(option2), __jni_env, "");
             }
             s << ";" << Qt::endl << INDENT << "}";
             s << ")";
@@ -9080,13 +9640,12 @@ bool CppImplGenerator::writeQtToJava(QTextStream &s,
             s << "QtJambiAPI::convertNativeToQNativePointer(" << __jni_env << ", ";
             if (java_type->getReferenceType()==MetaType::Reference)
                 s << "&";
-            s << qt_name << ", " << nativePointerTypeString(java_type) << ", ";
+            s << qt_name << ", " << nativePointerTypeString(java_type);
             int actualIndirections = java_type->actualIndirections();
             if(actualIndirections==0 && java_type->typeEntry()->isAlias() && static_cast<const TS::AliasTypeEntry*>(java_type->typeEntry())->getHasIndirections()){
                 ++actualIndirections;
             }
-            s << actualIndirections;
-            s << ")";
+            s << ", 1, " << actualIndirections << ")";
         } else if (java_type->isIterator()) {
             const IteratorTypeEntry* iteratorType = static_cast<const IteratorTypeEntry*>(java_type->typeEntry());
             bool found = false;
@@ -9114,7 +9673,7 @@ bool CppImplGenerator::writeQtToJava(QTextStream &s,
                         if(java_function->declaringClass()->templateBaseClass())
                             copy->setTypeEntry(java_function->declaringClass()->templateBaseClass()->typeEntry());
                         copy->setInstantiations(iteratorClass->templateBaseClassInstantiations());
-                        copy->setArrayElementCount(0);
+                        copy->setArrayElementCounts({});
                         copy->setArrayElementType(nullptr);
                         copy->setForceBoxedPrimitives(true);
                         MetaBuilder::decideUsagePattern(copy.data());
@@ -9146,7 +9705,7 @@ bool CppImplGenerator::writeQtToJava(QTextStream &s,
                                 copy->setIndirections(QList<bool>());
                                 copy->setTypeEntry(containerClass->templateBaseClass()->typeEntry());
                                 copy->setInstantiations(containerClass->templateBaseClassInstantiations());
-                                copy->setArrayElementCount(0);
+                                copy->setArrayElementCounts({});
                                 copy->setArrayElementType(nullptr);
                                 copy->setForceBoxedPrimitives(true);
                                 MetaBuilder::decideUsagePattern(copy.data());
@@ -9164,7 +9723,7 @@ bool CppImplGenerator::writeQtToJava(QTextStream &s,
                                 copy->setIndirections(QList<bool>());
                                 copy->setTypeEntry(containerClass->templateBaseClass()->typeEntry());
                                 copy->setInstantiations(containerClass->templateBaseClassInstantiations());
-                                copy->setArrayElementCount(0);
+                                copy->setArrayElementCounts({});
                                 copy->setArrayElementType(nullptr);
                                 copy->setForceBoxedPrimitives(true);
                                 MetaBuilder::decideUsagePattern(copy.data());
@@ -9185,7 +9744,7 @@ bool CppImplGenerator::writeQtToJava(QTextStream &s,
                             if(java_function->declaringClass()->templateBaseClass())
                                 copy->setTypeEntry(java_function->declaringClass()->templateBaseClass()->typeEntry());
                             copy->setInstantiations(java_function->declaringClass()->templateBaseClassInstantiations());
-                            copy->setArrayElementCount(0);
+                            copy->setArrayElementCounts({});
                             copy->setArrayElementType(nullptr);
                             copy->setForceBoxedPrimitives(true);
                             MetaBuilder::decideUsagePattern(copy.data());
@@ -9390,7 +9949,7 @@ void CppImplGenerator::writeJavaToQtContainer(QTextStream &s,
             instantiation->setReferenceType(MetaType::NoReference);
             instantiation->setConstant(false);
             instantiation->setIndirections(QList<bool>());
-            instantiation->setArrayElementCount(0);
+            instantiation->setArrayElementCounts({});
             instantiation->setArrayElementType(nullptr);
             instantiation->setForceBoxedPrimitives(false);
             instantiation->setInstantiationInCpp(false);
@@ -9994,33 +10553,36 @@ void CppImplGenerator::writeFunctionCall(QTextStream &s, const QString &object_n
         proxyCall = java_function->proxyCall();
     }
 
-    QString templateParams;
+    QStringList templateParameters;
     if(!proxyCall.isEmpty()){
         s << proxyCall << "(";
         writeFunctionCallArguments(s, java_function, "__qt_", Option(option | JNIProxyFunction));
         s << ")";
     }else{
-        if(!java_function->templateParameters().isEmpty()){
-            QString tmpl;
-            for(int i=0; i<java_function->templateParameters().size(); i++){
-                MetaTemplateParameter* param = java_function->templateParameters()[i];
-                if(!param->isImplicit()){
-                    if(param->type()){
-                        if(param->defaultType().isEmpty()){
-                            if(!tmpl.isEmpty()){
-                                tmpl += ", ";
-                            }
-                            QTextStream s2(&tmpl);
-                            writeTypeInfo(s2, param->type());
-                        }
-                    }else if(param->defaultType().isEmpty()){
-                        tmpl.clear();
-                        break;
+        for(MetaTemplateParameter* param : java_function->templateParameters()){
+            if(!param->isImplicit()){
+                if(!param->instantiation().isEmpty()){
+                    if(param->instantiationType()){
+                        QString str;
+                        QTextStream _s(&str);
+                        writeTypeInfo(_s, param->instantiationType());
+                        if(!str.trimmed().isEmpty())
+                            templateParameters << str;
+                    }else
+                        templateParameters << param->instantiation();
+                }else if(param->type()){
+                    if(param->defaultType().isEmpty()){
+                        QString str;
+                        QTextStream _s(&str);
+                        writeTypeInfo(_s, param->type());
+                        if(!str.trimmed().isEmpty())
+                            templateParameters << str;
                     }
+                }else if(param->defaultType().isEmpty()){
+                    templateParameters.clear();
+                    break;
                 }
             }
-            if(!tmpl.isEmpty())
-                templateParams = "<" + tmpl.trimmed() + ">";
         }
 
         //AbstractMetaClassList interfaces = java_function->implementingClass()->interfaces();
@@ -10298,7 +10860,10 @@ void CppImplGenerator::writeFunctionCall(QTextStream &s, const QString &object_n
             }
             if(!operatorCall){
                 if(java_function->isInGlobalScope()){
-                    s << function_name << templateParams << "(";
+                    s << function_name;
+                    if(!templateParameters.isEmpty())
+                        s << '<' << templateParameters.join(QStringLiteral(u", ")) << '>';
+                    s << "(";
                     if(!java_function->isStatic())
                         s << "*" << object_name << ", ";
                 }else{
@@ -10307,7 +10872,9 @@ void CppImplGenerator::writeFunctionCall(QTextStream &s, const QString &object_n
                         s << "::" << prefix;
                     else
                         s << "->" << prefix;
-                    s << function_name << templateParams;
+                    s << function_name;
+                    if(!templateParameters.isEmpty())
+                        s << '<' << templateParameters.join(QStringLiteral(u", ")) << '>';
                     if(java_function->arguments().isEmpty()
                             && java_function->declaringClass()->isNamespace()
                             && java_function->declaringClass()->qualifiedCppName().startsWith("QColorConstants")){
@@ -10504,20 +11071,21 @@ void CppImplGenerator::writeFunctionCallArguments(QTextStream &s,
             }
 
             if(argument->type()->isArray()
-                && java_function->functionType()==MetaFunction::ConstructorFunction
-                && java_function->attributes() & MetaAttributes::BracketCall){
-                s << "{";
-                for(int i=0; i<argument->type()->arrayElementCount(); ++i){
-                    if(i>0){
-                        s << ", ";
-                    }
-                    if (!argument->type()->isPrimitive()
-                        || java_function->hasConversionRule(TS::NativeCode, argument->argumentIndex() + 1)) {
-                        s << prefix;
-                    }
-                    s << argument->indexedName() << "[" << i << "]";
+                && argument->type()->arrayElementCounts().size()>0
+                && argument->type()->getReferenceType()==MetaType::NoReference){
+                QString qtName;
+                if (!argument->type()->isPrimitive()
+                    || java_function->hasConversionRule(TS::NativeCode, argument->argumentIndex() + 1)) {
+                    qtName += prefix;
                 }
-                s << "}";
+                qtName += argument->indexedName();
+                if(m_arrayConversions.contains(quintptr(java_function)) && m_arrayConversions[quintptr(java_function)].contains(qtName)){
+                    s << m_arrayConversions[quintptr(java_function)].take(qtName);
+                    if(m_arrayConversions[quintptr(java_function)].isEmpty())
+                        m_arrayConversions.remove(quintptr(java_function));
+                }else{
+                    s << qtName;
+                }
             }else{
                 if (!argument->type()->isPrimitive()
                         || java_function->hasConversionRule(TS::NativeCode, argument->argumentIndex() + 1)) {
@@ -11067,7 +11635,11 @@ void CppImplGenerator::writeTypeConversion(QTextStream &s, const MetaFunction *f
                                     checkJavaOwnership = ", false";
                                 }
                                 if (type->isContainer()){
-                                    s << INDENT << "InvalidateContainerAfterUse* __invalidate_out_after_use = new InvalidateContainerAfterUse(env, out.l" << checkJavaOwnership << ");" << Qt::endl;
+                                    if(static_cast<const ContainerTypeEntry *>(type->typeEntry())->type()==ContainerTypeEntry::std_array){
+                                        s << INDENT << "InvalidateArrayAfterUse* __invalidate_out_after_use = new InvalidateArrayAfterUse(env, out.l" << checkJavaOwnership << ");" << Qt::endl;
+                                    }else{
+                                        s << INDENT << "InvalidateContainerAfterUse* __invalidate_out_after_use = new InvalidateContainerAfterUse(env, out.l" << checkJavaOwnership << ");" << Qt::endl;
+                                    }
                                 }else if (type->isArray()){
                                     s << INDENT << "InvalidateArrayAfterUse* __invalidate_out_after_use = new InvalidateArrayAfterUse(env, out.l" << checkJavaOwnership << ");" << Qt::endl;
                                 }else{
@@ -11619,7 +12191,7 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const MetaClass *cls,
                                     && !function->isModifiedRemoved(TS::NativeCode)
                                     && !function->isModifiedRemoved(TS::TargetLangCode)
                                     && !function->isPrivate()
-                                    && !function->hasTemplateArgumentTypes()){
+                                    && !function->hasUnresolvedTemplateTypes()){
                                 if (function->actualMinimumArgumentCount()==0) {
                                     standardConstructor = function;
                                 }
@@ -12002,7 +12574,7 @@ void CppImplGenerator::writeMetaInfo(QTextStream &s, const MetaClass *cls,
                 for(MetaFunction * function : cls->functions()){
                     if (
                         !function->isEmptyFunction()
-                        && !function->hasTemplateArgumentTypes()
+                        && !function->hasUnresolvedTemplateTypes()
                         && !function->isRemovedFromAllLanguages(cls)
                     ){
                         QList<const MetaType*> types;

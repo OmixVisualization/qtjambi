@@ -6082,9 +6082,6 @@ class QObject___ extends QObject {
         return QMetaObject.cast(targetType, object);
     }
     
-}// class
-
-class QObject_5__ extends QObject {
     private static class CoreUtility extends io.qt.internal.CoreUtility{
         protected static void emitNativeSignal(QObject sender, int methodIndex, long metaObjectId, Object... args) {
             io.qt.internal.CoreUtility.emitNativeSignal(sender, methodIndex, metaObjectId, args);
@@ -6098,8 +6095,10 @@ class QObject_5__ extends QObject {
             return io.qt.internal.CoreUtility.disconnectOne(connection);
         }
     }
+}// class
 
-    static QThread getQPropertyThread(io.qt.internal.ClassAnalyzerUtility.LambdaInfo info) {
+class QObject_5__ extends QObject {
+    static QObject getQPropertyOwner(io.qt.internal.ClassAnalyzerUtility.LambdaInfo info) {
         return null;
     }
 }// class
@@ -6114,7 +6113,7 @@ class QObject_6__ extends QObject {
             if(metaProperty.isBindable()) {
                 QUntypedBindable bindable = metaProperty.bindable(object);
                 if(bindable.data()==property) {
-                    CoreUtility.registerPropertyField(metaProperty, reflectedField);
+                    PropertyUtility.registerPropertyField(metaProperty, reflectedField);
                     QMetaMethod notifySignal = metaProperty.notifySignal();
                     if(notifySignal.isValid()) {
                         if(notifySignal.parameterCount()==0) {
@@ -6291,7 +6290,7 @@ class QObject_6__ extends QObject {
             initialize(property, null);
         }
         final void initialize(QProperty<T> property, T val) {
-            io.qt.internal.PropertyInfo result = CoreUtility.analyzeProperty(property.owner(), property);
+            PropertyInfo result = PropertyUtility.analyzeProperty(property.owner(), property);
             if(result.property!=null) {
                 if(result.notifySignal==null) {
                     if(result.metaType.flags().testFlag(QMetaType.TypeFlag.IsPointer) || result.metaType.name().contains("*")) {
@@ -6305,13 +6304,13 @@ class QObject_6__ extends QObject {
                             property.core = new RCSignal0PropertyCore<>(result.metaType, result.notifySignal.methodIndex(), result.notifySignal.enclosingMetaObject().metaObjectPointer);
                         }else {
                             property.core = new Signal0PropertyCore<>(result.metaType, result.notifySignal.methodIndex(), result.notifySignal.enclosingMetaObject().metaObjectPointer);
-                        }                                                
+                        }
                     }else {
                         if(result.metaType.flags().testFlag(QMetaType.TypeFlag.IsPointer) || result.metaType.name().contains("*")) {
                             property.core = new RCSignal1PropertyCore<>(result.metaType, result.notifySignal.methodIndex(), result.notifySignal.enclosingMetaObject().metaObjectPointer);
                         }else {
                             property.core = new Signal1PropertyCore<>(result.metaType, result.notifySignal.methodIndex(), result.notifySignal.enclosingMetaObject().metaObjectPointer);
-                        }                        
+                        }
                     }
                 }
                 io.qt.core.QProperty.initialize_native(property, result.metaType, val);
@@ -7017,7 +7016,7 @@ class QObject_6__ extends QObject {
         }
         
         private Runnable signal = () -> {
-            io.qt.internal.PropertyInfo result = CoreUtility.analyzeProperty(QObject.this, this);
+            PropertyInfo result = PropertyUtility.analyzeProperty(QObject.this, this);
             QMetaMethod notifySignal;
             if(result.property!=null) {
                 notifySignal = result.notifySignal;
@@ -7313,7 +7312,7 @@ class QObject_6__ extends QObject {
         }
         
         private Runnable signal = () -> {
-            io.qt.internal.PropertyInfo result = CoreUtility.analyzeProperty(QObject.this, this);
+            PropertyInfo result = PropertyUtility.analyzeProperty(QObject.this, this);
             QMetaMethod notifySignal;
             if(result.property!=null) {
                 notifySignal = result.notifySignal;
@@ -7611,7 +7610,7 @@ class QObject_6__ extends QObject {
         }
         
         private Runnable signal = () -> {
-            io.qt.internal.PropertyInfo result = CoreUtility.analyzeProperty(QObject.this, this);
+            PropertyInfo result = PropertyUtility.analyzeProperty(QObject.this, this);
             QMetaMethod notifySignal;
             if(result.property!=null) {
                 notifySignal = result.notifySignal;
@@ -7907,7 +7906,7 @@ class QObject_6__ extends QObject {
         }
         
         private Runnable signal = () -> {
-            io.qt.internal.PropertyInfo result = CoreUtility.analyzeProperty(QObject.this, this);
+            PropertyInfo result = PropertyUtility.analyzeProperty(QObject.this, this);
             QMetaMethod notifySignal;
             if(result.property!=null) {
                 notifySignal = result.notifySignal;
@@ -8203,7 +8202,7 @@ class QObject_6__ extends QObject {
         }
         
         private Runnable signal = () -> {
-            io.qt.internal.PropertyInfo result = CoreUtility.analyzeProperty(QObject.this, this);
+            PropertyInfo result = PropertyUtility.analyzeProperty(QObject.this, this);
             QMetaMethod notifySignal;
             if(result.property!=null) {
                 notifySignal = result.notifySignal;
@@ -8499,7 +8498,7 @@ class QObject_6__ extends QObject {
         }
         
         private Runnable signal = () -> {
-            io.qt.internal.PropertyInfo result = CoreUtility.analyzeProperty(QObject.this, this);
+            PropertyInfo result = PropertyUtility.analyzeProperty(QObject.this, this);
             QMetaMethod notifySignal;
             if(result.property!=null) {
                 notifySignal = result.notifySignal;
@@ -8795,7 +8794,7 @@ class QObject_6__ extends QObject {
         }
         
         private Runnable signal = () -> {
-            io.qt.internal.PropertyInfo result = CoreUtility.analyzeProperty(QObject.this, this);
+            PropertyInfo result = PropertyUtility.analyzeProperty(QObject.this, this);
             QMetaMethod notifySignal;
             if(result.property!=null) {
                 notifySignal = result.notifySignal;
@@ -9091,7 +9090,7 @@ class QObject_6__ extends QObject {
         }
         
         private Runnable signal = () -> {
-            io.qt.internal.PropertyInfo result = CoreUtility.analyzeProperty(QObject.this, this);
+            PropertyInfo result = PropertyUtility.analyzeProperty(QObject.this, this);
             QMetaMethod notifySignal;
             if(result.property!=null) {
                 notifySignal = result.notifySignal;
@@ -9571,100 +9570,120 @@ class QObject_6__ extends QObject {
         }
     }
 
-    private static class CoreUtility extends io.qt.internal.CoreUtility{
-        static io.qt.internal.PropertyInfo analyzeProperty(QObject object, QtObject property) {
-            return io.qt.internal.CoreUtility.analyzeProperty(object, property, io.qt.internal.PropertyInfo.class);
-        }
-
-        protected static void registerPropertyField(QMetaProperty metaProperty, java.lang.reflect.Field field) {
-            io.qt.internal.CoreUtility.registerPropertyField(metaProperty, field);
-        }
-
-        protected static void emitNativeSignal(QObject sender, int methodIndex, long metaObjectId, Object... args) {
-            io.qt.internal.CoreUtility.emitNativeSignal(sender, methodIndex, metaObjectId, args);
-        }
-
-        protected static boolean disconnectAll(QtSignalEmitterInterface sender, Object receiver) {
-            return io.qt.internal.CoreUtility.disconnectAll(sender, receiver);
-        }
-
-        protected static boolean disconnectOne(QMetaObject.Connection connection) {
-            return io.qt.internal.CoreUtility.disconnectOne(connection);
-        }
-    }
-
-    static QThread getQPropertyThread(io.qt.internal.ClassAnalyzerUtility.LambdaInfo info) {
+    static QObject getQPropertyOwner(io.qt.internal.ClassAnalyzerUtility.LambdaInfo info) {
         if(info!=null) {
             if(info.owner==null && info.isStatic && info.lambdaArgs.size()>0) {
                 Object arg = info.lambdaArgs.get(0);
                 if(arg instanceof QUntypedPropertyData) {
                     if(arg instanceof QProperty) {
                         QProperty<?> property = (QProperty<?>)arg;
-                        return property.owner().thread();
+                        return property.owner();
                     }else if(arg instanceof QByteProperty) {
                         QByteProperty property = (QByteProperty)arg;
-                        return property.owner().thread();
+                        return property.owner();
                     }else if(arg instanceof QShortProperty) {
                         QShortProperty property = (QShortProperty)arg;
-                        return property.owner().thread();
+                        return property.owner();
                     }else if(arg instanceof QIntProperty) {
                         QIntProperty property = (QIntProperty)arg;
-                        return property.owner().thread();
+                        return property.owner();
                     }else if(arg instanceof QLongProperty) {
                         QLongProperty property = (QLongProperty)arg;
-                        return property.owner().thread();
+                        return property.owner();
                     }else if(arg instanceof QFloatProperty) {
                         QFloatProperty property = (QFloatProperty)arg;
-                        return property.owner().thread();
+                        return property.owner();
                     }else if(arg instanceof QDoubleProperty) {
                         QDoubleProperty property = (QDoubleProperty)arg;
-                        return property.owner().thread();
+                        return property.owner();
                     }else if(arg instanceof QCharProperty) {
                         QCharProperty property = (QCharProperty)arg;
-                        return property.owner().thread();
+                        return property.owner();
                     }else if(arg instanceof QBooleanProperty) {
                         QBooleanProperty property = (QBooleanProperty)arg;
-                        return property.owner().thread();
+                        return property.owner();
                     }else if(arg instanceof QAbstractComputedProperty) {
                         QAbstractComputedProperty property = (QAbstractComputedProperty)arg;
-                        return property.owner().thread();
+                        return property.owner();
                     }
                 }
             }else if(info.owner instanceof QUntypedPropertyData) {
                 if(info.owner instanceof QProperty) {
                     QProperty<?> property = (QProperty<?>)info.owner;
-                    return property.owner().thread();
+                    return property.owner();
                 }else if(info.owner instanceof QByteProperty) {
                     QByteProperty property = (QByteProperty)info.owner;
-                    return property.owner().thread();
+                    return property.owner();
                 }else if(info.owner instanceof QShortProperty) {
                     QShortProperty property = (QShortProperty)info.owner;
-                    return property.owner().thread();
+                    return property.owner();
                 }else if(info.owner instanceof QIntProperty) {
                     QIntProperty property = (QIntProperty)info.owner;
-                    return property.owner().thread();
+                    return property.owner();
                 }else if(info.owner instanceof QLongProperty) {
                     QLongProperty property = (QLongProperty)info.owner;
-                    return property.owner().thread();
+                    return property.owner();
                 }else if(info.owner instanceof QFloatProperty) {
                     QFloatProperty property = (QFloatProperty)info.owner;
-                    return property.owner().thread();
+                    return property.owner();
                 }else if(info.owner instanceof QDoubleProperty) {
                     QDoubleProperty property = (QDoubleProperty)info.owner;
-                    return property.owner().thread();
+                    return property.owner();
                 }else if(info.owner instanceof QCharProperty) {
                     QCharProperty property = (QCharProperty)info.owner;
-                    return property.owner().thread();
+                    return property.owner();
                 }else if(info.owner instanceof QBooleanProperty) {
                     QBooleanProperty property = (QBooleanProperty)info.owner;
-                    return property.owner().thread();
+                    return property.owner();
                 }else if(info.owner instanceof QAbstractComputedProperty) {
                     QAbstractComputedProperty property = (QAbstractComputedProperty)info.owner;
-                    return property.owner().thread();
+                    return property.owner();
                 }
             }
         }
         return null;
+    }
+
+    QMetaProperty metaProperty(QUntypedPropertyData property) {
+        QMetaProperty mp = PropertyUtility.analyzeProperty(this, property).property;
+        if(mp==null)
+            mp = new QMetaProperty();
+        return mp;
+    }
+
+    private static class PropertyInfo {
+        private PropertyInfo(java.lang.reflect.Field reflectedField, QMetaType metaType) {
+            super();
+            this.reflectedField = reflectedField;
+            this.metaType = metaType;
+            this.property = null;
+            this.notifySignal = null;
+        }
+        private PropertyInfo(java.lang.reflect.Field reflectedField, QMetaProperty property) {
+            super();
+            this.reflectedField = reflectedField;
+            this.metaType = property.metaType();
+            this.property = property;
+            QMetaMethod notifySignal = property.notifySignal();
+            if(notifySignal.isValid() && notifySignal.parameterCount()<=1)
+                this.notifySignal = notifySignal;
+            else
+                this.notifySignal = null;
+        }
+        final java.lang.reflect.Field reflectedField;
+        final QMetaType metaType;
+        final QMetaProperty property;
+        final QMetaMethod notifySignal;
+    }
+
+    private static class PropertyUtility extends io.qt.internal.PropertyUtility{
+        static PropertyInfo analyzeProperty(QObject object, QUntypedPropertyData property) {
+            return io.qt.internal.PropertyUtility.analyzeProperty(object, property, PropertyInfo::new, PropertyInfo::new);
+        }
+
+        protected static void registerPropertyField(QMetaProperty metaProperty, java.lang.reflect.Field field) {
+            io.qt.internal.PropertyUtility.registerPropertyField(metaProperty, field);
+        }
     }
 
 }// class
@@ -15387,6 +15406,134 @@ class QMetaProperty___{
     
     @QtUninvokable
     private native final Class<?> classType_native();
+}// class
+
+class QMetaProperty_6__{
+    /**
+     * Returns corresponding meta property for given QProperty.
+     */
+    public static @NonNull QMetaProperty fromProperty(QObject.@StrictNonNull QShortProperty property) {
+        return property.owner().metaProperty(property);
+    }
+
+    /**
+     * Returns corresponding meta property for given QProperty.
+     */
+    public static @NonNull QMetaProperty fromProperty(QObject.@StrictNonNull QByteProperty property) {
+        return property.owner().metaProperty(property);
+    }
+
+    /**
+     * Returns corresponding meta property for given QProperty.
+     */
+    public static @NonNull QMetaProperty fromProperty(QObject.@StrictNonNull QIntProperty property) {
+        return property.owner().metaProperty(property);
+    }
+
+    /**
+     * Returns corresponding meta property for given QProperty.
+     */
+    public static @NonNull QMetaProperty fromProperty(QObject.@StrictNonNull QLongProperty property) {
+        return property.owner().metaProperty(property);
+    }
+
+    /**
+     * Returns corresponding meta property for given QProperty.
+     */
+    public static @NonNull QMetaProperty fromProperty(QObject.@StrictNonNull QFloatProperty property) {
+        return property.owner().metaProperty(property);
+    }
+
+    /**
+     * Returns corresponding meta property for given QProperty.
+     */
+    public static @NonNull QMetaProperty fromProperty(QObject.@StrictNonNull QDoubleProperty property) {
+        return property.owner().metaProperty(property);
+    }
+
+    /**
+     * Returns corresponding meta property for given QProperty.
+     */
+    public static @NonNull QMetaProperty fromProperty(QObject.@StrictNonNull QBooleanProperty property) {
+        return property.owner().metaProperty(property);
+    }
+
+    /**
+     * Returns corresponding meta property for given QProperty.
+     */
+    public static @NonNull QMetaProperty fromProperty(QObject.@StrictNonNull QCharProperty property) {
+        return property.owner().metaProperty(property);
+    }
+
+    /**
+     * Returns corresponding meta property for given QProperty.
+     */
+    public static <A> @NonNull QMetaProperty fromProperty(QObject.@StrictNonNull QProperty<A> property) {
+        return property.owner().metaProperty(property);
+    }
+
+    /**
+     * Returns corresponding meta property for given QProperty.
+     */
+    public static @NonNull QMetaProperty fromProperty(QObject.@StrictNonNull QComputedShortProperty property) {
+        return property.owner().metaProperty(property);
+    }
+
+    /**
+     * Returns corresponding meta property for given QProperty.
+     */
+    public static @NonNull QMetaProperty fromProperty(QObject.@StrictNonNull QComputedByteProperty property) {
+        return property.owner().metaProperty(property);
+    }
+
+    /**
+     * Returns corresponding meta property for given QProperty.
+     */
+    public static @NonNull QMetaProperty fromProperty(QObject.@StrictNonNull QComputedIntProperty property) {
+        return property.owner().metaProperty(property);
+    }
+
+    /**
+     * Returns corresponding meta property for given QProperty.
+     */
+    public static @NonNull QMetaProperty fromProperty(QObject.@StrictNonNull QComputedLongProperty property) {
+        return property.owner().metaProperty(property);
+    }
+
+    /**
+     * Returns corresponding meta property for given QProperty.
+     */
+    public static @NonNull QMetaProperty fromProperty(QObject.@StrictNonNull QComputedFloatProperty property) {
+        return property.owner().metaProperty(property);
+    }
+
+    /**
+     * Returns corresponding meta property for given QProperty.
+     */
+    public static @NonNull QMetaProperty fromProperty(QObject.@StrictNonNull QComputedDoubleProperty property) {
+        return property.owner().metaProperty(property);
+    }
+
+    /**
+     * Returns corresponding meta property for given QProperty.
+     */
+    public static @NonNull QMetaProperty fromProperty(QObject.@StrictNonNull QComputedBooleanProperty property) {
+        return property.owner().metaProperty(property);
+    }
+
+    /**
+     * Returns corresponding meta property for given QProperty.
+     */
+    public static @NonNull QMetaProperty fromProperty(QObject.@StrictNonNull QComputedCharProperty property) {
+        return property.owner().metaProperty(property);
+    }
+
+    /**
+     * Returns corresponding meta property for given QProperty.
+     */
+    public static <A> @NonNull QMetaProperty fromProperty(QObject.@StrictNonNull QComputedProperty<A> property) {
+        return property.owner().metaProperty(property);
+    }
 }// class
 
 class QMetaEnum___{

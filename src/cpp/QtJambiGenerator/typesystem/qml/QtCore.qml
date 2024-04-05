@@ -3379,6 +3379,151 @@ public final %ITERATOR_TYPE iterator() {
             since: 6.7
         }
     }// namespace Qt
+
+    Rejection{
+        functionName: "is_eq"
+    }
+    Rejection{
+        functionName: "is_gt"
+    }
+    Rejection{
+        functionName: "is_gteq"
+    }
+    Rejection{
+        functionName: "is_lt"
+    }
+    Rejection{
+        functionName: "is_lteq"
+    }
+    Rejection{
+        functionName: "is_neq"
+    }
+
+    GlobalFunction{
+        signature: "is_eq(Qt::partial_ordering)"
+        targetType: "Qt"
+        since: 6.7
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "is_eq(Qt::strong_ordering)"
+        targetType: "Qt"
+        since: 6.7
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "is_eq(Qt::weak_ordering)"
+        targetType: "Qt"
+        since: 6.7
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "is_gteq(Qt::partial_ordering)"
+        targetType: "Qt"
+        since: 6.7
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "is_gteq(Qt::strong_ordering)"
+        targetType: "Qt"
+        since: 6.7
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "is_gteq(Qt::weak_ordering)"
+        targetType: "Qt"
+        since: 6.7
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "is_neq(Qt::partial_ordering)"
+        targetType: "Qt"
+        since: 6.7
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "is_neq(Qt::strong_ordering)"
+        targetType: "Qt"
+        since: 6.7
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "is_neq(Qt::weak_ordering)"
+        targetType: "Qt"
+        since: 6.7
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "is_lteq(Qt::partial_ordering)"
+        targetType: "Qt"
+        since: 6.7
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "is_lteq(Qt::strong_ordering)"
+        targetType: "Qt"
+        since: 6.7
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "is_lteq(Qt::weak_ordering)"
+        targetType: "Qt"
+        since: 6.7
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "is_lt(Qt::partial_ordering)"
+        targetType: "Qt"
+        since: 6.7
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "is_lt(Qt::strong_ordering)"
+        targetType: "Qt"
+        since: 6.7
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "is_lt(Qt::weak_ordering)"
+        targetType: "Qt"
+        since: 6.7
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "is_gt(Qt::partial_ordering)"
+        targetType: "Qt"
+        since: 6.7
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "is_gt(Qt::strong_ordering)"
+        targetType: "Qt"
+        since: 6.7
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "is_gt(Qt::weak_ordering)"
+        targetType: "Qt"
+        since: 6.7
+        remove: RemoveFlag.All
+    }
     
     NamespaceType{
         name: "QtPrivate"
@@ -4506,6 +4651,12 @@ public final %ITERATOR_TYPE iterator() {
                 name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
                 quoteAfterLine: "class QMetaProperty___"
                 quoteBeforeLine: "}// class"
+            }
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiCore.java"
+                quoteAfterLine: "class QMetaProperty_6__"
+                quoteBeforeLine: "}// class"
+                since: 6
             }
         }
     }
@@ -7670,6 +7821,11 @@ if(destinationChildV<0)
             }
         }
     }
+
+    GlobalFunction{
+        signature: "operator|=(QUrl::FormattingOptions&,QUrl::ComponentFormattingOptions)"
+        remove: RemoveFlag.All
+    }
     
     ValueType{
         name: "QRegExp"
@@ -7801,7 +7957,7 @@ if(destinationChildV<0)
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "fromArray<Byte,Size,true>(Byte)"
+            signature: "fromArray<Byte,Size,true>(const Byte(&)[Size])"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -11706,39 +11862,6 @@ if(destinationChildV<0)
                         Text{content: "auto %out = convertSlot(%env, %in);"}
                     }
                 }
-                InjectCode{
-                    target: CodeClass.Java
-                    position: Position.Beginning
-                    ArgumentMap{
-                        index: 1
-                        metaName: "dur"
-                    }
-                    ArgumentMap{
-                        index: 2
-                        metaName: "context"
-                    }
-                    ArgumentMap{
-                        index: 3
-                        metaName: "slot"
-                    }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
-                                  "    if(context!=null && context==object) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            singleShot(dur, context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            singleShot(dur, context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
-                }
             }
             Instantiation{
                 Argument{
@@ -11762,6 +11885,39 @@ if(destinationChildV<0)
                     }
                 }
                 ppCondition: "__has_include(<chrono>)"
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{
+                    index: 1
+                    metaName: "dur"
+                }
+                ArgumentMap{
+                    index: 2
+                    metaName: "context"
+                }
+                ArgumentMap{
+                    index: 3
+                    metaName: "slot"
+                }
+                Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                              "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                              "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                              "    if(context!=null && context==object) {\n"+
+                              "        switch(metaMethod.methodType()) {\n"+
+                              "        case Signal:\n"+
+                              "            singleShot(dur, context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                              "            return;\n"+
+                              "        case Method:\n"+
+                              "        case Slot:\n"+
+                              "            singleShot(dur, context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                              "            return;\n"+
+                              "        default:\n"+
+                              "            break;\n"+
+                              "        }\n"+
+                              "    }\n"+
+                              "}\n"}
             }
             since: 6.6
         }
@@ -11789,43 +11945,6 @@ if(destinationChildV<0)
                         Text{content: "auto %out = convertSlot(%env, %in);"}
                     }
                 }
-                InjectCode{
-                    target: CodeClass.Java
-                    position: Position.Beginning
-                    ArgumentMap{
-                        index: 1
-                        metaName: "dur"
-                    }
-                    ArgumentMap{
-                        index: 2
-                        metaName: "tt"
-                    }
-                    ArgumentMap{
-                        index: 3
-                        metaName: "context"
-                    }
-                    ArgumentMap{
-                        index: 4
-                        metaName: "slot"
-                    }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
-                                  "    if(context!=null && context==object) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            singleShot(dur, tt, context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            singleShot(dur, tt, context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
-                }
             }
             Instantiation{
                 Argument{
@@ -11849,6 +11968,43 @@ if(destinationChildV<0)
                     }
                 }
                 ppCondition: "__has_include(<chrono>)"
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{
+                    index: 1
+                    metaName: "dur"
+                }
+                ArgumentMap{
+                    index: 2
+                    metaName: "tt"
+                }
+                ArgumentMap{
+                    index: 3
+                    metaName: "context"
+                }
+                ArgumentMap{
+                    index: 4
+                    metaName: "slot"
+                }
+                Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                              "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                              "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                              "    if(context!=null && context==object) {\n"+
+                              "        switch(metaMethod.methodType()) {\n"+
+                              "        case Signal:\n"+
+                              "            singleShot(dur, tt, context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                              "            return;\n"+
+                              "        case Method:\n"+
+                              "        case Slot:\n"+
+                              "            singleShot(dur, tt, context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                              "            return;\n"+
+                              "        default:\n"+
+                              "            break;\n"+
+                              "        }\n"+
+                              "    }\n"+
+                              "}\n"}
             }
             since: 6.6
         }
@@ -11890,39 +12046,6 @@ if(destinationChildV<0)
                         Text{content: "auto %out = convertSlot(%env, %in);"}
                     }
                 }
-                InjectCode{
-                    target: CodeClass.Java
-                    position: Position.Beginning
-                    ArgumentMap{
-                        index: 1
-                        metaName: "dur"
-                    }
-                    ArgumentMap{
-                        index: 2
-                        metaName: "context"
-                    }
-                    ArgumentMap{
-                        index: 3
-                        metaName: "slot"
-                    }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
-                                  "    if(context!=null && context==object) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            singleShot(dur, context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            singleShot(dur, context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
-                }
             }
             Instantiation{
                 Argument{
@@ -11946,6 +12069,39 @@ if(destinationChildV<0)
                     }
                 }
                 ppCondition: "__has_include(<chrono>)"
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{
+                    index: 1
+                    metaName: "dur"
+                }
+                ArgumentMap{
+                    index: 2
+                    metaName: "context"
+                }
+                ArgumentMap{
+                    index: 3
+                    metaName: "slot"
+                }
+                Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                              "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                              "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                              "    if(context!=null && context==object) {\n"+
+                              "        switch(metaMethod.methodType()) {\n"+
+                              "        case Signal:\n"+
+                              "            singleShot(dur, context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                              "            return;\n"+
+                              "        case Method:\n"+
+                              "        case Slot:\n"+
+                              "            singleShot(dur, context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                              "            return;\n"+
+                              "        default:\n"+
+                              "            break;\n"+
+                              "        }\n"+
+                              "    }\n"+
+                              "}\n"}
             }
             until: 6.5
         }
@@ -11977,43 +12133,6 @@ if(destinationChildV<0)
                         Text{content: "auto %out = convertSlot(%env, %in);"}
                     }
                 }
-                InjectCode{
-                    target: CodeClass.Java
-                    position: Position.Beginning
-                    ArgumentMap{
-                        index: 1
-                        metaName: "dur"
-                    }
-                    ArgumentMap{
-                        index: 2
-                        metaName: "tt"
-                    }
-                    ArgumentMap{
-                        index: 3
-                        metaName: "context"
-                    }
-                    ArgumentMap{
-                        index: 4
-                        metaName: "slot"
-                    }
-                    Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
-                                  "if(metaMethod!=null && metaMethod.isValid()) {\n"+
-                                  "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
-                                  "    if(context!=null && context==object) {\n"+
-                                  "        switch(metaMethod.methodType()) {\n"+
-                                  "        case Signal:\n"+
-                                  "            singleShot(dur, tt, context, \"2\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        case Method:\n"+
-                                  "        case Slot:\n"+
-                                  "            singleShot(dur, tt, context, \"1\"+metaMethod.cppMethodSignature());\n"+
-                                  "            return;\n"+
-                                  "        default:\n"+
-                                  "            break;\n"+
-                                  "        }\n"+
-                                  "    }\n"+
-                                  "}\n"}
-                }
             }
             Instantiation{
                 Argument{
@@ -12037,6 +12156,43 @@ if(destinationChildV<0)
                     }
                 }
                 ppCondition: "__has_include(<chrono>)"
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Beginning
+                ArgumentMap{
+                    index: 1
+                    metaName: "dur"
+                }
+                ArgumentMap{
+                    index: 2
+                    metaName: "tt"
+                }
+                ArgumentMap{
+                    index: 3
+                    metaName: "context"
+                }
+                ArgumentMap{
+                    index: 4
+                    metaName: "slot"
+                }
+                Text{content: "io.qt.core.QMetaMethod metaMethod = io.qt.core.QMetaMethod.fromMethod(java.util.Objects.requireNonNull(slot, \"Argument 'slot': null not expected.\"));\n"+
+                              "if(metaMethod!=null && metaMethod.isValid()) {\n"+
+                              "    io.qt.core.QObject object = QtJambi_LibraryUtilities.internal.lambdaContext(slot);\n"+
+                              "    if(context!=null && context==object) {\n"+
+                              "        switch(metaMethod.methodType()) {\n"+
+                              "        case Signal:\n"+
+                              "            singleShot(dur, tt, context, \"2\"+metaMethod.cppMethodSignature());\n"+
+                              "            return;\n"+
+                              "        case Method:\n"+
+                              "        case Slot:\n"+
+                              "            singleShot(dur, tt, context, \"1\"+metaMethod.cppMethodSignature());\n"+
+                              "            return;\n"+
+                              "        default:\n"+
+                              "            break;\n"+
+                              "        }\n"+
+                              "    }\n"+
+                              "}\n"}
             }
             until: 6.5
         }
@@ -12956,7 +13112,7 @@ if(destinationChildV<0)
                 }
             }
             since: 6.7
-            until: 7
+            until: 6
         }
         ModifyFunction{
             signature: "receivers(const char*)const"
@@ -13303,7 +13459,8 @@ if(destinationChildV<0)
                 ModifyArgument{
                     index: 0
                     ReplaceType{
-                        modifiedType: "io.qt.core.@NonNull QList<T>"
+                        modifiedType: "T"
+                        modifiedJniType: "jobject"
                     }
                 }
                 AddTypeParameter{
@@ -13324,7 +13481,7 @@ if(destinationChildV<0)
                 ModifyArgument{
                     index: 0
                     ReplaceType{
-                        modifiedType: "io.qt.core.@NonNull QList<io.qt.core.@Nullable QObject>"
+                        modifiedType: "io.qt.core.@Nullable QObject"
                     }
                 }
             }
@@ -16485,6 +16642,7 @@ if(%1!=null){
             type: CustomConstructor.Default
             Text{content: "new(placement) QOperatingSystemVersion(QOperatingSystemVersion::Unknown, -1);"}
         }
+        until: "6.6.2"
     }
     
     ValueType{
@@ -16494,14 +16652,74 @@ if(%1!=null){
             name: "OSType"
         }
         generate: false
-        since: [6, 3]
+        since: 6.3
+        until: "6.6.2"
     }
 
     ValueType{
         name: "QOperatingSystemVersionUnexported"
         javaName: "QOperatingSystemVersion"
         generate: false
-        since: [6, 6]
+        since: 6.6
+        until: "6.6.2"
+    }
+
+    ValueType{
+        name: "QOperatingSystemVersionUnexported"
+        javaName: "QOperatingSystemVersion"
+        generate: false
+        pushUpStatics: true
+        since: "6.6.3"
+    }
+
+    ValueType{
+        name: "QOperatingSystemVersion"
+        generate: false
+        pushUpStatics: true
+        since: "6.6.3"
+    }
+
+    ValueType{
+        name: "QOperatingSystemVersionBase"
+        javaName: "QOperatingSystemVersion"
+        targetType: "final class"
+        generate: "no-shell"
+        EnumType{
+            name: "OSType"
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.End
+                Text{content: String.raw`
+                    /**
+                     * <p>See <code>QOperatingSystemVersionBase::<wbr/>isAnyOfType(std::initializer_list&lt;QOperatingSystemVersionBase::OSType&gt;,<wbr/>QOperatingSystemVersionBase::OSType)</code></p>
+                     */
+                    public boolean isAnyOfType(@NonNull OSType@NonNull ... types){
+                        return isAnyOfTypePrivate(types, this);
+                    }
+                    `
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "isAnyOfType(std::initializer_list<QOperatingSystemVersionBase::OSType>, QOperatingSystemVersionBase::OSType)"
+            rename: "isAnyOfTypePrivate"
+            access: Modification.Private
+        }
+        CustomConstructor{
+            type: CustomConstructor.Default
+            Text{content: "new(placement) QOperatingSystemVersionBase(QOperatingSystemVersionBase::Unknown, -1);"}
+        }
+        InjectCode{
+            target: CodeClass.MetaInfo
+            position: Position.End
+            Text{content: String.raw`
+                registerValueTypeInfo<QOperatingSystemVersion>("QOperatingSystemVersion", "io/qt/core/QOperatingSystemVersion");
+                registerMetaType<QOperatingSystemVersion>("QOperatingSystemVersion");
+                registerEnumTypeInfo<QOperatingSystemVersion::OSType>("QOperatingSystemVersion::OSType", "io/qt/core/QOperatingSystemVersion$OSType");
+                `
+            }
+        }
+        since: "6.6.3"
     }
     
     ObjectType{
@@ -19929,6 +20147,48 @@ if(%1!=null){
         }
         since: 6
     }
+
+    GlobalFunction{
+        signature: "is_eq(QPartialOrdering)"
+        targetType: "Qt"
+        since: 6
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "is_gteq(QPartialOrdering)"
+        targetType: "Qt"
+        since: 6
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "is_lteq(QPartialOrdering)"
+        targetType: "Qt"
+        since: 6
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "is_gt(QPartialOrdering)"
+        targetType: "Qt"
+        since: 6
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "is_lt(QPartialOrdering)"
+        targetType: "Qt"
+        since: 6
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "is_geq(QPartialOrdering)"
+        targetType: "Qt"
+        since: 6
+        remove: RemoveFlag.All
+    }
     
     ObjectType{
         name: "QResource"
@@ -20502,6 +20762,9 @@ if(%1!=null){
     
     ObjectType{
         name: "QLoggingCategory"
+        FunctionalType{
+            name: "CategoryFilter"
+        }
         ModifyFunction{
             signature: "operator()()"
             remove: RemoveFlag.All
@@ -20575,10 +20838,6 @@ if(%1!=null){
                 quoteBeforeLine: "}// class"
             }
         }
-    }
-    
-    FunctionalType{
-        name: "QLoggingCategory::CategoryFilter"
     }
     
     ObjectType{
@@ -20887,6 +21146,10 @@ if(%1!=null){
         }
         ModifyFunction{
             signature: "QRandomGenerator(const quint32*, const quint32*)"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "QRandomGenerator<N>(quint32()[N])"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -21723,9 +21986,54 @@ if(%1!=null){
         signature: "qRound(qfloat16)"
         remove: RemoveFlag.All
     }
+
+    GlobalFunction{
+        signature: "qbswap(qfloat16)"
+        remove: RemoveFlag.All
+    }
     
     GlobalFunction{
         signature: "qRound64(qfloat16)"
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "operator*=(qfloat16&,double)"
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "operator*=(qfloat16&,float)"
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "operator+=(qfloat16&,double)"
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "operator+=(qfloat16&,float)"
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "operator-=(qfloat16&,double)"
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "operator-=(qfloat16&,float)"
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "operator/=(qfloat16&,double)"
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "operator/=(qfloat16&,float)"
         remove: RemoveFlag.All
     }
     
@@ -21913,7 +22221,6 @@ if(%1!=null){
     GlobalFunction{
         signature: "qSNaN()"
         targetType: "QtNumeric"
-        since: [6,5]
     }
     
     GlobalFunction{
@@ -22755,18 +23062,10 @@ if(%1!=null){
                 type: "qint8"
                 isImplicit: true
             }
-            Argument{
-                type: "void"
-                isImplicit: true
-            }
         }
         Instantiation{
             Argument{
                 type: "qint16"
-                isImplicit: true
-            }
-            Argument{
-                type: "void"
                 isImplicit: true
             }
         }
@@ -22775,38 +23074,10 @@ if(%1!=null){
                 type: "qint32"
                 isImplicit: true
             }
-            Argument{
-                type: "void"
-                isImplicit: true
-            }
         }
         Instantiation{
             Argument{
                 type: "qint64"
-                isImplicit: true
-            }
-            Argument{
-                type: "void"
-                isImplicit: true
-            }
-        }
-        Instantiation{
-            Argument{
-                type: "double"
-                isImplicit: true
-            }
-            Argument{
-                type: "void"
-                isImplicit: true
-            }
-        }
-        Instantiation{
-            Argument{
-                type: "float"
-                isImplicit: true
-            }
-            Argument{
-                type: "void"
                 isImplicit: true
             }
         }
@@ -22814,15 +23085,11 @@ if(%1!=null){
     }
 
     GlobalFunction{
-        signature: "qbswap<T,>(T)"
+        signature: "qbswap<T,std::enable_if_t<std::is_integral_v<T>>>(T)"
         targetType: "QtEndian"
         Instantiation{
             Argument{
                 type: "qint8"
-                isImplicit: true
-            }
-            Argument{
-                type: "QVariant"
                 isImplicit: true
             }
         }
@@ -22831,18 +23098,10 @@ if(%1!=null){
                 type: "qint16"
                 isImplicit: true
             }
-            Argument{
-                type: "QVariant"
-                isImplicit: true
-            }
         }
         Instantiation{
             Argument{
                 type: "qint32"
-                isImplicit: true
-            }
-            Argument{
-                type: "QVariant"
                 isImplicit: true
             }
         }
@@ -22851,43 +23110,24 @@ if(%1!=null){
                 type: "qint64"
                 isImplicit: true
             }
-            Argument{
-                type: "QVariant"
-                isImplicit: true
-            }
-        }
-        Instantiation{
-            Argument{
-                type: "double"
-                isImplicit: true
-            }
-            Argument{
-                type: "QVariant"
-                isImplicit: true
-            }
-        }
-        Instantiation{
-            Argument{
-                type: "float"
-                isImplicit: true
-            }
-            Argument{
-                type: "QVariant"
-                isImplicit: true
-            }
-        }
-        Instantiation{
-            Argument{
-                type: "QUuid::Id128Bytes"
-                isImplicit: true
-            }
-            Argument{
-                type: "QVariant"
-                isImplicit: true
-            }
-            since: 6.6
         }
         since: 6
+    }
+
+    GlobalFunction{
+        signature: "qbswap(QUuid::Id128Bytes)"
+        targetType: "QtEndian"
+        since: 6.6
+    }
+
+    GlobalFunction{
+        signature: "qbswap(float)"
+        targetType: "QtEndian"
+    }
+
+    GlobalFunction{
+        signature: "qbswap(double)"
+        targetType: "QtEndian"
     }
 
     GlobalFunction{
@@ -23081,6 +23321,12 @@ if(%1!=null){
             since: 6.6
         }
     }
+
+    GlobalFunction{
+        signature: "qYieldCpu()"
+        targetType: "QtGlobal"
+        since: 6.7
+    }
     
     HeaderType{
         name: "QtAlgorithms"
@@ -23127,6 +23373,75 @@ if(%1!=null){
 
     Rejection{
         className: "QAssociativeIterable"
+    }
+
+    GlobalFunction{
+        signature: "comparesEqual(const QDate&,const QDate&)"
+        targetType: "QDate"
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "comparesEqual(const QDateTime&,const QDateTime&)"
+        targetType: "QDateTime"
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "comparesEqual(const QTime&,const QTime&)"
+        targetType: "QTime"
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "comparesEqual(const QTimeZone&,const QTimeZone&)"
+        targetType: "QTimeZone"
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "compareThreeWay(const QDate&,const QDate&)"
+        targetType: "QDate"
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "compareThreeWay(const QDateTime&,const QDateTime&)"
+        targetType: "QDateTime"
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "compareThreeWay(const QTime&,const QTime&)"
+        targetType: "QTime"
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "compareThreeWay(const QTimeZone&,const QTimeZone&)"
+        targetType: "QTimeZone"
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "qHashEquals(const QPersistentModelIndex&,const QPersistentModelIndex&)"
+        targetType: "QPersistentModelIndex"
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "qNextPowerOfTwo(unsigned long)"
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "qNextPowerOfTwo(long)"
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "qt_assume_is_deprecated(bool)"
+        remove: RemoveFlag.All
     }
     
     SuppressedWarning{text: "WARNING(Preprocessor) :: No such file or directory: *"}

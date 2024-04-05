@@ -65,7 +65,6 @@ TypeInfo CompilerUtils::typeDescription(TypeSpecifierAST *type_specifier, Declar
     typeInfo.setVolatile(type_cc.isVolatile());
     typeInfo.setReferenceType(TypeInfo::ReferenceType(decl_cc.getReferenceType()));
     typeInfo.setIndirections(decl_cc.indirection());
-    typeInfo.setArrayElements(decl_cc.arrayElements());
     typeInfo.setArguments(type_cc.templateArgumentTypes());
     typeInfo.setFunctionalArgumentTypes(type_cc.functionalArgumentTypes());
     typeInfo.setFunctionalArgumentNames(type_cc.functionalArgumentNames());
@@ -80,6 +79,16 @@ TypeInfo CompilerUtils::typeDescription(TypeSpecifierAST *type_specifier, Declar
             fpTypeInfo.addFunctionalArgumentName(p.name);
         }
         typeInfo = fpTypeInfo;
+        typeInfo.setReferenceType(TypeInfo::ReferenceType(decl_cc.getSubReferenceType()));
+        typeInfo.setIndirections(decl_cc.subIndirection());
+    }else if(!decl_cc.arrayElements().isEmpty()){
+        TypeInfo aTypeInfo;
+        aTypeInfo.setArray(true);
+        aTypeInfo.setArrayType(typeInfo);
+        typeInfo = aTypeInfo;
+        typeInfo.setArrayElements(decl_cc.arrayElements());
+        typeInfo.setReferenceType(TypeInfo::ReferenceType(decl_cc.getSubReferenceType()));
+        typeInfo.setIndirections(decl_cc.subIndirection());
     }
 
     return typeInfo;

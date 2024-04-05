@@ -970,8 +970,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
     	{
         	metaMethod = b.metaObject().method("metaMethod");
         	Assert.assertTrue(metaMethod!=null);
-        	result = metaMethod.invoke(b);
-        	Assert.assertTrue(result instanceof QMetaMethod);
+        	Assert.assertFalse(metaMethod.isValid());
     	}
     	{
     		metaProperty = b.metaObject().property("metaMethod");
@@ -982,11 +981,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
     	{
         	metaMethod = b.metaObject().method("currentIndex");
         	Assert.assertTrue(metaMethod!=null);
-        	result = metaMethod.invoke(b);
-        	Assert.assertTrue(result instanceof QModelIndex);
-    		QModelIndex idx = (QModelIndex)result;
-    		Assert.assertEquals(2, idx.row());
-    		Assert.assertEquals(2, idx.column());
+        	Assert.assertFalse(metaMethod.isValid());
     	}
     	{
     		metaProperty = b.metaObject().property("currentIndex");
@@ -1000,9 +995,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
     	{
         	metaMethod = b.metaObject().method("formattingOptions");
         	Assert.assertTrue(metaMethod!=null);
-        	result = metaMethod.invoke(b);
-        	Assert.assertTrue(result instanceof QUrl.FormattingOptions);
-        	Assert.assertEquals(new QUrl.FormattingOptions(QUrl.UrlFormattingOption.RemoveFilename, QUrl.ComponentFormattingOption.EncodeUnicode), result);
+        	Assert.assertFalse(metaMethod.isValid());
     	}
     	{
         	metaMethod = b.metaObject().method("setFormattingOptions", QUrl.FormattingOptions.class);
@@ -1022,9 +1015,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
     	{
         	metaMethod = b.metaObject().method("intList");
         	Assert.assertTrue(metaMethod!=null);
-        	result = metaMethod.invoke(b);
-        	Assert.assertTrue(result instanceof List);
-        	Assert.assertEquals(result, Arrays.asList(1,5,8,2,4));
+        	Assert.assertFalse(metaMethod.isValid());
     	}
     	{
     		metaProperty = b.metaObject().property("intList");
@@ -1076,9 +1067,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
     	{
         	metaMethod = b.metaObject().method("convertibleEnum");
         	Assert.assertTrue(metaMethod!=null);
-        	result = metaMethod.invoke(b);
-        	Assert.assertTrue(result instanceof ConvertibleProperties.ConvertibleEnum);
-        	Assert.assertEquals(result, ConvertibleProperties.ConvertibleEnum.E4);
+        	Assert.assertFalse(metaMethod.isValid());
     	}
     	{
         	metaProperty = b.metaObject().property("convertibleEnum");
@@ -1090,12 +1079,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
     	{
         	metaMethod = b.metaObject().method("connection");
         	Assert.assertTrue(metaMethod!=null);
-        	result = metaMethod.invoke(b);
-        	Assert.assertTrue(result instanceof QMetaObject.Connection);
-        	QMetaObject.Connection con = (QMetaObject.Connection)result;
-        	Assert.assertTrue(b.connection().isConnected());
-        	Assert.assertTrue(con.isConnected());
-        	Assert.assertEquals(b.model, con.sender());
+        	Assert.assertFalse(metaMethod.isValid());
     	}
     	{
         	metaProperty = b.metaObject().property("connection");

@@ -39,12 +39,12 @@ TypeSystem{
     InjectCode{
         target: CodeClass.MetaInfo
         position: Position.Position1
-        Text{content: "void initialize_meta_info_QtBluetooth();"}
+        Text{content: "#if defined(Q_OS_ANDROID)\nvoid initialize_meta_info_QtBluetooth();\n#endif"}
     }
     
     InjectCode{
         target: CodeClass.MetaInfo
-        Text{content: "initialize_meta_info_QtBluetooth();"}
+        Text{content: "#if defined(Q_OS_ANDROID)\ninitialize_meta_info_QtBluetooth();\n#endif"}
     }
 
     RequiredLibrary{

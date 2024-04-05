@@ -32,6 +32,9 @@
 #include "qtjambiapi.h"
 
 #include "java_p.h"
+#ifdef Q_OS_ANDROID
+#include "androidapi.h"
+#endif
 #include "registryutil_p.h"
 #include <QtCore/QMutex>
 
@@ -1446,7 +1449,7 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QNativePointer,
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(IJIZ)
     QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR2(Ljava/nio/Buffer;JJ)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(indirections,()I)
-    QTJAMBI_REPOSITORY_DEFINE_METHOD(byteSize,()J)
+    QTJAMBI_REPOSITORY_DEFINE_METHOD(knownSize,()J)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(setVerificationEnabled,(Z)V)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(invalidate,()V)
     QTJAMBI_REPOSITORY_DEFINE_METHOD(isReadOnly,()Z)
@@ -1549,13 +1552,11 @@ namespace Android{
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QTJAMBI_REPOSITORY_DEFINE_CLASS(org/qtproject/qt5/android,QtNative,
               QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(activity, ()Landroid/app/Activity;)
-              QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(activityDelegate, ()Lorg/qtproject/qt5/android/QtActivityDelegate;)
               QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(service, ()Landroid/app/Service;)
               QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(getContext, ()Landroid/content/Context;))
 #else
 QTJAMBI_REPOSITORY_DEFINE_CLASS(org/qtproject/qt/android,QtNative,
               QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(activity, ()Landroid/app/Activity;)
-              QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(activityDelegate, ()Lorg/qtproject/qt/android/QtActivityDelegate;)
               QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(service, ()Landroid/app/Service;)
               QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(getContext, ()Landroid/content/Context;))
 #endif

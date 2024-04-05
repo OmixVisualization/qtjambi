@@ -58,7 +58,7 @@ inline bool operator <(const QColor& c1, const QColor& c2){
 
 inline hash_type qHash(const QPixmap &value, hash_type seed = 0)
 {
-    return genericHash(value.handle(), seed);
+    return qHash(quintptr(value.handle()), seed);
 }
 
 inline hash_type qHash(const QCursor &cursor, hash_type seed = 0)
@@ -743,8 +743,40 @@ inline bool operator==(const QAbstractTextDocumentLayout::PaintContext &v1, cons
             && v1.selections==v2.selections;
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(5,14,0) && defined(QTJAMBI_GENERATOR_RUNNING)
-hash_type qHash(const QColorTransform &value, hash_type seed = 0);
+inline bool operator==(const QIconEngine::ScaledPixmapArgument &v1, const QIconEngine::ScaledPixmapArgument &v2){
+    return v1.size==v2.size
+           && v1.mode==v2.mode
+           && v1.state==v2.state
+           && v1.scale==v2.scale
+           && v1.pixmap.handle()==v2.pixmap.handle();
+}
+
+inline hash_type qHash(const QIconEngine::ScaledPixmapArgument &value, hash_type seed = 0)
+{
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.size);
+    seed = hash(seed, value.mode);
+    seed = hash(seed, value.state);
+    seed = hash(seed, value.scale);
+    seed = hash(seed, value.pixmap);
+    return seed;
+}
+
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+inline bool operator==(const QIconEngine::AvailableSizesArgument &v1, const QIconEngine::AvailableSizesArgument &v2){
+    return v1.sizes==v2.sizes
+        && v1.mode==v2.mode
+        && v1.state==v2.state;
+}
+
+inline hash_type qHash(const QIconEngine::AvailableSizesArgument &value, hash_type seed = 0)
+{
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.sizes);
+    seed = hash(seed, value.mode);
+    seed = hash(seed, value.state);
+    return seed;
+}
 #endif //QT_VERSION >= QT_VERSION_CHECK(5,14,0)
 
 #ifdef QTJAMBI_GENERATOR_RUNNING
@@ -790,6 +822,11 @@ QTJAMBI_MATRIX(3,3)
 QTJAMBI_MATRIX(3,4)
 QTJAMBI_MATRIX(4,2)
 QTJAMBI_MATRIX(4,3)
+
+#if QT_VERSION >= QT_VERSION_CHECK(5,14,0)
+hash_type qHash(const QColorTransform &value, hash_type seed = 0);
+#endif //QT_VERSION >= QT_VERSION_CHECK(5,14,0)
+
 #endif
 
 #endif // HASHES_H

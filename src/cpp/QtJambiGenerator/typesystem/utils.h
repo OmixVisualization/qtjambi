@@ -92,6 +92,7 @@ namespace TS {
         Getter              = 0x1000,
         Setter              = 0x2000,
         DeleterFunction     = 0x4000,
+        ConctreteWrapper    = 0x8000,
 
         // masks
         All                 = TargetLangCode
@@ -107,7 +108,8 @@ namespace TS {
         | DeleterFunction
         | Signal
         | MetaInfo
-        | ModuleInfo,
+        | ModuleInfo
+        | ConctreteWrapper,
 
         JavaAndNativeCode   = TargetLangCode | NativeCode,
         TargetLangAndNativeCode   = TargetLangCode | NativeCode

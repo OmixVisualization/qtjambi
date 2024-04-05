@@ -68,7 +68,9 @@ class CppImplGenerator : public CppGenerator {
 
         void writeExtraIncludes(QTextStream &s, const MetaFunctional *java_class, QSet<QString>& dedupe, bool skipQtJambi = false);
 
-        void writeAssignment(QTextStream &s, const QString &destName, const QString &srcName,
+        void writeAssignment(QTextStream &s,
+                             const QString &destName, const QString &srcName,
+                             const MetaFunction *java_function,
                              const MetaType *java_type);
         void writeCustomStructors(QTextStream &s, const ComplexTypeEntry *entry);
         void writeCodeInjections(QTextStream &s,
@@ -260,6 +262,7 @@ class CppImplGenerator : public CppGenerator {
             QString jniSignature;
         };
         QHash<const MetaFunction*,QList<ArgumentList>> m_nativeConstructorNames;
+        QMap<quintptr,QMap<QString,QString>> m_arrayConversions;
 };
 
 #endif // CPPIMPLGENERATOR_H

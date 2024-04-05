@@ -271,6 +271,7 @@ struct Parameter{
     QString name;
     QString extends;
     bool implicit;
+    QString value;
 };
 
 struct TemplateInstantiation: public AbstractFunctionModification {
@@ -288,6 +289,7 @@ struct FunctionModification: public AbstractFunctionModification {
     QString toString() const;
     TS::Language removal;
     QString signature;
+    QString originalSignature;
     QList<TemplateInstantiation> template_instantiations;
 };
 typedef QList<FunctionModification> FunctionModificationList;

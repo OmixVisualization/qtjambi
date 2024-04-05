@@ -412,7 +412,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
         QList<const MetaFunction *> signalsInTargetLang;
 
         for(MetaFunction* signal : java_class->cppSignalFunctions()){
-            if (signal->declaringClass() == java_class && !signal->hasTemplateArgumentTypes())
+            if (signal->declaringClass() == java_class && !signal->hasUnresolvedTemplateTypes())
                 signalsInTargetLang << signal;
         }
 
@@ -421,7 +421,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
                 (!function->isConstructor() ||
                  !java_class->hasUnimplmentablePureVirtualFunction()) &&
                  !function->isEmptyFunction() &&
-                 !function->hasTemplateArgumentTypes()
+                 !function->hasUnresolvedTemplateTypes()
                 )
                 functionsInTargetLang << function;
         }
@@ -429,7 +429,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
                                                                            | MetaClass::AbstractFunctions
                                                                            | MetaClass::NotRemovedFromTargetLang)) {
             if (function->implementingClass() != java_class &&
-                    !function->hasTemplateArgumentTypes() ) {
+                    !function->hasUnresolvedTemplateTypes() ) {
                 functionsInTargetLang << function;
             }
         }
@@ -551,7 +551,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
 
                 // Override all virtual functions to get the decision on static/virtual call
                 for(const MetaFunction *function : java_class->virtualOverrideFunctions()) {
-                    if(!function->hasTemplateArgumentTypes()
+                    if(!function->hasUnresolvedTemplateTypes()
                             && !function->isRemovedFrom(java_class, TS::TargetLangCode)
                             && !function->isRemovedFrom(function->declaringClass(), TS::TargetLangCode)
                             && !function->isModifiedRemoved(TS::NativeCode)
@@ -642,7 +642,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
 void CppHeaderGenerator::writeFunction(QTextStream &s, const MetaFunction *java_function, Option options) {
     if (java_function->isModifiedRemoved(TS::ShellCode))
         return;
-    if (java_function->hasTemplateArgumentTypes())
+    if (java_function->hasUnresolvedTemplateTypes())
         return;
     QStringList pps = getFunctionPPConditions(java_function);
     if(!pps.isEmpty()){

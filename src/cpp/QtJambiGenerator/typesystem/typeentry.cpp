@@ -896,6 +896,7 @@ QString ContainerTypeEntry::targetLangName() const {
         case StringListContainer: return "QStringList";
         case ByteArrayListContainer: return "QList";
         case ListContainer: return "QList";
+        case std_array: return "[";
         case std_vector: return "List";
         case QModelRoleDataSpanContainer: return "Map";
         case QPropertyBindingContainer: return "QPropertyBinding";
@@ -1001,7 +1002,7 @@ IteratorTypeEntry* IteratorTypeEntry::clone(const ComplexTypeEntry* containerTyp
 
 bool ComplexTypeEntry::hasFunctionCodeInjections(const QString &methodSignature, TS::Language language, const QSet<CodeSnip::Position>& positions) const{
     for (const FunctionModification& mod : m_function_mods) {
-        if (mod.signature == methodSignature) {
+        if (mod.signature == methodSignature || (!mod.originalSignature.isEmpty() && mod.originalSignature == methodSignature)) {
             if (mod.snips.count() <= 0)
                 continue ;
             for(const CodeSnip& snip : mod.snips) {
@@ -1021,7 +1022,7 @@ bool ComplexTypeEntry::hasFunctionCodeInjections(const QString &methodSignature,
 
 bool TypeSystemTypeEntry::hasFunctionCodeInjections(const QString &methodSignature, TS::Language language, const QSet<CodeSnip::Position>& positions) const{
     for (const FunctionModification& mod : m_function_mods) {
-        if (mod.signature == methodSignature) {
+        if (mod.signature == methodSignature || (!mod.originalSignature.isEmpty() && mod.originalSignature == methodSignature)) {
             if (mod.snips.count() <= 0)
                 continue ;
             for(const CodeSnip& snip : mod.snips) {
@@ -1052,7 +1053,7 @@ void TypeSystemTypeEntry::setTargetName(const QString &newTargetName)
 FunctionModificationList ComplexTypeEntry::functionModifications(const QString &signature) const {
     FunctionModificationList lst;
     for (const FunctionModification& mod : m_function_mods) {
-        if (mod.signature == signature) {
+        if (mod.signature == signature || (!mod.originalSignature.isEmpty() && mod.originalSignature == signature)) {
             lst << mod;
         }
     }
@@ -1084,7 +1085,7 @@ TypeSystemTypeEntry::TypeSystemTypeEntry(const QString &name, const QString &lib
 FunctionModificationList TypeSystemTypeEntry::functionModifications(const QString &signature) const {
     FunctionModificationList lst;
     for (const FunctionModification& mod : m_function_mods) {
-        if (mod.signature == signature) {
+        if (mod.signature == signature || (!mod.originalSignature.isEmpty() && mod.originalSignature == signature)) {
             lst << mod;
         }
     }
@@ -1149,6 +1150,16 @@ bool ComplexTypeEntry::getNotCloneable() const
 void ComplexTypeEntry::setNotCloneable(bool newNotCloneable)
 {
     notCloneable = newNotCloneable;
+}
+
+bool ComplexTypeEntry::getPushUpStatics() const
+{
+    return pushUpStatics;
+}
+
+void ComplexTypeEntry::setPushUpStatics(bool newPushUpStatics)
+{
+    pushUpStatics = newPushUpStatics;
 }
 
 bool ImplementorTypeEntry::isValueOwner() const

@@ -473,7 +473,9 @@ static void generateInitializer(QTextStream &s, const TypeSystemTypeEntry * type
             }
             if(line.startsWith(spaces))
                 line = line.mid(sp);
-            s << indent << line << Qt::endl;
+            if(!line.startsWith(QLatin1Char('#')))
+                s << indent;
+            s << line << Qt::endl;
         }
     }
 }

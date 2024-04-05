@@ -200,7 +200,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_fromArray)
 
         jobject nativePointer = Java::QtJambi::QNativePointer::newInstance(env,
                                                jint(QNativePointer::Type::Byte), size * size_t(len), 1, false);
-        char *buf = reinterpret_cast<char *>(QtJambiAPI::convertQNativePointerToNative(env, nativePointer, 1));
+        char *buf = reinterpret_cast<char *>(QtJambiAPI::convertQNativePointerToNative(env, nativePointer));
         for (jsize i=0; i<len; ++i) {
             jobject java_object = env->GetObjectArrayElement(array, i);
 
@@ -327,7 +327,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_fromObject)
 {
     try{
         if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(__jni_env, object))
-            return QtJambiAPI::convertNativeToQNativePointer(__jni_env, link->pointer(), QNativePointer::Type::Pointer, 1);
+            return QtJambiAPI::convertNativeToQNativePointer(__jni_env, link->pointer(), QNativePointer::Type::Pointer, -1, 1);
         else if(Java::QtJambi::QtObjectInterface::isInstanceOf(__jni_env, object))
             Java::QtJambi::QNoNativeResourcesException::throwNew(__jni_env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(__jni_env, object).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
     }catch(const JavaException& exn){
@@ -661,18 +661,21 @@ qint64 DirectAddressIODevice::writeData(const char *data, qint64 len)
     return -1;
 }
 
+extern "C" Q_DECL_EXPORT jlong JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_pointerSize)
+    (JNIEnv *,jobject)
+{
+    return jlong(sizeof(void*));
+}
+
 extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QNativePointer_ioDevice)
 (JNIEnv *env,
- jobject buffer)
+ jobject buffer, jint indirections, jlong byteSize, jlong pointer, jboolean readOnly)
 {
     try{
-        jint indirections = Java::QtJambi::QNativePointer::indirections(env,buffer);
         if(indirections==1){
-            jlong capacity = Java::QtJambi::QNativePointer::byteSize(env,buffer);
-            char* address = reinterpret_cast<char*>(Java::QtJambi::QNativePointer::pointer(env,buffer));
-            bool readOnly = Java::QtJambi::QNativePointer::isReadOnly(env, buffer);
-            if(address && capacity>0){
-                QIODevice* device = new DirectAddressIODevice(capacity, address, readOnly, env, buffer);
+            char* address = reinterpret_cast<char*>(pointer);
+            if(address && byteSize>0){
+                QIODevice* device = new DirectAddressIODevice(byteSize, address, readOnly, env, buffer);
                 return qtjambi_cast<jobject>(env, device);
             }
         }

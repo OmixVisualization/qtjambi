@@ -126,7 +126,7 @@ public class CreateNativeDeploymentTask extends Task {
 	        		OSInfo.setCrossCompilation(OSInfo.OperationSystem.Android, OSInfo.Architecture.arm);
 	        		abi = "armeabi-v7a"; 
 	        		break;
-	        	case "android-x64":
+	        	case "android-arm64":
 	        		OSInfo.setCrossCompilation(OSInfo.OperationSystem.Android, OSInfo.Architecture.arm64);
 	        		abi = "arm64-v8a"; 
 	        		break;
@@ -134,7 +134,7 @@ public class CreateNativeDeploymentTask extends Task {
 	        		OSInfo.setCrossCompilation(OSInfo.OperationSystem.Android, OSInfo.Architecture.x86);
 	        		abi = "x86";
 	        		break;
-	        	case "android-arm64":
+	        	case "android-x64":
 	        		OSInfo.setCrossCompilation(OSInfo.OperationSystem.Android, OSInfo.Architecture.x86_64);
 	        		abi = "x86_64";
 	        		break;

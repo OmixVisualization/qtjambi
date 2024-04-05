@@ -59,7 +59,6 @@ QString NameCompiler::decode_operator(std::size_t index, unsigned opLength) cons
 void NameCompiler::internal_run(AST *node) {
     _M_name.clear();
     _M_functionalReturnType = TypeInfo();
-    _M_templateArgs.clear();
     _M_templateArgumentTypes.clear();
     _M_functionalArgumentTypes.clear();
     _M_functionalArgumentNames.clear();
@@ -322,7 +321,7 @@ void NameCompiler::visitTemplateArgument(TemplateArgumentAST *node) {
             _M_functionalReturnType.setVolatile(type_cc.isVolatile());
             _M_functionalReturnType.setReferenceType(TypeInfo::ReferenceType(decl_cc.getReferenceType()));
             _M_functionalReturnType.setIndirections(decl_cc.indirection());
-            _M_functionalReturnType.setArrayElements(decl_cc.arrayElements());
+            //_M_functionalReturnType.setArrayElements(decl_cc.arrayElements());
             _M_functionalReturnType.setFunctionalArgumentTypes(type_cc.functionalArgumentTypes());
             _M_functionalReturnType.setFunctionalArgumentNames(type_cc.functionalArgumentNames());
             if(!type_cc.functionalReturnType().qualifiedName().isEmpty())
@@ -349,7 +348,7 @@ void NameCompiler::visitTemplateArgument(TemplateArgumentAST *node) {
             type.setVolatile(type_cc.isVolatile());
             type.setReferenceType(TypeInfo::ReferenceType(decl_cc.getReferenceType()));
             type.setIndirections(decl_cc.indirection());
-            type.setArrayElements(decl_cc.arrayElements());
+            //type.setArrayElements(decl_cc.arrayElements());
             type.setArguments(type_cc.templateArgumentTypes());
             type.setFunctionalArgumentTypes(type_cc.functionalArgumentTypes());
             if(!type_cc.functionalReturnType().qualifiedName().isEmpty())
@@ -358,11 +357,10 @@ void NameCompiler::visitTemplateArgument(TemplateArgumentAST *node) {
             _M_templateArgumentTypes << type;
         }
     }else if(node->expression){
-//        DefaultVisitor defaultVisitor;
-//        defaultVisitor.visit(node->expression);
-        templateArg = QLatin1String("EXPRESSION");
+        TypeInfo type;
+        type.setExpression(node->expression->toString(_M_token_stream));
+        _M_templateArgumentTypes << type;
     }
-    _M_templateArgs << templateArg;
 }
 
 // kate: space-indent on; indent-width 2; replace-tabs on;

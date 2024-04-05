@@ -29,6 +29,9 @@
 
 #include <QtCore/QMutex>
 #include "utils_p.h"
+#if defined(Q_OS_ANDROID)
+#include <QtJambi/AndroidAPI>
+#endif
 
 namespace Java{
 namespace QtBluetooth{
@@ -38,8 +41,8 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/bluetooth,QBluetoothDeviceInfo$ServiceUuid
 }
 }
 
-void initialize_meta_info_QtBluetooth(){
 #if defined(Q_OS_ANDROID)
+void initialize_meta_info_QtBluetooth(){
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #define ORG_QTPROJECT_QT "org/qtproject/qt/"
 #else
@@ -64,5 +67,5 @@ void initialize_meta_info_QtBluetooth(){
             }
         }
     }
-#endif
 }
+#endif

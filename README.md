@@ -145,7 +145,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `5.15.19`, by `6.5.5` or by `6.6.2`).
+(exchange `$VERSION` either by `5.15.20`, by `6.5.6`, by `6.6.3` or by `6.7.0`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 
@@ -165,7 +165,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.5.5.jar Test.java
+javac -cp qtjambi-6.5.6.jar Test.java
 ```
 
 ### Execute Example
@@ -173,8 +173,9 @@ javac -cp qtjambi-6.5.5.jar Test.java
 For execution you need the platform dependent binaries of QtJambi either as self-extracting bundle or as library file (e.b. dll). 
 For instance, if you are working on Windows download **qtjambi-native-windows-x64-VERSION.jar**
 from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-windows-x64/) and add it to java class path. 
+
 Additionally, you need *Qt*. Use the [Qt installer](https://www.qt.io/download-qt-installer) to install Qt on your system. Make sure you are using the same Qt version and QtJambi version (e.g. 5.15 or 6.x).
-**When using Maven artifacts for Windows you need to select MSVC 2019 64-Bit (msvc2019_64), as they are not compatible with Mingw Qt.**
+When using Maven artifacts for Windows you need to select MSVC 2019 64-Bit (msvc2019_64), as they are not compatible with Mingw Qt.
 
 When running a QtJambi application you have to make the locations of Qt libraries known to Java.
 Therefore, use the `PATH` environment (`LD_LIBRARY_PATH` on Linux, `DYLD_FRAMEWORK_PATH` on macOS) 
@@ -183,20 +184,20 @@ By default, on Windows Qt libraries are located in `bin` directory and on Linux 
 
 The example program can be executed this way on Windows:
 ``` powershell
-java -cp qtjambi-6.5.5.jar;. -Djava.library.path=C:\Qt\6.5.3\msvc2019_64\bin Test
+java -cp qtjambi-6.5.6.jar;. -Djava.library.path=C:\Qt\6.5.3\msvc2019_64\bin Test
 ```
 On Linux it looks this way:
 ``` bash
-java -cp qtjambi-6.5.5.jar:. -Djava.library.path=<path to>/Qt/6.5.3/gcc_64/lib Test
+java -cp qtjambi-6.5.6.jar:. -Djava.library.path=<path to>/Qt/6.5.3/gcc_64/lib Test
 ```
 On macOS you additionally need to use the start parameter `-XstartOnFirstThread`:
 ``` bash
-java -cp qtjambi-6.5.5.jar:. -Djava.library.path=<path to>/Qt/6.5.3/macos/lib -XstartOnFirstThread Test
+java -cp qtjambi-6.5.6.jar:. -Djava.library.path=<path to>/Qt/6.5.3/macos/lib -XstartOnFirstThread Test
 ```
 
 On Linux of your distribution provides Qt (of correct version) as system library you don't need to specify library path at all.
 However, since Maven-published binaries for Linux have been built with Qt from installer they might be incompatible to your system-specific Qt.
-In this case it is recommended to build QtJambi on your Linux system by using the installed `qmake`.
+In this case it is recommended to build QtJambi on your Linux system by using the installed `qmake` or install Qt by using Qt installer.
 
 If the example fails with a `UnsatisfiedLinkError` QtJambi libraries and Qt libraries seem to be incompatible.
 [Read here about library requirements and compatibility.](www/Modules.md)

@@ -560,7 +560,7 @@ namespace Java{
                       QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
                       QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR2()
                       QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(indirections)
-                      QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(byteSize)
+                      QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(knownSize)
                       QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(setVerificationEnabled)
                       QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(invalidate)
                       QTJAMBI_REPOSITORY_DECLARE_BOOLEAN_METHOD(isReadOnly)

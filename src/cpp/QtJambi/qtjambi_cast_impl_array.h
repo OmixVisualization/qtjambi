@@ -998,6 +998,27 @@ struct qtjambi_nativearray_caster<has_scope, jintArray, char32_t, false, I>{
     }
 };
 #endif
+
+template<typename T, size_t N, bool has_scope,
+         bool is_const, bool is_reference>
+struct qtjambi_jnitype_qobject_decider_cast<true, has_scope, std::array<T,N>, false, is_const, is_reference, false, false>
+{
+    typedef std::array<T,N> NativeType;
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
+    typedef typename std::add_lvalue_reference<typename std::add_const<NativeType>::type>::type NativeType_in;
+    typedef typename std::add_lvalue_reference<NativeType_c>::type NativeType_out;
+    typedef typename std::add_pointer<NativeType>::type NativeType_ptr;
+    constexpr static jobject cast(JNIEnv * env, NativeType_in in, const char* nativeTypeName, QtJambiScope* scope){
+        return QtJambiPrivate::qtjambi_array_cast_decider<
+            has_scope,
+            NativeType, QtJambiPrivate::is_jni_array_type<NativeType>::value,
+            const T*, false,
+            size_t
+            >::cast(env, in.data(), N, nativeTypeName, scope);
+    }
+};
+
 } // namespace QtJambiPrivate
 
 #endif // QTJAMBI_CAST_IMPL_ARRAY_H

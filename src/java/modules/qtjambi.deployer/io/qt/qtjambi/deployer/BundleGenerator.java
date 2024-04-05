@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -996,6 +995,49 @@ final class BundleGenerator {
 				@SuppressWarnings("serial")
 				class HasManifestException extends IOException{}
 				
+				class UnEmptyJarOutputStream extends JarOutputStream{
+					private final File utilFile;
+					private final Manifest manifest;
+					public UnEmptyJarOutputStream(File utilFile, Manifest manifest) throws IOException {
+						super(new FileOutputStream(utilFile));
+						this.utilFile = utilFile;
+						this.manifest = manifest;
+					}
+					
+					boolean hasManifest = false;
+					int entries;
+					@Override
+					public void putNextEntry(ZipEntry ze) throws IOException {
+						if(JarFile.MANIFEST_NAME.equals(ze.getName())) {
+							if(hasManifest)
+								throw new HasManifestException();
+							hasManifest = true;
+							super.putNextEntry(ze);
+						}else if(ze.getName().startsWith("META-INF/") || ze.getName().endsWith(".class")){
+							super.putNextEntry(ze);
+						}else if(ze.getName().startsWith("qml/")){
+							//super.putNextEntry(new JarEntry("assets/qrc/qt-project.org/imports/"+ze.getName().substring(4)));
+							super.putNextEntry(new JarEntry("qt-project.org/imports/"+ze.getName().substring(4)));
+						}else {
+//							super.putNextEntry(new JarEntry("assets/qrc/"+ze.getName()));
+							super.putNextEntry(new JarEntry(ze.getName()));
+						}
+						++entries;
+					}
+
+					@Override
+					public void close() throws IOException {
+						if(!hasManifest && entries>0) {
+							super.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
+							manifest.write(this);
+							super.closeEntry();
+						}
+						super.close();
+						if(entries==0)
+							utilFile.delete();
+					}
+				}
+				
 				Transformer transformer = TransformerFactory.newInstance().newTransformer();
 				transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 				transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
@@ -1014,41 +1056,7 @@ final class BundleGenerator {
 					JarOutputStream jarUtilFile = null;
 					if(osArchName.startsWith("android")) {
 						File utilFile = new File(targetDir, "qt-lib-"+libPair.getKey()+"-native-android-common-"+version+".jar");
-						OutputStream os = new FileOutputStream(utilFile);
-						jarUtilFile = new JarOutputStream(os){
-							boolean hasManifest = false;
-							int entries;
-							@Override
-							public void putNextEntry(ZipEntry ze) throws IOException {
-								if(JarFile.MANIFEST_NAME.equals(ze.getName())) {
-									if(hasManifest)
-										throw new HasManifestException();
-									hasManifest = true;
-									super.putNextEntry(ze);
-								}else if(ze.getName().startsWith("META-INF/") || ze.getName().endsWith(".class")){
-									super.putNextEntry(ze);
-								}else if(ze.getName().startsWith("qml/")){
-									//super.putNextEntry(new JarEntry("assets/qrc/qt-project.org/imports/"+ze.getName().substring(4)));
-									super.putNextEntry(new JarEntry("qt-project.org/imports/"+ze.getName().substring(4)));
-								}else {
-//									super.putNextEntry(new JarEntry("assets/qrc/"+ze.getName()));
-									super.putNextEntry(new JarEntry(ze.getName()));
-								}
-								++entries;
-							}
-
-							@Override
-							public void close() throws IOException {
-								if(!hasManifest && entries>0) {
-									super.putNextEntry(new ZipEntry(JarFile.MANIFEST_NAME));
-									manifest.write(this);
-									super.closeEntry();
-								}
-								super.close();
-								if(entries==0)
-									utilFile.delete();
-							}
-						};
+						jarUtilFile = new UnEmptyJarOutputStream(utilFile, manifest);
 						closable = jarUtilFile;
 						if("core".equals(libPair.getKey())) {
 							try(JarInputStream is = new JarInputStream(androidBindingsURL.openStream())){
@@ -1667,7 +1675,7 @@ final class BundleGenerator {
 					if(osArchName.startsWith("android")) {
 						File utilFile = new File(targetDir, "qt-plugin-"+libPair.getKey().replace("/", "-")+"-native-android-common-"+version+".jar");
 						if(!utilFile.exists()) {
-							jarUtilFile = new JarOutputStream(new FileOutputStream(utilFile));
+							jarUtilFile = new UnEmptyJarOutputStream(utilFile, manifest);
 						}else {
 							jarUtilFile = new JarOutputStream(new ByteArrayOutputStream());
 						}
@@ -1738,7 +1746,7 @@ final class BundleGenerator {
 					if(osArchName.startsWith("android")) {
 						File utilFile = new File(targetDir, "qt-qml-"+libName+"-native-android-common-"+version+".jar");
 						if(!utilFile.exists()) {
-							jarUtilFile = new JarOutputStream(new FileOutputStream(utilFile));
+							jarUtilFile = new UnEmptyJarOutputStream(utilFile, manifest);
 						}else {
 							jarUtilFile = new JarOutputStream(new ByteArrayOutputStream());
 						}
@@ -1950,6 +1958,10 @@ final class BundleGenerator {
 							continue;
 						}
 					}
+				}
+				if(file.getName().startsWith("v8_context_snapshot") && file.getName().endsWith(".bin")) {
+					if(file.getName().endsWith(".debug.bin") != isDebug)
+						continue;
 				}
 				Element element;
 				if(isLibrary) {

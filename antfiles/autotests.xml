@@ -68,6 +68,15 @@
 				</and>
 			</or>
         </condition>
+        <condition property="less.qt67" value="true">
+			<or>
+				<less arg1="6" arg2="${qtjambi.soname.version.major}"/>
+				<and>
+					<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+					<less arg1="6" arg2="${qtjambi.soname.version.minor}"/>
+				</and>
+			</or>
+        </condition>
 		<property name="qtjambi.isqt${qtjambi.soname.version.major}" value="true"/>
         <fileset id="qtjambi.autotest.classes" dir="${java.srcdir}/autotests">
             <include name="io/qt/**/Test${test.includes}.java"/>
@@ -76,6 +85,7 @@
             <exclude name="io/qt/**/Test*Qt63.java" unless="${less.qt63}"/>
             <exclude name="io/qt/**/Test*Qt65.java" unless="${less.qt65}"/>
             <exclude name="io/qt/**/Test*Qt66.java" unless="${less.qt66}"/>
+            <exclude name="io/qt/**/Test*Qt67.java" unless="${less.qt67}"/>
             <exclude name="io/qt/**/Test*Qml.java" unless="${qtjambi.qml.any.true}"/>
             <exclude name="io/qt/**/Test*ActiveX.java" unless="${qtjambi.activex.any.true}"/>
             <exclude name="io/qt/**/Test*OpenGL.java" unless="${qtjambi.opengl.any.true}"/>

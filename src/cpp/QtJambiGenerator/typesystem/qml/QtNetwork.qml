@@ -3063,6 +3063,12 @@ TypeSystem{
         }
         since: 6.7
     }
+
+    GlobalFunction{
+        signature: "qt_qhostinfo_lookup(const QString&,QObject*,const char*,bool*,int*)"
+        targetType: "QHostInfo"
+        remove: RemoveFlag.All // is internal
+    }
     
     SuppressedWarning{text: "*unmatched parameter type 'const sockaddr*"}
     

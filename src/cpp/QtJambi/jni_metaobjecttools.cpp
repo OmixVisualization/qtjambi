@@ -44,14 +44,16 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_AbstractMetaObjectUtility_getPropert
         jfieldID field = env->FromReflectedField(reflectField);
         for(int i=0; i<metaObject->propertyCount(); ++i){
             QMetaProperty prop = metaObject->property(i);
-            if(const QtJambiMetaObject* dynamicMetaObject = QtJambiMetaObject::cast(prop.enclosingMetaObject())){
-                if(field==dynamicMetaObject->getQPropertyField(prop.relativePropertyIndex())){
-                    return qtjambi_cast<jobject>(env, prop);
+            if(prop.isValid()){
+                if(const QtJambiMetaObject* dynamicMetaObject = QtJambiMetaObject::cast(prop.enclosingMetaObject())){
+                    if(field==dynamicMetaObject->getQPropertyField(prop.relativePropertyIndex())){
+                        return qtjambi_cast<jobject>(env, prop);
+                    }
                 }
             }
         }
     }
-    return qtjambi_cast<jobject>(env, QMetaProperty());
+    return nullptr;
 }
 
 extern "C" Q_DECL_EXPORT void JNICALL

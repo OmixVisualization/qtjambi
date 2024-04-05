@@ -379,16 +379,6 @@ const QRhiShaderResourceBinding * %out = array.pointer();
                         `}
                 }
             }
-            ModifyArgument{
-                index: 3
-                ReplaceType{
-                    modifiedType: "java.util.@NonNull Collection<@NonNull@QtPrimitiveType Integer>"
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "auto %out = std::back_inserter(qtjambi_cast<QList<quint32>&>(%env, %scope, %in));"}
-                }
-            }
             Instantiation{
                 Argument{
                     type: "QList<quint32>"
@@ -400,6 +390,16 @@ const QRhiShaderResourceBinding * %out = array.pointer();
                     ConversionRule{
                         codeClass: CodeClass.Native
                         Text{content: "const QRhiShaderResourceBinding * %out = array.pointer()+array.size();"}
+                    }
+                }
+                ModifyArgument{
+                    index: 3
+                    ReplaceType{
+                        modifiedType: "java.util.@NonNull Collection<@NonNull@QtPrimitiveType Integer>"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "auto %out = std::back_inserter(qtjambi_cast<QList<quint32>&>(%env, %scope, %in));"}
                     }
                 }
             }
@@ -629,10 +629,6 @@ if(%out_buffer.size()<array.size()*4)
             Rename{
                 to: "disposeLater"
             }
-            /*InjectCode{
-                target: CodeClass.Java
-                Text{content: ""}
-            }*/
         }
     }
     ObjectType{
@@ -645,6 +641,71 @@ if(%out_buffer.size()<array.size()*4)
         }
         ObjectType{
             name: "NativeBuffer"
+            ExtraIncludes{
+                Include{
+                    fileName: "QtJambi/GuiAPI"
+                    location: Include.Global
+                }
+            }
+            ModifyField{
+                name: "objects"
+                ReplaceType{
+                    modifiedType: "io.qt.@Nullable QNativePointer @Nullable[]"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.NativeGetter
+                    Text{content: String.raw`
+                            %out = QtJambiAPI::toJObjectArray<void const*>(%env, "io/qt/QNativePointer", %in, jsize(__qt_this->slotCount), [](JNIEnv * env, void const* pointer)->jobject{
+                                    return QtJambiAPI::convertNativeToQNativePointer(env, pointer, QNativePointer::Type::Pointer, -1, 1);
+                                });
+                        `}
+                }
+                ConversionRule{
+                    codeClass: CodeClass.NativeSetter
+                    Text{content: String.raw`
+                            JObjectArrayPointer<void*> %in_pointer(%env, %in, [](void*& ptr, JNIEnv *env, jobject obj){
+                                    ptr = QtJambiAPI::convertQNativePointerToNative(env, obj);
+                                });
+                            __qt_this->slotCount = %in_pointer.size();
+                            __qt_this->objects[0] = %in_pointer.size()>0 ? %in_pointer.pointer()[0] : nullptr;
+                            __qt_this->objects[1] = %in_pointer.size()>1 ? %in_pointer.pointer()[1] : nullptr;
+                            __qt_this->objects[2] = %in_pointer.size()>2 ? %in_pointer.pointer()[2] : nullptr;
+                        `}
+                }
+            }
+            ModifyField{
+                name: "slotCount"
+                write: false
+            }
+            ModifyFunction{
+                signature: "NativeBuffer{const void*[3],int}"
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "io.qt.@Nullable QNativePointer @Nullable[]"
+                    }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: String.raw`
+                                JObjectArrayPointer<void*> %in_pointer(%env, %in, [](void*& ptr, JNIEnv *env, jobject obj){
+                                        ptr = QtJambiAPI::convertQNativePointerToNative(env, obj);
+                                    });
+                                int %2 = objects0_pointer.size();
+                                #define %out {%in_pointer.size()>0 ? %in_pointer.pointer()[0] : nullptr, %in_pointer.size()>1 ? %in_pointer.pointer()[1] : nullptr, %in_pointer.size()>2 ? %in_pointer.pointer()[2] : nullptr}
+                            `}
+                    }
+                }
+                ModifyArgument{
+                    index: 2
+                    RemoveArgument{}
+                }
+                InjectCode{
+                    target: CodeClass.Native
+                    position: Position.End
+                    ArgumentMap{index: 1; metaName: "%1"}
+                    Text{content: "#undef __qt_%1"}
+                }
+            }
         }
         EnumType{
             name: "Type"
@@ -1194,6 +1255,11 @@ public final void setLuminanceInNits(float minLuminance, float maxLuminance) {
     }
     ObjectType{
         name: "QRhiSwapChainProxyData"
+        ModifyField{
+            name: "reserved"
+            read: false
+            write: false
+        }
     }
     ObjectType{
         name: "QRhiSwapChainRenderTarget"

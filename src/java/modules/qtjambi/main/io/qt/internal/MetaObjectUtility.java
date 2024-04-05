@@ -667,7 +667,279 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         || declaredMethod.isBridge()) {
                     continue;
                 }
-                if (
+                
+                final String declaredMethodName = declaredMethod.getName();
+
+                // Rules for readers:
+                // 1. Zero arguments
+                // 2. Return something other than void
+                // 3. We can convert the type
+                PropertyAnnotation reader = PropertyAnnotation.readerAnnotation(declaredMethod);
+                {
+
+                    if ( 
+                            (reader != null && reader.enabled())
+                            && isValidGetter(declaredMethod)) {
+
+                        String name = reader.name();
+                        // If the return type of the property reader is not registered, then
+                        // we need to register the owner class in the meta object (in which case
+                        // it has to be a QObject)
+                        Class<?> returnType = declaredMethod.getReturnType();
+
+                        if ( (QFlags.class.isAssignableFrom(returnType) || Enum.class.isAssignableFrom(returnType))
+                                && !isEnumAllowedForProperty(returnType) ) {
+                            int type = QMetaType.qRegisterMetaType(returnType);
+                            if(type==QMetaType.Type.UnknownType.value()) {
+                                System.err.println("Problem in property '" + name + "' in '" + clazz.getName()
+                                                   + "' with return type '"+returnType.getName()
+                                                   +"': Unable to register meta type.");
+                                continue;
+                            }
+                        }
+                        Field signalField = signals.get(name);
+                        if(signalField!=null && SignalUtility.AbstractSignal.class.isAssignableFrom(returnType))
+                        	continue;
+
+                        propertyReaders.put(name, declaredMethod);
+                        usedGetters.add(declaredMethod);
+                        propertyDesignableResolvers.put(name, isDesignable(declaredMethod, clazz));
+                                                                                                   
+                        propertyScriptableResolvers.put(name, isScriptable(declaredMethod, clazz));
+                        propertyEditableResolvers.put(name, isEditable(declaredMethod, clazz));
+                        propertyStoredResolvers.put(name, isStored(declaredMethod, clazz));
+                        propertyUserResolvers.put(name, isUser(declaredMethod, clazz));
+                        propertyRequiredResolvers.put(name, isRequired(declaredMethod, clazz));
+                        propertyConstantResolvers.put(name, isConstant(declaredMethod));
+                        propertyFinalResolvers.put(name, isFinal(declaredMethod));
+                    }
+                }
+
+                // Rules for writers:
+                // 1. Takes exactly one argument
+                // 2. Return void
+                // 3. We can convert the type
+                PropertyAnnotation writer = PropertyAnnotation.writerAnnotation(declaredMethod);
+                {
+                    if ( writer != null 
+                            && writer.enabled()
+                            && isValidSetter(declaredMethod)) {
+                        propertyWriters.computeIfAbsent(writer.name(), arrayListFactory()).add(declaredMethod);
+                    }
+                }
+
+                // Check naming convention by looking for setXxx patterns, but only if it hasn't already been
+                // annotated as a writer
+                if ((isQObject || isGadget)
+                    && writer == null
+                    && reader == null // reader can't be a writer, cause the signature doesn't match, just an optimization
+                    ) {
+            		if(declaredMethodName.startsWith("set")
+                            && declaredMethodName.length() > 3
+                            && Character.isUpperCase(declaredMethodName.charAt(3))
+                            && isValidSetter(declaredMethod)) {
+            			Class<?> paramType = declaredMethod.getParameterTypes()[0];
+                        String propertyName = Character.toLowerCase(declaredMethodName.charAt(3))
+                                            + declaredMethodName.substring(4);
+
+                        if (!propertyReaders.containsKey(propertyName)) {
+                            // We need a reader as well, and the reader must not be annotated as disabled
+                            // The reader can be called 'xxx', 'getXxx', 'isXxx' or 'hasXxx'
+                            // (just booleans for the last two)
+                            Method readerMethod = findPropertyReader(getDeclaredMethod(clazz, propertyName), propertyName, paramType);
+                            if (readerMethod == null)
+                                readerMethod = findPropertyReader(getDeclaredMethod(clazz, "get" + capitalizeFirst(propertyName)), propertyName, paramType);
+                            if (readerMethod == null && isBoolean(paramType))
+                                readerMethod = findPropertyReader(getDeclaredMethod(clazz, "is" + capitalizeFirst(propertyName)), propertyName, paramType);
+                            if (readerMethod == null && isBoolean(paramType))
+                                readerMethod = findPropertyReader(getDeclaredMethod(clazz, "has" + capitalizeFirst(propertyName)), propertyName, paramType);
+
+                            if (readerMethod != null) { // yay
+                                reader = PropertyAnnotation.readerAnnotation(readerMethod);
+                                if (reader == null) {
+                                	usedGetters.add(readerMethod);
+                                    propertyReaders.put(propertyName, readerMethod);
+                                    propertyWriters.computeIfAbsent(propertyName, arrayListFactory()).add(declaredMethod);
+
+                                    propertyDesignableResolvers.put(propertyName, isDesignable(readerMethod, clazz));
+                                    propertyScriptableResolvers.put(propertyName, isScriptable(readerMethod, clazz));
+                                    propertyUserResolvers.put(propertyName, isUser(readerMethod, clazz));
+                                    propertyRequiredResolvers.put(propertyName, isRequired(readerMethod, clazz));
+                                }
+                            }
+                        }
+            		}else if(isValidGetter(declaredMethod)){
+            			int offset = 3;
+            			if((   declaredMethodName.startsWith("get") 
+            				|| (isBoolean(declaredMethod.getReturnType()) && declaredMethodName.startsWith("has"))
+            				|| (isBoolean(declaredMethod.getReturnType()) && (--offset==2) && declaredMethodName.startsWith("is"))
+            			   ) && declaredMethodName.length() > offset
+                             && Character.isUpperCase(declaredMethodName.charAt(offset))) {
+	            			String propertyName = Character.toLowerCase(declaredMethodName.charAt(offset))
+	                                + declaredMethodName.substring(offset+1);
+	            			if(possibleReaders.isEmpty())
+	            				possibleReaders = new ArrayList<>();
+	            			possibleReaders.add(new QPair<>(propertyName, declaredMethod));
+            			}
+            		}
+                }
+                
+                // Rules for notifys:
+                // 1. No arguments
+                // 2. Return void
+                {
+                    PropertyAnnotation resetter = PropertyAnnotation.resetterAnnotation(declaredMethod);
+                    if (resetter != null
+                        && declaredMethod.getParameterCount() == 0
+                        && declaredMethod.getReturnType() == void.class) {
+                        propertyResetters.put(resetter.name(), declaredMethod);
+                    }
+                }
+                
+                if(isValidBindable(declaredMethod)) {
+	                PropertyAnnotation bindables = PropertyAnnotation.bindableAnnotation(declaredMethod);
+                    if (bindables != null) {
+                        propertyBindables.put(bindables.name(), declaredMethod);
+                    }else{
+                    	if(possibleBindables.isEmpty())
+                    		possibleBindables = new ArrayList<>();
+                    	possibleBindables.add(declaredMethod);
+                    }
+                }
+            }
+            
+            for(QPair<String,Method> pair : possibleReaders) {
+            	if (!propertyReaders.containsKey(pair.first) && !usedGetters.contains(pair.second)) {
+            		Field signalField = signals.get(pair.first);
+                    if(signalField!=null && SignalUtility.AbstractSignal.class.isAssignableFrom(pair.second.getReturnType()))
+                    	continue;
+            		propertyReaders.put(pair.first, pair.second);
+            		propertyDesignableResolvers.put(pair.first, isDesignable(pair.second, clazz));
+                    propertyScriptableResolvers.put(pair.first, isScriptable(pair.second, clazz));
+                    propertyUserResolvers.put(pair.first, isUser(pair.second, clazz));
+                    propertyRequiredResolvers.put(pair.first, isRequired(pair.second, clazz));
+            	}
+            }
+            
+            for(Method possibleBindable : possibleBindables) {
+            	String propertyName = possibleBindable.getName();
+            	if(propertyName.startsWith("bindable") && propertyName.length() > 8) {
+            		propertyName = PropertyAnnotation.removeAndLowercaseFirst(propertyName, 8);
+            		if (propertyReaders.containsKey(propertyName) || propertyWriters.containsKey(propertyName)) {
+            			propertyBindables.put(propertyName, possibleBindable);
+            		}else {
+            			QPropertyTypeInfo typeInfo = getQPropertyTypeInfo(possibleBindable);
+            			if(typeInfo!=null) {
+	            			Class<?> paramType = typeInfo.propertyType;
+	            			Method readerMethod = findPropertyReader(getDeclaredMethod(clazz, propertyName), propertyName, paramType);
+	                        if (readerMethod == null)
+	                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "get" + capitalizeFirst(propertyName)), propertyName, paramType);
+	                        if (readerMethod == null && isBoolean(paramType))
+	                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "is" + capitalizeFirst(propertyName)), propertyName, paramType);
+	                        if (readerMethod == null && isBoolean(paramType))
+	                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "has" + capitalizeFirst(propertyName)), propertyName, paramType);
+	
+	                        if (readerMethod != null) { // yay
+	                            propertyReaders.put(propertyName, readerMethod);
+	                            propertyBindables.put(propertyName, possibleBindable);
+	
+	                            propertyDesignableResolvers.put(propertyName, isDesignable(readerMethod, clazz));
+	                            propertyScriptableResolvers.put(propertyName, isScriptable(readerMethod, clazz));
+	                            propertyUserResolvers.put(propertyName, isUser(readerMethod, clazz));
+	                            propertyRequiredResolvers.put(propertyName, isRequired(readerMethod, clazz));
+	                        }else {
+	                        	Method writerMethod = findPropertyWriter(getDeclaredMethod(clazz, "set"+propertyName.toUpperCase().charAt(0)+propertyName.substring(1), paramType), propertyName, paramType);
+	                        	if(writerMethod != null) {
+	                        		PropertyAnnotation writer = PropertyAnnotation.writerAnnotation(writerMethod);
+	                                if (writer == null) {
+	                                	propertyWriters.computeIfAbsent(propertyName, arrayListFactory()).add(writerMethod);
+	                                	propertyDesignableResolvers.put(propertyName, isDesignable(writerMethod, clazz));
+	    	                            propertyScriptableResolvers.put(propertyName, isScriptable(writerMethod, clazz));
+	    	                            propertyUserResolvers.put(propertyName, isUser(writerMethod, clazz));
+	    	                            propertyRequiredResolvers.put(propertyName, isRequired(writerMethod, clazz));
+	                                }
+	                        	}
+	                        }
+            			}
+            		}
+            	}
+            }
+            
+            for(MetaObjectData.SignalInfo signalInfo : metaObjectData.signalInfos) {
+            	if(signalInfo.field.getName().endsWith("Changed")) {
+            		String propertyName = signalInfo.field.getName();
+            		propertyName = propertyName.substring(0, propertyName.length()-7);
+            		if (!propertyReaders.containsKey(propertyName)) {
+            			Class<?> paramType = signalInfo.signalTypes.size()==1 ? signalInfo.signalTypes.get(0).type : null;
+            			Method readerMethod = findPropertyReader(getDeclaredMethod(clazz, propertyName), propertyName, paramType);
+                        if (readerMethod == null)
+                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "get" + capitalizeFirst(propertyName)), propertyName, paramType);
+                        if (readerMethod == null && isBoolean(paramType))
+                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "is" + capitalizeFirst(propertyName)), propertyName, paramType);
+                        if (readerMethod == null && isBoolean(paramType))
+                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "has" + capitalizeFirst(propertyName)), propertyName, paramType);
+
+                        if (readerMethod != null) { // yay
+                            propertyReaders.put(propertyName, readerMethod);
+                            propertyNotifies.put(propertyName, signalInfo.field);
+
+                            propertyDesignableResolvers.put(propertyName, isDesignable(readerMethod, clazz));
+                            propertyScriptableResolvers.put(propertyName, isScriptable(readerMethod, clazz));
+                            propertyUserResolvers.put(propertyName, isUser(readerMethod, clazz));
+                            propertyRequiredResolvers.put(propertyName, isRequired(readerMethod, clazz));
+                        }else {
+                        	Method writerMethod;
+                        	writerMethod = findPropertyWriter(getDeclaredMethod(clazz, "set"+propertyName.toUpperCase().charAt(0)+propertyName.substring(1), paramType), propertyName, paramType);
+                        	if(writerMethod != null) {
+                        		PropertyAnnotation writer = PropertyAnnotation.writerAnnotation(writerMethod);
+                                if (writer == null) {
+                                	propertyWriters.computeIfAbsent(propertyName, arrayListFactory()).add(writerMethod);
+                                	propertyDesignableResolvers.put(propertyName, isDesignable(writerMethod, clazz));
+    	                            propertyScriptableResolvers.put(propertyName, isScriptable(writerMethod, clazz));
+    	                            propertyUserResolvers.put(propertyName, isUser(writerMethod, clazz));
+    	                            propertyRequiredResolvers.put(propertyName, isRequired(writerMethod, clazz));
+                                }
+                        	}
+                        }
+            		}
+            	}
+            }
+            
+            {
+	            TreeMap<String, Field> _propertyQPropertyFields = new TreeMap<>(propertyQPropertyFields);
+	            propertyQPropertyFields.clear();
+	            for(Map.Entry<String, Field> entry : _propertyQPropertyFields.entrySet()) {
+	            	String name = entry.getKey();
+	        		if(name.endsWith("Prop")) {
+	        			name = name.substring(0, name.length()-4);
+	        		}else if(name.endsWith("Property")) {
+	        			name = name.substring(0, name.length()-8);
+	        		}
+	        		PropertyAnnotation member;
+	            	if(!propertyReaders.containsKey(entry.getKey()) 
+	            			&& !propertyReaders.containsKey(name)
+	            			&& !Modifier.isStatic(entry.getValue().getModifiers())
+	            			&& Modifier.isFinal(entry.getValue().getModifiers())
+	            			&& (Modifier.isPublic(entry.getValue().getModifiers())
+	            					|| ((member = PropertyAnnotation.memberAnnotation(entry.getValue()))!=null && member.enabled()))) {
+	            		propertyReaders.put(name, null);
+	        			propertyQPropertyFields.put(name, entry.getValue());
+	            	}
+	            }
+            }
+            for(String prop : propertyMembers.keySet()) {
+            	if(!propertyReaders.containsKey(prop)) {
+            		propertyReaders.put(prop, null);
+            	}
+            }
+            
+            for (Method declaredMethod : declaredMethods) {
+                if(declaredMethod.isSynthetic() 
+                        || declaredMethod.isBridge()) {
+                    continue;
+                }
+                QtInvokable invokable = declaredMethod.getAnnotation(QtInvokable.class);
+            	if (
                         (
                                 (
                                         (isQObject || isGadget)
@@ -676,12 +948,22 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                                         && (declaredMethod.getReturnType()==void.class || Modifier.isPublic(declaredMethod.getModifiers()))
                                         && !(declaredMethod.getParameterCount()==0 && "clone".equals(declaredMethod.getName()))
                                 ) || (
-                                        declaredMethod.isAnnotationPresent(QtInvokable.class) 
-                                        && declaredMethod.getAnnotation(QtInvokable.class).value()
+                            			invokable!=null 
+                                        && invokable.value()
                                 )
                         )
                         && !overridesGeneratedSlot(declaredMethod, clazz)
                     ) {
+            		if(propertyReaders.keySet().contains(declaredMethod.getName()) ) {
+            			if(invokable==null) {
+	            			Logger.getLogger("io.qt.internal").warning("Method with same name as property skipped: '"
+	                                + clazz.getName() + "::" + declaredMethod.getName() + "'.");
+	            			continue;
+            			}else if(invokable.value()){
+            				Logger.getLogger("io.qt.internal").warning("Invokable method with same name as property may lead to unexpected behavior: '"
+	                                + clazz.getName() + "::" + declaredMethod.getName() + "'.");
+            			}
+            		}
                 	List<ParameterInfo> methodParameterInfos = new ArrayList<>();
                 	boolean isPointer = false;
                     boolean isReference = false;
@@ -888,275 +1170,6 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         metaObjectData.methodMetaTypes.add(new MetaObjectData.MetaTypeInfo[declaredMethod.getParameterCount()+1]);
                     }
                 }
-                
-                final String declaredMethodName = declaredMethod.getName();
-
-                // Rules for readers:
-                // 1. Zero arguments
-                // 2. Return something other than void
-                // 3. We can convert the type
-                PropertyAnnotation reader = PropertyAnnotation.readerAnnotation(declaredMethod);
-                {
-
-                    if ( 
-                            (reader != null && reader.enabled())
-                            && isValidGetter(declaredMethod)) {
-
-                        String name = reader.name();
-                        // If the return type of the property reader is not registered, then
-                        // we need to register the owner class in the meta object (in which case
-                        // it has to be a QObject)
-                        Class<?> returnType = declaredMethod.getReturnType();
-
-                        if ( (QFlags.class.isAssignableFrom(returnType) || Enum.class.isAssignableFrom(returnType))
-                                && !isEnumAllowedForProperty(returnType) ) {
-                            int type = QMetaType.qRegisterMetaType(returnType);
-                            if(type==QMetaType.Type.UnknownType.value()) {
-                                System.err.println("Problem in property '" + name + "' in '" + clazz.getName()
-                                                   + "' with return type '"+returnType.getName()
-                                                   +"': Unable to register meta type.");
-                                continue;
-                            }
-                        }
-                        Field signalField = signals.get(name);
-                        if(signalField!=null && SignalUtility.AbstractSignal.class.isAssignableFrom(returnType))
-                        	continue;
-
-                        propertyReaders.put(name, declaredMethod);
-                        usedGetters.add(declaredMethod);
-                        propertyDesignableResolvers.put(name, isDesignable(declaredMethod, clazz));
-                                                                                                   
-                        propertyScriptableResolvers.put(name, isScriptable(declaredMethod, clazz));
-                        propertyEditableResolvers.put(name, isEditable(declaredMethod, clazz));
-                        propertyStoredResolvers.put(name, isStored(declaredMethod, clazz));
-                        propertyUserResolvers.put(name, isUser(declaredMethod, clazz));
-                        propertyRequiredResolvers.put(name, isRequired(declaredMethod, clazz));
-                        propertyConstantResolvers.put(name, isConstant(declaredMethod));
-                        propertyFinalResolvers.put(name, isFinal(declaredMethod));
-                    }
-                }
-
-                // Rules for writers:
-                // 1. Takes exactly one argument
-                // 2. Return void
-                // 3. We can convert the type
-                PropertyAnnotation writer = PropertyAnnotation.writerAnnotation(declaredMethod);
-                {
-                    if ( writer != null 
-                            && writer.enabled()
-                            && isValidSetter(declaredMethod)) {
-                        propertyWriters.computeIfAbsent(writer.name(), arrayListFactory()).add(declaredMethod);
-                    }
-                }
-
-                // Check naming convention by looking for setXxx patterns, but only if it hasn't already been
-                // annotated as a writer
-                if ((isQObject || isGadget)
-                    && writer == null
-                    && reader == null // reader can't be a writer, cause the signature doesn't match, just an optimization
-                    ) {
-            		if(declaredMethodName.startsWith("set")
-                            && declaredMethodName.length() > 3
-                            && Character.isUpperCase(declaredMethodName.charAt(3))
-                            && isValidSetter(declaredMethod)) {
-            			Class<?> paramType = declaredMethod.getParameterTypes()[0];
-                        String propertyName = Character.toLowerCase(declaredMethodName.charAt(3))
-                                            + declaredMethodName.substring(4);
-
-                        if (!propertyReaders.containsKey(propertyName)) {
-                            // We need a reader as well, and the reader must not be annotated as disabled
-                            // The reader can be called 'xxx', 'getXxx', 'isXxx' or 'hasXxx'
-                            // (just booleans for the last two)
-                            Method readerMethod = findPropertyReader(getDeclaredMethod(clazz, propertyName), propertyName, paramType);
-                            if (readerMethod == null)
-                                readerMethod = findPropertyReader(getDeclaredMethod(clazz, "get" + capitalizeFirst(propertyName)), propertyName, paramType);
-                            if (readerMethod == null && isBoolean(paramType))
-                                readerMethod = findPropertyReader(getDeclaredMethod(clazz, "is" + capitalizeFirst(propertyName)), propertyName, paramType);
-                            if (readerMethod == null && isBoolean(paramType))
-                                readerMethod = findPropertyReader(getDeclaredMethod(clazz, "has" + capitalizeFirst(propertyName)), propertyName, paramType);
-
-                            if (readerMethod != null) { // yay
-                                reader = PropertyAnnotation.readerAnnotation(readerMethod);
-                                if (reader == null) {
-                                	usedGetters.add(readerMethod);
-                                    propertyReaders.put(propertyName, readerMethod);
-                                    propertyWriters.computeIfAbsent(propertyName, arrayListFactory()).add(declaredMethod);
-
-                                    propertyDesignableResolvers.put(propertyName, isDesignable(readerMethod, clazz));
-                                    propertyScriptableResolvers.put(propertyName, isScriptable(readerMethod, clazz));
-                                    propertyUserResolvers.put(propertyName, isUser(readerMethod, clazz));
-                                    propertyRequiredResolvers.put(propertyName, isRequired(readerMethod, clazz));
-                                }
-                            }
-                        }
-            		}else if(isValidGetter(declaredMethod)){
-            			int offset = 3;
-            			if((   declaredMethodName.startsWith("get") 
-            				|| (isBoolean(declaredMethod.getReturnType()) && declaredMethodName.startsWith("has"))
-            				|| (isBoolean(declaredMethod.getReturnType()) && (--offset==2) && declaredMethodName.startsWith("is"))
-            			   ) && declaredMethodName.length() > offset
-                             && Character.isUpperCase(declaredMethodName.charAt(offset))) {
-	            			String propertyName = Character.toLowerCase(declaredMethodName.charAt(offset))
-	                                + declaredMethodName.substring(offset+1);
-	            			if(possibleReaders.isEmpty())
-	            				possibleReaders = new ArrayList<>();
-	            			possibleReaders.add(new QPair<>(propertyName, declaredMethod));
-            			}
-            		}
-                }
-                
-                // Rules for notifys:
-                // 1. No arguments
-                // 2. Return void
-                {
-                    PropertyAnnotation resetter = PropertyAnnotation.resetterAnnotation(declaredMethod);
-                    if (resetter != null
-                        && declaredMethod.getParameterCount() == 0
-                        && declaredMethod.getReturnType() == void.class) {
-                        propertyResetters.put(resetter.name(), declaredMethod);
-                    }
-                }
-                
-                if(isValidBindable(declaredMethod)) {
-	                PropertyAnnotation bindables = PropertyAnnotation.bindableAnnotation(declaredMethod);
-                    if (bindables != null) {
-                        propertyBindables.put(bindables.name(), declaredMethod);
-                    }else{
-                    	if(possibleBindables.isEmpty())
-                    		possibleBindables = new ArrayList<>();
-                    	possibleBindables.add(declaredMethod);
-                    }
-                }
-            }
-            
-            for(QPair<String,Method> pair : possibleReaders) {
-            	if (!propertyReaders.containsKey(pair.first) && !usedGetters.contains(pair.second)) {
-            		Field signalField = signals.get(pair.first);
-                    if(signalField!=null && SignalUtility.AbstractSignal.class.isAssignableFrom(pair.second.getReturnType()))
-                    	continue;
-            		propertyReaders.put(pair.first, pair.second);
-            		propertyDesignableResolvers.put(pair.first, isDesignable(pair.second, clazz));
-                    propertyScriptableResolvers.put(pair.first, isScriptable(pair.second, clazz));
-                    propertyUserResolvers.put(pair.first, isUser(pair.second, clazz));
-                    propertyRequiredResolvers.put(pair.first, isRequired(pair.second, clazz));
-            	}
-            }
-            
-            for(Method possibleBindable : possibleBindables) {
-            	String propertyName = possibleBindable.getName();
-            	if(propertyName.startsWith("bindable") && propertyName.length() > 8) {
-            		propertyName = PropertyAnnotation.removeAndLowercaseFirst(propertyName, 8);
-            		if (propertyReaders.containsKey(propertyName) || propertyWriters.containsKey(propertyName)) {
-            			propertyBindables.put(propertyName, possibleBindable);
-            		}else {
-            			QPropertyTypeInfo typeInfo = getQPropertyTypeInfo(possibleBindable);
-            			if(typeInfo!=null) {
-	            			Class<?> paramType = typeInfo.propertyType;
-	            			Method readerMethod = findPropertyReader(getDeclaredMethod(clazz, propertyName), propertyName, paramType);
-	                        if (readerMethod == null)
-	                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "get" + capitalizeFirst(propertyName)), propertyName, paramType);
-	                        if (readerMethod == null && isBoolean(paramType))
-	                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "is" + capitalizeFirst(propertyName)), propertyName, paramType);
-	                        if (readerMethod == null && isBoolean(paramType))
-	                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "has" + capitalizeFirst(propertyName)), propertyName, paramType);
-	
-	                        if (readerMethod != null) { // yay
-	                            propertyReaders.put(propertyName, readerMethod);
-	                            propertyBindables.put(propertyName, possibleBindable);
-	
-	                            propertyDesignableResolvers.put(propertyName, isDesignable(readerMethod, clazz));
-	                            propertyScriptableResolvers.put(propertyName, isScriptable(readerMethod, clazz));
-	                            propertyUserResolvers.put(propertyName, isUser(readerMethod, clazz));
-	                            propertyRequiredResolvers.put(propertyName, isRequired(readerMethod, clazz));
-	                        }else {
-	                        	Method writerMethod = findPropertyWriter(getDeclaredMethod(clazz, "set"+propertyName.toUpperCase().charAt(0)+propertyName.substring(1), paramType), propertyName, paramType);
-	                        	if(writerMethod != null) {
-	                        		PropertyAnnotation writer = PropertyAnnotation.writerAnnotation(readerMethod);
-	                                if (writer == null) {
-	                                	propertyWriters.computeIfAbsent(propertyName, arrayListFactory()).add(writerMethod);
-	                                	propertyDesignableResolvers.put(propertyName, isDesignable(writerMethod, clazz));
-	    	                            propertyScriptableResolvers.put(propertyName, isScriptable(writerMethod, clazz));
-	    	                            propertyUserResolvers.put(propertyName, isUser(writerMethod, clazz));
-	    	                            propertyRequiredResolvers.put(propertyName, isRequired(writerMethod, clazz));
-	                                }
-	                        	}
-	                        }
-            			}
-            		}
-            	}
-            }
-            
-            for(MetaObjectData.SignalInfo signalInfo : metaObjectData.signalInfos) {
-            	if(signalInfo.field.getName().endsWith("Changed")) {
-            		String propertyName = signalInfo.field.getName();
-            		propertyName = propertyName.substring(0, propertyName.length()-7);
-            		if (!propertyReaders.containsKey(propertyName)) {
-            			Class<?> paramType = signalInfo.signalTypes.size()==1 ? signalInfo.signalTypes.get(0).type : null;
-            			Method readerMethod = findPropertyReader(getDeclaredMethod(clazz, propertyName), propertyName, paramType);
-                        if (readerMethod == null)
-                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "get" + capitalizeFirst(propertyName)), propertyName, paramType);
-                        if (readerMethod == null && isBoolean(paramType))
-                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "is" + capitalizeFirst(propertyName)), propertyName, paramType);
-                        if (readerMethod == null && isBoolean(paramType))
-                            readerMethod = findPropertyReader(getDeclaredMethod(clazz, "has" + capitalizeFirst(propertyName)), propertyName, paramType);
-
-                        if (readerMethod != null) { // yay
-                            propertyReaders.put(propertyName, readerMethod);
-                            propertyNotifies.put(propertyName, signalInfo.field);
-
-                            propertyDesignableResolvers.put(propertyName, isDesignable(readerMethod, clazz));
-                            propertyScriptableResolvers.put(propertyName, isScriptable(readerMethod, clazz));
-                            propertyUserResolvers.put(propertyName, isUser(readerMethod, clazz));
-                            propertyRequiredResolvers.put(propertyName, isRequired(readerMethod, clazz));
-                        }else {
-                        	Method writerMethod;
-                        	if(paramType==null) {
-                        		
-                        	}else{
-                        		
-                        	}
-                        	writerMethod = findPropertyWriter(getDeclaredMethod(clazz, "set"+propertyName.toUpperCase().charAt(0)+propertyName.substring(1), paramType), propertyName, paramType);
-                        	if(writerMethod != null) {
-                        		PropertyAnnotation writer = PropertyAnnotation.writerAnnotation(readerMethod);
-                                if (writer == null) {
-                                	propertyWriters.computeIfAbsent(propertyName, arrayListFactory()).add(writerMethod);
-                                	propertyDesignableResolvers.put(propertyName, isDesignable(writerMethod, clazz));
-    	                            propertyScriptableResolvers.put(propertyName, isScriptable(writerMethod, clazz));
-    	                            propertyUserResolvers.put(propertyName, isUser(writerMethod, clazz));
-    	                            propertyRequiredResolvers.put(propertyName, isRequired(writerMethod, clazz));
-                                }
-                        	}
-                        }
-            		}
-            	}
-            }
-            
-            {
-	            TreeMap<String, Field> _propertyQPropertyFields = new TreeMap<>(propertyQPropertyFields);
-	            propertyQPropertyFields.clear();
-	            for(Map.Entry<String, Field> entry : _propertyQPropertyFields.entrySet()) {
-	            	String name = entry.getKey();
-	        		if(name.endsWith("Prop")) {
-	        			name = name.substring(0, name.length()-4);
-	        		}else if(name.endsWith("Property")) {
-	        			name = name.substring(0, name.length()-8);
-	        		}
-	        		PropertyAnnotation member;
-	            	if(!propertyReaders.containsKey(entry.getKey()) 
-	            			&& !propertyReaders.containsKey(name)
-	            			&& !Modifier.isStatic(entry.getValue().getModifiers())
-	            			&& Modifier.isFinal(entry.getValue().getModifiers())
-	            			&& (Modifier.isPublic(entry.getValue().getModifiers())
-	            					|| ((member = PropertyAnnotation.memberAnnotation(entry.getValue()))!=null && member.enabled()))) {
-	            		propertyReaders.put(name, null);
-	        			propertyQPropertyFields.put(name, entry.getValue());
-	            	}
-	            }
-            }
-            for(String prop : propertyMembers.keySet()) {
-            	if(!propertyReaders.containsKey(prop)) {
-            		propertyReaders.put(prop, null);
-            	}
             }
             
             for(String property : propertyReaders.keySet()) {
@@ -1166,12 +1179,13 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                 			if(signalInfo.signalTypes.isEmpty()) {
                 				propertyNotifies.put(property, signalInfo.field);
                 			}else {
-                				if(propertyReaders.get(property)!=null) {
-                					if(signalInfo.signalTypes.get(0).type.isAssignableFrom(getBoxedType(propertyReaders.get(property).getReturnType()))) {
+                				Field propertyField;
+                				Method reader;
+                				if((reader = propertyReaders.get(property))!=null) {
+                					if(signalInfo.signalTypes.get(0).type.isAssignableFrom(getBoxedType(reader.getReturnType()))) {
                         				propertyNotifies.put(property, signalInfo.field);
                         			}
-                    			}else if(propertyMembers.get(property)!=null) {
-                    				Field propertyField = propertyMembers.get(property);
+                    			}else if((propertyField = propertyMembers.get(property))!=null) {
                     				if(isValidQProperty(propertyField)) {
                     					MetaObjectUtility.QPropertyTypeInfo pinfo = getQPropertyTypeInfo(propertyField);
                     					if(signalInfo.signalTypes.get(0).type.isAssignableFrom(getBoxedType(pinfo.propertyType))) {
@@ -1180,8 +1194,8 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                     				}else if(signalInfo.signalTypes.get(0).type.isAssignableFrom(getBoxedType(propertyField.getType()))) {
                         				propertyNotifies.put(property, signalInfo.field);
                         			}
-                    			}else if(propertyQPropertyFields.get(property)!=null) {
-                    				MetaObjectUtility.QPropertyTypeInfo pinfo = getQPropertyTypeInfo(propertyQPropertyFields.get(property));
+                    			}else if((propertyField = propertyQPropertyFields.get(property))!=null) {
+                    				MetaObjectUtility.QPropertyTypeInfo pinfo = getQPropertyTypeInfo(propertyField);
                 					if(signalInfo.signalTypes.get(0).type.isAssignableFrom(getBoxedType(pinfo.propertyType))) {
                         				propertyNotifies.put(property, signalInfo.field);
                         			}

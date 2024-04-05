@@ -1329,4 +1329,18 @@ public class TestQml extends ApplicationInitializer{
 		assertEquals(123, object.property("data"));
 		assertEquals(123, result);
 	}
+	
+//	@Test
+    public void testQmlSignals() {
+		QtQml.qmlClearTypeRegistrations();
+		QByteArray data = new QByteArray("import QtQuick 2.15\n" + 
+				"Item {\n" + 
+				"    signal test(enumeration o)\n" + 
+				"    function callTest(o){test(o);}\n" + 
+				"}");
+		QQmlApplicationEngine engine = new QQmlApplicationEngine();
+		engine.warnings.connect(list->list.forEach(System.out::println));
+		engine.loadData(data);
+		QObject object = engine.rootObjects().first();
+	}
 }

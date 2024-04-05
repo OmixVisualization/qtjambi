@@ -520,9 +520,9 @@ QString JavaGenerator::translateType(const MetaType *java_type, const MetaClass 
             }
         }
         if(option & VarArgsAsArray)
-            s += "[]";
+            s += QStringLiteral(u"[]");
         else
-            s += " ...";
+            s += QStringLiteral(u" ...");
     } else if (java_type->isCharString()) {
         if (option & NoNullness) {
             s = QStringLiteral(u"java.lang.String");
@@ -532,7 +532,28 @@ QString JavaGenerator::translateType(const MetaType *java_type, const MetaClass 
     } else if (java_type->hasNativeId() && (option & UseNativeIds)) {
         s = QStringLiteral(u"long");
     } else if (java_type->isArray()) {
-        s = translateType(java_type->arrayElementType(), context, Option((option & ~EnumAsInts & ~UseNativeIds & ~BoxedPrimitive) | NoSuppressExports | VarArgsAsArray)) + "[]";
+        s = translateType(java_type->arrayElementType(), context, Option((option & ~EnumAsInts & ~UseNativeIds & ~BoxedPrimitive) | NoSuppressExports | VarArgsAsArray));
+        if(!s.endsWith("QNativePointer")){
+            for(int i=0; i<java_type->arrayElementCounts().size(); ++i){
+                if (!(option & NoNullness))
+                    s += QStringLiteral(u" @StrictNonNull[]");
+                else
+                    s += QStringLiteral(u"[]");
+            }
+        }else{
+            s = s.replace("@NonNull", "@StrictNonNull").replace("@Nullable", "@StrictNonNull");
+        }
+    } else if(java_type->isContainer() && static_cast<const ContainerTypeEntry *>(java_type->typeEntry())->type()==ContainerTypeEntry::std_array){
+        const MetaType *elementType = java_type->instantiations()[0];
+        s = translateType(elementType, context, Option((option & ~EnumAsInts & ~UseNativeIds & ~BoxedPrimitive) | NoSuppressExports | VarArgsAsArray));
+        if(!s.endsWith("QNativePointer")){
+            if (!(option & NoNullness))
+                s += QStringLiteral(u" @StrictNonNull[]");
+            else
+                s += QStringLiteral(u"[]");
+        }else{
+            s = s.replace("@NonNull", "@StrictNonNull").replace("@Nullable", "@StrictNonNull");
+        }
     } else if (java_type->isEnum()) {
         const EnumTypeEntry * eentry = reinterpret_cast<const EnumTypeEntry *>(java_type->typeEntry());
         uint size = eentry->size();
@@ -705,175 +726,185 @@ QString JavaGenerator::translateType(const MetaType *java_type, const MetaClass 
             s = QStringLiteral(u"QNativePointer");
         } else if (java_type->isContainer()) {
             const ContainerTypeEntry * container = static_cast<const ContainerTypeEntry *>(java_type->typeEntry());
-            if(container->type()==ContainerTypeEntry::std_chrono){
-                option = Option(option | SkipTemplateParameters);
-            }
-            if(((option & CollectionAsCollection) != CollectionAsCollection)
-                    && ((option & NoQCollectionContainers) != NoQCollectionContainers)
-                    && (java_type->getReferenceType()==MetaType::Reference
-                    || !java_type->indirections().isEmpty())
-                    && (
-                        container->type()==ContainerTypeEntry::ListContainer
-                        || container->type()==ContainerTypeEntry::StringListContainer
-                        || container->type()==ContainerTypeEntry::ByteArrayListContainer
-                        || container->type()==ContainerTypeEntry::QueueContainer
-                        || container->type()==ContainerTypeEntry::MapContainer
-                        || container->type()==ContainerTypeEntry::SetContainer
-                        || container->type()==ContainerTypeEntry::MultiMapContainer
-                        || container->type()==ContainerTypeEntry::HashContainer
-                        || container->type()==ContainerTypeEntry::MultiHashContainer
-                        || container->type()==ContainerTypeEntry::VectorContainer
-                        || container->type()==ContainerTypeEntry::StackContainer
-                        || container->type()==ContainerTypeEntry::LinkedListContainer
-                        )){
-                if(container->type()==ContainerTypeEntry::StringListContainer
-                        || container->type()==ContainerTypeEntry::ByteArrayListContainer){
-                    s = QStringLiteral(u"io.qt.core.QList");
-                }else{
-                    if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch)>=QT_VERSION_CHECK(6,0,0) && container->type()==ContainerTypeEntry::VectorContainer){
+            if(container->type()==ContainerTypeEntry::std_array){
+                const QList<const MetaType *>& args = java_type->instantiations();
+                Q_ASSERT(args.size()>0);
+                s += translateType(args[0], context, Option(NoQCollectionContainers | VarArgsAsArray));
+                if (!(option & NoNullness))
+                    s += QStringLiteral(u" @NonNull[]");
+                else
+                    s += QStringLiteral(u"[]");
+            }else{
+                if(container->type()==ContainerTypeEntry::std_chrono){
+                    option = Option(option | SkipTemplateParameters);
+                }
+                if(((option & CollectionAsCollection) != CollectionAsCollection)
+                        && ((option & NoQCollectionContainers) != NoQCollectionContainers)
+                        && (java_type->getReferenceType()==MetaType::Reference
+                        || !java_type->indirections().isEmpty())
+                        && (
+                            container->type()==ContainerTypeEntry::ListContainer
+                            || container->type()==ContainerTypeEntry::StringListContainer
+                            || container->type()==ContainerTypeEntry::ByteArrayListContainer
+                            || container->type()==ContainerTypeEntry::QueueContainer
+                            || container->type()==ContainerTypeEntry::MapContainer
+                            || container->type()==ContainerTypeEntry::SetContainer
+                            || container->type()==ContainerTypeEntry::MultiMapContainer
+                            || container->type()==ContainerTypeEntry::HashContainer
+                            || container->type()==ContainerTypeEntry::MultiHashContainer
+                            || container->type()==ContainerTypeEntry::VectorContainer
+                            || container->type()==ContainerTypeEntry::StackContainer
+                            || container->type()==ContainerTypeEntry::LinkedListContainer
+                            )){
+                    if(container->type()==ContainerTypeEntry::StringListContainer
+                            || container->type()==ContainerTypeEntry::ByteArrayListContainer){
                         s = QStringLiteral(u"io.qt.core.QList");
                     }else{
-                        s = QStringLiteral(u"io.qt.core.")+java_type->typeEntry()->qualifiedCppName();
+                        if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch)>=QT_VERSION_CHECK(6,0,0) && container->type()==ContainerTypeEntry::VectorContainer){
+                            s = QStringLiteral(u"io.qt.core.QList");
+                        }else{
+                            s = QStringLiteral(u"io.qt.core.")+java_type->typeEntry()->qualifiedCppName();
+                        }
                     }
-                }
-                if ((option & SkipTemplateParameters) == 0) {
-                    s += u'<';
-                    const QList<const MetaType *>& args = java_type->instantiations();
-                    for (int i=0; i<args.size(); ++i) {
-                        if (i != 0)
-                            s += ", ";
-                        if((option & CollectionAsCollection) == CollectionAsCollection
-                                && !args.at(i)->isPrimitive()
-                                && !args.at(i)->isJavaString()
-                                && !args.at(i)->isQChar())
-                            s += "? extends ";
-                        s += translateType(args.at(i), context, Option((option & NoNullness) | BoxedPrimitive | NoQCollectionContainers | VarArgsAsArray));
+                    if ((option & SkipTemplateParameters) == 0) {
+                        s += u'<';
+                        const QList<const MetaType *>& args = java_type->instantiations();
+                        for (int i=0; i<args.size(); ++i) {
+                            if (i != 0)
+                                s += ", ";
+                            if((option & CollectionAsCollection) == CollectionAsCollection
+                                    && !args.at(i)->isPrimitive()
+                                    && !args.at(i)->isJavaString()
+                                    && !args.at(i)->isQChar())
+                                s += "? extends ";
+                            s += translateType(args.at(i), context, Option((option & NoNullness) | BoxedPrimitive | NoQCollectionContainers | VarArgsAsArray));
+                        }
+                        s += '>';
                     }
-                    s += '>';
-                }
-            }else{
-                s = java_type->typeEntry()->qualifiedTargetLangName();
-                if((option & CollectionAsCollection) == CollectionAsCollection){
-                    if(s==QStringLiteral(u"java.util.List")
-                            ||  s==QStringLiteral(u"java.util.LinkedList")
-                            ||  s==QStringLiteral(u"java.util.Queue")
-                            ||  s==QStringLiteral(u"java.util.Deque")
-                            ||  s==QStringLiteral(u"java.util.ArrayList")
-                            ||  s==QStringLiteral(u"java.util.Vector")
-                            ||  s==QStringLiteral(u"java.util.Set")
-                            ||  s==QStringLiteral(u"io.qt.core.QSet")
-                            ||  s==QStringLiteral(u"io.qt.core.QList")
-                            ||  s==QStringLiteral(u"io.qt.core.QStringList")
-                            ||  s==QStringLiteral(u"io.qt.core.QQueue")
-                            ||  s==QStringLiteral(u"io.qt.core.QVector")
-                            ||  s==QStringLiteral(u"io.qt.core.QStack")
-                            ||  s==QStringLiteral(u"io.qt.core.QLinkedList")){
-                        s = QStringLiteral(u"java.util.Collection");
-                    }else if(s==QStringLiteral(u"java.util.Map")
-                             ||  s==QStringLiteral(u"java.util.SortedMap")
-                             ||  s==QStringLiteral(u"java.util.NavigableMap")
-                             ||  s==QStringLiteral(u"java.util.HashMap")
-                             ||  s==QStringLiteral(u"java.util.TreeMap")
-                             ||  s==QStringLiteral(u"io.qt.core.QMap")
-                             ||  s==QStringLiteral(u"io.qt.core.QHash")
-                             ||  s==QStringLiteral(u"io.qt.core.QMultiMap")
-                             ||  s==QStringLiteral(u"io.qt.core.QMultiHash")){
-                        s = QStringLiteral(u"java.util.Map");
-                    }else if(s==QStringLiteral(u"java.time.Duration")){
-                        s = QStringLiteral(u"java.time.temporal.TemporalAmount");
+                }else{
+                    s = java_type->typeEntry()->qualifiedTargetLangName();
+                    if((option & CollectionAsCollection) == CollectionAsCollection){
+                        if(s==QStringLiteral(u"java.util.List")
+                                ||  s==QStringLiteral(u"java.util.LinkedList")
+                                ||  s==QStringLiteral(u"java.util.Queue")
+                                ||  s==QStringLiteral(u"java.util.Deque")
+                                ||  s==QStringLiteral(u"java.util.ArrayList")
+                                ||  s==QStringLiteral(u"java.util.Vector")
+                                ||  s==QStringLiteral(u"java.util.Set")
+                                ||  s==QStringLiteral(u"io.qt.core.QSet")
+                                ||  s==QStringLiteral(u"io.qt.core.QList")
+                                ||  s==QStringLiteral(u"io.qt.core.QStringList")
+                                ||  s==QStringLiteral(u"io.qt.core.QQueue")
+                                ||  s==QStringLiteral(u"io.qt.core.QVector")
+                                ||  s==QStringLiteral(u"io.qt.core.QStack")
+                                ||  s==QStringLiteral(u"io.qt.core.QLinkedList")){
+                            s = QStringLiteral(u"java.util.Collection");
+                        }else if(s==QStringLiteral(u"java.util.Map")
+                                 ||  s==QStringLiteral(u"java.util.SortedMap")
+                                 ||  s==QStringLiteral(u"java.util.NavigableMap")
+                                 ||  s==QStringLiteral(u"java.util.HashMap")
+                                 ||  s==QStringLiteral(u"java.util.TreeMap")
+                                 ||  s==QStringLiteral(u"io.qt.core.QMap")
+                                 ||  s==QStringLiteral(u"io.qt.core.QHash")
+                                 ||  s==QStringLiteral(u"io.qt.core.QMultiMap")
+                                 ||  s==QStringLiteral(u"io.qt.core.QMultiHash")){
+                            s = QStringLiteral(u"java.util.Map");
+                        }else if(s==QStringLiteral(u"java.time.Duration")){
+                            s = QStringLiteral(u"java.time.temporal.TemporalAmount");
+                        }
+                    }else if((option & NoQCollectionContainers) == NoQCollectionContainers){
+                        if(s==QStringLiteral(u"io.qt.core.QList")
+                                || s==QStringLiteral(u"io.qt.core.QVector")){
+                            s = "java.util.List";
+                        }else if(s==QStringLiteral(u"io.qt.core.QStringList")){
+                            s = "java.util.List";
+                        }else if(s==QStringLiteral(u"io.qt.core.QSet")){
+                            s = "java.util.Set";
+                        }else if(s==QStringLiteral(u"io.qt.core.QQueue")){
+                            s = "java.util.Queue";
+                        }else if(s==QStringLiteral(u"io.qt.core.QStack")){
+                            s = "java.util.Deque";
+                        }else if(s==QStringLiteral(u"io.qt.core.QLinkedList")){
+                            s = "java.util.LinkedList";
+                        }else if(s==QStringLiteral(u"io.qt.core.QMap")
+                                 ||  s==QStringLiteral(u"io.qt.core.QMultiMap")){
+                            s = "java.util.NavigableMap";
+                        }else if(s==QStringLiteral(u"io.qt.core.QHash")
+                                 ||  s==QStringLiteral(u"io.qt.core.QMultiHash")){
+                            s = QStringLiteral(u"java.util.Map");
+                        }else if(s==QStringLiteral(u"java.time.Duration")){
+                            s = QStringLiteral(u"java.time.temporal.TemporalAmount");
+                        }
                     }
-                }else if((option & NoQCollectionContainers) == NoQCollectionContainers){
-                    if(s==QStringLiteral(u"io.qt.core.QList")
-                            || s==QStringLiteral(u"io.qt.core.QVector")){
-                        s = "java.util.List";
-                    }else if(s==QStringLiteral(u"io.qt.core.QStringList")){
-                        s = "java.util.List";
-                    }else if(s==QStringLiteral(u"io.qt.core.QSet")){
-                        s = "java.util.Set";
-                    }else if(s==QStringLiteral(u"io.qt.core.QQueue")){
-                        s = "java.util.Queue";
-                    }else if(s==QStringLiteral(u"io.qt.core.QStack")){
-                        s = "java.util.Deque";
-                    }else if(s==QStringLiteral(u"io.qt.core.QLinkedList")){
-                        s = "java.util.LinkedList";
-                    }else if(s==QStringLiteral(u"io.qt.core.QMap")
-                             ||  s==QStringLiteral(u"io.qt.core.QMultiMap")){
-                        s = "java.util.NavigableMap";
-                    }else if(s==QStringLiteral(u"io.qt.core.QHash")
-                             ||  s==QStringLiteral(u"io.qt.core.QMultiHash")){
-                        s = QStringLiteral(u"java.util.Map");
-                    }else if(s==QStringLiteral(u"java.time.Duration")){
-                        s = QStringLiteral(u"java.time.temporal.TemporalAmount");
-                    }
-                }
 
-                QString plainType;
-                if((option & SkipTemplateParameters) == 0 && container->type()==ContainerTypeEntry::QModelRoleDataSpanContainer){
-                    s += QStringLiteral(u"<Integer,Object>");
-                }else if ((option & SkipTemplateParameters) == 0 && s!=QStringLiteral(u"io.qt.core.QStringList")) {
-                    plainType = s;
-                    s += u'<';
-                    const QList<const MetaType *>& args = java_type->instantiations();
-                    auto argssize = args.size();
-                    for (int i=0; i<argssize; ++i) {
-                        if (i != 0)
-                            s += QStringLiteral(u", ");
-                        bool isMultiMap = (container->type() == ContainerTypeEntry::MultiMapContainer
-                                           || container->type() == ContainerTypeEntry::MultiHashContainer)
-                                          && ((option & NoQCollectionContainers) == NoQCollectionContainers
-                                              || (option & CollectionAsCollection) == CollectionAsCollection)
-                                          && i == 1;
-                        if (isMultiMap)
-                            s += "? extends java.util.List<";
-                        if((option & CollectionAsCollection) == CollectionAsCollection
-                                && !args.at(i)->isPrimitive()
-                                && !args.at(i)->isJavaString()
-                                && !args.at(i)->isQChar())
-                            s += "? extends ";
-                        s += translateType(args.at(i), context, Option((option & NoNullness) | BoxedPrimitive | NoQCollectionContainers | VarArgsAsArray));
-                        if (isMultiMap)
-                            s += ">";
+                    QString plainType;
+                    if((option & SkipTemplateParameters) == 0 && container->type()==ContainerTypeEntry::QModelRoleDataSpanContainer){
+                        s += QStringLiteral(u"<Integer,Object>");
+                    }else if ((option & SkipTemplateParameters) == 0 && s!=QStringLiteral(u"io.qt.core.QStringList")) {
+                        plainType = s;
+                        s += u'<';
+                        const QList<const MetaType *>& args = java_type->instantiations();
+                        auto argssize = args.size();
+                        for (int i=0; i<argssize; ++i) {
+                            if (i != 0)
+                                s += QStringLiteral(u", ");
+                            bool isMultiMap = (container->type() == ContainerTypeEntry::MultiMapContainer
+                                               || container->type() == ContainerTypeEntry::MultiHashContainer)
+                                              && ((option & NoQCollectionContainers) == NoQCollectionContainers
+                                                  || (option & CollectionAsCollection) == CollectionAsCollection)
+                                              && i == 1;
+                            if (isMultiMap)
+                                s += "? extends java.util.List<";
+                            if((option & CollectionAsCollection) == CollectionAsCollection
+                                    && !args.at(i)->isPrimitive()
+                                    && !args.at(i)->isJavaString()
+                                    && !args.at(i)->isQChar())
+                                s += "? extends ";
+                            s += translateType(args.at(i), context, Option((option & NoNullness) | BoxedPrimitive | NoQCollectionContainers | VarArgsAsArray));
+                            if (isMultiMap)
+                                s += ">";
+                        }
+                        s += '>';
                     }
-                    s += '>';
-                }
-                if(s.startsWith(QStringLiteral(u"java.util.Optional<java.lang.")) && s.endsWith(QStringLiteral(u"Integer>"))){
-                    s = QStringLiteral(u"java.util.OptionalInt");
-                }else if(s.startsWith(QStringLiteral(u"java.util.Optional<java.lang.")) && s.endsWith(QStringLiteral(u"Long>"))){
-                    s = QStringLiteral(u"java.util.OptionalLong");
-                }else if(s.startsWith(QStringLiteral(u"java.util.Optional<java.lang.")) && s.endsWith(QStringLiteral(u"Double>"))){
-                    s = QStringLiteral(u"java.util.OptionalDouble");
-                }else if(s.startsWith(QStringLiteral(u"io.qt.core.QPropertyBinding<java.lang.")) && s.endsWith(QStringLiteral(u"Boolean>"))){
-                    s = QStringLiteral(u"io.qt.core.QBooleanPropertyBinding");
-                }else if(s.startsWith(QStringLiteral(u"io.qt.core.QPropertyBinding<java.lang.")) && s.endsWith(QStringLiteral(u"Byte>"))){
-                    s = QStringLiteral(u"io.qt.core.QBytePropertyBinding");
-                }else if(s.startsWith(QStringLiteral(u"io.qt.core.QPropertyBinding<java.lang.")) && s.endsWith(QStringLiteral(u"Short>"))){
-                    s = QStringLiteral(u"io.qt.core.QShortPropertyBinding");
-                }else if(s.startsWith(QStringLiteral(u"io.qt.core.QPropertyBinding<java.lang.")) && s.endsWith(QStringLiteral(u"Integer>"))){
-                    s = QStringLiteral(u"io.qt.core.QIntPropertyBinding");
-                }else if(s.startsWith(QStringLiteral(u"io.qt.core.QPropertyBinding<java.lang.")) && s.endsWith(QStringLiteral(u"Long>"))){
-                    s = QStringLiteral(u"io.qt.core.QLongPropertyBinding");
-                }else if(s.startsWith(QStringLiteral(u"io.qt.core.QPropertyBinding<java.lang.")) && s.endsWith(QStringLiteral(u"Char>"))){
-                    s = QStringLiteral(u"io.qt.core.QCharPropertyBinding");
-                }else if(s.startsWith(QStringLiteral(u"io.qt.core.QPropertyBinding<java.lang.")) && s.endsWith(QStringLiteral(u"Float>"))){
-                    s = QStringLiteral(u"io.qt.core.QFloatPropertyBinding");
-                }else if(s.startsWith(QStringLiteral(u"io.qt.core.QPropertyBinding<java.lang.")) && s.endsWith(QStringLiteral(u"Double>"))){
-                    s = QStringLiteral(u"io.qt.core.QDoublePropertyBinding");
-                }else if(s.startsWith(QStringLiteral(u"io.qt.core.QBindable<java.lang.")) && s.endsWith(QStringLiteral(u"Boolean>"))){
-                    s = QStringLiteral(u"io.qt.core.QBooleanBindable");
-                }else if(s.startsWith(QStringLiteral(u"io.qt.core.QBindable<java.lang.")) && s.endsWith(QStringLiteral(u"Byte>"))){
-                    s = QStringLiteral(u"io.qt.core.QByteBindable");
-                }else if(s.startsWith(QStringLiteral(u"io.qt.core.QBindable<java.lang.")) && s.endsWith(QStringLiteral(u"Short>"))){
-                    s = QStringLiteral(u"io.qt.core.QShortBindable");
-                }else if(s.startsWith(QStringLiteral(u"io.qt.core.QBindable<java.lang.")) && s.endsWith(QStringLiteral(u"Integer>"))){
-                    s = QStringLiteral(u"io.qt.core.QIntBindable");
-                }else if(s.startsWith(QStringLiteral(u"io.qt.core.QBindable<java.lang.")) && s.endsWith(QStringLiteral(u"Long>"))){
-                    s = QStringLiteral(u"io.qt.core.QLongBindable");
-                }else if(s.startsWith(QStringLiteral(u"io.qt.core.QBindable<java.lang.")) && s.endsWith(QStringLiteral(u"Char>"))){
-                    s = QStringLiteral(u"io.qt.core.QCharBindable");
-                }else if(s.startsWith(QStringLiteral(u"io.qt.core.QBindable<java.lang.")) && s.endsWith(QStringLiteral(u"Float>"))){
-                    s = QStringLiteral(u"io.qt.core.QFloatBindable");
-                }else if(s.startsWith(QStringLiteral(u"io.qt.core.QBindable<java.lang.")) && s.endsWith(QStringLiteral(u"Double>"))){
-                    s = QStringLiteral(u"io.qt.core.QDoubleBindable");
+                    if(s.startsWith(QStringLiteral(u"java.util.Optional<java.lang.")) && s.endsWith(QStringLiteral(u"Integer>"))){
+                        s = QStringLiteral(u"java.util.OptionalInt");
+                    }else if(s.startsWith(QStringLiteral(u"java.util.Optional<java.lang.")) && s.endsWith(QStringLiteral(u"Long>"))){
+                        s = QStringLiteral(u"java.util.OptionalLong");
+                    }else if(s.startsWith(QStringLiteral(u"java.util.Optional<java.lang.")) && s.endsWith(QStringLiteral(u"Double>"))){
+                        s = QStringLiteral(u"java.util.OptionalDouble");
+                    }else if(s.startsWith(QStringLiteral(u"io.qt.core.QPropertyBinding<java.lang.")) && s.endsWith(QStringLiteral(u"Boolean>"))){
+                        s = QStringLiteral(u"io.qt.core.QBooleanPropertyBinding");
+                    }else if(s.startsWith(QStringLiteral(u"io.qt.core.QPropertyBinding<java.lang.")) && s.endsWith(QStringLiteral(u"Byte>"))){
+                        s = QStringLiteral(u"io.qt.core.QBytePropertyBinding");
+                    }else if(s.startsWith(QStringLiteral(u"io.qt.core.QPropertyBinding<java.lang.")) && s.endsWith(QStringLiteral(u"Short>"))){
+                        s = QStringLiteral(u"io.qt.core.QShortPropertyBinding");
+                    }else if(s.startsWith(QStringLiteral(u"io.qt.core.QPropertyBinding<java.lang.")) && s.endsWith(QStringLiteral(u"Integer>"))){
+                        s = QStringLiteral(u"io.qt.core.QIntPropertyBinding");
+                    }else if(s.startsWith(QStringLiteral(u"io.qt.core.QPropertyBinding<java.lang.")) && s.endsWith(QStringLiteral(u"Long>"))){
+                        s = QStringLiteral(u"io.qt.core.QLongPropertyBinding");
+                    }else if(s.startsWith(QStringLiteral(u"io.qt.core.QPropertyBinding<java.lang.")) && s.endsWith(QStringLiteral(u"Char>"))){
+                        s = QStringLiteral(u"io.qt.core.QCharPropertyBinding");
+                    }else if(s.startsWith(QStringLiteral(u"io.qt.core.QPropertyBinding<java.lang.")) && s.endsWith(QStringLiteral(u"Float>"))){
+                        s = QStringLiteral(u"io.qt.core.QFloatPropertyBinding");
+                    }else if(s.startsWith(QStringLiteral(u"io.qt.core.QPropertyBinding<java.lang.")) && s.endsWith(QStringLiteral(u"Double>"))){
+                        s = QStringLiteral(u"io.qt.core.QDoublePropertyBinding");
+                    }else if(s.startsWith(QStringLiteral(u"io.qt.core.QBindable<java.lang.")) && s.endsWith(QStringLiteral(u"Boolean>"))){
+                        s = QStringLiteral(u"io.qt.core.QBooleanBindable");
+                    }else if(s.startsWith(QStringLiteral(u"io.qt.core.QBindable<java.lang.")) && s.endsWith(QStringLiteral(u"Byte>"))){
+                        s = QStringLiteral(u"io.qt.core.QByteBindable");
+                    }else if(s.startsWith(QStringLiteral(u"io.qt.core.QBindable<java.lang.")) && s.endsWith(QStringLiteral(u"Short>"))){
+                        s = QStringLiteral(u"io.qt.core.QShortBindable");
+                    }else if(s.startsWith(QStringLiteral(u"io.qt.core.QBindable<java.lang.")) && s.endsWith(QStringLiteral(u"Integer>"))){
+                        s = QStringLiteral(u"io.qt.core.QIntBindable");
+                    }else if(s.startsWith(QStringLiteral(u"io.qt.core.QBindable<java.lang.")) && s.endsWith(QStringLiteral(u"Long>"))){
+                        s = QStringLiteral(u"io.qt.core.QLongBindable");
+                    }else if(s.startsWith(QStringLiteral(u"io.qt.core.QBindable<java.lang.")) && s.endsWith(QStringLiteral(u"Char>"))){
+                        s = QStringLiteral(u"io.qt.core.QCharBindable");
+                    }else if(s.startsWith(QStringLiteral(u"io.qt.core.QBindable<java.lang.")) && s.endsWith(QStringLiteral(u"Float>"))){
+                        s = QStringLiteral(u"io.qt.core.QFloatBindable");
+                    }else if(s.startsWith(QStringLiteral(u"io.qt.core.QBindable<java.lang.")) && s.endsWith(QStringLiteral(u"Double>"))){
+                        s = QStringLiteral(u"io.qt.core.QDoubleBindable");
+                    }
                 }
             }
         } else if (java_type->isPointerContainer() && java_type->instantiations().size()==1) {
@@ -2537,13 +2568,15 @@ void JavaGenerator::writePrivateNativeFunction(QTextStream &s, const MetaFunctio
                 && java_function->declaringClass()->templateBaseClass()->templateArguments().size()>0) || !addedParameterTypes.isEmpty()){
             s << "<";
             bool first = true;
-            for(TypeEntry * t : java_function->declaringClass()->templateBaseClass()->templateArguments()){
-                if(first){
-                    first = false;
-                }else{
-                    s << ",";
+            if(java_function->declaringClass()->templateBaseClass()){
+                for(TypeEntry * t : java_function->declaringClass()->templateBaseClass()->templateArguments()){
+                    if(first){
+                        first = false;
+                    }else{
+                        s << ",";
+                    }
+                    s << t->name();
                 }
-                s << t->name();
             }
             for(const Parameter& p : addedParameterTypes){
                 if(first){
@@ -2817,12 +2850,18 @@ void JavaGenerator::writeJavaCallThroughContents(QTextStream &s, const MetaFunct
                         }
                     }
 
-                    if (type->isArray()) {
-                        s << INDENT << "if (" << arg->modifiedArgumentName() << ".length != " << type->arrayElementCount() << ")" << Qt::endl
-                          << INDENT << "    " << "throw new IllegalArgumentException(\"Argument '"
-                          << arg->modifiedArgumentName() << "': Wrong number of elements in array. Found: \" + "
-                          << arg->modifiedArgumentName() << ".length + \", expected: " << type->arrayElementCount() << "\");"
-                          << Qt::endl << Qt::endl;
+                    if (type->isArray() && type->arrayElementCounts().size()>0) {
+                        if(java_function->typeReplaced(arg->argumentIndex() + 1).isEmpty()){
+                            s << INDENT << "java.util.Objects.requireNonNull(" << arg->modifiedArgumentName() << ", \"Argument '" << arg->modifiedArgumentName() << "': null not expected.\");" << Qt::endl;
+                            nonNull = true;
+                        }
+                    }
+
+                    if (type->isContainer() && static_cast<const ContainerTypeEntry *>(type->typeEntry())->type()==ContainerTypeEntry::std_array) {
+                        if(java_function->typeReplaced(arg->argumentIndex() + 1).isEmpty()){
+                            s << INDENT << "java.util.Objects.requireNonNull(" << arg->modifiedArgumentName() << ", \"Argument '" << arg->modifiedArgumentName() << "': null not expected.\");" << Qt::endl;
+                            nonNull = true;
+                        }
                     }
 
                     if (type->isEnum()) {
@@ -4258,7 +4297,7 @@ void JavaGenerator::writeFunction(QTextStream &s, const MetaFunction *java_funct
                                   uint included_attributes, uint excluded_attributes, Option option) {
     if (java_function->isModifiedRemoved(TS::TargetLangCode))
         return ;
-    if (java_function->hasTemplateArgumentTypes()){
+    if (java_function->hasUnresolvedTemplateTypes()){
         return;
     }
     if(!(option & NoNullness) && !m_nullness){
@@ -4404,9 +4443,9 @@ void JavaGenerator::writeFunction(QTextStream &s, const MetaFunction *java_funct
                                  .replace(QStringLiteral(u"*/"), QStringLiteral(u"*&sol;"))
                           << "::<wbr/>";
         }
-        if(java_function->functionTemplate()){
-            if(!java_function->functionTemplate()->originalSignature().isEmpty()){
-                commentStream << QString(java_function->functionTemplate()->originalSignature())
+        if(java_function->functionTemplate().first){
+            if(!java_function->functionTemplate().first->originalSignature().isEmpty()){
+                commentStream << QString(java_function->functionTemplate().first->originalSignature())
                                      .replace(QStringLiteral(u"&"), QStringLiteral(u"&amp;"))
                                      .replace(QStringLiteral(u"<"), QStringLiteral(u"&lt;"))
                                      .replace(QStringLiteral(u">"), QStringLiteral(u"&gt;"))
@@ -4415,8 +4454,8 @@ void JavaGenerator::writeFunction(QTextStream &s, const MetaFunction *java_funct
                                      .replace(QStringLiteral(u"/*"), QStringLiteral(u"&sol;*"))
                                      .replace(QStringLiteral(u"*/"), QStringLiteral(u"*&sol;"))
                                      .replace(",", ",<wbr/>");
-            }else if(!java_function->functionTemplate()->minimalSignature().isEmpty()){
-                commentStream << QString(java_function->functionTemplate()->minimalSignature())
+            }else if(!java_function->functionTemplate().first->minimalSignature().isEmpty()){
+                commentStream << QString(java_function->functionTemplate().first->minimalSignature())
                                      .replace(QStringLiteral(u"&"), QStringLiteral(u"&amp;"))
                                      .replace(QStringLiteral(u"<"), QStringLiteral(u"&lt;"))
                                      .replace(QStringLiteral(u">"), QStringLiteral(u"&gt;"))
@@ -4426,7 +4465,7 @@ void JavaGenerator::writeFunction(QTextStream &s, const MetaFunction *java_funct
                                      .replace(QStringLiteral(u"*/"), QStringLiteral(u"*&sol;"))
                                      .replace(",", ",<wbr/>");
             }else{
-                commentStream << QString(java_function->functionTemplate()->name())
+                commentStream << QString(java_function->functionTemplate().first->name())
                                      .replace(QStringLiteral(u"&"), QStringLiteral(u"&amp;"))
                                      .replace(QStringLiteral(u"<"), QStringLiteral(u"&lt;"))
                                      .replace(QStringLiteral(u">"), QStringLiteral(u"&gt;"))
@@ -5943,6 +5982,13 @@ void JavaGenerator::writeInstantiatedType(QTextStream &s, const MetaType *abstra
         case ContainerTypeEntry::HashContainer:
         case ContainerTypeEntry::MultiHashContainer:
         case ContainerTypeEntry::MapContainer: s << "java.util.Map"; break;
+        case ContainerTypeEntry::std_array:
+            if (abstractMetaType->hasInstantiations()) {
+                const QList<const MetaType *>& instantiations = abstractMetaType->instantiations();
+                QString arrayType = instantiations[0]->typeEntry()->targetLangName();
+                s << arrayType << "[]";
+            }
+            break;
         default:
             s << type->qualifiedTargetLangName().replace(u'$', u'.'); break;
         }
@@ -5969,7 +6015,7 @@ void JavaGenerator::writeFunctionOverloads(QTextStream &s, const MetaFunction *j
         uint include_attributes, uint exclude_attributes, Option _option, const QString& alternativeFunctionName) {
     if (java_function->isModifiedRemoved(TS::TargetLangCode))
         return ;
-    if (java_function->hasTemplateArgumentTypes())
+    if (java_function->hasUnresolvedTemplateTypes())
         return;
     if (java_function->isCopyConstructor())
         return;
@@ -7225,6 +7271,7 @@ void JavaGenerator::write(QTextStream &s, const MetaClass *java_class, int nesti
                             }
                         }
                     }
+                    writeExtraFunctions(s, java_class, true);
                 }
                 s << INDENT << "}" << Qt::endl
                   << INDENT << Qt::endl;
@@ -7407,7 +7454,7 @@ void JavaGenerator::write(QTextStream &s, const MetaClass *java_class, int nesti
             if (!java_class->isInterface()) {
                 writeJavaLangObjectOverrideFunctions(s, java_class);
             }
-            writeExtraFunctions(s, java_class);
+            writeExtraFunctions(s, java_class, false);
             if (!java_class->isInterface()) {
                 writeToStringFunction(s, java_class);
             }
@@ -7986,6 +8033,18 @@ void JavaGenerator::writeFunctionAttributes(QTextStream &s, const MetaFunction *
             }
         }
 
+        if(!nativePointer
+                && java_function->type()
+                && java_function->type()->arrayElementType()
+                && java_function->type()->arrayElementType()->isNativePointer()
+                && !java_function->type()->arrayElementType()->typeEntry()->isNativePointer()
+                && !(java_function->type()->arrayElementType()->typeEntry()->isAlias() && reinterpret_cast<const AliasTypeEntry*>(java_function->type()->arrayElementType()->typeEntry())->getAsNativePointer())){
+            if(java_function->typeReplaced(0).isEmpty()
+                && java_function->argumentReplaced(0)!=QStringLiteral(u"this")){
+                nativePointer = true;
+            }
+        }
+
         // Does the function need to be considered for resetting the Java objects after use?
         bool resettableObject = false;
         if(java_function->type()
@@ -8053,6 +8112,13 @@ void JavaGenerator::writeFunctionAttributes(QTextStream &s, const MetaFunction *
                     if (argument->type()->isNativePointer()) {
                         if(!argument->type()->typeEntry()->isNativePointer()
                                 && !(argument->type()->typeEntry()->isAlias() && reinterpret_cast<const AliasTypeEntry*>(argument->type()->typeEntry())->getAsNativePointer())){
+                            nativePointer = true;
+                            if (resettableObject) break ;
+                        }
+
+                    } else if (argument->type()->arrayElementType() && argument->type()->arrayElementType()->isNativePointer()) {
+                        if(!argument->type()->arrayElementType()->typeEntry()->isNativePointer()
+                                && !(argument->type()->arrayElementType()->typeEntry()->isAlias() && reinterpret_cast<const AliasTypeEntry*>(argument->type()->arrayElementType()->typeEntry())->getAsNativePointer())){
                             nativePointer = true;
                             if (resettableObject) break ;
                         }
@@ -8431,7 +8497,7 @@ void JavaGenerator::writeFunctionArguments(QTextStream &s, const MetaFunction *j
 }
 
 
-void JavaGenerator::writeExtraFunctions(QTextStream &s, const MetaClass *java_class) {
+void JavaGenerator::writeExtraFunctions(QTextStream &s, const MetaClass *java_class, bool isConcreteWrapper) {
     const ComplexTypeEntry *class_type = java_class->typeEntry();
     Q_ASSERT(class_type);
 
@@ -8444,8 +8510,9 @@ void JavaGenerator::writeExtraFunctions(QTextStream &s, const MetaClass *java_cl
             || snip.position==CodeSnip::Position4
             || snip.position==CodeSnip::Position5
             || snip.position==CodeSnip::End)
-            && ((!java_class->isInterface() && snip.language == TS::TargetLangCode)
-                            || (java_class->isInterface() && snip.language == TS::Interface))) {
+            && ((isConcreteWrapper && snip.language == TS::ConctreteWrapper)
+                 || (!isConcreteWrapper && !java_class->isInterface() && snip.language == TS::TargetLangCode)
+                     || (!isConcreteWrapper && java_class->isInterface() && snip.language == TS::Interface))) {
             lines << snip.code().split("\n");
         }
     }

@@ -89,7 +89,8 @@ public:
         Setter              = 0x2000,
         NativeGetter        = Native | Getter,
         NativeSetter        = Native | Setter,
-        DeleterFunction     = 0x4000
+        DeleterFunction     = 0x4000,
+        JavaConctreteWrapper= 0x8000
     };
     Q_ENUM(Entries)
     CodeClass() = delete;

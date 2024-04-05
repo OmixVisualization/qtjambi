@@ -477,7 +477,7 @@ TypeSystem{
     ObjectType{
         name: "Qt3DCore::QEntity"
         ModifyFunction{
-            signature: "componentsOfType<T>()const"
+            signature: "componentsOfType<T>() const"
             remove: RemoveFlag.All
         }
         ModifyFunction{
@@ -1004,7 +1004,7 @@ TypeSystem{
         name: "Qt3DCore::QTransform"
     }
     
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'doClone()const' for function modification in '*' not found.*"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'doClone() const' for function modification in '*' not found.*"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature '*' for function modification in 'Qt3DCore' not found.*"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: Final class 'QAbstractSkeleton' set to non-final, as it is extended by other classes"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'Qt3DCore::QAspectJob::postFrame*', unmatched parameter type 'Qt3DCore::QAspectManager*'"}

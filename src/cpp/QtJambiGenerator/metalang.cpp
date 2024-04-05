@@ -51,7 +51,7 @@ MetaType *MetaType::copy() const {
     cpy->setReferenceType(getReferenceType());
     cpy->setIndirections(indirections());
     cpy->setInstantiations(instantiations());
-    cpy->setArrayElementCount(arrayElementCount());
+    cpy->setArrayElementCounts(arrayElementCounts());
     cpy->setOriginalTypeDescription(originalTypeDescription());
     cpy->setOriginalTemplateType(originalTemplateType() ? originalTemplateType()->copy() : nullptr);
     cpy->setForceBoxedPrimitives(forceBoxedPrimitives());
@@ -108,11 +108,9 @@ QString MetaType::cppSignature() const {
 MetaTemplateParameter *MetaTemplateParameter::copy() const {
     MetaTemplateParameter *cpy = new MetaTemplateParameter;
     cpy->setName(MetaTemplateParameter::name());
-    cpy->setInstantiation(instantiation());
-    cpy->setImplicit(isImplicit());
+    cpy->setInstantiation(isImplicit(), instantiation(), instantiationType());
     cpy->setType(type() ? type()->copy() : nullptr);
     cpy->setDefaultType(defaultType());
-    cpy->setParameterType(parameterType());
     return cpy;
 }
 
@@ -212,10 +210,60 @@ QString MetaClass::fullName() const {
 /*******************************************************************************
  * AbstractMetaFunction
  */
+
+MetaFunction::MetaFunction()
+    :MetaAttributes(),
+    m_original_name(),
+    m_original_signature(),
+    m_function_type(NormalFunction),
+    m_type(nullptr),
+    m_class(nullptr),
+    m_implementing_class(nullptr),
+    m_declaring_class(nullptr),
+    m_interface_class(nullptr),
+    m_property_spec(nullptr),
+    m_operatorType(OperatorType::None),
+    m_constant(false),
+    m_variadics(false),
+    m_declExplicit(false),
+    m_template(false),
+    m_invalid(false),
+    m_actualMinimumArgumentCount(-1),
+    m_accessedField(nullptr),
+    m_functionReferenceType(MetaType::NoReference),
+    m_functionTemplate()
+{
+}
+
 MetaFunction::~MetaFunction() {
     qDeleteAll(m_arguments);
     delete m_type;
 }
+
+QString MetaFunction::name() const { return m_name; }
+
+QString MetaFunction::originalName() const { return m_original_name.isEmpty() ? name() : m_original_name; }
+void MetaFunction::setOriginalName(const QString &name) { m_original_name = name; }
+
+void MetaFunction::setOriginalSignature(const QString &signature) { m_original_signature = signature; }
+const QString& MetaFunction::originalSignature() const { return m_original_signature; }
+
+MetaType *MetaFunction::type() const { return m_type; }
+void MetaFunction::setType(MetaType *type) { m_type = type; }
+
+// The class that has this function as a member.
+const MetaClass *MetaFunction::ownerClass() const { return m_class; }
+void MetaFunction::setOwnerClass(const MetaClass *cls) { m_class = cls; }
+
+// The first class in a hierarchy that declares the function
+const MetaClass *MetaFunction::declaringClass() const { return m_declaring_class; }
+void MetaFunction::setDeclaringClass(const MetaClass *cls) { m_declaring_class = cls; }
+
+// The class that actually implements this function
+const MetaClass *MetaFunction::implementingClass() const { return m_implementing_class; }
+void MetaFunction::setImplementingClass(const MetaClass *cls) { m_implementing_class = cls; }
+
+const MetaArgumentList& MetaFunction::arguments() const { return m_arguments; }
 
 /*******************************************************************************
  * Indicates that this function has a modification that removes it
@@ -548,6 +596,50 @@ QStringList MetaFunction::introspectionCompatibleSignatures(const QStringList &r
     }
 }
 
+bool MetaFunction::hasUnresolvedTemplateTypes() const{
+    for(const MetaArgument *arg : m_arguments) {
+        if (arg->type()->isTemplateArgument())
+            return true;
+        else if(arg->type()->isArray()){
+            for(const QPair<int,QString>& pair : arg->type()->arrayElementCounts()){
+                if(!pair.second.isEmpty())
+                    return true;
+            }
+        }
+    }
+    if(m_type && (m_type->isTemplateArgument() || m_type->typeUsagePattern()==MetaType::AutoPattern))
+        return true;
+    if(m_type && m_type->isArray()){
+        for(const QPair<int,QString>& pair : m_type->arrayElementCounts()){
+            if(!pair.second.isEmpty())
+                return true;
+        }
+    }
+    return false;
+}
+bool MetaFunction::hasTemplateTypes() const{
+    for(const MetaTemplateParameter *arg : m_templateParameters) {
+        if (arg->instantiation().isEmpty() && arg->type() && arg->type()->isTemplateArgument() && arg->defaultType().isEmpty())
+            return true;
+        if (!arg->type() && arg->defaultType().isEmpty())
+            return true;
+    }
+    return false;
+}
+
+MetaFunction::FunctionType MetaFunction::functionType() const { return m_function_type; }
+
+void MetaFunction::setFunctionType(FunctionType type) { m_function_type = type; }
+
+bool MetaFunction::argumentsHaveNativeId() const {
+    for(const MetaArgument *arg : m_arguments) {
+        if (arg->type()->hasNativeId())
+            return true;
+    }
+
+    return false;
+}
+
 QString MetaFunction::signature(bool skipName) const {
     if(!skipName){
         if(!m_cached_full_signature.isEmpty())
@@ -612,6 +704,20 @@ bool MetaFunction::hasRReferences() const {
     return false;
 }
 
+bool MetaFunction::isNormal() const { return functionType() == NormalFunction || isSlot() || isInGlobalScope() || isBaseClassDelegateFunction(); }
+
+bool MetaFunction::isInGlobalScope() const { return functionType() == GlobalScopeFunction; }
+
+bool MetaFunction::isSignal() const { return functionType() == SignalFunction || functionType() == PrivateSignalFunction; }
+
+bool MetaFunction::isPrivateSignal() const { return functionType() == PrivateSignalFunction; }
+
+bool MetaFunction::isSlot() const { return functionType() == SlotFunction; }
+
+bool MetaFunction::isEmptyFunction() const { return functionType() == EmptyFunction; }
+
+bool MetaFunction::isBaseClassDelegateFunction() const { return functionType() == BaseClassDelegateFunction; }
+
 
 int MetaFunction::actualMinimumArgumentCount() const {
     if(m_actualMinimumArgumentCount==-1){
@@ -636,6 +742,14 @@ int MetaFunction::actualMinimumArgumentCount() const {
     }
     return m_actualMinimumArgumentCount;
 }
+
+void MetaFunction::setInvalid(bool on) { m_invalid = on; }
+
+bool MetaFunction::isInvalid() const { return m_invalid; }
+
+void MetaFunction::setTemplate(bool on) { m_template = on; }
+
+bool MetaFunction::isTemplate() const { return m_template; }
 
 // Returns reference counts for argument at idx, or all arguments if idx == -2
 QList<ReferenceCount> MetaFunction::referenceCounts(const MetaClass *cls, int idx) const {
@@ -1088,7 +1202,7 @@ QList<Parameter> MetaFunction::addedParameterTypes() const
     for(const FunctionModification& modification : modifications) {
         for(const ArgumentModification& argument_modification : modification.argument_mods) {
             if(argument_modification.type==ArgumentModification::TypeParameter){
-                result << Parameter{{}, argument_modification.modified_name, argument_modification.modified_type,false};
+                result << Parameter{{}, argument_modification.modified_name, argument_modification.modified_type,false,{}};
             }
         }
     }
@@ -1322,6 +1436,10 @@ bool MetaFunction::isDeprecated() const {
     }
     return false;
 }
+
+bool MetaFunction::isDestructor() const { return functionType() == DestructorFunction; }
+
+bool MetaFunction::isConstructor() const { return functionType() == ConstructorFunction; }
 
 OwnershipRule MetaFunction::ownership(const MetaClass *cls, TS::Language language, int key) const {
     if(m_accessedField){
@@ -1820,28 +1938,51 @@ QString MetaFunction::minimalSignature() const {
 
     QStringList args;
     for(MetaTemplateParameter* param : m_templateParameters){
-        if(param->type()){
-            QString strg;
-            QTextStream s2(&strg);
-            writeTypeInfo(s2, param->type());
-            s2.flush();
-            if(strg.isEmpty()){
-                if(!param->defaultType().isEmpty()){
-                    strg = param->defaultType();
+        if(!param->instantiation().isEmpty()){
+            if(param->instantiationType()){
+                QString strg;
+                QTextStream s2(&strg);
+                writeTypeInfo(s2, param->instantiationType());
+                s2.flush();
+                if(strg.isEmpty())
+                    strg = param->instantiation();
+                args << strg;
+            }else{
+                args << param->instantiation();
+            }
+        }else{
+            if(!param->type() || !param->type()->isTemplateArgument()){
+                if(!param->name().isEmpty()){
+                    args << param->name();
+                    continue;
+                }else if(!param->defaultType().isEmpty()){
+                    args << param->defaultType();
+                    continue;
                 }else if(!param->parameterType().isEmpty()){
-                    strg = param->parameterType();
+                    args << param->parameterType();
+                    continue;
+                }else if(!param->type() && !param->instantiation().isEmpty()){
+                    args << param->instantiation();
+                    continue;
                 }
             }
-            args << strg;
-        }else if(!param->name().isEmpty()){
-            args << param->name();
-        }else if(!param->defaultType().isEmpty()){
-            args << param->defaultType();
-        }else if(!param->parameterType().isEmpty()){
-            args << param->parameterType();
-        }else{
-            args.clear();
-            break;
+            if(param->type()){
+                QString strg;
+                QTextStream s2(&strg);
+                writeTypeInfo(s2, param->type());
+                s2.flush();
+                if(strg.isEmpty()){
+                    if(!param->defaultType().isEmpty()){
+                        strg = param->defaultType();
+                    }else if(!param->parameterType().isEmpty()){
+                        strg = param->parameterType();
+                    }
+                }
+                args << strg;
+            }else{
+                args.clear();
+                break;
+            }
         }
     }
     QString tmpl;
@@ -1903,6 +2044,12 @@ QString MetaFunction::throws(const MetaClass *implementor) const {
     return QString();
 }
 
+const MetaClass *MetaFunction::interfaceClass() const { return m_interface_class; }
+
+void MetaFunction::setInterfaceClass(const MetaClass *cl) { m_interface_class = cl; }
+
+void MetaFunction::setPropertySpec(QPropertySpec *spec) { m_property_spec = spec; }
+
 bool MetaFunction::hasCodeInjections(const MetaClass *implementor, TS::Language language, const QSet<CodeSnip::Position>& positions) const{
     return implementor->typeEntry()->hasFunctionCodeInjections(minimalSignature(), language, positions);
 }
@@ -1917,6 +2064,13 @@ FunctionModificationList MetaFunction::modifications(const ComplexTypeEntry *ent
     FunctionModificationList result;
     if(entry){
         result = entry->functionModifications(minimalSignature());
+        if(result.isEmpty() && minimalSignature()!=originalSignature())
+            result = entry->functionModifications(originalSignature());
+        if(m_functionTemplate.first && !m_functionTemplate.second.signature.isEmpty()){
+            if(entry==m_implementing_class->typeEntry()){
+                result.prepend(m_functionTemplate.second);
+            }
+        }
         if(result.isEmpty() && (entry->qualifiedCppName().startsWith("QOpenGLFunctions") || entry->qualifiedCppName()=="QOpenGLExtraFunctions")){
             const MetaArgumentList& arguments = this->arguments();
             QList<ArgumentModification> argumentMods;
@@ -1940,9 +2094,16 @@ FunctionModificationList MetaFunction::modifications(const ComplexTypeEntry *ent
 }
 
 FunctionModificationList MetaFunction::modifications(const TypeSystemTypeEntry *entry) const{
-    if(entry)
-        return entry->functionModifications(minimalSignature());
-    return {};
+    FunctionModificationList result;
+    if(entry){
+        result = entry->functionModifications(minimalSignature());
+        if(result.isEmpty() && minimalSignature()!=originalSignature())
+            result = entry->functionModifications(originalSignature());
+        if(m_functionTemplate.first && !m_functionTemplate.second.signature.isEmpty()){
+            result.prepend(m_functionTemplate.second);
+        }
+    }
+    return result;
 }
 
 bool MetaFunction::hasModifications(const MetaClass *implementor) const {
@@ -2014,6 +2175,14 @@ QString MetaFunction::targetLangSignature(bool minimal) const {
 
     return s;
 }
+
+bool MetaFunction::shouldReturnThisObject() const { return QLatin1String("this") == argumentReplaced(0); }
+
+bool MetaFunction::isConstant() const { return m_constant; }
+
+void MetaFunction::setConstant(bool constant) { m_constant = constant; }
+
+const QString &MetaFunction::toString() const { return m_name; }
 
 
 /*******************************************************************************
@@ -2879,7 +3048,7 @@ const MetaFunction *MetaField::setter() const {
         MetaArgumentList arguments;
         MetaArgument *argument = new MetaArgument;
         argument->setType(type()->copy());
-        if(type()->getReferenceType()==MetaType::NoReference && !type()->isPrimitive() && type()->indirections().isEmpty()){
+        if(type()->getReferenceType()==MetaType::NoReference && !type()->isArray() && !type()->isPrimitive() && type()->indirections().isEmpty()){
             argument->type()->setReferenceType(MetaType::Reference);
             argument->type()->setConstant(true);
         }
@@ -2948,7 +3117,7 @@ const MetaFunction *MetaField::getter() const {
             m_getter->setVisibility(MetaAttributes::Private);
         }
         m_getter->setType(type()->copy());
-        if(type()->getReferenceType()==MetaType::NoReference && !type()->isPrimitive() && type()->indirections().isEmpty()){
+        if(type()->getReferenceType()==MetaType::NoReference && !type()->isArray() && !type()->isPrimitive() && type()->indirections().isEmpty()){
             m_getter->type()->setReferenceType(MetaType::Reference);
             m_getter->type()->setConstant(true);
         }
@@ -3482,6 +3651,38 @@ void MetaClass::fixUnimplmentablePureVirtualFunctions(){
     this->m_has_unimplmentablePureVirtualFunctions = !getAllUnimplmentablePureVirtualFunctions().isEmpty();
 }
 
+void MetaType::addInstantiation(const MetaType *inst) {
+    m_instantiations << inst;
+    if(typeEntry() && typeEntry()->isContainer()){
+        const ContainerTypeEntry *ctype =
+            static_cast<const ContainerTypeEntry *>(typeEntry());
+        if(ctype->type()==ContainerTypeEntry::ByteArrayListContainer){
+            setInstantiationInCpp(false);
+            Q_ASSERT(m_instantiations.size()==1 && m_instantiations[0] && m_instantiations[0]->typeEntry()->qualifiedCppName()=="QByteArray");
+        }
+        if(ctype->type()==ContainerTypeEntry::StringListContainer){
+            setInstantiationInCpp(false);
+            Q_ASSERT(m_instantiations.size()==1 && m_instantiations[0] && m_instantiations[0]->typeEntry()->qualifiedCppName()=="QString");
+        }
+    }
+}
+
+void MetaType::setInstantiations(const QList<const MetaType *> &insts) {
+    m_instantiations = insts;
+    if(m_instantiations.size()==1 && typeEntry() && typeEntry()->isContainer()){
+        const ContainerTypeEntry *ctype =
+            static_cast<const ContainerTypeEntry *>(typeEntry());
+        if(ctype->type()==ContainerTypeEntry::ByteArrayListContainer){
+            setInstantiationInCpp(false);
+            Q_ASSERT(m_instantiations[0] && m_instantiations[0]->typeEntry()->qualifiedCppName()=="QByteArray");
+        }
+        if(ctype->type()==ContainerTypeEntry::StringListContainer){
+            setInstantiationInCpp(false);
+            Q_ASSERT(m_instantiations[0] && m_instantiations[0]->typeEntry()->qualifiedCppName()=="QString");
+        }
+    }
+}
+
 QString MetaType::minimalSignature() const {
     QString minimalSignature;
     if (isConstant())
@@ -3499,15 +3700,31 @@ QString MetaType::minimalSignature() const {
         minimalSignature += ">";
     }
 
-    if (getReferenceType()==MetaType::Reference)
-        minimalSignature += "&";
-    if (getReferenceType()==MetaType::RReference)
-        minimalSignature += "&&";
-    for (int j = 0; j < indirections().size(); ++j){
-        if(indirections()[j]){
-            minimalSignature += "*const ";
-        }else{
-            minimalSignature += "*";
+    if(!m_type_entry->isArray()){
+        if (getReferenceType()==MetaType::Reference)
+            minimalSignature += "&";
+        if (getReferenceType()==MetaType::RReference)
+            minimalSignature += "&&";
+        for (int j = 0; j < indirections().size(); ++j){
+            if(indirections()[j]){
+                minimalSignature += "*const ";
+            }else{
+                minimalSignature += "*";
+            }
+        }
+    }else{
+        if (getReferenceType()==MetaType::Reference)
+            minimalSignature += "(&)";
+        for(int i=0; i<m_array_element_count.size(); ++i){
+            const QPair<int,QString>& pair = m_array_element_count[i];
+            if(pair.second.isEmpty()){
+                if(pair.first>0)
+                    minimalSignature += "[" + QString::number(pair.first) + "]";
+                else
+                    minimalSignature += "[]";
+            }else{
+                minimalSignature += "[" + pair.second + "]";
+            }
         }
     }
 
@@ -3527,13 +3744,23 @@ QString MetaType::normalizedSignature() const {
         normalizedSignature += ">";
     }
 
-    if (getReferenceType()==MetaType::Reference && !isConstant())
-        normalizedSignature += "&";
-    for (int j = 0; j < indirections().size(); ++j){
-        if(indirections()[j]){
-            normalizedSignature += "*const";
-        }else{
-            normalizedSignature += "*";
+    if(!m_type_entry->isArray()){
+        if (getReferenceType()==MetaType::Reference && !isConstant())
+            normalizedSignature += "&";
+        for (int j = 0; j < indirections().size(); ++j){
+            if(indirections()[j]){
+                normalizedSignature += "*const";
+            }else{
+                normalizedSignature += "*";
+            }
+        }
+    }else{
+        for(int i=0; i<m_array_element_count.size(); ++i){
+            const QPair<int,QString>& pair = m_array_element_count[i];
+            if(pair.second.isEmpty())
+                normalizedSignature += "[" + QString::number(pair.first) + "]";
+            else
+                normalizedSignature += "[" + pair.second + "]";
         }
     }
     return normalizedSignature;
@@ -3710,3 +3937,4 @@ QSet<QString> MetaClass::getAllUnimplmentablePureVirtualFunctions()const{
     }
     return allPrivatePureVirtualFunctions;
 }
+QPropertySpec *MetaFunction::propertySpec() const { return m_property_spec; }

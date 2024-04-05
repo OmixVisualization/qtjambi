@@ -333,6 +333,55 @@ public class TestMetaObject extends ApplicationInitializer {
     	Assert.assertEquals(null, QMetaObject.forType(QtAlgorithms.class));
     }
     
+    @Test public void testMetaObjectForUnreadableProperty() {
+    	// must not lead to NullPointerException
+    	QMetaObject.forType(SignalCarrier.class);
+    }
+    
+    static class SignalCarrier extends QObject{
+    	public final Signal1<String> xChanged = new Signal1<>();
+    	public void setX(String x){}
+    }
+    
+    static class PropertyCarrier extends QObject{
+    	private boolean enabled;
+    	private boolean visible;
+
+    	@QtPropertyReader(name="isEnabled")
+		public boolean isEnabled() {
+			return enabled;
+		}
+
+		public void setEnabled(boolean enabled) {
+			this.enabled = enabled;
+		}
+
+		public boolean visible() {
+			return visible;
+		}
+
+		public void setVisible(boolean visible) {
+			this.visible = visible;
+		}
+    }
+    
+    @Test public void testPropertyMethodNamingCollisions() {
+    	QMetaObject mo = QMetaObject.forType(PropertyCarrier.class);
+    	QMetaProperty isEnabledP = mo.property("isEnabled");
+    	Assert.assertTrue(isEnabledP.isValid());
+    	Assert.assertTrue(isEnabledP.isReadable());
+    	Assert.assertFalse(isEnabledP.isWritable());
+    	QMetaMethod isEnabledM = mo.method("isEnabled()");
+    	Assert.assertFalse(isEnabledM.isValid());
+    	
+    	QMetaProperty visibleP = mo.property("visible");
+    	Assert.assertTrue(visibleP.isValid());
+    	Assert.assertTrue(visibleP.isReadable());
+    	Assert.assertTrue(visibleP.isWritable());
+    	QMetaMethod visibleM = mo.method("visible()");
+    	Assert.assertFalse(visibleM.isValid());
+    }
+    
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestMetaObject.class.getName());
     }

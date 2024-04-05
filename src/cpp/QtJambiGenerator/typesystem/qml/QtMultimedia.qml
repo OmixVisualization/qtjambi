@@ -40,12 +40,12 @@ TypeSystem{
     InjectCode{
         target: CodeClass.MetaInfo
         position: Position.Position1
-        Text{content: "void initialize_meta_info_QtMultimedia();"}
+        Text{content: "#if defined(Q_OS_ANDROID)\nvoid initialize_meta_info_QtMultimedia();\n#endif"}
     }
     
     InjectCode{
         target: CodeClass.MetaInfo
-        Text{content: "initialize_meta_info_QtMultimedia();"}
+        Text{content: "#if defined(Q_OS_ANDROID)\ninitialize_meta_info_QtMultimedia();\n#endif"}
     }
 
     RequiredLibrary{
@@ -59,21 +59,6 @@ TypeSystem{
         name: "QtMultimediaWidgets"
         mode: RequiredLibrary.ProvideOnly
         until: 5
-    }
-    
-    SuppressedWarning{text: "WARNING(CppImplGenerator) :: protected function '*' in final class '*'"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: visibility of function '*' modified in class '*'"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: hiding of function '*' in class '*'"}
-    
-    Rejection{
-        className: "QAbstractVideoBuffer"
-        since: 6
-    }
-    
-    Rejection{
-        className: "QImageCapture"
-        functionName: "platformImageCapture"
-        since: [6, 3]
     }
     
     Rejection{
@@ -133,6 +118,35 @@ TypeSystem{
         EnumType{
             name: "VolumeScale"
         }
+        until: 6.6
+    }
+
+    NamespaceType{
+        name: "QtAudio"
+        Include{
+            fileName: "qtaudio.h"
+            location: Include.Global
+        }
+        EnumType{
+            name: "Error"
+        }
+
+        EnumType{
+            name: "Mode"
+        }
+
+        EnumType{
+            name: "State"
+        }
+
+        EnumType{
+            name: "Role"
+        }
+
+        EnumType{
+            name: "VolumeScale"
+        }
+        since: 6.7
     }
     
     NamespaceType{
@@ -141,215 +155,6 @@ TypeSystem{
         EnumType{name: "EncodingMode"}
         EnumType{name: "EncodingQuality"}
         EnumType{name: "SupportEstimate"}
-        until: 5
-    }
-    
-    EnumType{
-        name: "QVideoSurfaceFormat::Direction"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QVideoSurfaceFormat::YCbCrColorSpace"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QAudioDecoder::Error"
-    }
-    
-    EnumType{
-        name: "QAudioDecoder::State"
-    }
-    
-    EnumType{
-        name: "QCameraExposure::ExposureMode"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QCameraExposure::FlashMode"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QCameraExposure::MeteringMode"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QCameraExposureControl::ExposureParameter"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QCameraFeedbackControl::EventType"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QCameraFocus::FocusMode"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QCameraFocus::FocusPointMode"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QCameraFocusZone::FocusZoneStatus"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QCameraImageCapture::CaptureDestination"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QCameraImageCapture::DriveMode"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QCameraImageCapture::Error"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QCameraImageProcessing::WhiteBalanceMode"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QCameraImageProcessing::ColorFilter"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QCameraImageProcessingControl::ProcessingParameter"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QCameraViewfinderSettingsControl::ViewfinderParameter"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QMediaPlayer::Error"
-    }
-    
-    EnumType{
-        name: "QMediaPlayer::Flag"
-    }
-    
-    EnumType{
-        name: "QMediaPlayer::PlaybackState"
-    }
-    
-    EnumType{
-        name: "QMediaPlayer::MediaStatus"
-    }
-    
-    EnumType{
-        name: "QMediaPlayer::State"
-    }
-    
-    EnumType{
-        name: "QMediaPlayer::Loops"
-    }
-    
-    EnumType{
-        name: "QMediaPlaylist::Error"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QMediaPlaylist::PlaybackMode"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QMediaRecorder::Error"
-    }
-    
-    EnumType{
-        name: "QMediaRecorder::State"
-    }
-    
-    EnumType{
-        name: "QMediaRecorder::Status"
-    }
-    
-    EnumType{
-        name: "QMediaRecorder::EncodingMode"
-    }
-    
-    EnumType{
-        name: "QMediaRecorder::Quality"
-    }
-    
-    EnumType{
-        name: "QMediaRecorder::RecorderState"
-    }
-    
-    EnumType{
-        name: "QMediaStreamsControl::StreamType"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QRadioData::Error"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QRadioData::ProgramType"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QRadioTuner::Band"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QRadioTuner::Error"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QRadioTuner::SearchMode"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QRadioTuner::State"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QRadioTuner::StereoMode"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QSound::Loop"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QSoundEffect::Loop"
-    }
-    
-    EnumType{
-        name: "QSoundEffect::Status"
-    }
-    
-    EnumType{
-        name: "QCameraControl::PropertyChangeType"
         until: 5
     }
 
@@ -562,7 +367,11 @@ TypeSystem{
             since: 6
         }
     }
-    
+
+    Rejection{
+        className: "QAbstractVideoBuffer"
+        since: 6
+    }
     ObjectType{
         name: "QAbstractVideoBuffer"
         EnumType{name: "HandleType"}
@@ -612,9 +421,8 @@ TypeSystem{
             }
             ModifyArgument{
                 index: 0
-                NoNullPointer{}
                 ReplaceType{
-                    modifiedType: "io.qt.multimedia.QAbstractVideoBuffer$MapResult"
+                    modifiedType: "io.qt.multimedia.QAbstractVideoBuffer$@NonNull MapResult"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -624,24 +432,22 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "uchar* %out = nullptr;\n"+
-                                  "if(%in){\n"+
-                                  "jobject data = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::data(%env, %in);\n"+
-                                  "if(%3){\n"+
-                                  "*%3 = int(Java::QtMultimedia::QAbstractVideoBuffer$MapResult::bytesPerLine(%env, %in));\n"+
-                                  "}\n"+
-                                  "if(%2){\n"+
-                                  "*%2 = int(%env->GetDirectBufferCapacity(data));\n"+
-                                  "}\n"+
-                                  "%out = reinterpret_cast<uchar*>(%env->GetDirectBufferAddress(data));\n"+
-                                  "}else{\n"+
-                                  "if(%2){\n"+
-                                  "*%2 = 0;\n"+
-                                  "}\n"+
-                                  "if(%3){\n"+
-                                  "*%3 = 0;\n"+
-                                  "}\n"+
-                                  "}"}
+                    Text{content: String.raw`
+uchar* %out = nullptr;
+if(%in){
+    JBufferData buffer(%env, Java::QtMultimedia::QAbstractVideoBuffer$MapResult::data(%env, %in));
+    if(%3)
+        *%3 = int(Java::QtMultimedia::QAbstractVideoBuffer$MapResult::bytesPerLine(%env, %in));
+    if(%2)
+        *%2 = int(buffer.size());
+    %out = reinterpret_cast<uchar*>(buffer.take());
+}else{
+    if(%2)
+        *%2 = 0;
+    if(%3)
+        *%3 = 0;
+}`
+                    }
                 }
             }
         }
@@ -667,11 +473,7 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "int %out[4];\n"+
-                                  "%out[0] = 0;\n"+
-                                  "%out[1] = 0;\n"+
-                                  "%out[2] = 0;\n"+
-                                  "%out[3] = 0;"}
+                    Text{content: "int %out[4] = {0,0,0,0};"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -684,11 +486,7 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "uchar* %out[4];\n"+
-                                  "%out[0] = nullptr;\n"+
-                                  "%out[1] = nullptr;\n"+
-                                  "%out[2] = nullptr;\n"+
-                                  "%out[3] = nullptr;"}
+                    Text{content: "uchar* %out[4] = {nullptr,nullptr,nullptr,nullptr};"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -702,17 +500,19 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "if(%in>0){\n"+
-                                  "if(%in>4)\n"+
-                                  "%in = 4;\n"+
-                                  "%out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newArray(%env, jsize(%in));\n"+
-                                  "for(int i=0; i<%in; ++i){\n"+
-                                  "jobject buffer = DataJBuffer(%env, __qt_%4[i], %2).take();\n"+
-                                  "jobject element = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newInstance(%env, buffer, jint(__qt_%3[i]), false);\n"+
-                                  "%env->SetObjectArrayElement(%out, jsize(i), element);\n"+
-                                  "JavaException::check(%env QTJAMBI_STACKTRACEINFO );\n"+
-                                  "}\n"+
-                                  "}"}
+                    Text{content: String.raw`
+if(%in>0){
+    if(%in>4)
+        %in = 4;
+    %out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newArray(%env, jsize(%in));
+    for(int i=0; i<%in; ++i){
+        jobject buffer = DataJBuffer(%env, __qt_%4[i], %2).take();
+        jobject element = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newInstance(%env, buffer, jint(__qt_%3[i]), false);
+        %env->SetObjectArrayElement(%out, jsize(i), element);
+        JavaException::check(%env QTJAMBI_STACKTRACEINFO );
+    }
+}`
+                    }
                 }
             }
         }
@@ -755,11 +555,7 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "int %out[4];\n"+
-                                  "%out[0] = 0;\n"+
-                                  "%out[1] = 0;\n"+
-                                  "%out[2] = 0;\n"+
-                                  "%out[3] = 0;"}
+                    Text{content: "int %out[4] = {0,0,0,0};"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -772,11 +568,7 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "uchar* %out[4];\n"+
-                                  "%out[0] = nullptr;\n"+
-                                  "%out[1] = nullptr;\n"+
-                                  "%out[2] = nullptr;\n"+
-                                  "%out[3] = nullptr;"}
+                    Text{content: "uchar* %out[4] = {nullptr,nullptr,nullptr,nullptr};"}
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
@@ -790,71 +582,56 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "jobjectArray %out = nullptr;\n"+
-                                  "if(%in>0){\n"+
-                                  "if(%in>4)\n"+
-                                  "%in = 4;\n"+
-                                  "%out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newArray(%env, jsize(%in));\n"+
-                                  "for(int i=0; i<%in; ++i){\n"+
-                                  "jobject buffer = DataJBuffer(%env, __qt_%4[i], %2).take();\n"+
-                                  "jobject element = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newInstance(%env, buffer, jint(__qt_%3[i]), false);\n"+
-                                  "%env->SetObjectArrayElement(%out, jsize(i), element);\n"+
-                                  "JavaException::check(%env QTJAMBI_STACKTRACEINFO );\n"+
-                                  "}\n"+
-                                  "}"}
+                    Text{content: String.raw`
+jobjectArray %out = nullptr;
+if(%in>0){
+    if(%in>4)
+        %in = 4;
+    %out = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newArray(%env, jsize(%in));
+    for(int i=0; i<%in; ++i){
+        jobject buffer = DataJBuffer(%env, __qt_%4[i], %2).take();
+        jobject element = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::newInstance(%env, buffer, jint(__qt_%3[i]), false);
+        %env->SetObjectArrayElement(%out, jsize(i), element);
+        JavaException::check(%env QTJAMBI_STACKTRACEINFO );
+    }
+}`
+                    }
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "int %out = 0;\n"+
-                                  "%3[0] = 0;\n"+
-                                  "%3[1] = 0;\n"+
-                                  "%3[2] = 0;\n"+
-                                  "%3[3] = 0;\n"+
-                                  "%4[0] = nullptr;\n"+
-                                  "%4[1] = nullptr;\n"+
-                                  "%4[2] = nullptr;\n"+
-                                  "%4[3] = nullptr;\n"+
-                                  "if(%in){\n"+
-                                  "%out = qMin(4, int(%env->GetArrayLength(%in)));\n"+
-                                  "for(int i=0; i<%out; ++i){\n"+
-                                  "jobject element = %env->GetObjectArrayElement(%in, jsize(i));\n"+
-                                  "if(!element){\n"+
-                                  "%out = i;\n"+
-                                  "break;\n"+
-                                  "}\n"+
-                                  "jobject data = Java::QtMultimedia::QAbstractVideoBuffer$MapResult::data(%env, element);\n"+
-                                  "if(!data){\n"+
-                                  "%out = i;\n"+
-                                  "break;\n"+
-                                  "}\n"+
-                                  "%3[i] = int(Java::QtMultimedia::QAbstractVideoBuffer$MapResult::bytesPerLine(%env, element));\n"+
-                                  "if(%2){\n"+
-                                  "int capacity = int(%env->GetDirectBufferCapacity(data));\n"+
-                                  "if(capacity<=0){\n"+
-                                  "%out = 0;\n"+
-                                  "%3[0] = 0;\n"+
-                                  "%3[1] = 0;\n"+
-                                  "%3[2] = 0;\n"+
-                                  "%3[3] = 0;\n"+
-                                  "%4[0] = nullptr;\n"+
-                                  "%4[1] = nullptr;\n"+
-                                  "%4[2] = nullptr;\n"+
-                                  "%4[3] = nullptr;\n"+
-                                  "break;\n"+
-                                  "}\n"+
-                                  "if(i>0){\n"+
-                                  "*%2 = qMin(*%2, capacity);\n"+
-                                  "}else{\n"+
-                                  "*%2 = capacity;\n"+
-                                  "}\n"+
-                                  "}\n"+
-                                  "%4[i] = reinterpret_cast<uchar*>(%env->GetDirectBufferAddress(data));\n"+
-                                  "}\n"+
-                                  "}else{\n"+
-                                  "if(%2){\n"+
-                                  "*%2 = 0;\n"+
-                                  "}\n"+
-                                  "}"}
+                    Text{content: String.raw`
+int %out = 0;
+%3[0] = 0;
+%3[1] = 0;
+%3[2] = 0;
+%3[3] = 0;
+%4[0] = nullptr;
+%4[1] = nullptr;
+%4[2] = nullptr;
+%4[3] = nullptr;
+if(%2) *%2 = 0;
+if(%in){
+    %out = qMin(4, int(%env->GetArrayLength(%in)));
+    for(int i=0; i<%out; ++i){
+        jobject element = %env->GetObjectArrayElement(%in, jsize(i));
+        if(!element){
+            %out = i;
+            break;
+        }
+        JBufferData buffer(%env, Java::QtMultimedia::QAbstractVideoBuffer$MapResult::data(%env, element));
+        if(buffer.capacity()==0){
+            %out = i;
+            break;
+        }
+        %3[i] = int(Java::QtMultimedia::QAbstractVideoBuffer$MapResult::bytesPerLine(%env, element));
+        if(%2){
+            int size = int(buffer.size());
+            *%2 = i>0 ? qMin(*%2, size) : size;
+        }
+        %4[i] = reinterpret_cast<uchar*>(buffer.take());
+    }
+}`
+                        }
                 }
             }
         }
@@ -922,6 +699,12 @@ TypeSystem{
                 location: Include.Global
             }
         }
+        EnumType{
+            name: "Direction"
+        }
+        EnumType{
+            name: "YCbCrColorSpace"
+        }
         until: 5
     }
     
@@ -931,6 +714,10 @@ TypeSystem{
     
     ValueType{
         name: "QCameraFocusZone"
+        EnumType{
+            name: "FocusZoneStatus"
+        }
+        until: 5
     }
     
     ValueType{
@@ -1027,6 +814,12 @@ TypeSystem{
     
     ObjectType{
         name: "QAudioDecoder"
+        EnumType{
+            name: "Error"
+        }
+        EnumType{
+            name: "State"
+        }
         ModifyFunction{
             signature: "setSourceDevice(QIODevice*)"
             ModifyArgument{
@@ -1073,15 +866,17 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "QList<int> %out;\n"+
-                                  "if(%in){\n"+
-                                  "    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
-                                  "    if(__tmp_%in)\n"+
-                                  "        %out = qtjambi_cast<QList<int>>(%env, __tmp_%in);\n"+
-                                  "    if(%2){\n"+
-                                  "        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
-                                  "    }\n"+
-                                  "}"}
+                    Text{content: String.raw`
+QList<int> %out;
+if(%in){
+    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
+    if(__tmp_%in)
+        %out = qtjambi_cast<QList<int>>(%env, __tmp_%in);
+    if(%2){
+        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
+    }
+}`
+                        }
                 }
             }
             ModifyArgument{
@@ -1250,6 +1045,9 @@ TypeSystem{
     
     ObjectType{
         name: "QCameraControl"
+        EnumType{
+            name: "PropertyChangeType"
+        }
         until: 5
     }
     
@@ -1265,6 +1063,9 @@ TypeSystem{
                 location: Include.Local
             }
         }
+        EnumType{
+            name: "ExposureParameter"
+        }
         ModifyFunction{
             signature: "supportedParameterRange(const QCameraExposureControl::ExposureParameter &, bool *) const"
             ModifyArgument{
@@ -1279,15 +1080,17 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "QList<QVariant> %out;\n"+
-                                  "if(%in){\n"+
-                                  "    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
-                                  "    if(__tmp_%in)\n"+
-                                  "        %out = qtjambi_cast<QList<QVariant>>(%env, __tmp_%in);\n"+
-                                  "    if(%2){\n"+
-                                  "        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
-                                  "    }\n"+
-                                  "}"}
+                    Text{content: String.raw`
+QList<QVariant> %out;
+if(%in){
+    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
+    if(__tmp_%in)
+        %out = qtjambi_cast<QList<QVariant>>(%env, __tmp_%in);
+    if(%2){
+        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
+    }
+}`
+                        }
                 }
             }
             ModifyArgument{
@@ -1306,6 +1109,9 @@ TypeSystem{
     
     ObjectType{
         name: "QCameraFeedbackControl"
+        EnumType{
+            name: "EventType"
+        }
         until: 5
     }
     
@@ -1321,6 +1127,15 @@ TypeSystem{
                 location: Include.Local
             }
         }
+        EnumType{
+            name: "ExposureMode"
+        }
+        EnumType{
+            name: "FlashMode"
+        }
+        EnumType{
+            name: "MeteringMode"
+        }
         ModifyFunction{
             signature: "supportedApertures(bool *) const"
             ModifyArgument{
@@ -1335,15 +1150,17 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "QList<double> %out;\n"+
-                                  "if(%in){\n"+
-                                  "    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
-                                  "    if(__tmp_%in)\n"+
-                                  "        %out = qtjambi_cast<QList<double>>(%env, __tmp_%in);\n"+
-                                  "    if(%1){\n"+
-                                  "        *%1 = %env->GetObjectField(%in, Java::QtMultimedia::QMediaService$Result(%env).continuous);\n"+
-                                  "    }\n"+
-                                  "}"}
+                    Text{content: String.raw`
+QList<double> %out;
+if(%in){
+    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
+    if(__tmp_%in)
+        %out = qtjambi_cast<QList<double>>(%env, __tmp_%in);
+    if(%2){
+        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
+    }
+}`
+                    }
                 }
             }
             ModifyArgument{
@@ -1371,15 +1188,17 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "QList<int> %out;\n"+
-                                  "if(%in){\n"+
-                                  "    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
-                                  "    if(__tmp_%in)\n"+
-                                  "        %out = qtjambi_cast<QList<int>>(%env, __tmp_%in);\n"+
-                                  "    if(%1){\n"+
-                                  "        *%1 = %env->GetObjectField(%in, Java::QtMultimedia::QMediaService$Result(%env).continuous);\n"+
-                                  "    }\n"+
-                                  "}"}
+                    Text{content: String.raw`
+QList<int> %out;
+if(%in){
+    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
+    if(__tmp_%in)
+        %out = qtjambi_cast<QList<int>>(%env, __tmp_%in);
+    if(%2){
+        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
+    }
+}`
+                    }
                 }
             }
             ModifyArgument{
@@ -1407,15 +1226,17 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "QList<double> %out;\n"+
-                                  "if(%in){\n"+
-                                  "    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
-                                  "    if(__tmp_%in)\n"+
-                                  "        %out = qtjambi_cast<QList<double>>(%env, __tmp_%in);\n"+
-                                  "    if(%1){\n"+
-                                  "        *%1 = %env->GetObjectField(%in, Java::QtMultimedia::QMediaService$Result(%env).continuous);\n"+
-                                  "    }\n"+
-                                  "}"}
+                    Text{content: String.raw`
+QList<double> %out;
+if(%in){
+    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
+    if(__tmp_%in)
+        %out = qtjambi_cast<QList<double>>(%env, __tmp_%in);
+    if(%2){
+        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
+    }
+}`
+                    }
                 }
             }
             ModifyArgument{
@@ -1434,6 +1255,12 @@ TypeSystem{
     
     ObjectType{
         name: "QCameraFocus"
+        EnumType{
+            name: "FocusMode"
+        }
+        EnumType{
+            name: "FocusPointMode"
+        }
         until: 5
     }
     
@@ -1443,6 +1270,15 @@ TypeSystem{
     
     ObjectType{
         name: "QCameraImageCapture"
+        EnumType{
+            name: "CaptureDestination"
+        }
+        EnumType{
+            name: "DriveMode"
+        }
+        EnumType{
+            name: "Error"
+        }
         ModifyFunction{
             signature: "setMediaObject(QMediaObject*)"
             ModifyArgument{
@@ -1473,15 +1309,17 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "QList<QSize> %out;\n"+
-                                  "if(%in){\n"+
-                                  "    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
-                                  "    if(__tmp_%in)\n"+
-                                  "        %out = qtjambi_cast<QList<QSize>>(%env, __tmp_%in);\n"+
-                                  "    if(%2){\n"+
-                                  "        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
-                                  "    }\n"+
-                                  "}"}
+                    Text{content: String.raw`
+QList<QSize> %out;
+if(%in){
+    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
+    if(__tmp_%in)
+        %out = qtjambi_cast<QList<QSize>>(%env, __tmp_%in);
+    if(%2){
+        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
+    }
+}`
+                    }
                 }
             }
             ModifyArgument{
@@ -1504,11 +1342,20 @@ TypeSystem{
     
     ObjectType{
         name: "QCameraImageProcessing"
+        EnumType{
+            name: "WhiteBalanceMode"
+        }
+        EnumType{
+            name: "ColorFilter"
+        }
         until: 5
     }
     
     ObjectType{
         name: "QCameraImageProcessingControl"
+        EnumType{
+            name: "ProcessingParameter"
+        }
         until: 5
     }
     
@@ -1518,6 +1365,9 @@ TypeSystem{
     
     ObjectType{
         name: "QCameraViewfinderSettingsControl"
+        EnumType{
+            name: "ViewfinderParameter"
+        }
         until: 5
     }
     
@@ -1552,15 +1402,17 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "QList<QSize> %out;\n"+
-                                  "if(%in){\n"+
-                                  "    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
-                                  "    if(__tmp_%in)\n"+
-                                  "        %out = qtjambi_cast<QList<QSize>>(%env, __tmp_%in);\n"+
-                                  "    if(%2){\n"+
-                                  "        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
-                                  "    }\n"+
-                                  "}"}
+                    Text{content: String.raw`
+QList<QSize> %out;
+if(%in){
+    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
+    if(__tmp_%in)
+        %out = qtjambi_cast<QList<QSize>>(%env, __tmp_%in);
+    if(%2){
+        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
+    }
+}`
+                    }
                 }
             }
             ModifyArgument{
@@ -1630,6 +1482,24 @@ TypeSystem{
     
     ObjectType{
         name: "QMediaPlayer"
+        EnumType{
+            name: "Error"
+        }
+        EnumType{
+            name: "Flag"
+        }
+        EnumType{
+            name: "PlaybackState"
+        }
+        EnumType{
+            name: "MediaStatus"
+        }
+        EnumType{
+            name: "State"
+        }
+        EnumType{
+            name: "Loops"
+        }
         ModifyFunction{
             signature: "setVideoOutput(QGraphicsVideoItem*)"
             remove: RemoveFlag.All
@@ -1760,6 +1630,12 @@ TypeSystem{
     
     ObjectType{
         name: "QMediaPlaylist"
+        EnumType{
+            name: "Error"
+        }
+        EnumType{
+            name: "PlaybackMode"
+        }
         ModifyFunction{
             signature: "setMediaObject(QMediaObject*)"
             ModifyArgument{
@@ -1785,6 +1661,24 @@ TypeSystem{
     
     ObjectType{
         name: "QMediaRecorder"
+        EnumType{
+            name: "Error"
+        }
+        EnumType{
+            name: "State"
+        }
+        EnumType{
+            name: "Status"
+        }
+        EnumType{
+            name: "EncodingMode"
+        }
+        EnumType{
+            name: "Quality"
+        }
+        EnumType{
+            name: "RecorderState"
+        }
         ModifyFunction{
             signature: "setMediaObject(QMediaObject*)"
             ModifyArgument{
@@ -1815,15 +1709,17 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "QList<int> %out;\n"+
-                                  "if(%in){\n"+
-                                  "    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
-                                  "    if(__tmp_%in)\n"+
-                                  "        %out = qtjambi_cast<QList<int>>(%env, __tmp_%in);\n"+
-                                  "    if(%2){\n"+
-                                  "        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
-                                  "    }\n"+
-                                  "}"}
+                    Text{content: String.raw`
+QList<int> %out;
+if(%in){
+    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
+    if(__tmp_%in)
+        %out = qtjambi_cast<QList<int>>(%env, __tmp_%in);
+    if(%2){
+        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
+    }
+}`
+                    }
                 }
             }
             ModifyArgument{
@@ -1852,15 +1748,17 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "QList<double> %out;\n"+
-                                  "if(%in){\n"+
-                                  "    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
-                                  "    if(__tmp_%in)\n"+
-                                  "        %out = qtjambi_cast<QList<double>>(%env, __tmp_%in);\n"+
-                                  "    if(%2){\n"+
-                                  "        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
-                                  "    }\n"+
-                                  "}"}
+                    Text{content: String.raw`
+QList<double> %out;
+if(%in){
+    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
+    if(__tmp_%in)
+        %out = qtjambi_cast<QList<double>>(%env, __tmp_%in);
+    if(%2){
+        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
+    }
+}`
+                            }
                 }
             }
             ModifyArgument{
@@ -1889,15 +1787,17 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "QList<QSize> %out;\n"+
-                                  "if(%in){\n"+
-                                  "    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
-                                  "    if(__tmp_%in)\n"+
-                                  "        %out = qtjambi_cast<QList<QSize>>(%env, __tmp_%in);\n"+
-                                  "    if(%2){\n"+
-                                  "        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
-                                  "    }\n"+
-                                  "}"}
+                    Text{content: String.raw`
+QList<QSize> %out;
+if(%in){
+    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
+    if(__tmp_%in)
+        %out = qtjambi_cast<QList<QSize>>(%env, __tmp_%in);
+    if(%2){
+        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
+    }
+}`
+                    }
                 }
             }
             ModifyArgument{
@@ -1980,6 +1880,9 @@ TypeSystem{
     
     ObjectType{
         name: "QMediaStreamsControl"
+        EnumType{
+            name: "StreamType"
+        }
         until: 5
     }
     
@@ -1997,6 +1900,12 @@ TypeSystem{
     
     ObjectType{
         name: "QRadioData"
+        EnumType{
+            name: "Error"
+        }
+        EnumType{
+            name: "ProgramType"
+        }
         ModifyFunction{
             signature: "setMediaObject(QMediaObject*)"
             ModifyArgument{
@@ -2005,7 +1914,6 @@ TypeSystem{
                     action: ReferenceCount.Ignore
                 }
             }
-            until: 5
         }
         until: 5
     }
@@ -2016,6 +1924,26 @@ TypeSystem{
     
     ObjectType{
         name: "QRadioTuner"
+
+        EnumType{
+            name: "Band"
+        }
+
+        EnumType{
+            name: "Error"
+        }
+
+        EnumType{
+            name: "SearchMode"
+        }
+
+        EnumType{
+            name: "State"
+        }
+
+        EnumType{
+            name: "StereoMode"
+        }
         until: 5
     }
     
@@ -2025,11 +1953,20 @@ TypeSystem{
     
     ObjectType{
         name: "QSound"
+        EnumType{
+            name: "Loop"
+        }
         until: 5
     }
     
     ObjectType{
         name: "QSoundEffect"
+        EnumType{
+            name: "Loop"
+        }
+        EnumType{
+            name: "Status"
+        }
     }
     
     ObjectType{
@@ -2058,15 +1995,17 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "QList<double> %out;\n"+
-                                  "if(%in){\n"+
-                                  "    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
-                                  "    if(__tmp_%in)\n"+
-                                  "        %out = qtjambi_cast<QList<double>>(%env, __tmp_%in);\n"+
-                                  "    if(%2){\n"+
-                                  "        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
-                                  "    }\n"+
-                                  "}"}
+                    Text{content: String.raw`
+QList<double> %out;
+if(%in){
+    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
+    if(__tmp_%in)
+        %out = qtjambi_cast<QList<double>>(%env, __tmp_%in);
+    if(%2){
+        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
+    }
+}`
+                            }
                 }
             }
             ModifyArgument{
@@ -2094,15 +2033,17 @@ TypeSystem{
                 }
                 ConversionRule{
                     codeClass: CodeClass.Shell
-                    Text{content: "QList<QSize> %out;\n"+
-                                  "if(%in){\n"+
-                                  "    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);\n"+
-                                  "    if(__tmp_%in)\n"+
-                                  "        %out = qtjambi_cast<QList<QSize>>(%env, __tmp_%in);\n"+
-                                  "    if(%2){\n"+
-                                  "        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);\n"+
-                                  "    }\n"+
-                                  "}"}
+                    Text{content: String.raw`
+QList<QSize> %out;
+if(%in){
+    jobject __tmp_%in = Java::QtMultimedia::QMediaService$Result::result(%env, %in);
+    if(__tmp_%in)
+        %out = qtjambi_cast<QList<QSize>>(%env, __tmp_%in);
+    if(%2){
+        *%2 = Java::QtMultimedia::QMediaService$Result::continuous(%env, %in);
+    }
+}`
+                            }
                 }
             }
             ModifyArgument{
@@ -2459,16 +2400,68 @@ TypeSystem{
     
     ObjectType{
         name: "QAudioSink"
+        ModifyFunction{
+            signature: "error(Qt::Disambiguated_t)const"
+            ModifyArgument{
+                index: 1
+                RemoveArgument{}
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "constexpr Qt::Disambiguated_t %out = Qt::Disambiguated;"}
+                }
+            }
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "state(Qt::Disambiguated_t)const"
+            ModifyArgument{
+                index: 1
+                RemoveArgument{}
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "constexpr Qt::Disambiguated_t %out = Qt::Disambiguated;"}
+                }
+            }
+            since: 6.7
+        }
         since: [6, 2]
     }
     
     ObjectType{
         name: "QAudioSource"
+        ModifyFunction{
+            signature: "error(Qt::Disambiguated_t)const"
+            ModifyArgument{
+                index: 1
+                RemoveArgument{}
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "constexpr Qt::Disambiguated_t %out = Qt::Disambiguated;"}
+                }
+            }
+            since: 6.7
+        }
+        ModifyFunction{
+            signature: "state(Qt::Disambiguated_t)const"
+            ModifyArgument{
+                index: 1
+                RemoveArgument{}
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "constexpr Qt::Disambiguated_t %out = Qt::Disambiguated;"}
+                }
+            }
+            since: 6.7
+        }
         since: [6, 2]
     }
     
     ObjectType{
         name: "QImageCapture"
+        Rejection{
+            functionName: "platformImageCapture"
+            since: [6, 3]
+        }
         EnumType{
             name: "Error"
         }
@@ -2735,4 +2728,7 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QCamera::platformCamera', unmatched return type 'QPlatformCamera*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QImageCapture::platformImageCapture', unmatched return type 'QPlatformImageCapture*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QMediaRecorder::platformRecoder', unmatched return type 'QPlatformMediaRecorder*'"}
+    SuppressedWarning{text: "WARNING(CppImplGenerator) :: protected function '*' in final class '*'"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: visibility of function '*' modified in class '*'"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: hiding of function '*' in class '*'"}
 }

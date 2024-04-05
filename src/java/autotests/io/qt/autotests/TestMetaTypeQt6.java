@@ -33,6 +33,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.Serializable;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -249,6 +250,26 @@ public class TestMetaTypeQt6 extends ApplicationInitializer {
     public void testRegisterContainerMetaType() {
     	QMetaType type = QMetaType.fromObject(new QHash<>(String.class, Iface.class));
     	System.out.println(type);
+    }
+	
+	@Test
+    public void testMetaTypeOfJavaMap() {
+		QMetaType hashType = QMetaType.fromType(QHash.class, QMetaType.fromType(ThreadGroup.class), QMetaType.fromType(String.class));
+		System.out.println(hashType);
+		new QHash<>(ThreadGroup.class, String.class);
+		QMetaObject.forType(JavaMapCarrier.class).properties().forEach(p->System.out.println(p.typeName()+" "+p.name()+": Readable="+p.isReadable()+", Writable="+p.isWritable()+", Bindable="+p.isBindable()+", Notify="+p.notifySignal()));
+	}
+    
+    static class JavaMapCarrier extends QObject{
+    	private Map<ThreadGroup,String> map;
+
+		public Map<ThreadGroup, String> getMap() {
+			return map;
+		}
+
+		public void setMap(Map<ThreadGroup, String> map) {
+			this.map = map;
+		}
     }
     
     public static void main(String args[]) {

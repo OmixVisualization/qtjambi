@@ -1350,6 +1350,17 @@ TypeSystem{
     ObjectType{
         name: "QDesignerResourceBrowserInterface"
     }
+
+    GlobalFunction{
+        signature: "variantToDomProperty(QAbstractFormBuilder*,const QMetaObject*,const QString&,const QVariant&)"
+        remove: RemoveFlag.All // is internal
+    }
+
+
+    GlobalFunction{
+        signature: "domPropertyToVariant(QAbstractFormBuilder*,const QMetaObject*,const DomProperty*)"
+        remove: RemoveFlag.All // is internal
+    }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QtResourceModel*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type '*QDesignerIntrospectionInterface*'"}

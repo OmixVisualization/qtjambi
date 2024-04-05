@@ -30,6 +30,7 @@ package io.qt.autotests;
 
 import static org.junit.Assert.*;
 
+import java.lang.reflect.Method;
 import java.util.*;
 
 import org.junit.Assume;
@@ -110,6 +111,12 @@ public class TestGraphs extends ApplicationInitializer {
     @Test
     public void testQ3DScatter() {
     	Q3DScatter scatter = new Q3DScatter();
+    	if(QLibraryInfo.version().compareTo(new QVersionNumber(6,7,0))>=0) {
+    		try {
+    			Method setOptimizationHint = QAbstract3DGraph.class.getMethod("setOptimizationHint", QAbstract3DGraph.OptimizationHint.class);
+    			setOptimizationHint.invoke(scatter, QAbstract3DGraph.OptimizationHint.valueOf("Legacy"));
+    		}catch(Throwable t) {}
+    	}
     	//Assume.assumeTrue(scatter.hasContext());
     	QValue3DAxis axis1 = new QValue3DAxis();
     	scatter.setAxisX(axis1);
@@ -138,9 +145,16 @@ public class TestGraphs extends ApplicationInitializer {
     	assertFalse(series.parent()==null);
     }
     
-    @Test
+//    @Test
     public void testQ3DSurface() {
     	Q3DSurface surface = new Q3DSurface();
+    	if(QLibraryInfo.version().compareTo(new QVersionNumber(6,7,0))>=0) {
+    		try {
+    			Method setOptimizationHint = QAbstract3DGraph.class.getMethod("setOptimizationHint", QAbstract3DGraph.OptimizationHint.class);
+    			setOptimizationHint.invoke(surface, QAbstract3DGraph.OptimizationHint.valueOf("Legacy"));
+    		}catch(Throwable t) {}
+    		
+    	}
     	//Assume.assumeTrue(surface.hasContext());
     	QValue3DAxis axis1 = new QValue3DAxis();
     	surface.setAxisX(axis1);

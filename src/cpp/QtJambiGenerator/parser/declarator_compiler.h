@@ -78,6 +78,8 @@ class DeclaratorCompiler: protected DefaultVisitor {
         inline bool isVariadics() const { return _M_variadics; }
         inline ReferenceType getReferenceType() const { return _M_reference_type; }
         inline const QList<bool>& indirection() const { return _M_indirection; }
+        inline ReferenceType getSubReferenceType() const { return _M_sub_reference_type; }
+        inline const QList<bool>& subIndirection() const { return _M_sub_indirection; }
         inline const QList<Parameter>& parameters() const { return _M_parameters; }
         OperatorType operatorType() const { return _M_operatorType; }
         const TypeInfo& operatorCastType() const { return _M_operatorCastType; }
@@ -90,17 +92,19 @@ class DeclaratorCompiler: protected DefaultVisitor {
         Binder *_M_binder;
         TokenStream *_M_token_stream;
 
-        bool _M_function;
-        ReferenceType _M_reference_type;
-        bool _M_variadics;
+        bool _M_function = false;
+        ReferenceType _M_reference_type = NoReference;
+        ReferenceType _M_sub_reference_type = NoReference;
+        bool _M_variadics = false;
         /**
          * the size of this array represents the number of indirections of the type.
          * the individual entry 'false' it represents a *.
          * the individual entry 'true' it represents a * const.
          */
         QList<bool> _M_indirection;
+        QList<bool> _M_sub_indirection;
         QString _M_id;
-        OperatorType _M_operatorType;
+        OperatorType _M_operatorType = OperatorType::None;
         TypeInfo _M_operatorCastType;
         QStringList _M_array;
         QList<Parameter> _M_parameters;

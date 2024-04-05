@@ -596,6 +596,19 @@ void ComplexType::setNotCloneable(bool newNotCloneable)
     emit notCloneableChanged();
 }
 
+bool ComplexType::getPushUpStatics() const
+{
+    return pushUpStatics;
+}
+
+void ComplexType::setPushUpStatics(bool newPushUpStatics)
+{
+    if (pushUpStatics == newPushUpStatics)
+        return;
+    pushUpStatics = newPushUpStatics;
+    emit pushUpStaticsChanged();
+}
+
 bool ValueType::getIsPolymorphicBase() const
 {
     return isPolymorphicBase;

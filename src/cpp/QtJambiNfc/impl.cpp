@@ -28,10 +28,12 @@
 ****************************************************************************/
 
 #include <QtJambi/QtJambiAPI>
-#include <QtJambi/JavaAPI>
-
-void initialize_meta_info_QtNfc(){
 #if defined(Q_OS_ANDROID)
+#include <QtJambi/AndroidAPI>
+#endif
+
+#if defined(Q_OS_ANDROID)
+void initialize_meta_info_QtNfc(){
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #define ORG_QTPROJECT_QT "org/qtproject/qt/"
 #else
@@ -56,5 +58,5 @@ void initialize_meta_info_QtNfc(){
             }
         }
     }
-#endif
 }
+#endif

@@ -36,10 +36,17 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.NonNull;
 import io.qt.QNoNativeResourcesException;
+import io.qt.QtPrimitiveType;
 import io.qt.core.QAbstractTableModel;
+import io.qt.core.QMetaMethod;
+import io.qt.core.QMetaObject;
 import io.qt.core.QModelIndex;
+import io.qt.core.QObject;
 import io.qt.core.QTimer;
+import io.qt.core.Qt;
+import io.qt.core.QObject.PrivateSignal3;
 import io.qt.core.Qt.Orientation;
 import io.qt.gui.QStandardItemModel;
 import io.qt.widgets.QApplication;
@@ -79,6 +86,16 @@ public class TestTableModel extends ApplicationInitializer {
 //				qWarning("TableModel::headerData(%1$s,%2$s,%3$s(%4$s)) = %5$s", section, orientation, roleNames().get(role).toString(), role, result);
 				roles.add(role);
 				return result;
+			}
+			
+			public final Signal3<io.qt.core.@NonNull QModelIndex, java.lang.@QtPrimitiveType@NonNull Integer, java.lang.@QtPrimitiveType@NonNull Integer> publicRowsInserted = new Signal3<>();
+			{
+				System.out.println("checkConnectArgs: "+QMetaObject.checkConnectArgs(QMetaMethod.fromSignal(publicRowsInserted), QMetaMethod.fromSignal(rowsInserted)));
+				QMetaObject.Connection conn = QObject.connect(this, QMetaMethod.fromSignal(publicRowsInserted), this, QMetaMethod.fromSignal(rowsInserted), Qt.ConnectionType.DirectConnection);
+				System.out.println(conn+" "+conn.isConnected());
+				conn = this.rowsInserted.connect((a,b,c)->System.out.println(a+" "+b+" "+c));
+				System.out.println(conn+" "+conn.isConnected());
+				publicRowsInserted.emit(createIndex(0, 0), 0, 0);
 			}
 		};
 		QTableView view = new QTableView();

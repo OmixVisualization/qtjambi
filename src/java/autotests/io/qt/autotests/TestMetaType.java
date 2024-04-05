@@ -47,6 +47,7 @@ import io.qt.core.QByteArray;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QDataStream;
 import io.qt.core.QDebug;
+import io.qt.core.QHash;
 import io.qt.core.QIODevice;
 import io.qt.core.QLibraryInfo;
 import io.qt.core.QMetaMethod;
@@ -300,6 +301,13 @@ public class TestMetaType extends ApplicationInitializer {
 		assertEquals(SubObject.class, returnMetaType.javaType());
 		QMetaObject rmo = returnMetaType.metaObject();
 		assertEquals(QMetaObject.forType(SubObject.class), rmo);
+	}
+	
+	@Test
+    public void testMetaTypeOfJavaMap() {
+		QMetaType hashType = QMetaType.fromType(QHash.class, QMetaType.fromType(ThreadGroup.class), QMetaType.fromType(String.class));
+		System.out.println(hashType);
+		new QHash<>(ThreadGroup.class, String.class);
 	}
     
     public static void main(String args[]) {

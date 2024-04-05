@@ -3495,26 +3495,8 @@ TypeSystem{
     }
     
     Rejection{
-        className: "QGuiApplication"
-        functionName: "nativeInterface"
-        since: [6, 2]
-    }
-    
-    Rejection{
         className: "QBrushDataPointerDeleter"
         since: [6, 2]
-    }
-    
-    Rejection{
-        className: "QEglFSFunctions::SwitchLangType"
-    }
-    
-    Rejection{
-        className: "QLinuxFbFunctions::LoadKeymapType"
-    }
-    
-    Rejection{
-        className: "QLinuxFbFunctions::SwitchLangType"
     }
     
     Rejection{
@@ -3534,25 +3516,11 @@ TypeSystem{
     }
     
     Rejection{
-        className: "QInputMethodQueryEvent::QueryPair"
-    }
-    
-    Rejection{
         className: "QImageCleanupFunction"
     }
     
     Rejection{
         className: "QAccessible2"
-    }
-    
-    Rejection{
-        className: "QAccessibleActionInterface"
-        functionName: "tr"
-    }
-    
-    Rejection{
-        className: "QAccessibleActionInterface"
-        functionName: "trUtf8"
     }
     
     Rejection{
@@ -3565,42 +3533,11 @@ TypeSystem{
     }
     
     Rejection{
-        className: "QGradient::QGradientData"
-    }
-    
-    Rejection{
-        className: "QDesktopServices::StandardLocation"
-    }
-    
-    Rejection{
-        className: "QDesktopServices"
-        functionName: "storageLocation"
-    }
-    
-    Rejection{
-        className: "QDesktopServices"
-        functionName: "displayName"
-    }
-    
-    Rejection{
         className: "QGenericMatrix"
     }
     
     Rejection{
-        className: "QIconEngine::AvailableSizesArgument"
-    }
-    
-    Rejection{
-        className: "QIconEngine::IconEngineHook"
-    }
-    
-    Rejection{
         className: "QImageTextKeyLang"
-    }
-    
-    Rejection{
-        className: "QPaintEngine"
-        functionName: "fix_neg_rect"
     }
     
     Rejection{
@@ -3624,78 +3561,7 @@ TypeSystem{
     }
     
     Rejection{
-        className: "QTabletEvent"
-        fieldName: "mExtra"
-    }
-    
-    Rejection{
         className: "QTextFrameLayoutData"
-    }
-    
-    Rejection{
-        className: "QWheelEvent"
-        enumName: "enum_1"
-    }
-    
-    
-    Rejection{
-        className: "QTouchEvent"
-        fieldName: "_window"
-    }
-    
-    Rejection{
-        className: "QTouchEvent"
-        fieldName: "_target"
-    }
-    
-    Rejection{
-        className: "QTouchEvent"
-        fieldName: "_device"
-    }
-    
-    Rejection{
-        className: "QTouchEvent"
-        fieldName: "_touchPointStates"
-    }
-    
-    Rejection{
-        className: "QTouchEvent"
-        fieldName: "_touchPoints"
-    }
-    
-    Rejection{
-        className: "QEglFSFunctions"
-        functionName: "vsp2AddBlendListener"
-    }
-    
-    Rejection{
-        className: "QImageReader"
-        functionName: "tr"
-    }
-    
-    Rejection{
-        className: "QImageReader"
-        functionName: "trUtf8"
-    }
-    
-    Rejection{
-        className: "QImageWriter"
-        functionName: "tr"
-    }
-    
-    Rejection{
-        className: "QImageWriter"
-        functionName: "trUtf8"
-    }
-    
-    Rejection{
-        className: "QSurface"
-        functionName: "surfaceHandle"
-    }
-    
-    Rejection{
-        className: "QOffscreenSurface"
-        functionName: "surfaceHandle"
     }
     
     Rejection{
@@ -3711,476 +3577,6 @@ TypeSystem{
     Rejection{
         className: "QVulkanWindowRenderer"
         since: [5, 10]
-    }
-    
-    Rejection{
-        className: "QActionGroup"
-        functionName: "selected"
-        since: 6
-    }
-    
-    EnumType{
-        name: "QAction::ActionEvent"
-        since: 6
-    }
-    
-    EnumType{
-        name: "QAction::MenuRole"
-        since: 6
-    }
-    
-    EnumType{
-        name: "QAction::Priority"
-        since: 6
-    }
-    
-    EnumType{
-        name: "QActionGroup::ExclusionPolicy"
-        since: 6
-    }
-    
-    EnumType{
-        name: "QContextMenuEvent::Reason"
-    }
-    
-    EnumType{
-        name: "QInputMethodEvent::AttributeType"
-    }
-    
-    EnumType{
-        name: "QPagedPaintDevice::PdfVersion"
-        since: [5, 10]
-    }
-    
-    
-    EnumType{
-        name: "QDoubleValidator::Notation"
-    }
-    
-    EnumType{
-        name: "QFont::Capitalization"
-    }
-    
-    EnumType{
-        name: "QFont::HintingPreference"
-    }
-    
-    
-    EnumType{
-        name: "QFont::SpacingType"
-    }
-    
-    EnumType{
-        name: "QFont::Stretch"
-    }
-    
-    EnumType{
-        name: "QFont::Style"
-    }
-    
-    EnumType{
-        name: "QFont::StyleStrategy"
-    }
-    
-    EnumType{
-        name: "QFont::Weight"
-    }
-    
-    EnumType{
-        name: "QFont::StyleHint"
-        RejectEnumValue{
-            name: "SansSerif"
-        }
-        RejectEnumValue{
-            name: "Serif"
-        }
-        RejectEnumValue{
-            name: "TypeWriter"
-        }
-        RejectEnumValue{
-            name: "Decorative"
-        }
-    }
-    
-    EnumType{
-        name: "QFont::ResolveProperties"
-    }
-    
-    EnumType{
-        name: "QFontDatabase::WritingSystem"
-        RejectEnumValue{
-            name: "Other"
-        }
-    }
-    
-    EnumType{
-        name: "QFontDatabase::SystemFont"
-    }
-    
-    EnumType{
-        name: "QIcon::Mode"
-    }
-    
-    EnumType{
-        name: "QIcon::State"
-    }
-    
-    EnumType{
-        name: "QImage::Format"
-    }
-    
-    EnumType{
-        name: "QImage::InvertMode"
-    }
-    
-    EnumType{
-        name: "QImageIOHandler::ImageOption"
-    }
-    
-    EnumType{
-        name: "QImageIOHandler::Transformation"
-    }
-    
-    EnumType{
-        name: "QImageReader::ImageReaderError"
-    }
-    
-    EnumType{
-        name: "QImageWriter::ImageWriterError"
-    }
-    
-    EnumType{
-        name: "QImageIOPlugin::Capability"
-    }
-    
-    EnumType{
-        name: "QInputMethod::Action"
-    }
-    
-    EnumType{
-        name: "QKeySequence::SequenceFormat"
-    }
-    
-    EnumType{
-        name: "QKeySequence::SequenceMatch"
-    }
-    
-    EnumType{
-        name: "QKeySequence::StandardKey"
-    }
-    
-    EnumType{
-        name: "QMovie::CacheMode"
-    }
-    
-    EnumType{
-        name: "QMovie::MovieState"
-    }
-    
-    EnumType{
-        name: "QSurface::SurfaceType"
-    }
-    
-    EnumType{
-        name: "QPaintDevice::PaintDeviceMetric"
-    }
-    
-    EnumType{
-        name: "QPaintEngine::DirtyFlag"
-    }
-    
-    EnumType{
-        name: "QPaintEngine::PaintEngineFeature"
-    }
-    
-    EnumType{
-        name: "QPaintEngine::PolygonDrawMode"
-    }
-    
-    EnumType{
-        name: "QPaintEngine::Type"
-        upperBound: "QPaintEngine.MaxUser"
-        lowerBound: "QPaintEngine.User"
-        extensible: true
-    }
-    
-    EnumType{
-        name: "QPagedPaintDevice::PageSize"
-        RejectEnumValue{
-            name: "AnsiA"
-        }
-        RejectEnumValue{
-            name: "AnsiB"
-        }
-        RejectEnumValue{
-            name: "EnvelopeC5"
-        }
-        RejectEnumValue{
-            name: "EnvelopeDL"
-        }
-        RejectEnumValue{
-            name: "Envelope10"
-        }
-        RejectEnumValue{
-            name: "LastPageSize"
-        }
-        RejectEnumValue{
-            name: "NPageSize"
-        }
-        RejectEnumValue{
-            name: "NPaperSize"
-        }
-    }
-    
-    EnumType{
-        name: "QStandardItem::ItemType"
-    }
-    
-    EnumType{
-        name: "QStaticText::PerformanceHint"
-    }
-    
-    EnumType{
-        name: "QSurfaceFormat::FormatOption"
-    }
-    
-    EnumType{
-        name: "QSurfaceFormat::OpenGLContextProfile"
-    }
-    
-    EnumType{
-        name: "QSurfaceFormat::RenderableType"
-    }
-    
-    EnumType{
-        name: "QSurfaceFormat::SwapBehavior"
-    }
-    
-    EnumType{
-        name: "QTabletEvent::PointerType"
-    }
-    
-    EnumType{
-        name: "QTabletEvent::TabletDevice"
-    }
-    
-    EnumType{
-        name: "QTextBlockFormat::LineHeightTypes"
-    }
-    
-    EnumType{
-        name: "QTextBlockFormat::MarkerType"
-        since: [5, 14]
-    }
-    
-    EnumType{
-        name: "QTextCharFormat::UnderlineStyle"
-    }
-    
-    EnumType{
-        name: "QTextCharFormat::VerticalAlignment"
-    }
-    
-    EnumType{
-        name: "QTextCursor::MoveMode"
-    }
-    
-    EnumType{
-        name: "QTextCursor::MoveOperation"
-    }
-    
-    EnumType{
-        name: "QTextCursor::SelectionType"
-    }
-    
-    EnumType{
-        name: "QTextDocument::FindFlag"
-    }
-    
-    EnumType{
-        name: "QTextDocument::MetaInformation"
-    }
-    
-    EnumType{
-        name: "QTextDocument::ResourceType"
-    }
-    
-    EnumType{
-        name: "QTextDocument::Stacks"
-    }
-    
-    EnumType{
-        name: "QTextDocument::MarkdownFeature"
-        since: [5, 14]
-    }
-    
-    EnumType{
-        name: "QTextFormat::ObjectTypes"
-    }
-    
-    EnumType{
-        name: "QTextFormat::PageBreakFlag"
-    }
-    
-    EnumType{
-        name: "QTextFrameFormat::Position"
-    }
-    
-    EnumType{
-        name: "QTextFrameFormat::BorderStyle"
-    }
-    
-    EnumType{
-        name: "QTextItem::RenderFlag"
-    }
-    
-    EnumType{
-        name: "QTextLayout::CursorMode"
-    }
-    
-    EnumType{
-        name: "QTextLength::Type"
-    }
-    
-    EnumType{
-        name: "QTextLine::CursorPosition"
-    }
-    
-    EnumType{
-        name: "QTextLine::Edge"
-    }
-    
-    EnumType{
-        name: "QTextListFormat::Style"
-    }
-    
-    EnumType{
-        name: "QTextOption::Flag"
-    }
-    
-    EnumType{
-        name: "QTextOption::WrapMode"
-    }
-    
-    EnumType{
-        name: "QTextOption::TabType"
-    }
-    
-    EnumType{
-        name: "QTextFormat::FormatType"
-    }
-    
-    EnumType{
-        name: "QTextFormat::Property"
-        RejectEnumValue{
-            name: "FontSizeIncrement"
-        }
-        RejectEnumValue{
-            name: "FirstFontProperty"
-        }
-        RejectEnumValue{
-            name: "LastFontProperty"
-        }
-        RejectEnumValue{
-            name: "OldFontFamily"
-            since: [6, 4]
-        }
-    }
-    
-    EnumType{
-        name: "QTouchDevice::CapabilityFlag"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QTouchDevice::DeviceType"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QValidator::State"
-    }
-    
-    EnumType{
-        name: "QWindow::AncestorMode"
-    }
-    
-    EnumType{
-        name: "QWindow::Visibility"
-    }
-    
-    EnumType{
-        name: "QTouchEvent::TouchPoint::InfoFlag"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QSessionManager::RestartHint"
-    }
-    
-    EnumType{
-        name: "QScrollEvent::ScrollState"
-    }
-    
-    EnumType{
-        name: "QIconEngine::IconEngineHook"
-    }
-    
-    EnumType{
-        name: "QPalette::ColorGroup"
-        RejectEnumValue{
-            name: "Normal"
-        }
-    }
-    
-    EnumType{
-        name: "QPalette::ColorRole"
-        RejectEnumValue{
-            name: "Foreground"
-        }
-        RejectEnumValue{
-            name: "Background"
-        }
-    }
-    
-    EnumType{
-        name: "QTextCharFormat::FontPropertiesInheritanceBehavior"
-    }
-    
-    EnumType{
-        name: "QPageSize::PageSizeId"
-        RejectEnumValue{
-            name: "Letter"
-        }
-        RejectEnumValue{
-            name: "C5E"
-        }
-        RejectEnumValue{
-            name: "Ledger"
-        }
-        RejectEnumValue{
-            name: "DLE"
-        }
-        RejectEnumValue{
-            name: "Comm10E"
-        }
-        RejectEnumValue{
-            name: "LastPageSize"
-        }
-        RejectEnumValue{
-            name: "NPageSize"
-        }
-        RejectEnumValue{
-            name: "NPaperSize"
-        }
-    }
-    
-    EnumType{
-        name: "QPageSize::SizeMatchPolicy"
-    }
-    
-    EnumType{
-        name: "QPageSize::Unit"
     }
     
     ValueType{
@@ -4203,11 +3599,6 @@ TypeSystem{
             name: "Svg"
         }
     }
-    
-    EnumType{
-        name: "QSurfaceFormat::ColorSpace"
-    }
-    
     
     ObjectType{
         name: "QAccessible"
@@ -4821,6 +4212,8 @@ TypeSystem{
     
     InterfaceType{
         name: "QAccessibleActionInterface"
+        Rejection{functionName: "tr"}
+        Rejection{functionName: "trUtf8"}
     }
     
     InterfaceType{
@@ -4852,7 +4245,9 @@ TypeSystem{
     
     ObjectType{
         name: "QInputMethodEvent"
-
+        EnumType{
+            name: "AttributeType"
+        }
         ValueType{
             name: "Attribute"
             Include{
@@ -5088,6 +4483,9 @@ TypeSystem{
     
     ObjectType{
         name: "QContextMenuEvent"
+        EnumType{
+            name: "Reason"
+        }
         ModifyField{
             name: "p"
             read: false
@@ -5197,6 +4595,9 @@ TypeSystem{
     
     ObjectType{
         name: "QInputMethodQueryEvent"
+        Rejection{
+            className: "QueryPair"
+        }
         ModifyFunction{
             signature: "operator=(const QInputMethodQueryEvent &)"
             Delegate{
@@ -5479,6 +4880,12 @@ TypeSystem{
     
     ObjectType{
         name: "QTabletEvent"
+        EnumType{
+            name: "PointerType"
+        }
+        EnumType{
+            name: "TabletDevice"
+        }
         ModifyField{
             name: "mPos"
             read: false
@@ -5582,6 +4989,9 @@ TypeSystem{
     
     ObjectType{
         name: "QWheelEvent"
+        Rejection{
+            enumName: "enum_1"
+        }
         ModifyField{
             name: "p"
             read: false
@@ -5769,6 +5179,9 @@ TypeSystem{
     
     ObjectType{
         name: "QScrollEvent"
+        EnumType{
+            name: "ScrollState"
+        }
         ModifyFunction{
             signature: "operator=(const QScrollEvent &)"
             Delegate{
@@ -6314,6 +5727,15 @@ TypeSystem{
     
     ObjectType{
         name: "QDesktopServices"
+        Rejection{
+            className: "StandardLocation"
+        }
+        Rejection{
+            functionName: "storageLocation"
+        }
+        Rejection{
+            functionName: "displayName"
+        }
         ModifyFunction{
             signature: "setUrlHandler(const QString &, QObject *, const char *)"
             access: Modification.Private
@@ -6355,6 +5777,9 @@ TypeSystem{
     
     ObjectType{
         name: "QDoubleValidator"
+        EnumType{
+            name: "Notation"
+        }
         ExtraIncludes{
             Include{
                 fileName: "QtJambi/JavaAPI"
@@ -6994,6 +6419,28 @@ TypeSystem{
     
     ObjectType{
         name: "QTouchEvent"
+        ValueType{
+            name: "TouchPoint"
+            EnumType{
+                name: "InfoFlag"
+            }
+            until: 5
+        }
+        Rejection{
+            fieldName: "_window"
+        }
+        Rejection{
+            fieldName: "_target"
+        }
+        Rejection{
+            fieldName: "_device"
+        }
+        Rejection{
+            fieldName: "_touchPointStates"
+        }
+        Rejection{
+            fieldName: "_touchPoints"
+        }
         ModifyFunction{
             signature: "operator=(const QTouchEvent &)"
             Delegate{
@@ -7178,6 +6625,55 @@ TypeSystem{
                 location: Include.Global
             }
         }
+
+        EnumType{
+            name: "Capitalization"
+        }
+
+        EnumType{
+            name: "HintingPreference"
+        }
+
+
+        EnumType{
+            name: "SpacingType"
+        }
+
+        EnumType{
+            name: "Stretch"
+        }
+
+        EnumType{
+            name: "Style"
+        }
+
+        EnumType{
+            name: "StyleStrategy"
+        }
+
+        EnumType{
+            name: "Weight"
+        }
+
+        EnumType{
+            name: "StyleHint"
+            RejectEnumValue{
+                name: "SansSerif"
+            }
+            RejectEnumValue{
+                name: "Serif"
+            }
+            RejectEnumValue{
+                name: "TypeWriter"
+            }
+            RejectEnumValue{
+                name: "Decorative"
+            }
+        }
+
+        EnumType{
+            name: "ResolveProperties"
+        }
         ModifyFunction{
             signature: "QFont(const QFont &, QPaintDevice*)"
             remove: RemoveFlag.All
@@ -7186,16 +6682,80 @@ TypeSystem{
         }
         ValueType{
             name: "Tag"
+            ImplicitCast{from: "java.lang.@StrictNonNull String"}
             ModifyFunction{
                 signature: "toString()const"
                 rename: "toByteArray"
             }
+            ModifyFunction{
+                signature: "fromString(QAnyStringView)"
+                ModifyArgument{
+                    index: 1
+                    NoNullPointer{}
+                }
+                InjectCode{
+                    position: Position.Beginning
+                    ArgumentMap{
+                        index: 1
+                        metaName: "%1"
+                    }
+                    Text{content: "if(%1.length()!=4)\n"+
+                                  "    throw new IllegalArgumentException(\"The tag name must be exactly 4 characters long!\");"}
+                }
+            }
+            ModifyFunction{
+                signature: "Tag<N>(const char(&)[N])"
+                Instantiation{
+                    Argument{
+                        value: "5"
+                        isImplicit: true
+                    }
+                    ModifyArgument{
+                        index: 1
+                        NoNullPointer{}
+                        ReplaceType{
+                            modifiedType: "java.lang.String"
+                        }
+                        ConversionRule{
+                            codeClass: CodeClass.Native
+                            Text{content: String.raw`
+J2CStringBuffer buffer = J2CStringBuffer(%env, %in);
+if(buffer.length()!=4)
+    JavaException::raiseIllegalArgumentException(%env, "The tag name must be exactly 4 characters long!" QTJAMBI_STACKTRACEINFO);
+const char* bufferData = buffer;
+const char (&%out)[5] = *reinterpret_cast<const char(*)[5]>(bufferData);
+                                `}
+                        }
+                    }
+                }
+            }
             since: 6.7
         }
+    }
+
+    GlobalFunction{
+        signature: "comparesEqual(const QFont::Tag&,const QFont::Tag&)"
+        since: 6.7
+        remove: RemoveFlag.All
+    }
+
+    GlobalFunction{
+        signature: "compareThreeWay(const QFont::Tag&,const QFont::Tag&)"
+        since: 6.7
+        remove: RemoveFlag.All
     }
     
     ValueType{
         name: "QFontDatabase"
+        EnumType{
+            name: "WritingSystem"
+            RejectEnumValue{
+                name: "Other"
+            }
+        }
+        EnumType{
+            name: "SystemFont"
+        }
         ExtraIncludes{
             Include{
                 fileName: "QStringList"
@@ -7392,6 +6952,7 @@ TypeSystem{
         name: "QGradient"
         Rejection{enumName: "Type"}
         Rejection{functionName: "type"}
+        Rejection{className: "QGradientData"}
 
         EnumType{
             name: "Spread"
@@ -7446,6 +7007,10 @@ TypeSystem{
     
     ObjectType{
         name: "QGuiApplication"
+        Rejection{
+            functionName: "nativeInterface"
+            since: [6, 2]
+        }
         ExtraIncludes{
             Include{
                 fileName: "QtJambi/CoreAPI"
@@ -7580,24 +7145,26 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "bool useQApplicationExec = false;\n"+
-                              "QCoreApplication* instance = QCoreApplication::instance();\n"+
-                              "if (!instance)\n"+
-                              "    JavaException::raiseRuntimeException(%env, \"QGuiApplication has not been initialized with QGuiApplication.initialize()\" QTJAMBI_STACKTRACEINFO );\n"+
-                              "else if(instance->inherits(\"QApplication\")){\n"+
-                              "    useQApplicationExec = true;\n"+
-                              "    QTJAMBI_TRY_ANY{\n"+
-                              "        Java::QtWidgets::QApplication::getClass(%env);\n"+
-                              "    }QTJAMBI_CATCH_ANY{\n"+
-                              "        useQApplicationExec = false;\n"+
-                              "    }QTJAMBI_TRY_END\n"+
-                              "    if(useQApplicationExec)\n"+
-                              "        __java_return_value = Java::QtWidgets::QApplication::exec(%env);\n"+
-                              "}else if(instance->thread()!=QThread::currentThread())\n"+
-                              "    JavaException::raiseRuntimeException(%env, \"exec() must be called from the main thread.\" QTJAMBI_STACKTRACEINFO );\n"+
-                              "else if(QThreadData::get2(instance->thread())->eventLoops.size()>0)\n"+
-                              "    JavaException::raiseRuntimeException(%env, \"The event loop is already running.\" QTJAMBI_STACKTRACEINFO );\n"+
-                              "if(!useQApplicationExec){"}
+                Text{content: String.raw`
+bool useQApplicationExec = false;
+QCoreApplication* instance = QCoreApplication::instance();
+if (!instance)
+    JavaException::raiseRuntimeException(%env, "QGuiApplication has not been initialized with QGuiApplication.initialize()" QTJAMBI_STACKTRACEINFO );
+else if(instance->inherits("QApplication")){
+    useQApplicationExec = true;
+    QTJAMBI_TRY_ANY{
+        Java::QtWidgets::QApplication::getClass(%env);
+    }QTJAMBI_CATCH_ANY{
+        useQApplicationExec = false;
+    }QTJAMBI_TRY_END
+    if(useQApplicationExec)
+        __java_return_value = Java::QtWidgets::QApplication::exec(%env);
+}else if(instance->thread()!=QThread::currentThread())
+    JavaException::raiseRuntimeException(%env, "exec() must be called from the main thread." QTJAMBI_STACKTRACEINFO );
+else if(QThreadData::get2(instance->thread())->eventLoops.size()>0)
+    JavaException::raiseRuntimeException(%env, "The event loop is already running." QTJAMBI_STACKTRACEINFO );
+if(!useQApplicationExec){`
+                }
             }
             InjectCode{
                 target: CodeClass.Native
@@ -7635,22 +7202,24 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "java.lang.Class<QNativeInterface>"
+                    modifiedType: "java.lang.@NonNull Class<QNativeInterface>"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "if(inherits(\"QApplication\")){\n"+
-                                  "    bool classNotFound = false;\n"+
-                                  "    QTJAMBI_TRY_ANY{\n"+
-                                  "        Java::QtWidgets::QApplication::getClass(%env);\n"+
-                                  "    }QTJAMBI_CATCH_ANY{\n"+
-                                  "        classNotFound = true;\n"+
-                                  "    }QTJAMBI_TRY_END\n"+
-                                  "    if(!classNotFound)\n"+
-                                  "        return Java::QtWidgets::QApplication::resolveInterface(%env, CoreAPI::javaObject(__this_nativeId, %env), %in);\n"+
-                                  "}\n"+
-                                  "CoreAPI::NITypeInfo info = CoreAPI::getNativeInterfaceInfo(%env, %in);\n"+
-                                  "const char* %out = info.name;"}
+                    Text{content: String.raw`
+if(inherits("QApplication")){
+    bool classNotFound = false;
+    QTJAMBI_TRY_ANY{
+        Java::QtWidgets::QApplication::getClass(%env);
+    }QTJAMBI_CATCH_ANY{
+        classNotFound = true;
+    }QTJAMBI_TRY_END
+    if(!classNotFound)
+        return Java::QtWidgets::QApplication::resolveInterface(%env, CoreAPI::javaObject(__this_nativeId, %env), %in);
+}
+CoreAPI::NITypeInfo info = CoreAPI::getNativeInterfaceInfo(%env, %in);
+const char* %out = info.name;
+                        `}
                 }
             }
             ModifyArgument{
@@ -7675,6 +7244,12 @@ TypeSystem{
     
     ValueType{
         name: "QIcon"
+        EnumType{
+            name: "Mode"
+        }
+        EnumType{
+            name: "State"
+        }
         threadAffinity: "pixmap"
         ModifyFunction{
             signature: "QIcon()"
@@ -7702,6 +7277,17 @@ TypeSystem{
     
     ObjectType{
         name: "QIconEngine"
+        ValueType{
+            name: "AvailableSizesArgument"
+            until: 5
+        }
+        EnumType{
+            name: "IconEngineHook"
+            extensible: true
+        }
+        ValueType{
+            name: "ScaledPixmapArgument"
+        }
         ModifyFunction{
             signature: "paint(QPainter*,QRect,QIcon::Mode,QIcon::State)"
             ModifyArgument{
@@ -7725,7 +7311,95 @@ TypeSystem{
         }
         ModifyFunction{
             signature: "virtual_hook(int,void*)"
-            remove: RemoveFlag.All
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "io.qt.gui.QIconEngine$@NonNull IconEngineHook"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "int %out = int(qtjambi_cast<QIconEngine::IconEngineHook>(%env, %in));"}
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Shell
+                    Text{content: "jobject %out = qtjambi_cast<jobject>(%env, QIconEngine::IconEngineHook(%in));"}
+                }
+            }
+            ModifyArgument{
+                index: 2
+                ReplaceType{
+                    modifiedType: "java.lang.Object"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Shell
+                    Text{content: String.raw`
+jobject %out{nullptr};
+switch(%1){
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+case QIconEngine::IconNameHook:
+    %out = QtJambiAPI::convertQStringToJavaObject(%env, reinterpret_cast<QString*>(%in));
+    %scope.addObjectInvalidation(%env, %out, true);
+    break;
+case QIconEngine::AvailableSizesHook:
+    %out = qtjambi_cast<jobject>(%env, reinterpret_cast<QIconEngine::AvailableSizesArgument*>(%in));
+    %scope.addObjectInvalidation(%env, %out, true);
+    break;
+#endif
+case QIconEngine::IsNullHook:
+    {
+        BoolPointerArray* pointer = new BoolPointerArray(%env, reinterpret_cast<bool*>(%in), 1);
+        %scope.addDeletion(pointer);
+        %out = pointer->array();
+    }
+    break;
+case QIconEngine::ScaledPixmapHook:
+    %out = qtjambi_cast<jobject>(%env, reinterpret_cast<QIconEngine::ScaledPixmapArgument*>(%in));
+    %scope.addObjectInvalidation(%env, %out, true);
+    break;
+default:
+    switch(__jni_env->GetObjectRefType(jobject(data1))){
+    case JNILocalRefType:
+    case JNIGlobalRefType:
+    case JNIWeakGlobalRefType:
+        __java_data1 = jobject(data1);
+        break;
+        default:
+        break;
+    }
+    break;
+}
+                        `}
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: String.raw`
+void* %out{nullptr};
+switch(__qt_%1){
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+case QIconEngine::IconNameHook:
+    %out = qtjambi_cast<QString*>(%env, %in);
+    break;
+case QIconEngine::AvailableSizesHook:
+    %out = qtjambi_cast<QIconEngine::AvailableSizesArgument*>(%env, %in);
+    break;
+#endif
+case QIconEngine::IsNullHook:
+    if(JBooleanArrayPointer::isValidArray(__jni_env, data1)){
+        JBooleanArrayPointer* pointer = new JBooleanArrayPointer(%env, jbooleanArray(%in));
+        %scope.addDeletion(pointer);
+        %out = pointer->pointer();
+    }
+    break;
+case QIconEngine::ScaledPixmapHook:
+    %out = qtjambi_cast<QIconEngine::ScaledPixmapArgument*>(%env, %in);
+    break;
+default:
+    %out = %in;
+    break;
+}
+                        `}
+                }
+            }
         }
         ModifyFunction{
             signature: "clone()const"
@@ -7744,16 +7418,18 @@ TypeSystem{
     }
     
     ValueType{
-        name: "QIconEngine::ScaledPixmapArgument"
-    }
-    
-    ValueType{
         name: "QImageCleanupFunction"
         generate: false
     }
     
     ValueType{
         name: "QImage"
+        EnumType{
+            name: "Format"
+        }
+        EnumType{
+            name: "InvertMode"
+        }
         Rejection{
             functionName: "convertToFormat_helper"
             since: 6
@@ -7857,7 +7533,7 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 ReplaceType{
-                    modifiedType: "java.lang.String[]"
+                    modifiedType: "java.lang.@NonNull String @NonNull[]"
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
@@ -7971,6 +7647,15 @@ TypeSystem{
     
     ObjectType{
         name: "QImageWriter"
+        EnumType{
+            name: "ImageWriterError"
+        }
+        Rejection{
+            functionName: "tr"
+        }
+        Rejection{
+            functionName: "trUtf8"
+        }
         ModifyFunction{
             signature: "setDevice(QIODevice*)"
             ModifyArgument{
@@ -7995,6 +7680,12 @@ TypeSystem{
     
     ObjectType{
         name: "QImageIOHandler"
+        EnumType{
+            name: "ImageOption"
+        }
+        EnumType{
+            name: "Transformation"
+        }
         ExtraIncludes{
             Include{
                 fileName: "QRect"
@@ -8065,6 +7756,15 @@ TypeSystem{
     
     ObjectType{
         name: "QImageReader"
+        EnumType{
+            name: "ImageReaderError"
+        }
+        Rejection{
+            functionName: "tr"
+        }
+        Rejection{
+            functionName: "trUtf8"
+        }
         ExtraIncludes{
             Include{
                 fileName: "QColor"
@@ -8107,6 +7807,9 @@ TypeSystem{
     
     ObjectType{
         name: "QImageIOPlugin"
+        EnumType{
+            name: "Capability"
+        }
         ModifyFunction{
             signature: "create(QIODevice*,QByteArray)const"
             ModifyArgument{
@@ -8142,6 +7845,9 @@ TypeSystem{
     
     ObjectType{
         name: "QInputMethod"
+        EnumType{
+            name: "Action"
+        }
     }
     
     ObjectType{
@@ -8156,6 +7862,15 @@ TypeSystem{
     
     ValueType{
         name: "QKeySequence"
+        EnumType{
+            name: "SequenceFormat"
+        }
+        EnumType{
+            name: "SequenceMatch"
+        }
+        EnumType{
+            name: "StandardKey"
+        }
         InjectCode{
             until: 5
             ImportFile{
@@ -9035,6 +8750,12 @@ TypeSystem{
     
     ObjectType{
         name: "QMovie"
+        EnumType{
+            name: "CacheMode"
+        }
+        EnumType{
+            name: "MovieState"
+        }
         ExtraIncludes{
             Include{
                 fileName: "QColor"
@@ -9084,13 +8805,18 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QSurface::SurfaceClass"
-        generate: false
-    }
-    
     InterfaceType{
         name: "QSurface"
+        EnumType{
+            name: "SurfaceClass"
+            generate: false
+        }
+        EnumType{
+            name: "SurfaceType"
+        }
+        Rejection{
+            functionName: "surfaceHandle"
+        }
         ModifyField{
             name: "m_type"
             read: false
@@ -9108,6 +8834,9 @@ TypeSystem{
     
     ObjectType{
         name: "QOffscreenSurface"
+        Rejection{
+            functionName: "surfaceHandle"
+        }
         ModifyFunction{
             signature: "QOffscreenSurface(QScreen *)"
             ModifyArgument{
@@ -9246,6 +8975,9 @@ TypeSystem{
     
     InterfaceType{
         name: "QPaintDevice"
+        EnumType{
+            name: "PaintDeviceMetric"
+        }
         ModifyField{
             name: "painters"
             read: false
@@ -9335,6 +9067,39 @@ TypeSystem{
     
     InterfaceType{
         name: "QPagedPaintDevice"
+
+        EnumType{
+            name: "PdfVersion"
+            since: [5, 10]
+        }
+
+        EnumType{
+            name: "PageSize"
+            RejectEnumValue{
+                name: "AnsiA"
+            }
+            RejectEnumValue{
+                name: "AnsiB"
+            }
+            RejectEnumValue{
+                name: "EnvelopeC5"
+            }
+            RejectEnumValue{
+                name: "EnvelopeDL"
+            }
+            RejectEnumValue{
+                name: "Envelope10"
+            }
+            RejectEnumValue{
+                name: "LastPageSize"
+            }
+            RejectEnumValue{
+                name: "NPageSize"
+            }
+            RejectEnumValue{
+                name: "NPaperSize"
+            }
+        }
         ModifyFunction{
             signature: "devType() const"
             remove: RemoveFlag.All
@@ -9344,14 +9109,37 @@ TypeSystem{
             remove: RemoveFlag.All
             until: 5
         }
-    }
-    
-    ValueType{
-        name: "QPagedPaintDevice::Margins"
+
+        ValueType{
+            name: "Margins"
+        }
     }
     
     ObjectType{
         name: "QPaintEngine"
+
+        EnumType{
+            name: "DirtyFlag"
+        }
+
+        EnumType{
+            name: "PaintEngineFeature"
+        }
+
+        EnumType{
+            name: "PolygonDrawMode"
+        }
+
+        EnumType{
+            name: "Type"
+            upperBound: "QPaintEngine.MaxUser"
+            lowerBound: "QPaintEngine.User"
+            extensible: true
+        }
+
+        Rejection{
+            functionName: "fix_neg_rect"
+        }
         ModifyFunction{
             signature: "begin(QPaintDevice*)"
             ModifyArgument{
@@ -10144,6 +9932,21 @@ TypeSystem{
     
     ValueType{
         name: "QPalette"
+        EnumType{
+            name: "ColorGroup"
+            RejectEnumValue{
+                name: "Normal"
+            }
+        }
+        EnumType{
+            name: "ColorRole"
+            RejectEnumValue{
+                name: "Foreground"
+            }
+            RejectEnumValue{
+                name: "Background"
+            }
+        }
         noImplicitConstructors: true
         ModifyFunction{
             signature: "QPalette(QColor)"
@@ -10919,6 +10722,9 @@ TypeSystem{
     
     ObjectType{
         name: "QStandardItem"
+        EnumType{
+            name: "ItemType"
+        }
         ModifyFunction{
             signature: "appendColumn(const QList<QStandardItem *> &)"
             ModifyArgument{
@@ -11233,6 +11039,9 @@ TypeSystem{
     
     ValueType{
         name: "QStaticText"
+        EnumType{
+            name: "PerformanceHint"
+        }
     }
     
     ObjectType{
@@ -11241,6 +11050,26 @@ TypeSystem{
     
     ValueType{
         name: "QSurfaceFormat"
+
+        EnumType{
+            name: "ColorSpace"
+        }
+
+        EnumType{
+            name: "FormatOption"
+        }
+
+        EnumType{
+            name: "OpenGLContextProfile"
+        }
+
+        EnumType{
+            name: "RenderableType"
+        }
+
+        EnumType{
+            name: "SwapBehavior"
+        }
     }
     
     ObjectType{
@@ -11283,6 +11112,41 @@ TypeSystem{
     
     ValueType{
         name: "QTextBlock"
+        ValueType{
+            name: "iterator"
+            Include{
+                fileName: "QTextBlock"
+                location: Include.Global
+            }
+            ModifyFunction{
+                signature: "operator++()"
+                rename: "next"
+                ModifyArgument{
+                    index: "return"
+                    ReplaceType{
+                        modifiedType: "void"
+                    }
+                }
+            }
+            ModifyFunction{
+                signature: "operator--()"
+                rename: "previous"
+                ModifyArgument{
+                    index: "return"
+                    ReplaceType{
+                        modifiedType: "void"
+                    }
+                }
+            }
+            ModifyFunction{
+                signature: "operator++(int)"
+                remove: RemoveFlag.All
+            }
+            ModifyFunction{
+                signature: "operator--(int)"
+                remove: RemoveFlag.All
+            }
+        }
         implementing: "java.lang.Iterable<QTextFragment>"
         ModifyFunction{
             signature: "setUserData(QTextBlockUserData *)"
@@ -11305,6 +11169,15 @@ TypeSystem{
     
     ValueType{
         name: "QTextBlockFormat"
+
+        EnumType{
+            name: "LineHeightTypes"
+        }
+
+        EnumType{
+            name: "MarkerType"
+            since: [5, 14]
+        }
     }
     
     ValueType{
@@ -11313,6 +11186,18 @@ TypeSystem{
     
     ValueType{
         name: "QTextCharFormat"
+
+        EnumType{
+            name: "UnderlineStyle"
+        }
+
+        EnumType{
+            name: "VerticalAlignment"
+        }
+
+        EnumType{
+            name: "FontPropertiesInheritanceBehavior"
+        }
         ModifyFunction{
             signature: "isValid()const"
             access: Modification.NonFinal
@@ -11331,6 +11216,35 @@ TypeSystem{
     
     ValueType{
         name: "QTextFormat"
+
+        EnumType{
+            name: "ObjectTypes"
+        }
+
+        EnumType{
+            name: "PageBreakFlag"
+        }
+
+        EnumType{
+            name: "FormatType"
+        }
+
+        EnumType{
+            name: "Property"
+            RejectEnumValue{
+                name: "FontSizeIncrement"
+            }
+            RejectEnumValue{
+                name: "FirstFontProperty"
+            }
+            RejectEnumValue{
+                name: "LastFontProperty"
+            }
+            RejectEnumValue{
+                name: "OldFontFamily"
+                since: [6, 4]
+            }
+        }
         ModifyFunction{
             signature: "isValid()const"
             access: Modification.NonFinal
@@ -11339,108 +11253,25 @@ TypeSystem{
     
     ValueType{
         name: "QTextListFormat"
-    }
-    
-    ValueType{
-        name: "QTextFrame::iterator"
-        Include{
-            fileName: "QTextFrame"
-            location: Include.Global
-        }
-        ModifyFunction{
-            signature: "operator++(int)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator--(int)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator=(QTextFrame::iterator)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "operator++()"
-            rename: "next"
-            ModifyArgument{
-                index: "return"
-                ReplaceType{
-                    modifiedType: "void"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "operator--()"
-            rename: "previous"
-            ModifyArgument{
-                index: "return"
-                ReplaceType{
-                    modifiedType: "void"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "QTextFrame::iterator()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "QTextFrame::iterator(const QTextFrame::iterator &)"
-            remove: RemoveFlag.All
-        }
-    }
-    
-    ValueType{
-        name: "QTextBlock::iterator"
-        Include{
-            fileName: "QTextBlock"
-            location: Include.Global
-        }
-        ModifyFunction{
-            signature: "operator++()"
-            rename: "next"
-            ModifyArgument{
-                index: "return"
-                ReplaceType{
-                    modifiedType: "void"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "operator--()"
-            rename: "previous"
-            ModifyArgument{
-                index: "return"
-                ReplaceType{
-                    modifiedType: "void"
-                }
-            }
-        }
-        ModifyFunction{
-            signature: "operator++(int)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator--(int)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "operator=(QTextBlock::iterator)"
-            remove: RemoveFlag.All
-            until: 5
-        }
-        ModifyFunction{
-            signature: "QTextBlock::iterator()"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "QTextBlock::iterator(const QTextBlock::iterator &)"
-            remove: RemoveFlag.All
+        EnumType{
+            name: "Style"
         }
     }
     
     ValueType{
         name: "QTextCursor"
+
+        EnumType{
+            name: "MoveMode"
+        }
+
+        EnumType{
+            name: "MoveOperation"
+        }
+
+        EnumType{
+            name: "SelectionType"
+        }
         threadAffinity: "%1->isNull() ? nullptr : %1->document()"
         ExtraIncludes{
             Include{
@@ -11551,10 +11382,6 @@ TypeSystem{
         }
     }
     
-    ValueType{
-        name: "QTextOption::Tab"
-    }
-    
     ObjectType{
         name: "QTextBlockGroup"
     }
@@ -11565,6 +11392,9 @@ TypeSystem{
     
     ObjectType{
         name: "QTextItem"
+        EnumType{
+            name: "RenderFlag"
+        }
     }
     
     ObjectType{
@@ -11603,10 +11433,50 @@ TypeSystem{
                 location: Include.Global
             }
         }
+
+        ValueType{
+            name: "iterator"
+            Include{
+                fileName: "QTextFrame"
+                location: Include.Global
+            }
+            ModifyFunction{
+                signature: "operator++(int)"
+                remove: RemoveFlag.All
+            }
+            ModifyFunction{
+                signature: "operator--(int)"
+                remove: RemoveFlag.All
+            }
+            ModifyFunction{
+                signature: "operator++()"
+                rename: "next"
+                ModifyArgument{
+                    index: "return"
+                    ReplaceType{
+                        modifiedType: "void"
+                    }
+                }
+            }
+            ModifyFunction{
+                signature: "operator--()"
+                rename: "previous"
+                ModifyArgument{
+                    index: "return"
+                    ReplaceType{
+                        modifiedType: "void"
+                    }
+                }
+            }
+        }
     }
     
     ObjectType{
         name: "QTextLayout"
+
+        EnumType{
+            name: "CursorMode"
+        }
         ValueType{
             name: "FormatRange"
             Include{
@@ -11661,13 +11531,34 @@ TypeSystem{
         name: "QAbstractUndoItem"
     }
     
-    FunctionalType{
-        name: "QTextDocument::ResourceProvider"
-        since: [6, 1]
-    }
-    
     ObjectType{
         name: "QTextDocument"
+
+        FunctionalType{
+            name: "ResourceProvider"
+            since: [6, 1]
+        }
+
+        EnumType{
+            name: "FindFlag"
+        }
+
+        EnumType{
+            name: "MetaInformation"
+        }
+
+        EnumType{
+            name: "ResourceType"
+        }
+
+        EnumType{
+            name: "Stacks"
+        }
+
+        EnumType{
+            name: "MarkdownFeature"
+            since: [5, 14]
+        }
         isValueOwner: true
         ExtraIncludes{
             Include{
@@ -11780,10 +11671,30 @@ TypeSystem{
     
     ValueType{
         name: "QTextOption"
+        EnumType{
+            name: "Flag"
+        }
+
+        EnumType{
+            name: "WrapMode"
+        }
+
+        EnumType{
+            name: "TabType"
+        }
+        ValueType{
+            name: "Tab"
+        }
     }
     
     ValueType{
         name: "QTextLine"
+        EnumType{
+            name: "CursorPosition"
+        }
+        EnumType{
+            name: "Edge"
+        }
         ModifyFunction{
             signature: "cursorToX(int*,QTextLine::Edge)const"
             Remove{
@@ -11814,6 +11725,14 @@ TypeSystem{
     
     ValueType{
         name: "QTextFrameFormat"
+
+        EnumType{
+            name: "Position"
+        }
+
+        EnumType{
+            name: "BorderStyle"
+        }
         ModifyFunction{
             signature: "isValid()const"
             access: Modification.NonFinal
@@ -11822,10 +11741,24 @@ TypeSystem{
     
     ValueType{
         name: "QTextLength"
+
+        EnumType{
+            name: "Type"
+        }
     }
     
     ObjectType{
         name: "QTouchDevice"
+
+        EnumType{
+            name: "CapabilityFlag"
+            until: 5
+        }
+
+        EnumType{
+            name: "DeviceType"
+            until: 5
+        }
     }
     
     ValueType{
@@ -11898,6 +11831,9 @@ TypeSystem{
     
     ObjectType{
         name: "QValidator"
+        EnumType{
+            name: "State"
+        }
         InjectCode{
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiGui.java"
@@ -12163,6 +12099,12 @@ TypeSystem{
     
     ObjectType{
         name: "QWindow"
+        EnumType{
+            name: "AncestorMode"
+        }
+        EnumType{
+            name: "Visibility"
+        }
         Rejection{
             functionName: "vulkanInstance"
         }
@@ -12481,11 +12423,6 @@ TypeSystem{
         }
     }
     
-    ValueType{
-        name: "QTouchEvent::TouchPoint"
-        until: 5
-    }
-    
     ObjectType{
         name: "QRangeCollection"
         since: 6
@@ -12503,6 +12440,9 @@ TypeSystem{
     
     ObjectType{
         name: "QSessionManager"
+        EnumType{
+            name: "RestartHint"
+        }
     }
     
     
@@ -12512,6 +12452,42 @@ TypeSystem{
     
     ValueType{
         name: "QPageSize"
+
+        EnumType{
+            name: "PageSizeId"
+            RejectEnumValue{
+                name: "Letter"
+            }
+            RejectEnumValue{
+                name: "C5E"
+            }
+            RejectEnumValue{
+                name: "Ledger"
+            }
+            RejectEnumValue{
+                name: "DLE"
+            }
+            RejectEnumValue{
+                name: "Comm10E"
+            }
+            RejectEnumValue{
+                name: "LastPageSize"
+            }
+            RejectEnumValue{
+                name: "NPageSize"
+            }
+            RejectEnumValue{
+                name: "NPaperSize"
+            }
+        }
+
+        EnumType{
+            name: "SizeMatchPolicy"
+        }
+
+        EnumType{
+            name: "Unit"
+        }
     }
     
     ValueType{
@@ -12736,6 +12712,26 @@ TypeSystem{
         since: [5, 11]
         until: 5
     }
+
+    ObjectType{
+        name: "QLinuxFbFunctions"
+        Rejection{
+            className: "LoadKeymapType"
+        }
+        Rejection{
+            className: "SwitchLangType"
+        }
+        ModifyFunction{
+            signature: "loadKeymapTypeIdentifier()"
+            remove: RemoveFlag.All
+        }
+        ModifyFunction{
+            signature: "switchLangTypeIdentifier()"
+            remove: RemoveFlag.All
+        }
+        since: [5, 11]
+        until: 5
+    }
     
     NamespaceType{
         name: "QXcbScreenFunctions"
@@ -12859,6 +12855,12 @@ TypeSystem{
     
     NamespaceType{
         name: "QEglFSFunctions"
+        Rejection{
+            functionName: "vsp2AddBlendListener"
+        }
+        Rejection{
+            className: "SwitchLangType"
+        }
         ModifyFunction{
             signature: "loadKeymapTypeIdentifier()"
             remove: RemoveFlag.All
@@ -12896,6 +12898,15 @@ TypeSystem{
         CustomConstructor{
             Text{content: "return new(placement) QColorSpace(copy->primaries(), copy->transferFunction(), copy->gamma());"}
         }
+        EnumType{
+            name: "NamedColorSpace"
+        }
+        EnumType{
+            name: "Primaries"
+        }
+        EnumType{
+            name: "TransferFunction"
+        }
         since: [5, 14]
     }
     
@@ -12906,21 +12917,6 @@ TypeSystem{
             position: Position.Beginning
             Text{content: "hash_type qHash(const QColorTransform &value, hash_type seed = 0);"}
         }
-        since: [5, 14]
-    }
-    
-    EnumType{
-        name: "QColorSpace::NamedColorSpace"
-        since: [5, 14]
-    }
-    
-    EnumType{
-        name: "QColorSpace::Primaries"
-        since: [5, 14]
-    }
-    
-    EnumType{
-        name: "QColorSpace::TransferFunction"
         since: [5, 14]
     }
     
@@ -12967,6 +12963,9 @@ TypeSystem{
     
     ObjectType{
         name: "QActionGroup"
+        EnumType{
+            name: "ExclusionPolicy"
+        }
         ModifyFunction{
             signature: "addAction(QAction*)"
             threadAffinity: true
@@ -13020,6 +13019,15 @@ TypeSystem{
                 fileName: "utils_p.h"
                 location: Include.Local
             }
+        }
+        EnumType{
+            name: "ActionEvent"
+        }
+        EnumType{
+            name: "MenuRole"
+        }
+        EnumType{
+            name: "Priority"
         }
         InjectCode{
             ImportFile{
@@ -13804,6 +13812,20 @@ TypeSystem{
 
     ObjectType{
         name: "QChildWindowEvent"
+        ModifyFunction{
+            signature: "clone()const"
+            ModifyArgument{
+                index: "return"
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Shell
+                    ownership: Ownership.Cpp
+                }
+            }
+        }
         since: 6.7
     }
     
@@ -14507,10 +14529,6 @@ TypeSystem{
         Import{
             template: "QOpenGLESFunctions"
         }
-    }
-    
-    ObjectType{
-        name: "QLinuxFbFunctions"
     }
     
     ObjectType{
@@ -18575,25 +18593,42 @@ TypeSystem{
     GlobalFunction{
         signature: "qFuzzyCompare(const QMatrix4x4&, const QMatrix4x4&)"
         targetType: "QMatrix4x4"
-        until: [5, 15]
     }
     
     GlobalFunction{
         signature: "qFuzzyCompare(const QVector2D&, const QVector2D&)"
         targetType: "QVector2D"
-        until: [5, 15]
     }
     
     GlobalFunction{
         signature: "qFuzzyCompare(const QVector3D&, const QVector3D&)"
         targetType: "QVector3D"
-        until: [5, 15]
     }
     
     GlobalFunction{
         signature: "qFuzzyCompare(const QVector4D&, const QVector4D&)"
         targetType: "QVector4D"
-        until: [5, 15]
+    }
+
+    GlobalFunction{
+        signature: "qHasPixmapTexture(const QBrush&)"
+        targetType: "QBrush"
+    }
+
+    GlobalFunction{
+        signature: "qt_paint_device_metric(const QPaintDevice*,QPaintDevice::PaintDeviceMetric)"
+        targetType: "QPaintDevice"
+        ModifyArgument{
+            index: 1
+            NoNullPointer{}
+        }
+        remove: RemoveFlag.All // seems to be internal
+    }
+
+    GlobalFunction{
+        signature: "qt_region_strictContains(const QRegion&,const QRect&)"
+        targetType: "QRegion"
+        remove: RemoveFlag.All // is internal
     }
 
     NativePointerType{
@@ -18705,7 +18740,7 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QMenu::addAction', unmatched return type 'QtPrivate::QEnableIf<EXPRESSION,QAction*>::Type'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QToolBar::addAction', unmatched return type 'QtPrivate::QEnableIf<EXPRESSION,QAction*>::Type'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'setVulkanInstance(QVulkanInstance*)' for function modification in 'QWindow' not found.*"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'vulkanInstance()const' for function modification in 'QWindow' not found.*"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'vulkanInstance*' for function modification in 'QWindow' not found.*"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QColorTransform::map', unmatched return type 'QRgbaFloat*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * '*', unmatched *type 'QVulkan*'"}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QColorTransform."}
@@ -18733,6 +18768,8 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QAccessibleTableCellInterface'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: class 'Display' inherits from unknown base class '_XDisplay'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'QPaintEngineState(*)' for function modification in 'QPaintEngineState' not found. Possible candidates: "}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'glGetPointerv(GLenum, GLvoid**)' for function modification in 'QOpenGLFunctions_3_*' not found. Possible candidates: "}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'glGetPointerv(GLenum, GLvoid**)' for function modification in 'QOpenGLFunctions_4_*' not found. Possible candidates: "}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QRhi*'"; until: 6.6}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QFont::Tag::Tag<N>*', unmatched parameter type 'const char[N]'"; since: 6.7}
+    //SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QFont::Tag::Tag<N>*', unmatched parameter type 'const char[N]'"; since: 6.7}
 }

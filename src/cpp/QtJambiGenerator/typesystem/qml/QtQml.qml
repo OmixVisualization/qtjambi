@@ -1579,13 +1579,33 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
     }
     
     GlobalFunction{
-        signature: "qmlAttachedPropertiesFunction(QObject*, const QMetaObject*)"
+        signature: "qmlAttachedPropertiesFunction(QObject*,const QMetaObject*)"
         targetType: "QtQml"
+        ModifyArgument{
+            index: 0
+            ReplaceType{
+                modifiedType: "io.qt.qml.QtQml$@NonNull QQmlAttachedPropertiesFunc"
+            }
+            ConversionRule{
+                codeClass: CodeClass.Native
+                Text{content: "%out = qtjambi_cast<jobject>(%env, QtQml::QQmlAttachedPropertiesFunc(%in), \"QtQml::QQmlAttachedPropertiesFunc\");"}
+            }
+        }
     }
     
     GlobalFunction{
-        signature: "qmlAttachedPropertiesObject(QObject*, QQmlAttachedPropertiesFunc, bool)"
+        signature: "qmlAttachedPropertiesObject(QObject*,QQmlAttachedPropertiesFunc,bool)"
         targetType: "QtQml"
+        ModifyArgument{
+            index: 2
+            ReplaceType{
+                modifiedType: "io.qt.qml.QtQml$@NonNull QQmlAttachedPropertiesFunc"
+            }
+            ConversionRule{
+                codeClass: CodeClass.Native
+                Text{content: "QQmlAttachedPropertiesFunc %out = qtjambi_cast<QtQml::QQmlAttachedPropertiesFunc>(%env, %in);"}
+            }
+        }
     }
     
     GlobalFunction{
@@ -1875,7 +1895,7 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
     }
     
     GlobalFunction{
-        signature: "qmlRegisterRevision<T,metaObjectRevision>(const char*, int, int)"
+        signature: "qmlRegisterRevision<T>(const char*, int, int)"
         targetType: "QtQml"
         Instantiation{
             proxyCall: "qtjambi_qmlRegisterRevision"

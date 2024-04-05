@@ -782,16 +782,6 @@ QTJAMBI_REPOSITORY_DECLARE_CLASS(ReferenceUtility,
                                  QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(copyReferenceCount)
                                  )
 }
-
-#ifdef Q_OS_ANDROID
-namespace Android{
-QTJAMBI_REPOSITORY_DECLARE_CLASS(QtNative,
-              QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(activity)
-              QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(activityDelegate)
-              QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(service)
-              QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(getContext))
-}
-#endif //def Q_OS_ANDROID
 }
 
 #undef DECLARE_CLASS_REF

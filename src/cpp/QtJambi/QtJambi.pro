@@ -91,6 +91,7 @@ SOURCES += \
     utils.cpp
 
 HEADERS += \
+    androidapi.h \
     containeraccess.h \
     containeraccess_hash.h \
     containeraccess_list.h \

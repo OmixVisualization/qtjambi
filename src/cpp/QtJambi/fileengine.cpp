@@ -38,6 +38,9 @@
 #include "qtjambiapi.h"
 #include "jobjectwrapper.h"
 #include "java_p.h"
+#ifdef Q_OS_ANDROID
+#include "androidapi.h"
+#endif
 #include "utils_p.h"
 
 #ifdef Q_OS_ANDROID

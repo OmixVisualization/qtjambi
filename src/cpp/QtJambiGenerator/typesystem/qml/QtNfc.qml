@@ -39,12 +39,12 @@ TypeSystem{
     InjectCode{
         target: CodeClass.MetaInfo
         position: Position.Position1
-        Text{content: "void initialize_meta_info_QtNfc();"}
+        Text{content: "#if defined(Q_OS_ANDROID)\nvoid initialize_meta_info_QtNfc();\n#endif"}
     }
     
     InjectCode{
         target: CodeClass.MetaInfo
-        Text{content: "initialize_meta_info_QtNfc();"}
+        Text{content: "#if defined(Q_OS_ANDROID)\ninitialize_meta_info_QtNfc();\n#endif"}
     }
 
     RequiredLibrary{
@@ -251,6 +251,38 @@ TypeSystem{
 
         EnumType{
             name: "TypeNameFormat"
+        }
+        until: 5
+    }
+
+    GlobalFunction{
+        signature: "qNfcChecksum(const char*,uint)"
+        targetType: "QNearFieldTarget"
+        ModifyArgument{
+            index: 1
+            AsBuffer{
+                lengthParameter: 2
+                AsArray{}
+            }
+        }
+        until: 5
+    }
+
+    GlobalFunction{
+        signature: "qRegisterNdefRecordTypeHelper(const QMetaObject *,QNdefRecord::TypeNameFormat,const QByteArray &)"
+        targetType: "QQmlNdefRecord"
+        until: 5
+    }
+
+    GlobalFunction{
+        signature: "qNewDeclarativeNdefRecordForNdefRecord(const QNdefRecord &)"
+        targetType: "QQmlNdefRecord"
+        ModifyArgument{
+            index: "return"
+            DefineOwnership{
+                codeClass: CodeClass.Native
+                ownership: Ownership.Java
+            }
         }
         until: 5
     }

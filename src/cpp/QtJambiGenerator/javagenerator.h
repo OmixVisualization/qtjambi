@@ -82,7 +82,7 @@ public:
 
     void writeFunctionOverloads(QTextStream &s, const MetaFunction *java_function,
                                 uint included_attributes = 0, uint excluded_attributes = 0, Option option = NoOption, const QString& alternativeFunctionName = QString());
-    void writeExtraFunctions(QTextStream &s, const MetaClass *java_class);
+    void writeExtraFunctions(QTextStream &s, const MetaClass *java_class, bool isConcreteWrapper = false);
     void writeExtraFunctions(QTextStream &s, const MetaFunctional *java_class, bool inInterface);
     void writeToStringFunction(QTextStream &s, const MetaClass *java_class);
     void writeCloneFunction(QTextStream &s, const MetaClass *java_class);

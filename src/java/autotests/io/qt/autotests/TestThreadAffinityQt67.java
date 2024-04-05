@@ -1,5 +1,6 @@
 /****************************************************************************
 **
+** Copyright (C) 1992-2009 Nokia. All rights reserved.
 ** Copyright (C) 2009-2024 Dr. Peter Droste, Omix Visualization GmbH & Co. KG. All rights reserved.
 **
 ** This file is part of Qt Jambi.
@@ -28,39 +29,47 @@
 ****************************************************************************/
 package io.qt.autotests;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
 
+import java.lang.ref.WeakReference;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.gui.rhi.QRhiReadbackResult;
-import io.qt.gui.rhi.QRhiScissor;
-import io.qt.gui.rhi.QRhiViewport;
-import io.qt.gui.rhi.QShaderDescription;
+import io.qt.core.QObject;
+import io.qt.core.QThread;
 
-public class TestRhiQt66 extends ApplicationInitializer{
+public class TestThreadAffinityQt67 extends ApplicationInitializer {
+	@BeforeClass
+	public static void testInitialize() throws Exception {
+		ApplicationInitializer.testInitialize();
+    }
 	
 	@Test
-    public void test() {
-		QRhiReadbackResult value = new QRhiReadbackResult();
-		assertEquals(null, value.completed());
-		QRhiReadbackResult.CompletedFunction cf = ()->{};
-		value.setCompleted(cf);
-		assertEquals(cf, value.completed());
-		
-		QShaderDescription d = new QShaderDescription();
-		int[] computeShaderLocalSize = d.computeShaderLocalSize();
-		assertEquals(3, computeShaderLocalSize.length);
-		
-		QRhiScissor rscissor = new QRhiScissor(1,2,3,4);
-		int[] scissor = rscissor.scissor();
-		assertEquals(4, scissor.length);
-		assertEquals(1, scissor[0]);
-		assertEquals(2, scissor[1]);
-		assertEquals(3, scissor[2]);
-		assertEquals(4, scissor[3]);
-		
-		QRhiViewport rviewport = new QRhiViewport();
-		float[] viewport = rviewport.viewport();
-		assertEquals(4, viewport.length);
+	public void testQThreadAffinityExceptionOnMoveToThread() throws InterruptedException{
+		AtomicReference<QObject> object = new AtomicReference<>();
+		QThread jthread = QThread.create(()->{
+			object.set(new QObject());
+			try {
+				synchronized(TestQThread.class) {
+					TestQThread.class.wait();
+				}
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		});
+		try {
+			jthread.start();
+			while(object.get()==null) {
+				Thread.sleep(50);
+			}
+			assertFalse(object.get().moveToThread(QThread.currentThread()));
+		}finally {
+			synchronized(TestQThread.class) {
+				TestQThread.class.notifyAll();
+			}
+			instances.add(new WeakReference<>(jthread));
+		}
 	}
 }

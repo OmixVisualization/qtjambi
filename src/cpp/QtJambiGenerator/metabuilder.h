@@ -136,6 +136,7 @@ class MetaBuilder {
         MetaFunction *traverseFunction(FunctionModelItem function, const QString& _function_name, const QStringList& tparams);
         MetaField *traverseField(VariableModelItem field);
         void checkFunctionModifications();
+        void checkHashAndSwapFunctions();
 
         void parseQ_Property(MetaClass *meta_class, const QStringList &declarations);
         void setupConstructorAvailability(MetaClass *meta_class);
@@ -178,7 +179,7 @@ class MetaBuilder {
         void setRequiredFeatures(const QMap<QString,QStringList>& requiredFeatures) { _M_requiredFeatures = requiredFeatures; }
 
 protected:
-        MetaType* exchangeTemplateTypes(const MetaType* type, bool isReturn, const QMap<QString,MetaType*>& templateTypes);
+        MetaType* exchangeTemplateTypes(const MetaType* type, bool isReturn, const QMap<QString,QPair<MetaType*,QString>>& templateTypes);
         MetaClass *argumentToClass(const MetaType* type);
         void addInclude(TS::TypeEntry * entry, QString fileName, bool extra = false);
         void addInclude(TS::ComplexTypeEntry * entry, const MetaType* includedType);
@@ -252,6 +253,8 @@ protected:
         QString m_generateTypeSystemQML;
         QSet<MetaClass*> m_functions_fixed;
         QList<QPair<MetaClass*,QString>> m_pendingScopedClasses;
+        QList<QPair<QPair<QString,FunctionModelItem>,MetaFunction*>> m_pendingHashFunctions;
+        QList<QPair<QPair<QString,FunctionModelItem>,MetaFunction*>> m_pendingSwapFunctions;
 };
 
 struct Operator {

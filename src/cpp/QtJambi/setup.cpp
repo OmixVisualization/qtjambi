@@ -45,6 +45,9 @@ QT_WARNING_DISABLE_DEPRECATED
 #endif
 #include "registryutil_p.h"
 #include "java_p.h"
+#ifdef Q_OS_ANDROID
+#include "androidapi.h"
+#endif
 #include "utils_p.h"
 #include "qtjambilink_p.h"
 

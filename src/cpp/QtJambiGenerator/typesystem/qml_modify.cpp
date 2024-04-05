@@ -687,6 +687,19 @@ void Argument::setIsImplicit(bool newIsImplicit)
     emit isImplicitChanged();
 }
 
+QString Argument::getValue() const
+{
+    return value;
+}
+
+void Argument::setValue(const QString &newValue)
+{
+    if (value == newValue)
+        return;
+    value = newValue;
+    emit valueChanged();
+}
+
 const QString &Rename::getTo() const
 {
     return to;

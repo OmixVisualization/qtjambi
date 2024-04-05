@@ -9,10 +9,10 @@
 ** This file may be used under the terms of the GNU Lesser
 ** General Public License version 2.1 as published by the Free Software
 ** Foundation and appearing in the file LICENSE.LGPL included in the
-** packaging of this file.  Please review the following information to
+** packaging of this file.  Please review Wthe following information to
 ** ensure the GNU Lesser General Public License version 2.1 requirements
 ** will be met: http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html.
-** 
+**
 ** GNU General Public License Usage
 ** Alternatively, this file may be used under the terms of the GNU
 ** General Public License version 3.0 as published by the Free Software
@@ -26,41 +26,26 @@
 ** WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
 **
 ****************************************************************************/
-package io.qt.autotests;
 
-import static org.junit.Assert.*;
+#if !defined(QTJAMBI_ANDROIDAPI_H) && !defined(QTJAMBI_GENERATOR_RUNNING)
+#define QTJAMBI_ANDROIDAPI_H
 
-import org.junit.Test;
+#include "global.h"
 
-import io.qt.gui.rhi.QRhiReadbackResult;
-import io.qt.gui.rhi.QRhiScissor;
-import io.qt.gui.rhi.QRhiViewport;
-import io.qt.gui.rhi.QShaderDescription;
+#ifdef Q_OS_ANDROID
+#include "javautils.h"
 
-public class TestRhiQt66 extends ApplicationInitializer{
-	
-	@Test
-    public void test() {
-		QRhiReadbackResult value = new QRhiReadbackResult();
-		assertEquals(null, value.completed());
-		QRhiReadbackResult.CompletedFunction cf = ()->{};
-		value.setCompleted(cf);
-		assertEquals(cf, value.completed());
-		
-		QShaderDescription d = new QShaderDescription();
-		int[] computeShaderLocalSize = d.computeShaderLocalSize();
-		assertEquals(3, computeShaderLocalSize.length);
-		
-		QRhiScissor rscissor = new QRhiScissor(1,2,3,4);
-		int[] scissor = rscissor.scissor();
-		assertEquals(4, scissor.length);
-		assertEquals(1, scissor[0]);
-		assertEquals(2, scissor[1]);
-		assertEquals(3, scissor[2]);
-		assertEquals(4, scissor[3]);
-		
-		QRhiViewport rviewport = new QRhiViewport();
-		float[] viewport = rviewport.viewport();
-		assertEquals(4, viewport.length);
-	}
+QT_WARNING_DISABLE_CLANG("-Wdollar-in-identifier-extension")
+
+namespace Java{
+namespace Android{
+QTJAMBI_REPOSITORY_DECLARE_CLASS(QtNative,
+                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(activity)
+                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(service)
+                                 QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(getContext))
 }
+}
+
+#endif //def Q_OS_ANDROID
+
+#endif // QTJAMBI_ANDROIDAPI_H

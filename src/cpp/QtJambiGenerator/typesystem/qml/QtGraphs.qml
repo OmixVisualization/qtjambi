@@ -1272,19 +1272,6 @@ TypeSystem{
         EnumType{
             name: "SeriesColorTheme"
         }
-        /*ModifyFunction{
-            signature: "graphSeriesCount() const"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "setGraphSeriesCount(int)"
-            remove: RemoveFlag.All
-        }
-        ModifyFunction{
-            signature: "graphSeriesColor(int) const"
-            remove: RemoveFlag.All
-        }
-        Rejection{className: "CustomFlags"}*/
         since: 6.7
     }
 

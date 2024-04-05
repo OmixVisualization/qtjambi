@@ -982,7 +982,9 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);\n"+
+                              "QDate __qt_%1;"}
             }
             ModifyArgument{
                 index: 0
@@ -996,12 +998,8 @@ TypeSystem{
                 }
             }
             ModifyArgument{
-                index: 1
+                index: 2
                 RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QDate %out;"}
                 }
             }
         }
@@ -1011,7 +1009,9 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);\n"+
+                              "QDateTime __qt_%1;"}
             }
             ModifyArgument{
                 index: 0
@@ -1025,12 +1025,8 @@ TypeSystem{
                 }
             }
             ModifyArgument{
-                index: 1
+                index: 2
                 RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QDateTime %out;"}
                 }
             }
         }
@@ -1040,7 +1036,9 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);\n"+
+                              "QLine __qt_%1;"}
             }
             ModifyArgument{
                 index: 0
@@ -1054,12 +1052,8 @@ TypeSystem{
                 }
             }
             ModifyArgument{
-                index: 1
+                index: 2
                 RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QLine %out;"}
                 }
             }
         }
@@ -1069,7 +1063,9 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);\n"+
+                              "QLineF __qt_%1;"}
             }
             ModifyArgument{
                 index: 0
@@ -1083,12 +1079,8 @@ TypeSystem{
                 }
             }
             ModifyArgument{
-                index: 1
+                index: 2
                 RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QLineF %out;"}
                 }
             }
         }
@@ -1098,7 +1090,9 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);\n"+
+                              "QPoint __qt_%1;"}
             }
             ModifyArgument{
                 index: 0
@@ -1112,12 +1106,8 @@ TypeSystem{
                 }
             }
             ModifyArgument{
-                index: 1
+                index: 2
                 RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QPoint %out;"}
                 }
             }
         }
@@ -1127,7 +1117,9 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);\n"+
+                              "QPointF __qt_%1;"}
             }
             ModifyArgument{
                 index: 0
@@ -1141,12 +1133,8 @@ TypeSystem{
                 }
             }
             ModifyArgument{
-                index: 1
+                index: 2
                 RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QPointF %out;"}
                 }
             }
         }
@@ -1156,7 +1144,9 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);\n"+
+                              "QRect __qt_%1;"}
             }
             ModifyArgument{
                 index: 0
@@ -1170,12 +1160,8 @@ TypeSystem{
                 }
             }
             ModifyArgument{
-                index: 1
+                index: 2
                 RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QRect %out;"}
                 }
             }
         }
@@ -1185,7 +1171,9 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);\n"+
+                              "QRectF __qt_%1;"}
             }
             ModifyArgument{
                 index: 0
@@ -1199,12 +1187,8 @@ TypeSystem{
                 }
             }
             ModifyArgument{
-                index: 1
+                index: 2
                 RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QRectF %out;"}
                 }
             }
         }
@@ -1214,7 +1198,9 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);\n"+
+                              "QSize __qt_%1;"}
             }
             ModifyArgument{
                 index: 0
@@ -1228,12 +1214,8 @@ TypeSystem{
                 }
             }
             ModifyArgument{
-                index: 1
+                index: 2
                 RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSize %out;"}
                 }
             }
         }
@@ -1243,7 +1225,9 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);\n"+
+                              "QSizeF __qt_%1;"}
             }
             ModifyArgument{
                 index: 0
@@ -1257,12 +1241,8 @@ TypeSystem{
                 }
             }
             ModifyArgument{
-                index: 1
+                index: 2
                 RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QSizeF %out;"}
                 }
             }
         }
@@ -1272,7 +1252,9 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);\n"+
+                              "QTime __qt_%1;"}
             }
             ModifyArgument{
                 index: 0
@@ -1286,12 +1268,8 @@ TypeSystem{
                 }
             }
             ModifyArgument{
-                index: 1
+                index: 2
                 RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QTime %out;"}
                 }
             }
         }
@@ -1301,7 +1279,9 @@ TypeSystem{
             InjectCode{
                 target: CodeClass.Native
                 position: Position.Beginning
-                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);"}
+                ArgumentMap{index: 1; metaName: "%1"}
+                Text{content: "qtjambi_dbus_check_read_argument(%env, __qt_this);\n"+
+                              "QVariant __qt_%1;"}
             }
             ModifyArgument{
                 index: 0
@@ -1315,12 +1295,8 @@ TypeSystem{
                 }
             }
             ModifyArgument{
-                index: 1
+                index: 2
                 RemoveArgument{
-                }
-                ConversionRule{
-                    codeClass: CodeClass.Native
-                    Text{content: "QVariant %out;"}
                 }
             }
         }

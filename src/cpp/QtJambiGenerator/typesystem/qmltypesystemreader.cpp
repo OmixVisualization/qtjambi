@@ -330,7 +330,7 @@ void QmlTypeSystemReaderPrivate::parseTypeSystem(TypeSystem* typeSystem, const Q
                         {CodeClass::Native, TS::NativeCode},
                         {CodeClass::ModuleInfo, TS::ModuleInfo},
                         {CodeClass::PackageInitializer, TS::PackageInitializer},
-                        {CodeClass::MetaInfo, TS::MetaInfo},
+                        {CodeClass::MetaInfo, TS::MetaInfo}
                     };
 
                     static const QHash<Position::Entries, CodeSnip::Position> positionNames{
@@ -350,7 +350,7 @@ void QmlTypeSystemReaderPrivate::parseTypeSystem(TypeSystem* typeSystem, const Q
                     parseSuppressedWarning(childElement);
                 }else if(Template* childElement = qobject_cast<Template*>(item)){
                     parseTemplate(childElement);
-                }else if(ModifyFunction* childElement = qobject_cast<ModifyFunction*>(item)){
+                }else if(GlobalFunction* childElement = qobject_cast<GlobalFunction*>(item)){
                     parseModifyFunction(childElement, entry);
                 }else{
                     TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of element %2").arg(item->metaObject()->className(), typeSystem->metaObject()->className()));
@@ -489,6 +489,7 @@ void QmlTypeSystemReaderPrivate::parseInjectCode(InjectCode* element, ComplexTyp
         {CodeClass::DestructorFunction, TS::DestructorFunction},
         {CodeClass::DeleterFunction, TS::DeleterFunction},
         {CodeClass::Constructors, TS::Constructors},
+        {CodeClass::JavaConctreteWrapper, TS::ConctreteWrapper},
         {CodeClass::Signal, TS::Signal}
     };
 
@@ -536,7 +537,8 @@ void QmlTypeSystemReaderPrivate::parseInjectCode(InjectCode* element, Functional
         {CodeClass::DeleterFunction, TS::DeleterFunction},
         {CodeClass::Constructors, TS::Constructors},
         {CodeClass::Signal, TS::Signal},
-        {CodeClass::JavaInterface, TS::Interface}
+        {CodeClass::JavaInterface, TS::Interface},
+        {CodeClass::JavaConctreteWrapper, TS::ConctreteWrapper}
     };
 
     static const QHash<Position::Entries, CodeSnip::Position> positionNames{
@@ -862,6 +864,7 @@ void QmlTypeSystemReaderPrivate::parseAttributesOfComplexType(ComplexType* eleme
         ctype->setForceFriendly();
     if (element->getDeprecated())
         ctype->setDeprecated();
+    ctype->setPushUpStatics(element->getPushUpStatics());
     ctype->setNoImplicitConstructors(element->getNoImplicitConstructors());
     ctype->setNotAssignable(element->getNotAssignable());
     ctype->setNotMoveAssignable(element->getNotMoveAssignable());
@@ -1863,14 +1866,15 @@ TemplateInstantiation QmlTypeSystemReaderPrivate::parseInstantiation(Instantiati
                     QString type = childElement->getType();
                     bool implicit = childElement->getIsImplicit();
                     if(type.isEmpty()){
+                        QString value = childElement->getValue();
                         QString parameter = childElement->getParameter();
                         QString extends = childElement->getExtending();
-                        if(parameter.isEmpty()){
-                            TypesystemException::raise(QStringLiteral(u"Attribute 'type' or 'parameter' required"));
+                        if(parameter.isEmpty() && value.isEmpty()){
+                            TypesystemException::raise(QStringLiteral(u"Attribute 'type', 'value' or 'parameter' required for Argument"));
                         }
-                        mod.arguments << TS::Parameter{type,parameter,extends,implicit};
+                        mod.arguments << TS::Parameter{{},parameter,extends,implicit,value};
                     }else{
-                        mod.arguments << TS::Parameter{type,{},{},implicit};
+                        mod.arguments << TS::Parameter{type,{},{},implicit,{}};
                     }
                 }
             }else if(ModifyArgument* childElement = qobject_cast<ModifyArgument*>(item)){
@@ -1984,12 +1988,15 @@ void QmlTypeSystemReaderPrivate::parseModifyFunction(ModifyFunction* element, Ty
             if (signature.isEmpty()) {
                 TypesystemException::raise(QStringLiteral(u"No signature"));
             }
-            signature = QString::fromLatin1(QMetaObject::normalizedSignature(qPrintable(signature)));
             AccessModifications accesses = element->getAccess();
             QString rename = element->getRename();
             FunctionModification mod;
             mod.removal = TS::NoLanguage;
-            mod.signature = signature;
+            if(!signature.contains("(*)") && !signature.contains("(&)"))
+                mod.signature = QString::fromLatin1(QMetaObject::normalizedSignature(qPrintable(signature)));
+            else
+                mod.signature = signature;
+            mod.originalSignature = signature;
             mod.ppCondition = element->getPpCondition();
             mod.throws = element->getThrowing();
             mod.proxyCall = element->getProxyCall();

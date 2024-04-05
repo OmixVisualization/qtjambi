@@ -90,10 +90,29 @@ QString CppGenerator::translateType(const MetaType *java_type, Option option) {
             || java_type->isQChar()) {
         return java_type->typeEntry()->jniName();
     } else if (java_type->isArray()){
-        if(java_type->typeEntry()->isArray())
+        if(java_type->arrayElementType() && java_type->arrayElementType()->isNativePointer()){
+            return translateType(java_type->arrayElementType(), option);
+        }else if(java_type->typeEntry()->isArray())
             return java_type->typeEntry()->jniName();
         else{
-            QString jniName = java_type->typeEntry()->jniName();
+            QString jniName = java_type->arrayElementType()->typeEntry()->jniName();
+            if(jniName==QStringLiteral(u"void")
+                || jniName==QStringLiteral(u"jstring")
+                || jniName==QStringLiteral(u"jthrowable")
+                || jniName==QStringLiteral(u"jclass")
+                || jniName==QStringLiteral(u"jobject")
+                || jniName.endsWith(QStringLiteral(u"Array")))
+                return QStringLiteral(u"jobjectArray");
+            return jniName + "Array";
+        }
+    } else if(java_type->isContainer() && static_cast<const ContainerTypeEntry *>(java_type->typeEntry())->type()==ContainerTypeEntry::std_array){
+        const MetaType *elementType = java_type->instantiations()[0];
+        if(elementType && elementType->isNativePointer()){
+            return translateType(elementType, option);
+        }else if(java_type->typeEntry()->isArray())
+            return java_type->typeEntry()->jniName();
+        else if(elementType){
+            QString jniName = elementType->typeEntry()->jniName();
             if(jniName==QStringLiteral(u"void")
                 || jniName==QStringLiteral(u"jstring")
                 || jniName==QStringLiteral(u"jthrowable")
@@ -209,9 +228,16 @@ void CppGenerator::writeTypeInfo(QTextStream &s, const MetaType *type, Option op
     if (type->isArray()) {
         writeTypeInfo(s, type->arrayElementType(), Option(options & ~ForceConstReference));
         if (options & ArrayAsPointer) {
-            s << "*";
+            for(int i=0; i<type->arrayElementCounts().size(); ++i)
+                s << "*";
         } else if (!(options & SkipArray)) {
-            s << "[" << type->arrayElementCount() << "]";
+            for(int i=0; i<type->arrayElementCounts().size(); ++i){
+                const QPair<int,QString>& pair = type->arrayElementCounts()[i];
+                if(pair.second.isEmpty())
+                    s << "[" << pair.first << "]";
+                else
+                    s << "[" << pair.second << "]";
+            }
         }
         return;
     }
@@ -453,19 +479,33 @@ void CppGenerator::writeFunctionArguments(QTextStream &s,
                 }
             }
         }else {
-            if(arg->type()->isArray() && !(option & SkipName)){
-                option = Option(option | SkipArray);
-            }
-            if(arg->type()->originalTypeDescription().startsWith("const ::")
-                    || arg->type()->originalTypeDescription().startsWith("::")){
-                writeTypeInfo(s, arg->type(), Option(option | OriginalTypeDescription));
-            }else{
-                writeTypeInfo(s, arg->type(), option);
+            {
+                Option _option = option;
+                if(arg->type()->isArray() && !(option & SkipName)){
+                    _option = Option(_option | SkipArray);
+                }
+                if(arg->type()->originalTypeDescription().startsWith("const ::")
+                        || arg->type()->originalTypeDescription().startsWith("::")){
+                    writeTypeInfo(s, arg->type(), Option(_option | OriginalTypeDescription));
+                }else{
+                    writeTypeInfo(s, arg->type(), _option);
+                }
             }
             if (!(option & SkipName)){
                 s << arg->indexedName();
                 if(arg->type()->isArray()){
-                    s << "[" << arg->type()->arrayElementCount() << "]";
+                    if (option & ArrayAsPointer) {
+                        for(int i=0; i<arg->type()->arrayElementCounts().size(); ++i)
+                            s << "*";
+                    } else if (!(option & SkipArray)) {
+                        for(int i=0; i<arg->type()->arrayElementCounts().size(); ++i){
+                            const QPair<int,QString>& pair = arg->type()->arrayElementCounts()[i];
+                            if(pair.second.isEmpty())
+                                s << "[" << pair.first << "]";
+                            else
+                                s << "[" << pair.second << "]";
+                        }
+                    }
                 }
             }
             if ((option & IncludeDefaultExpression) && !arg->originalDefaultValueExpression().isEmpty()) {
@@ -512,8 +552,13 @@ void CppGenerator::writeFunctionSignature(QTextStream &s,
     if(java_function->hasTemplateTypes()){
         s << "template<";
         for(MetaTemplateParameter * templateParameter : java_function->templateParameters()){
-            if(templateParameter->type()){
-                writeTypeInfo(s, templateParameter->type());
+            if(templateParameter->instantiationType()){
+                writeTypeInfo(s, templateParameter->instantiationType());
+            }else if(!templateParameter->instantiation().isEmpty()){
+                s << templateParameter->instantiation();
+            }else if(!templateParameter->defaultType().isEmpty()){
+                s << templateParameter->defaultType();
+            }else if(!templateParameter->name().isEmpty()){
                 s << templateParameter->name();
             }
         }
@@ -1022,11 +1067,31 @@ QString CppGenerator::jni_signature(const MetaType *java_type, JNISignatureForma
         if(java_type->typeEntry()->qualifiedTargetLangName()=="java.time.Instant")
             return jni_signature("java.time.temporal.Temporal", format);
     }
+    if(java_type->typeEntry()->isContainer()){
+        const ContainerTypeEntry* ctype = static_cast<const ContainerTypeEntry*>(java_type->typeEntry());
+        switch(ctype->type()){
+        case ContainerTypeEntry::std_array:
+        if (java_type->hasInstantiations()) {
+            const QList<const MetaType *>& instantiations = java_type->instantiations();
+            if ((format & Underscores) == Underscores)
+                return "_3" + jni_signature(instantiations[0], format);
+            else
+                return "[" + jni_signature(instantiations[0], format);
+        }
+        break;
+            default:break;
+        }
+    }
     if (java_type->isArray()) {
-        if ((format & Underscores) == Underscores)
-            return "_3" + jni_signature(java_type->arrayElementType(), format);
-        else
-            return "[" + jni_signature(java_type->arrayElementType(), format);
+        if(java_type->arrayElementType() && java_type->arrayElementType()->isNativePointer()){
+            return jni_signature(java_type->arrayElementType(), format);
+        }else{
+            if ((format & Underscores) == Underscores)
+                return "_3" + jni_signature(java_type->arrayElementType(), format);
+            else
+                return "[" + jni_signature(java_type->arrayElementType(), format);
+
+        }
     }
     if (java_type->isInitializerList() && java_type->instantiations().size()==1) {
         const MetaType* instantiation = java_type->instantiations()[0];

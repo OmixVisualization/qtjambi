@@ -36,10 +36,8 @@ import java.net.URL;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import io.qt.QtObject;
 import io.qt.QtSignalEmitterInterface;
 import io.qt.core.QMetaObject;
-import io.qt.core.QMetaProperty;
 import io.qt.core.QObject;
 
 /**
@@ -83,14 +81,6 @@ public abstract class CoreUtility {
     
     protected static void checkConnectionToDisposedSignal(QMetaObject.DisposedSignal signal, Object receiver, boolean slotObject) {
         SignalUtility.checkConnectionToDisposedSignalImpl(signal, receiver, slotObject);
-    }
-    
-    protected static <PI> PI analyzeProperty(QObject object, QtObject property, Class<PI> propertyInfoClass) {
-    	return MetaObjectUtility.analyzeProperty(object, property, propertyInfoClass);
-    }
-    
-    protected static void registerPropertyField(QMetaProperty metaProperty, java.lang.reflect.Field field) {
-    	MetaObjectUtility.registerPropertyField(metaProperty, field);
     }
     
     protected static void emitNativeSignal(QObject sender, int methodIndex, long metaObjectId, Object args[]) {

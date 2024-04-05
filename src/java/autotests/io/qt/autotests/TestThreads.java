@@ -37,13 +37,11 @@ import static org.junit.Assert.assertTrue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import io.qt.QNoNativeResourcesException;
-import io.qt.QThreadAffinityException;
 import io.qt.QtUtilities;
 import io.qt.autotests.generated.General;
 import io.qt.core.QCoreApplication;
@@ -52,10 +50,8 @@ import io.qt.core.QEventLoop;
 import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QThread;
-import io.qt.core.QVariantAnimation;
 import io.qt.core.Qt;
 import io.qt.internal.TestUtility;
-import io.qt.widgets.QWidget;
 
 public class TestThreads extends ApplicationInitializer{
 	
@@ -595,59 +591,6 @@ public class TestThreads extends ApplicationInitializer{
     	QCoreApplication.processEvents();
     }
     
-    @Test(expected=QThreadAffinityException.class)
-    public void run_affinity_breach() throws Exception
-    {
-    	QObject object = new QObject();
-    	QThread thread = new QThread();
-    	try {
-	    	object.moveToThread(thread);
-	    	object.startTimer(90);
-    	}finally {
-//    		object.dispose();
-    	}
-    }
-    
-    @Test(expected=QThreadAffinityException.class)
-    public void run_affinity_breach_parent() throws Exception
-    {
-    	QObject object = new QObject();
-    	QThread thread = new QThread();
-    	try {
-	    	object.moveToThread(thread);
-	    	new QObject(object);
-    	}finally {
-//    		object.dispose();
-    	}
-    }
-    
-    @Test(expected=QThreadAffinityException.class)
-    public void run_widget_affinity_breach() throws Exception
-    {
-    	QThreadAffinityException[] exn = {null};
-    	QThread thread = QThread.create(()->{
-    		try {
-				new QWidget();
-			} catch (QThreadAffinityException e) {
-				exn[0] = e;
-			}
-    	});
-    	thread.start();
-    	thread.join();
-    	if(exn[0]!=null)
-    		throw exn[0];
-    }
-    
-    @Test(expected=QNoNativeResourcesException.class)
-    public void run_affinity_breach_no_native() throws Exception
-    {
-    	QObject object = new QObject();
-    	QThread thread = new QThread();
-    	object.moveToThread(thread);
-    	object.dispose();
-    	object.setObjectName("test");
-    }
-    
     @Test(expected=QNoNativeResourcesException.class)
     public void run_no_native() throws Exception
     {
@@ -671,64 +614,6 @@ public class TestThreads extends ApplicationInitializer{
     	assertFalse(thread.isRunning());
     	if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android))
     		assertEquals(Thread.State.TERMINATED, jthread[1].getState());
-    }
-    
-    @Test
-    public void test_thread_affinity()
-    {
-    	QVariantAnimation parent = new QVariantAnimation();
-    	QVariantAnimation child = new QVariantAnimation();
-    	parent.valueChanged.connect(child.valueChanged);
-    	Object[] result = {null};
-    	child.valueChanged.connect(o->result[0] = o);
-    	Throwable[] t = {null};
-    	QThread thread = QThread.create(()->{
-    		parent.valueChanged.emit("TEST");
-    		try {
-				parent.setProperty("", "");
-			} catch (Throwable e) {
-				t[0] = e;
-			}
-    	});
-    	thread.start();
-    	thread.join();
-    	QCoreApplication.sendPostedEvents();
-    	assertTrue(t[0] instanceof QThreadAffinityException);
-    	assertEquals("TEST", result[0]);
-    }
-    
-    @Test
-    public void run_affinity_breach_exceptionhandling() {
-    	QObject obj = new QObject();
-    	QThread thread = new QThread(){
-    		@Override
-    		protected void run() {
-    			obj.startTimer(0);
-    		}
-    	};
-    	Throwable[] occurred = {null};
-    	thread.setUncaughtExceptionHandler((t,e)->{occurred[0] = e;});
-    	thread.start();
-    	thread.join();
-    	Assert.assertTrue(occurred[0] instanceof QThreadAffinityException);
-    	occurred[0] = null;
-    	thread = QThread.create(()->{
-			obj.startTimer(0);
-		});
-    	thread.setUncaughtExceptionHandler((t,e)->{occurred[0] = e;});
-    	thread.start();
-    	thread.join();
-    	Assert.assertTrue(occurred[0] instanceof QThreadAffinityException);
-    	occurred[0] = null;
-    	
-    	thread = QThread.create(()->{
-			obj.startTimer(0);
-		});
-    	thread.setUncaughtExceptionHandler((t,e)->{occurred[0] = e;});
-    	thread.start();
-    	thread.join();
-    	Assert.assertTrue(occurred[0] instanceof QThreadAffinityException);
-    	occurred[0] = null;
     }
 
     public static void main(String args[]) {

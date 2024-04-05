@@ -35,7 +35,8 @@
 #include "utils_p.h"
 #include <QtJambi/QtJambiAPI>
 #include <QtJambi/JavaAPI>
-#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+#if defined(Q_OS_ANDROID)
+#include <QtJambi/AndroidAPI>
 #endif
 
 namespace Java{
@@ -88,8 +89,8 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_multime
 }
 #endif
 
-void initialize_meta_info_QtMultimedia(){
 #if defined(Q_OS_ANDROID)
+void initialize_meta_info_QtMultimedia(){
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 #define ORG_QTPROJECT_QT "org/qtproject/qt/"
 #else
@@ -130,19 +131,21 @@ void initialize_meta_info_QtMultimedia(){
                     env->ExceptionClear();
             }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
             method = env->GetStaticMethodID(cls, "setActivity", "(Landroid/app/Activity;Ljava/lang/Object;)V");
             if(env->ExceptionCheck())
                 env->ExceptionClear();
             if(method){
                 jobject activityDelegate = nullptr;
-                try{
-                    activityDelegate = Java::Android::QtNative::activity(env);
-                }catch(...){}
+//                try{
+//                    activityDelegate = Java::Android::QtNative::activity(env);
+//                }catch(...){}
                 env->CallStaticVoidMethod(cls, method, activity, activityDelegate);
                 if(env->ExceptionCheck())
                     env->ExceptionClear();
             }
+#endif
         }
     }
-#endif
 }
+#endif

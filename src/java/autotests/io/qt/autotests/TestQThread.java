@@ -37,13 +37,11 @@ import static org.junit.Assert.assertTrue;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 
-import io.qt.QThreadAffinityException;
 import io.qt.autotests.generated.General;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
@@ -304,33 +302,6 @@ public class TestQThread extends ApplicationInitializer{
 		instances.add(new WeakReference<>(finished));
 		instances.add(new WeakReference<>(started));
 		instances.add(new WeakReference<>(running));
-	}
-	
-	@org.junit.Test(expected=QThreadAffinityException.class)
-	public void testQThreadAffinityExceptionOnMoveToThread() throws QThreadAffinityException, InterruptedException{
-		AtomicReference<QObject> object = new AtomicReference<>();
-		QThread jthread = QThread.create(()->{
-			object.set(new QObject());
-			try {
-				synchronized(TestQThread.class) {
-					TestQThread.class.wait();
-				}
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		});
-		try {
-			jthread.start();
-			while(object.get()==null) {
-				Thread.sleep(50);
-			}
-			object.get().moveToThread(QThread.currentThread());
-		}finally {
-			synchronized(TestQThread.class) {
-				TestQThread.class.notifyAll();
-			}
-			instances.add(new WeakReference<>(jthread));
-		}
 	}
 	
 	@org.junit.Test
@@ -736,12 +707,13 @@ public class TestQThread extends ApplicationInitializer{
 			Thread.yield();
 			Thread.sleep(100);
 		}
-		if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows)
-				&& !System.getProperty("java.version", "").startsWith("1.8") 
+		if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Windows)) {
+			if(!System.getProperty("java.version", "").startsWith("1.8") 
     			&& !System.getProperty("java.version", "").startsWith("8")) {
-			Assert.assertTrue("QThread has not been deleted", qthreadCleaned.get());
-		}else {
-			System.err.println("threadCleaned="+qthreadCleaned.get()+" as expected in Java8");
+				Assert.assertTrue("QThread has not been deleted", qthreadCleaned.get());
+			}else if(!qthreadCleaned.get()){
+				System.err.println("threadCleaned="+qthreadCleaned.get()+" as expected in Java8");
+			}
 		}
 	}
 }

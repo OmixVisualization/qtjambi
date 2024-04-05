@@ -1341,7 +1341,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
     }else if(Java::QtJambi::QNativePointer::isSameClass(_env,externalClass)){
         return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
             const void * const*in_p = reinterpret_cast<const void * const*>(in);
-            p.l = QtJambiAPI::convertNativeToQNativePointer(env, *in_p, QNativePointer::Type::Pointer, 1);
+            p.l = QtJambiAPI::convertNativeToQNativePointer(env, *in_p, QNativePointer::Type::Pointer, -1, 1);
             return true;
         };
     } else if (Java::QtJambi::QFlags::isAssignableFrom(_env,externalClass)) {
@@ -3918,11 +3918,11 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                     Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: QNativePointer").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                 if(scope && !out){
                     void** ptr;
-                    out = ptr = new void*(!val.l ? nullptr : QtJambiAPI::convertQNativePointerToNative(env, val.l, 1));
+                    out = ptr = new void*(!val.l ? nullptr : QtJambiAPI::convertQNativePointerToNative(env, val.l));
                     scope->addDeletion(ptr);
                     return true;
                 }else if(out){
-                    *reinterpret_cast<void**>(out) = !val.l ? nullptr : QtJambiAPI::convertQNativePointerToNative(env, val.l, 1);
+                    *reinterpret_cast<void**>(out) = !val.l ? nullptr : QtJambiAPI::convertQNativePointerToNative(env, val.l);
                     return true;
                 }
                 return false;
@@ -3932,7 +3932,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
             return [_internalMetaType](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
                 if(val.l && !Java::QtJambi::QNativePointer::isInstanceOf(env, val.l))
                     Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: QNativePointer").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
-                void* nptr = !val.l ? nullptr : QtJambiAPI::convertQNativePointerToNative(env, val.l, 1);
+                void* nptr = !val.l ? nullptr : QtJambiAPI::convertQNativePointerToNative(env, val.l);
                 if(scope && !out){
                     void* ptr;
                     out = ptr = QMetaType::create(_internalMetaType, nptr);
@@ -8506,6 +8506,12 @@ QHashFunction QtJambiTypeManager::findHashFunction(bool isPointer, int metaType)
         }
         if(!f && metaTypeName.startsWith("QFlags<"))
             f = [](const void* ptr, hash_type seed) -> hash_type{ return !ptr ? 0 : qHash(*reinterpret_cast<const qint32*>(ptr), seed);};
+        if(!f && isJObjectWrappedMetaType(QMetaType(metaType)))
+            f = registeredHashFunction(typeid(JObjectWrapper));
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+        if(!f && isNativeWrapperMetaType(QMetaType(metaType)))
+            f = registeredHashFunction(typeid(JObjectWrapper));
+#endif
         return f;
     }
 }

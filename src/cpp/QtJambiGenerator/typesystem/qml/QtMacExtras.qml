@@ -81,6 +81,11 @@ TypeSystem{
             remove: RemoveFlag.All
         }
     }
+
+    GlobalFunction{
+        signature: "qRegisterDraggedTypes(const QStringList&)"
+        targetType: "QMacPasteboardMime"
+    }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QHelpContentItem::QHelpContentItem', unmatched parameter type 'QHelpDBReader*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: private virtual function 'changeEvent(QEvent * event)' in 'QHelpSearchQueryWidget'"}
@@ -90,6 +95,6 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping *, unmatched *type '*NSToolbar*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping *, unmatched *type '*NSData*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping *, unmatched *type '*CG*Ref*'"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'nativeToolbar()const' for function modification in 'QMacToolBar' not found. Possible candidates:*"}
-    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'nativeToolbarItem()const' for function modification in 'QMacToolBarItem' not found. Possible candidates:*"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'nativeToolbar() const' for function modification in 'QMacToolBar' not found. Possible candidates:*"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'nativeToolbarItem() const' for function modification in 'QMacToolBarItem' not found. Possible candidates:*"}
 }

@@ -3430,7 +3430,23 @@ final class LibraryUtility {
 	}
 	
 	private static int findSequence(int offset, byte[] array, byte[] sequence) {
-	    for (int i = offset; i < array.length - sequence.length + 1; i++) {
+	    for (int i = offset; i < array.length - sequence.length + 1; ++i) {
+	        boolean found = true;
+	        for (int j = 0; j < sequence.length; j++) {
+	            if (array[i + j] != sequence[j]) {
+	                found = false;
+	                break;
+	            }
+	        }
+	        if (found) {
+	            return i;
+	        }
+	    }
+	    return -1;
+	}
+	
+	private static int reverseFindSequence(int offset, byte[] array, byte[] sequence) {
+	    for (int i = offset-sequence.length; i >= 0; --i) {
 	        boolean found = true;
 	        for (int j = 0; j < sequence.length; j++) {
 	            if (array[i + j] != sequence[j]) {
@@ -3456,11 +3472,16 @@ final class LibraryUtility {
 												|| LibraryUtility.operatingSystem==OperatingSystem.IOS;
 		final List<String> qtLibraryBuilds = new ArrayList<>();
 		final List<String> qtjambiLibraryBuilds = new ArrayList<>();
+		final byte[] buildBy = "build; by".getBytes(StandardCharsets.US_ASCII);
+		final byte[] qtSpace = "Qt ".getBytes(StandardCharsets.US_ASCII);
 		try {
 			byte[] coredata = Files.readAllBytes(coreLib.toPath());
 			int idx = 0;
 			while(true) {
-				idx = findSequence(idx, coredata, String.format("Qt %1$s.%2$s.", QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion).getBytes(StandardCharsets.US_ASCII));
+				idx = findSequence(idx, coredata, buildBy);
+				if(idx<0)
+					break;
+				idx = reverseFindSequence(idx, coredata, qtSpace);
 				if(idx<0)
 					break;
 				ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -3510,9 +3531,13 @@ final class LibraryUtility {
 			if(availability.file!=null) {
 				try {
 					byte[] jambidata = Files.readAllBytes(availability.file.toPath());
+					final byte[] qtjambiSpace = "QtJambi ".getBytes(StandardCharsets.US_ASCII);
 					int idx = 0;
 					while(true) {
-						idx = findSequence(idx, jambidata, String.format("QtJambi %1$s.%2$s.", QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion).getBytes(StandardCharsets.US_ASCII));
+						idx = findSequence(idx, jambidata, buildBy);
+						if(idx<0)
+							break;
+						idx = reverseFindSequence(idx, jambidata, qtjambiSpace);
 						if(idx<0)
 							break;
 						ByteArrayOutputStream os = new ByteArrayOutputStream();
@@ -3601,17 +3626,27 @@ final class LibraryUtility {
 					}
 				}
 			default:
-				if(qtLibraryBuilds.size()==1) {
-					if(qtjambiLibraryBuilds.size()==1) {
-						throw new LinkageError("Cannot run " + qtjambiLibraryBuild + " with " + qtLibraryBuild + ".", t);
-					}else {
-						throw new LinkageError("Cannot run one of " + qtjambiLibraryBuilds + " with " + qtLibraryBuild + ".", t);
-					}
+				if(!qtLibraryBuild.contains(String.format("Qt %1$s.%2$s.", QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion))) {
+					throw new LinkageError(String.format("Mismatching versions: Cannot run Qtjambi %1$s.%2$s with %3$s.", QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion, qtLibraryBuild), t);
 				}else {
-					if(qtjambiLibraryBuilds.size()==1) {
-						throw new LinkageError("Cannot run " + qtjambiLibraryBuild + " with one of " + qtLibraryBuilds + ".", t);
+					String message = "";
+					if(LibraryUtility.operatingSystem.isUnixLike()) {
+						if(t.getMessage()!=null && t.getMessage().contains("_PRIVATE_API' not found")) {
+							message = "Incompatible Qt builds: ";
+						}
+					}
+					if(qtLibraryBuilds.size()==1) {
+						if(qtjambiLibraryBuilds.size()==1) {
+							throw new LinkageError(message+"Cannot run " + qtjambiLibraryBuild + " with " + qtLibraryBuild + ".", t);
+						}else {
+							throw new LinkageError(message+"Cannot run one of " + qtjambiLibraryBuilds + " with " + qtLibraryBuild + ".", t);
+						}
 					}else {
-						throw new LinkageError("Cannot run one of " + qtjambiLibraryBuilds + " with one of " + qtLibraryBuilds + ".", t);
+						if(qtjambiLibraryBuilds.size()==1) {
+							throw new LinkageError(message+"Cannot run " + qtjambiLibraryBuild + " with one of " + qtLibraryBuilds + ".", t);
+						}else {
+							throw new LinkageError(message+"Cannot run one of " + qtjambiLibraryBuilds + " with one of " + qtLibraryBuilds + ".", t);
+						}
 					}
 				}
 			}

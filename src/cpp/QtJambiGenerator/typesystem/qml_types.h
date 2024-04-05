@@ -175,6 +175,9 @@ public:
     bool getNotCloneable() const;
     void setNotCloneable(bool newNotCloneable);
 
+    bool getPushUpStatics() const;
+    void setPushUpStatics(bool newPushUpStatics);
+
 signals:
     void packageNameChanged();
 
@@ -220,6 +223,8 @@ signals:
 
     void notCloneableChanged();
 
+    void pushUpStaticsChanged();
+
 private:
     QString packageName;
     QString implementing;
@@ -243,6 +248,7 @@ private:
     bool notAssignable = false;
     bool notMoveAssignable = false;
     bool notCloneable = false;
+    bool pushUpStatics = false;
     Q_PROPERTY(QString packageName READ getPackageName WRITE setPackageName NOTIFY packageNameChanged)
     Q_PROPERTY(QString implementing READ getImplementing WRITE setImplementing NOTIFY implementingChanged)
     Q_PROPERTY(QString using READ getUsing WRITE setUsing NOTIFY usingChanged)
@@ -265,6 +271,7 @@ private:
     Q_PROPERTY(bool notAssignable READ getNotAssignable WRITE setNotAssignable NOTIFY notAssignableChanged FINAL)
     Q_PROPERTY(bool notMoveAssignable READ getNotMoveAssignable WRITE setNotMoveAssignable NOTIFY notMoveAssignableChanged FINAL)
     Q_PROPERTY(bool notCloneable READ getNotCloneable WRITE setNotCloneable NOTIFY notCloneableChanged FINAL)
+    Q_PROPERTY(bool pushUpStatics READ getPushUpStatics WRITE setPushUpStatics NOTIFY pushUpStaticsChanged FINAL)
 };
 
 class ObjectType : public ComplexType

@@ -240,6 +240,10 @@ void Binder::visitSimpleDeclaration(SimpleDeclarationAST *node) {
 
 void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_declarator) {
     DeclaratorAST *declarator = init_declarator->declarator;
+    if (!declarator) {
+        _M_message_handler("expected a declarator");
+        return;
+    }
 
     while (declarator && declarator->sub_declarator)
         declarator = declarator->sub_declarator;
@@ -396,12 +400,20 @@ void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_
         typeInfo.setVolatile(type_cc.isVolatile());
         typeInfo.setReferenceType(TypeInfo::ReferenceType(decl_cc.getReferenceType()));
         typeInfo.setIndirections(decl_cc.indirection());
-        typeInfo.setArrayElements(decl_cc.arrayElements());
         typeInfo.setArguments(type_cc.templateArgumentTypes());
         typeInfo.setFunctionalArgumentTypes(type_cc.functionalArgumentTypes());
         typeInfo.setFunctionalArgumentNames(type_cc.functionalArgumentNames());
         if(!type_cc.functionalReturnType().qualifiedName().isEmpty())
             typeInfo.setFunctionalReturnType(type_cc.functionalReturnType());
+        if(!decl_cc.arrayElements().isEmpty()){
+            TypeInfo aTypeInfo;
+            aTypeInfo.setArray(true);
+            aTypeInfo.setArrayType(typeInfo);
+            typeInfo = aTypeInfo;
+            typeInfo.setArrayElements(decl_cc.arrayElements());
+            typeInfo.setReferenceType(TypeInfo::ReferenceType(decl_cc.getSubReferenceType()));
+            typeInfo.setIndirections(decl_cc.subIndirection());
+        }
 
         fun->setType(qualifyType(typeInfo, symbolScope->qualifiedName()));
         if(decl_cc.operatorType()==OperatorType::TypeCast){
@@ -461,12 +473,31 @@ void Binder::declare_symbol(SimpleDeclarationAST *node, InitDeclaratorAST *init_
         typeInfo.setVolatile(type_cc.isVolatile());
         typeInfo.setReferenceType(TypeInfo::ReferenceType(decl_cc.getReferenceType()));
         typeInfo.setIndirections(decl_cc.indirection());
-        typeInfo.setArrayElements(decl_cc.arrayElements());
         typeInfo.setArguments(type_cc.templateArgumentTypes());
         typeInfo.setFunctionalArgumentTypes(type_cc.functionalArgumentTypes());
         typeInfo.setFunctionalArgumentNames(type_cc.functionalArgumentNames());
         if(!type_cc.functionalReturnType().qualifiedName().isEmpty())
             typeInfo.setFunctionalReturnType(type_cc.functionalReturnType());
+        if(decl_cc.isFunction()){
+            TypeInfo fpTypeInfo;
+            fpTypeInfo.setFunctionPointer(true);
+            fpTypeInfo.setFunctionalReturnType(typeInfo);
+            for(const DeclaratorCompiler::Parameter& p : decl_cc.parameters()){
+                fpTypeInfo.addFunctionalArgumentType(p.type);
+                fpTypeInfo.addFunctionalArgumentName(p.name);
+            }
+            typeInfo = fpTypeInfo;
+            typeInfo.setReferenceType(TypeInfo::ReferenceType(decl_cc.getSubReferenceType()));
+            typeInfo.setIndirections(decl_cc.subIndirection());
+        }else if(!decl_cc.arrayElements().isEmpty()){
+            TypeInfo aTypeInfo;
+            aTypeInfo.setArray(true);
+            aTypeInfo.setArrayType(typeInfo);
+            typeInfo = aTypeInfo;
+            typeInfo.setArrayElements(decl_cc.arrayElements());
+            typeInfo.setReferenceType(TypeInfo::ReferenceType(decl_cc.getSubReferenceType()));
+            typeInfo.setIndirections(decl_cc.subIndirection());
+        }
 
         if (node->type_specifier && node->type_specifier->cv) {
             const ListNode<std::size_t> *it = node->type_specifier->cv->toFront();
@@ -516,6 +547,10 @@ void Binder::visitFunctionDefinition(FunctionDefinitionAST *node) {
 
     InitDeclaratorAST *init_declarator = node->init_declarator;
     DeclaratorAST *declarator = init_declarator->declarator;
+    if(!declarator){
+        // not sure why this happens. TODO: find out!
+        return;
+    }
 
     // in the case of "void (func)()" or "void ((func))()" we need to
     // skip to the inner most.  This is in line with how the declarator
@@ -594,6 +629,81 @@ void Binder::visitFunctionDefinition(FunctionDefinitionAST *node) {
 
     Q_ASSERT(! decl_cc.id().isEmpty());
 
+    if(!decl_cc.arrayElements().isEmpty()){
+        VariableModelItem var = model()->create<VariableModelItem>();
+        updateItemPosition(var->toItem(), node);
+        var->setTemplate(_M_current_is_template);
+        var->setTemplateParameters(_M_current_template_parameters);
+        if(_M_current_is_template){
+            var->setTemplateInstantiations(name_cc.templateArgumentTypes());
+        }
+        var->setAccessPolicy(_M_current_access);
+        Q_ASSERT(declarator->id->unqualified_name);
+        name_cc.run(declarator->id->unqualified_name);
+        var->setName(name_cc.name());
+
+        type_cc.run(node->type_specifier);
+        TypeInfo typeInfo;
+        typeInfo.setQualifiedName(type_cc.qualifiedName());
+        typeInfo.setVariadic(type_cc.isVariadic());
+        typeInfo.setConstant(type_cc.isConstant());
+        typeInfo.setVolatile(type_cc.isVolatile());
+        typeInfo.setReferenceType(TypeInfo::ReferenceType(decl_cc.getReferenceType()));
+        typeInfo.setIndirections(decl_cc.indirection());
+        typeInfo.setArguments(type_cc.templateArgumentTypes());
+        typeInfo.setFunctionalArgumentTypes(type_cc.functionalArgumentTypes());
+        typeInfo.setFunctionalArgumentNames(type_cc.functionalArgumentNames());
+        if(!type_cc.functionalReturnType().qualifiedName().isEmpty())
+            typeInfo.setFunctionalReturnType(type_cc.functionalReturnType());
+        TypeInfo aTypeInfo;
+        aTypeInfo.setArray(true);
+        aTypeInfo.setArrayType(typeInfo);
+        typeInfo = aTypeInfo;
+        typeInfo.setArrayElements(decl_cc.arrayElements());
+        typeInfo.setReferenceType(TypeInfo::ReferenceType(decl_cc.getSubReferenceType()));
+        typeInfo.setIndirections(decl_cc.subIndirection());
+
+        if (node->type_specifier && node->type_specifier->cv) {
+            const ListNode<std::size_t> *it = node->type_specifier->cv->toFront();
+            const ListNode<std::size_t> *end = it;
+            do {
+                int kind = _M_token_stream->kind(it->element);
+                if (kind == Token_constexpr)
+                    var->setConstExpr(true);
+                it = it->next;
+            } while (it != end);
+        }
+        if (node->function_specifiers) {
+            const ListNode<std::size_t> *it = node->function_specifiers->toFront();
+            const ListNode<std::size_t> *end = it;
+            do {
+                int kind = _M_token_stream->kind(it->element);
+                if (kind == Token_constexpr)
+                    var->setConstExpr(true);
+                it = it->next;
+            } while (it != end);
+        }
+        if (declarator != init_declarator->declarator
+            && init_declarator->declarator->parameter_declaration_clause != nullptr) {
+            TypeInfo fpTypeInfo;
+            fpTypeInfo.setFunctionPointer(true);
+            fpTypeInfo.setFunctionalReturnType(typeInfo);
+            decl_cc.run(init_declarator->declarator);
+            for(const DeclaratorCompiler::Parameter& p : decl_cc.parameters()){
+                fpTypeInfo.addFunctionalArgumentType(p.type);
+                fpTypeInfo.addFunctionalArgumentName(p.name);
+            }
+            typeInfo = fpTypeInfo;
+        }
+
+        var->setType(qualifyType(typeInfo, _M_context));
+        applyStorageSpecifiers(node->storage_specifiers, model_static_cast<MemberModelItem>(var));
+
+        var->setScope(functionScope->qualifiedName());
+        functionScope->addVariable(var);
+        return;
+    }
+
     FunctionDefinitionModelItem old = changeCurrentFunction(_M_model->create<FunctionDefinitionModelItem>());
     _M_current_function->setScope(functionScope->qualifiedName());
     updateItemPosition(_M_current_function->toItem(), node);
@@ -612,7 +722,8 @@ void Binder::visitFunctionDefinition(FunctionDefinitionAST *node) {
     typeInfo.setVolatile(type_cc.isVolatile());
     typeInfo.setReferenceType(TypeInfo::ReferenceType(decl_cc.getReferenceType()));
     typeInfo.setIndirections(decl_cc.indirection());
-    typeInfo.setArrayElements(decl_cc.arrayElements());
+    Q_ASSERT(decl_cc.arrayElements().isEmpty());
+    //typeInfo.setArrayElements(decl_cc.arrayElements());
     typeInfo.setArguments(type_cc.templateArgumentTypes());
     typeInfo.setFunctionalArgumentTypes(type_cc.functionalArgumentTypes());
     typeInfo.setFunctionalArgumentNames(type_cc.functionalArgumentNames());
@@ -749,7 +860,7 @@ void Binder::visitTemplateDeclaration(TemplateDeclarationAST *node) {
 
             QString defaultType;
             NameAST *name{nullptr};
-            QString parameterType;
+            //QString parameterType;
             TypeInfo parameterTypeInfo;
             bool isVariadic = false;
             if (!type_parameter) {
@@ -762,7 +873,7 @@ void Binder::visitTemplateDeclaration(TemplateDeclarationAST *node) {
                         defaultType = parameter->parameter_declaration->expression->toString(this->tokenStream()).trimmed();
                     }
                     if(parameter->parameter_declaration->type_specifier){
-                        parameterType = parameter->parameter_declaration->type_specifier->toString(this->tokenStream()).trimmed();
+                        //parameterType = parameter->parameter_declaration->type_specifier->toString(this->tokenStream()).trimmed();
                         parameterTypeInfo = CompilerUtils::typeDescription(parameter->parameter_declaration->type_specifier,
                                                        parameter->parameter_declaration->declarator,
                                                        this);
@@ -788,7 +899,7 @@ void Binder::visitTemplateDeclaration(TemplateDeclarationAST *node) {
             TemplateParameterModelItem p = model()->create<TemplateParameterModelItem>();
             name_cc.run(name);
             p->setName(name_cc.name());
-            p->setParameterType(parameterType);
+            p->setParameterTypeInfo(parameterTypeInfo);
             p->setIsVaradic(isVariadic);
             p->setDefaultValue(defaultType);
 
@@ -1402,6 +1513,9 @@ TypeInfo Binder::qualifyType(TypeInfo type, const QStringList &context) const {
     // ### Potentially improve to use string list in the name table to
     if(type.functionalReturnType()){
         type.setFunctionalReturnType(qualifyType(type.functionalReturnType(), context));
+    }
+    if(type.arrayType()){
+        type.setArrayType(qualifyType(type.arrayType(), context));
     }
     if(!type.functionalArgumentTypes().isEmpty()){
         QList<TypeInfo> functionalArgumentTypes;

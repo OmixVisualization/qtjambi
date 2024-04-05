@@ -309,12 +309,12 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "qCompare<T,N>(const QList<T> &, std::initializer_list<T>, const char *, const char *, const char *, int)"
+            signature: "qCompare<T,N>(QList<T>, std::initializer_list<T>, const char *, const char *, const char *, int)"
             remove: RemoveFlag.All
             since: 6
         }
         ModifyFunction{
-            signature: "qCompare<T,N>(QList<T>,T,const char*,const char*,const char*,int)"
+            signature: "qCompare<T,N>(const QList<T>&,const T(&)[N],const char*,const char*,const char*,int)"
             remove: RemoveFlag.All
             since: 6
         }
