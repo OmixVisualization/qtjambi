@@ -109,15 +109,13 @@ struct qtjambi_jnitype_crono_duration_cast<false, has_scope, is_pointer, is_cons
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast jobject to std::chrono &");
+    Q_STATIC_ASSERT_X(!is_reference || has_scope, "Cannot cast jobject to std::chrono &");
 
     static NativeType_out cast(JNIEnv *env, jobject in, const char*name, QtJambiScope* scope){
-        std::unique_ptr<NativeType> ptr;
-        if(in){
-            NativeType value = qtjambi_jnitype_crono_duration_cast<false, has_scope, false, false, false, NativeType>::cast(env, in, name, scope);
-            ptr.reset(new NativeType(value));
-        }
-        return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, ptr);
+        if(!in)
+            return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, nullptr);
+        NativeType value = qtjambi_jnitype_crono_duration_cast<false, has_scope, false, false, false, NativeType>::cast(env, in, name, scope);
+        return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, std::move(value));
     }
 };
 
@@ -140,15 +138,13 @@ struct qtjambi_jnitype_crono_time_point_cast<false, has_scope, is_pointer, is_co
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast jobject to std::chrono &");
+    Q_STATIC_ASSERT_X(!is_reference || has_scope, "Cannot cast jobject to std::chrono &");
 
     static NativeType_out cast(JNIEnv *env, jobject in, const char*name, QtJambiScope* scope){
-        std::unique_ptr<NativeType> ptr;
-        if(in){
-            NativeType value = qtjambi_jnitype_crono_time_point_cast<false, has_scope, false, false, false, NativeType>::cast(env, in, name, scope);
-            ptr.reset(new NativeType(value));
-        }
-        return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, ptr);
+        if(!in)
+            return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, nullptr);
+        NativeType value = qtjambi_jnitype_crono_time_point_cast<false, has_scope, false, false, false, NativeType>::cast(env, in, name, scope);
+        return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, std::move(value));
     }
 };
 

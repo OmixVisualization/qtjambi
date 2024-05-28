@@ -306,21 +306,4 @@ public final class DebugTools {
      * @param className The name of class for which to reset or null for all
      */
     public static native void reset_pointerContainerDestroyedCount(String className);
-
-    /**
-     * Retrieves the counter for calls to the PointerContainer destructor
-     *
-     * @param className The name of class for which to reset or null for all
-     */
-    public static native int pointerContainerDestroyedCount(String className);
-
-    /**
-     * Same as calling reset_pointerContainerDestroyedCount(null)
-     */
-    public static void reset_pointerContainerDestroyedCount() { reset_pointerContainerDestroyedCount(null); }
-
-    /**
-     * Same as calling pointerContainerDestroyedCount(null)
-     */
-    public static int pointerContainerDestroyedCount() { return pointerContainerDestroyedCount(null); }
 }

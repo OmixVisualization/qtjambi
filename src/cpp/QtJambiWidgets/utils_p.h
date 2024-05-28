@@ -59,5 +59,8 @@ namespace QtWidgets{
 const QObject* getPointerOwner(const QGraphicsLayoutItem* __qt_this);
 const QObject* getPointerOwner(const QGraphicsItem* __qt_this);
 const QObject* getPointerOwner(const QTreeWidgetItemIterator* __qt_this);
+const QObject* getPointerOwner(const QTreeWidgetItem* __qt_this);
+const QObject* getPointerOwner(const QListWidgetItem* __qt_this);
+const QObject* getPointerOwner(const QTableWidgetItem* __qt_this);
 
 #endif // UTILS_P_H

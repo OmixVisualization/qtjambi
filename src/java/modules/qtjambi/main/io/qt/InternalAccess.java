@@ -137,6 +137,7 @@ public interface InternalAccess {
      */
     public interface Cleanable {
         void clean();
+        void dismiss();
     }
     
     Cleanable registerCleaner(Object object, Runnable action);
@@ -201,7 +202,7 @@ public interface InternalAccess {
     public QObject owner(QtObject object);
     public QObject owner(QtObjectInterface object);
     
-    <Q extends QtObjectInterface,M> M findMemberAccess(Q ifc, Class<Q> interfaceClass, Class<M> accessClass);
+    <Q extends QtObjectInterface,M extends io.qt.MemberAccess<Q>> M findMemberAccess(Q ifc, Class<Q> interfaceClass, Class<M> accessClass);
     
     <T> Supplier<T> getFactory0(Constructor<T> constructor);
     

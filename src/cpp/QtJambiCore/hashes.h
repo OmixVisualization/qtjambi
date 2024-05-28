@@ -39,8 +39,6 @@
 #endif
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0) && defined(QTJAMBI_GENERATOR_RUNNING)
-bool operator==(QByteArrayView, QByteArray);
-bool operator<(QByteArrayView, QByteArray);
 hash_type qHash(QSizePolicy);
 #endif
 
@@ -54,7 +52,11 @@ hash_type genericHash(const T &value, hash_type seed = 0)
 
 inline hash_type qHash(const QAbstractEventDispatcher::TimerInfo &value, hash_type seed = 0)
 {
-    return genericHash(value, seed);
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.interval);
+    seed = hash(seed, value.timerId);
+    seed = hash(seed, value.timerType);
+    return seed;
 }
 
 inline bool operator==(const QAbstractEventDispatcher::TimerInfo &v1, const QAbstractEventDispatcher::TimerInfo &v2){
@@ -62,6 +64,24 @@ inline bool operator==(const QAbstractEventDispatcher::TimerInfo &v1, const QAbs
             && v1.timerId==v2.timerId
             && v1.timerType==v2.timerType;
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+inline hash_type qHash(const QAbstractEventDispatcher::TimerInfoV2 &value, hash_type seed = 0)
+{
+    QtPrivate::QHashCombine hash;
+    seed = hash(seed, value.interval.count());
+    seed = hash(seed, value.timerId);
+    seed = hash(seed, value.timerType);
+    return seed;
+}
+
+inline bool operator==(const QAbstractEventDispatcher::TimerInfoV2 &v1, const QAbstractEventDispatcher::TimerInfoV2 &v2){
+    return v1.interval==v2.interval
+           && v1.timerId==v2.timerId
+           && v1.timerType==v2.timerType;
+}
+#endif
+
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
 inline hash_type qHash(const QMetaType &value, hash_type seed = 0)

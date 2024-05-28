@@ -58,12 +58,21 @@ import io.qt.core.QObject;
 /**
  * @hidden
  */
-final class AccessUtility implements io.qt.InternalAccess{
+class AccessUtility implements io.qt.InternalAccess{
 
 	private AccessUtility(){}
 	
 	@NativeAccess
-	private final static AccessUtility instance = new AccessUtility();
+	final static AccessUtility instance = LibraryUtility.operatingSystem==LibraryUtility.OperatingSystem.Android 
+											?  new AccessUtility() : new AccessUtility(){
+													@SuppressWarnings("unchecked")
+													@Override
+													public <T> Class<T> getClass(T object) {
+														if(object==null)
+															return null;
+														return (Class<T>)object.getClass();
+													}
+												};
 	
 	@Override
 	public int registerMetaType(Class<?> clazz, Type genericType, AnnotatedElement annotatedType, boolean isPointer, boolean isReference) {
@@ -322,15 +331,16 @@ final class AccessUtility implements io.qt.InternalAccess{
 	}
 	
 	@Override
-	public <Q extends QtObjectInterface,M> M findMemberAccess(Q ifc, Class<Q> interfaceClass, Class<M> accessClass) {
+	public <Q extends QtObjectInterface,M extends io.qt.MemberAccess<Q>> M findMemberAccess(Q ifc, Class<Q> interfaceClass, Class<M> accessClass) {
 		NativeUtility.NativeLink link = NativeUtility.findInterfaceLink(ifc, true);
 		return accessClass.cast(link.getMemberAccess(interfaceClass));
 	}
-
+	
+	/**
+	 * Class.getClass() lead to recursive calls on android when using inside of interface default methods.
+	 */
 	@Override
-	public <T> Class<T> getClass(T object) {
-		return ClassAnalyzerUtility.getClass(object);
-	}
+	public native <T> Class<T> getClass(T object);
 
 	@Override
 	public int registerMetaType(Parameter parameter) {

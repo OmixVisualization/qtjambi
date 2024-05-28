@@ -714,6 +714,14 @@ bool trivialConverter(const void *src, void *target) {
 void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, const QString& fullJavaName, jclass clazz, QMetaType nativeWrapperType){
     QMetaType jObjectWrapperType = QMetaType::fromType<JObjectWrapper>();
     if(metaType.isValid() && metaType!=jObjectWrapperType){
+        if(metaType.flags() & QMetaType::IsPointer || isJObjectWrappedMetaType(metaType)){
+            if(!QMetaType::hasRegisteredConverterFunction(QMetaType(QMetaType::Nullptr), metaType)){
+                QMetaType::registerConverterFunction([metaType](const void *, void *target) -> bool {
+                    metaType.construct(target);
+                    return true;
+                }, QMetaType(QMetaType::Nullptr), metaType);
+            }
+        }
         if(Java::QtCore::QObject::isAssignableFrom(env, clazz)){
             if(!QMetaType::hasRegisteredConverterFunction(jObjectWrapperType, metaType))
                 QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
@@ -961,95 +969,95 @@ void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, c
             }
         }
     }
-    JObjectArrayWrapper interfaces(env, Java::Runtime::Class::getInterfaces(env, clazz));
-    for(int i=0; i<interfaces.length(); ++i){
-        if(jclass interfaceClass = jclass(interfaces.at(env, i))){
-            if(!Java::QtJambi::QtObjectInterface::isSameClass(env, interfaceClass)
-                    && !Java::QtJambi::QtObject::isSameClass(env, interfaceClass)
-                    && !Java::Runtime::Object::isSameClass(env, interfaceClass)){
-                QString _fullJavaName = QtJambiAPI::getClassName(env, interfaceClass).replace(".", "/");
-                QString _qtName = QtJambiTypeManager::getInternalTypeName(env, interfaceClass, false);
-                QMetaType _metaType = QMetaType::fromName(_qtName.toLatin1());
-                const std::type_info* interfaceTypeId = getTypeByJavaName(_fullJavaName);
-                if(!interfaceTypeId){
-                    if(jclass _object_class = JavaAPI::resolveClosestQtSuperclass(env, interfaceClass)){
-                        interfaceClass = _object_class;
-                        _fullJavaName = QtJambiAPI::getClassName(env, _object_class).replace(".", "/");
-                        interfaceTypeId = getTypeByJavaName(_fullJavaName);
-                    }
-                }
-                if(!_metaType.isValid() && _qtName.endsWith("*") && interfaceTypeId){
-                    _metaType = qtjambiRegisterMetaType(env, interfaceClass, _qtName.toUtf8(), registeredOriginalMetaObject(*interfaceTypeId), false);
-                }
-                if(_metaType.isValid()){
-                    if(!QMetaType::hasRegisteredConverterFunction(metaType, _metaType)){
-                        if(metaType==jObjectWrapperType
-                                || JObjectValueWrapper::isValueType(metaType)
-                                || isJObjectWrappedMetaType(metaType)){
-                            interfaceClass = getGlobalClassRef(env, interfaceClass);
-                            const QSharedPointer<QtJambiLink>& (*findLinkForJavaObject)(JNIEnv*,jobject)
-                                    = Java::QtJambi::NativeUtility$Object::isAssignableFrom(env, interfaceClass) ? QtJambiLink::findLinkForJavaObject : QtJambiLink::findLinkForJavaInterface;
-                            if(_qtName.endsWith("*")){
-                                QMetaType::registerConverterFunction([interfaceClass, interfaceTypeId, findLinkForJavaObject](const void *src, void *target) -> bool {
-                                    if(JniEnvironment env{200}){
-                                        if(src){
-                                            const JObjectWrapper* wrapper = reinterpret_cast<const JObjectWrapper*>(src);
-                                            if(!wrapper->object() || env->IsInstanceOf(wrapper->object(), interfaceClass)){
-                                                void* object = nullptr;
-                                                if(QSharedPointer<QtJambiLink> link = findLinkForJavaObject(env, wrapper->object()))
-                                                    object = interfaceTypeId ? link->typedPointer(*interfaceTypeId) : link->pointer();
-                                                *reinterpret_cast<void**>(target) = object;
-                                                return true;
-                                            }else{
-                                                return false;
-                                            }
+    const std::type_info* typeId = getTypeByJavaName(fullJavaName);
+    jclass closestQtSuperclass{nullptr};
+    if(!typeId){
+        closestQtSuperclass = JavaAPI::resolveClosestQtSuperclass(env, clazz);
+        if(!env->IsSameObject(closestQtSuperclass, nullptr) && !env->IsSameObject(clazz, closestQtSuperclass)){
+            typeId = getTypeByJavaName(QtJambiAPI::getClassName(env, closestQtSuperclass).replace(".", "/"));
+        }else{
+            closestQtSuperclass = nullptr;
+        }
+    }
+    const QList<jclass> hirarchy = getFlatClassHirarchy(env, clazz);
+    for(jclass superClass : qAsConst(hirarchy)){
+        if(!env->IsSameObject(clazz, superClass)
+            && !Java::QtJambi::QtObjectInterface::isSameClass(env, superClass)
+            && !Java::QtJambi::QtObject::isSameClass(env, superClass)
+            && !Java::Runtime::Object::isSameClass(env, superClass)
+            && env->GetArrayLength(Java::Runtime::Class::getTypeParameters(env, superClass))==0){
+            QString _fullJavaName = QtJambiAPI::getClassName(env, superClass).replace(".", "/");
+            QString _qtName = QtJambiTypeManager::getInternalTypeName(env, superClass, false);
+            QMetaType _metaType = QMetaType::fromName(_qtName.toLatin1());
+            const std::type_info* superTypeId = getTypeByJavaName(_fullJavaName);
+            if(!_metaType.isValid() && _qtName.endsWith("*") && superTypeId){
+                _metaType = qtjambiRegisterMetaType(env, superClass, _qtName.toUtf8(), registeredOriginalMetaObject(*superTypeId), false);
+            }
+            if(_metaType.isValid()){
+                if(!QMetaType::hasRegisteredConverterFunction(metaType, _metaType)){
+                    if(metaType==jObjectWrapperType
+                        || JObjectValueWrapper::isValueType(metaType)
+                        || isJObjectWrappedMetaType(metaType)){
+                        superClass = getGlobalClassRef(env, superClass);
+                        const QSharedPointer<QtJambiLink>& (*findLinkForJavaObject)(JNIEnv*,jobject)
+                            = Java::QtJambi::NativeUtility$Object::isAssignableFrom(env, superClass) ? QtJambiLink::findLinkForJavaObject : QtJambiLink::findLinkForJavaInterface;
+                        if(_qtName.endsWith("*")){
+                            QMetaType::registerConverterFunction([superClass, superTypeId, findLinkForJavaObject](const void *src, void *target) -> bool {
+                                if(JniEnvironment env{200}){
+                                    if(src){
+                                        const JObjectWrapper* wrapper = reinterpret_cast<const JObjectWrapper*>(src);
+                                        if(!wrapper->object() || env->IsInstanceOf(wrapper->object(), superClass)){
+                                            void* object = nullptr;
+                                            if(QSharedPointer<QtJambiLink> link = findLinkForJavaObject(env, wrapper->object()))
+                                                object = superTypeId ? link->typedPointer(*superTypeId) : link->pointer();
+                                            *reinterpret_cast<void**>(target) = object;
+                                            return true;
+                                        }else{
+                                            return false;
                                         }
-                                    }
-                                    return false;
-                                }, metaType, _metaType);
-                            }else{
-                                QMetaType::registerConverterFunction([interfaceClass, interfaceTypeId, findLinkForJavaObject, _metaType](const void *src, void *target) -> bool {
-                                    if(JniEnvironment env{200}){
-                                        if(src){
-                                            const JObjectWrapper* wrapper = reinterpret_cast<const JObjectWrapper*>(src);
-                                            if(env->IsInstanceOf(wrapper->object(), interfaceClass)){
-                                                void* object = nullptr;
-                                                if(QSharedPointer<QtJambiLink> link = findLinkForJavaObject(env, wrapper->object()))
-                                                    object = interfaceTypeId ? link->typedPointer(*interfaceTypeId) : link->pointer();
-                                                _metaType.destruct(target);
-                                                _metaType.construct(target, object);
-                                                return true;
-                                            }else{
-                                                return false;
-                                            }
-                                        }
-                                    }
-                                    return false;
-                                }, metaType, _metaType);
-                            }
-                        }else if(!getTypeByJavaName(fullJavaName) && interfaceTypeId){
-                            if(jclass _object_class = JavaAPI::resolveClosestQtSuperclass(env, clazz)){
-                                if(const std::type_info* typeId = getTypeByJavaName(QtJambiAPI::getClassName(env, _object_class).replace(".", "/"))){
-                                    int offset = registeredInterfaceOffset(*typeId, *interfaceTypeId);
-                                    if(offset==0){
-                                        QMetaType::registerConverterFunction(&trivialConverter, metaType, _metaType);
-                                    }else if(offset>0){
-                                        QMetaType::registerConverterFunction([offset](const void *src, void *target) ->bool {
-                                                                                 char* ptr = *reinterpret_cast<char*const*>(src);
-                                                                                 ptr += offset;
-                                                                                 *reinterpret_cast<const void**>(target) = ptr;
-                                                                                 return true;
-                                                                             }, metaType, _metaType);
                                     }
                                 }
-                            }
+                                return false;
+                            }, metaType, _metaType);
+                        }else{
+                            QMetaType::registerConverterFunction([superClass, superTypeId, findLinkForJavaObject, _metaType](const void *src, void *target) -> bool {
+                                if(JniEnvironment env{200}){
+                                    if(src){
+                                        const JObjectWrapper* wrapper = reinterpret_cast<const JObjectWrapper*>(src);
+                                        if(env->IsInstanceOf(wrapper->object(), superClass)){
+                                            void* object = nullptr;
+                                            if(QSharedPointer<QtJambiLink> link = findLinkForJavaObject(env, wrapper->object()))
+                                                object = superTypeId ? link->typedPointer(*superTypeId) : link->pointer();
+                                            _metaType.destruct(target);
+                                            _metaType.construct(target, object);
+                                            return true;
+                                        }else{
+                                            return false;
+                                        }
+                                    }
+                                }
+                                return false;
+                            }, metaType, _metaType);
+                        }
+                    }else if(typeId && superTypeId){
+                        int offset = registeredInterfaceOffset(*typeId, *superTypeId);
+                        if(offset==0){
+                            QMetaType::registerConverterFunction(&trivialConverter, metaType, _metaType);
+                        }else if(offset>0){
+                            QMetaType::registerConverterFunction([offset](const void *src, void *target) ->bool {
+                                char* ptr = *reinterpret_cast<char*const*>(src);
+                                ptr += offset;
+                                *reinterpret_cast<const void**>(target) = ptr;
+                                return true;
+                            }, metaType, _metaType);
                         }
                     }
-                    registerConverterVariant(env, _metaType, _qtName, _fullJavaName, interfaceClass, nativeWrapperType);
                 }
+                registerConverterVariant(env, _metaType, _qtName, _fullJavaName, superClass, nativeWrapperType);
             }
         }
     }
+    /*
     if(!Java::Runtime::Class::isInterface(env, clazz)){
         if(jclass superClazz = env->GetSuperclass(clazz)){
             if(!Java::QtJambi::QtObject::isSameClass(env, superClazz)
@@ -1137,73 +1145,71 @@ void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, c
         }
     }
 
-    if(const std::type_info* typeId = getTypeByJavaName(fullJavaName)){
-        jobject interfaceList = Java::QtJambi::ClassAnalyzerUtility::getAllImplementedInterfaces(env, clazz);
-        int count = interfaceList ? QtJambiAPI::sizeOfJavaCollection(env, interfaceList) : 0;
-        if(count>0){
-            jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, interfaceList);
-            while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
-                jclass interfaceClass = jclass(QtJambiAPI::nextOfJavaIterator(env, iterator));
-                if(env->GetArrayLength(Java::Runtime::Class::getTypeParameters(env, interfaceClass))==0){
-                    QString _fullJavaName = QtJambiAPI::getClassName(env, interfaceClass).replace(".", "/");
-                    if(const std::type_info* interfaceTypeId = getTypeByJavaName(_fullJavaName)){
-                        QString _qtName = QtJambiTypeManager::getInternalTypeName(env, interfaceClass, false);
-                        QMetaType _metaType = QMetaType::fromName(_qtName.toUtf8());
-                        if(_metaType.isValid()){
-                            if(!QMetaType::hasRegisteredConverterFunction(metaType, _metaType)){
-                                if(metaType==jObjectWrapperType
-                                        || JObjectValueWrapper::isValueType(metaType)
-                                        || isJObjectWrappedMetaType(metaType)){
-                                    if(_qtName.endsWith("*")){
-                                        interfaceClass = getGlobalClassRef(env, interfaceClass);
-                                        QMetaType::registerConverterFunction([interfaceClass,interfaceTypeId](const void *src, void *target) -> bool {
-                                            if(JniEnvironment env{200}){
-                                                if(src){
-                                                    const JObjectWrapper* wrapper = reinterpret_cast<const JObjectWrapper*>(src);
-                                                    if(!wrapper->object() || env->IsInstanceOf(wrapper->object(), interfaceClass)){
-                                                        void* object = QtJambiAPI::convertJavaInterfaceToNative(env, wrapper->object(), *interfaceTypeId);
-                                                        Q_ASSERT(target);
-                                                        *reinterpret_cast<void**>(target) = object;
-                                                        return true;
-                                                    }else{
-                                                        return false;
-                                                    }
+    {
+        const std::type_info* typeId = getTypeByJavaName(fullJavaName);
+        const SuperTypeInfos superTypeInfos = SuperTypeInfos::fromClass(env, clazz);
+        if(jobject interfaceInfos = superTypeInfos.interfaceInfos()){
+            jobject keySet = Java::Runtime::Map::keySet(env, interfaceInfos);
+            for(const SuperTypeInfo& superTypeInfo : superTypeInfos){
+                jclass interfaceClass = superTypeInfo.javaClass();
+                if(Java::Runtime::Collection::contains(env, keySet, interfaceClass)){
+                    const std::type_info* interfaceTypeId = &superTypeInfo.typeId();
+                    const QString& _qtName = superTypeInfo.qtName();
+                    QMetaType _metaType = QMetaType::fromName(_qtName.toUtf8());
+                    if(_metaType.isValid()){
+                        if(!QMetaType::hasRegisteredConverterFunction(metaType, _metaType)){
+                            if(metaType==jObjectWrapperType
+                                || JObjectValueWrapper::isValueType(metaType)
+                                || isJObjectWrappedMetaType(metaType)){
+                                if(_qtName.endsWith("*")){
+                                    interfaceClass = getGlobalClassRef(env, interfaceClass);
+                                    QMetaType::registerConverterFunction([interfaceClass,interfaceTypeId](const void *src, void *target) -> bool {
+                                        if(JniEnvironment env{200}){
+                                            if(src){
+                                                const JObjectWrapper* wrapper = reinterpret_cast<const JObjectWrapper*>(src);
+                                                if(!wrapper->object() || env->IsInstanceOf(wrapper->object(), interfaceClass)){
+                                                    void* object = QtJambiAPI::convertJavaInterfaceToNative(env, wrapper->object(), *interfaceTypeId);
+                                                    Q_ASSERT(target);
+                                                    *reinterpret_cast<void**>(target) = object;
+                                                    return true;
+                                                }else{
+                                                    return false;
                                                 }
                                             }
-                                            return false;
-                                        }, metaType, _metaType);
-                                    }else{
-                                        interfaceClass = getGlobalClassRef(env, interfaceClass);
-                                        QMetaType::registerConverterFunction([interfaceClass,interfaceTypeId, _metaType](const void *src, void *target) -> bool {
-                                            if(JniEnvironment env{200}){
-                                                if(src){
-                                                    const JObjectWrapper* wrapper = reinterpret_cast<const JObjectWrapper*>(src);
-                                                    if(env->IsInstanceOf(wrapper->object(), interfaceClass)){
-                                                        void* object = QtJambiAPI::convertJavaInterfaceToNative(env, wrapper->object(), *interfaceTypeId);
-                                                        Q_ASSERT(target);
-                                                        _metaType.destruct(target);
-                                                        _metaType.construct(target, object);
-                                                        return true;
-                                                    }else{
-                                                        return false;
-                                                    }
-                                                }
-                                            }
-                                            return false;
-                                        }, metaType, _metaType);
-                                    }
+                                        }
+                                        return false;
+                                    }, metaType, _metaType);
                                 }else{
-                                    int offset = registeredInterfaceOffset(*typeId, *interfaceTypeId);
-                                    if(offset==0){
-                                        QMetaType::registerConverterFunction(&trivialConverter, metaType, _metaType);
-                                    }else if(offset>0){
-                                        QMetaType::registerConverterFunction([offset](const void *src, void *target) ->bool {
-                                                                                 char* ptr = *reinterpret_cast<char*const*>(src);
-                                                                                 ptr += offset;
-                                                                                 *reinterpret_cast<const void**>(target) = ptr;
-                                                                                 return true;
-                                                                             }, metaType, _metaType);
-                                    }
+                                    interfaceClass = getGlobalClassRef(env, interfaceClass);
+                                    QMetaType::registerConverterFunction([interfaceClass,interfaceTypeId, _metaType](const void *src, void *target) -> bool {
+                                        if(JniEnvironment env{200}){
+                                            if(src){
+                                                const JObjectWrapper* wrapper = reinterpret_cast<const JObjectWrapper*>(src);
+                                                if(env->IsInstanceOf(wrapper->object(), interfaceClass)){
+                                                    void* object = QtJambiAPI::convertJavaInterfaceToNative(env, wrapper->object(), *interfaceTypeId);
+                                                    Q_ASSERT(target);
+                                                    _metaType.destruct(target);
+                                                    _metaType.construct(target, object);
+                                                    return true;
+                                                }else{
+                                                    return false;
+                                                }
+                                            }
+                                        }
+                                        return false;
+                                    }, metaType, _metaType);
+                                }
+                            }else if(typeId){
+                                int offset = registeredInterfaceOffset(*typeId, *interfaceTypeId);
+                                if(offset==0){
+                                    QMetaType::registerConverterFunction(&trivialConverter, metaType, _metaType);
+                                }else if(offset>0){
+                                    QMetaType::registerConverterFunction([offset](const void *src, void *target) ->bool {
+                                        char* ptr = *reinterpret_cast<char*const*>(src);
+                                        ptr += offset;
+                                        *reinterpret_cast<const void**>(target) = ptr;
+                                        return true;
+                                    }, metaType, _metaType);
                                 }
                             }
                         }
@@ -1211,7 +1217,7 @@ void registerConverterVariant(JNIEnv *env, QMetaType metaType, QString qtName, c
                 }
             }
         }
-    }
+    }*/
 }
 #endif
 
@@ -1446,7 +1452,7 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                     }
                 }
             }else{
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassName(env, object_class)) QTJAMBI_STACKTRACEINFO );
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassName(env, object_class).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
             }
         }else if (Java::QtCore::QSet::isInstanceOf(env, java_object)) {
             if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_object)){
@@ -1462,7 +1468,7 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                     }
                 }
             }else{
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassName(env, object_class)) QTJAMBI_STACKTRACEINFO );
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassName(env, object_class).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
             }
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         }else if (Java::QtCore::QLinkedList::isInstanceOf(env, java_object)) {
@@ -1479,7 +1485,7 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                     }
                 }
             }else{
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassName(env, object_class)) QTJAMBI_STACKTRACEINFO );
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassName(env, object_class).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
             }
         }else if (Java::QtCore::QVector::isInstanceOf(env, java_object)) {
             if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_object)){
@@ -1495,7 +1501,7 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                     }
                 }
             }else{
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassName(env, object_class)) QTJAMBI_STACKTRACEINFO );
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassName(env, object_class).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
             }
 #endif
         }
@@ -1562,7 +1568,7 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                     }
                 }
             }else{
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassName(env, object_class)) QTJAMBI_STACKTRACEINFO );
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassName(env, object_class).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
             }
         }else if (Java::QtCore::QHash::isInstanceOf(env, java_object)) {
             if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_object)){
@@ -1579,7 +1585,7 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                     }
                 }
             }else{
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassName(env, object_class)) QTJAMBI_STACKTRACEINFO );
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassName(env, object_class).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
             }
         }else if (Java::QtCore::QMultiMap::isInstanceOf(env, java_object)) {
             if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_object)){
@@ -1596,7 +1602,7 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                     }
                 }
             }else{
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassName(env, object_class)) QTJAMBI_STACKTRACEINFO );
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassName(env, object_class).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
             }
         }else if (Java::QtCore::QMultiHash::isInstanceOf(env, java_object)) {
             if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_object)){
@@ -1613,7 +1619,7 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                     }
                 }
             }else{
-                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassName(env, object_class)) QTJAMBI_STACKTRACEINFO );
+                Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassName(env, object_class).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
             }
         }
         if(Java::Runtime::Map::size(env, java_object)>0){
@@ -1803,7 +1809,7 @@ QVariant internal_convertJavaObjectToQVariant(JNIEnv *env, jobject java_object, 
                                            typeId ? registeredOriginalMetaObject(*typeId) : nullptr,
                                            Java::QtCore::QObject::isAssignableFrom(env, object_class));
         }else if(qtName.isEmpty()){
-            //const SuperTypeInfos& infos = SuperTypeInfos::fromClass(env, object_class);
+            //const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, object_class);
             //if(!infos.isEmpty()){
                 type = QMetaType(CoreAPI::registerMetaType(env, object_class, nullptr));
                 qtName = type.name();
@@ -1941,7 +1947,7 @@ bool QtJambiAPI::convertJavaToNative(JNIEnv *env, const std::type_info& typeId, 
 
 void *QtJambiAPI::convertJavaObjectToNative(JNIEnv *env, jobject java_object)
 {
-    if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaObject(env, java_object))
+    if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaInterface(env, java_object))
         return link->pointer();
     else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, java_object))
         Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, java_object).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
@@ -1950,7 +1956,7 @@ void *QtJambiAPI::convertJavaObjectToNative(JNIEnv *env, jobject java_object)
 
 QObject *QtJambiAPI::convertJavaObjectToQObject(JNIEnv *env, jobject java_object)
 {
-    if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaObject(env, java_object))
+    if(const QSharedPointer<QtJambiLink>& link = QtJambiLink::findLinkForJavaInterface(env, java_object))
         return link->isQObject() ? link->qobject() : nullptr;
     else if(Java::QtJambi::QtObjectInterface::isInstanceOf(env, java_object))
         Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getObjectClassName(env, java_object).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
@@ -1960,7 +1966,7 @@ QObject *QtJambiAPI::convertJavaObjectToQObject(JNIEnv *env, jobject java_object
 const void *QtJambiAPI::convertJavaObjectToNativeAsSmartPointer(JNIEnv *env, jobject java_object, SmartPointerCreator pointerCreator, SmartPointerDeleter pointerDeleter, SmartPointerQObjectGetter pointerGetter)
 {
     if(java_object){
-        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_object)){
+        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, java_object)){
             Q_ASSERT(link->isQObject());
             if(link->isSmartPointer()){
                 SmartPointerLink* pointerLink = static_cast<SmartPointerLink*>(link.data());
@@ -1971,7 +1977,7 @@ const void *QtJambiAPI::convertJavaObjectToNativeAsSmartPointer(JNIEnv *env, job
                 bool is_shell = link->isShell();
                 QtJambiShellImpl* shell = nullptr;
                 if(is_shell){
-                    const SuperTypeInfos& infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(java_object));
+                    const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(java_object));
                     Q_ASSERT(infos.size());
                     shell = *reinterpret_cast<QtJambiShellImpl**>( quintptr(ptr) + infos.at(0).size() );
                 }
@@ -2006,7 +2012,7 @@ const void *QtJambiAPI::convertJavaObjectToNativeAsSmartPointer(JNIEnv *env, job
 const void *QtJambiAPI::convertJavaObjectToNativeAsSmartPointer(JNIEnv *env, jobject java_object, SmartPointerCreator pointerCreator, SmartPointerDeleter pointerDeleter, SmartPointerGetter pointerGetter)
 {
     if(java_object){
-        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_object)){
+        if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, java_object)){
             Q_ASSERT(!link->isQObject());
             if(link->isSmartPointer()){
                 return static_cast<SmartPointerLink*>(link.data())->getSmartPointer();
@@ -2016,7 +2022,7 @@ const void *QtJambiAPI::convertJavaObjectToNativeAsSmartPointer(JNIEnv *env, job
                 bool is_shell = link->isShell();
                 QtJambiShellImpl* shell = nullptr;
                 if(is_shell){
-                    const SuperTypeInfos& infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(java_object));
+                    const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(java_object));
                     Q_ASSERT(infos.size());
                     shell = *reinterpret_cast<QtJambiShellImpl**>( quintptr(ptr) + infos.at(0).size() );
                 }
@@ -2483,7 +2489,7 @@ jobject internal_convertQObjectSmartPointerToJavaObject_notype(JNIEnv *env, cons
                     bool is_shell = link->isShell();
                     QtJambiShellImpl* shell = nullptr;
                     if(is_shell){
-                        const SuperTypeInfos& infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(object));
+                        const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(object));
                         Q_ASSERT(infos.size());
                         shell = *reinterpret_cast<QtJambiShellImpl**>( quintptr(qt_object) + infos.at(0).size() );
                     }
@@ -2679,7 +2685,7 @@ jobject internal_convertQObjectToJavaObject_notype(JNIEnv *env, const QObject *c
     if (!const_qt_object)
         return nullptr;
     QObject * qt_object = const_cast<QObject *>(const_qt_object);
-    const std::type_info* _typeId = tryGetTypeInfo(env, QtJambiPrivate::CheckPointer<QObject>::supplyType, qt_object);
+    const std::type_info* _typeId = tryGetTypeInfo(env, RegistryAPI::Private::PolymorphicTypeInfoSupplier<QObject>::value, qt_object);
     if(!_typeId){
         Java::QtJambi::QDanglingPointerException::throwNew(env, QString::asprintf("Dangling pointer to QObject: %p", qt_object) QTJAMBI_STACKTRACEINFO );
     }

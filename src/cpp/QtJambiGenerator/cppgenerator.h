@@ -76,6 +76,10 @@ public:
 
     static QString shellClassName(const MetaClass *java_class);
 
+    static QString mshellClassName(const MetaClass *java_class);
+
+    static QString oshellClassName(const MetaClass *java_class);
+
     static QString shellClassName(const MetaFunctional *java_class);
     static QStringList getFunctionPPConditions(const MetaFunction *java_function);
 

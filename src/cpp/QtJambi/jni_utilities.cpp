@@ -135,6 +135,29 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_LibraryUtility_libraryFilePath)
     return nullptr;
 }
 
+extern "C" Q_DECL_EXPORT jclass JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_AccessUtility_getClass)
+    (JNIEnv * env,
+     jobject, jobject e)
+{
+    return e ? env->GetObjectClass(e) : nullptr;
+}
+
+extern "C" Q_DECL_EXPORT jboolean JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_ClassAnalyzerUtility_isGeneratedClass)
+    (JNIEnv *env,
+     jclass,
+     jstring className)
+{
+    try{
+        QString cn = qtjambi_cast<QString>(env, className).replace(".", "/");
+        return getTypeByJavaName(cn)!=nullptr || isJavaNameNamespace(cn);
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+    return false;
+}
+
 extern "C" Q_DECL_EXPORT jboolean JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_unsetenv)
     (JNIEnv *env, jclass, jstring varName)
@@ -207,6 +230,45 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_threadCheck)(JNIEnv *env, jclass,
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
     }
+}
+
+extern "C" Q_DECL_EXPORT jobject JNICALL
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_asSelectiveEventFilter)(JNIEnv *env, jclass, QtJambiNativeID objectId, jobject firstType, jobjectArray types)
+{
+    try{
+        QObject* eventFilter = QtJambiAPI::objectFromNativeId<QObject>(objectId);
+        QtJambiAPI::checkThread(env, eventFilter);
+        QSet<QEvent::Type> typeSet;
+        typeSet.insert(qtjambi_cast<QEvent::Type>(env, firstType));
+        for(jsize i=0, l = env->GetArrayLength(types); i<l; ++i){
+            typeSet.insert(qtjambi_cast<QEvent::Type>(env, env->GetObjectArrayElement(types, i)));
+        }
+        class SelectiveEventFilter : public QObject{
+            QObject* m_eventFilter;
+            const QSet<QEvent::Type> m_typeSet;
+        public:
+            SelectiveEventFilter(QObject* eventFilter, QSet<QEvent::Type>&& typeSet)
+                : QObject(eventFilter->parent()),
+                m_eventFilter(eventFilter),
+                m_typeSet(std::move(typeSet))
+            {
+                m_eventFilter->setParent(this);
+            }
+            bool eventFilter(QObject *watched, QEvent *event) final override{
+                if(m_typeSet.contains(event->type())){
+                    return m_eventFilter->eventFilter(watched, event);
+                }
+                return false;
+            }
+        };
+        eventFilter = new SelectiveEventFilter(eventFilter, std::move(typeSet));
+        jobject result = qtjambi_cast<jobject>(env, eventFilter);
+        QtJambiAPI::setJavaOwnershipForTopLevelObject(env, eventFilter);
+        return result;
+    }catch(const JavaException& exn){
+        exn.raiseInJava(env);
+    }
+    return nullptr;
 }
 
 #if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS) || defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD) || defined(Q_OS_SOLARIS)) && !defined(Q_OS_ANDROID)

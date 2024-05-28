@@ -245,13 +245,6 @@ TypeSystem{
                 }
             }
         }
-        ModifyFunction{
-            signature: "eventFilter(QObject*,QEvent*)"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-            }
-        }
     }
     
     ObjectType{

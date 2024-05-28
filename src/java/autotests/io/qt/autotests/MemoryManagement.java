@@ -192,7 +192,6 @@ public abstract class MemoryManagement extends ApplicationInitializer{
         DebugTools.reset_shellDestructorCalledCount();
         DebugTools.reset_shellDestroyedCount();
         DebugTools.reset_userDataDestroyedCount();
-        DebugTools.reset_pointerContainerDestroyedCount();
     }
 
 
@@ -209,8 +208,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
             int objectInvalidatedCount,
             int shellDestructorCalledCount,
             int userDataDestroyedCount,
-            int shellDestroyedCount,
-            int pointerContainerDestroyedCount) {
+            int shellDestroyedCount) {
     	if(isFinalized) {
     		assertEquals("isFinalized", null, ref.get());
     	}
@@ -258,11 +256,6 @@ public abstract class MemoryManagement extends ApplicationInitializer{
 		}
         try {
         	assertEquals("shellDestroyedCount",        shellDestroyedCount,              						DebugTools.shellDestroyedCount(className));
-		} catch (AssertionError e) {
-			errors.add(e);
-		}
-        try {
-        	assertEquals("pointerContainerDestroyedCount",        pointerContainerDestroyedCount,               DebugTools.pointerContainerDestroyedCount(className));
 		} catch (AssertionError e) {
 			errors.add(e);
 		}
@@ -334,15 +327,14 @@ public abstract class MemoryManagement extends ApplicationInitializer{
 
         test(className(), ref, true, 
         		1, //cleanCallerCount
-        		isQObject() ? 0 : 1, //destructorFunctionCalledCount
+        		isQObject() && !isSharedPointer() ? 0 : 1, //destructorFunctionCalledCount
         		0, //disposeCalledCount
         		isSharedPointer() ? 2 : 1, //linkConstructedCount
 				isSharedPointer() ? 2 : 1, //linkDestroyedCount
 				isSharedPointer() ? 2 : 1, //objectInvalidatedCount
         		!hasShellDestructor() ? 0 : (hasInterfaces() ? 3 : 1), //shellDestructorCalledCount
 				!isQObject() ? 0: 1, //userDataDestroyedCount
-        		hasShellDestructor() ? 1 : 0, //shellDestroyedCount
-				isSharedPointer() && isQObject() ? 1 : 0 //pointerContainerDestroyedCount
+        		hasShellDestructor() ? 1 : 0 //shellDestroyedCount
 			);
 
     }
@@ -365,8 +357,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
         		1, //objectInvalidatedCount
         		0, //shellDestructorCalledCount
         		0, //userDataDestroyedCount
-        		0, //shellDestroyedCount
-        		0 //pointerContainerDestroyedCount
+        		0 //shellDestroyedCount
     		);
     }
 
@@ -386,15 +377,14 @@ public abstract class MemoryManagement extends ApplicationInitializer{
 
         test(className(), ref, true,
         		1, //cleanCallerCount
-        		isQObject() ? 0 : 1, //destructorFunctionCalledCount
+        		isQObject() && !isSharedPointer() ? 0 : 1, //destructorFunctionCalledCount
         		0, //disposeCalledCount
         		1, //linkConstructedCount
         		1, //linkDestroyedCount
         		1, //objectInvalidatedCount
         		0, //shellDestructorCalledCount
         		!isQObject() ? 0: 1, //userDataDestroyedCount
-        		0, //shellDestroyedCount
-        		isSharedPointer() && isQObject() ? 1 : 0 //pointerContainerDestroyedCount
+        		0 //shellDestroyedCount
     		);
     }
 
@@ -424,8 +414,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
 				isSharedPointer() ? 2 : 1, //objectInvalidatedCount
         		!hasShellDestructor() ? 0 : (hasInterfaces() ? 3 : 1), //shellDestructorCalledCount
 				!isQObject() ? 0: 1, //userDataDestroyedCount
-				hasShellDestructor() ? 1 : 0, //shellDestroyedCount
-				isSharedPointer() && isQObject() ? 1 : 0 //pointerContainerDestroyedCount
+				hasShellDestructor() ? 1 : 0 //shellDestroyedCount
 			);
     }
 
@@ -446,8 +435,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
 				isSharedPointer() ? 2 : 1, //objectInvalidatedCount
         		!hasShellDestructor() ? 0 : (hasInterfaces() ? 3 : 1), //shellDestructorCalledCount
 				!isQObject() ? 0: 1, //userDataDestroyedCount
-				hasShellDestructor() ? 1 : 0, //shellDestroyedCount
-				isSharedPointer() && isQObject() ? 1 : 0 //pointerContainerDestroyedCount
+				hasShellDestructor() ? 1 : 0 //shellDestroyedCount
 			);
         return ref;
     }
@@ -472,8 +460,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
 				isSharedPointer() ? 2 : 1, //objectInvalidatedCount
         		!hasShellDestructor() ? 0 : (hasInterfaces() ? 3 : 1), //shellDestructorCalledCount
 				!isQObject() ? 0: 1, //userDataDestroyedCount
-				hasShellDestructor() ? 1 : 0, //shellDestroyedCount
-				isSharedPointer() && isQObject() ? 1 : 0 //pointerContainerDestroyedCount
+				hasShellDestructor() ? 1 : 0 //shellDestroyedCount
 			);
     }
 
@@ -495,8 +482,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
         		isSharedPointer() ? 2 : 1, //objectInvalidatedCount
         		!hasShellDestructor() ? 0 : (hasInterfaces() ? 3 : 1), //shellDestructorCalledCount
 				!isQObject() ? 0: 1, //userDataDestroyedCount
-				hasShellDestructor() ? 1 : 0, //shellDestroyedCount
-				isSharedPointer() && isQObject() ? 1 : 0 //pointerContainerDestroyedCount
+				hasShellDestructor() ? 1 : 0 //shellDestroyedCount
 			);
         return ref;
     }
@@ -513,15 +499,14 @@ public abstract class MemoryManagement extends ApplicationInitializer{
 
         test(className(), ref, true, 
         		0, //cleanCallerCount
-        		isQObject() ? 0 : 1, //destructorFunctionCalledCount
+        		isQObject() && !isSharedPointer() ? 0 : 1, //destructorFunctionCalledCount
         		1, //disposeCalledCount
         		1, //linkConstructedCount
         		1, //linkDestroyedCount
         		1, //objectInvalidatedCount
         		0, //shellDestructorCalledCount
         		0, //userDataDestroyedCount
-        		0, //shellDestroyedCount
-        		0 //pointerContainerDestroyedCount
+        		0 //shellDestroyedCount
     		);
     }
 
@@ -535,15 +520,14 @@ public abstract class MemoryManagement extends ApplicationInitializer{
 
         test(className(), ref, false, 
         		0, //cleanCallerCount
-        		isQObject() ? 0 : 1, //destructorFunctionCalledCount
+        		isQObject() && !isSharedPointer() ? 0 : 1, //destructorFunctionCalledCount
         		1, //disposeCalledCount
         		1, //linkConstructedCount
         		1, //linkDestroyedCount
         		1, //objectInvalidatedCount
         		0, //shellDestructorCalledCount
         		0, //userDataDestroyedCount
-        		0, //shellDestroyedCount
-        		0 //pointerContainerDestroyedCount
+        		0 //shellDestroyedCount
     		);
         return ref;
     }
@@ -567,8 +551,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
         		1, //objectInvalidatedCount
         		0, //shellDestructorCalledCount
         		!isQObject() ? 0: 1, //userDataDestroyedCount
-        		0, //shellDestroyedCount
-        		isSharedPointer() && isQObject() ? 1 : 0 //pointerContainerDestroyedCount
+        		0 //shellDestroyedCount
     		);
     }
 
@@ -590,8 +573,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
         		1, //objectInvalidatedCount
         		0, //shellDestructorCalledCount
         		!isQObject() ? 0: 1, //userDataDestroyedCount
-        		0, //shellDestroyedCount
-        		isSharedPointer() && isQObject() ? 1 : 0 //pointerContainerDestroyedCount
+        		0 //shellDestroyedCount
     		);
         return ref;
     }
@@ -615,8 +597,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
         		1, //objectInvalidatedCount
         		0, //shellDestructorCalledCount
         		!isQObject() ? 0: 1, //userDataDestroyedCount
-        		0, //shellDestroyedCount
-        		isSharedPointer() && isQObject() ? 1 : 0 //pointerContainerDestroyedCount
+        		0 //shellDestroyedCount
     		);
     }
 
@@ -639,8 +620,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
         		1, //objectInvalidatedCount
         		0, //shellDestructorCalledCount
         		!isQObject() ? 0: 1, //userDataDestroyedCount
-        		0, //shellDestroyedCount
-        		isSharedPointer() && isQObject() ? 1 : 0 //pointerContainerDestroyedCount
+        		0 //shellDestroyedCount
     		);
         return ref;
     }
@@ -659,15 +639,14 @@ public abstract class MemoryManagement extends ApplicationInitializer{
 	            gcAndWait(TIME_LIMIT, null, 1, 1, 1, 1, 1);
 	            test(className(), ref, false, 
 	            		0, //cleanCallerCount
-	            		0, //destructorFunctionCalledCount
+	            		isSharedPointer() && isQObject() ? 1 : 0, //destructorFunctionCalledCount
 	            		0, //disposeCalledCount
 	            		1, //linkConstructedCount
 	            		1, //linkDestroyedCount
 	            		1, //objectInvalidatedCount
 	            		!hasShellDestructor() ? 0 : (hasInterfaces() ? 3 : 1), //shellDestructorCalledCount
         				!isQObject() ? 0: 1, //userDataDestroyedCount
-        				hasShellDestructor() ? 1 : 0, //shellDestroyedCount
-						isSharedPointer() && isQObject() ? 1 : 0 //pointerContainerDestroyedCount
+        				hasShellDestructor() ? 1 : 0 //shellDestroyedCount
 					);
 	        } else {
 	            gcAndWait(TIME_LIMIT, Long.valueOf(250), null, 1, null, null, null);	// FIXME nothing to test/wait for ?
@@ -680,8 +659,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
 	            		0, //objectInvalidatedCount
 	            		0, //shellDestructorCalledCount
 	            		0, //userDataDestroyedCount
-	            		0, //shellDestroyedCount
-	            		0 //pointerContainerDestroyedCount
+	            		0 //shellDestroyedCount
             		);
 	        }
     	}finally {
@@ -704,15 +682,14 @@ public abstract class MemoryManagement extends ApplicationInitializer{
         if (hasVirtualDestructor())
             test(className(), ref, false, 
             		0, //cleanCallerCount
-            		0, //destructorFunctionCalledCount
+            		isSharedPointer() && isQObject() ? 1 : 0, //destructorFunctionCalledCount
             		0, //disposeCalledCount
             		1, //linkConstructedCount
             		1, //linkDestroyedCount
             		1, //objectInvalidatedCount
             		!hasShellDestructor() ? 0 : (hasInterfaces() ? 3 : 1), //shellDestructorCalledCount
     				!isQObject() ? 0: 1, //userDataDestroyedCount
-    				hasShellDestructor() ? 1 : 0, //shellDestroyedCount
-					isSharedPointer() && isQObject() ? 1 : 0 //pointerContainerDestroyedCount
+    				hasShellDestructor() ? 1 : 0 //shellDestroyedCount
 				);
         else
             test(className(), ref, false, 
@@ -724,8 +701,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
             		0, //objectInvalidatedCount
             		0, //shellDestructorCalledCount
             		0, //userDataDestroyedCount
-            		0, //shellDestroyedCount
-            		0 //pointerContainerDestroyedCount
+            		0 //shellDestroyedCount
         		);
         return ref;
     }
@@ -755,8 +731,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
 	            		1, //objectInvalidatedCount
 	            		0, //shellDestructorCalledCount
 	            		!isQObject() ? 0: 1, //userDataDestroyedCount
-	            		0, //shellDestroyedCount
-	            		0 //pointerContainerDestroyedCount
+	            		0 //shellDestroyedCount
             		);
 	        } else {
 	            gcAndWait(TIME_LIMIT, null, null, 1, null, null, 1);	// userDataDestroyedCount
@@ -769,8 +744,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
 	            		0, //objectInvalidatedCount
 	            		0, //shellDestructorCalledCount
 	            		!isQObject() ? 0: 1, //userDataDestroyedCount
-	            		0, //shellDestroyedCount
-	            		0 //pointerContainerDestroyedCount
+	            		0 //shellDestroyedCount
             		);
 	        }
     	}finally {
@@ -799,8 +773,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
         		0, //objectInvalidatedCount
         		0, //shellDestructorCalledCount
         		0, //userDataDestroyedCount
-        		0, //shellDestroyedCount
-        		0 //pointerContainerDestroyedCount
+        		0 //shellDestroyedCount
     		);
         java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINEST, "createInNativeDisableGCAndDeleteInNative() MARK3");
 
@@ -814,8 +787,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
 				isQObject() ? 1 : 0, //objectInvalidatedCount
 				0, //shellDestructorCalledCount
 				!isQObject() ? 0: 1, //userDataDestroyedCount
-				0, //shellDestroyedCount
-				0 //pointerContainerDestroyedCount
+				0 //shellDestroyedCount
 			);
         return ref;
     }
@@ -966,8 +938,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
         		1, //objectInvalidatedCount
         		0, //shellDestructorCalledCount
         		!isQObject() ? 0: 1, //userDataDestroyedCount
-        		0, //shellDestroyedCount
-        		0 //pointerContainerDestroyedCount
+        		0 //shellDestroyedCount
     		);
     }
 
@@ -988,8 +959,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
         		0, //objectInvalidatedCount
         		0, //shellDestructorCalledCount
         		!isQObject() ? 0: 1, //userDataDestroyedCount
-        		0, //shellDestroyedCount
-        		0 //pointerContainerDestroyedCount
+        		0 //shellDestroyedCount
     		);
         return ref;
     }
@@ -1007,15 +977,14 @@ public abstract class MemoryManagement extends ApplicationInitializer{
 
             test(className(), ref, true,
             		1, //cleanCallerCount
-            		0, //destructorFunctionCalledCount
+            		isSharedPointer() && isQObject() ? 1 : 0, //destructorFunctionCalledCount
             		0, //disposeCalledCount
             		1, //linkConstructedCount
             		1, //linkDestroyedCount
             		1, //objectInvalidatedCount
             		0, //shellDestructorCalledCount
             		1, //userDataDestroyedCount
-            		0, //shellDestroyedCount
-            		isSharedPointer() && isQObject() ? 1 : 0 //pointerContainerDestroyedCount
+            		0 //shellDestroyedCount
         		);
         } else if(isSharedPointer()) {
             gcAndWait(TIME_LIMIT, null, 1, 1, 1, null, 1);
@@ -1029,8 +998,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
             		1, //objectInvalidatedCount
             		0, //shellDestructorCalledCount
             		0, //userDataDestroyedCount
-            		0, //shellDestroyedCount
-            		0 //pointerContainerDestroyedCount
+            		0 //shellDestroyedCount
         		);
         } else {
             gcAndWait(TIME_LIMIT, null, 2, 2, 2, null, 1);
@@ -1044,8 +1012,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
             		2, //objectInvalidatedCount
             		0, //shellDestructorCalledCount
             		0, //userDataDestroyedCount
-            		0, //shellDestroyedCount
-            		0 //pointerContainerDestroyedCount
+            		0 //shellDestroyedCount
         		);
         }
     }
@@ -1074,8 +1041,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
         		0, //objectInvalidatedCount
         		0, //shellDestructorCalledCount
         		0, //userDataDestroyedCount
-        		0, //shellDestroyedCount
-        		0 //pointerContainerDestroyedCount
+        		0 //shellDestroyedCount
     		);
         return ref;
     }
@@ -1093,15 +1059,14 @@ public abstract class MemoryManagement extends ApplicationInitializer{
 
             test(className(), ref, true,
             		1, //cleanCallerCount
-            		0, //destructorFunctionCalledCount
+            		isSharedPointer() && isQObject() ? 1 : 0, //destructorFunctionCalledCount
             		0, //disposeCalledCount
             		isSharedPointer() ? 2 : 1, //linkConstructedCount
     				isSharedPointer() ? 2 : 1, //linkDestroyedCount
 					isSharedPointer() ? 2 : 1, //objectInvalidatedCount
             		hasInterfaces() ? 3 : 1, //shellDestructorCalledCount
             		1, //userDataDestroyedCount
-            		1, //shellDestroyedCount
-            		isSharedPointer() && isQObject() ? 1 : 0 //pointerContainerDestroyedCount
+            		1 //shellDestroyedCount
         		);
         } else if(isSharedPointer()) {
             gcAndWait(TIME_LIMIT, null, 1, 1, 1, null, 1);
@@ -1115,8 +1080,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
             		2, //objectInvalidatedCount
             		hasShellDestructor() ? (hasInterfaces() ? 3 : 1) : 0, //shellDestructorCalledCount
             		0, //userDataDestroyedCount
-            		hasShellDestructor() ? 1 : 0, //shellDestroyedCount
-            		0 //pointerContainerDestroyedCount
+            		hasShellDestructor() ? 1 : 0 //shellDestroyedCount
         		);
         } else {
             gcAndWait(TIME_LIMIT, null, 2, 2, 2, null, 1);
@@ -1130,8 +1094,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
             		1, //objectInvalidatedCount
             		hasShellDestructor() ? (hasInterfaces() ? 3 : 1) : 0, //shellDestructorCalledCount
             		0, //userDataDestroyedCount
-            		hasShellDestructor() ? 1 : 0, //shellDestroyedCount
-            		0 //pointerContainerDestroyedCount
+            		hasShellDestructor() ? 1 : 0 //shellDestroyedCount
         		);
         }
     }
@@ -1157,8 +1120,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
 				isSharedPointer() ? 1 : 0, //objectInvalidatedCount
         		0, //shellDestructorCalledCount
         		0, //userDataDestroyedCount
-        		0, //shellDestroyedCount
-        		0 //pointerContainerDestroyedCount
+        		0 //shellDestroyedCount
     		);
         return ref;
     }
@@ -1185,8 +1147,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
 				isSharedPointer() ? 1 : 2, //objectInvalidatedCount
         		0, //shellDestructorCalledCount
         		0, //userDataDestroyedCount
-        		0, //shellDestroyedCount
-        		0 //pointerContainerDestroyedCount
+        		0 //shellDestroyedCount
     		);
     }
 
@@ -1212,8 +1173,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
 				isSharedPointer() ? 0 : 1, //objectInvalidatedCount
         		0, //shellDestructorCalledCount
         		0, //userDataDestroyedCount
-        		0, //shellDestroyedCount
-        		0 //pointerContainerDestroyedCount
+        		0 //shellDestroyedCount
     		);
         return ref;
     }
@@ -1229,15 +1189,14 @@ public abstract class MemoryManagement extends ApplicationInitializer{
 
         test(className2(), ref, true, 
         		1, //cleanCallerCount
-        		isQObject() ? 0 : 1, //destructorFunctionCalledCount
+        		isQObject() && !isSharedPointer() ? 0 : 1, //destructorFunctionCalledCount
         		0, //disposeCalledCount
         		isSharedPointer() ? 2 : 1, //linkConstructedCount
 				isSharedPointer() ? 2 : 1, //linkDestroyedCount
 				isSharedPointer() ? 2 : 1, //objectInvalidatedCount
         		!hasShellDestructor() ? 0 : (hasInterfaces() ? 3 : 1), //shellDestructorCalledCount
 				!isQObject() ? 0: 1, //userDataDestroyedCount
-        		hasShellDestructor() ? 1 : 0, //shellDestroyedCount
-				isSharedPointer() && isQObject() ? 1 : 0 //pointerContainerDestroyedCount
+        		hasShellDestructor() ? 1 : 0 //shellDestroyedCount
 			);
 
     }

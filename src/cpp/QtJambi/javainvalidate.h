@@ -34,50 +34,79 @@
 
 enum class QtJambiNativeID : jlong;
 
-class QTJAMBI_EXPORT InvalidateAfterUse{
+struct InvalidateAfterUsePrivate;
+
+class QTJAMBI_EXPORT AbstractInvalidateAfterUse{
 public:
-    InvalidateAfterUse(JNIEnv *env, jobject object, bool checkJavaOwnership = true);
-    InvalidateAfterUse(JNIEnv *env, QtJambiNativeID nativeId);
-    ~InvalidateAfterUse();
-    static void invalidate(JNIEnv *env, jobject java_object, bool checkJavaOwnership = true);
-    static void invalidate(JNIEnv *env, QtJambiNativeID nativeId);
+    ~AbstractInvalidateAfterUse();
+protected:
+    AbstractInvalidateAfterUse(InvalidateAfterUsePrivate& p);
 private:
-    struct InvalidateAfterUsePrivate* p;
+    InvalidateAfterUsePrivate* p;
+    Q_DISABLE_COPY_MOVE(AbstractInvalidateAfterUse)
+};
+
+class QTJAMBI_EXPORT InvalidateAfterUse : public AbstractInvalidateAfterUse{
+public:
+    InvalidateAfterUse(JNIEnv *env, jobject object);
+    InvalidateAfterUse(JNIEnv *env, QtJambiNativeID nativeId);
+    static void invalidate(JNIEnv *env, jobject java_object);
+    static void invalidate(JNIEnv *env, QtJambiNativeID nativeId);
+    static void forcedInvalidate(JNIEnv *env, jobject java_object);
+    static void forcedInvalidate(JNIEnv *env, QtJambiNativeID nativeId);
     Q_DISABLE_COPY_MOVE(InvalidateAfterUse)
+};
+
+class QTJAMBI_EXPORT ForcedInvalidateAfterUse : public AbstractInvalidateAfterUse{
+public:
+    ForcedInvalidateAfterUse(JNIEnv *env, jobject object);
+    ForcedInvalidateAfterUse(JNIEnv *env, QtJambiNativeID nativeId);
+private:
+    Q_DISABLE_COPY_MOVE(ForcedInvalidateAfterUse)
 };
 
 #define QTJAMBI_INVALIDATE_AFTER_USE(env, object)\
     InvalidateAfterUse __qj_invalidate_##object##_after_use(env, object)
 
-#define QTJAMBI_INVALIDATE_AFTER_USE_UNCHECKED(env, object)\
-    InvalidateAfterUse __qj_invalidate_##object##_after_use(env, object, false)
+#define QTJAMBI_FORCED_INVALIDATE_AFTER_USE(env, object)\
+    ForcedInvalidateAfterUse __qj_invalidate_##object##_after_use(env, object)
 
-class QTJAMBI_EXPORT InvalidateContainerAfterUse{
+class QTJAMBI_EXPORT InvalidateContainerAfterUse : public AbstractInvalidateAfterUse{
 public:
-    InvalidateContainerAfterUse(JNIEnv *env, jobject object, bool checkJavaOwnership = true);
-    ~InvalidateContainerAfterUse();
+    InvalidateContainerAfterUse(JNIEnv *env, jobject object);
 private:
-    JNIEnv *m_env;
-    jobject m_object;
-    bool m_checkJavaOwnership;
     Q_DISABLE_COPY_MOVE(InvalidateContainerAfterUse)
+};
+
+class QTJAMBI_EXPORT ForcedInvalidateContainerAfterUse : public AbstractInvalidateAfterUse{
+public:
+    ForcedInvalidateContainerAfterUse(JNIEnv *env, jobject object);
+private:
+    Q_DISABLE_COPY_MOVE(ForcedInvalidateContainerAfterUse)
 };
 
 #define QTJAMBI_INVALIDATE_CONTAINER_AFTER_USE(env, object)\
     InvalidateContainerAfterUse __qj_invalidate_##object##_after_use(env, object)
+#define QTJAMBI_FORCED_INVALIDATE_CONTAINER_AFTER_USE(env, object)\
+    ForcedInvalidateContainerAfterUse __qj_invalidate_##object##_after_use(env, object)
 
-class QTJAMBI_EXPORT InvalidateArrayAfterUse{
+class QTJAMBI_EXPORT InvalidateArrayAfterUse : public AbstractInvalidateAfterUse{
 public:
-    InvalidateArrayAfterUse(JNIEnv *env, jobjectArray object, bool checkJavaOwnership = true);
-    ~InvalidateArrayAfterUse();
+    InvalidateArrayAfterUse(JNIEnv *env, jobjectArray object);
 private:
-    JNIEnv *m_env;
-    jobjectArray m_object;
-    bool m_checkJavaOwnership;
     Q_DISABLE_COPY_MOVE(InvalidateArrayAfterUse)
+};
+
+class QTJAMBI_EXPORT ForcedInvalidateArrayAfterUse : public AbstractInvalidateAfterUse{
+public:
+    ForcedInvalidateArrayAfterUse(JNIEnv *env, jobjectArray object);
+private:
+    Q_DISABLE_COPY_MOVE(ForcedInvalidateArrayAfterUse)
 };
 
 #define QTJAMBI_INVALIDATE_ARRAY_AFTER_USE(env, object)\
     InvalidateArrayAfterUse __qj_invalidate_##object##_after_use(env, object)
+#define QTJAMBI_FORCED_INVALIDATE_ARRAY_AFTER_USE(env, object)\
+ForcedInvalidateArrayAfterUse __qj_invalidate_##object##_after_use(env, object)
 
 #endif // QTJAMBI_JAVAINVALIDATE_H

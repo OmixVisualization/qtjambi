@@ -463,6 +463,17 @@ if(%out_buffer.size()<array.size()*4)
     ObjectType{
         name: "QRhiTextureRenderTargetDescription"
         ModifyFunction{
+            signature: "setDepthResolveTexture(QRhiTexture*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcDepthResolveTexture"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: 6.8
+        }
+        ModifyFunction{
             signature: "setDepthStencilBuffer(QRhiRenderBuffer*)"
             ModifyArgument{
                 index: 1
@@ -554,6 +565,17 @@ if(%out_buffer.size()<array.size()*4)
         name: "QShader"
         ObjectType{
             name: "NativeShaderInfo"
+            InjectCode{
+                target: CodeClass.Native
+                position: Position.Beginning
+                Text{content: String.raw`
+namespace QHashPrivate {
+template <>
+constexpr inline bool HasQHashSingleArgOverload<QMap<int,int>> = false;
+}`
+                }
+                since: 6.8
+            }
         }
         ObjectType{
             name: "SeparateToCombinedImageSamplerMapping"
@@ -569,6 +591,17 @@ if(%out_buffer.size()<array.size()*4)
         }
         EnumType{
             name: "Variant"
+        }
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: String.raw`
+namespace QHashPrivate {
+template <>
+constexpr inline bool HasQHashSingleArgOverload<QMap<int,QPair<int,int>>> = false;
+}`
+            }
+            since: 6.8
         }
     }
     ObjectType{
@@ -1044,6 +1077,10 @@ if(%out_buffer.size()<array.size()*4)
         ObjectType{
             name: "NativeTexture"
         }
+        ObjectType{
+            name: "ViewFormat"
+            since: 6.8
+        }
         EnumType{
             name: "Flag"
         }
@@ -1209,6 +1246,12 @@ if(%out_buffer.size()<array.size()*4)
     }
     ObjectType{
         name: "QRhiSwapChainHdrInfo"
+        EnumType{
+            name: "LimitsType"
+        }
+        EnumType{
+            name: "LuminanceBehavior"
+        }
         ModifyField{
             name: "limits"
             read: true
@@ -1268,6 +1311,9 @@ public final void setLuminanceInNits(float minLuminance, float maxLuminance) {
     ObjectType{
         name: "QRhiTextureRenderTarget"
         Rejection{fieldName: "*"}
+        EnumType{
+            name: "Flag"
+        }
         ModifyFunction{
             signature: "newCompatibleRenderPassDescriptor()"
             ModifyArgument{
@@ -1291,5 +1337,8 @@ public final void setLuminanceInNits(float minLuminance, float maxLuminance) {
     }
     ObjectType{
         name: "QShaderVersion"
+        EnumType{
+            name: "Flag"
+        }
     }
 }

@@ -61,10 +61,11 @@ private:
 class QThreadUserData : public QtJambiObjectData
 {
 public:
-    QThreadUserData(QThread* thread);
-    QThreadUserData(JNIEnv *env, jobject threadGroup, QThread* thread);
+    QThreadUserData();
+    QThreadUserData(JNIEnv *env, jobject threadGroup);
     ~QThreadUserData() override;
     QTJAMBI_OBJECTUSERDATA_ID_DECL
+    void initialize(QThread* thread);
     void deleteAtThreadEnd(QObject* object);
     void doAtThreadEnd(const std::function<void()>& action);
     inline bool isDaemon() const { return m_isDaemon; }
@@ -80,8 +81,16 @@ public:
     inline void clearThreadGroup(JNIEnv *env){ m_threadGroup.clear(env); }
     inline void clearUncaughtExceptionHandler(JNIEnv *env){ m_uncaughtExceptionHandler.clear(env); }
     inline bool purgeOnExit() const {return m_threadType!=ProcessMainThread;}
+    inline QObject* threadDeleter() const {return m_threadDeleter.get();}
+    static QThreadUserData* ensureThreadUserData(QThread* thread);
+    struct Result{
+        QThreadUserData* threadUserData;
+        bool initRequired;
+    };
+    static Result ensureThreadUserDataLocked(QThread* thread);
 private:
     void cleanup();
+    QSharedPointer<QObject> m_threadDeleter;
     QList<QPointer<QObject>> m_objectsForDeletion;
     QList<std::function<void()>>* m_finalActions;
     QMutex* m_mutex;
@@ -103,11 +112,21 @@ private:
     friend EventDispatcherCheck;
 };
 
-class SelfDeletingThread : public QThread
+class AbstractThreadEvent : public QEvent
 {
-    Q_DECLARE_PRIVATE(QThread)
+#if QT_VERSION < 0x060000
 public:
-    bool deleteLaterIfIsInFinish();
+    virtual AbstractThreadEvent* clone() const = 0;
+#endif
+protected:
+    AbstractThreadEvent();
+    AbstractThreadEvent(const AbstractThreadEvent& clone);
+private:
+    static bool execute(QEvent* event);
+    virtual void execute() = 0;
+    int reserved1 = 0;
+    int reserved2 = 0;
+    friend class Deleter;
 };
 
 #endif // THREADUTILS_P_H

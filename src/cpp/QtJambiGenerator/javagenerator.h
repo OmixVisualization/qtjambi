@@ -160,8 +160,8 @@ public:
 
 private:
     void printExtraCode(QStringList& lines, QTextStream &s, bool addFreeLine = false);
-    void write_equals_parts(QTextStream &s, const MetaFunctionList &lst, char prefix, bool& first, bool& suppressUnchecked, bool& suppressRaw, QHash<const MetaFunction*,QString>& javaTypesByFunction);
-    void write_compareto_parts(QTextStream &s, const MetaFunctionList &lst, int value, bool *first, bool& suppressUnchecked, bool& suppressRaw, QList<QPair<const MetaFunction*,QString>>& javaTypesByFunction);
+    void write_equals_parts(QTextStream &s, const MetaFunctionList &lst, char prefix, bool& first, bool& suppressUnchecked, bool& suppressRaw, bool &wroteNull, QList<QPair<const MetaFunction*,QString>>& javaTypesByFunction);
+    void write_compareto_parts(QTextStream &s, const MetaFunctionList &lst, int value, bool& first, bool& suppressUnchecked, bool& suppressRaw, bool &wroteNull, QList<QPair<const MetaFunction*,QString>>& javaTypesByFunction);
     QString subDirectoryForPackage(const QString &package) const { return QString(package).replace(".", "/"); }
     void writeInstantiatedType(QTextStream &s, const MetaType *abstractMetaType, bool forceBoxed) const;
     void write(QTextStream &s, const MetaEnum *global_enum);

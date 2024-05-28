@@ -83,6 +83,7 @@ import io.qt.QtUninvokable;
 import io.qt.QtUtilities;
 import io.qt.QtUtilities.LibraryRequirementMode;
 import io.qt.core.QDeclarableSignals;
+import io.qt.core.QMetaObject;
 import io.qt.core.QPair;
 import io.qt.internal.LibraryBundle.Library;
 import io.qt.internal.LibraryBundle.SpecificationException;
@@ -254,17 +255,29 @@ final class LibraryUtility {
     static {
     	libraryLoader = (callerClass, lib) -> {
     		synchronized(LibraryUtility.class) {
-	    		@SuppressWarnings({ "rawtypes", "unchecked" })
-	    		QDeclarableSignals.Signal2<Class<?>, String> loadLibrary = new QDeclarableSignals.Signal2(Class.class, String.class);
-				try {
-					if(operatingSystem==OperatingSystem.Android)
-						loadLibrary.connect(Runtime.getRuntime(), "loadLibrary0(Class, String)");
-					else
-						loadLibrary.connect(Runtime.getRuntime(), "load0(Class, String)");
-					libraryLoader = loadLibrary::emit;
+				boolean found = false;
+    			try {
+					if(operatingSystem==OperatingSystem.Android) {
+						@SuppressWarnings({ "rawtypes", "unchecked" })
+			    		QDeclarableSignals.Signal2<String, ClassLoader> loadLibrary = new QDeclarableSignals.Signal2(String.class, ClassLoader.class);
+						QMetaObject.Connection connection = loadLibrary.connect(Runtime.getRuntime(), "load(String, ClassLoader)");
+						if(connection.isConnected()) {
+							libraryLoader = (_callerClass, _lib)->loadLibrary.emit(_lib, _callerClass.getClassLoader());
+							found = true;
+						}
+					}else {
+						@SuppressWarnings({ "rawtypes", "unchecked" })
+			    		QDeclarableSignals.Signal2<Class<?>, String> loadLibrary = new QDeclarableSignals.Signal2(Class.class, String.class);
+						QMetaObject.Connection connection = loadLibrary.connect(Runtime.getRuntime(), "load0(Class, String)");
+						if(connection.isConnected()) {
+							libraryLoader = loadLibrary::emit;
+							found = true;
+						}
+					}
 				} catch (QNoSuchSlotException e) {
-					libraryLoader = (_callerClass, _lib)->Runtime.getRuntime().load(_lib);
 				}
+    			if(!found)
+    				libraryLoader = (_callerClass, _lib)->Runtime.getRuntime().load(_lib);
     		}
     		libraryLoader.accept(callerClass, lib);
     	};

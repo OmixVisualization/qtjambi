@@ -538,6 +538,7 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
     }
     
     static void runGC() {
+    	Thread.yield();
     	runFinalization.accept(Runtime.getRuntime());
     }
 }

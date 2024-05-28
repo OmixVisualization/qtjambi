@@ -40,7 +40,6 @@ import java.util.function.Function;
 
 import io.qt.QtObject;
 import io.qt.QtUninvokable;
-import io.qt.internal.ClassAnalyzerUtility;
 
 abstract class AbstractIterator<T> extends QtObject{
 	
@@ -352,7 +351,7 @@ abstract class AbstractIterator<T> extends QtObject{
 	private static final Map<Class<?>, BeginEndFunctions> endMethodHandles = Collections.synchronizedMap(new HashMap<>());
 	
 	private static BeginEndFunctions findBeginEndSuppliers(QtObject beginOwner) {
-		return endMethodHandles.computeIfAbsent(ClassAnalyzerUtility.getClass(beginOwner), cls -> {
+		return endMethodHandles.computeIfAbsent(QtJambi_LibraryUtilities.internal.getClass(beginOwner), cls -> {
 			Method beginMethod = null;
 			Method constBeginMethod = null;
 			Method endMethod = null;

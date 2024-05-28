@@ -388,7 +388,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                         _argMetaType.reset(argMetaType = nullptr);
 
                     {
-                        const SuperTypeInfos& infos = SuperTypeInfos::fromClass(__jni_env, argClassType);
+                        const SuperTypeInfos infos = SuperTypeInfos::fromClass(__jni_env, argClassType);
                         if(infos.isEmpty()){
                             if(argMetaType){
                                 typeId = getTypeByMetaType(*argMetaType);
@@ -676,7 +676,7 @@ void convertArgumentList(QVector<QSharedDataPointer<Cleanup>>& cleaners, QVector
                     resolved = true;
                 }else{
                     {
-                        const SuperTypeInfos& infos = SuperTypeInfos::fromClass(__jni_env, argClassType);
+                        const SuperTypeInfos infos = SuperTypeInfos::fromClass(__jni_env, argClassType);
                         if(infos.isEmpty()){
                             if(argMetaType){
                                 typeId = getTypeByMetaType(*argMetaType);
@@ -1637,7 +1637,7 @@ jobject CoreAPI::invokeFunctionPointer(JNIEnv * __jni_env, QFunctionPointer __qt
     if(!returnValueResolved){
         size_t size = 0;
         short alignment = 1;
-        const SuperTypeInfos& infos = SuperTypeInfos::fromClass(__jni_env, returnClassType);
+        const SuperTypeInfos infos = SuperTypeInfos::fromClass(__jni_env, returnClassType);
         if(infos.isEmpty()){
             if(!returnMetaType)
                 _returnMetaType.reset(returnMetaType = new QMetaType(registerMetaType(__jni_env, returnClassType, false, false)));
@@ -1990,7 +1990,7 @@ jclass CoreAPI::getFunctionPointerReturnType(JNIEnv * __jni_env, jobject returnT
 
     QScopedPointer<QMetaType> _returnMetaType;
     size_t size = 0;
-    const SuperTypeInfos& infos = SuperTypeInfos::fromClass(__jni_env, returnClassType);
+    const SuperTypeInfos infos = SuperTypeInfos::fromClass(__jni_env, returnClassType);
     if(infos.isEmpty()){
         if(!returnMetaType)
             _returnMetaType.reset(returnMetaType = new QMetaType(registerMetaType(__jni_env, returnClassType, false, false)));
@@ -2252,7 +2252,7 @@ jobject CoreAPI::convertFunctionPointerReturn(JNIEnv * __jni_env, jobject return
     const std::type_info* returnTypeId = nullptr;
 
     QScopedPointer<const QMetaType> _returnMetaType;
-    const SuperTypeInfos& infos = SuperTypeInfos::fromClass(__jni_env, returnClassType);
+    const SuperTypeInfos infos = SuperTypeInfos::fromClass(__jni_env, returnClassType);
     if(infos.isEmpty()){
         if(!returnMetaType)
             _returnMetaType.reset(returnMetaType = new QMetaType(registerMetaType(__jni_env, returnClassType, false, false)));
@@ -2655,7 +2655,7 @@ void CoreAPI::getFunctionPointerParameterTypes(JNIEnv * __jni_env, jobjectArray 
                     _argMetaType.reset(argMetaType = nullptr);
 
                 {
-                    const SuperTypeInfos& infos = SuperTypeInfos::fromClass(__jni_env, argClassType);
+                    const SuperTypeInfos infos = SuperTypeInfos::fromClass(__jni_env, argClassType);
                     if(infos.isEmpty()){
                         if(argMetaType){
                             typeId = getTypeByMetaType(*argMetaType);
@@ -2729,7 +2729,7 @@ void CoreAPI::getFunctionPointerParameterTypes(JNIEnv * __jni_env, jobjectArray 
             }else{
                 size_t size = 0;
                 {
-                    const SuperTypeInfos& infos = SuperTypeInfos::fromClass(__jni_env, argClassType);
+                    const SuperTypeInfos infos = SuperTypeInfos::fromClass(__jni_env, argClassType);
                     if(infos.isEmpty()){
                         if(argMetaType){
                             typeId = getTypeByMetaType(*argMetaType);
@@ -2908,7 +2908,7 @@ void CoreAPI::convertFunctionPointerParameters(JNIEnv * __jni_env, jobjectArray 
         jobject convertedValue = nullptr;
         const std::type_info* typeId = nullptr;
         bool isFunctionPointer = false;
-        const SuperTypeInfos& infos = SuperTypeInfos::fromClass(__jni_env, argClassType);
+        const SuperTypeInfos infos = SuperTypeInfos::fromClass(__jni_env, argClassType);
         if(infos.isEmpty()){
             if(!argMetaType)
                 _argMetaType.reset(argMetaType = new QMetaType(registerMetaType(__jni_env, argClassType, false, false)));
@@ -3157,7 +3157,7 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
     const std::type_info* sourceTypeId = nullptr;
     const std::type_info* targetTypeId = nullptr;
     {
-        const SuperTypeInfos& infos = SuperTypeInfos::fromClass(env, functionalInterface);
+        const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, functionalInterface);
         if(infos.isEmpty()){
             targetTypeId = getTypeByJavaName(QtJambiAPI::getClassName(env, functionalInterface).replace('.', '/'));
         }else{
@@ -3165,7 +3165,7 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
         }
     }
     {
-        const SuperTypeInfos& infos = SuperTypeInfos::fromClass(env, sourceClass);
+        const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, sourceClass);
         if(infos.isEmpty()){
             sourceTypeId = getTypeByJavaName(QtJambiAPI::getClassName(env, sourceClass).replace('.', '/'));
         }else{
@@ -3198,11 +3198,11 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
                                             (*gObjectsByFunctionPointer())[quintptr(ptr)] << env->NewGlobalRef(result);
                                             return result;
                                         }else{
-                                            Java::Runtime::ClassCastException::throwNew(env, QStringLiteral("Unable to convert object of type %1 to function pointer.").arg(QtJambiAPI::getObjectClassName(env, function)) QTJAMBI_STACKTRACEINFO );
+                                            Java::Runtime::ClassCastException::throwNew(env, QStringLiteral("Unable to convert java object of type '%1' to function pointer '%2'.").arg(QtJambiAPI::getObjectClassName(env, function).replace('$', '.'), QtJambiAPI::typeName(*sourceTypeId)) QTJAMBI_STACKTRACEINFO );
                                             return nullptr;
                                         }
                                     }else{
-                                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassName(env, sourceClass)) QTJAMBI_STACKTRACEINFO );
+                                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassName(env, sourceClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                                     }
                                 }
                             }
@@ -3259,12 +3259,12 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
                                     return result;
                                 }
                             }else{
-                                Java::Runtime::ClassCastException::throwNew(env, QStringLiteral("Unable to convert object of type %1 to function pointer.").arg(QtJambiAPI::getObjectClassName(env, function)) QTJAMBI_STACKTRACEINFO );
+                                Java::Runtime::ClassCastException::throwNew(env, QStringLiteral("Unable to convert java object of type '%1' to function pointer '%2'.").arg(QtJambiAPI::getObjectClassName(env, function).replace('$', '.'), QtJambiAPI::typeName(*sourceTypeId)) QTJAMBI_STACKTRACEINFO );
                                 return nullptr;
                             }
                         }
                     }else{
-                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassName(env, sourceClass)) QTJAMBI_STACKTRACEINFO );
+                        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassName(env, sourceClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                     }
                 }
             }
@@ -3314,14 +3314,14 @@ jobject CoreAPI::castFunctionPointer(JNIEnv * env, jobject function, jclass func
                         }
                     }
                 }else{
-                    Java::Runtime::ClassCastException::throwNew(env, QStringLiteral("Unable to convert object of type %1 to function pointer.").arg(QtJambiAPI::getObjectClassName(env, function)) QTJAMBI_STACKTRACEINFO );
+                    Java::Runtime::ClassCastException::throwNew(env, QStringLiteral("Unable to convert java object of type '%1' to function pointer.").arg(QtJambiAPI::getObjectClassName(env, function).replace('$', '.')) QTJAMBI_STACKTRACEINFO );
                     return nullptr;
                 }
             }
         }
         Java::Runtime::IllegalArgumentException::throwNew(env, QStringLiteral("Object of type %1 is not a function pointer type.").arg(QtJambiAPI::getClassName(env, sourceClass).replace('$', '.')) QTJAMBI_STACKTRACEINFO );
     }else{
-        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassName(env, sourceClass)) QTJAMBI_STACKTRACEINFO );
+        Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QtJambiAPI::getClassName(env, sourceClass).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
     }
     return nullptr;
 }

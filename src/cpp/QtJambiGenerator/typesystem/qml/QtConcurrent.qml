@@ -48,7 +48,6 @@ TypeSystem{
     
     NamespaceType{
         name: "QtConcurrent"
-        targetType: "class"
         ExtraIncludes{
             Include{
                 fileName: "QtConcurrent/QtConcurrent"

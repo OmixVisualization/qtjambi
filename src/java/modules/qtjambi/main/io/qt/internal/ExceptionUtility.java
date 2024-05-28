@@ -85,7 +85,7 @@ abstract class ExceptionUtility {
 		if(StaticContainer.ThreadDeathClass==null || !StaticContainer.ThreadDeathClass.isInstance(e))
 		try {
 			UncaughtExceptionHandler handler = Thread.currentThread().getUncaughtExceptionHandler();
-			while(handler != null && (Object)ClassAnalyzerUtility.getClass(handler)==ThreadGroup.class) {
+			while(handler != null && (Object)AccessUtility.instance.getClass(handler)==ThreadGroup.class) {
 				try {
 					ThreadGroup tg = (ThreadGroup)handler;
 					handler = tg.getParent();
@@ -94,11 +94,11 @@ abstract class ExceptionUtility {
 			if(handler==null)
                 handler = Thread.getDefaultUncaughtExceptionHandler();
 			if (handler != null 
-					&& (Object)ClassAnalyzerUtility.getClass(handler)!=ThreadGroup.class
-					&& !ClassAnalyzerUtility.getClass(handler).getName().startsWith("com.android")) {
+					&& (Object)AccessUtility.instance.getClass(handler)!=ThreadGroup.class
+					&& !AccessUtility.instance.getClass(handler).getName().startsWith("com.android")) {
 				handler.uncaughtException(Thread.currentThread(), e);
 			} else{
-				LogRecord logRecord = new LogRecord(java.util.logging.Level.SEVERE, ClassAnalyzerUtility.getClass(e).getTypeName()+(methodName==null ? " has been thrown" : " has been thrown in "+methodName));
+				LogRecord logRecord = new LogRecord(java.util.logging.Level.SEVERE, AccessUtility.instance.getClass(e).getTypeName()+(methodName==null ? " has been thrown" : " has been thrown in "+methodName));
 				logRecord.setThrown(e);
 				if(methodName!=null) {
 					logRecord.setSourceClassName(methodName);

@@ -37,16 +37,9 @@
     isEmpty(JAVA_HOME_TARGET):{
         error("Please set your JAVA_HOME_TARGET or JAVA_HOME environment variable to point to the directory of your Java SDK. Current JAVA_HOME_TARGET: $$(JAVA_HOME_TARGET) JAVA_HOME: $$(JAVA_HOME)")
     }else{
-        !exists($$(JAVA_HOME_TARGET)) {
+        !exists($$JAVA_HOME_TARGET) {
             # Ant/Maven should set this up (this can't be a symlink)
-            exists($$(JAVA_HOME)) {
-                JAVA_HOME_TARGET = $$(JAVA_HOME)
-            } else {
-                error("Please set your JAVA_HOME_TARGET or JAVA_HOME environment variable to point to the directory of your Java SDK. Current JAVA_HOME_TARGET: $$(JAVA_HOME_TARGET) JAVA_HOME: $$(JAVA_HOME)")
-            }
-        } else {
-            # This has the effect of making $$JAVA_HOME_TARGET work in this file as used below
-            JAVA_HOME_TARGET = $$(JAVA_HOME_TARGET)
+            error("Please set your JAVA_HOME_TARGET or JAVA_HOME environment variable to point to the directory of your Java SDK. Current JAVA_HOME_TARGET: $$(JAVA_HOME_TARGET) JAVA_HOME: $$(JAVA_HOME)")
         }
     }
 }

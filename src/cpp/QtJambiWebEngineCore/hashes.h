@@ -84,7 +84,7 @@ inline hash_type qHash(const QWebEngineFindTextResult &value, hash_type seed = 0
     seed = hash(seed, value.numberOfMatches());
     seed = hash(seed, value.activeMatch());
     return seed;
-#endif
+#endif // QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 }
 
 inline bool operator==(const QWebEngineCookieStore::FilterRequest& arg1, const QWebEngineCookieStore::FilterRequest& arg2){
@@ -103,7 +103,7 @@ inline hash_type qHash(const QWebEngineCookieStore::FilterRequest &value, hash_t
     seed = hash(seed, value.origin);
     seed = hash(seed, value.firstPartyUrl);
     return seed;
-#endif
+#endif // QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 }
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -167,9 +167,10 @@ inline hash_type qHash(const QWebEngineFileSystemAccessRequest& value, hash_type
 {
     return QtWebEngineCore::FileSystemAccessPermissionRequestManagerQt::hash(value, seed);
 }
-#endif
-#endif
+#endif //defined(QTJAMBI_GENERATOR_RUNNING)
 
-#endif
+#endif // QT_VERSION >= QT_VERSION_CHECK(6, 4, 0)
+
+#endif // QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 
 #endif // QTJAMBIQWEBENGINECORE_HASHES_H

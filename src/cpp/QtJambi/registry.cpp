@@ -62,6 +62,10 @@ QT_WARNING_DISABLE_DEPRECATED
 #include "supertypeinfo_p.h"
 #include "qtjambi_cast.h"
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+#define qAsConst std::as_const
+#endif
+
 Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gLock, (QReadWriteLock::Recursive))
 typedef QMap<size_t, EntryTypes> TypeEntryTypesHash;
 typedef QMap<size_t, const char*> TypeStringHash;
@@ -82,7 +86,7 @@ Q_GLOBAL_STATIC(TypeStringHash, gTypeJavaNameHash)
 Q_GLOBAL_STATIC(StringTypesHash, gJavaNameTypeHash)
 typedef QSet<size_t> TypeSet;
 Q_GLOBAL_STATIC(StringTypeHash, gIIDTypeHash)
-Q_GLOBAL_STATIC(StringStringHash, gTypeIIDHash)
+Q_GLOBAL_STATIC(StringStringHash, gJavaClassIIDHash)
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 typedef QMap<QByteArray,QPair<const char*, int>> NativeInterfaceMap;
 Q_GLOBAL_STATIC(NativeInterfaceMap, gNativeInterfaceMap)
@@ -110,6 +114,8 @@ typedef QMap<size_t, QVector<FunctionInfo> > FunctionInfoHash;
 Q_GLOBAL_STATIC(FunctionInfoHash, gVirtualFunctionInfos)
 typedef QMap<size_t, QVector<ConstructorInfo> > ConstructorInfoHash;
 Q_GLOBAL_STATIC(ConstructorInfoHash, gConstructorInfos)
+typedef QMap<size_t, uint> ReturnScopeHash;
+Q_GLOBAL_STATIC(ReturnScopeHash, gReturnScopes)
 typedef QMap<size_t, Destructor> DestructorHash;
 Q_GLOBAL_STATIC(DestructorHash, gDestructorHash)
 typedef QHash<hash_type, const char*> NameHash;
@@ -476,7 +482,7 @@ void RegistryAPI::registerInterfaceTypeInfo(const std::type_info& typeId, QtJamb
     QWriteLocker locker(gLock());
     Q_UNUSED(locker)
     gIIDTypeHash->insert(interface_iid, &typeId);
-    gTypeIIDHash->insert(java_name, interface_iid);
+    gJavaClassIIDHash->insert(java_name, interface_iid);
 }
 
 void RegistryAPI::registerInterfaceID(const std::type_info& typeId, const char *interface_iid)
@@ -484,14 +490,21 @@ void RegistryAPI::registerInterfaceID(const std::type_info& typeId, const char *
     QWriteLocker locker(gLock());
     Q_UNUSED(locker)
     gIIDTypeHash->insert(interface_iid, &typeId);
-    gTypeIIDHash->insert(gTypeJavaNameHash->value(unique_id(typeId), nullptr), interface_iid);
+    gJavaClassIIDHash->insert(gTypeJavaNameHash->value(unique_id(typeId), nullptr), interface_iid);
 }
 
 const char * registeredInterfaceID(const std::type_info& typeId)
 {
     QReadLocker locker(gLock());
     Q_UNUSED(locker)
-    return gTypeIIDHash->value(gTypeJavaNameHash->value(unique_id(typeId), nullptr));
+    return gJavaClassIIDHash->value(gTypeJavaNameHash->value(unique_id(typeId), nullptr));
+}
+
+const char * registeredInterfaceIDForClassName(const QString& className)
+{
+    QReadLocker locker(gLock());
+    Q_UNUSED(locker)
+    return gJavaClassIIDHash->value(className.toLocal8Bit());
 }
 
 const char * RegistryAPI::registerInterfaceID(JNIEnv* env, jclass cls)
@@ -502,12 +515,12 @@ const char * RegistryAPI::registerInterfaceID(JNIEnv* env, jclass cls)
     {
         QWriteLocker locker(gLock());
         Q_UNUSED(locker)
-        if(!gTypeIIDHash->contains(className)){
+        if(!gJavaClassIIDHash->contains(className)){
             const char* _iid = gIIDByteArrayHash->insert(iid.toLatin1(), className).key();
-            gTypeIIDHash->insert(className, _iid);
+            gJavaClassIIDHash->insert(className, _iid);
             return _iid;
         }else{
-            return (*gTypeIIDHash)[className];
+            return (*gJavaClassIIDHash)[className];
         }
     }
 }
@@ -518,7 +531,7 @@ void RegistryAPI::registerInterfaceValueTypeInfo(const std::type_info& typeId, Q
     QWriteLocker locker(gLock());
     Q_UNUSED(locker)
     gIIDTypeHash->insert(interface_iid, &typeId);
-    gTypeIIDHash->insert(java_name, interface_iid);
+    gJavaClassIIDHash->insert(java_name, interface_iid);
 }
 
 void RegistryAPI::registerFunctionalTypeInfo(const std::type_info& typeId, QtJambiTypeInfo info, const char *qt_name, const char *java_name)
@@ -745,7 +758,7 @@ int registeredMetaTypeID(const std::type_info& typeId);
 
 bool isValueType(JNIEnv * env, jclass valueType, int* metaTypeId)
 {
-    const SuperTypeInfos& infos = SuperTypeInfos::fromClass(env, valueType);
+    const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, valueType);
     if(metaTypeId)
         *metaTypeId = QMetaType::UnknownType;
     if (!infos.isEmpty()){
@@ -981,9 +994,24 @@ void registerMetaTypeID(const std::type_info& typeId, const std::type_info& nonP
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 void registerMetaObjectByMetaTypeInterface(const QtPrivate::QMetaTypeInterface* iface, const QMetaObject* mo){
-    QWriteLocker locker(gLock());
-    Q_UNUSED(locker)
-    gMetaTypeMetaObjectHash->insert(iface, mo);
+    {
+        QWriteLocker locker(gLock());
+        Q_UNUSED(locker)
+        gMetaTypeMetaObjectHash->insert(iface, mo);
+    }
+    if(const QtJambiMetaObject* cqjmo = QtJambiMetaObject::cast(mo)){
+        if(cqjmo->revision()>=10){
+#if QT_VERSION < QT_VERSION_CHECK(7, 0, 0)
+            const qsizetype offset = cqjmo->revision() < 12
+                    ? cqjmo->propertyCount()
+                    : cqjmo->propertyCount() + cqjmo->enumeratorCount();
+#else
+            const qsizetype offset = cqjmo->propertyCount() + cqjmo->enumeratorCount();
+#endif
+            if(!mo->d.metaTypes[offset])
+                const_cast<const QtPrivate::QMetaTypeInterface**>(mo->d.metaTypes)[offset] = iface;
+        }
+    }
 }
 
 const QMetaObject* metaobjectByMetaTypeInterface(const QtPrivate::QMetaTypeInterface* iface){
@@ -1483,35 +1511,47 @@ void RegistryAPI::registerFunctionInfos(const std::type_info& typeId, std::initi
 {
     QWriteLocker locker(gLock());
     Q_UNUSED(locker)
-    if(!gVirtualFunctionInfos->contains(unique_id(typeId)))
-        gVirtualFunctionInfos->insert(unique_id(typeId), virtualFunctions);
+    size_t uid = unique_id(typeId);
+    if(!gVirtualFunctionInfos->contains(uid))
+        gVirtualFunctionInfos->insert(uid, virtualFunctions);
 }
 
 const QVector<const FunctionInfo>* virtualFunctions(const std::type_info& typeId)
 {
     QReadLocker locker(gLock());
     Q_UNUSED(locker)
-    if(gVirtualFunctionInfos->contains(unique_id(typeId))){
-        return reinterpret_cast<const QVector<const FunctionInfo>*>(&(*gVirtualFunctionInfos())[unique_id(typeId)]);
+    size_t uid = unique_id(typeId);
+    if(gVirtualFunctionInfos->contains(uid)){
+        return reinterpret_cast<const QVector<const FunctionInfo>*>(&(*gVirtualFunctionInfos())[uid]);
     }else{
         return nullptr;
     }
 }
 
-void RegistryAPI::registerConstructorInfos(const std::type_info& typeId, Destructor destructor, std::initializer_list<ConstructorInfo> constructors){
+void RegistryAPI::registerConstructorInfos(const std::type_info& typeId, uint returnScopes, Destructor destructor, std::initializer_list<ConstructorInfo> constructors){
     QWriteLocker locker(gLock());
     Q_UNUSED(locker)
-    if(!gConstructorInfos->contains(unique_id(typeId)))
-        gConstructorInfos->insert(unique_id(typeId), constructors);
-    if(!gDestructorHash->contains(unique_id(typeId)))
-        gDestructorHash->insert(unique_id(typeId), destructor);
+    size_t uid = unique_id(typeId);
+    if(!gConstructorInfos->contains(uid))
+        gConstructorInfos->insert(uid, constructors);
+    if(!gDestructorHash->contains(uid))
+        gDestructorHash->insert(uid, destructor);
+    if(returnScopes>0 && !gReturnScopes->contains(uid))
+        gReturnScopes->insert(uid, returnScopes);
+}
+
+uint returnScopes(const std::type_info& typeId){
+    QReadLocker locker(gLock());
+    Q_UNUSED(locker)
+    return gReturnScopes()->value(unique_id(typeId), 0);
 }
 
 const QVector<const ConstructorInfo>* registeredConstructorInfos(const std::type_info& typeId){
     QReadLocker locker(gLock());
     Q_UNUSED(locker)
-    if(gConstructorInfos->contains(unique_id(typeId))){
-        return reinterpret_cast<const QVector<const ConstructorInfo>*>(&(*gConstructorInfos())[unique_id(typeId)]);
+    size_t uid = unique_id(typeId);
+    if(gConstructorInfos->contains(uid)){
+        return reinterpret_cast<const QVector<const ConstructorInfo>*>(&(*gConstructorInfos())[uid]);
     }else{
         return nullptr;
     }
@@ -1795,7 +1835,7 @@ const InterfaceOffsetInfo* getInterfaceOffsets(JNIEnv *env, jclass clazz){
             InterfaceOffsetInfo result;
             jclass cls = clazz;
             if(!Java::QtJambi::ClassAnalyzerUtility::isGeneratedClass(env, cls)){
-                const SuperTypeInfos& infos = SuperTypeInfos::fromClass(env, clazz);
+                const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, clazz);
                 for(const SuperTypeInfo& info : infos){
                     if(info.offset()>0){
                         result.offsets[unique_id(info.typeId())] = uint(info.offset());
@@ -2007,6 +2047,7 @@ QList<QMetaMethod> getExtraSignalsOfMetaObject(const QMetaObject* metaObject){
         QMetaMethod method = metaObject->method(i);
         if(method.isValid()
                 && method.methodType()==QMetaMethod::Signal
+                && !(method.attributes() & QMetaMethod::Cloned)
                 && !availableSignalInfos.contains(method.methodIndex())
                 && !QtJambiMetaObject::isInstance(method.enclosingMetaObject())){
             extraSignals << method;
@@ -2369,7 +2410,7 @@ QMetaType getNativeWrapperType(const QMetaType& metaType){
                             builder.setStaticMetacallFunction([](QObject *gadget, QMetaObject::Call call, int argc, void **argv){
                                 JObjectWrapper* wrapper = reinterpret_cast<JObjectWrapper*>(gadget);
                                 if(JniEnvironment env{200}){
-                                    if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, wrapper->object())){
+                                    if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, wrapper->object())){
                                         QMetaType metaType;
                                         if(PointerToObjectLink* plink = dynamic_cast<PointerToObjectLink*>(link.get())){
                                             metaType = plink->metaType();
@@ -2441,34 +2482,58 @@ QList<QMetaType> registeredCustomMetaTypesForJavaClass(const QByteArray& javaCla
 }
 #endif
 
-QList<const char*> CoreAPI::getInterfaceIIDs(JNIEnv *env, jclass javaType){
-    QList<const char*> iids;
-    QString className;
-    if(javaType){
-        jobject interfaceList = Java::QtJambi::ClassAnalyzerUtility::getAllImplementedInterfaces(env, javaType);
-        if(interfaceList){
-            int count = QtJambiAPI::sizeOfJavaCollection(env, interfaceList);
-            if(count>0){
-                jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, interfaceList);
-                while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
-                    jclass interfaceClass = jclass(QtJambiAPI::nextOfJavaIterator(env, iterator));
-                    className = QtJambiAPI::getClassName(env, interfaceClass).replace('.', '/');
-                    QReadLocker locker(gLock());
-                    Q_UNUSED(locker)
-                    if(const char* iid = gTypeIIDHash->value(className.toLatin1(), nullptr)){
-                        iids << iid;
+QList<jclass> getFlatClassHirarchy(JNIEnv *env, jclass clazz){
+    QList<jclass> hirarchy;
+    {
+        QSet<jint> classHashes;
+        classHashes.insert(Java::Runtime::Object::hashCode(env, clazz));
+        hirarchy << clazz;
+        jint hash = 0;
+        QList<jclass> superTypes{clazz};
+        while(!superTypes.isEmpty()){
+            jclass cls = superTypes.takeFirst();
+            JObjectArrayWrapper interfaces(env, Java::Runtime::Class::getInterfaces(env, cls));
+            for(int i=0; i<interfaces.length(); ++i){
+                if(jclass interfaceClass = jclass(interfaces.at(env, i))){
+                    if(!classHashes.contains(hash = Java::Runtime::Object::hashCode(env, interfaceClass))){
+                        classHashes.insert(hash);
+                        hirarchy << interfaceClass;
                     }
+                    superTypes << interfaceClass;
+                }
+            }
+            if(!Java::Runtime::Class::isInterface(env, cls)){
+                jclass sc = env->GetSuperclass(cls);
+                if(sc && !Java::QtJambi::QtObject::isSameClass(env, sc)
+                      && !Java::Runtime::Object::isSameClass(env, sc)){
+                    if(!classHashes.contains(hash = Java::Runtime::Object::hashCode(env, sc))){
+                        hirarchy << sc;
+                        classHashes.insert(hash);
+                    }
+                    superTypes << sc;
                 }
             }
         }
-        while(javaType){
-            className = QtJambiAPI::getClassName(env, javaType).replace('.', '/');
-            QReadLocker locker(gLock());
-            Q_UNUSED(locker)
-            if(const char* iid = gTypeIIDHash->value(className.toLatin1(), nullptr)){
+    }
+    return hirarchy;
+}
+
+QList<const char*> CoreAPI::getInterfaceIIDs(JNIEnv *env, jclass javaType){
+    QList<const char*> iids;
+    if(javaType){
+        const SuperTypeInfos superTypeInfos = SuperTypeInfos::fromClass(env, javaType);
+        for(const SuperTypeInfo& superTypeInfo : superTypeInfos){
+            if(const char* iid = superTypeInfo.interfaceID())
                 iids << iid;
+        }
+        QString className;
+        const QList<jclass> hirarchy = getFlatClassHirarchy(env, javaType);
+        for(jclass sc : hirarchy){
+            className = QtJambiAPI::getClassName(env, sc).replace('.', '/');
+            if(const char* iid = registeredInterfaceIDForClassName(className)){
+                if(!iids.contains(iid))
+                    iids << iid;
             }
-            javaType = env->GetSuperclass(javaType);
         }
     }
     return iids;
@@ -2964,7 +3029,7 @@ QObject* QmlAPI::createQmlErrorDummyObject(const QMetaObject* metaObject, void* 
 size_t QmlAPI::extendedSizeForClass(JNIEnv *env, jclass object_class)
 {
     size_t size = 0;
-    const SuperTypeInfos& infos = SuperTypeInfos::fromClass(env, object_class);
+    const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, object_class);
     if(!infos.isEmpty()){
         for(const SuperTypeInfo& info : infos){
             size += info.size();
@@ -4232,7 +4297,7 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                 default: break;
                 }
             }else{
-                const SuperTypeInfos& superTypes = SuperTypeInfos::fromClass(env, clazz);
+                const SuperTypeInfos superTypes = SuperTypeInfos::fromClass(env, clazz);
                 QByteArray metaTypeName = javaClassName.toUtf8().replace("/", "::").replace("$", "::");
                 if(superTypes.isEmpty())
                 {
@@ -4374,8 +4439,8 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                                     return true;
                                 }, QMetaType::fromType<JObjectWrapper>(), metaType);
                             }
-                            registerConverterVariant(env, metaType, QLatin1String(metaTypeInterface->name), javaClassName, clazz);
                             registerJavaClassForCustomMetaType(env, metaType, clazz);
+                            registerConverterVariant(env, metaType, QLatin1String(metaTypeInterface->name), javaClassName, clazz);
                             return result;
                         }
                         if(Java::Runtime::Collection::isAssignableFrom(env, clazz)){
@@ -4544,8 +4609,8 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                                         return true;
                                     }, QMetaType::fromType<JObjectWrapper>(), metaType);
                                 }
-                                registerConverterVariant(env, metaType, QLatin1String(metaTypeInterface->name), javaClassName, clazz);
                                 registerJavaClassForCustomMetaType(env, metaType, clazz);
+                                registerConverterVariant(env, metaType, QLatin1String(metaTypeInterface->name), javaClassName, clazz);
                                 return result;
                             }
                             if(Java::Runtime::Collection::isAssignableFrom(env, clazz)){

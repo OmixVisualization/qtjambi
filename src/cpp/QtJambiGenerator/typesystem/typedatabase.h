@@ -67,7 +67,7 @@ public:
     ContainerTypeEntry *findContainerType(const QString &name) const;
     IteratorTypeEntry *findIteratorType(const QString &name) const;
     IteratorTypeEntry *findIteratorType(const ComplexTypeEntry * container) const;
-    PointerContainerTypeEntry *findPointerContainerType(const QString &name) const;
+    SmartPointerTypeEntry *findPointerContainerType(const QString &name) const;
     InitializerListTypeEntry *findInitializerListType(const QString &name) const;
 
     bool isPixmapType(const TypeEntry *e) const{

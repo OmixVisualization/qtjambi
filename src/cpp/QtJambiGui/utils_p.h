@@ -64,4 +64,6 @@ namespace QtWidgets{
 }
 }
 
+const QObject* getPointerOwner(const QTextCursor* __qt_this);
+
 #endif // QTJAMBIGUI_UTILS_H

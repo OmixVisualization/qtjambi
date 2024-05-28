@@ -188,14 +188,17 @@ class MetaAttributes {
         bool wasFriendly() const { return m_originalAttributes & Friendly; }
         void setHref(const QString& href) {m_href = href;}
         void setBrief(const QString& brief) {m_brief = brief;}
+        void setSince(const QString& since) {m_since = since;}
         const QString& href() const {return m_href;}
         const QString& brief() const {return m_brief;}
+        const QString& since() const {return m_since;}
 
     private:
         uint m_attributes;
         uint m_originalAttributes;
         QString m_href;
         QString m_brief;
+        QString m_since;
 };
 
 
@@ -228,7 +231,7 @@ class MetaType {
             FunctionalPattern,
             ContainerPattern,
             IteratorPattern,
-            PointerContainerPattern,
+            SmartPointerPattern,
             InitializerListPattern,
             QVariantPattern,
             JObjectWrapperPattern,
@@ -358,7 +361,7 @@ class MetaType {
         bool isIterator() const { return m_pattern == IteratorPattern; }
 
         // returns true if the type was used as a qpointer
-        bool isPointerContainer() const { return m_pattern == PointerContainerPattern; }
+        bool isSmartPointer() const { return m_pattern == SmartPointerPattern; }
 
         // returns true if the type was used as a flag
         bool isFlags() const { return m_pattern == FlagsPattern; }
@@ -771,6 +774,9 @@ class MetaFunction : public MetaAttributes {
 
     void setOperatorType(OperatorType operatorType){ m_operatorType = operatorType; }
 
+    int returnScopeIndex() const;
+    void setReturnScopeIndex(int newReturnScopeIndex);
+
 private:
     QString m_name;
     QString m_original_name;
@@ -801,6 +807,7 @@ private:
     QString m_deprecatedComment;
     MetaType::ReferenceType m_functionReferenceType;
     QPair<MetaFunction*,FunctionModification> m_functionTemplate;
+    int m_returnScopeIndex = -1;
 };
 
 class MetaEnum;
@@ -892,6 +899,8 @@ class MetaFunctional : public MetaAttributes {
 
         FunctionalTypeEntry *typeEntry() const { return m_type_entry; }
         void setTypeEntry(FunctionalTypeEntry *entry) { m_type_entry = entry; }
+
+        OwnershipRule ownership(TS::Language language, int idx) const;
 
         MetaClass *enclosingClass() const { return m_class; }
         void setEnclosingClass(MetaClass *c) { m_class = c; }
@@ -1118,6 +1127,8 @@ class MetaClass : public MetaAttributes {
         void setHasVirtualSlots(bool on) { m_has_virtual_slots = on; }
         bool generateShellClass() const;
         bool instantiateShellClass() const;
+        void setNeedsOShellDestructor(bool b);
+        bool needsOShellDestructor() const;
 
         bool hasVirtualSlots() const { return m_has_virtual_slots; }
         bool hasVirtualFunctions() const { return !isFinal() && m_has_virtuals; }
@@ -1244,7 +1255,9 @@ class MetaClass : public MetaAttributes {
         bool hasPaintMethod() const;
         bool hasQmlListProperty() const;
         MetaFunction* publicCopyConstructor() const;
-private:
+        uint returnScopeRequired() const;
+
+    private:
         QSet<QString> getAllUnimplmentablePureVirtualFunctions() const;
 
     private:
@@ -1277,7 +1290,8 @@ private:
     uint m_has_subClasses : 1;
     uint m_usingProtectedBaseConstructors : 1;
     uint m_usingPublicBaseConstructors : 1;
-    uint m_reserved : 15;
+    uint m_needsOShellDestructor : 1;
+    uint m_reserved : 14;
 
         const MetaClass *m_enclosing_class;
         MetaClass *m_base_class;
@@ -1315,6 +1329,7 @@ private:
         const MetaFunction* m_qDebug_stream_function;
         QString m_deprecatedComment;
         QString m_qHashScope;
+        uint m_returnScopeRequired = 0;
 };
 
 class QPropertySpec {

@@ -277,7 +277,9 @@ inline hash_type qHash(const QQuickRenderTarget &value, hash_type seed = 0)
 #if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
         seed = hash(seed, p->u.nativeTexture.layoutOrState);
         seed = hash(seed, p->u.nativeTexture.rhiFormat);
+#if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
         seed = hash(seed, p->u.nativeTexture.rhiFlags);
+#endif
 #else
         seed = hash(seed, p->u.nativeTexture.layout);
 #endif

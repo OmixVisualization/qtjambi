@@ -117,6 +117,7 @@ final class MetaObjectUtility extends AbstractMetaObjectUtility{
      */
     @NativeAccess
     private static MetaObjectData analyze(Class<?> clazz) {
+    	int revision = resolveMetaDataRevision();
         try {
             if(clazz.isPrimitive()) {
                 throw new RuntimeException("Cannot analyze meta object from primitive type");
@@ -197,13 +198,49 @@ final class MetaObjectUtility extends AbstractMetaObjectUtility{
             	isGadget = gadgetClasses.contains(clazz) || gadgetPackages.contains(clazz.getPackage().getName());
             }
             {
+            	try {
+					Class<?> syntheticClass = Class.forName(clazz.getName()+"$WhenMappings", false, clazz.getClassLoader());
+					if(syntheticClass.isSynthetic()) {
+						for(Field declaredField : syntheticClass.getDeclaredFields()) {
+							if(Modifier.isStatic(declaredField.getModifiers()) 
+									&& declaredField.getType()==int[].class
+									&& declaredField.getName().startsWith("$EnumSwitchMapping$")) {
+								metaObjectData.switchTableFields.add(declaredField);
+							}
+						}
+					}
+				} catch (Throwable e1) {
+				}
+            	for(int i=1;;++i) {
+            		try {
+						Class<?> syntheticClass = Class.forName(clazz.getName()+"$"+i, false, clazz.getClassLoader());
+						if(syntheticClass.isSynthetic()) {
+							for(Field declaredField : syntheticClass.getDeclaredFields()) {
+								if(Modifier.isStatic(declaredField.getModifiers()) 
+										&& declaredField.getType()==int[].class
+										&& declaredField.getName().startsWith("$SwitchMap$")) {
+									metaObjectData.switchTableFields.add(declaredField);
+								}
+							}
+						}
+					} catch (Throwable e1) {
+						break;
+					}
+            	}
             	TreeSet<Field> declaredFields = new TreeSet<>((m1, m2)->{
                 	return m1.getName().compareTo(m2.getName());
                 });
             	declaredFields.addAll(Arrays.asList(clazz.getDeclaredFields()));
 signalLoop:	    for (Field declaredField : declaredFields) {
 					Class<?> fieldType = declaredField.getType();
-	            	if(isQObjectSignalType(fieldType)) {
+					if(declaredField.isSynthetic() 
+							&& Modifier.isStatic(declaredField.getModifiers()) 
+							&& Modifier.isPrivate(declaredField.getModifiers()) 
+							&& fieldType==int[].class
+							&& declaredField.getName().startsWith("$SWITCH_TABLE$")) {
+						metaObjectData.switchTableFields.add(declaredField);
+					}
+	            	if(isQObjectSignalType(fieldType) && !declaredField.isAnnotationPresent(QtUninvokable.class)) {
 	            		if (!Modifier.isStatic(declaredField.getModifiers())) {
 	            			if(!isQObject && fieldType.getEnclosingClass() == QObject.class)
 	            				throw new QSignalDeclarationException(String.format("Declaration error at signal %1$s.%2$s: do not use QObject signals within non-QObjects.", clazz.getSimpleName(), declaredField.getName()));
@@ -283,9 +320,9 @@ signalLoop:	    for (Field declaredField : declaredFields) {
 	                                signalParameterInfos.add(new ParameterInfo(type));
 	                            }
 	                        }
-	                        long methodId = findEmitMethodId(fieldType, emitParameterTypes);
+	                        SignalUtility.EmitMethodInfo emitMethodInfo = findEmitMethodInfo(fieldType, emitParameterTypes);
 	                        String methodSignature = String.format("%1$s(%2$s)", declaredField.getName(), String.join(", ", cppTypes));
-	                        if(!addedMethodSignatures.contains(methodSignature) && methodId!=0) {
+	                        if(!addedMethodSignatures.contains(methodSignature) && emitMethodInfo!=null && emitMethodInfo.methodId!=0) {
 	                        	if (!Modifier.isFinal(declaredField.getModifiers())) {
 		                    		if(!Boolean.getBoolean("qtjambi.allow-nonfinal-signals") && !Boolean.getBoolean("io.qt.allow-nonfinal-signals")) {
 		                    			java.util.logging.Logger.getLogger("io.qt.internal").severe(String.format("Missing modifier 'final' at signal %1$s.%2$s. Specify JVM argument -Dqtjambi.allow-nonfinal-signals=true to disable this error.", clazz.getSimpleName(), declaredField.getName()));
@@ -308,20 +345,20 @@ signalLoop:	    for (Field declaredField : declaredFields) {
 	                        	addedMethodSignatures.add(methodSignature);
 	                        	signalIsClone.add(Boolean.FALSE);
 	                        	allSignalParameterInfos.add(new ArrayList<>(signalParameterInfos));
-                        		metaObjectData.signalInfos.add(new MetaObjectData.SignalInfo(declaredField, new ArrayList<>(signalTypes), fieldType, new int[signalTypes.size()], methodId));
+                        		metaObjectData.signalInfos.add(new MetaObjectData.SignalInfo(declaredField, new ArrayList<>(signalTypes), fieldType, new int[signalTypes.size()], emitMethodInfo.methodId));
                         		signals.put(declaredField.getName(), declaredField);
 		                        Runnable addDefaultSignal = ()->{
 		                        	signalTypes.remove(signalTypes.size()-1);
 	                        		signalParameterInfos.remove(signalParameterInfos.size()-1);
 	                        		cppTypes.remove(cppTypes.size()-1);
 	                        		emitParameterTypes.remove(emitParameterTypes.size()-1);
-		                        	long _methodId = findEmitMethodId(fieldType, emitParameterTypes);
+	                        		SignalUtility.EmitMethodInfo _emitMethodInfo = findEmitMethodInfo(fieldType, emitParameterTypes);
 	                        		String _methodSignature = String.format("%1$s(%2$s)", declaredField.getName(), String.join(", ", cppTypes));
-	                        		if(!addedMethodSignatures.contains(_methodSignature) && _methodId!=0) {
+	                        		if(!addedMethodSignatures.contains(_methodSignature) && _emitMethodInfo!=null && _emitMethodInfo.methodId!=0) {
 	                        			addedMethodSignatures.add(_methodSignature);
 	                        			signalIsClone.add(Boolean.TRUE);
 	    	                        	allSignalParameterInfos.add(new ArrayList<>(signalParameterInfos));
-	    	                        	metaObjectData.signalInfos.add(new MetaObjectData.SignalInfo(declaredField, new ArrayList<>(signalTypes), fieldType, new int[signalTypes.size()], _methodId));
+	    	                        	metaObjectData.signalInfos.add(new MetaObjectData.SignalInfo(declaredField, new ArrayList<>(signalTypes), fieldType, new int[signalTypes.size()], _emitMethodInfo.methodId));
 	                        		}
 		                        };
 		                        switch(signalTypes.size()) {
@@ -495,9 +532,8 @@ signalLoop:	    for (Field declaredField : declaredFields) {
                                 propertyEditableResolvers.put(property, isEditable(declaredField, clazz));
                                 propertyStoredResolvers.put(property, isStored(declaredField, clazz));
                                 propertyUserResolvers.put(property, isUser(declaredField, clazz));
-                                propertyRequiredResolvers.put(property, isRequired(declaredField, clazz));
+                                propertyRequiredResolvers.put(property, isRequired(declaredField));
                                 propertyConstantResolvers.put(property, isConstant(declaredField));
-                                propertyFinalResolvers.put(property, false);
 	            			}
 	            		}else if(isQObject && isValidQProperty(declaredField)) {
         					if (!Modifier.isFinal(declaredField.getModifiers())) {
@@ -513,9 +549,8 @@ signalLoop:	    for (Field declaredField : declaredFields) {
                             propertyEditableResolvers.put(property, isEditable(declaredField, clazz));
                             propertyStoredResolvers.put(property, isStored(declaredField, clazz));
                             propertyUserResolvers.put(property, isUser(declaredField, clazz));
-                            propertyRequiredResolvers.put(property, isRequired(declaredField, clazz));
+                            propertyRequiredResolvers.put(property, isRequired(declaredField));
                             propertyConstantResolvers.put(property, isConstant(declaredField));
-                            propertyFinalResolvers.put(property, false);
 	            		}else if((isQObject || isGadget) && Modifier.isPublic(declaredField.getModifiers())) {
 	            			String property = declaredField.getName();
 	            			if(!(Modifier.isStatic(declaredField.getModifiers()) && property.equals("staticMetaObject"))) {
@@ -525,9 +560,8 @@ signalLoop:	    for (Field declaredField : declaredFields) {
 	                            propertyEditableResolvers.put(property, isEditable(declaredField, clazz));
 	                            propertyStoredResolvers.put(property, isStored(declaredField, clazz));
 	                            propertyUserResolvers.put(property, isUser(declaredField, clazz));
-	                            propertyRequiredResolvers.put(property, false);
-	                            propertyConstantResolvers.put(property, true);
-	                            propertyFinalResolvers.put(property, false);
+	                            propertyRequiredResolvers.put(property, isRequired(declaredField));
+	                            propertyConstantResolvers.put(property, isConstant(declaredField, Modifier.isFinal(declaredField.getModifiers())));
 	            			}
 	                	}
 	                }
@@ -709,7 +743,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         propertyEditableResolvers.put(name, isEditable(declaredMethod, clazz));
                         propertyStoredResolvers.put(name, isStored(declaredMethod, clazz));
                         propertyUserResolvers.put(name, isUser(declaredMethod, clazz));
-                        propertyRequiredResolvers.put(name, isRequired(declaredMethod, clazz));
+                        propertyRequiredResolvers.put(name, isRequired(declaredMethod));
                         propertyConstantResolvers.put(name, isConstant(declaredMethod));
                         propertyFinalResolvers.put(name, isFinal(declaredMethod));
                     }
@@ -764,7 +798,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                                     propertyDesignableResolvers.put(propertyName, isDesignable(readerMethod, clazz));
                                     propertyScriptableResolvers.put(propertyName, isScriptable(readerMethod, clazz));
                                     propertyUserResolvers.put(propertyName, isUser(readerMethod, clazz));
-                                    propertyRequiredResolvers.put(propertyName, isRequired(readerMethod, clazz));
+                                    propertyRequiredResolvers.put(propertyName, isRequired(readerMethod));
                                 }
                             }
                         }
@@ -817,7 +851,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
             		propertyDesignableResolvers.put(pair.first, isDesignable(pair.second, clazz));
                     propertyScriptableResolvers.put(pair.first, isScriptable(pair.second, clazz));
                     propertyUserResolvers.put(pair.first, isUser(pair.second, clazz));
-                    propertyRequiredResolvers.put(pair.first, isRequired(pair.second, clazz));
+                    propertyRequiredResolvers.put(pair.first, isRequired(pair.second));
             	}
             }
             
@@ -846,7 +880,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 	                            propertyDesignableResolvers.put(propertyName, isDesignable(readerMethod, clazz));
 	                            propertyScriptableResolvers.put(propertyName, isScriptable(readerMethod, clazz));
 	                            propertyUserResolvers.put(propertyName, isUser(readerMethod, clazz));
-	                            propertyRequiredResolvers.put(propertyName, isRequired(readerMethod, clazz));
+	                            propertyRequiredResolvers.put(propertyName, isRequired(readerMethod));
 	                        }else {
 	                        	Method writerMethod = findPropertyWriter(getDeclaredMethod(clazz, "set"+propertyName.toUpperCase().charAt(0)+propertyName.substring(1), paramType), propertyName, paramType);
 	                        	if(writerMethod != null) {
@@ -856,7 +890,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 	                                	propertyDesignableResolvers.put(propertyName, isDesignable(writerMethod, clazz));
 	    	                            propertyScriptableResolvers.put(propertyName, isScriptable(writerMethod, clazz));
 	    	                            propertyUserResolvers.put(propertyName, isUser(writerMethod, clazz));
-	    	                            propertyRequiredResolvers.put(propertyName, isRequired(writerMethod, clazz));
+	    	                            propertyRequiredResolvers.put(propertyName, isRequired(writerMethod));
 	                                }
 	                        	}
 	                        }
@@ -886,7 +920,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                             propertyDesignableResolvers.put(propertyName, isDesignable(readerMethod, clazz));
                             propertyScriptableResolvers.put(propertyName, isScriptable(readerMethod, clazz));
                             propertyUserResolvers.put(propertyName, isUser(readerMethod, clazz));
-                            propertyRequiredResolvers.put(propertyName, isRequired(readerMethod, clazz));
+                            propertyRequiredResolvers.put(propertyName, isRequired(readerMethod));
                         }else {
                         	Method writerMethod;
                         	writerMethod = findPropertyWriter(getDeclaredMethod(clazz, "set"+propertyName.toUpperCase().charAt(0)+propertyName.substring(1), paramType), propertyName, paramType);
@@ -897,7 +931,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                                 	propertyDesignableResolvers.put(propertyName, isDesignable(writerMethod, clazz));
     	                            propertyScriptableResolvers.put(propertyName, isScriptable(writerMethod, clazz));
     	                            propertyUserResolvers.put(propertyName, isUser(writerMethod, clazz));
-    	                            propertyRequiredResolvers.put(propertyName, isRequired(writerMethod, clazz));
+    	                            propertyRequiredResolvers.put(propertyName, isRequired(writerMethod));
                                 }
                         	}
                         }
@@ -1224,7 +1258,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 
                 final int MO_HEADER_LEN = 14;  // header size        	
                 // revision
-                metaObjectData.intData.add(resolveMetaDataRevision());		intdataComments.add("revision");
+                metaObjectData.intData.add(revision);		intdataComments.add("revision");
                 // classname
                 metaObjectData.intData.add(metaObjectData.addStringDataAndReturnIndex(classname));		intdataComments.add("className");
                 // classinfo
@@ -1348,6 +1382,40 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                 //
                 for(int i=0; i<propertyReaders.size(); ++i) {
                     metaObjectData.metaTypes.add(0);
+                }
+                
+                if(revision>=10) {
+                	if(revision>=12) {
+                		if(!enums.isEmpty()){
+                        	List<Class<?>> enumList = new ArrayList<>(enums.values());
+                            int metaTypeId;
+                            String typeName;
+                            for (int i = 0; i < enumList.size(); i++) {
+                                Class<?> enumClass = enumList.get(i);
+                                typeName = enumClass.getSimpleName();
+    	                        QMetaType.Type type = metaType(typeName);
+    	                        if(type==QMetaType.Type.UnknownType || type==QMetaType.Type.User){
+    	                        	metaTypeId = findMetaType(typeName);
+    	                        	QMetaType metaType = new QMetaType(metaTypeId);
+    	                            if(metaTypeId==QMetaType.Type.UnknownType.value() 
+    	                            		|| !metaType.name().toString().equals(typeName)
+    	                            		|| metaType.javaType()!=enumClass) {
+    	                                metaTypeId = registerMetaType(enumClass, null, null, false, false);
+    	                                metaType = new QMetaType(metaTypeId);
+    	                            }
+    	                            if(metaTypeId!=QMetaType.Type.UnknownType.value())
+    	                                typeName = new QMetaType(metaTypeId).name().toString();
+    	                            metaObjectData.metaTypes.add(metaTypeId);
+    	                            metaObjectData.enumMetaTypes.add(new MetaObjectData.MetaTypeInfo[]{new MetaObjectData.MetaTypeInfo(metaTypeId, typeName),new MetaObjectData.MetaTypeInfo(metaTypeId, typeName)});
+    	                        }else{
+    	                            metaObjectData.metaTypes.add(type.value());
+    	                            metaObjectData.enumMetaTypes.add(new MetaObjectData.MetaTypeInfo[]{new MetaObjectData.MetaTypeInfo(type.value(), typeName),new MetaObjectData.MetaTypeInfo(type.value(), typeName)});
+    	                        }
+                            }
+                        }
+                	}
+                	// metaType for metaObject
+                	metaObjectData.metaTypes.add(0);
                 }
                 
                 for (int i = 0; i < metaObjectData.signalInfos.size(); ++i) {
@@ -1731,7 +1799,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                             flags.set(Bindable);
                         
                         if (designableVariant instanceof Boolean) {
-                            if ((Boolean) designableVariant)
+                            if ((boolean)designableVariant)
                                 flags.set(PropertyFlags.Designable);
                             metaObjectData.propertyDesignableResolvers.add(null);
                         } else if (designableVariant instanceof Method) {
@@ -1739,10 +1807,12 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                             flags.set(ResolveDesignable);
                         }else {
                             metaObjectData.propertyDesignableResolvers.add(null);
+                            // Designable by default
+                            flags.set(PropertyFlags.Designable);
                         }
                         
                         if (scriptableVariant instanceof Boolean) {
-                            if ((Boolean) scriptableVariant)
+                            if ((boolean)scriptableVariant)
                                 flags.set(PropertyFlags.Scriptable);
                             metaObjectData.propertyScriptableResolvers.add(null);
                         } else if (scriptableVariant instanceof Method) {
@@ -1750,10 +1820,12 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                             metaObjectData.propertyScriptableResolvers.add((Method) scriptableVariant);
                         }else {
                             metaObjectData.propertyScriptableResolvers.add(null);
+                            // Scriptable by default
+                            flags.set(PropertyFlags.Scriptable);
                         }
                         
                         if (editableVariant instanceof Boolean) {
-                            if ((Boolean) editableVariant)
+                            if ((boolean)editableVariant)
                                 flags.set(Editable);
                             metaObjectData.propertyEditableResolvers.add(null);
                         } else if (editableVariant instanceof Method) {
@@ -1764,7 +1836,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         }
                         
                         if (storedVariant instanceof Boolean) {
-                            if ((Boolean) storedVariant)
+                            if ((boolean)storedVariant)
                                 flags.set(PropertyFlags.Stored);
                             metaObjectData.propertyStoredResolvers.add(null);
                         } else if (storedVariant instanceof Method) {
@@ -1773,10 +1845,12 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                             metaObjectData.propertyStoredResolvers.add((Method) storedVariant);
                         }else {
                             metaObjectData.propertyStoredResolvers.add(null);
+                            // Stored by default
+                            flags.set(PropertyFlags.Stored);
                         }
                                
                         if (userVariant instanceof Boolean) {
-                            if ((Boolean) userVariant)
+                            if ((boolean)userVariant)
                                 flags.set(PropertyFlags.User);
                             metaObjectData.propertyUserResolvers.add(null);
                         } else if (userVariant instanceof Method) {
@@ -1788,7 +1862,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                         
                         if (Boolean.TRUE.equals(constantVariant)) {
                         	if(writer!=null || notify!=null)
-                        		throw new QPropertyDeclarationException(String.format("Property %1$s in class %2$s: Must not specify @QtPropertyConstant in combination with writer and/or notifier signal.", propertyName, clazz.getTypeName()));
+                        		throw new QPropertyDeclarationException(String.format("Property '%1$s' in class %2$s: Must not specify @QtPropertyConstant in combination with writer and/or notifier signal.", propertyName, clazz.getTypeName()));
                             flags.set(PropertyFlags.Constant);
                         }else if (writer==null 
                         		&& notify==null 
@@ -2239,7 +2313,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
         for (Class<?> declaredClass : declaredClasses)
             putEnumOrFlag(declaredClass, enums);
 
-        return enums;
+        return Collections.unmodifiableMap(enums);
     }
 
     private static int putEnumOrFlag(Class<?> type, Map<String, Class<?>> enums) {
@@ -2321,7 +2395,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
             }
         }
 
-        return Boolean.TRUE;
+        return null;
     }
     
     private static Object isScriptable(AccessibleObject member, Class<?> clazz) {
@@ -2346,7 +2420,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 	            }
             }
         }
-        return Boolean.TRUE;
+        return null;
     }
     
     private static Object isStored(AccessibleObject member, Class<?> clazz) {
@@ -2371,7 +2445,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 	            }
             }
         }
-        return Boolean.TRUE;
+        return null;
     }
     
     private static Object isEditable(AccessibleObject member, Class<?> clazz) {
@@ -2420,27 +2494,31 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
             }
         }
 
-        return Boolean.FALSE;
+        return null;
     }
 
-    private static Boolean isRequired(AccessibleObject member, Class<?> clazz) {
+    private static Boolean isRequired(AccessibleObject member) {
         QtPropertyRequired required = member.getAnnotation(QtPropertyRequired.class);
         if (required != null) {
             return required.value();
         }
-        return Boolean.FALSE;
+        return null;
     }
 
     private static Boolean isFinal(Method declaredMethod) {
         return Modifier.isFinal(declaredMethod.getModifiers());
     }
-
+    
     private static Boolean isConstant(AccessibleObject member) {
+    	return isConstant(member, null);
+    }
+
+    private static Boolean isConstant(AccessibleObject member, Boolean defaultValue) {
         QtPropertyConstant isConstant = member.getAnnotation(QtPropertyConstant.class);
         if (isConstant != null) {
             return isConstant.value();
         }
-        return Boolean.FALSE;
+        return defaultValue;
     }
 
     private static boolean isValidGetter(Method method) {
@@ -2501,13 +2579,20 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
             return r;
 
         int major = QtJambi_LibraryUtilities.qtMajorVersion;
-//        int minor = QtJambi_LibraryUtilities.qtMinorVersion;
+        int minor = QtJambi_LibraryUtilities.qtMinorVersion;
         if(major == 5)
             r = 7;  // 5.0.x (Qt5 requires a minimum of this revision)
-        else if(major == 6)
-            r = 9;  // 6.0.x (Qt6 requires a minimum of this revision)
-        else  // All future versions
-            r = 9;
+        else if(major == 6) {
+        	if(minor<2)
+        		r = 9;  // 6.0.x (Qt6 requires a minimum of this revision)
+        	else if(minor<5)
+        		r = 10;
+        	else if(minor<6)
+        		r = 11;
+        	else
+        		r = 12;
+        }else  // All future versions
+            r = 12;
         revision = r;
         return r;
     }
@@ -2557,7 +2642,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
         }
     }
 	
-	private static long findEmitMethodId(Class<?> signalClass, List<Class<?>> signalTypes) {
+	private static SignalUtility.EmitMethodInfo findEmitMethodInfo(Class<?> signalClass, List<Class<?>> signalTypes) {
 		Map<List<Class<?>>,SignalUtility.EmitMethodInfo> emitMethods = SignalUtility.findEmitMethods(signalClass);
 		SignalUtility.EmitMethodInfo result;
 		if(emitMethods.isEmpty())
@@ -2575,7 +2660,7 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
 				result = emitMethods.get(signalTypes);
 			}
 		}
-		return result==null ? 0 : result.methodId;
+		return result;
 	}
 
 	/**
@@ -2705,7 +2790,9 @@ class MetaObjectData {
     final @NativeAccess List<Method>  propertyUserResolvers = new ArrayList<>();
     final @NativeAccess List<MetaTypeInfo[]>   propertyMetaTypes = new ArrayList<>();
     final @NativeAccess List<Class<?>>   propertyClassTypes = new ArrayList<>();
+    final @NativeAccess List<MetaTypeInfo[]>   enumMetaTypes = new ArrayList<>();
     final @NativeAccess List<Class<?>> relatedMetaObjects = new ArrayList<>();
+    final @NativeAccess List<Field> switchTableFields = new ArrayList<>();
 
     @NativeAccess boolean hasStaticMembers;
     final @NativeAccess List<Integer> metaTypes = new ArrayList<>();

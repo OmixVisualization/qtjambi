@@ -382,6 +382,23 @@ public class TestMetaObject extends ApplicationInitializer {
     	Assert.assertFalse(visibleM.isValid());
     }
     
+    static class PropertyMemberCarrier extends QObject {
+    	public String text;
+
+		public String getText() {
+			return text;
+		}
+
+		public void setText(String text) {
+			this.text = text;
+		}
+    }
+    
+    @Test public void testPublicMember() {
+    	// not throwing QPropertyDeclarationException
+    	new PropertyMemberCarrier();
+    }
+    
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestMetaObject.class.getName());
     }

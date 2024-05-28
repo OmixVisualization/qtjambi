@@ -270,15 +270,18 @@ JNIEnv *currentJNIEnvironment(JavaVM *vm, bool initializeJavaThread = true){
                 jthread = nullptr;
             }
         }
-        {
-            QReadLocker locker(QtJambiLinkUserData::lock());
-            threadData = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, currentThread);
-        }
+        bool init = false;
         if(!threadData){
-            threadData = new QThreadUserData(currentThread);
             QWriteLocker locker(QtJambiLinkUserData::lock());
-            QTJAMBI_SET_OBJECTUSERDATA(QThreadUserData, currentThread, threadData);
+            threadData = QTJAMBI_GET_OBJECTUSERDATA(QThreadUserData, currentThread);
+            if(!threadData){
+                threadData = new QThreadUserData();
+                init = true;
+                QTJAMBI_SET_OBJECTUSERDATA(QThreadUserData, currentThread, threadData);
+            }
         }
+        if(init)
+            threadData->initialize(currentThread);
     } else {
         Q_ASSERT(result == JNI_OK);
     }

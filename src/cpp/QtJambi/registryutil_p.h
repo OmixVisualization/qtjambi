@@ -143,6 +143,7 @@ bool isNativeWrapperMetaType(QMetaType metaType);
 
 int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isReference);
 const QVector<const ConstructorInfo>* registeredConstructorInfos(const std::type_info& typeId);
+uint returnScopes(const std::type_info& typeId);
 jclass getArrayClass(JNIEnv *env, jclass cls, int arrayDepth);
 
 #if QT_VERSION >= QT_VERSION_CHECK(6,0,0)
@@ -160,7 +161,9 @@ void registerContainerTypeInfo(const std::type_info& typeId, QtJambiTypeInfo inf
 void registerMetaTypeID(const std::type_info& typeId, const std::type_info& nonPointerTypeId, int qtMetaType);
 QList<const PolymorphicIdHandler*> getPolymorphicIdHandlers(const std::type_info& polymorphicBaseTypeId);
 const char * registeredInterfaceID(const std::type_info& typeId);
+const char * registeredInterfaceIDForClassName(const QString& className);
 bool isQObject(const std::type_info& typeId);
+QList<jclass> getFlatClassHirarchy(JNIEnv *env, jclass clazz);
 
 #ifdef JOBJECT_REFCOUNT
 #  include <QtCore/QReadWriteLock>

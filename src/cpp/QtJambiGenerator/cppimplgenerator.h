@@ -96,7 +96,7 @@ class CppImplGenerator : public CppGenerator {
         void writeToStringFunction(QTextStream &s, const MetaClass *java_class);
         void writeCloneFunction(QTextStream &s, const MetaClass *java_class);
         void writeShellConstructor(QTextStream &s, bool isInterface, const MetaFunction *java_function, Option options = NoOption);
-        void writeShellDestructor(QTextStream &s, bool isInterface, const MetaClass *java_class);
+        void writeShellDestructor(QTextStream &s, const MetaClass *java_class);
         void writeShellConstructor(QTextStream &s, const MetaFunctional *java_class);
         void writeShellDestructor(QTextStream &s, const MetaFunctional *java_class);
         void writeArgumentConversion(QTextStream &s, const MetaFunction *signal, QStringList& converterFunctions, QSet<QString> &forwardDeclarations);
@@ -168,6 +168,7 @@ class CppImplGenerator : public CppGenerator {
                                      const MetaClass *java_class, Option option = NoOption);
         void writeOwnership(QTextStream &s,
                             const MetaFunction *java_function,
+                            const MetaFunctional *java_functional,
                             const QString &java_var_name,
                             const QString &qt_var_name,
                             int var_index,
@@ -176,9 +177,11 @@ class CppImplGenerator : public CppGenerator {
                             const QString& __jni_env = "__jni_env",
                             const QString& qtjambi_scope = "");
         bool hasOwnership(const MetaFunction *java_function,
+                          const MetaFunctional *java_functional,
                             int var_index,
                             const MetaClass *implementor,
                             TS::Language);
+
         bool writeQtToJava(QTextStream &s,
                            const MetaType *java_type,
                            const QString &qt_name,

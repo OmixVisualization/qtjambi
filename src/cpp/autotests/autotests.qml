@@ -77,6 +77,23 @@ TypeSystem{
 		FunctionalType{
 			name: "TestStdFunction"
 		}
+		
+		
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: String.raw`
+namespace QHashPrivate {
+template <>
+constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QRunnable *>> = false;
+template <>
+constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QObject *>> = false;
+template <>
+constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
+}`
+            }
+            since: 6.8
+        }
     }
     
     ValueType{
@@ -1311,7 +1328,7 @@ if(java.util.logging.Logger.getLogger("io.qt.autotests").isLoggable(java.util.lo
     }
     
     ObjectType{
-        name: "SharedPointerTest"
+        name: "SmartPointerTest"
         ExtraIncludes{
             Include{
                 fileName: "QtJambiWidgets/hashes.h"
@@ -1322,6 +1339,9 @@ if(java.util.logging.Logger.getLogger("io.qt.autotests").isLoggable(java.util.lo
                 location: Include.Global
             }
         }
+		FunctionalType{
+			name: "StringSupplier"
+		}
     }
     
     ObjectType{

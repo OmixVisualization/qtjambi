@@ -63,12 +63,17 @@ public:
     QtJambiShellImpl(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, QObject* ptr, const QMetaObject* originalMetaObject, bool created_by_java, bool isDeclarativeCall, bool is_shell, bool hasCustomMetaObject, const SuperTypeInfos* superTypeInfos, JavaException& ocurredException);
     ~QtJambiShellImpl() override;
     void deleteShell() override;
+    QtJambiScope* returnScope(JNIEnv *env, const std::type_info& typeId, uint index) override;
     void init(JNIEnv* env);
     QSharedPointer<QtJambiLink> link() const;
+    bool hasEmptyVTable() const;
     void overrideLink(const QSharedPointer<QtJambiLink>& link);
     static void * getPlacement(JNIEnv *env, jclass callingClass, jobject placement_object);
     static const char *const id;
     static void initializeNativeInterface(JNIEnv *env, jclass callingClass, jobject object, jobject link, jobject arguments);
+    static QtJambiShellImpl* get(const QtJambiShellInterface* shellInterface);
+    static jmethodID javaMethod(const QtJambiShellInterface* shellInterface, const std::type_info& typeId, int pos);
+    static QSharedPointer<QtJambiLink> link(const QtJambiShellInterface* shellInterface);
 protected:
     static const QSharedPointer<const VTable>&setupVTable(JNIEnv *, jclass, jobject, const std::type_info&, const SuperTypeInfos*, const QMetaObject*, bool hasCustomMetaObject, JavaException& ocurredException);
 private:
@@ -106,6 +111,32 @@ private:
     bool m_isAlive;
 #endif
     Q_DISABLE_COPY_MOVE(SingleTypeShell)
+};
+
+class SingleTypeRSShell : public SingleTypeShell{
+public:
+    SingleTypeRSShell(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, const QMetaType& metaType, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
+                    PtrOwnerFunction ownerFunction, JavaException& ocurredException, uint returnScopeCount);
+    SingleTypeRSShell(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
+                    PtrDeleterFunction destructor_function, PtrOwnerFunction ownerFunction, JavaException& ocurredException, uint returnScopeCount);
+    SingleTypeRSShell(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, const QMetaType& metaType, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
+                    JavaException& ocurredException, uint returnScopeCount);
+    SingleTypeRSShell(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
+                    PtrDeleterFunction destructor_function, JavaException& ocurredException, uint returnScopeCount);
+    SingleTypeRSShell(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos, JavaException& ocurredException, uint returnScopeCount);
+    SingleTypeRSShell(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, const QMetaType& metaType, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
+                    AbstractContainerAccess* containerAccess, JavaException& ocurredException, uint returnScopeCount);
+    SingleTypeRSShell(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
+                    AbstractContainerAccess* containerAccess, PtrDeleterFunction destructor_function, JavaException& ocurredException, uint returnScopeCount);
+    SingleTypeRSShell(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
+                    AbstractContainerAccess* containerAccess, PtrDeleterFunction destructor_function, PtrOwnerFunction ownerFunction, JavaException& ocurredException, uint returnScopeCount);
+    SingleTypeRSShell(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, QObject* ptr, const QMetaObject* originalMetaObject, bool created_by_java, bool isDeclarativeCall, bool is_shell, bool hasCustomMetaObject, const SuperTypeInfos* superTypeInfos, JavaException& ocurredException, uint returnScopeCount);
+    ~SingleTypeRSShell() override;
+    QtJambiScope* returnScope(JNIEnv *env, const std::type_info& typeId, uint index) override;
+    void deleteShell() override;
+private:
+    QVector<QtJambiScope*> m_scopes;
+    Q_DISABLE_COPY_MOVE(SingleTypeRSShell)
 };
 
 struct DestructorInfo{
@@ -162,6 +193,32 @@ private:
     const QHash<size_t,DestructorInfo> m_destructorInfo;
 
     Q_DISABLE_COPY_MOVE(MultiTypeShell)
+};
+
+class MultiTypeRSShell : public MultiTypeShell{
+public:
+    MultiTypeRSShell(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, const QHash<size_t,DestructorInfo>& destructorInfo, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
+                   PtrDeleterFunction destructor_function, PtrOwnerFunction ownerFunction, JavaException& ocurredException, QMap<size_t,QVector<QtJambiScope*>>&& returnScopes);
+    MultiTypeRSShell(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, const QMetaType& metaType, const QHash<size_t,DestructorInfo>& destructorInfo, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
+                   PtrOwnerFunction ownerFunction, JavaException& ocurredException, QMap<size_t,QVector<QtJambiScope*>>&& returnScopes);
+    MultiTypeRSShell(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, const QHash<size_t,DestructorInfo>& destructorInfo, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
+                   PtrDeleterFunction destructor_function, JavaException& ocurredException, QMap<size_t,QVector<QtJambiScope*>>&& returnScopes);
+    MultiTypeRSShell(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, const QHash<size_t,DestructorInfo>& destructorInfo, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos, JavaException& ocurredException, QMap<size_t,QVector<QtJambiScope*>>&& returnScopes);
+    MultiTypeRSShell(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, const QMetaType& metaType, const QHash<size_t,DestructorInfo>& destructorInfo, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
+                   JavaException& ocurredException, QMap<size_t,QVector<QtJambiScope*>>&& returnScopes);
+    MultiTypeRSShell(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, const QMetaType& metaType, const QHash<size_t,DestructorInfo>& destructorInfo, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
+                   AbstractContainerAccess* containerAccess, JavaException& ocurredException, QMap<size_t,QVector<QtJambiScope*>>&& returnScopes);
+    MultiTypeRSShell(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, const QHash<size_t,DestructorInfo>& destructorInfo, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
+                   AbstractContainerAccess* containerAccess, PtrDeleterFunction destructor_function, JavaException& ocurredException, QMap<size_t,QVector<QtJambiScope*>>&& returnScopes);
+    MultiTypeRSShell(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, void* ptr, const QHash<size_t,DestructorInfo>& destructorInfo, bool created_by_java, bool is_shell, const SuperTypeInfos* superTypeInfos,
+                   AbstractContainerAccess* containerAccess, PtrDeleterFunction destructor_function, PtrOwnerFunction ownerFunction, JavaException& ocurredException, QMap<size_t,QVector<QtJambiScope*>>&& returnScopes);
+    MultiTypeRSShell(JNIEnv *__jni_env, jclass objectClass, jobject nativeLink, jobject __jni_object, const std::type_info& typeId, QObject* ptr, const QMetaObject* originalMetaObject, const QHash<size_t,DestructorInfo>& destructorInfo, bool created_by_java, bool isDeclarativeCall, bool is_shell, bool hasCustomMetaObject, const SuperTypeInfos* superTypeInfos, JavaException& ocurredException, QMap<size_t,QVector<QtJambiScope*>>&& returnScopes);
+    ~MultiTypeRSShell() override;
+    QtJambiScope* returnScope(JNIEnv *env, const std::type_info& typeId, uint index) override;
+    void deleteShell() override;
+private:
+    QMap<size_t,QVector<QtJambiScope*>> m_scopes;
+    Q_DISABLE_COPY_MOVE(MultiTypeRSShell)
 };
 
 class DestructionHelper : public QObject {

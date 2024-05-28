@@ -3424,7 +3424,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_1_0"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_1_0>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_1_0_template_full"
         }
@@ -3433,7 +3433,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_1_1"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_1_1>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_1_0_template_full"
         }
@@ -3445,7 +3445,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_1_2"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_1_2>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_1_0_template_full"
         }
@@ -3457,7 +3457,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_1_3"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_1_3>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_1_0_template_full"
         }
@@ -3469,7 +3469,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_1_4"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_1_4>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_1_4A"
         }
@@ -3484,7 +3484,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_1_5"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_1_5>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_1_4A"
         }
@@ -3505,7 +3505,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_2_0"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_2_0>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_2_0A"
         }
@@ -3520,7 +3520,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_2_1"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_2_1>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_2_0A"
         }
@@ -3535,7 +3535,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_3_0"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_3_0>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_2_0A"
         }
@@ -3553,7 +3553,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_3_1"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_3_1>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_2_0A"
         }
@@ -3571,7 +3571,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_3_2_Compatibility"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_3_2_Compatibility>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_2_0A"
         }
@@ -3592,7 +3592,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_3_2_Core"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_3_2_Core>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_2_0A"
         }
@@ -3613,7 +3613,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_3_3_Compatibility"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_3_3_Compatibility>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_2_0A"
         }
@@ -3634,7 +3634,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_3_3_Core"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_3_3_Core>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_2_0A"
         }
@@ -3655,7 +3655,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_4_0_Compatibility"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_4_0_Compatibility>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_2_0A"
         }
@@ -3676,7 +3676,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_4_0_Core"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_4_0_Core>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_2_0A"
         }
@@ -3697,7 +3697,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_4_1_Compatibility"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_4_1_Compatibility>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_2_0A"
         }
@@ -3718,7 +3718,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_4_1_Core"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_4_1_Core>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_2_0A"
         }
@@ -3739,7 +3739,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_4_2_Compatibility"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_4_2_Compatibility>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_2_0A"
         }
@@ -3760,7 +3760,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_4_2_Core"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_4_2_Core>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_2_0A"
         }
@@ -3781,7 +3781,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_4_3_Compatibility"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_4_3_Compatibility>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_2_0A"
         }
@@ -3802,7 +3802,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_4_3_Core"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_4_3_Core>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_2_0A"
         }
@@ -3823,7 +3823,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_4_4_Compatibility"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_4_4_Compatibility>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_2_0B"
         }
@@ -3844,7 +3844,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_4_4_Core"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_4_0_Core>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_2_0B"
         }
@@ -3865,7 +3865,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_4_5_Compatibility"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_4_5_Compatibility>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_2_0B"
         }
@@ -3886,7 +3886,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_4_5_Core"
         ppCondition: "!defined(QT_NO_OPENGL) && !QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_4_5_Core>)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_2_0B"
         }
@@ -3907,7 +3907,7 @@ TypeSystem{
     ObjectType{
         name: "QOpenGLFunctions_ES2"
         ppCondition: "QT_CONFIG(opengles2) && __has_include(<QtOpenGL/QOpenGLFunctions_ES2>)"
-        targetType: "final class"
+        forceFinal: true
         ModifyFunction{
             signature: "glBindAttribLocation(GLuint,GLuint,const GLchar*)"
             ModifyArgument{

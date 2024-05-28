@@ -146,7 +146,47 @@ TypeSystem{
         EnumType{
             name: "VolumeScale"
         }
-        since: 6.7
+        since: [6,7,0]
+        until: [6,7,0]
+    }
+
+    NamespaceType{
+        name: "QAudio"
+        javaName: "QtAudio"
+        Include{
+            fileName: "qaudio.h"
+            location: Include.Global
+        }
+        EnumType{
+            name: "Error"
+        }
+
+        EnumType{
+            name: "Mode"
+        }
+
+        EnumType{
+            name: "State"
+        }
+
+        EnumType{
+            name: "Role"
+        }
+
+        EnumType{
+            name: "VolumeScale"
+        }
+        since: [6,7,1]
+    }
+
+    TypeAliasType{
+        name: "QtAudio::Error"
+        since: [6,7,1]
+    }
+
+    TypeAliasType{
+        name: "QtAudio::State"
+        since: [6,7,1]
     }
     
     NamespaceType{
@@ -1689,6 +1729,17 @@ if(%in){
             }
             until: 5
         }
+        ModifyFunction{
+            signature: "setOutputDevice(QIODevice*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcOutputDevice"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: 6.8
+        }
         ExtraIncludes{
             Include{
                 fileName: "utils_p.h"
@@ -2349,6 +2400,9 @@ if(%in){
     
     ValueType{
         name: "QCameraDevice"
+        EnumType{
+            name: "Position"
+        }
         since: [6, 2]
     }
     
@@ -2410,7 +2464,8 @@ if(%in){
                     Text{content: "constexpr Qt::Disambiguated_t %out = Qt::Disambiguated;"}
                 }
             }
-            since: 6.7
+            since: [6,7,0]
+            until: [6,7,0]
         }
         ModifyFunction{
             signature: "state(Qt::Disambiguated_t)const"
@@ -2422,7 +2477,8 @@ if(%in){
                     Text{content: "constexpr Qt::Disambiguated_t %out = Qt::Disambiguated;"}
                 }
             }
-            since: 6.7
+            since: [6,7,0]
+            until: [6,7,0]
         }
         since: [6, 2]
     }
@@ -2439,7 +2495,8 @@ if(%in){
                     Text{content: "constexpr Qt::Disambiguated_t %out = Qt::Disambiguated;"}
                 }
             }
-            since: 6.7
+            since: [6,7,0]
+            until: [6,7,0]
         }
         ModifyFunction{
             signature: "state(Qt::Disambiguated_t)const"
@@ -2451,7 +2508,8 @@ if(%in){
                     Text{content: "constexpr Qt::Disambiguated_t %out = Qt::Disambiguated;"}
                 }
             }
-            since: 6.7
+            since: [6,7,0]
+            until: [6,7,0]
         }
         since: [6, 2]
     }
@@ -2687,6 +2745,9 @@ if(%in){
 
     ObjectType{
         name: "QWindowCapture"
+        EnumType{
+            name: "Error"
+        }
         since: [6, 6]
     }
     ObjectType{
@@ -2728,7 +2789,6 @@ if(%in){
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QCamera::platformCamera', unmatched return type 'QPlatformCamera*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QImageCapture::platformImageCapture', unmatched return type 'QPlatformImageCapture*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QMediaRecorder::platformRecoder', unmatched return type 'QPlatformMediaRecorder*'"}
-    SuppressedWarning{text: "WARNING(CppImplGenerator) :: protected function '*' in final class '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: visibility of function '*' modified in class '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: hiding of function '*' in class '*'"}
 }

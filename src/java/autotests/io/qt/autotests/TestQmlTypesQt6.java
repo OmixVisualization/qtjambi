@@ -33,6 +33,8 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.QtAsGadget;
+import io.qt.QtInvokable;
 import io.qt.autotests.TestQmlTypes.MyObject;
 import io.qt.autotests.qmlreg.FormatRangeForeignExtendedByJavaWrapper;
 import io.qt.autotests.qmlreg.FormatRangeForeignExtendedByNativeObjectWrapper;
@@ -257,5 +259,62 @@ public class TestQmlTypesQt6 extends ApplicationInitializer{
 		Assert.assertEquals(4, size);
 		Object result = root.metaObject().method("getLineEdit", Object.class).invoke(root, 0);
 		Assert.assertTrue(result instanceof QLineEdit);
+	}
+	
+	@QtAsGadget
+	static class LightweightObject{
+		private String test;
+
+		public String getTest() {
+			return test;
+		}
+
+		public void setTest(String test) {
+			this.test = test;
+		}
+		
+		@QtInvokable
+		public void doSomething() {
+			
+		}
+		
+		public enum TestEnum{
+			A,B,C
+		}
+	}
+	
+	static class LightweightUser extends QObject{
+		public boolean isLightweight(LightweightObject lo) {
+			System.out.println("isLightweight("+lo+")");
+			return false;
+		}
+	}
+	
+	@Test
+    public void testJavaNull() {
+		QtQml.qmlClearTypeRegistrations();
+		QtQml.qmlRegisterType(LightweightObject.class, "Test", 1, 0, "lightweightObject");
+		LightweightUser lu = new LightweightUser();
+		QtQml.qmlRegisterSingletonInstance("Test", 1, 0, "Lightweight", lu);
+		
+		QQmlEngine engine = new QQmlEngine();
+		engine.setOutputWarningsToStandardError(true);
+		engine.warnings.connect(warnings->{
+			for(QQmlError warning : warnings) {
+				System.out.println(warning);
+			}
+		});
+		
+		QQmlComponent component = new QQmlComponent(engine);
+		component.setData("import Test 1.0\n"
+				+ "import QtQuick\n"
+				+ "Window{\n"
+				+ "property lightweightObject lo: null\n"
+//				+ "Component.onCompleted: {lo = null;}\n"
+				+ "visible: Lightweight.isLightweight(lo)\n"
+				+ "}", (QUrl)null);
+		Assert.assertEquals(component.errorString().trim(), QQmlComponent.Status.Ready, component.status());
+		Assert.assertEquals(component.errorString().trim(), 0, component.errors().size());
+		component.create();
 	}
 }

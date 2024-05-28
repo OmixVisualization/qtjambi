@@ -282,15 +282,6 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
     }
     writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtCore/QtGlobal")), included);
 
-    QList<const MetaFunction *> returnScopeRequired;
-    for(const MetaFunction *function : java_class->functionsInShellClass()) {
-        if((!function->isFinalInCpp() || function->isVirtualSlot()) && !function->wasPrivate() && function->needsReturnScope())
-            returnScopeRequired << function;
-    }
-
-    if(!returnScopeRequired.isEmpty())
-        writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"memory")), included);
-
     bool hasDeprecation = java_class->isDeclDeprecated();
     if(!hasDeprecation){
         for(const MetaFunction* f : java_class->functions()){
@@ -351,16 +342,128 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
     writeInjectedCode(s, java_class, {CodeSnip::Position2, CodeSnip::Beginning});
 
     if (java_class->generateShellClass()) {
+        if(java_class->hasVirtualDestructor()){
+            s << Qt::endl
+              << "class " << shellClassName(java_class)
+              << " : public " << java_class->qualifiedCppName()
+              << ", public QtJambiShellInterface"
+              << Qt::endl
+              << "{" << Qt::endl;
+            writeInjectedCode(s, java_class, {CodeSnip::Beginning});
+            s << "public:" << Qt::endl;
+            if(!java_class->typeEntry()->isDestructorPrivate() && java_class->instantiateShellClass()){
+                for(const MetaFunction *function : java_class->functions()) {
+                    if (function->isConstructor() && !function->wasPrivate()){
+                        QStringList ppConditions;
+                        for(const MetaArgument *argument : function->arguments()) {
+                            if(function->argumentRemoved(argument->argumentIndex()+1)!=ArgumentRemove_No){
+                                if(!argument->type()->typeEntry()->ppCondition().isEmpty() && !ppConditions.contains(argument->type()->typeEntry()->ppCondition())){
+                                    ppConditions << argument->type()->typeEntry()->ppCondition();
+                                }
+                                for(const MetaType* inst : argument->type()->instantiations()){
+                                    if(!inst->typeEntry()->ppCondition().isEmpty() && !ppConditions.contains(inst->typeEntry()->ppCondition())){
+                                        ppConditions << inst->typeEntry()->ppCondition();
+                                    }
+                                }
+                            }
+                        }
+                        if(!java_class->typeEntry()->ppCondition().isEmpty()){
+                            ppConditions.removeAll(java_class->typeEntry()->ppCondition());
+                        }
+                        if(!ppConditions.isEmpty()){
+                            for (int i=0; i<ppConditions.size(); ++i) {
+                                if(ppConditions[i].contains(QStringLiteral(u"||"))){
+                                    ppConditions[i] = QStringLiteral(u"(%1)").arg(ppConditions[i]);
+                                }
+                            }
+                            s << Qt::endl << "#if " << ppConditions.join(" && ") << Qt::endl << Qt::endl;
+                        }
+                        Option option = Option(SkipRemovedArguments | PlainShell);
+                        //if(java_class->isQObject()){
+                        option = Option(option | IncludeDefaultExpression);
+                        //}
+                        if(!function->isPublic())
+                            option = Option(option | EnumAsInts);
+                        writeFunction(s, function, option);
+                        if(!ppConditions.isEmpty()){
+                            s << Qt::endl << "#endif //" << ppConditions.join(" && ") << Qt::endl << Qt::endl;
+                        }
+                    }
+                }
+
+                s << "    ";
+                if(java_class->needsOShellDestructor() && !java_class->hasVirtualDestructor())
+                    s << "virtual ";
+                s << "~" << shellClassName(java_class) << "()";
+                if(java_class->hasVirtualDestructor()){
+                    s << " override";
+                }
+                s << ";" << Qt::endl;
+            }
+            if(java_class->instantiateShellClass()){
+                if(!java_class->isAbstract())
+                    s << "    static void operator delete(void * ptr) noexcept;" << Qt::endl;
+                s << "private:" << Qt::endl
+                  << "    QtJambiShell* __shell() const override final;" << Qt::endl;
+                if(java_class->isQObject()){
+                    s << "    friend class " << mshellClassName(java_class) << ";" << Qt::endl;
+                }
+                if(java_class->hasVirtualDestructor()){
+                    s << "    friend class " << oshellClassName(java_class) << ";" << Qt::endl;
+                }
+            }
+            writeInjectedCode(s, java_class, {CodeSnip::Position3, CodeSnip::End});
+            s  << "};" << Qt::endl << Qt::endl;
+
+            if(java_class->isQObject()){
+                s << Qt::endl
+                  << "class " << mshellClassName(java_class)
+                  << " : public " << shellClassName(java_class)
+                  << Qt::endl
+                  << "{" << Qt::endl
+                  << "public:" << Qt::endl
+                  << "    using " << shellClassName(java_class)<< "::" << shellClassName(java_class) << ";" << Qt::endl;
+                if(!java_class->isAbstract())
+                    s << "    static void operator delete(void * ptr) noexcept;" << Qt::endl;
+                if(java_class->instantiateShellClass()) {
+                    if(!java_class->hasMetaObjectFunction())
+                        s << "    const QMetaObject *metaObject() const override final;" << Qt::endl;
+                    if(!java_class->hasMetaCastFunction())
+                        s << "    void *qt_metacast(const char *) override final;" << Qt::endl;
+                    if(!java_class->hasMetaCallFunction())
+                        s << "    int qt_metacall(QMetaObject::Call, int, void **) override final;" << Qt::endl;
+                }
+                s  << "};" << Qt::endl << Qt::endl;
+            }
+        }
+
         s << Qt::endl
-          << "class " << shellClassName(java_class)
-          << " : public " << java_class->qualifiedCppName();
-        if(java_class->hasVirtualDestructor())
-            s << ", public QtJambiShellInterface";
+          << "class ";
+        if(java_class->hasVirtualDestructor()){
+            s << oshellClassName(java_class);
+            if(java_class->isQObject())
+                s << " : public " << mshellClassName(java_class);
+            else
+                s << " : public " << shellClassName(java_class);
+        }else{
+            s << shellClassName(java_class)
+              << " : public " << java_class->qualifiedCppName();
+        }
         s << Qt::endl
           << "{" << Qt::endl;
-        writeInjectedCode(s, java_class, {CodeSnip::Beginning});
+        if(!java_class->hasVirtualDestructor()){
+            writeInjectedCode(s, java_class, {CodeSnip::Beginning});
+        }
         s << "public:" << Qt::endl;
-        if(!java_class->typeEntry()->isDestructorPrivate() && java_class->instantiateShellClass()){
+        if(java_class->hasVirtualDestructor()){
+            if(java_class->isQObject())
+                s << "    using " << mshellClassName(java_class)<< "::" << mshellClassName(java_class) << ";" << Qt::endl;
+            else
+                s << "    using " << shellClassName(java_class)<< "::" << shellClassName(java_class) << ";" << Qt::endl;
+            if(java_class->needsOShellDestructor()){
+                s << "    ~" << oshellClassName(java_class) << "() override;" << Qt::endl;
+            }
+        }else if(!java_class->typeEntry()->isDestructorPrivate() && java_class->instantiateShellClass()){
             for(const MetaFunction *function : java_class->functions()) {
                 if (function->isConstructor() && !function->wasPrivate()){
                     QStringList ppConditions;
@@ -388,6 +491,9 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
                         s << Qt::endl << "#if " << ppConditions.join(" && ") << Qt::endl << Qt::endl;
                     }
                     Option option = Option(SkipRemovedArguments);
+                    if(!java_class->hasVirtualDestructor()){
+                        option = Option(option | PlainShell);
+                    }
                     //if(java_class->isQObject()){
                         option = Option(option | IncludeDefaultExpression);
                     //}
@@ -399,14 +505,10 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
                     }
                 }
             }
-
-            s << "    ~" << shellClassName(java_class) << "()";
-            if(java_class->hasVirtualDestructor()){
-                s << " override";
-            }
-            s << ";" << Qt::endl;
+            s << "    ~" << shellClassName(java_class) << "();" << Qt::endl;
+        }else{
+            s << Qt::endl;
         }
-        s << Qt::endl;
 
         QList<const MetaFunction *> functionsInTargetLang;
         QList<const MetaFunction *> signalsInTargetLang;
@@ -457,40 +559,24 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
         }
         if(java_class->instantiateShellClass()){
             s << "    static void operator delete(void * ptr) noexcept;" << Qt::endl;
-            if (java_class->isQObject()) {
-                if(!java_class->hasMetaObjectFunction())
-                    s << "    const QMetaObject *metaObject() const override final;" << Qt::endl;
-                if(!java_class->hasMetaCastFunction())
-                    s << "    void *qt_metacast(const char *) override final;" << Qt::endl;
-                if(!java_class->hasMetaCallFunction())
-                    s << "    int qt_metacall(QMetaObject::Call, int, void **) override final;" << Qt::endl;
-            }
         }
 
         s << "private:" << Qt::endl;
         for(const MetaFunction *function : qAsConst(privatePureVirtuals)) {
             writeFunction(s, function);
         }
-        for(const MetaFunction *function : qAsConst(returnScopeRequired)) {
-            s << "    ";
-            if(function->isConstant())
-                s << "mutable ";
-            s << "std::unique_ptr<QtJambiScope> __returnScope__" << function->name();
-            if(function->isConstant())
-                s << "_const";
-            s << ";" << Qt::endl;
-        }
-        if(java_class->instantiateShellClass()){
-            s << "    QtJambiShell* __shell() const";
-            if(java_class->hasVirtualDestructor()){
-                s << " override final";
+        if(!java_class->hasVirtualDestructor()){
+            if(java_class->instantiateShellClass()){
+                s << "    QtJambiShell* __shell() const;" << Qt::endl;
             }
-            s << ";" << Qt::endl;
+        }
+        if(!java_class->implementableFunctions().isEmpty()){
             s << "    jmethodID __shell_javaMethod(int pos) const;" << Qt::endl;
         }
-
-        //writeVariablesSection(s, java_class, interfaceClass!=nullptr);
-        writeInjectedCode(s, java_class, {CodeSnip::Position3, CodeSnip::End});
+        if(!java_class->hasVirtualDestructor()){
+            //writeVariablesSection(s, java_class, interfaceClass!=nullptr);
+            writeInjectedCode(s, java_class, {CodeSnip::Position3, CodeSnip::End});
+        }
 
         s  << "};" << Qt::endl << Qt::endl;
 

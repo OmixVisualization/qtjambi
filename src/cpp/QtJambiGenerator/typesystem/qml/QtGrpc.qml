@@ -63,6 +63,10 @@ TypeSystem{
         since: 6.6
     }
     ObjectType{
+        name: "QGrpcSerializationFormat"
+        since: 6.8
+    }
+    ObjectType{
         name: "QGrpcCallReply"
     }
     ObjectType{

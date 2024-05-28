@@ -565,6 +565,7 @@ MetaFunction *MetaFunction::copy() const {
     cpy->setDeprecatedComment(deprecatedComment());
     cpy->setHref(href());
     cpy->setBrief(brief());
+    cpy->setSince(since());
 
     for(const MetaArgument *arg : arguments())
         cpy->addArgument(arg->copy());
@@ -936,6 +937,7 @@ bool MetaFunctional::needsReturnScope() const {
             && (
                 type()->isCharString() // -> returning const char* from jstring
                 || (type()->isQString() && type()->isConstant() && !type()->indirections().isEmpty())  // -> returning const QString* from jstring
+                || (type()->isQVariant() && type()->isConstant() && !type()->indirections().isEmpty())  // -> returning const QVariant* from jobject
                 )){
         return true;
     }
@@ -1209,6 +1211,16 @@ QList<Parameter> MetaFunction::addedParameterTypes() const
     return result;
 }
 
+int MetaFunction::returnScopeIndex() const
+{
+    return m_returnScopeIndex;
+}
+
+void MetaFunction::setReturnScopeIndex(int newReturnScopeIndex)
+{
+    m_returnScopeIndex = newReturnScopeIndex;
+}
+
 bool MetaFunction::isForcedExplicit() const{
     if(implementingClass()->typeEntry()->getNoImplicitConstructors())
         return true;
@@ -1328,6 +1340,59 @@ ThreadAffinity MetaFunction::argumentThreadAffinity(int key) const {
         }
     }
     return ThreadAffinity::None;
+}
+
+OwnershipRule MetaFunctional::ownership(TS::Language language, int key) const {
+    for(const ArgumentModification& argument_modification : this->typeEntry()->argumentModification()) {
+        if(argument_modification.type!=ArgumentModification::Default)
+            continue;
+        if (argument_modification.index == key){
+            OwnershipRule o = argument_modification.ownerships.value(language, OwnershipRule{TS::InvalidOwnership, QString()});
+            if(o.ownership!=TS::InvalidOwnership)
+                return o;
+        }
+    }
+
+    if(key==0){
+        if(m_type && m_type->typeEntry()->isSmartPointer()){
+            const SmartPointerTypeEntry* pentry = static_cast<const SmartPointerTypeEntry*>(m_type->typeEntry());
+            switch(pentry->type()){
+            case SmartPointerTypeEntry::QScopedPointer:
+                if(language==TS::ShellCode){
+                    return OwnershipRule{TS::CppOwnership, QString()};
+                }else if(language==TS::NativeCode){
+                    return OwnershipRule{TS::TargetLangOwnership, QString()};
+                }
+                break;
+            default:
+                break;
+            }
+        }
+    }else{
+        MetaType* type{nullptr};
+        for(const MetaArgument* arg : m_arguments){
+            if(arg->argumentIndex()+1==key){
+                type = arg->type();
+                break;
+            }
+        }
+        if(type && type->typeEntry()->isSmartPointer()){
+            const SmartPointerTypeEntry* pentry = static_cast<const SmartPointerTypeEntry*>(type->typeEntry());
+            switch(pentry->type()){
+            case SmartPointerTypeEntry::QScopedPointer:
+                if(language==TS::NativeCode){
+                    return OwnershipRule{TS::CppOwnership, QString()};
+                }else if(language==TS::ShellCode){
+                    return OwnershipRule{TS::TargetLangOwnership, QString()};
+                }
+                break;
+            default:
+                break;
+            }
+        }
+    }
+
+    return OwnershipRule{TS::InvalidOwnership, QString()};
 }
 
 ArgumentRemove MetaFunctional::argumentRemoved(int key) const {
@@ -1468,6 +1533,45 @@ OwnershipRule MetaFunction::ownership(const MetaClass *cls, TS::Language languag
                     if(o.ownership!=TS::InvalidOwnership)
                         return o;
                 }
+            }
+        }
+    }
+
+    if(key==0){
+        if(m_type && m_type->typeEntry()->isSmartPointer()){
+            const SmartPointerTypeEntry* pentry = static_cast<const SmartPointerTypeEntry*>(m_type->typeEntry());
+            switch(pentry->type()){
+            case SmartPointerTypeEntry::QScopedPointer:
+                if(language==TS::ShellCode){
+                    return OwnershipRule{TS::CppOwnership, QString()};
+                }else if(language==TS::NativeCode){
+                    return OwnershipRule{TS::TargetLangOwnership, QString()};
+                }
+                break;
+            default:
+                break;
+            }
+        }
+    }else{
+        MetaType* type{nullptr};
+        for(const MetaArgument* arg : m_arguments){
+            if(arg->argumentIndex()+1==key){
+                type = arg->type();
+                break;
+            }
+        }
+        if(type && type->typeEntry()->isSmartPointer()){
+            const SmartPointerTypeEntry* pentry = static_cast<const SmartPointerTypeEntry*>(type->typeEntry());
+            switch(pentry->type()){
+            case SmartPointerTypeEntry::QScopedPointer:
+                if(language==TS::NativeCode){
+                    return OwnershipRule{TS::CppOwnership, QString()};
+                }else if(language==TS::ShellCode){
+                    return OwnershipRule{TS::TargetLangOwnership, QString()};
+                }
+                break;
+            default:
+                break;
             }
         }
     }
@@ -2089,6 +2193,9 @@ FunctionModificationList MetaFunction::modifications(const ComplexTypeEntry *ent
                 result << mod;
             }
         }
+        for(const FunctionModification& mod : result){
+            entry->useFunctionSignature(mod.signature);
+        }
     }
     return result;
 }
@@ -2298,6 +2405,7 @@ MetaClass *MetaClass::extractInterfaceImpl() {
         ifaceImpl->setBaseClassTypeInfo(this->baseClassTypeInfo());
         ifaceImpl->setHref(href());
         ifaceImpl->setBrief(brief());
+        ifaceImpl->setSince(since());
         itype->origin()->setInclude(itype->include());
         itype->origin()->setExtraIncludes(itype->extraIncludes());
         itype->origin()->setExpensePolicy(itype->expensePolicy());
@@ -2558,6 +2666,7 @@ void MetaClass::setBaseClass(MetaClass *base_class) {
 void MetaClass::setFunctions(const MetaFunctionList &functions) {
     m_functionsBySignature.clear();
     m_functions = functions;
+    m_returnScopeRequired = 0;
 
     // Functions must be sorted by name before next loop
     QString currentName;
@@ -2626,6 +2735,12 @@ void MetaClass::setFunctions(const MetaFunctionList &functions) {
         }
         if(f->isConstructor())
             m_publiccopyconstructor_requested = false;
+        if((!f->isFinalInCpp() || f->isVirtualSlot()) && !f->wasPrivate() && f->needsReturnScope()){
+            f->setReturnScopeIndex(m_returnScopeRequired);
+            ++m_returnScopeRequired;
+        }else{
+            f->setReturnScopeIndex(-1);
+        }
     }
 
 #ifndef QT_NO_DEBUG
@@ -2788,6 +2903,13 @@ void MetaClass::addFunction(MetaFunction *function) {
     if(function->isConstructor()){
         m_publiccopyconstructor_requested = false;
     }
+
+    if((!function->isFinalInCpp() || function->isVirtualSlot()) && !function->wasPrivate() && function->needsReturnScope()){
+        function->setReturnScopeIndex(m_returnScopeRequired);
+        ++m_returnScopeRequired;
+    }else{
+        function->setReturnScopeIndex(-1);
+    }
     //printf("Adding function: %s::%s\n", qPrintable(qualifiedCppName()), qPrintable(function->minimalSignature()));
 }
 
@@ -2852,6 +2974,14 @@ bool MetaClass::hasProtectedConstructors() const {
             return true;
     }
     return false;
+}
+
+void MetaClass::setNeedsOShellDestructor(bool b){
+    m_needsOShellDestructor = b;
+}
+
+bool MetaClass::needsOShellDestructor() const{
+    return m_needsOShellDestructor;
 }
 
 bool MetaClass::instantiateShellClass() const {
@@ -2948,6 +3078,7 @@ MetaField *MetaField::copy() const {
     returned->setOriginalAttributes(originalAttributes());
     returned->setHref(href());
     returned->setBrief(brief());
+    returned->setSince(since());
 
     return returned;
 }
@@ -2964,6 +3095,7 @@ static MetaFunction *createXetter(const MetaField *g, const QString &name, uint 
 
     f->setBrief(g->brief());
     f->setHref(g->href());
+    f->setSince(g->since());
 
     f->setName(name);
     f->setOriginalName(name);
@@ -3048,7 +3180,7 @@ const MetaFunction *MetaField::setter() const {
         MetaArgumentList arguments;
         MetaArgument *argument = new MetaArgument;
         argument->setType(type()->copy());
-        if(type()->getReferenceType()==MetaType::NoReference && !type()->isArray() && !type()->isPrimitive() && type()->indirections().isEmpty()){
+        if(type()->getReferenceType()==MetaType::NoReference && !type()->isArray() && !type()->isSmartPointer() && !type()->isPrimitive() && type()->indirections().isEmpty()){
             argument->type()->setReferenceType(MetaType::Reference);
             argument->type()->setConstant(true);
         }
@@ -3117,7 +3249,7 @@ const MetaFunction *MetaField::getter() const {
             m_getter->setVisibility(MetaAttributes::Private);
         }
         m_getter->setType(type()->copy());
-        if(type()->getReferenceType()==MetaType::NoReference && !type()->isArray() && !type()->isPrimitive() && type()->indirections().isEmpty()){
+        if(type()->getReferenceType()==MetaType::NoReference && !type()->isArray() && !type()->isPrimitive() && !type()->isSmartPointer() && type()->indirections().isEmpty()){
             m_getter->type()->setReferenceType(MetaType::Reference);
             m_getter->type()->setConstant(true);
         }
@@ -3272,6 +3404,7 @@ MetaClass::MetaClass()
         m_has_subClasses(false),
         m_usingProtectedBaseConstructors(false),
         m_usingPublicBaseConstructors(false),
+        m_needsOShellDestructor(false),
         m_enclosing_class(nullptr),
         m_base_class(nullptr),
         m_typeAliasType(nullptr),
@@ -3779,17 +3912,28 @@ bool MetaType::hasNativeId() const {
 MetaEnum *MetaClassList::findEnum(const EnumTypeEntry *entry) const {
     Q_ASSERT(entry->isEnum());
 
-    QString qualified_name = entry->name();
-    auto pos = qualified_name.lastIndexOf("::");
+    if(!entry->javaScope().isEmpty()){
+        MetaClass *meta_class = findClass(entry->javaScope(), QualifiedCppName);
+        if (!meta_class) {
+            ReportHandler::warning(QString("Unknown Java scope '%1' for enum '%2'")
+                                       .arg(entry->javaScope(), entry->qualifiedCppName()));
+            return nullptr;
+        }
+        QString enum_name = entry->name().split("::").last();
+        for(MetaEnum *enm : meta_class->enums()){
+            if(enm->typeEntry()==entry)
+                return enm;
+        }
+        MetaEnum *enm = meta_class->findEnum(enum_name);
+        if(enm)
+            return enm;
+    }
 
-    QString enum_name;
-    QString class_name;
+    QStringList nameSplit = entry->name().split("::");
+    QString enum_name = nameSplit.takeLast();
+    QString class_name = nameSplit.join("::");
 
-    if (pos > 0) {
-        enum_name = qualified_name.mid(pos + 2);
-        class_name = qualified_name.mid(0, pos);
-    } else {
-        enum_name = qualified_name;
+    if (class_name.isEmpty()) {
         for(MetaClass *c : *this) {
             if (c->typeEntry()->isGlobal()){
                 MetaEnum *enm = c->findEnum(enum_name);
@@ -3800,12 +3944,17 @@ MetaEnum *MetaClassList::findEnum(const EnumTypeEntry *entry) const {
     }
 
     MetaClass *meta_class = findClass(class_name);
-    if (!meta_class && !entry->javaScope().isEmpty()) {
-        meta_class = findClass(entry->javaScope(), FullName);
-    }
     if (!meta_class) {
-        ReportHandler::warning(QString("Unknown class '%1' for enum '%2'")
-                               .arg(class_name, entry->qualifiedCppName()));
+        for(MetaClass *c : *this) {
+            if (c->typeEntry()->isGlobal()){
+                MetaEnum *enm = c->findEnum(entry->name());
+                if(enm)
+                    return enm;
+            }
+        }
+        if(class_name!="QMetaObject")
+            ReportHandler::warning(QString("Unknown class '%1' for enum '%2'")
+                                   .arg(class_name, entry->qualifiedCppName()));
         return nullptr;
     }
 
@@ -3937,4 +4086,10 @@ QSet<QString> MetaClass::getAllUnimplmentablePureVirtualFunctions()const{
     }
     return allPrivatePureVirtualFunctions;
 }
+
+uint MetaClass::returnScopeRequired() const
+{
+    return m_returnScopeRequired;
+}
+
 QPropertySpec *MetaFunction::propertySpec() const { return m_property_spec; }

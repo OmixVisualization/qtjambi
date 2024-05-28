@@ -70,7 +70,7 @@ namespace rpp {
                     _InputIterator begin = first;
                     ++begin;
                     int counter = 1;
-                    while(begin != last && *begin==' ') {
+                    while(begin != last && (*begin==' ' || *begin=='\r' || *begin=='\t')) {
                         ++begin;
                         ++counter;
                     }

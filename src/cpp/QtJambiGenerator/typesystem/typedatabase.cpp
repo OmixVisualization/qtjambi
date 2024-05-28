@@ -1036,13 +1036,13 @@ void TypeDatabase::initialize(const QString &filename, const QStringList &import
         }
 
         addType(new InitializerListTypeEntry());
-        addType(new PointerContainerTypeEntry("QPointer", PointerContainerTypeEntry::QPointer));
-        addType(new PointerContainerTypeEntry("QSharedPointer", PointerContainerTypeEntry::QSharedPointer));
-        addType(new PointerContainerTypeEntry("QWeakPointer", PointerContainerTypeEntry::QWeakPointer));
-        addType(new PointerContainerTypeEntry("QScopedPointer", PointerContainerTypeEntry::QScopedPointer));
-        addType(new PointerContainerTypeEntry("std::unique_ptr", PointerContainerTypeEntry::unique_ptr));
-        addType(new PointerContainerTypeEntry("std::shared_ptr", PointerContainerTypeEntry::shared_ptr));
-        addType(new PointerContainerTypeEntry("std::weak_ptr", PointerContainerTypeEntry::weak_ptr));
+        addType(new SmartPointerTypeEntry("QPointer", SmartPointerTypeEntry::QPointer));
+        addType(new SmartPointerTypeEntry("QSharedPointer", SmartPointerTypeEntry::QSharedPointer));
+        addType(new SmartPointerTypeEntry("QWeakPointer", SmartPointerTypeEntry::QWeakPointer));
+        addType(new SmartPointerTypeEntry("QScopedPointer", SmartPointerTypeEntry::QScopedPointer));
+        addType(new SmartPointerTypeEntry("std::unique_ptr", SmartPointerTypeEntry::unique_ptr));
+        addType(new SmartPointerTypeEntry("std::shared_ptr", SmartPointerTypeEntry::shared_ptr));
+        addType(new SmartPointerTypeEntry("std::weak_ptr", SmartPointerTypeEntry::weak_ptr));
 
         // Custom types...
         addType(new QMetaObjectTypeEntry());
@@ -1180,7 +1180,7 @@ IteratorTypeEntry *TypeDatabase::findIteratorType(const ComplexTypeEntry * conta
     return nullptr;
 }
 
-PointerContainerTypeEntry *TypeDatabase::findPointerContainerType(const QString &name) const {
+SmartPointerTypeEntry *TypeDatabase::findPointerContainerType(const QString &name) const {
     QString template_name = name;
 
     auto pos = name.indexOf('<');
@@ -1188,8 +1188,8 @@ PointerContainerTypeEntry *TypeDatabase::findPointerContainerType(const QString 
         template_name = name.left(pos);
 
     TypeEntry *type_entry = findType(template_name);
-    if (type_entry && type_entry->isPointerContainer())
-        return static_cast<PointerContainerTypeEntry *>(type_entry);
+    if (type_entry && type_entry->isSmartPointer())
+        return static_cast<SmartPointerTypeEntry *>(type_entry);
     return nullptr;
 }
 

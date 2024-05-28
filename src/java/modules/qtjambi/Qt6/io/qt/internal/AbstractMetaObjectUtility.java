@@ -366,7 +366,7 @@ abstract class AbstractMetaObjectUtility {
     private final static Map<Class<?>, List<PropertyIndex>> propertyFieldsByClasses = Collections.synchronizedMap(new HashMap<>());
     
     static <PI> PI analyzeProperty(QObject containingObject, QtObject property, BiFunction<Field, QMetaType, PI> fun1, BiFunction<Field, QMetaProperty, PI> fun2) {
-		List<PropertyIndex> propertyFields = propertyFieldsByClasses.computeIfAbsent(ClassAnalyzerUtility.getClass(containingObject), cls->{
+		List<PropertyIndex> propertyFields = propertyFieldsByClasses.computeIfAbsent(AccessUtility.instance.getClass(containingObject), cls->{
 			List<PropertyIndex> fields = Collections.emptyList();
 			while (QObject.class.isAssignableFrom(cls)) {
 				QMetaObject metaObject = QMetaObject.forType(cls);

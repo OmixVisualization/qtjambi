@@ -247,7 +247,7 @@ struct qtjambi_jnitype_qobject_decider_cast<true, has_scope, NativeType, true, i
     static jobject cast(JNIEnv * env, NativeType_in in, const char*, QtJambiScope* scope){
         jobject o = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, in, typeid(NativeType));
         if(scope)
-            scope->addObjectInvalidation(env, o, true, false);
+            scope->addObjectInvalidation(env, o);
         return o;
     }
 };
@@ -270,7 +270,7 @@ struct qtjambi_jnitype_qobject_decider_cast<true, has_scope, NativeType, true, i
         if(!o){
             o = QtJambiAPI::convertNativeToJavaObjectAsWrapper(env, in, typeid(NativeType));
             if(scope)
-                scope->addObjectInvalidation(env, o, true, false);
+                scope->addObjectInvalidation(env, o);
         }
         return o;
     }

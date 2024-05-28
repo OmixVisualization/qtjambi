@@ -68,14 +68,10 @@ public:
     static void operator delete(void * ptr) noexcept;
 private:
     QtJambiShell* __shell() const override final;
-    jmethodID __shell_javaMethod(int pos) const;
 };
 
 template<class T>
 QtJambiShell* QFutureInterface_shell<T>::__shell() const { return *reinterpret_cast<QtJambiShell**>( quintptr(this) + sizeof(QFutureInterface_shell) ); }
-
-template<class T>
-jmethodID QFutureInterface_shell<T>::__shell_javaMethod(int pos) const { return QFutureInterface_shell::__shell()->javaMethod(typeid(QFutureInterface<T>), pos); }
 
 // emitting (writeShellConstructor)
 template<class T>
@@ -145,7 +141,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core
 // emitting (writeSignalFunction)
 // emitting (writeConstructors)
 // new QFutureInterface(QFutureInterfaceBase::State initialState)
-void __qt_construct_QFutureInterface_QVariant__0(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue*, bool)
+void __qt_construct_QFutureInterface_QVariant__0(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue*, bool, bool, bool)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QFutureInterface(QFutureInterfaceBase::State initialState)")
 #if QT_CONFIG(future)
@@ -159,7 +155,7 @@ void __qt_construct_QFutureInterface_QVariant__0(void* __qtjambi_ptr, JNIEnv* __
 }
 
 // new QFutureInterface(QFutureInterfaceBase::State initialState)
-void __qt_construct_QFutureInterface_void__0(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue*, bool)
+void __qt_construct_QFutureInterface_void__0(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue*, bool, bool, bool)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QFutureInterface(QFutureInterfaceBase::State initialState)")
 #if QT_CONFIG(future)
@@ -173,7 +169,7 @@ void __qt_construct_QFutureInterface_void__0(void* __qtjambi_ptr, JNIEnv* __jni_
 }
 
 // new QFutureInterface(QFutureInterfaceBase::State initialState)
-void __qt_construct_QFutureInterface_QVariant__1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool)
+void __qt_construct_QFutureInterface_QVariant__1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool, bool, bool)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QFutureInterface(QFutureInterfaceBase::State initialState)")
 #if QT_CONFIG(future)
@@ -191,7 +187,7 @@ void __qt_construct_QFutureInterface_QVariant__1(void* __qtjambi_ptr, JNIEnv* __
 }
 
 // new QFutureInterface(const QFutureInterface<QVariant> & other)
-void __qt_construct_QFutureInterface_QVariant__2(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool)
+void __qt_construct_QFutureInterface_QVariant__2(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool, bool, bool)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QFutureInterface(const QFutureInterface<QVariant> & other)")
 #if QT_CONFIG(future)
@@ -214,7 +210,7 @@ void __qt_construct_QFutureInterface_QVariant__2(void* __qtjambi_ptr, JNIEnv* __
 }
 
 // new QFutureInterface(QFutureInterfaceBase::State initialState)
-void __qt_construct_QFutureInterface_void__1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool)
+void __qt_construct_QFutureInterface_void__1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool, bool, bool)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QFutureInterface(QFutureInterfaceBase::State initialState)")
 #if QT_CONFIG(future)
@@ -232,7 +228,7 @@ void __qt_construct_QFutureInterface_void__1(void* __qtjambi_ptr, JNIEnv* __jni_
 }
 
 // new QFutureInterface(const QFutureInterface<void> & other)
-void __qt_construct_QFutureInterface_void__2(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool)
+void __qt_construct_QFutureInterface_void__2(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool, bool, bool)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QFutureInterface(const QFutureInterface<QVariant> & other)")
 #if QT_CONFIG(future)
@@ -310,7 +306,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
                                         isVoid ? sizeof(QFutureInterface_shell<void>)
                                                : sizeof(QFutureInterface_shell<QVariant>),
                                         isVoid ? typeid(QFutureInterface<void>)
-                                               : typeid(QFutureInterface<QVariant>), true, &arguments);
+                                               : typeid(QFutureInterface<QVariant>), 0, true, &arguments);
 #else
         Q_UNUSED(__jni_object)
         Q_UNUSED(__jni_class)
@@ -344,7 +340,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
                                         isVoid ? sizeof(QFutureInterface_shell<void>)
                                                : sizeof(QFutureInterface_shell<QVariant>),
                                         isVoid ? typeid(QFutureInterface<void>)
-                                               : typeid(QFutureInterface<QVariant>), true, &arguments);
+                                               : typeid(QFutureInterface<QVariant>), 0, true, &arguments);
 #else
         Q_UNUSED(__jni_object)
         Q_UNUSED(__jni_class)
@@ -532,7 +528,6 @@ public:
     static void operator delete(void * ptr) noexcept;
 private:
     QtJambiShell* __shell() const override final;
-    jmethodID __shell_javaMethod(int pos) const;
 public:
     bool m_isVoid;
     static const QMetaObject& staticMetaObject;
@@ -547,8 +542,6 @@ const QMetaObject& QFutureWatcher_shell::staticMetaObject = []()->const QMetaObj
 }();
 
 QtJambiShell* QFutureWatcher_shell::__shell() const { return *reinterpret_cast<QtJambiShell**>( quintptr(this) + sizeof(QFutureWatcher_shell) ); }
-
-jmethodID QFutureWatcher_shell::__shell_javaMethod(int pos) const { return QFutureWatcher_shell::__shell()->javaMethod(typeid(QFutureWatcher<QVariant>), pos); }
 
 // emitting (writeShellConstructor)
 QFutureWatcher_shell::QFutureWatcher_shell(QObject* parent)
@@ -570,7 +563,7 @@ void QFutureWatcher_shell::operator delete(void * ptr) noexcept {
 }
 
 // new QFutureWatcher(QObject*)
-void __qt_construct_QFutureWatcher_1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue* __java_arguments, bool)
+void __qt_construct_QFutureWatcher_1(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue* __java_arguments, bool, bool, bool)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QFutureWatcher(QObject*)")
 #if QT_CONFIG(future)
@@ -649,7 +642,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QF
         jvalue arguments[2];
         arguments[0].l = parent0;
         arguments[1].l = functions;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QFutureWatcher_1, sizeof(QFutureWatcher_shell), typeid(QFutureWatcher<QVariant>), QFutureWatcher_shell::staticMetaObject, true, false, false, arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QFutureWatcher_1, sizeof(QFutureWatcher_shell), typeid(QFutureWatcher<QVariant>), 0, QFutureWatcher_shell::staticMetaObject, true, false, false, arguments);
 #else
         Q_UNUSED(__jni_object)
         Q_UNUSED(__jni_class)
@@ -712,7 +705,7 @@ void initialize_meta_info_QFutureInterface(){
 #if QT_CONFIG(future)
     {
         const std::type_info& typeId = registerValueTypeInfo<QFutureInterface<QVariant>>("QFutureInterface<QVariant>", "io/qt/core/QFutureInterface");
-        registerConstructorInfos(typeId, &__qt_destruct_QFutureInterface_QVariant_, {
+        registerConstructorInfos(typeId, 0, &__qt_destruct_QFutureInterface_QVariant_, {
             ConstructorInfo(&__qt_construct_QFutureInterface_QVariant__0, nullptr)
            ,ConstructorInfo(&__qt_construct_QFutureInterface_QVariant__1, "Lio/qt/core/QFutureInterfaceBase$State;")
            ,ConstructorInfo(&__qt_construct_QFutureInterface_QVariant__2, "Lio/qt/core/QFutureInterface;")
@@ -722,7 +715,7 @@ void initialize_meta_info_QFutureInterface(){
     }
     {
         const std::type_info& typeId = registerValueTypeInfo<QFutureInterface<void>>("QFutureInterface<void>", "io/qt/core/QFutureInterface");
-        registerConstructorInfos(typeId, &__qt_destruct_QFutureInterface_void_, {
+        registerConstructorInfos(typeId, 0, &__qt_destruct_QFutureInterface_void_, {
             ConstructorInfo(&__qt_construct_QFutureInterface_void__0, nullptr)
            ,ConstructorInfo(&__qt_construct_QFutureInterface_void__1, "Lio/qt/core/QFutureInterfaceBase$State;")
            ,ConstructorInfo(&__qt_construct_QFutureInterface_void__2, "Lio/qt/core/QFutureInterface;")

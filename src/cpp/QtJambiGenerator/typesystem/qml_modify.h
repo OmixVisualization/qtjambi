@@ -1244,7 +1244,7 @@ signals:
 
 private:
     QString interface;
-    Q_PROPERTY(QString interface READ getInterface WRITE setInterface NOTIFY interfaceChanged)
+    Q_PROPERTY(QString interfaces READ getInterface WRITE setInterface NOTIFY interfaceChanged)
 };
 
 QML_DECLARE_TYPE(Access)

@@ -248,4 +248,19 @@ inline hash_type qHash(const QHttp2Configuration& p, hash_type seed = 0){
 size_t qHash(const QHttp1Configuration &value, size_t seed = 0);
 #endif
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+inline size_t qHash(const QHttpHeaders &value, size_t seed = 0){
+    struct HttpHeaders{
+        QExplicitlySharedDataPointer<QHttpHeadersPrivate> d;
+    };
+    return qHash(quintptr(reinterpret_cast<const HttpHeaders&>(value).d.constData()), seed);
+}
+inline bool operator==(const QHttpHeaders &v1, const QHttpHeaders &v2){
+    struct HttpHeaders{
+        QExplicitlySharedDataPointer<QHttpHeadersPrivate> d;
+    };
+    return reinterpret_cast<const HttpHeaders&>(v1).d.constData()==reinterpret_cast<const HttpHeaders&>(v2).d.constData();
+}
+#endif
+
 #endif // QTJAMBINETWORK_HASHES_H

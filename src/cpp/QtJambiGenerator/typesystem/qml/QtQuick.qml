@@ -318,7 +318,7 @@ TypeSystem{
     ObjectType{
         name: "QQuickCloseEvent"
         packageName: "io.qt.quick.internal"
-        targetType: "final class"
+        forceFinal: true
         generate: "no-shell"
         ModifyFunction{
             signature: "QQuickCloseEvent()"
@@ -346,9 +346,38 @@ TypeSystem{
 
         ModifyFunction{
             signature: "childMouseEventFilter(QQuickItem*,QEvent*)"
+            noExcept: true
+            blockExceptions: true
+            ModifyArgument{
+                index: 1
+                ConversionRule{
+                    codeClass: CodeClass.Shell
+                    Text{content: String.raw`
+jobject %out;
+try{
+    %out = qtjambi_cast<jobject>(%env, %in);
+    if(!%out && %in)
+        return %class::childMouseEventFilter(%in, %2);
+}catch(const JavaException&){
+    return %class::childMouseEventFilter(%in, %2);
+}
+                        `}
+                }
+            }
             ModifyArgument{
                 index: 2
                 invalidateAfterUse: true
+                ConversionRule{
+                    codeClass: CodeClass.Shell
+                    Text{content: String.raw`
+jobject %out;
+try{
+    %out = qtjambi_cast<jobject>(%env, %in);
+}catch(const JavaException&){
+    return %class::childMouseEventFilter(%1, %in);
+}
+                        `}
+                }
             }
         }
         ModifyFunction{
@@ -385,12 +414,28 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "focusOutEvent(QFocusEvent*)"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -399,12 +444,28 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "hoverLeaveEvent(QHoverEvent*)"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -413,12 +474,28 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "inputMethodEvent(QInputMethodEvent*)"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -427,12 +504,28 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "keyReleaseEvent(QKeyEvent*)"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -441,12 +534,28 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "mouseMoveEvent(QMouseEvent*)"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -455,12 +564,28 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "mouseReleaseEvent(QMouseEvent*)"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -469,12 +594,28 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "wheelEvent(QWheelEvent*)"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         Import{
@@ -576,6 +717,9 @@ TypeSystem{
     
     ObjectType{
         name: "QQuickTextDocument"
+        EnumType{
+            name: "Status"
+        }
         ModifyFunction{
             signature: "setTextDocument(QTextDocument*)"
             ModifyArgument{
@@ -1277,6 +1421,12 @@ TypeSystem{
 
     ObjectType{
         name: "QSGTextNode"
+        EnumType{
+            name: "TextStyle"
+        }
+        EnumType{
+            name: "RenderType"
+        }
         ModifyFunction{
             signature: "addTextDocument(QPointF,QTextDocument*,int,int)"
             ModifyArgument{
@@ -2766,6 +2916,10 @@ if(%1.count()<=0)
                 ckeckAvailability: true
             }
         }
+        EnumType{
+            name: "Flag"
+            since: 6.8
+        }
 
         InjectCode{
             target: CodeClass.Native
@@ -2779,6 +2933,12 @@ if(%1.count()<=0)
             since: [6, 4]
             Text{content: "QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *env, jlong image, jint layout, jint format, const QSize& pixelSize, int sampleCount);"}
         }
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            since: [6, 8]
+            Text{content: "QQuickRenderTarget qtjambi_QQuickRenderTarget_fromVulkanImage(JNIEnv *env, jlong image, jint layout, jint format, jint viewFormat, const QSize& pixelSize, int sampleCount, int arraySize, QQuickRenderTarget::Flags flags);"}
+        }
         ModifyFunction{
             signature: "fromD3D11Texture(void *, QSize, int)"
             ppCondition: "defined(Q_OS_WIN)"
@@ -2790,9 +2950,19 @@ if(%1.count()<=0)
             since: [6, 4]
         }
         ModifyFunction{
+            signature: "fromD3D11Texture(void *, unsigned int, QSize, int, QQuickRenderTarget::Flags)"
+            ppCondition: "defined(Q_OS_WIN)"
+            since: [6, 8]
+        }
+        ModifyFunction{
             signature: "fromD3D12Texture(void *, int, uint, QSize, int)"
             ppCondition: "defined(Q_OS_WIN)"
             since: 6.6
+        }
+        ModifyFunction{
+            signature: "fromD3D12Texture(void *, int, uint, uint, QSize, int, int, QQuickRenderTarget::Flags)"
+            ppCondition: "defined(Q_OS_WIN)"
+            since: 6.8
         }
         ModifyFunction{
             signature: "fromMetalTexture(MTLTexture *, QSize, int)"
@@ -2803,6 +2973,11 @@ if(%1.count()<=0)
             signature: "fromMetalTexture(MTLTexture *, unsigned int, QSize, int)"
             ppCondition: "defined(Q_OS_MACOS) || defined(Q_OS_IOS)"
             since: [6, 4]
+        }
+        ModifyFunction{
+            signature: "fromMetalTexture(MTLTexture *, unsigned int, unsigned int, QSize, int, int, QQuickRenderTarget::Flags)"
+            ppCondition: "defined(Q_OS_MACOS) || defined(Q_OS_IOS)"
+            since: [6, 8]
         }
         ModifyFunction{
             signature: "fromPaintDevice(QPaintDevice*)"
@@ -2903,6 +3078,64 @@ if(%1.count()<=0)
             since: [6, 4]
         }
         ModifyFunction{
+            signature: "fromVulkanImage(VkImage, VkImageLayout, VkFormat, VkFormat, QSize, int, int, QQuickRenderTarget::Flags)"
+            ppCondition: "QT_CONFIG(vulkan)"
+            proxyCall: "qtjambi_QQuickRenderTarget_fromVulkanImage"
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "long"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "#ifdef %out\n"+
+                                  "#undef %out\n"+
+                                  "#endif\n"+
+                                  "#define %out %in"}
+                }
+            }
+            ModifyArgument{
+                index: 2
+                ReplaceType{
+                    modifiedType: "int"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "#ifdef %out\n"+
+                                  "#undef %out\n"+
+                                  "#endif\n"+
+                                  "#define %out %in"}
+                }
+            }
+            ModifyArgument{
+                index: 3
+                ReplaceType{
+                    modifiedType: "int"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "#ifdef %out\n"+
+                                  "#undef %out\n"+
+                                  "#endif\n"+
+                                  "#define %out %in"}
+                }
+            }
+            ModifyArgument{
+                index: 4
+                ReplaceType{
+                    modifiedType: "int"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    Text{content: "#ifdef %out\n"+
+                                  "#undef %out\n"+
+                                  "#endif\n"+
+                                  "#define %out %in"}
+                }
+            }
+            since: [6, 8]
+        }
+        ModifyFunction{
             signature: "QQuickRenderTarget(QQuickRenderTarget)"
             InjectCode{
                 target: CodeClass.Java
@@ -2911,6 +3144,16 @@ if(%1.count()<=0)
                 ArgumentMap{index: 1; metaName: "%1"}
                 Text{content: "__rcRenderTarget = %1.__rcRenderTarget;"}
             }
+        }
+        ModifyFunction{
+            signature: "setDepthTexture(QRhiTexture*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
+            since: 6.8
         }
         ModifyFunction{
             signature: "operator=(QQuickRenderTarget)"

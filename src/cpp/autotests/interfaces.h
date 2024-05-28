@@ -177,6 +177,14 @@ public:
     MoccedObject(QObject* parent = nullptr) : QObject(parent) {}
 };
 
+class MoccedMoccedObject : public MoccedObject{
+    Q_OBJECT
+signals:
+    void clonedSignal(int i=0, QString s = {});
+    void clonedSignal2(int, QString s = {});
+    void clonedSignal3(char, int, QString s = {});
+};
+
 class UnMoccedObject : public MoccedObject{
 public:
     UnMoccedObject(QObject* parent = nullptr) : MoccedObject(parent) {}

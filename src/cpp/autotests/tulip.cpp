@@ -67,15 +67,18 @@ QList<QEasingCurve::EasingFunction> Tulip::createListOfEasingFunctions() {return
 void Tulip::testEasingFunctions(const QList<QEasingCurve::EasingFunction>& functions){
     int i=0;
     for(QEasingCurve::EasingFunction fun : functions){
-        fun(i++);
+        if(fun)
+            fun(i++);
     }
 }
 QList<Tulip::TestStdFunction> Tulip::createListOfStdFunctions() {return {[](int,bool,double){}};}
 void Tulip::testStdFunctions(const QList<Tulip::TestStdFunction>& functions){
     int i=0;
     for(Tulip::TestStdFunction fun : functions){
-        fun(i, i%2==1, i);
-        ++i;
+        if(fun){
+            fun(i, i%2==1, i);
+            ++i;
+        }
     }
 }
 

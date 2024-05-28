@@ -42,9 +42,23 @@ QT_WARNING_DISABLE_DEPRECATED
 #ifndef QT_NO_DEBUG
 QT_WARNING_DISABLE_GCC("-Wstringop-overflow")
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+namespace QHashPrivate {
+template <>
+constexpr inline bool HasQHashSingleArgOverload<QMap<QString,int>> = false;
+template <>
+constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QString>> = false;
+}
+#endif
+
 class UnknownKey{
 public:
-    UnknownKey(int){}
+    UnknownKey(int){
+        QTJAMBI_IN_CONSTRUCTOR_CALL("UnknownKey(int)", this)
+    }
+    void test(){
+        QTJAMBI_JAVA_METHOD_CALL("UnknownKey::test()")
+    }
 };
 
 //bool operator <(const UnknownKey&,const UnknownKey&){return false;}
@@ -53,7 +67,9 @@ uint qHash(const UnknownKey&){return 0;}
 
 class UnknownClass{
 public:
-    UnknownClass(int){}
+    UnknownClass(int){
+        QTJAMBI_IN_CONSTRUCTOR_CALL("UnknownClass(int)")
+    }
 };
 bool operator ==(const UnknownClass&,const UnknownClass&){return false;}
 //bool operator <(const UnknownClass&,const UnknownClass&){return false;}

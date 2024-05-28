@@ -45,8 +45,8 @@
 using ClientIoDevice = QtROClientIoDevice;
 #endif
 
-void __qt_construct_QRemoteObjectPendingCall(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool);
-void __qt_construct_QRemoteObjectPendingCall_cref_QRemoteObjectPendingCall(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool);
+void __qt_construct_QRemoteObjectPendingCall(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool, bool, bool);
+void __qt_construct_QRemoteObjectPendingCall_cref_QRemoteObjectPendingCall(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject __jni_object, jvalue* __java_arguments, bool, bool, bool);
 void __qt_destruct_QRemoteObjectPendingCall(void* ptr);
 
 extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteobjects_QRemoteObjectPendingReply_initialize_1native__Lio_qt_remoteobjects_QRemoteObjectPendingReply_2)
@@ -56,7 +56,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteo
 {
     QTJAMBI_NATIVE_METHOD_CALL("QRemoteObjectPendingReply<QVariant>::QRemoteObjectPendingReply<QVariant>()")
     QTJAMBI_TRY{
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QRemoteObjectPendingCall, sizeof(QRemoteObjectPendingReply<QVariant>), typeid(QRemoteObjectPendingReply<QVariant>), false, nullptr);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QRemoteObjectPendingCall, sizeof(QRemoteObjectPendingReply<QVariant>), typeid(QRemoteObjectPendingReply<QVariant>), 0, false, nullptr);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -73,7 +73,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_remoteo
     QTJAMBI_TRY{
         jvalue arguments;
         arguments.l = other0;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QRemoteObjectPendingCall_cref_QRemoteObjectPendingCall, sizeof(QRemoteObjectPendingReply<QVariant>), typeid(QRemoteObjectPendingReply<QVariant>), false, &arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_construct_QRemoteObjectPendingCall_cref_QRemoteObjectPendingCall, sizeof(QRemoteObjectPendingReply<QVariant>), typeid(QRemoteObjectPendingReply<QVariant>), 0, false, &arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -223,7 +223,7 @@ void initialize_meta_info_RemoteObject(){
 #else
     QMetaType::registerNormalizedTypedef("QRemoteObjectPendingReply", QMetaType(metaTypeID));
 #endif
-    registerConstructorInfos(typeId, &__qt_destruct_QRemoteObjectPendingCall, {
+    registerConstructorInfos(typeId, 0, &__qt_destruct_QRemoteObjectPendingCall, {
     });
 }
 

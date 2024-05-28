@@ -645,7 +645,7 @@ public class TestQObject extends ApplicationInitializer {
     	assertTrue(object!=null);
     	assertEquals(UnMoccedSub2Object.class, object.getClass());
     }
-
+    
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestQObject.class.getName());
     }

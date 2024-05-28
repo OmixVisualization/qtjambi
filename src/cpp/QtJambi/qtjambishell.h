@@ -38,14 +38,16 @@
 #include <QtCore/QObject>
 
 class AbstractContainerAccess;
+class QtJambiShellImpl;
 
 class QTJAMBI_EXPORT QtJambiShell{
 public:
-    typedef void (*ConstructorFunction)(void*, JNIEnv*, jobject, jvalue*, bool);
+    typedef void (*ConstructorFunction)(void*, JNIEnv*, jobject, jvalue*, bool, bool, bool);
 
     virtual void destructed(const std::type_info& typeId) = 0;
     virtual void constructed(const std::type_info& typeId) = 0;
     virtual void deleteShell() = 0;
+    virtual class QtJambiScope* returnScope(JNIEnv *env, const std::type_info& typeId, uint index) = 0;
     bool tryDeleteShell(const std::type_info& typeId);
     const QMetaObject* metaObject() const;
     void warnForMethod(const char*) const;
@@ -59,50 +61,50 @@ public:
 
 
     static void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
-                           size_t size, const std::type_info& typeId, bool isShell,
+                           size_t size, const std::type_info& typeId, uint returnScopeRequired, bool isShell,
                            PtrDeleterFunction delete_function,
                            jvalue* arguments);
 
     static void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
-                           size_t size, const std::type_info& typeId, bool isShell,
+                           size_t size, const std::type_info& typeId, uint returnScopeRequired, bool isShell,
                            PtrDeleterFunction delete_function, PtrOwnerFunction ownerFunction,
                            jvalue* arguments);
 
     static void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
-                           size_t size, const std::type_info& typeId, bool isShell,
+                           size_t size, const std::type_info& typeId, uint returnScopeRequired, bool isShell,
                            jvalue* arguments);
 
     static void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
-                           size_t size, const std::type_info& typeId, bool isShell,
+                           size_t size, const std::type_info& typeId, uint returnScopeRequired, bool isShell,
                            PtrOwnerFunction ownerFunction,
                            jvalue* arguments);
 
     static void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
-                           size_t size, const std::type_info& typeId, PtrDeleterFunction delete_function);
+                           size_t size, const std::type_info& typeId, uint returnScopeRequired, PtrDeleterFunction delete_function);
 
     static void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
-                           size_t size, const std::type_info& typeId, const QMetaObject& originalMetaObject,
+                           size_t size, const std::type_info& typeId, uint returnScopeRequired, const QMetaObject& originalMetaObject,
                            bool isShell, bool hasCustomMetaObject, bool isDeclarativeCall, jvalue* arguments);
 
     static void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
-                           size_t size, const std::type_info& typeId, bool isShell,
+                           size_t size, const std::type_info& typeId, uint returnScopeRequired, bool isShell,
                            AbstractContainerAccess* containerAccess,
                            jvalue* arguments);
 
     static void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
-                           size_t size, const std::type_info& typeId, bool isShell,
+                           size_t size, const std::type_info& typeId, uint returnScopeRequired, bool isShell,
                            AbstractContainerAccess* containerAccess,
                            PtrDeleterFunction delete_function, jvalue* arguments);
 
     static void initialize(JNIEnv *env, jclass callingClass, jobject object, ConstructorFunction constructorFunction,
-                           size_t size, const std::type_info& typeId, bool isShell,
+                           size_t size, const std::type_info& typeId, uint returnScopeRequired, bool isShell,
                            AbstractContainerAccess* containerAccess,
                            PtrDeleterFunction delete_function, PtrOwnerFunction ownerFunction, jvalue* arguments);
 private:
     QtJambiShell();
     virtual ~QtJambiShell();
     Q_DISABLE_COPY_MOVE(QtJambiShell)
-    friend class QtJambiShellImpl;
+    friend QtJambiShellImpl;
 };
 
 class QTJAMBI_EXPORT QtJambiShellInterface{
@@ -112,8 +114,7 @@ protected:
     virtual ~QtJambiShellInterface();
 private:
     virtual QtJambiShell* __shell() const = 0;
-    friend class FunctorBase;
-    friend class FunctorBasePrivate;
+    friend QtJambiShellImpl;
 };
 
 #endif // QTJAMBISHELL_H

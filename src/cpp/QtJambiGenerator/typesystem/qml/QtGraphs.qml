@@ -449,6 +449,14 @@ TypeSystem{
         name: "QAbstract3DGraph"
 
         EnumType{
+            name: "RenderingMode"
+        }
+
+        EnumType{
+            name: "CameraPreset"
+        }
+
+        EnumType{
             name: "ElementType"
         }
 
@@ -492,6 +500,7 @@ TypeSystem{
                     action: ReferenceCount.Ignore
                 }
             }
+            until: 6.7
         }
         ModifyFunction{
             signature: "addTheme(Q3DTheme *)"
@@ -525,6 +534,7 @@ TypeSystem{
                     action: ReferenceCount.Ignore
                 }
             }
+            until: 6.7
         }
         ModifyFunction{
             signature: "releaseTheme(Q3DTheme *)"
@@ -558,6 +568,7 @@ TypeSystem{
                     action: ReferenceCount.Ignore
                 }
             }
+            until: 6.7
         }
         ModifyFunction{
             signature: "setActiveTheme(Q3DTheme *)"
@@ -630,6 +641,7 @@ TypeSystem{
                 }
             }
         }
+        until: 6.7
     }
     
     ObjectType{
@@ -818,7 +830,7 @@ TypeSystem{
         }
     }
     
-    ObjectType{
+    ValueType{
         name: "QBarDataRow"
         ExtraIncludes{
             Include{
@@ -1290,6 +1302,7 @@ TypeSystem{
             name: "LabelsPosition"
         }
         since: 6.7
+        until: 6.7
     }
 
     ObjectType{
@@ -1320,6 +1333,94 @@ TypeSystem{
 
     ObjectType{
         name: "QBarSeries"
+        EnumType{
+            name: "LabelsPosition"
+        }
+        EnumType{
+            name: "BarsType"
+        }
+        EnumType{
+            name: "BarsOrientation"
+        }
+        ModifyFunction{
+            signature: "append(QBarSet*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "append(QList<QBarSet*>)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "insert(int,QBarSet*)"
+            ModifyArgument{
+                index: 2
+                ReferenceCount{
+                    variableName: "__rcBarSet"
+                    action: ReferenceCount.Add
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "remove(QBarSet*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcBarSet"
+                    action: ReferenceCount.Take
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "take(QBarSet*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcBarSet"
+                    action: ReferenceCount.Take
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "setAxisX(QAbstractAxis*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcAxisX"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "setAxisY(QAbstractAxis*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcAxisY"
+                    action: ReferenceCount.Set
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "setBarComponent(QQmlComponent*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcBarComponent"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: 6.8
+        }
         since: 6.7
     }
 
@@ -1330,6 +1431,11 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         since: 6.7
+    }
+
+    ObjectType{
+        name: "QLegendData"
+        since: 6.8
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: horribly broken type ''"}

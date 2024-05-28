@@ -631,8 +631,11 @@ public class TestQThread extends ApplicationInitializer{
 			reference = new WeakReference<>(thread);
 			thread.start();
 			thread.join();
-			if(exception[0]!=null)
+			if(exception[0]!=null) {
+				qtarray[0] = null;
+				thread = null;
 				throw exception[0];
+			}
 			Assert.assertEquals(javaThreads[0], javaThreads[1]);
 			Assert.assertEquals(thread, qtarray[0]);
 			Assert.assertTrue(cppOwnership[0]);

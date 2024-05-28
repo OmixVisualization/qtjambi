@@ -41,11 +41,9 @@ import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Assume;
@@ -64,7 +62,6 @@ import io.qt.QtPropertyResetter;
 import io.qt.QtPropertyWriter;
 import io.qt.QtSignalEmitterInterface;
 import io.qt.QtUninvokable;
-import io.qt.autotests.generated.General;
 import io.qt.autotests.generated.SignalsAndSlots;
 import io.qt.core.QByteArray;
 import io.qt.core.QCoreApplication;
@@ -90,7 +87,6 @@ import io.qt.gui.QGuiApplication;
 import io.qt.internal.ClassAnalyzerUtility;
 import io.qt.internal.TestUtility;
 import io.qt.widgets.QApplication;
-import io.qt.widgets.QColorDialog;
 import io.qt.widgets.QGraphicsScene;
 import io.qt.widgets.QLineEdit;
 import io.qt.widgets.QPushButton;
@@ -2053,72 +2049,6 @@ public class TestConnections extends ApplicationInitializer
 			assertFalse(((QtObjectInterface)connection).isDisposed());
 			assertFalse(connection.isConnected());
 		}
-	}
-	
-	@Test
-    public void test_destroyed_signal() throws InterruptedException {
-		Set<QObject> received = new HashSet<>();
-		Set<QObject> expected = new HashSet<>();
-		boolean[] dialogDestroyedAsNull = {false};
-		{
-			QColorDialog dialog = new QColorDialog();
-			for(QObject child : dialog.children()) {
-				expected.add(child);
-				child.destroyed.connect(received::add);
-				assertTrue("not cpp ownership", General.internalAccess.isCppOwnership(child));
-			}
-			dialog.destroyed.connect(c->{
-				dialogDestroyedAsNull[0] = c==null;
-			});
-			dialog = null;
-		}
-		ApplicationInitializer.runGC();
-        Thread.sleep(50);
-        QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-		ApplicationInitializer.runGC();
-        Thread.sleep(50);
-        QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-		ApplicationInitializer.runGC();
-        Thread.sleep(50);
-        QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-		ApplicationInitializer.runGC();
-        Thread.sleep(50);
-        QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-		assertTrue(dialogDestroyedAsNull[0]);
-		assertEquals(expected.size(), received.size());
-		for (QObject object : expected) {
-			assertTrue(received.contains(object));
-		}
-	}
-	
-	static class DestroyResponseObject extends QObject{
-		public void onDestroyed(QObject o){
-			System.out.println("DestroyResponseObject@"+System.identityHashCode(o));
-		}
-	}
-	
-	@Test
-    public void test_destroyed_signal_self() throws InterruptedException {
-		{
-			DestroyResponseObject d = new DestroyResponseObject();
-			d.destroyed.connect(o->d.onDestroyed(o));
-		}
-		ApplicationInitializer.runGC();
-        Thread.sleep(50);
-        QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-	}
-	
-	@Test
-    public void test_destroyed_signal_queued() throws InterruptedException {
-		QObject object = new QObject();
-		object.destroyed.connect(o -> {
-			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "destroyed: "+System.identityHashCode(o));
-		}, Qt.ConnectionType.QueuedConnection);
-		ApplicationInitializer.runGC();
-        Thread.sleep(50);
-        QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-        QCoreApplication.processEvents();
-        // nothing should happen
 	}
 	
 	@Test public void testLambdaSlot() {

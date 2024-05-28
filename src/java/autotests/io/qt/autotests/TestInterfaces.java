@@ -64,6 +64,7 @@ import io.qt.autotests.generated.TestAbstractClass;
 import io.qt.autotests.generated.TestInterface;
 import io.qt.autotests.generated.TestPrivateInterface;
 import io.qt.autotests.generated.Tulip;
+import io.qt.core.QCoreApplication;
 import io.qt.core.QEasingCurve;
 import io.qt.core.QEvent;
 import io.qt.core.QEventLoop;
@@ -854,6 +855,7 @@ public class TestInterfaces extends ApplicationInitializer {
 	public void test_manyEasingFunctions() {
 		QList<QEasingCurve.EasingFunction> container = Tulip.createListOfEasingFunctions();
     	Assert.assertTrue(container!=null);
+    	Assert.assertEquals(1, container.size());
     	TreeMap<Integer,Double> calls = new TreeMap<>();
     	for(int i=0; i<100; ++i) {
     		int _i = i;
@@ -863,6 +865,13 @@ public class TestInterfaces extends ApplicationInitializer {
     		};
     		container.add(object);
     	}
+    	System.gc();
+    	Thread.yield();
+    	QCoreApplication.processEvents();
+    	System.gc();
+    	Thread.yield();
+    	QCoreApplication.processEvents();
+    	System.gc();
     	Tulip.testEasingFunctions(container);
         Assert.assertEquals(100, calls.size());
         for (int i = 0; i < calls.size(); i++) {

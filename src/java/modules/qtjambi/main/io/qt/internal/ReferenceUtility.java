@@ -407,8 +407,8 @@ abstract class ReferenceUtility {
 		boolean got = false;
 		if (declaringClass!=null && declaringClass.isInterface() && !isStatic) {
 			NativeLink link = NativeUtility.findInterfaceLink(owner, false);
-			if (link instanceof NativeUtility.InterfaceNativeLink) {
-				collection = ((NativeUtility.InterfaceNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, null);
+			if (link instanceof NativeUtility.ReferenceCountingNativeLink) {
+				collection = ((NativeUtility.ReferenceCountingNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, null);
 				got = true;
 			}
 		}
@@ -421,7 +421,7 @@ abstract class ReferenceUtility {
 				}
 			}
 			if (field == null && owner != null) {
-				Class<?> objectClass = ClassAnalyzerUtility.getClass(owner);
+				Class<?> objectClass = AccessUtility.instance.getClass(owner);
 				do {
 					try {
 						field = objectClass.getDeclaredField(fieldName);
@@ -444,8 +444,8 @@ abstract class ReferenceUtility {
 		boolean got = false;
 		if (declaringClass!=null && declaringClass.isInterface() && !isStatic) {
 			NativeLink link = NativeUtility.findInterfaceLink(owner, false);
-			if (link instanceof NativeUtility.InterfaceNativeLink) {
-				collection = ((NativeUtility.InterfaceNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, null);
+			if (link instanceof NativeUtility.ReferenceCountingNativeLink) {
+				collection = ((NativeUtility.ReferenceCountingNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, null);
 				got = true;
 			}
 		}
@@ -458,7 +458,7 @@ abstract class ReferenceUtility {
 				}
 			}
 			if (field == null && owner != null) {
-				Class<?> objectClass = ClassAnalyzerUtility.getClass(owner);
+				Class<?> objectClass = AccessUtility.instance.getClass(owner);
 				do {
 					try {
 						field = objectClass.getDeclaredField(fieldName);
@@ -482,8 +482,8 @@ abstract class ReferenceUtility {
 		boolean got = false;
 		if (declaringClass!=null && declaringClass.isInterface() && !isStatic) {
 			NativeLink link = NativeUtility.findInterfaceLink(owner, false);
-			if (link instanceof NativeUtility.InterfaceNativeLink) {
-				collection = ((NativeUtility.InterfaceNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, RCList::new);
+			if (link instanceof NativeUtility.ReferenceCountingNativeLink) {
+				collection = ((NativeUtility.ReferenceCountingNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, RCList::new);
 				got = true;
 			}
 		}
@@ -496,7 +496,7 @@ abstract class ReferenceUtility {
 				}
 			}
 			if (field == null && owner != null) {
-				Class<?> objectClass = ClassAnalyzerUtility.getClass(owner);
+				Class<?> objectClass = AccessUtility.instance.getClass(owner);
 				do {
 					try {
 						field = objectClass.getDeclaredField(fieldName);
@@ -528,8 +528,8 @@ abstract class ReferenceUtility {
 		boolean got = false;
 		if (declaringClass!=null && declaringClass.isInterface() && !isStatic) {
 			NativeLink link = NativeUtility.findInterfaceLink(owner, false);
-			if (link instanceof NativeUtility.InterfaceNativeLink) {
-				map = ((NativeUtility.InterfaceNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, () -> {
+			if (link instanceof NativeUtility.ReferenceCountingNativeLink) {
+				map = ((NativeUtility.ReferenceCountingNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, () -> {
 					if (isThreadSafe) {
 						return java.util.Collections.synchronizedMap(new RCMap());
 					} else {
@@ -548,7 +548,7 @@ abstract class ReferenceUtility {
 				}
 			}
 			if (field == null && owner != null) {
-				Class<?> objectClass = ClassAnalyzerUtility.getClass(owner);
+				Class<?> objectClass = AccessUtility.instance.getClass(owner);
 				do {
 					try {
 						field = objectClass.getDeclaredField(fieldName);
@@ -579,8 +579,8 @@ abstract class ReferenceUtility {
 		boolean got = false;
 		if (declaringClass!=null && declaringClass.isInterface() && !isStatic) {
 			NativeLink link = NativeUtility.findInterfaceLink(owner, false);
-			if (link instanceof NativeUtility.InterfaceNativeLink) {
-				collection = ((NativeUtility.InterfaceNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, null);
+			if (link instanceof NativeUtility.ReferenceCountingNativeLink) {
+				collection = ((NativeUtility.ReferenceCountingNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, null);
 				got = true;
 			}
 		}
@@ -593,7 +593,7 @@ abstract class ReferenceUtility {
 				}
 			}
 			if (field == null && owner != null) {
-				Class<?> objectClass = ClassAnalyzerUtility.getClass(owner);
+				Class<?> objectClass = AccessUtility.instance.getClass(owner);
 				do {
 					try {
 						field = objectClass.getDeclaredField(fieldName);
@@ -619,8 +619,8 @@ abstract class ReferenceUtility {
 		boolean got = false;
 		if (declaringClass!=null && declaringClass.isInterface() && !isStatic) {
 			NativeLink link = NativeUtility.findInterfaceLink(owner, false);
-			if (link instanceof NativeUtility.InterfaceNativeLink) {
-				collection = ((NativeUtility.InterfaceNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, RCList::new);
+			if (link instanceof NativeUtility.ReferenceCountingNativeLink) {
+				collection = ((NativeUtility.ReferenceCountingNativeLink) link).getReferenceCountCollection(declaringClass, fieldName, RCList::new);
 				got = true;
 			}
 		}
@@ -633,7 +633,7 @@ abstract class ReferenceUtility {
 				}
 			}
 			if (field == null && owner != null) {
-				Class<?> objectClass = ClassAnalyzerUtility.getClass(owner);
+				Class<?> objectClass = AccessUtility.instance.getClass(owner);
 				do {
 					try {
 						field = objectClass.getDeclaredField(fieldName);
@@ -665,11 +665,11 @@ abstract class ReferenceUtility {
 		if(declaringClass!=null) {
 			if (declaringClass.isInterface()) {
 				NativeLink link = NativeUtility.findInterfaceLink(copy, true);
-				if (link instanceof NativeUtility.InterfaceNativeLink) {
-					newValue = ((NativeUtility.InterfaceNativeLink) link).getReferenceCount(declaringClass, fieldName);
+				if (link instanceof NativeUtility.ReferenceCountingNativeLink) {
+					newValue = ((NativeUtility.ReferenceCountingNativeLink) link).getReferenceCount(declaringClass, fieldName);
 					link = NativeUtility.findInterfaceLink(owner, true);
-					if (link instanceof NativeUtility.InterfaceNativeLink) {
-						((NativeUtility.InterfaceNativeLink) link).setReferenceCount(declaringClass, fieldName, newValue);
+					if (link instanceof NativeUtility.ReferenceCountingNativeLink) {
+						((NativeUtility.ReferenceCountingNativeLink) link).setReferenceCount(declaringClass, fieldName, newValue);
 						return;
 					}
 				}
@@ -680,7 +680,7 @@ abstract class ReferenceUtility {
 			}
 		}
 		if (field == null && copy != null) {
-			Class<?> objectClass = ClassAnalyzerUtility.getClass(copy);
+			Class<?> objectClass = AccessUtility.instance.getClass(copy);
 			do {
 				try {
 					field = objectClass.getDeclaredField(fieldName);
@@ -695,8 +695,8 @@ abstract class ReferenceUtility {
 			}
 			if (declaringClass!=null && declaringClass.isInterface()) {
 				NativeLink link = NativeUtility.findInterfaceLink(owner, true);
-				if (link instanceof NativeUtility.InterfaceNativeLink) {
-					((NativeUtility.InterfaceNativeLink) link).setReferenceCount(declaringClass, fieldName, newValue);
+				if (link instanceof NativeUtility.ReferenceCountingNativeLink) {
+					((NativeUtility.ReferenceCountingNativeLink) link).setReferenceCount(declaringClass, fieldName, newValue);
 					return;
 				}
 			}
@@ -720,8 +720,8 @@ abstract class ReferenceUtility {
 		if(declaringClass!=null) {
 			if (declaringClass.isInterface() && !isStatic) {
 				NativeLink link = NativeUtility.findInterfaceLink(owner, true);
-				if (link instanceof NativeUtility.InterfaceNativeLink) {
-					((NativeUtility.InterfaceNativeLink) link).setReferenceCount(declaringClass, fieldName, newValue);
+				if (link instanceof NativeUtility.ReferenceCountingNativeLink) {
+					((NativeUtility.ReferenceCountingNativeLink) link).setReferenceCount(declaringClass, fieldName, newValue);
 					return;
 				}
 			}
@@ -731,7 +731,7 @@ abstract class ReferenceUtility {
 			}
 		}
 		if (field == null && owner != null) {
-			Class<?> objectClass = ClassAnalyzerUtility.getClass(owner);
+			Class<?> objectClass = AccessUtility.instance.getClass(owner);
 			do {
 				try {
 					field = objectClass.getDeclaredField(fieldName);

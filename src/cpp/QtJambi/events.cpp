@@ -81,9 +81,13 @@ struct UIInitialCheck{
     static void trivial(JNIEnv *env, const char*, const std::type_info&, const QObject*);
     static bool trivial(QObject *, QEvent *, bool*);
     static const QObject* trivial(const void * ptr);
+    template<WindowConstructorCheck replacement>
     static void initialWindowConstructorCheck(JNIEnv *, const std::type_info&, const QObject*);
+    template<WidgetConstructorCheck replacement>
     static void initialWidgetConstructorCheck(JNIEnv *, const std::type_info&, const QObject*);
+    template<ConstructorCheck replacement>
     static void initialPixmapConstructorCheck(JNIEnv *, const std::type_info&);
+    template<ConstructorCheck replacement>
     static void initialUIConstructorCheck(JNIEnv *, const std::type_info&);
     static void initialPixmapUseCheck(JNIEnv *, const std::type_info&);
     static void initialPixmapArgumentCheck(JNIEnv *, const char*, const std::type_info&);
@@ -107,8 +111,8 @@ struct UIInitialCheck{
     static void enabledUIThreadCheck(JNIEnv *, const std::type_info&);
 };
 
-UIInitialCheck::WindowConstructorCheck UIInitialCheck::windowConstructorCheck = &UIInitialCheck::trivial;
-UIInitialCheck::WidgetConstructorCheck UIInitialCheck::widgetConstructorCheck = &UIInitialCheck::trivial;
+UIInitialCheck::WindowConstructorCheck UIInitialCheck::windowConstructorCheck = &UIInitialCheck::initialWindowConstructorCheck<&UIInitialCheck::trivial>;
+UIInitialCheck::WidgetConstructorCheck UIInitialCheck::widgetConstructorCheck = &UIInitialCheck::initialWidgetConstructorCheck<&UIInitialCheck::trivial>;
 UIInitialCheck::ConstructorCheck UIInitialCheck::pixmapConstructorCheck = &UIInitialCheck::trivial;
 UIInitialCheck::ConstructorCheck UIInitialCheck::uiConstructorCheck = &UIInitialCheck::trivial;
 UIInitialCheck::UseCheck UIInitialCheck::pixmapUseCheck = &UIInitialCheck::trivial;
@@ -155,10 +159,22 @@ bool UIInitialCheck::initialEventNotify(QObject *receiver, QEvent *event, bool* 
     return false;
 }
 
+class ScopedScopeLevelCounter
+{
+    int& scopeLevel;
+public:
+    inline ScopedScopeLevelCounter(QThreadData *threadData)
+        : scopeLevel(threadData->scopeLevel)
+    { ++scopeLevel; }
+    inline ~ScopedScopeLevelCounter()
+    { --scopeLevel; }
+};
+
 bool UIInitialCheck::enabledEventNotify(QObject *receiver, QEvent *event, bool* result){
     QObjectPrivate *d = QObjectPrivate::get(receiver);
     QThreadData *threadData = d->threadData;
-    QScopedScopeLevelCounter scopeLevelCounter(threadData);
+    ScopedScopeLevelCounter scopeLevelCounter(threadData);
+    QtJambiExceptionUnraiser __qt_unraiser;
     QtJambiExceptionBlocker __qt_exceptionHandler;
     *result = QCoreApplication::instance()->notify(receiver, event);
     __qt_exceptionHandler.release(nullptr);
@@ -193,26 +209,27 @@ void UIInitialCheck::enabledPixmapArgumentThreadCheck(JNIEnv *env, const char* a
     QThread* mainThread = QCoreApplicationPrivate::theMainThread.loadRelaxed();
     QThread* currentThread = QThread::currentThread();
     if(currentThread!=mainThread){
-        JavaException::raiseQThreadAffinityException(env, QStringLiteral("%1 used as argument '%2' from outside main thread").arg(getQtName(argumentType)).arg(argumentName) QTJAMBI_STACKTRACEINFO ,
+        JavaException::raiseQThreadAffinityException(env, QStringLiteral("%1 used as argument '%2' from outside main thread").arg(getQtName(argumentType), argumentName) QTJAMBI_STACKTRACEINFO ,
                                                      nullptr,
                                                      mainThread, currentThread);
     }
 }
 
+template<UIInitialCheck::ConstructorCheck replacement>
 void UIInitialCheck::initialPixmapConstructorCheck(JNIEnv *env, const std::type_info& constructedType){
     QCoreApplication* instance = QCoreApplication::instance();
     if(!instance) {
         Java::Runtime::IllegalStateException::throwNew(env, QStringLiteral("Cannot create %1 before initializing QGuiApplication.").arg(getQtName(constructedType)) QTJAMBI_STACKTRACEINFO);
     }else{
         if(!instance->inherits("QGuiApplication"))
-            Java::Runtime::IllegalStateException::throwNew(env, QStringLiteral("Cannot create %1 without QGuiApplication (instead of %2).").arg(getQtName(constructedType)).arg(instance->metaObject()->className()) QTJAMBI_STACKTRACEINFO);
+            Java::Runtime::IllegalStateException::throwNew(env, QStringLiteral("Cannot create %1 without QGuiApplication (instead of %2).").arg(getQtName(constructedType), instance->metaObject()->className()) QTJAMBI_STACKTRACEINFO);
         else{
             if(threadedPixmapsChecker()){
                 pixmapConstructorCheck = &trivial;
             }else{
-                pixmapConstructorCheck = &uiConstructorThreadCheck;
+                pixmapConstructorCheck = replacement;
             }
-            qAddPostRoutine([](){ UIInitialCheck::pixmapConstructorCheck = &UIInitialCheck::initialPixmapConstructorCheck; });
+            qAddPostRoutine([](){ UIInitialCheck::pixmapConstructorCheck = &UIInitialCheck::initialPixmapConstructorCheck<replacement>; });
             pixmapConstructorCheck(env, constructedType);
         }
     }
@@ -227,16 +244,17 @@ const QObject* UIInitialCheck::initialGetPixmapOwner(const void * ptr){
     return getPixmapOwner(ptr);
 }
 
+template<UIInitialCheck::ConstructorCheck replacement>
 void UIInitialCheck::initialUIConstructorCheck(JNIEnv *env, const std::type_info& constructedType){
     QCoreApplication* instance = QCoreApplication::instance();
     if(!instance) {
         Java::Runtime::IllegalStateException::throwNew(env, QStringLiteral("Cannot create %1 before initializing QGuiApplication.").arg(getQtName(constructedType)) QTJAMBI_STACKTRACEINFO);
     }else{
         if(!instance->inherits("QGuiApplication"))
-            Java::Runtime::IllegalStateException::throwNew(env, QStringLiteral("Cannot create %1 without QGuiApplication (instead of %2).").arg(getQtName(constructedType)).arg(instance->metaObject()->className()) QTJAMBI_STACKTRACEINFO);
+            Java::Runtime::IllegalStateException::throwNew(env, QStringLiteral("Cannot create %1 without QGuiApplication (instead of %2).").arg(getQtName(constructedType), instance->metaObject()->className()) QTJAMBI_STACKTRACEINFO);
         else{
-            uiConstructorCheck = &uiConstructorThreadCheck;
-            qAddPostRoutine([](){ UIInitialCheck::uiConstructorCheck = &UIInitialCheck::initialUIConstructorCheck; });
+            uiConstructorCheck = replacement;
+            qAddPostRoutine([](){ UIInitialCheck::uiConstructorCheck = &UIInitialCheck::initialUIConstructorCheck<replacement>; });
             uiConstructorCheck(env, constructedType);
         }
     }
@@ -300,31 +318,33 @@ void UIInitialCheck::widgetConstructorThreadCheck(JNIEnv *env, const std::type_i
     }
 }
 
+template<UIInitialCheck::WindowConstructorCheck replacement>
 void UIInitialCheck::initialWindowConstructorCheck(JNIEnv *env, const std::type_info& constructedType, const QObject* parent){
     QCoreApplication* instance = QCoreApplication::instance();
     if(!instance) {
         Java::Runtime::IllegalStateException::throwNew(env, QStringLiteral("Cannot create %1 before initializing QGuiApplication.").arg(getQtName(constructedType)) QTJAMBI_STACKTRACEINFO);
     }else{
         if(!instance->inherits("QGuiApplication"))
-            Java::Runtime::IllegalStateException::throwNew(env, QStringLiteral("Cannot create %1 without QGuiApplication (instead of %2).").arg(getQtName(constructedType)).arg(instance->metaObject()->className()) QTJAMBI_STACKTRACEINFO);
+            Java::Runtime::IllegalStateException::throwNew(env, QStringLiteral("Cannot create %1 without QGuiApplication (instead of %2).").arg(getQtName(constructedType), instance->metaObject()->className()) QTJAMBI_STACKTRACEINFO);
         else{
-            windowConstructorCheck = &windowConstructorThreadCheck;
-            qAddPostRoutine([](){ UIInitialCheck::windowConstructorCheck = &UIInitialCheck::initialWindowConstructorCheck; });
+            windowConstructorCheck = replacement;
+            qAddPostRoutine([](){ UIInitialCheck::windowConstructorCheck = &UIInitialCheck::initialWindowConstructorCheck<replacement>; });
             windowConstructorCheck(env, constructedType, parent);
         }
     }
 }
 
+template<UIInitialCheck::WidgetConstructorCheck replacement>
 void UIInitialCheck::initialWidgetConstructorCheck(JNIEnv *env, const std::type_info& constructedType, const QObject* parent){
     QCoreApplication* instance = QCoreApplication::instance();
     if(!instance) {
         Java::Runtime::IllegalStateException::throwNew(env, QStringLiteral("Cannot create %1 before initializing QApplication.").arg(getQtName(constructedType)) QTJAMBI_STACKTRACEINFO);
     }else{
         if(!instance->inherits("QApplication")){
-            Java::Runtime::IllegalStateException::throwNew(env, QStringLiteral("Cannot create %1 without QApplication (instead of %2).").arg(getQtName(constructedType)).arg(instance->metaObject()->className()) QTJAMBI_STACKTRACEINFO);
+            Java::Runtime::IllegalStateException::throwNew(env, QStringLiteral("Cannot create %1 without QApplication (instead of %2).").arg(getQtName(constructedType), instance->metaObject()->className()) QTJAMBI_STACKTRACEINFO);
         }else{
-            widgetConstructorCheck = &widgetConstructorThreadCheck;
-            qAddPostRoutine([](){ UIInitialCheck::widgetConstructorCheck = &UIInitialCheck::initialWidgetConstructorCheck; });
+            widgetConstructorCheck = replacement;
+            qAddPostRoutine([](){ UIInitialCheck::widgetConstructorCheck = &UIInitialCheck::initialWidgetConstructorCheck<replacement>; });
             widgetConstructorCheck(env, constructedType, parent);
         }
     }
@@ -390,7 +410,7 @@ void UIInitialCheck::enabledValueArgumentThreadCheck(JNIEnv *env, const char* ar
                 if(objectThread == currentThread)
                     return;
             }
-            JavaException::raiseQThreadAffinityException(env, QStringLiteral("%1 used as argument '%2' from outside its own thread").arg(getQtName(argumentType)).arg(argumentName) QTJAMBI_STACKTRACEINFO ,
+            JavaException::raiseQThreadAffinityException(env, QStringLiteral("%1 used as argument '%2' from outside its own thread").arg(getQtName(argumentType), argumentName) QTJAMBI_STACKTRACEINFO ,
                                                          nullptr,
                                                          objectThread, currentThread);
         }
@@ -409,7 +429,7 @@ void UIInitialCheck::enabledUIArgumentThreadCheck(JNIEnv *env, const char* argum
     QThread* objectThread = QCoreApplicationPrivate::theMainThread.loadRelaxed();
     QThread* currentThread = QThread::currentThread();
     if(currentThread!=objectThread){
-        JavaException::raiseQThreadAffinityException(env, QStringLiteral("%1 used as argument '%2' from outside main thread").arg(getQtName(argumentType)).arg(argumentName) QTJAMBI_STACKTRACEINFO ,
+        JavaException::raiseQThreadAffinityException(env, QStringLiteral("%1 used as argument '%2' from outside main thread").arg(getQtName(argumentType), argumentName) QTJAMBI_STACKTRACEINFO ,
                                                      nullptr,
                                                      objectThread, currentThread);
     }
@@ -562,10 +582,10 @@ void QtJambiAPI::checkThreadConstructingApplication(JNIEnv *env, const std::type
 
 void enableThreadAffinity(bool enabled){
     if(enabled){
-        UIInitialCheck::windowConstructorCheck = &UIInitialCheck::initialWindowConstructorCheck;
-        UIInitialCheck::widgetConstructorCheck = &UIInitialCheck::initialWidgetConstructorCheck;
-        UIInitialCheck::pixmapConstructorCheck = &UIInitialCheck::initialPixmapConstructorCheck;
-        UIInitialCheck::uiConstructorCheck = &UIInitialCheck::initialUIConstructorCheck;
+        UIInitialCheck::windowConstructorCheck = &UIInitialCheck::initialWindowConstructorCheck<&UIInitialCheck::windowConstructorThreadCheck>;
+        UIInitialCheck::widgetConstructorCheck = &UIInitialCheck::initialWidgetConstructorCheck<&UIInitialCheck::widgetConstructorThreadCheck>;
+        UIInitialCheck::pixmapConstructorCheck = &UIInitialCheck::initialPixmapConstructorCheck<&UIInitialCheck::uiConstructorThreadCheck>;
+        UIInitialCheck::uiConstructorCheck = &UIInitialCheck::initialUIConstructorCheck<&UIInitialCheck::uiConstructorThreadCheck>;
         UIInitialCheck::pixmapUseCheck = &UIInitialCheck::initialPixmapUseCheck;
         UIInitialCheck::uiThreadCheck = &UIInitialCheck::enabledUIThreadCheck;
         UIInitialCheck::pixmapArgumentThreadCheck = &UIInitialCheck::initialPixmapArgumentCheck;
@@ -578,6 +598,10 @@ void enableThreadAffinity(bool enabled){
         UIInitialCheck::valueConstructorThreadCheck = &UIInitialCheck::enabledValueConstructorThreadCheck;
         UIInitialCheck::generalConstructorThreadCheck = &UIInitialCheck::enabledGeneralConstructorThreadCheck;
     }else{
+        UIInitialCheck::windowConstructorCheck = &UIInitialCheck::initialWindowConstructorCheck<&UIInitialCheck::trivial>;
+        UIInitialCheck::widgetConstructorCheck = &UIInitialCheck::initialWidgetConstructorCheck<&UIInitialCheck::trivial>;
+        UIInitialCheck::pixmapConstructorCheck = &UIInitialCheck::initialPixmapConstructorCheck<&UIInitialCheck::trivial>;
+        UIInitialCheck::uiConstructorCheck = &UIInitialCheck::initialUIConstructorCheck<&UIInitialCheck::trivial>;
         UIInitialCheck::objectThreadCheck = &UIInitialCheck::trivial;
         UIInitialCheck::pixmapUseCheck = &UIInitialCheck::trivial;
         UIInitialCheck::uiThreadCheck = &UIInitialCheck::trivial;
@@ -589,10 +613,6 @@ void enableThreadAffinity(bool enabled){
         UIInitialCheck::objectConstructorThreadCheck = &UIInitialCheck::trivial;
         UIInitialCheck::valueConstructorThreadCheck = &UIInitialCheck::trivial;
         UIInitialCheck::generalConstructorThreadCheck = &UIInitialCheck::trivial;
-        UIInitialCheck::uiConstructorCheck = &UIInitialCheck::trivial;
-        UIInitialCheck::pixmapConstructorCheck = &UIInitialCheck::trivial;
-        UIInitialCheck::widgetConstructorCheck = &UIInitialCheck::trivial;
-        UIInitialCheck::windowConstructorCheck = &UIInitialCheck::trivial;
     }
 }
 
@@ -646,7 +666,7 @@ bool eventNotifier(QObject *receiver, QEvent *event, bool* result)
     if (!QCoreApplicationPrivate::threadRequiresCoreApplication()){
         QObjectPrivate *d = QObjectPrivate::get(receiver);
         QThreadData *threadData = d->threadData;
-        QScopedScopeLevelCounter scopeLevelCounter(threadData);
+        ScopedScopeLevelCounter scopeLevelCounter(threadData);
         if (receiver == nullptr) {                        // serious error
             qCWarning(DebugAPI::internalCategory, "QCoreApplication::notify: Unexpected null receiver");
             return true;
@@ -654,6 +674,7 @@ bool eventNotifier(QObject *receiver, QEvent *event, bool* result)
 #ifndef QT_NO_DEBUG
         QCoreApplicationPrivate::checkReceiverThread(receiver);
 #endif
+        QtJambiExceptionUnraiser __qt_unraiser;
         QtJambiExceptionBlocker __qt_exceptionHandler;
         *result = receiver->isWidgetType() ? false : QCoreApplicationPrivate::notify_helper(receiver, event);
         __qt_exceptionHandler.release(nullptr);
@@ -680,9 +701,9 @@ bool threadAffineEventNotify(void **data)
         {
             if(const QObjectPrivate* p = QObjectPrivate::get(receiver)){
                 QThreadData *thr = p->threadData;
-                QScopedScopeLevelCounter scopeLevelCounter(thr);
+                ScopedScopeLevelCounter scopeLevelCounter(thr);
                 QThreadData *currentThread = QThreadData::get2(QThread::currentThread());
-                QScopedScopeLevelCounter cscopeLevelCounter(currentThread);
+                ScopedScopeLevelCounter cscopeLevelCounter(currentThread);
                 if(thr && thr->threadId!=nullptr && currentThread != thr){
                     QMetaEnum enm = QMetaEnum::fromType<QEvent::Type>();
                     QString eventDescr;

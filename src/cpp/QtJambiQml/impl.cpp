@@ -46,6 +46,10 @@
 #include "utils_p.h"
 #include <QtJambi/qtjambi_cast.h>
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+#define qAsConst std::as_const
+#endif
+
 namespace Java{
 namespace QtJambi {
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt,QtMetaType,
@@ -543,7 +547,7 @@ struct QmlTypeRegistractionData{
 #else
     void (*create)(void *) = nullptr;
 #endif
-    QVariant (*createValueType)(const QJSValue &);
+    QVariant (*createValueType)(const QJSValue &) = nullptr;
     QQmlAttachedPropertiesFunc attachedPropertiesFunction = nullptr;
     const QMetaObject *attachedPropertiesMetaObject = nullptr;
 #if QT_VERSION >= QT_VERSION_CHECK(6,5,0)
@@ -2817,7 +2821,7 @@ extern "C" Q_DECL_EXPORT jobject JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_
 }
 
 // new QQmlListProperty()
-void __qt_create_new_QQmlListProperty(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue*, bool)
+void __qt_create_new_QQmlListProperty(void* __qtjambi_ptr, JNIEnv*, jobject, jvalue*, bool, bool, bool)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QQmlListProperty<void>()")
     QQmlListProperty<void> *__qt_this = new(__qtjambi_ptr) QQmlListProperty<void>();
@@ -2831,7 +2835,7 @@ typedef qsizetype list_int;
 #endif
 
 // new QQmlListProperty(QObject * o, QList<QObject > & list)
-void __qt_create_new_QQmlListProperty_QObject_QList_bool(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue* __java_arguments, bool)
+void __qt_create_new_QQmlListProperty_QObject_QList_bool(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue* __java_arguments, bool, bool, bool)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QQmlListProperty<void>(QObject * o, QList<QObject > & list)")
     jobject o0 = __java_arguments[0].l;
@@ -3051,7 +3055,7 @@ struct FunctionUserData : QtJambiObjectData{
 #endif
 };
 
-void __qt_create_new_QQmlListProperty_functions(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue* __java_arguments, bool)
+void __qt_create_new_QQmlListProperty_functions(void* __qtjambi_ptr, JNIEnv* __jni_env, jobject, jvalue* __java_arguments, bool, bool, bool)
 {
     QTJAMBI_NATIVE_METHOD_CALL("construct QQmlListProperty<void>(QObject * o, QList<QObject > & list)()")
     QObject* object = QtJambiAPI::convertJavaObjectToQObject(__jni_env, __java_arguments[1].l);
@@ -3134,7 +3138,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
 {
     QTJAMBI_NATIVE_METHOD_CALL("QQmlListProperty::QQmlListProperty()")
     QTJAMBI_TRY{
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_create_new_QQmlListProperty, sizeof(QQmlListProperty<void>), typeid(QQmlListProperty<void>), false, &deleter_QQmlListProperty, nullptr);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_create_new_QQmlListProperty, sizeof(QQmlListProperty<void>), typeid(QQmlListProperty<void>), 0, false, &deleter_QQmlListProperty, nullptr);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -3155,7 +3159,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
         arguments[0].l = o0;
         arguments[1].l = list1;
         arguments[2].z = readonly;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_create_new_QQmlListProperty_QObject_QList_bool, sizeof(QQmlListProperty<void>), typeid(QQmlListProperty<void>), false, &deleter_QQmlListProperty, arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_create_new_QQmlListProperty_QObject_QList_bool, sizeof(QQmlListProperty<void>), typeid(QQmlListProperty<void>), 0, false, &deleter_QQmlListProperty, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -3187,7 +3191,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_qml_QQm
         arguments[6].l = replaceFunction;
         arguments[7].l = removeLastFunction;
         arguments[8].i = hash;
-        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_create_new_QQmlListProperty_functions, sizeof(QQmlListProperty<void>), typeid(QQmlListProperty<void>), false, &deleter_QQmlListProperty, arguments);
+        QtJambiShell::initialize(__jni_env, __jni_class, __jni_object, &__qt_create_new_QQmlListProperty_functions, sizeof(QQmlListProperty<void>), typeid(QQmlListProperty<void>), 0, false, &deleter_QQmlListProperty, arguments);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(__jni_env);
     }QTJAMBI_TRY_END
@@ -3558,7 +3562,7 @@ void initialize_meta_info_QQmlListProperty(){
     });
     const std::type_info& typeId = registerUnspecificTypeInfo<QQmlListProperty<void>>("QQmlListProperty", "io/qt/qml/QQmlListProperty");
     registerOperators<QQmlListProperty<void>>();
-    registerConstructorInfos(typeId, &__qt_destruct_QQmlListProperty, {});
+    registerConstructorInfos(typeId, 0, &__qt_destruct_QQmlListProperty, {});
     registerDeleter(typeId, &deleter_QQmlListProperty);
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     int metaTypeID = registerMetaType<QQmlListProperty<QObject>>("QQmlListProperty<QObject>",

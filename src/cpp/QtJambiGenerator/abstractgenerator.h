@@ -102,6 +102,8 @@ class AbstractGenerator : public QObject {
             JNIProxyFunction                = 0x8000000000,
             NoNullness                      = 0x10000000000,
             StrictNonNull                   = 0x20000000000,
+            PlainShell                      = 0x40000000000,
+            MShell                          = 0x80000000000,
 
             ForceValueType                  = (ExcludeReference | ExcludeConst) & ~ForceConstReference
         };

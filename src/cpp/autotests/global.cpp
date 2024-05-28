@@ -61,6 +61,14 @@
 #include "general.h"
 #include <QtJambi/qtjambi_cast.h>
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+namespace QHashPrivate {
+template <>
+constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QFileInfo>> = false;
+}
+#endif
+
+
 class UnknownKey{
 public:
     UnknownKey(int){}

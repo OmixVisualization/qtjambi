@@ -99,7 +99,8 @@ SuperTypeInfo::SuperTypeInfo(  const char* _qtName,
                 const QVector<ResolvedConstructorInfo>& _constructorInfos,
                 Destructor _destructor,
                 PtrOwnerFunction _ownerFunction,
-                const std::type_info& typeId)
+                const std::type_info& typeId,
+                char const* _iid)
     : m_qtName(_qtName),
       m_className(_className),
       m_javaClass(_javaClass),
@@ -109,7 +110,8 @@ SuperTypeInfo::SuperTypeInfo(  const char* _qtName,
       m_constructorInfos(_constructorInfos),
       m_destructor(_destructor),
       m_ownerFunction(_ownerFunction),
-      m_typeId(&typeId)
+      m_typeId(&typeId),
+      m_iid(_iid)
 {}
 
 SuperTypeInfo::SuperTypeInfo()
@@ -122,7 +124,8 @@ SuperTypeInfo::SuperTypeInfo()
       m_constructorInfos(),
       m_destructor(nullptr),
       m_ownerFunction(nullptr),
-      m_typeId(nullptr)
+      m_typeId(nullptr),
+      m_iid(nullptr)
 {}
 
 SuperTypeInfo::SuperTypeInfo(  const SuperTypeInfo& other )
@@ -135,7 +138,8 @@ SuperTypeInfo::SuperTypeInfo(  const SuperTypeInfo& other )
       m_constructorInfos(other.m_constructorInfos),
       m_destructor(other.m_destructor),
       m_ownerFunction(other.m_ownerFunction),
-      m_typeId(other.m_typeId)
+      m_typeId(other.m_typeId),
+      m_iid(other.m_iid)
 {}
 
 SuperTypeInfo& SuperTypeInfo::operator=(  const SuperTypeInfo& other )
@@ -150,6 +154,7 @@ SuperTypeInfo& SuperTypeInfo::operator=(  const SuperTypeInfo& other )
       m_destructor = other.m_destructor;
       m_ownerFunction = other.m_ownerFunction;
       m_typeId = other.m_typeId;
+      m_iid = other.m_iid;
       return *this;
 }
 
@@ -165,6 +170,7 @@ SuperTypeInfo& SuperTypeInfo::operator=(  SuperTypeInfo&& other )
       m_destructor = std::move(other.m_destructor);
       m_ownerFunction = std::move(other.m_ownerFunction);
       m_typeId = std::move(other.m_typeId);
+      m_iid = std::move(other.m_iid);
       return *this;
 }
 
@@ -178,7 +184,8 @@ SuperTypeInfo::SuperTypeInfo(  SuperTypeInfo&& other )
       m_constructorInfos(std::move(other.m_constructorInfos)),
       m_destructor(std::move(other.m_destructor)),
       m_ownerFunction(std::move(other.m_ownerFunction)),
-      m_typeId(std::move(other.m_typeId))
+      m_typeId(std::move(other.m_typeId)),
+      m_iid(std::move(other.m_iid))
 {}
 
 void SuperTypeInfo::swap(SuperTypeInfo& other){
@@ -205,6 +212,10 @@ const std::type_info& SuperTypeInfo::typeId() const {
 
 const char* SuperTypeInfo::qtName() const {
     return m_qtName;
+}
+
+const char* SuperTypeInfo::interfaceID() const {
+    return m_iid;
 }
 
 const QString& SuperTypeInfo::className() const {
@@ -240,34 +251,19 @@ PtrOwnerFunction SuperTypeInfo::ownerFunction() const {
 }
 
 
-SuperTypeInfos::SuperTypeInfos(JNIEnv *env, jobject obj) : QVector<SuperTypeInfo>(), m_interfaceList(obj ? env->NewGlobalRef(obj) : nullptr){}
+SuperTypeInfos::SuperTypeInfos(JNIEnv *env, jobject interfaceInfos) : QVector<SuperTypeInfo>(), m_interfaceInfos(env, interfaceInfos){}
 
-SuperTypeInfos::SuperTypeInfos(const SuperTypeInfos& other) : QVector<SuperTypeInfo>(other), m_interfaceList(nullptr){
-    if(other.m_interfaceList){
-        if(DefaultJniEnvironment env{0}){
-            m_interfaceList = env->NewGlobalRef(other.m_interfaceList);
-        }
-    }
+SuperTypeInfos::SuperTypeInfos(const SuperTypeInfos& other) : QVector<SuperTypeInfo>(other), m_interfaceInfos(other.m_interfaceInfos){
 }
 
-SuperTypeInfos::SuperTypeInfos(SuperTypeInfos&& other) : QVector<SuperTypeInfo>(std::move(other)), m_interfaceList(other.m_interfaceList){
-    other.m_interfaceList = nullptr;
+SuperTypeInfos::SuperTypeInfos(SuperTypeInfos&& other) : QVector<SuperTypeInfo>(std::move(other)), m_interfaceInfos(std::move(other.m_interfaceInfos)){
 }
 
 SuperTypeInfos& SuperTypeInfos::operator=(const SuperTypeInfos& other){
     if(this!=&other){
         QVector<SuperTypeInfo>& _this = *this;
         _this = other;
-        if(DefaultJniEnvironment env{0}){
-            if(m_interfaceList){
-                env->DeleteGlobalRef(m_interfaceList);
-            }
-            if(other.m_interfaceList){
-                m_interfaceList = env->NewGlobalRef(other.m_interfaceList);
-            }else{
-                m_interfaceList = nullptr;
-            }
-        }
+        m_interfaceInfos = other.m_interfaceInfos;
     }
     return *this;
 }
@@ -276,42 +272,16 @@ SuperTypeInfos& SuperTypeInfos::operator=(SuperTypeInfos&& other){
     if(this!=&other){
         QVector<SuperTypeInfo>& _this = *this;
         _this = std::move(other);
-        if(m_interfaceList){
-            if(DefaultJniEnvironment env{0}){
-                env->DeleteGlobalRef(m_interfaceList);
-                m_interfaceList = nullptr;
-            }
-        }
-        m_interfaceList = other.m_interfaceList;
-        other.m_interfaceList = nullptr;
+        m_interfaceInfos = std::move(other.m_interfaceInfos);
     }
     return *this;
 }
 
 SuperTypeInfos::~SuperTypeInfos(){
-    try{
-        if(m_interfaceList && !QCoreApplication::closingDown()){
-            DEREF_JOBJECT;
-            if(DefaultJniEnvironment env{0}){
-                jthrowable throwable = nullptr;
-                if(env->ExceptionCheck()){
-                    throwable = env->ExceptionOccurred();
-                    env->ExceptionClear();
-                }
-                jobject interfaceList = m_interfaceList;
-                m_interfaceList = nullptr;
-                env->DeleteGlobalRef(interfaceList);
-                if(throwable){
-                    env->Throw(throwable);
-                    env->DeleteLocalRef(throwable);
-                }
-            }
-        }
-    }catch(...){}
 }
 
-jobject SuperTypeInfos::interfaceList(JNIEnv *env) const{
-    return m_interfaceList ? env->NewLocalRef(m_interfaceList) : nullptr;
+jobject SuperTypeInfos::interfaceInfos() const{
+    return m_interfaceInfos;
 }
 
 void clearSuperTypesAtShutdown(JNIEnv *env){
@@ -324,16 +294,12 @@ void clearSuperTypesAtShutdown(JNIEnv *env){
     }
     if(env){
         for(SuperTypeInfos& info : superTypeInfosMap){
-            if(info.m_interfaceList){
-                jobject interfaceList = info.m_interfaceList;
-                info.m_interfaceList = nullptr;
-                env->DeleteGlobalRef(interfaceList);
-            }
+            info.m_interfaceInfos.clear(env);
         }
     }
 }
 
-const SuperTypeInfos& SuperTypeInfos::fromClass(JNIEnv *env, jclass clazz)
+SuperTypeInfos SuperTypeInfos::fromClass(JNIEnv *env, jclass clazz)
 {
     if(clazz){
         jint hashCode = Java::Runtime::Object::hashCode(env,clazz);
@@ -346,14 +312,15 @@ const SuperTypeInfos& SuperTypeInfos::fromClass(JNIEnv *env, jclass clazz)
         }
         {
             QTJAMBI_JNI_LOCAL_FRAME(env, 512);
-            jobject interfaceList = Java::QtJambi::ClassAnalyzerUtility::getImplementedInterfaces(env, clazz);
-            SuperTypeInfos superTypeInfos(env, interfaceList);
+            jobject interfaceInfos = Java::QtJambi::ClassAnalyzerUtility::getImplementedInterfaceInfo(env, clazz);
+            SuperTypeInfos superTypeInfos(env, interfaceInfos);
             size_t offset = 0;
             if(jclass closestQtClass = JavaAPI::resolveClosestQtSuperclass(env, clazz, nullptr)){
                 Q_ASSERT(env->GetObjectRefType(closestQtClass)==JNIGlobalRefType);
                 QString className = QtJambiAPI::getClassName(env, closestQtClass).replace('.', '/');
                 if(const std::type_info* typeId = getTypeByJavaName(className)){
                     const char* qtName = getQtName(*typeId);
+                    const char* iid = registeredInterfaceIDForClassName(className);
                     size_t size = getShellSize(*typeId);
                     bool hasShell = true;
                     if(size==0){
@@ -375,22 +342,23 @@ const SuperTypeInfos& SuperTypeInfos::fromClass(JNIEnv *env, jclass clazz)
                     }
                     Java::QtJambi::ClassAnalyzerUtility::checkImplementation(env, closestQtClass, clazz);
                     if(Java::QtCore::QObject::isAssignableFrom(env, closestQtClass)){
-                        superTypeInfos << SuperTypeInfo(qtName, className, closestQtClass, size, hasShell, offset, resolvedConstructorInfos, destructor, [](const void* ptr) -> const QObject* { return reinterpret_cast<const QObject*>(ptr); }, *typeId);
+                        superTypeInfos << SuperTypeInfo(qtName, className, closestQtClass, size, hasShell, offset, resolvedConstructorInfos, destructor, [](const void* ptr) -> const QObject* { return reinterpret_cast<const QObject*>(ptr); }, *typeId, iid);
                     }else{
-                        superTypeInfos << SuperTypeInfo(qtName, className, closestQtClass, size, hasShell, offset, resolvedConstructorInfos, destructor, registeredOwnerFunction(*typeId), *typeId);
+                        superTypeInfos << SuperTypeInfo(qtName, className, closestQtClass, size, hasShell, offset, resolvedConstructorInfos, destructor, registeredOwnerFunction(*typeId), *typeId, iid);
                     }
                     offset += size + sizeof(void*);
                 }
             }
 
-            int count = interfaceList ? QtJambiAPI::sizeOfJavaCollection(env, interfaceList) : 0;
-            if(count>0){
-                jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, interfaceList);
-                while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
-                    jclass interfaceClass = jclass(QtJambiAPI::nextOfJavaIterator(env, iterator));
+            if(interfaceInfos && Java::Runtime::Map::size(env, interfaceInfos)!=0){
+                jobject keySet = Java::Runtime::Map::keySet(env, interfaceInfos);
+                jobject iterator = Java::Runtime::Collection::iterator(env, keySet);
+                while(Java::Runtime::Iterator::hasNext(env, iterator)) {
+                    jclass interfaceClass = jclass(Java::Runtime::Iterator::next(env, iterator));
                     QString className = QtJambiAPI::getClassName(env, interfaceClass).replace('.', '/');
                     if(const std::type_info* typeId = getTypeByJavaName(className)){
                         const char* qtName = getQtName(*typeId);
+                        const char* iid = registeredInterfaceIDForClassName(className);
                         size_t size = getShellSize(*typeId);
                         bool hasShell = true;
                         if(size==0){
@@ -409,7 +377,7 @@ const SuperTypeInfos& SuperTypeInfos::fromClass(JNIEnv *env, jclass clazz)
                                     resolveClasses(env, QLatin1String(info.signature), resolvedConstructorInfos[i].argumentTypes);
                                 }
                             }
-                            superTypeInfos << SuperTypeInfo(qtName, className, getGlobalClassRef(env, interfaceClass, qPrintable(className)), size, hasShell, offset, resolvedConstructorInfos, destructor, registeredOwnerFunction(*typeId), *typeId);
+                            superTypeInfos << SuperTypeInfo(qtName, className, getGlobalClassRef(env, interfaceClass, qPrintable(className)), size, hasShell, offset, resolvedConstructorInfos, destructor, registeredOwnerFunction(*typeId), *typeId, iid);
                             offset += size + sizeof(void*);
                         }else{
                             jthrowable t = Java::QtJambi::QInterfaceCannotBeSubclassedException::newInstance(env, interfaceClass);

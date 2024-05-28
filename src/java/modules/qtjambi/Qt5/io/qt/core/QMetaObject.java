@@ -338,7 +338,7 @@ public final class QMetaObject {
      * 
      * As Connection is just a handle, the underlying signal-slot connection is unaffected when Connection is destroyed or reassigned.
      */
-    public static interface Connection{
+    public static interface Connection extends Cloneable{
         /**
          * Returns true if the connection is valid.
          */
@@ -355,6 +355,12 @@ public final class QMetaObject {
          * @return receiver
          */
         public Object receiver();
+        
+        /**
+         * Create a copy of the connection.
+         * @return clone
+         */
+		public @NonNull Connection clone();
     }
     
     /**
@@ -10747,6 +10753,14 @@ public final class QMetaObject {
         public final void emit() {
             emitSignal();
         }
+
+        /**
+         * @hidden
+         */
+        @Override
+        protected final boolean isPrivateSignal() {
+        	return false;
+        }
     }
 
     /**
@@ -10789,6 +10803,14 @@ public final class QMetaObject {
         public final void emit(A arg1) {
             emitSignal(arg1);
         }
+
+        /**
+         * @hidden
+         */
+        @Override
+        protected final boolean isPrivateSignal() {
+        	return false;
+        }
     }
 
     /**
@@ -10829,6 +10851,14 @@ public final class QMetaObject {
         @Override
         public final void emit(A arg1, B arg2) {
             emitSignal(arg1, arg2);
+        }
+
+        /**
+         * @hidden
+         */
+        @Override
+        protected final boolean isPrivateSignal() {
+        	return false;
         }
     }
 
@@ -10871,6 +10901,14 @@ public final class QMetaObject {
         @Override
         public final void emit(A arg1, B arg2, C arg3) {
             emitSignal(arg1, arg2, arg3);
+        }
+
+        /**
+         * @hidden
+         */
+        @Override
+        protected final boolean isPrivateSignal() {
+        	return false;
         }
     }
 
@@ -10915,6 +10953,14 @@ public final class QMetaObject {
         public final void emit(A arg1, B arg2, C arg3, D arg4) {
             emitSignal(arg1, arg2, arg3, arg4);
         }
+
+        /**
+         * @hidden
+         */
+        @Override
+        protected final boolean isPrivateSignal() {
+        	return false;
+        }
     }
 
     /**
@@ -10958,6 +11004,14 @@ public final class QMetaObject {
         @Override
         public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5) {
             emitSignal(arg1, arg2, arg3, arg4, arg5);
+        }
+
+        /**
+         * @hidden
+         */
+        @Override
+        protected final boolean isPrivateSignal() {
+        	return false;
         }
     }
 
@@ -11004,6 +11058,14 @@ public final class QMetaObject {
         public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) {
             emitSignal(arg1, arg2, arg3, arg4, arg5, arg6);
         }
+
+        /**
+         * @hidden
+         */
+        @Override
+        protected final boolean isPrivateSignal() {
+        	return false;
+        }
     }
 
     /**
@@ -11049,6 +11111,14 @@ public final class QMetaObject {
         @Override
         public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) {
             emitSignal(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+        }
+
+        /**
+         * @hidden
+         */
+        @Override
+        protected final boolean isPrivateSignal() {
+        	return false;
         }
     }
 
@@ -11097,6 +11167,14 @@ public final class QMetaObject {
         public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) {
             emitSignal(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
         }
+
+        /**
+         * @hidden
+         */
+        @Override
+        protected final boolean isPrivateSignal() {
+        	return false;
+        }
     }
 
     /**
@@ -11144,6 +11222,14 @@ public final class QMetaObject {
         @Override
         public final void emit(A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) {
             emitSignal(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+        }
+
+        /**
+         * @hidden
+         */
+        @Override
+        protected final boolean isPrivateSignal() {
+        	return false;
         }
     }
     
@@ -14860,6 +14946,26 @@ public final class QMetaObject {
         }
 	}
 	
+	static QMetaMethod signalMethod(Signal signal) {
+        QMetaMethod method = null;
+		if(signal instanceof AbstractSignal) {
+			return CoreUtility.signalMethod((AbstractSignal)signal);
+        }else {
+	        QtSignalEmitterInterface containingObject = signal.containingObject();
+	        if(containingObject instanceof QObject) {
+	            if(signal.methodIndex()>=0) {
+	                method = ((QObject)containingObject).metaObject().method(signal.methodIndex());
+	            }else{
+	                java.util.List<Class<?>> signalTypeClasses = signal.argumentTypes();
+	                method = ((QObject)containingObject).metaObject().method(signal.name(), signalTypeClasses.toArray(new Class[signalTypeClasses.size()]));
+	            }
+	        }
+		}
+        if(method==null)
+            method = new QMetaMethod();
+        return method;
+	}
+	
 	private static class CoreUtility extends io.qt.internal.CoreUtility{
 		static {
 			QtJambi_LibraryUtilities.initialize();
@@ -14885,6 +14991,10 @@ public final class QMetaObject {
 	            super(signalName, types);
 	        }
 	    }
+		
+		static QMetaMethod signalMethod(AbstractSignal signal) {
+			return io.qt.internal.CoreUtility.signalMethod(signal);
+		}
 	    
 	    protected static abstract class AbstractMultiSignal<S extends AbstractSignal> extends io.qt.internal.CoreUtility.AbstractMultiSignal<S> {
 	        AbstractMultiSignal() {

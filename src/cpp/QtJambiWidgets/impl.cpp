@@ -247,6 +247,12 @@ const QObject* getPointerOwner(const QGraphicsItem* __qt_this)
     return nullptr;
 }
 
+const QObject* ownerOrApp(const QObject* obj){
+    if(obj && QApplication::instance())
+        obj = QApplication::instance();
+    return obj;
+}
+
 const QObject* getPointerOwner(const QTreeWidgetItemIterator* iter)
 {
     struct TreeWidgetItemIteratorPrivate{
@@ -258,13 +264,20 @@ const QObject* getPointerOwner(const QTreeWidgetItemIterator* iter)
         QScopedPointer<TreeWidgetItemIteratorPrivate> d_ptr;
     };
     const TreeWidgetItemIteratorPrivate* p = reinterpret_cast<const TreeWidgetItemIterator*>(iter)->d_ptr.get();
-    return p->m_model;
-    /*
-    if(!iter->operator*()){
-        iter->operator--();
-    }
-    if(iter->operator*() && iter->operator*()->treeWidget()){
-        return iter->operator*()->treeWidget()->model();
-    }
-    return nullptr;*/
+    return ownerOrApp(p->m_model);
+}
+
+const QObject* getPointerOwner(const QTreeWidgetItem* item)
+{
+    return ownerOrApp(item->treeWidget());
+}
+
+const QObject* getPointerOwner(const QListWidgetItem* item)
+{
+    return ownerOrApp(item->listWidget());
+}
+
+const QObject* getPointerOwner(const QTableWidgetItem* item)
+{
+    return ownerOrApp(item->tableWidget());
 }

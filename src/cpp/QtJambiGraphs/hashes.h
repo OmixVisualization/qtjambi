@@ -65,4 +65,9 @@ inline hash_type qHash(const QSurfaceDataItem &value, hash_type seed = 0){
     return qHash(value.position(), seed);
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0) && defined(QTJAMBI_GENERATOR_RUNNING)
+bool operator==(const QBarDataRow& a, const QBarDataRow& b);
+hash_type qHash(const QBarDataRow &value, hash_type seed = 0);
+#endif
+
 #endif // QTJAMBI_DATAVIS3D_HASHES_H

@@ -441,7 +441,6 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QScriptSyntaxCheckResult."}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QScriptValue."}
     SuppressedWarning{text: "WARNING(CppImplGenerator) :: Value type 'QScriptSyntaxCheckResult' is missing a default constructor.*"}
-    SuppressedWarning{text: "WARNING(CppImplGenerator) :: protected function '*' in final class '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: visibility of function '*' modified in class '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: hiding of function '*' in class '*'"}
 }

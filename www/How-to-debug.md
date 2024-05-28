@@ -22,7 +22,7 @@ Now, follow the instructions for [QML debugging](https://doc.qt.io/qt/qtquick-de
 ## Native Debugger
 
 For native debugging you need the debuginfo bundle for every native bundle your application is using. 
-For instance, on Windows you need **qtjambi-debuginfo-windows-x64-6.5.6.jar** placed next to **qtjambi-native-windows-x64-6.5.6.jar**.
+For instance, on Windows you need **qtjambi-debuginfo-windows-x64-6.5.7.jar** placed next to **qtjambi-native-windows-x64-6.5.7.jar**.
 The debuginfo bundle contains platform-dependent debug symbol files for the native debugger and corresponding source code.
 It is necessary to enable the extraction of these files during program start by using the system property `io.qt.provide-debuginfo=true` (`io.qt.no-native-deployment` must not be `true`).
 By default, QtJambi does not extract source files unless you specify a target directory for those files with property `io.qt.sourcesdir`.

@@ -752,18 +752,6 @@ TypeSystem{
     }
     
     EnumType{
-        name: "QCalendarWidget::HorizontalHeaderFormat"
-    }
-    
-    EnumType{
-        name: "QCalendarWidget::SelectionMode"
-    }
-    
-    EnumType{
-        name: "QCalendarWidget::VerticalHeaderFormat"
-    }
-    
-    EnumType{
         name: "QComboBox::InsertPolicy"
     }
     
@@ -2007,12 +1995,28 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "dragEnterEvent(QGraphicsSceneDragDropEvent*)"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -2021,6 +2025,14 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "dragMoveEvent(QGraphicsSceneDragDropEvent*)"
@@ -2028,12 +2040,28 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "dropEvent(QGraphicsSceneDragDropEvent*)"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -2077,6 +2105,14 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "isObscuredBy(const QGraphicsItem*)const"
@@ -2091,12 +2127,28 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "keyReleaseEvent(QKeyEvent*)"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -2105,12 +2157,28 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "mouseMoveEvent(QGraphicsSceneMouseEvent*)"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -2119,12 +2187,28 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "mouseReleaseEvent(QGraphicsSceneMouseEvent*)"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -2133,16 +2217,50 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "sceneEventFilter(QGraphicsItem*,QEvent*)"
+            noExcept: true
+            blockExceptions: true
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+                ConversionRule{
+                    codeClass: CodeClass.Shell
+                    Text{content: String.raw`
+jobject %out;
+try{
+    %out = qtjambi_cast<jobject>(%env, %in);
+    if(!%out && %in)
+        return %class::sceneEventFilter(%in, %2);
+}catch(const JavaException&){
+    return %class::sceneEventFilter(%in, %2);
+}
+                        `}
+                }
             }
             ModifyArgument{
                 index: 2
                 invalidateAfterUse: true
+                ConversionRule{
+                    codeClass: CodeClass.Shell
+                    Text{content: String.raw`
+jobject %out;
+try{
+    %out = qtjambi_cast<jobject>(%env, %in);
+}catch(const JavaException&){
+    return %class::sceneEventFilter(%1, %in);
+}
+                        `}
+                }
             }
         }
         ModifyFunction{
@@ -2151,13 +2269,22 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "installSceneEventFilter(QGraphicsItem *)"
             ModifyArgument{
                 index: 1
                 ReferenceCount{
-                    action: ReferenceCount.Ignore
+                    variableName: "__rcSceneEventFilters"
+                    action: ReferenceCount.Add
                 }
             }
         }
@@ -2166,7 +2293,8 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 ReferenceCount{
-                    action: ReferenceCount.Ignore
+                    variableName: "__rcSceneEventFilters"
+                    action: ReferenceCount.Take
                 }
             }
         }
@@ -2792,13 +2920,6 @@ TypeSystem{
             allowAsSlot: true
             threadAffinity: true
         }
-        ModifyFunction{
-            signature: "eventFilter(QObject*,QEvent*)"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-            }
-        }
     }
     
     ObjectType{
@@ -2961,13 +3082,6 @@ TypeSystem{
                 }
             }
         }
-        ModifyFunction{
-            signature: "eventFilter(QObject*,QEvent*)"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-            }
-        }
     }
     
     ObjectType{
@@ -2978,14 +3092,6 @@ TypeSystem{
         name: "QFontDialog"
         EnumType{
             name: "FontDialogOption"
-        }
-
-        ModifyFunction{
-            signature: "eventFilter(QObject*,QEvent*)"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-            }
         }
         InjectCode{
             ImportFile{
@@ -3714,13 +3820,6 @@ TypeSystem{
                 }
             }
         }
-        ModifyFunction{
-            signature: "eventFilter(QObject*,QEvent*)"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-            }
-        }
     }
     
     InterfaceType{
@@ -4083,13 +4182,6 @@ TypeSystem{
                 }
             }
         }
-        ModifyFunction{
-            signature: "eventFilter(QObject*,QEvent*)"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-            }
-        }
     }
     
     ObjectType{
@@ -4110,13 +4202,6 @@ TypeSystem{
                 ReferenceCount{
                     action: ReferenceCount.Ignore
                 }
-            }
-        }
-        ModifyFunction{
-            signature: "eventFilter(QObject*,QEvent*)"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
             }
         }
     }
@@ -4499,13 +4584,6 @@ TypeSystem{
                 }
             }
         }
-        ModifyFunction{
-            signature: "eventFilter(QObject*,QEvent*)"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-            }
-        }
         ExtraIncludes{
             Include{
                 fileName: "io.qt.gui.*"
@@ -4616,13 +4694,6 @@ TypeSystem{
                 }
             }
         }
-        ModifyFunction{
-            signature: "eventFilter(QObject*,QEvent*)"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-            }
-        }
     }
     
     ObjectType{
@@ -4677,13 +4748,6 @@ TypeSystem{
         ModifyFunction{
             signature: "setVisible(bool)"
             threadAffinity: true
-        }
-        ModifyFunction{
-            signature: "eventFilter(QObject*,QEvent*)"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-            }
         }
     }
     
@@ -5221,13 +5285,6 @@ TypeSystem{
                     codeClass: CodeClass.Native
                     ownership: Ownership.Java
                 }
-            }
-        }
-        ModifyFunction{
-            signature: "eventFilter(QObject*,QEvent*)"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
             }
         }
         ModifyFunction{
@@ -7319,18 +7376,19 @@ TypeSystem{
             threadAffinity: true
         }
         ModifyFunction{
-            signature: "eventFilter(QObject*,QEvent*)"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-            }
-        }
-        ModifyFunction{
             signature: "contextMenuEvent(QGraphicsSceneContextMenuEvent*)"
             threadAffinity: true
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -7340,6 +7398,14 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "dragLeaveEvent(QGraphicsSceneDragDropEvent*)"
@@ -7348,6 +7414,14 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "dragMoveEvent(QGraphicsSceneDragDropEvent*)"
@@ -7355,6 +7429,14 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -7388,6 +7470,14 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "focusInEvent(QFocusEvent*)"
@@ -7395,6 +7485,14 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -7404,6 +7502,14 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "helpEvent(QGraphicsSceneHelpEvent*)"
@@ -7411,6 +7517,14 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -7420,6 +7534,14 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "keyPressEvent(QKeyEvent*)"
@@ -7427,6 +7549,14 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -7436,6 +7566,14 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "mouseDoubleClickEvent(QGraphicsSceneMouseEvent*)"
@@ -7443,6 +7581,14 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -7452,6 +7598,14 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "mousePressEvent(QGraphicsSceneMouseEvent*)"
@@ -7459,6 +7613,14 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -7468,6 +7630,14 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "wheelEvent(QGraphicsSceneWheelEvent*)"
@@ -7475,6 +7645,14 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -7849,6 +8027,17 @@ TypeSystem{
                 location: Include.Global
             }
         }
+        EnumType{
+            name: "HorizontalHeaderFormat"
+        }
+
+        EnumType{
+            name: "SelectionMode"
+        }
+
+        EnumType{
+            name: "VerticalHeaderFormat"
+        }
         ModifyFunction{
             signature: "paintCell(QPainter*,QRect,QDate)const"
             ModifyArgument{
@@ -7856,12 +8045,16 @@ TypeSystem{
                 invalidateAfterUse: true
             }
         }
-        ModifyFunction{
-            signature: "eventFilter(QObject*,QEvent*)"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: String.raw`
+namespace QHashPrivate {
+template <>
+constexpr inline bool HasQHashSingleArgOverload<QMap<QDate,QTextCharFormat>> = false;
+}`
             }
+            since: 6.8
         }
     }
     
@@ -8173,7 +8366,7 @@ TypeSystem{
     
     ObjectType{
         name: "QTableWidgetItem"
-        threadAffinity: "%1->tableWidget()"
+        threadAffinity: "getPointerOwner(%1)"
         ModifyFunction{
             signature: "clone() const"
             ModifyArgument{
@@ -8282,7 +8475,7 @@ TypeSystem{
     
     ObjectType{
         name: "QListWidgetItem"
-        threadAffinity: "%1->listWidget()"
+        threadAffinity: "getPointerOwner(%1)"
         ModifyFunction{
             signature: "QListWidgetItem(const QListWidgetItem &)"
             remove: RemoveFlag.All
@@ -8378,7 +8571,7 @@ TypeSystem{
     ValueType{
         name: "QTreeWidgetItem"
         implementing: "Iterable<io.qt.widgets.QTreeWidgetItem>"
-        threadAffinity: "%1->treeWidget() ? %1->treeWidget()->model() : nullptr"
+        threadAffinity: "getPointerOwner(%1)"
 
         Rejection{enumName: "ItemType"}
         Rejection{functionName: "treeModel"}
@@ -8709,13 +8902,6 @@ TypeSystem{
                     variableName: "__rcWidget"
                     action: ReferenceCount.Set
                 }
-            }
-        }
-        ModifyFunction{
-            signature: "eventFilter(QObject*,QEvent*)"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
             }
         }
     }
@@ -9421,6 +9607,14 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "closeEvent(QCloseEvent*)"
@@ -9429,6 +9623,14 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "contextMenuEvent(QContextMenuEvent*)"
@@ -9436,6 +9638,14 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -9519,6 +9729,14 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "keyPressEvent(QKeyEvent*)"
@@ -9527,6 +9745,14 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "keyReleaseEvent(QKeyEvent*)"
@@ -9534,6 +9760,14 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -9551,6 +9785,14 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "mouseMoveEvent(QMouseEvent*)"
@@ -9558,6 +9800,14 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -9567,6 +9817,14 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "mouseReleaseEvent(QMouseEvent*)"
@@ -9574,6 +9832,14 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -9587,6 +9853,7 @@ TypeSystem{
         ModifyFunction{
             signature: "paintEvent(QPaintEvent*)"
             threadAffinity: Affinity.UI
+            isPaintMethod: true
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
@@ -9615,6 +9882,14 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "wheelEvent(QWheelEvent*)"
@@ -9622,6 +9897,14 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -9907,11 +10190,6 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "paintEvent(QPaintEvent*)"
-            threadAffinity: Affinity.UI
-            isPaintMethod: true
-        }
-        ModifyFunction{
             signature: "setWindowTitle(const QString &)"
             threadAffinity: Affinity.UI
             InjectCode{
@@ -10019,6 +10297,9 @@ TypeSystem{
     
     ObjectType{
         name: "QMessageBox"
+        EnumType{
+            name: "Option"
+        }
         ModifyFunction{
             signature: "setWindowTitle(const QString &)"
             remove: RemoveFlag.All
@@ -10993,17 +11274,13 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
-        }
-        ModifyFunction{
-            signature: "eventFilter(QObject*,QEvent*)"
-            threadAffinity: Affinity.UI
-            ModifyArgument{
-                index: 1
-                threadAffinity: true
-            }
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ExtraIncludes{
@@ -11437,34 +11714,6 @@ TypeSystem{
     
     ObjectType{
         name: "QKeySequenceEdit"
-        ModifyFunction{
-            signature: "event(QEvent*)"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-        }
-        ModifyFunction{
-            signature: "keyPressEvent(QKeyEvent*)"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-        }
-        ModifyFunction{
-            signature: "keyReleaseEvent(QKeyEvent*)"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-        }
-        ModifyFunction{
-            signature: "timerEvent(QTimerEvent*)"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-        }
     }
     
     ObjectType{
@@ -12440,6 +12689,14 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "addChildLayoutItem(QGraphicsLayoutItem*)"
@@ -13014,13 +13271,6 @@ TypeSystem{
             remove: RemoveFlag.All
         }
         ModifyFunction{
-            signature: "eventFilter(QObject*,QEvent*)"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
-            }
-        }
-        ModifyFunction{
             signature: "newProxyWidget(const QWidget*)"
             threadAffinity: true
             ModifyArgument{
@@ -13297,6 +13547,14 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "closeEvent(QCloseEvent*)"
@@ -13304,6 +13562,14 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -13313,6 +13579,14 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "grabMouseEvent(QEvent*)"
@@ -13320,6 +13594,14 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -13329,6 +13611,14 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "moveEvent(QGraphicsSceneMoveEvent*)"
@@ -13336,6 +13626,14 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -13353,6 +13651,14 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "showEvent(QShowEvent*)"
@@ -13360,6 +13666,14 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -13369,6 +13683,14 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "ungrabMouseEvent(QEvent*)"
@@ -13377,6 +13699,14 @@ TypeSystem{
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "windowFrameEvent(QEvent*)"
@@ -13384,6 +13714,14 @@ TypeSystem{
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -13769,13 +14107,6 @@ TypeSystem{
                 ReferenceCount{
                     action: ReferenceCount.Ignore
                 }
-            }
-        }
-        ModifyFunction{
-            signature: "eventFilter(QObject*,QEvent*)"
-            ModifyArgument{
-                index: 2
-                invalidateAfterUse: true
             }
         }
     }
@@ -14558,7 +14889,6 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: hiding of function '*' in class '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: unsupported default value 'QVector<FormatRange>()' of argument in function '*', class '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: unsupported default value 'QVariantList()' of argument in function '*', class '*'"}
-    SuppressedWarning{text: "WARNING(CppImplGenerator) :: protected function '*' in final class '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QFileDialog::QFileDialog', unmatched parameter type 'const QFileDialogArgs&'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QWidget::windowSurface', unmatched return type 'QWindowSurface*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QWidget::setWindowSurface', unmatched parameter type 'QWindowSurface*'"}

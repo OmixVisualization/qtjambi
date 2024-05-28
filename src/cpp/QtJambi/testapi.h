@@ -38,7 +38,6 @@ enum class DebugCounters{
     cleanCallerCount = 1,
     userDataDestroyedCount,
     destructorFunctionCalledCount,
-    pointerContainerDestroyedCount,
     shellDestructorCalledCount,
     objectInvalidatedCount,
     disposeCalledCount,

@@ -37,52 +37,52 @@
 
 template<class T>
 struct QDBusReplyUtility{
-    static QDBusReply<T>* reverseCreateFrom(const QDBusReply<QVariant>& dBusReply)
+    static QDBusReply<T> reverseCreateFrom(const QDBusReply<QVariant>& dBusReply)
     {
         if(dBusReply.isValid()){
             QDBusMessage message;
             message.setArguments({QVariant::fromValue<T>(dBusReply.value().value<T>())});
-            return new QDBusReply<T>(message);
+            return QDBusReply<T>(message);
         }else{
-            return new QDBusReply<T>(dBusReply.error());
+            return QDBusReply<T>(dBusReply.error());
         }
     }
 
-    static QDBusReply<QVariant>* createFrom(const QDBusReply<T>& dBusReply)
+    static QDBusReply<QVariant> createFrom(const QDBusReply<T>& dBusReply)
     {
         if(dBusReply.isValid()){
             QDBusMessage message;
             message.setArguments({QVariant::fromValue<QDBusVariant>(QDBusVariant(QVariant::fromValue<T>(dBusReply.value())))});
-            return new QDBusReply<QVariant>(message);
+            return QDBusReply<QVariant>(message);
         }else{
-            return new QDBusReply<QVariant>(dBusReply.error());
+            return QDBusReply<QVariant>(dBusReply.error());
         }
     }
 };
 
 template<>
 struct QDBusReplyUtility<QVariant>{
-    static QDBusReply<QVariant>* reverseCreateFrom(const QDBusReply<QVariant>& dBusReply)
+    static QDBusReply<QVariant> reverseCreateFrom(const QDBusReply<QVariant>& dBusReply)
     {
-        return new QDBusReply<QVariant>(dBusReply);
+        return dBusReply;
     }
-    static QDBusReply<QVariant>* createFrom(const QDBusReply<QVariant>& dBusReply)
+    static QDBusReply<QVariant> createFrom(const QDBusReply<QVariant>& dBusReply)
     {
-        return new QDBusReply<QVariant>(dBusReply);
+        return dBusReply;
     }
 };
 
 template<>
 struct QDBusReplyUtility<void>{
-    static QDBusReply<void>* reverseCreateFrom(const QDBusReply<QVariant>& dBusReply)
+    static QDBusReply<void> reverseCreateFrom(const QDBusReply<QVariant>& dBusReply)
     {
         if(dBusReply.isValid()){
-            return new QDBusReply<void>(QDBusMessage());
+            return QDBusReply<void>(QDBusMessage());
         }else{
-            return new QDBusReply<void>(dBusReply.error());
+            return QDBusReply<void>(dBusReply.error());
         }
     }
-    static QDBusReply<QVariant>* createFrom(const QDBusReply<void>& dBusReply)
+    static QDBusReply<QVariant> createFrom(const QDBusReply<void>& dBusReply)
     {
         if(dBusReply.isValid()){
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
@@ -92,9 +92,9 @@ struct QDBusReplyUtility<void>{
 #endif
             QDBusMessage message;
             message.setArguments({QVariant::fromValue<QDBusVariant>(dbusVariant)});
-            return new QDBusReply<QVariant>(message);
+            return QDBusReply<QVariant>(message);
         }else{
-            return new QDBusReply<QVariant>(dBusReply.error());
+            return QDBusReply<QVariant>(dBusReply.error());
         }
     }
 };

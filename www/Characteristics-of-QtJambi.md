@@ -148,6 +148,25 @@ yet available. Alternatively, you can specify `resolve(int value, String name)`
 to request a new entry with a specific enum name. If you want to
 develop custom extensible enums use the annotation `@QtExtensibleEnum`.
 
+Using an extensible enum within a `switch` statement may cause exceptions on Android
+because the custom entries are unexpected. 
+On all other platforms, the meta object system adapts the code to allow custom entries.
+So switch over extensible enums is save for gadgets and QObjects.
+
+```
+@Override
+public boolean event(QEvent event){
+	switch(event.type()){ // throws ArrayIndexOutOfBoundsException on Android
+	case MouseButtonPress:
+		//...
+		break;
+	default:
+		break;
+	}
+	return super.event(event);
+}
+```
+
 #### Flags
 
 There are enums in Qt used as flags. This is also availale in Java by
@@ -588,12 +607,17 @@ QObject.connect(this.statechanged, this::onStatechanged);
 QObject.disconnect(this.statechanged, this::onStatechanged); //->false in Android
 ```
 
-A possible solution is to use a variable to store the lamnda object:
+A possible solution is to use a variable to store the lambda object or the connection:
 
 ``` java
 Slot0 slot = this::onStatechanged;
 QObject.connect(this.statechanged, slot);
 QObject.disconnect(this.statechanged, slot); //->true
+```
+
+``` java
+QMetaObject.Connection connection = QObject.connect(this.statechanged, this::onStatechanged);
+QObject.disconnect(connection); //->true
 ```
 
 In any case, textual signal slot connections are resolved to `QMetaMethod`s even in Android:
@@ -657,6 +681,12 @@ In rare cases where connections are ambiguous or you need the individual signal 
 ``` java
 spinBox.valueChanged.overload(int.class); // returns Signal1<Integer> for valueChanged(int)
 ```
+
+### Lightweight Signals
+
+By adding the annotation `@QtUninvokable` to a signal declaration it becomes lightweight, i.e.
+the signal is not implemented by Qt's meta object system but purely in Java.
+Lightweight signals are a Java-only feature not available in Qt and QML.
 
 ### Signals in other Contexts
 
@@ -1140,7 +1170,7 @@ device.close();
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.5.6.jar:qtjambi-uic-6.5.6.jar
+     -p qtjambi-6.5.7.jar:qtjambi-uic-6.5.7.jar
      -m qtjambi.uic --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -1148,7 +1178,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.5.6.jar:qtjambi-uic-6.5.6.jar
+     -cp qtjambi-6.5.7.jar:qtjambi-uic-6.5.7.jar
      io.qt.uic.Main --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -1469,7 +1499,7 @@ and *QtJambi* libraries:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.5.6.jar:qtjambi-deployer-6.5.6.jar
+     -p qtjambi-6.5.7.jar:qtjambi-deployer-6.5.7.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1481,7 +1511,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.5.6.jar:qtjambi-deployer-6.5.6.jar
+     -cp qtjambi-6.5.7.jar:qtjambi-deployer-6.5.7.jar
      io.qt.qtjambi.deployer.Main plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1508,7 +1538,7 @@ This is especially necessary on macOS (arm64).
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.5.6.jar:qtjambi-deployer-6.5.6.jar
+     -p qtjambi-6.5.7.jar:qtjambi-deployer-6.5.7.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar

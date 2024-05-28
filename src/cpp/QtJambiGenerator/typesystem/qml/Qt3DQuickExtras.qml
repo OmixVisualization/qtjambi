@@ -68,13 +68,6 @@ TypeSystem{
                 }
             }
         }
-        ModifyFunction{
-            signature: "showEvent(QShowEvent*)"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
-        }
         since: [5, 7]
     }
 }

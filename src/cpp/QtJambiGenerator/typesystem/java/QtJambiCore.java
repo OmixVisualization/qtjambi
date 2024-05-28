@@ -10055,6 +10055,30 @@ class QTimer___ extends QTimer {
 
 }// class
 
+class QChronoTimer___ extends QChronoTimer {
+    /**
+     * <p>See <a href="@docRoot/qchronotimer.html#callOnTimeout"><code>QChronoTimer::callOnTimeout(Args&amp;&amp;...)</code></a></p>
+     */
+    public final QMetaObject.@NonNull Connection callOnTimeout(QMetaObject.@NonNull Slot0 slot, Qt.@NonNull ConnectionType @NonNull... type){
+        return timeout.connect(slot, type);
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qchronotimer.html#callOnTimeout"><code>QChronoTimer::callOnTimeout(Args&amp;&amp;...)</code></a></p>
+     */
+    public final QMetaObject.@NonNull Connection callOnTimeout(QMetaObject.@NonNull Connectable0 connectable, Qt.@NonNull ConnectionType @NonNull... type){
+        return timeout.connect(connectable, type);
+    }
+
+    /**
+     * <p>See <a href="@docRoot/qchronotimer.html#callOnTimeout"><code>QChronoTimer::callOnTimeout(Args&amp;&amp;...)</code></a></p>
+     */
+    public final QMetaObject.@NonNull Connection callOnTimeout(@Nullable QObject receiver, @NonNull String method, Qt.@NonNull ConnectionType @NonNull... type){
+        return timeout.connect(receiver, method, type);
+    }
+
+}// class
+
 class QCoreApplication___ extends QCoreApplication {
     
     private static boolean __qt_isInitializing = false;
@@ -15103,6 +15127,9 @@ class QMetaMethod___ {
 
     private QMetaObject.AbstractSignal findSignal(@StrictNonNull QObject sender) {
         int methodIndex = methodIndex();
+        if((attributes() & Attributes.Cloned.value())!=0) {
+            return enclosingMetaObject().method(methodIndex-1).findSignal(sender);
+        }
         Class<?> cls = enclosingMetaObject().type();
         if(cls==null)
             cls = QtJambi_LibraryUtilities.internal.getClass(sender);
@@ -15149,19 +15176,7 @@ class QMetaMethod___ {
      */
     @QtUninvokable
     public static @NonNull QMetaMethod fromSignal(QMetaObject.@StrictNonNull Signal signal) {
-        QMetaMethod method = null;
-        QtSignalEmitterInterface containingObject = signal.containingObject();
-        if(containingObject instanceof QObject) {
-            if(signal.methodIndex()>=0) {
-                method = ((QObject)containingObject).metaObject().method(signal.methodIndex());
-            }else{
-                java.util.List<Class<?>> signalTypeClasses = signal.argumentTypes();
-                method = ((QObject)containingObject).metaObject().method(signal.name(), signalTypeClasses.toArray(new Class[signalTypeClasses.size()]));
-            }
-        }
-        if(method==null)
-            method = new QMetaMethod();
-        return method;
+        return QMetaObject.signalMethod(signal);
     }
     
     /**
@@ -17310,7 +17325,7 @@ class QPropertyObserver_native__{
 QPropertyObserver_shell::QPropertyObserver_shell(QPropertyObserverBase::ChangeHandler changeHandler0)
     : QPropertyObserver(changeHandler0)
 {
-    QTJAMBI_IN_CONSTRUCTOR_CALL("QPropertyObserver_shell::QPropertyObserver_shell(QPropertyObserverBase::ChangeHandler changeHandler0)", QPropertyObserver_shell::__shell())
+    QTJAMBI_IN_CONSTRUCTOR_CALL("QPropertyObserver_shell::QPropertyObserver_shell(QPropertyObserverBase::ChangeHandler changeHandler0)", this)
     QPropertyObserver_shell::__shell()->constructed(typeid(QPropertyObserver));
 }
 

@@ -59,8 +59,10 @@ public:
     void addArrayDeletion(T* pointer){
         addFinalAction([pointer](){delete[] pointer;});
     }
-    void addObjectInvalidation(JNIEnv *env, jobject object, bool checkJavaOwnership, bool persistent = true);
+    void addObjectInvalidation(JNIEnv *env, jobject object, bool persistent = true);
     void addObjectInvalidation(JNIEnv *env, QtJambiNativeID nativeId, bool persistent = true);
+    void addForcedObjectInvalidation(JNIEnv *env, jobject object, bool persistent = true);
+    void addForcedObjectInvalidation(JNIEnv *env, QtJambiNativeID nativeId, bool persistent = true);
     QtJambiNativeID relatedNativeID() const;
 protected:
     QtJambiScope(QtJambiScopePrivate&);

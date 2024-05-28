@@ -973,33 +973,53 @@ const QVariant *JavaSequence::const_iterator::operator->() const{
 }
 
 bool JavaSequence::const_iterator::operator==(const JavaSequence::const_iterator& o) const {
-    if(JniEnvironment env{300})
+    if(JniEnvironment env{300}){
+        if(env->ExceptionCheck()){
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+        }
         return env->IsSameObject(m_collection.object(), o.m_collection.object()) && m_cursor==o.m_cursor;
-    else return false;
+    }else return false;
 }
 
 bool JavaSequence::const_iterator::operator<(const JavaSequence::const_iterator& o) const {
-    if(JniEnvironment env{300})
+    if(JniEnvironment env{300}){
+        if(env->ExceptionCheck()){
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+        }
         return env->IsSameObject(m_collection.object(), o.m_collection.object()) && m_cursor<o.m_cursor;
-    else return false;
+    }else return false;
 }
 
 bool JavaSequence::const_iterator::operator>(const JavaSequence::const_iterator& o) const {
-    if(JniEnvironment env{300})
+    if(JniEnvironment env{300}){
+        if(env->ExceptionCheck()){
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+        }
         return env->IsSameObject(m_collection.object(), o.m_collection.object()) && m_cursor>o.m_cursor;
-    else return false;
+    }else return false;
 }
 
 bool JavaSequence::const_iterator::operator<=(const JavaSequence::const_iterator& o) const {
-    if(JniEnvironment env{300})
+    if(JniEnvironment env{300}){
+        if(env->ExceptionCheck()){
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+        }
         return env->IsSameObject(m_collection.object(), o.m_collection.object()) && m_cursor<=o.m_cursor;
-    else return false;
+    }else return false;
 }
 
 bool JavaSequence::const_iterator::operator>=(const JavaSequence::const_iterator& o) const {
-    if(JniEnvironment env{300})
+    if(JniEnvironment env{300}){
+        if(env->ExceptionCheck()){
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+        }
         return env->IsSameObject(m_collection.object(), o.m_collection.object()) && m_cursor>=o.m_cursor;
-    else return false;
+    }else return false;
 }
 
 JavaSequence::const_iterator::const_iterator()

@@ -48,6 +48,7 @@ void DocIndexReader::analyzeEnum(const QDir& subdir, DocModel* model, const QStr
         cls->setHref(element.attribute("href"));
         cls->setBrief(element.attribute("brief"));
         cls->setFullName(element.attribute("fullname"));
+        cls->setSince(element.attribute("since"));
         model->addEnum(cls);
     }
 }
@@ -61,6 +62,7 @@ void DocIndexReader::analyzeClass(const QDir& subdir, DocModel* model, const QSt
         cls->setHref(element.attribute("href"));
         cls->setBrief(element.attribute("brief"));
         cls->setFullName(element.attribute("fullname"));
+        cls->setSince(element.attribute("since"));
         QDomNodeList childNodes = element.childNodes();
         for(int i=0; i<childNodes.size(); ++i){
             QDomNode child = childNodes.item(i);
@@ -99,6 +101,7 @@ void DocIndexReader::analyzeNamespace(const QDir& subdir, DocModel* model, const
             ns->setHref(element.attribute("href"));
             ns->setBrief(element.attribute("brief"));
             ns->setFullName(element.attribute("fullname"));
+            ns->setSince(element.attribute("since"));
             model->addNamespace(ns);
         }
         QList<QDomNodeList> childNodeList{element.childNodes()};
@@ -146,6 +149,7 @@ void DocIndexReader::analyzeTypeDef(const QDir& subdir, DocClass* cls, const QSt
         var->setHref(element.attribute("href"));
         var->setBrief(element.attribute("brief"));
         var->setFullName(element.attribute("fullname"));
+        var->setSince(element.attribute("since"));
         cls->addTypeDef(var);
     }
 }
@@ -160,6 +164,7 @@ void DocIndexReader::analyzeVariable(const QDir& subdir, DocClass* cls, const QS
         var->setHref(element.attribute("href"));
         var->setBrief(element.attribute("brief"));
         var->setFullName(element.attribute("fullname"));
+        var->setSince(element.attribute("since"));
         var->setStatic(element.attribute("static")=="true");
         cls->addVariable(var);
     }
@@ -175,6 +180,7 @@ void DocIndexReader::analyzeProperty(const QDir& subdir, DocClass* cls, const QS
         prop->setHref(element.attribute("href"));
         prop->setBrief(element.attribute("brief"));
         prop->setFullName(element.attribute("fullname"));
+        prop->setSince(element.attribute("since"));
         QString getter;
         QString setter;
         QDomNodeList childNodes = element.childNodes();
@@ -205,6 +211,7 @@ void DocIndexReader::analyzeFunction(const QDir& subdir, DocFunctionOwner* owner
         fun->setHref(element.attribute("href"));
         fun->setBrief(element.attribute("brief"));
         fun->setFullName(element.attribute("fullname"));
+        fun->setSince(element.attribute("since"));
         fun->setConst(element.attribute("const")=="true");
         fun->setStatic(element.attribute("static")=="true");
         QStringList parameters;

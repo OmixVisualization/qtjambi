@@ -13,6 +13,8 @@
 
 #define __cplusplus 1
 
+//#define __cpp_lib_three_way_comparison
+
 #define __STDC__
 
 //#define __has_cpp_attribute(macro) 1

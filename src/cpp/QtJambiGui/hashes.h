@@ -273,25 +273,17 @@ inline hash_type qHash(const QVector4D &vec, hash_type seed = 0)
 inline hash_type qHash(const QFontMetrics &value, hash_type seed = 0)
 {
     struct FontMetrics{
-        QExplicitlySharedDataPointer<void*> p;
+        QExplicitlySharedDataPointer<QFontPrivate> p;
     };
-    const FontMetrics* fontMetrics = reinterpret_cast<const FontMetrics* >(&value);
-
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, quintptr(fontMetrics->p.data()));
-    return seed;
+    return qHash(quintptr(reinterpret_cast<const FontMetrics&>(value).p.constData()), seed);
 }
 
 inline hash_type qHash(const QFontMetricsF &value, hash_type seed = 0)
 {
-    struct FontMetricsF{
-        QExplicitlySharedDataPointer<void*> p;
+    struct FontMetrics{
+        QExplicitlySharedDataPointer<QFontPrivate> p;
     };
-    const FontMetricsF* fontMetrics = reinterpret_cast<const FontMetricsF* >(&value);
-
-    QtPrivate::QHashCombine hash;
-    seed = hash(seed, quintptr(fontMetrics->p.data()));
-    return seed;
+    return qHash(quintptr(reinterpret_cast<const FontMetrics&>(value).p.constData()), seed);
 }
 
 inline hash_type qHash(const QGlyphRun &value, hash_type seed = 0)

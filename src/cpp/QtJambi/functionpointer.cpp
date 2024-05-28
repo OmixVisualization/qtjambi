@@ -37,6 +37,7 @@
 #include <QtCore/QTemporaryFile>
 #include <QtCore/QLibrary>
 #include <QtCore/QUuid>
+#include <QtCore/QCoreApplication>
 #include <QtCore/QDebug>
 #include <memory>
 #include "utils_p.h"
@@ -153,7 +154,6 @@ private:
 
 struct Libraries{
     Libraries():dir(nullptr){}
-    Libraries(const QString& templatePath):dir(new QTemporaryDir(templatePath)){}
     ~Libraries(){
         filesByFunction.clear();
         libraries.clear();
@@ -164,13 +164,63 @@ struct Libraries{
         dir.swap(other.dir);
         return *this;
     }
+    QFunctionPointer nextFunction(const QString& typeName,
+                                  FunctionPointerPrivate::FunctionPointerDisposer disposer,
+                                  QFunctionPointer caller) const{
+        QFunctionPointer result = nullptr;
+        for(QExplicitlySharedDataPointer<LibraryFile> availableFile : libraries[typeName]){
+            if(availableFile){
+                result = availableFile->nextFunction(disposer, caller);
+                if(result)
+                    break;
+            }
+        }
+        return result;
+    }
+    void insertLibraryFile(LibraryFile* libFile){
+        libraries[libFile->name] << QExplicitlySharedDataPointer<LibraryFile>(libFile);
+    }
+    QString nextTempFilePath(QString* dirErrorString = nullptr){
+        if(!dir){
+            dir.reset(new QTemporaryDir(QStringLiteral(u"%1/qtjambi.fp.%2.XXXXXX").arg(QDir::tempPath()).arg(QCoreApplication::applicationPid())));
+            if(!dir->isValid() && dirErrorString)
+                *dirErrorString = dir->errorString();
+        }
+        QString tmpFile = dir->filePath(QUuid::createUuid().toString(QUuid::Id128)+".tmp");
+        while(QFileInfo::exists(tmpFile)){
+            tmpFile = dir->filePath(QUuid::createUuid().toString(QUuid::Id128)+".tmp");
+        }
+        return tmpFile;
+    }
+    bool disposeFunction(QFunctionPointer fn){
+        QExplicitlySharedDataPointer<LibraryFile> libFile = filesByFunction[quintptr(fn)];
+        if(libFile){
+            bool notInUse = libFile->disposeFunction(fn);
+            if(notInUse){
+                QVector<QExplicitlySharedDataPointer<LibraryFile>>& files = libraries[libFile->name];
+                if(files.size()>1){
+                    files.removeAll(libFile);
+                }
+            }
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+            libFile = nullptr;
+#else
+            libFile.reset();
+#endif
+            return true;
+        }
+        return false;
+    }
+private:
     QHash<QString,QVector<QExplicitlySharedDataPointer<LibraryFile>>> libraries;
     QHash<quintptr,QExplicitlySharedDataPointer<LibraryFile>> filesByFunction;
     std::unique_ptr<QTemporaryDir> dir;
     Q_DISABLE_COPY_MOVE(Libraries);
+    friend void register_file_by_function(LibraryFile* libFile, QFunctionPointer fn);
+    friend void unregister_file_by_function(QFunctionPointer fn);
 };
 
-Q_GLOBAL_STATIC_WITH_ARGS(Libraries, gLibraries, (QDir::tempPath()+"/qtjambi.fp.XXXXXX"));
+Q_GLOBAL_STATIC(Libraries, gLibraries);
 Q_GLOBAL_STATIC(QRecursiveMutex, gMutex)
 
 void register_file_by_function(LibraryFile* libFile, QFunctionPointer fn){
@@ -231,20 +281,16 @@ QFunctionPointer extractFunction(
     }else{
         typeName = funTypeName;
     }
-    if(gLibraries->libraries.contains(typeName)){
-        const QVector<QExplicitlySharedDataPointer<LibraryFile>>& availableFiles = gLibraries->libraries[typeName];
-        for(QExplicitlySharedDataPointer<LibraryFile> availableFile : availableFiles){
-            if(availableFile){
-                result = availableFile->nextFunction(disposer, caller);
-                if(result)
-                    return result;
-            }
-        }
-    }
+    result = gLibraries->nextFunction(typeName, disposer, caller);
+    if(result)
+        return result;
 
     //qCDebug(DebugAPI::internalCategory) << "found: " << typeName;
-    QString tmpFile = gLibraries->dir->filePath("~"+QUuid::createUuid().toString(QUuid::Id128)+".tmp");
-    if(QFile::copy(":/io/qt/qtjambi/functionpointers/"+typeName, tmpFile)){
+    QString dirErrorString;
+    QString tmpFile = gLibraries->nextTempFilePath(&dirErrorString);
+    QFile file(":/io/qt/qtjambi/functionpointers/"+typeName);
+    file.copy(tmpFile);
+    if(QFileInfo::exists(tmpFile)){
         std::unique_ptr<QLibrary> library(new QLibrary(tmpFile));
         if(library->load()){
             if(Initialize initialize = Initialize(library->resolve("initialize"))){
@@ -261,38 +307,45 @@ QFunctionPointer extractFunction(
                 }
                 LibraryFile* libFile = new LibraryFile(typeName, std::move(libFunctions), std::move(freeIndexes), library);
                 result = libFile->nextFunction(disposer, caller);
-                gLibraries->libraries[typeName] << QExplicitlySharedDataPointer<LibraryFile>(libFile);
+                gLibraries->insertLibraryFile(libFile);
             }else{
                 library->unload();
-                qCWarning(DebugAPI::internalCategory) << "Unable to find initialize function for " << typeName << ".";
+                if(JniEnvironment env{300}) {
+                    Java::Runtime::RuntimeException::throwNew(env, QStringLiteral("Unable to find 'initialize' function for %1.").arg(typeName) QTJAMBI_STACKTRACEINFO );
+                }
+                qCCritical(DebugAPI::internalCategory) << "Unable to find 'initialize' function for " << typeName << ".";
             }
         }else{
-            qCWarning(DebugAPI::internalCategory) << "Unable to create function pointer. " << library->errorString();
+            if(JniEnvironment env{300}) {
+                Java::Runtime::RuntimeException::throwNew(env, QStringLiteral("Unable to create function pointer. %1").arg(library->errorString()) QTJAMBI_STACKTRACEINFO );
+            }
+            qCCritical(DebugAPI::internalCategory) << "Unable to create function pointer. " << library->errorString();
         }
     }else{
-        qCWarning(DebugAPI::internalCategory) << "Unable to copy library to " << tmpFile;
+        if(QFileInfo::exists(":/io/qt/qtjambi/functionpointers/"+typeName)){
+            if(JniEnvironment env{300}) {
+                if(!dirErrorString.isEmpty())
+                    Java::Runtime::RuntimeException::throwNew(env, QStringLiteral("Unable to copy function pointer library :/io/qt/qtjambi/functionpointers/%1 to %2: %3 %4").arg(typeName, tmpFile, dirErrorString, file.errorString()) QTJAMBI_STACKTRACEINFO );
+                if(!QFileInfo(tmpFile).dir().exists()){
+                    Java::Runtime::RuntimeException::throwNew(env, QStringLiteral("Unable to copy function pointer library :/io/qt/qtjambi/functionpointers/%1 to %2: directory %3 does not exist. %4").arg(typeName, tmpFile, QFileInfo(tmpFile).dir().absolutePath(), file.errorString()) QTJAMBI_STACKTRACEINFO );
+                }else{
+                    Java::Runtime::RuntimeException::throwNew(env, QStringLiteral("Unable to copy function pointer library :/io/qt/qtjambi/functionpointers/%1 to %2: %3").arg(typeName, tmpFile, file.errorString()) QTJAMBI_STACKTRACEINFO );
+                }
+            }
+            qCCritical(DebugAPI::internalCategory) << "Unable to copy function pointer library to " << tmpFile;
+        }else{
+            if(JniEnvironment env{300}) {
+                Java::Runtime::RuntimeException::throwNew(env, QStringLiteral("Unable to find function pointer library :/io/qt/qtjambi/functionpointers/%1").arg(typeName) QTJAMBI_STACKTRACEINFO );
+            }
+            qCCritical(DebugAPI::internalCategory) << "Unable to find function pointer library " << typeName;
+        }
     }
     return result;
 }
 
 bool disposeFunction(QFunctionPointer fn){
     if(!gLibraries.isDestroyed()){
-        QExplicitlySharedDataPointer<LibraryFile> libFile = gLibraries->filesByFunction[quintptr(fn)];
-        if(libFile){
-            bool notInUse = libFile->disposeFunction(fn);
-            if(notInUse){
-                QVector<QExplicitlySharedDataPointer<LibraryFile>>& files = gLibraries->libraries[libFile->name];
-                if(files.size()>1){
-                    files.removeAll(libFile);
-                }
-            }
-#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
-            libFile = nullptr;
-#else
-            libFile.reset();
-#endif
-            return true;
-        }
+        return gLibraries->disposeFunction(fn);
     }
     return false;
 }

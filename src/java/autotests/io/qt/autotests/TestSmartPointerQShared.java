@@ -42,7 +42,7 @@ import org.junit.Test;
 
 import io.qt.QtObject;
 import io.qt.autotests.generated.General;
-import io.qt.autotests.generated.SharedPointerTest;
+import io.qt.autotests.generated.SmartPointerTest;
 import io.qt.core.QEvent;
 import io.qt.core.QIODevice;
 import io.qt.core.QMetaObject.Connection;
@@ -59,21 +59,20 @@ import io.qt.widgets.QSpacerItem;
 import io.qt.widgets.QWidget;
 import io.qt.widgets.QWidgetItem;
 
-public class TestSharedPointer extends ApplicationInitializer {
+public class TestSmartPointerQShared extends ApplicationInitializer {
 
 	public static void main(String args[]) {
-		org.junit.runner.JUnitCore.main(TestSharedPointer.class.getName());
+		org.junit.runner.JUnitCore.main(TestSmartPointerQShared.class.getName());
 	}
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {
     	ApplicationInitializer.testInitializeWithWidgets();
     }
-
-	private SharedPointerTest object = new SharedPointerTest();
-
+	
 	@Test
 	public void testSharedObject10() {
+		SmartPointerTest object = new SmartPointerTest();
 		QObject sharedObject = object.createSharedObject1();
 		assertNotNull(sharedObject);
 		assertTrue(TestUtility.isSharedPointer(sharedObject));
@@ -85,6 +84,7 @@ public class TestSharedPointer extends ApplicationInitializer {
 	
 	@Test
 	public void testSharedObject11() {
+		SmartPointerTest object = new SmartPointerTest();
 		QObject sharedObject = object.createSharedObject1();
 		assertNotNull(sharedObject);
 		assertTrue(TestUtility.isSharedPointer(sharedObject));
@@ -115,6 +115,7 @@ public class TestSharedPointer extends ApplicationInitializer {
 	
 	@Test
 	public void testSharedObject20() {
+		SmartPointerTest object = new SmartPointerTest();
 		QGraphicsItem sharedObject = object.createSharedObject2();
 		assertNotNull(sharedObject);
 		assertTrue(TestUtility.isSharedPointer(sharedObject));
@@ -126,6 +127,7 @@ public class TestSharedPointer extends ApplicationInitializer {
 
 	@Test
 	public void testSharedObject21() {
+		SmartPointerTest object = new SmartPointerTest();
 		QGraphicsItem sharedObject = object.createSharedObject2();
 		assertNotNull(sharedObject);
 		assertTrue(TestUtility.isSharedPointer(sharedObject));
@@ -153,6 +155,7 @@ public class TestSharedPointer extends ApplicationInitializer {
 	
 	@Test
 	public void testSharedObject30() {
+		SmartPointerTest object = new SmartPointerTest();
 		QEvent sharedObject = object.createSharedObject3();
 		assertNotNull(sharedObject);
 		assertTrue(TestUtility.isSharedPointer(sharedObject));
@@ -164,6 +167,7 @@ public class TestSharedPointer extends ApplicationInitializer {
 
 	@Test
 	public void testSharedObject31() {
+		SmartPointerTest object = new SmartPointerTest();
 		QEvent sharedObject = object.createSharedObject3();
 		assertNotNull(sharedObject);
 		assertTrue(TestUtility.isSharedPointer(sharedObject));
@@ -186,6 +190,7 @@ public class TestSharedPointer extends ApplicationInitializer {
 	
 	@Test
 	public void testSharedObject40() {
+		SmartPointerTest object = new SmartPointerTest();
 		QLayoutItem sharedObject = object.createSharedObject4();
 		assertNotNull(sharedObject);
 		assertTrue(TestUtility.isSharedPointer(sharedObject));
@@ -197,6 +202,7 @@ public class TestSharedPointer extends ApplicationInitializer {
 
 	@Test
 	public void testSharedObject41() {
+		SmartPointerTest object = new SmartPointerTest();
 		QLayoutItem sharedObject = object.createSharedObject4();
 		assertNotNull(sharedObject);
 		assertTrue(TestUtility.isSharedPointer(sharedObject));
@@ -224,6 +230,7 @@ public class TestSharedPointer extends ApplicationInitializer {
 	
 	@Test
 	public void testSharedObject50() {
+		SmartPointerTest object = new SmartPointerTest();
 		QLayoutItem sharedObject = object.createSharedObject5();
 		assertNotNull(sharedObject);
 		assertTrue(TestUtility.isSharedPointer(sharedObject));
@@ -235,6 +242,7 @@ public class TestSharedPointer extends ApplicationInitializer {
 
 	@Test
 	public void testSharedObject51() {
+		SmartPointerTest object = new SmartPointerTest();
 		QLayoutItem sharedObject = object.createSharedObject5();
 		assertNotNull(sharedObject);
 		assertTrue(TestUtility.isSharedPointer(sharedObject));
@@ -258,6 +266,7 @@ public class TestSharedPointer extends ApplicationInitializer {
 	
 	@Test
 	public void testSharedObject60() {
+		SmartPointerTest object = new SmartPointerTest();
 		QLayoutItem sharedObject = object.createSharedObject6();
 		assertNotNull(sharedObject);
 		assertTrue(TestUtility.isSharedPointer(sharedObject));
@@ -279,6 +288,7 @@ public class TestSharedPointer extends ApplicationInitializer {
 
 	@Test
 	public void testSharedObject61() {
+		SmartPointerTest object = new SmartPointerTest();
 		QLayoutItem sharedObject = object.createSharedObject6();
 		assertNotNull(sharedObject);
 		assertTrue(TestUtility.isSharedPointer(sharedObject));
@@ -334,6 +344,7 @@ public class TestSharedPointer extends ApplicationInitializer {
 	
 	@Test
 	public void testSharedObject70() {
+		SmartPointerTest object = new SmartPointerTest();
 		AtomicInteger disposed = new AtomicInteger();
 		AtomicInteger jAoutToClose = new AtomicInteger();
 		QAtomicInteger qAboutToClose = new QAtomicInteger();
@@ -357,6 +368,7 @@ public class TestSharedPointer extends ApplicationInitializer {
 	
 	@Test
 	public void testSharedObject80() {
+		SmartPointerTest object = new SmartPointerTest();
 		List<String> sharedObject = object.createSharedObject8();
 		assertTrue(sharedObject instanceof QtObject);
 		assertTrue(TestUtility.isSharedPointer((QtObject)sharedObject));
@@ -366,7 +378,7 @@ public class TestSharedPointer extends ApplicationInitializer {
 	@Test
 	public void testObjectToSharedPointer() {
 		QObject newObject = new QObject();
-		QObject sharedObject = SharedPointerTest.asSharedPointer(newObject);
+		QObject sharedObject = SmartPointerTest.asSharedPointer(newObject);
 		assertTrue(TestUtility.isSharedPointer(sharedObject));
 		assertEquals(newObject, sharedObject);
 		assertTrue(TestUtility.isSharedPointer(newObject));

@@ -626,6 +626,32 @@ TypeSystem{
                               "    Java::QtNetwork::QTimeoutException::throwNew(%env, \"Connection timed out\" QTJAMBI_STACKTRACEINFO );"}
             }
         }
+        ModifyFunction{
+            signature: "addPendingConnection(QLocalSocket*)"
+            ModifyArgument{
+                index: 1
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Cpp
+                }
+            }
+            since: 6.8
+        }
+        ModifyFunction{
+            signature: "nextPendingConnection()"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Shell
+                    ownership: Ownership.Cpp
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            since: 6.8
+        }
         InjectCode{
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiNetwork.java"
@@ -3056,7 +3082,7 @@ TypeSystem{
         since: 6.7
     }
 
-    ObjectType{
+    ValueType{
         name: "QHttpHeaders"
         EnumType{
             name: "WellKnownHeader"

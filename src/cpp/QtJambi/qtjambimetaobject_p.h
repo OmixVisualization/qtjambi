@@ -116,6 +116,7 @@ public:
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #endif
     int originalSignalOrSlotSignature(JNIEnv *env, int _id, QString *signature) const;
+    int revision() const;
 
     jclass typeOfProperty(int index) const;
     InternalToExternalConverter internalToExternalConverterOfProperty(int index) const;

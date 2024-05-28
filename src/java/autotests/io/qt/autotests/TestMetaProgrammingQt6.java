@@ -173,7 +173,7 @@ public class TestMetaProgrammingQt6 extends ApplicationInitializer {
     @Test
     public void testMetaProperties() {
         ExpectedValues expectedValues[] = {
-                new ExpectedValues("bindable", true, false, false, false, false, true, true),
+                new ExpectedValues("bindable", true, false, true, false, false, true, true),
                 new ExpectedValues("requiredProperty", true, false, true, false, true, false, false),
                 new ExpectedValues("ordinaryProperty", true, false, true, false, false, false, true),
                 new ExpectedValues("annotatedProperty", true, false, true, false, false, false, false),

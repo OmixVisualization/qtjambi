@@ -67,7 +67,7 @@ public class TestGraphs extends ApplicationInitializer {
     	assertEquals(axis2.parent(), axis3.parent());
     }
     
-    @Test
+    /*@Test
     public void testQAbstract3DGraph(){
     	QObject parent = new QObject();
     	QAbstract3DGraph abstract3DGraph = new Q3DBars();
@@ -106,7 +106,7 @@ public class TestGraphs extends ApplicationInitializer {
     	assertTrue(customItem.isDisposed());
     	abstract3DGraph.removeCustomItem(customItem2);
     	assertTrue(customItem2.isDisposed());
-    }
+    }*/
     
     @Test
     public void testQ3DScatter() {

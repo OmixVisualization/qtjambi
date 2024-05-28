@@ -37,6 +37,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import io.qt.QtSignalEmitterInterface;
+import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 
@@ -69,6 +70,10 @@ public abstract class CoreUtility {
             super(signalName, types);
         }
     }
+	
+	protected static QMetaMethod signalMethod(AbstractSignal signal) {
+		return signal.signalMethod();
+	}
     
 	/**
 	 * @hidden
@@ -84,7 +89,7 @@ public abstract class CoreUtility {
     }
     
     protected static void emitNativeSignal(QObject sender, int methodIndex, long metaObjectId, Object args[]) {
-    	SignalUtility.emitNativeSignal(sender, methodIndex, metaObjectId, 0, args);
+    	SignalUtility.emitNativeSignal(NativeUtility.checkedNativeId(sender), methodIndex, metaObjectId, 0, args);
     }
     
     protected static boolean disconnectAll(QtSignalEmitterInterface sender, Object receiver) {
@@ -121,5 +126,9 @@ public abstract class CoreUtility {
     
     protected static URL createURL(String url) throws MalformedURLException {
     	return new URL(url);
+    }
+    
+    protected static void invokeMethod(QObject context, Runnable runnable, boolean blocking) {
+    	SignalUtility.invokeMethod(NativeUtility.checkedNativeId(context), runnable, blocking);
     }
 }

@@ -232,9 +232,20 @@ TypeSystem{
     
     ObjectType{
         name: "QWebEngineUrlRequestJob"
-
         EnumType{
             name: "Error"
+        }
+
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: String.raw`
+namespace QHashPrivate {
+template <>
+constexpr inline bool HasQHashSingleArgOverload<QMap<QByteArray,QByteArray>> = false;
+}`
+            }
+            since: 6.8
         }
     }
     
@@ -268,6 +279,17 @@ TypeSystem{
                 name: "set"
                 deprecated: true
             }
+        }
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: String.raw`
+namespace QHashPrivate {
+template <>
+constexpr inline bool HasQHashSingleArgOverload<QMap<QByteArray,QByteArray>> = false;
+}`
+            }
+            since: 6.8
         }
     }
     
@@ -843,6 +865,9 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/webengine/core,QWebEngineProfile$IconAvail
     ObjectType{
         name: "QWebEngineSettings"
         EnumType{
+            name: "ImageAnimationPolicy"
+        }
+        EnumType{
             name: "FontFamily"
         }
         EnumType{
@@ -1025,6 +1050,14 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/webengine/core,QWebEngineProfile$IconAvail
             name: "RequestFailureReason"
         }
         since: 6.7
+    }
+    ObjectType{
+        name: "QWebEngineClientHints"
+        since: 6.8
+    }
+    ObjectType{
+        name: "QWebEngineFrame"
+        since: 6.8
     }
 
     GlobalFunction{

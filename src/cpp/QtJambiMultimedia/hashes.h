@@ -321,6 +321,12 @@ inline hash_type qHash(const QCapturableWindow &value, hash_type seed = 0)
     seed = hash(seed, value.description());
     return seed;
 }
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 1) && defined(QTJAMBI_GENERATOR_RUNNING)
+using QtAudio::Error = QAudio::Error;
+using QtAudio::State = QAudio::State;
+#endif
+
 #endif
 
 #endif // QTJAMBIMULTIMEDIA_HASHES_H

@@ -240,7 +240,7 @@ namespace rpp {
 
                         pp_fast_string fast_name(name_buffer, std::size_t(name_size));
                         if(frame && frame->actuals && frame->expanding_macro
-                                && frame->actuals->size()>0
+                                //&& frame->actuals->size()>0
                                 && frame->expanding_macro->variadics && fast_name=="__VA_ARGS__"){
                             bool comma = false;
                             for(auto i=frame->expanding_macro->formals.size(); i<frame->actuals->size(); ++i){
@@ -381,7 +381,7 @@ namespace rpp {
                             std::string actual(arg_it, arg_end);
                             QByteArray _actual(actual.c_str(), QByteArray::size_type(actual.size()));
                             if(frame && frame->actuals && frame->expanding_macro
-                                    && frame->actuals->size()>0
+                                    //&& frame->actuals->size()>0
                                     && frame->expanding_macro->variadics && _actual.trimmed()=="__VA_ARGS__"){
                                 for(auto i=frame->expanding_macro->formals.size(); i<frame->actuals->size(); ++i){
                                     actuals.resize(actuals.size() + 1);

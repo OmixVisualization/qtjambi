@@ -40,7 +40,7 @@ Make yourself familiar with [developing applications with QtJambi](www/How-to-de
 * Java Development Kit (e.g. [OpenJDK](https://adoptopenjdk.net/), tested with Java 1.8, 11 and 21)
 * Qt 5.15 or 6.x (using the Qt Online Installer)
 * Minimum required Qt modules: QtCore, QtQml, QtNetwork, QtConcurrent and QtXml
-* C++ compiler and make (Gcc, Clang, MSVC2019)
+* C++ compiler and make (Gcc, Clang, MSVC2022)
 * XCode command line tools (macOS only)
 
 When building for Android all required SDK and NDK components are downloaded automatically.
@@ -92,7 +92,7 @@ Finally, find all Java libraries in directory `<qtjambiversion>/deployment` and 
 
 You can call ant with additional properties as listed below. Therefore use the `-D` command line argument: `ant -Dkey=value all`.
 
-* `qt` - specify comma-separated Qt versions to be used, e.g. `-Dqt="5.15,6.3"`.
+* `qt` - specify comma-separated Qt versions to be used, e.g. `-Dqt="6.5,6.7"`.
 * `qtbase` - specify Qt installer's base directory, e.g. `-Dqtbase=/var/Qt`. Can be combined with `qt`.
 * `qtdir` - specify Qt version and platform directory, e.g. `-Dqtdir=/var/Qt/6.5.3/macos`. This option allows multiple directories separated by path separator. (If this option is specified `qt` and `qtbase` have no effect.)
 * `qmake` - specify a path to a `qmake` program to be used for building QtJambi. (If this option is specified `qt`, `qtbase` and `qtdir` have no effect.)
@@ -145,7 +145,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `5.15.20`, by `6.5.6`, by `6.6.3` or by `6.7.0`).
+(exchange `$VERSION` either by `6.5.7` or by `6.7.1`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 
@@ -165,7 +165,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.5.6.jar Test.java
+javac -cp qtjambi-6.5.7.jar Test.java
 ```
 
 ### Execute Example
@@ -174,7 +174,7 @@ For execution you need the platform dependent binaries of QtJambi either as self
 For instance, if you are working on Windows download **qtjambi-native-windows-x64-VERSION.jar**
 from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi-native-windows-x64/) and add it to java class path. 
 
-Additionally, you need *Qt*. Use the [Qt installer](https://www.qt.io/download-qt-installer) to install Qt on your system. Make sure you are using the same Qt version and QtJambi version (e.g. 5.15 or 6.x).
+Additionally, you need *Qt*. Use the [Qt installer](https://www.qt.io/download-qt-installer) to install Qt on your system. Make sure you are using the same Qt version and QtJambi version (the first and second version digit needs to be the same).
 When using Maven artifacts for Windows you need to select MSVC 2019 64-Bit (msvc2019_64), as they are not compatible with Mingw Qt.
 
 When running a QtJambi application you have to make the locations of Qt libraries known to Java.
@@ -184,15 +184,15 @@ By default, on Windows Qt libraries are located in `bin` directory and on Linux 
 
 The example program can be executed this way on Windows:
 ``` powershell
-java -cp qtjambi-6.5.6.jar;. -Djava.library.path=C:\Qt\6.5.3\msvc2019_64\bin Test
+java -cp qtjambi-6.5.7.jar;. -Djava.library.path=C:\Qt\6.5.3\msvc2019_64\bin Test
 ```
 On Linux it looks this way:
 ``` bash
-java -cp qtjambi-6.5.6.jar:. -Djava.library.path=<path to>/Qt/6.5.3/gcc_64/lib Test
+java -cp qtjambi-6.5.7.jar:. -Djava.library.path=<path to>/Qt/6.5.3/gcc_64/lib Test
 ```
 On macOS you additionally need to use the start parameter `-XstartOnFirstThread`:
 ``` bash
-java -cp qtjambi-6.5.6.jar:. -Djava.library.path=<path to>/Qt/6.5.3/macos/lib -XstartOnFirstThread Test
+java -cp qtjambi-6.5.7.jar:. -Djava.library.path=<path to>/Qt/6.5.3/macos/lib -XstartOnFirstThread Test
 ```
 
 On Linux of your distribution provides Qt (of correct version) as system library you don't need to specify library path at all.

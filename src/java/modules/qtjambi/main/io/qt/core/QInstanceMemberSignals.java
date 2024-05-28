@@ -743,7 +743,7 @@ public interface QInstanceMemberSignals {
      * @param <I> The type of the single parameter of the signal.
      */
     public static final class PrivateSignal9<A,B,C,D,E,F,G,H,I> extends AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> {
-            	/**
+    	/**
     	 * Create signal within containing object.
     	 * @param <Q> type of the containing object.
     	 * @param containingObject the containing object

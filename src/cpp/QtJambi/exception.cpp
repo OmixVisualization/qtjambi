@@ -423,6 +423,12 @@ void JavaException::raiseQThreadAffinityException(JNIEnv* env, QAnyStringView me
 JNIEnv *currentJNIEnvironment(bool initializeJavaThread = true);
 
 struct ExceptionHandler{
+    enum State : quint8{
+        None = 0x0,
+        Blocking = 0x1,
+        Reraise = 0x2,
+        Keep = 0x4
+    };
     ExceptionHandler() : exn(), methodName(nullptr), blocking(false), reraise(false) {}
     ~ExceptionHandler(){
         if(exn){
@@ -449,6 +455,7 @@ struct ExceptionHandler{
     const char* methodName;
     uint blocking : 1;
     uint reraise : 1;
+    uint keep : 1;
     static QThreadStorage<ExceptionHandler> storage;
 };
 
@@ -458,7 +465,15 @@ QtJambiExceptionHandler::QtJambiExceptionHandler()
     : data(0)
 {
     ExceptionHandler& exceptionHandler = ExceptionHandler::storage.localData();
-    data = exceptionHandler.blocking;
+    if(exceptionHandler.blocking){
+        data |= ExceptionHandler::Blocking;
+    }
+    if(exceptionHandler.reraise){
+        data |= ExceptionHandler::Reraise;
+    }
+    if(exceptionHandler.keep){
+        data |= ExceptionHandler::Keep;
+    }
     exceptionHandler.blocking = false;
 }
 
@@ -499,16 +514,24 @@ QtJambiExceptionInhibitor::QtJambiExceptionInhibitor()
     : data(0)
 {
     ExceptionHandler& exceptionHandler = ExceptionHandler::storage.localData();
-    data = (exceptionHandler.blocking ? 0x01 : 0x0) | (exceptionHandler.reraise ? 0x10 : 0x0);
+    if(exceptionHandler.blocking){
+        data |= ExceptionHandler::Blocking;
+    }
+    if(exceptionHandler.reraise){
+        data |= ExceptionHandler::Reraise;
+    }
+    if(exceptionHandler.keep){
+        data |= ExceptionHandler::Keep;
+    }
     exceptionHandler.blocking = false;
 }
 
 QtJambiExceptionInhibitor::~QtJambiExceptionInhibitor(){
-    ExceptionHandler::storage.localData().blocking = (data & 0x01);
+    ExceptionHandler::storage.localData().blocking = (data & ExceptionHandler::Blocking);
 }
 
 void QtJambiExceptionInhibitor::handle(JNIEnv *env, const JavaException& exn, const char* methodName){
-    if(!(data & 0x01) || (data & 0x10)){
+    if(!(data & ExceptionHandler::Blocking) || (data & ExceptionHandler::Reraise)){
         ExceptionHandler& exceptionHandler = ExceptionHandler::storage.localData();
         if(exceptionHandler.exn){
             if(!env){
@@ -562,20 +585,28 @@ QtJambiExceptionBlocker::QtJambiExceptionBlocker()
     : data(0)
 {
     ExceptionHandler& exceptionHandler = ExceptionHandler::storage.localData();
-    data = exceptionHandler.blocking;
+    if(exceptionHandler.blocking){
+        data |= ExceptionHandler::Blocking;
+    }
+    //if(exceptionHandler.reraise){
+    //    data |= ExceptionHandler::Reraise;
+    //}
+    //exceptionHandler.reraise = false;
     exceptionHandler.blocking = true;
 }
 
 QtJambiExceptionBlocker::~QtJambiExceptionBlocker(){
-    ExceptionHandler::storage.localData().blocking = data;
+    ExceptionHandler::storage.localData().blocking = (data & ExceptionHandler::Blocking);
+    ExceptionHandler::storage.localData().reraise = (data & ExceptionHandler::Reraise);
+    ExceptionHandler::storage.localData().keep = (data & ExceptionHandler::Keep);
 }
 
 void QtJambiExceptionBlocker::release(JNIEnv *env){
     ExceptionHandler& exceptionHandler = ExceptionHandler::storage.localData();
-    if(exceptionHandler.exn){
+    if(exceptionHandler.exn && !exceptionHandler.keep){
         JavaException exn = exceptionHandler.exn;
         exceptionHandler.exn = JavaException();
-        if(exceptionHandler.reraise){
+        if(exceptionHandler.reraise/*(data & ExceptionHandler::Reraise)*/){
             exceptionHandler.methodName = nullptr;
             if(exn)
                 throw exn;
@@ -630,6 +661,20 @@ void QtJambiExceptionRaiser::raise(JNIEnv *){
     }
 }
 
+QtJambiExceptionUnraiser::QtJambiExceptionUnraiser()
+    : data(0) {
+    ExceptionHandler& exceptionHandler = ExceptionHandler::storage.localData();
+    data = exceptionHandler.reraise;
+    exceptionHandler.reraise = false;
+    exceptionHandler.keep = data;
+}
+
+QtJambiExceptionUnraiser::~QtJambiExceptionUnraiser(){
+    ExceptionHandler& exceptionHandler = ExceptionHandler::storage.localData();
+    exceptionHandler.reraise = data;
+    exceptionHandler.keep = false;
+}
+
 #if defined(QTJAMBI_CENTRAL_TRY_CATCH)
 namespace TryCatchWrapperAPI{
 void TypedCatcher::operator()(const JavaException& exn){m_caller(m_functor, exn);}
@@ -674,7 +719,8 @@ void QtJambiPrivate::javaExceptionCheck(JNIEnv* env){
     JavaException::check(env);
 }
 
-void QtJambiPrivate::javaInstanceCheck(JNIEnv* env,jobject object, jclass class_ref, bool isMemberFunction, const char* name){
+void QtJambiPrivate::javaInstanceCheck(JNIEnv* env, jobject object, jclass class_ref, bool isMemberFunction, const char* name){
+    JavaException::check(env);
     if(env->IsSameObject(object, nullptr)){
         if(isMemberFunction)
             JavaException::raiseNullPointerException(env, QLatin1String("Cannot invoke member function %1.%2(...) on null.").arg(QtJambiAPI::getClassName(env, class_ref), name) QTJAMBI_STACKTRACEINFO );

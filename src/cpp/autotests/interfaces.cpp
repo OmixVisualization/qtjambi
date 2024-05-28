@@ -135,16 +135,16 @@ QString FunctionManager::text() const {return m_text;}
 class MoccedInternalSub1Object : public MoccedSub1Object{
 };
 
-class UnMoccedInternalSub1Object : public UnMoccedSub1Object{
-};
-
 class MoccedInternalSub2Object : public MoccedSub2Object{
 };
 
-class UnMoccedInternalSub2Object : public UnMoccedSub2Object{
+class MoccedInternalObject : public MoccedObject{
 };
 
-class MoccedInternalObject : public MoccedObject{
+class UnMoccedInternalSub1Object : public UnMoccedSub1Object{
+};
+
+class UnMoccedInternalSub2Object : public UnMoccedSub2Object{
 };
 
 class UnMoccedInternalObject : public UnMoccedObject{
@@ -172,6 +172,8 @@ QObject* UnMoccedObject::create(int type){
         return new UnMoccedInternalSub1Object;
     case -5:
         return new UnMoccedInternalSub2Object;
+    case 6:
+        return new MoccedMoccedObject;
     }
     return nullptr;
 }

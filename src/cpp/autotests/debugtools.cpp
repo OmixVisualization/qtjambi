@@ -129,7 +129,6 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_autotes
     COUNTER_IMPLEMENTATION(disposeCalledCount)
     COUNTER_IMPLEMENTATION(linkDestroyedCount)
     COUNTER_IMPLEMENTATION(linkConstructedCount)
-    COUNTER_IMPLEMENTATION(pointerContainerDestroyedCount)
 
 void qtjambi_increase_destructorFunctionCalledCount(const char*className){
     bool enabled;

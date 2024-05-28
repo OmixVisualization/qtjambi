@@ -48,6 +48,9 @@ TypeSystem{
         name: "QtCanBus"
 
         EnumType{
+            name: "UniqueId"
+        }
+        EnumType{
             name: "DataSource"
         }
         EnumType{

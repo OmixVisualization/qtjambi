@@ -29,6 +29,7 @@ HEADERS += \
     nativepointertester.h \
     paintengine.h \
     signalsandslots.h \
+    smartpointertest.h \
     testdialog.h \
     tulip.h \
     variants.h \
@@ -36,7 +37,6 @@ HEADERS += \
     memorymanagement.h \
     flagsandenumtest.h \
     propertyandmethodcalltest.h \
-    sharedpointertest.h \
     settingstest.h \
     multisignaltest.h
 
@@ -49,11 +49,11 @@ SOURCES += \
     global.cpp \
     injectedcode.cpp \
     interfaces.cpp \
+    smartpointertest.cpp \
     testdialog.cpp \
     memorymanagement.cpp \
     flagsandenumtest.cpp \
     propertyandmethodcalltest.cpp \
-    sharedpointertest.cpp \
     settingstest.cpp \
     multisignaltest.cpp \
     tulip.cpp \

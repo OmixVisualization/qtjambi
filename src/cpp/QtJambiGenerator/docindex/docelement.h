@@ -45,18 +45,22 @@ public:
     const QString& href() const;
     const QString& brief() const;
     const QDir& subdir() const;
+    const QString& since() const;
     void setName(const QString& name);
     void setUrl(const QString& url);
     void setFullName(const QString& fullName);
     void setHref(const QString& href);
     void setBrief(const QString& brief);
     void setSubdir(const QDir& subdir);
+    void setSince(const QString &newSince);
+
 private:
     QString m_url;
     QString m_name;
     QString m_fullName;
     QString m_href;
     QString m_brief;
+    QString m_since;
     QDir m_subdir;
 };
 

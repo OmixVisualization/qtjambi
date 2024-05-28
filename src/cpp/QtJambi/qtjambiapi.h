@@ -89,7 +89,10 @@ struct CheckPointer{
     static const std::type_info* supplyType(const void *ptr) {
         const T* object = reinterpret_cast<const T*>(ptr);
         try{
-            return &typeid(*object);
+            const std::type_info* typeId = &typeid(*object);
+            if(!typeId)
+                typeId = &typeid(T);
+            return typeId;
         }catch(const std::bad_typeid&){
             return nullptr;
         }catch(...){
@@ -105,6 +108,7 @@ struct CheckPointer{
 };
 template<typename T>
 struct CheckPointer<T,false>{
+    static constexpr TypeInfoSupplier supplyType = nullptr;
     static void checkNullPointer(JNIEnv *env, const T* ptr){
         QtJambiAPI::checkNullPointer(env, ptr, typeid(T));
     }
@@ -561,11 +565,15 @@ QTJAMBI_EXPORT void setJavaOwnership(JNIEnv *env, jobject object);
 
 QTJAMBI_EXPORT void setCppOwnership(JNIEnv *env, jobject object);
 
+QTJAMBI_EXPORT void setCppOwnershipAndInvalidate(JNIEnv *env, jobject object);
+
 QTJAMBI_EXPORT void setDefaultOwnership(JNIEnv *env, jobject object);
 
 QTJAMBI_EXPORT void setJavaOwnership(JNIEnv *env, QtJambiNativeID objectId);
 
 QTJAMBI_EXPORT void setCppOwnership(JNIEnv *env, QtJambiNativeID objectId);
+
+QTJAMBI_EXPORT void setCppOwnershipAndInvalidate(JNIEnv *env, QtJambiNativeID objectId);
 
 QTJAMBI_EXPORT void setDefaultOwnership(JNIEnv *env, QtJambiNativeID objectId);
 

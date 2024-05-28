@@ -54,6 +54,10 @@ QT_WARNING_DISABLE_DEPRECATED
 
 #include "qtjambi_cast.h"
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+#define qAsConst std::as_const
+#endif
+
 typedef QHash<const QMetaObject *, jweak> JavaMetaObjectHash;
 Q_GLOBAL_STATIC(JavaMetaObjectHash, javaMetaObjects);
 Q_GLOBAL_STATIC(QRecursiveMutex, javaMetaObjectsLock);
@@ -733,6 +737,7 @@ void QtJambiMetaObjectPrivate::initialize(JNIEnv *env, const QMetaObject *origin
     jobject meta_data_struct = Java::QtJambi::MetaObjectUtility::analyze(env, m_clazz);
     if (!meta_data_struct)
         return;
+    registerSwitchTableFields(env, Java::QtJambi::MetaObjectData::switchTableFields(env,meta_data_struct));
     jobject intData = Java::QtJambi::MetaObjectData::intData(env, meta_data_struct);
     Q_ASSERT(intData);
 
@@ -2670,6 +2675,11 @@ int QtJambiMetaObject::bindableProperty(JNIEnv *env, jobject object, int _id, vo
 
     return _id - d->m_property_count;
 }
+
+int QtJambiMetaObject::revision() const{
+    return d_ptr->m_intData[0];
+}
+
 #endif //QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 
 jclass QtJambiMetaObject::typeOfProperty(int _id) const
@@ -2765,6 +2775,12 @@ QSharedPointer<const QtJambiMetaObject> QtJambiMetaObject::dispose(JNIEnv * env)
     return pointer;
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
+QList<QMetaType> registeredCustomMetaTypesForJavaClass(const QByteArray& javaClass);
+void registerMetaObjectByMetaTypeInterface(const QtPrivate::QMetaTypeInterface* iface, const QMetaObject* mo);
+#endif
+
+
 const QMetaObject *QtJambiMetaObjectPrivate::getQMetaObjectForJavaClass(JNIEnv *env, jclass object_class, const std::function<const QMetaObject *(bool&,bool&)>& original_meta_object_provider)
 {
     Q_ASSERT(object_class != nullptr);
@@ -2827,17 +2843,24 @@ const QMetaObject *QtJambiMetaObjectPrivate::getQMetaObjectForJavaClass(JNIEnv *
             }
         }
         Q_ASSERT(returned || isNamespace);
-        QWriteLocker locker(gMetaObjectsLock());
-        Q_UNUSED(locker)
-        // check if someone added a meta object meanwhile
-        if(gMetaObjects->contains(classHash)){
-            const QMetaObject *_returned = gMetaObjects->value(classHash, nullptr);
-            if(dynamicResult && dynamicResult!=_returned){
-                dynamicResult->dispose(env);
+        {
+            QWriteLocker locker(gMetaObjectsLock());
+            Q_UNUSED(locker)
+            // check if someone added a meta object meanwhile
+            if(gMetaObjects->contains(classHash)){
+                const QMetaObject *_returned = gMetaObjects->value(classHash, nullptr);
+                if(dynamicResult && dynamicResult!=_returned){
+                    dynamicResult->dispose(env);
+                }
+                return _returned;
             }
-            return _returned;
+            gMetaObjects->insert(classHash, returned);
         }
-        gMetaObjects->insert(classHash, returned);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 2, 0)
+        for(QMetaType mtype : registeredCustomMetaTypesForJavaClass(QtJambiAPI::getClassName(env, object_class).toLatin1())){
+            registerMetaObjectByMetaTypeInterface(mtype.iface(), returned);
+        }
+#endif
     }
     return returned;
 }
@@ -3229,7 +3252,7 @@ void QtJambiMetaObject::resolveSignals(JNIEnv *env, jobject java_object, const Q
                     metaObject = metaMethod.enclosingMetaObject();
                     if (const QtJambiMetaObject* mo = QtJambiMetaObject::cast(metaObject)){
                         jclass java_class = mo->javaClass();
-                        jobject signalField = Java::Runtime::Class::getDeclaredField(env, java_class, env->NewStringUTF(metaMethod.name().data()));
+                        jobject signalField = Java::Runtime::Class::getDeclaredField(env, java_class, env->NewStringUTF(metaMethod.name().constData()));
                         if(signalField){
                             jfieldID signalFieldId = env->FromReflectedField(signalField);
                             jobject signalTypes = mo->signalTypes(metaMethod.methodIndex()-metaObject->methodOffset());
@@ -3254,36 +3277,216 @@ void QtJambiMetaObject::resolveSignals(JNIEnv *env, jobject java_object, const Q
 JObjectWrapper QtJambiMetaObject::resolveExtraSignal(JNIEnv *env, jobject java_object, const QMetaMethod& method){
     QSet<const QMetaObject*> convertedMetaObjects;
     jobject signalObject = nullptr;
+    int cloneCount = 0;
+    for(int i = method.methodIndex()+1;; ++i){
+        QMetaMethod clone = method.enclosingMetaObject()->method(i);
+        if(clone.isValid() && clone.name()==method.name() && (clone.attributes() & QMetaMethod::Cloned)){
+            ++cloneCount;
+        }else{
+            break;
+        }
+    }
     switch(method.parameterCount()){
     case 0:
         signalObject = Java::QtJambi::QInstanceMemberSignals$Signal0::newInstance(env, java_object);
         break;
     case 1:
-        signalObject = Java::QtJambi::QInstanceMemberSignals$Signal1::newInstance(env, java_object);
+        switch(cloneCount){
+        case 1:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal1Default1::newInstance(env, java_object);
+            break;
+        default:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal1::newInstance(env, java_object);
+            break;
+        }
         break;
     case 2:
-        signalObject = Java::QtJambi::QInstanceMemberSignals$Signal2::newInstance(env, java_object);
+        switch(cloneCount){
+        case 1:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal2Default1::newInstance(env, java_object);
+            break;
+        case 2:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal2Default2::newInstance(env, java_object);
+            break;
+        default:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal2::newInstance(env, java_object);
+            break;
+        }
         break;
     case 3:
-        signalObject = Java::QtJambi::QInstanceMemberSignals$Signal3::newInstance(env, java_object);
+        switch(cloneCount){
+        case 1:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal3Default1::newInstance(env, java_object);
+            break;
+        case 2:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal3Default2::newInstance(env, java_object);
+            break;
+        case 3:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal3Default3::newInstance(env, java_object);
+            break;
+        default:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal3::newInstance(env, java_object);
+            break;
+        }
         break;
     case 4:
-        signalObject = Java::QtJambi::QInstanceMemberSignals$Signal4::newInstance(env, java_object);
+        switch(cloneCount){
+        case 1:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal4Default1::newInstance(env, java_object);
+            break;
+        case 2:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal4Default2::newInstance(env, java_object);
+            break;
+        case 3:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal4Default3::newInstance(env, java_object);
+            break;
+        case 4:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal4Default4::newInstance(env, java_object);
+            break;
+        default:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal4::newInstance(env, java_object);
+            break;
+        }
         break;
     case 5:
-        signalObject = Java::QtJambi::QInstanceMemberSignals$Signal5::newInstance(env, java_object);
+        switch(cloneCount){
+        case 1:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal5Default1::newInstance(env, java_object);
+            break;
+        case 2:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal5Default2::newInstance(env, java_object);
+            break;
+        case 3:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal5Default3::newInstance(env, java_object);
+            break;
+        case 4:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal5Default4::newInstance(env, java_object);
+            break;
+        case 5:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal5Default5::newInstance(env, java_object);
+            break;
+        default:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal5::newInstance(env, java_object);
+            break;
+        }
         break;
     case 6:
-        signalObject = Java::QtJambi::QInstanceMemberSignals$Signal6::newInstance(env, java_object);
+        switch(cloneCount){
+        case 1:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal6Default1::newInstance(env, java_object);
+            break;
+        case 2:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal6Default2::newInstance(env, java_object);
+            break;
+        case 3:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal6Default3::newInstance(env, java_object);
+            break;
+        case 4:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal6Default4::newInstance(env, java_object);
+            break;
+        case 5:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal6Default5::newInstance(env, java_object);
+            break;
+        case 6:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal6Default6::newInstance(env, java_object);
+            break;
+        default:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal6::newInstance(env, java_object);
+            break;
+        }
         break;
     case 7:
-        signalObject = Java::QtJambi::QInstanceMemberSignals$Signal7::newInstance(env, java_object);
+        switch(cloneCount){
+        case 1:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal7Default1::newInstance(env, java_object);
+            break;
+        case 2:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal7Default2::newInstance(env, java_object);
+            break;
+        case 3:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal7Default3::newInstance(env, java_object);
+            break;
+        case 4:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal7Default4::newInstance(env, java_object);
+            break;
+        case 5:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal7Default5::newInstance(env, java_object);
+            break;
+        case 6:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal7Default6::newInstance(env, java_object);
+            break;
+        case 7:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal7Default7::newInstance(env, java_object);
+            break;
+        default:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal7::newInstance(env, java_object);
+            break;
+        }
         break;
     case 8:
-        signalObject = Java::QtJambi::QInstanceMemberSignals$Signal8::newInstance(env, java_object);
+        switch(cloneCount){
+        case 1:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal8Default1::newInstance(env, java_object);
+            break;
+        case 2:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal8Default2::newInstance(env, java_object);
+            break;
+        case 3:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal8Default3::newInstance(env, java_object);
+            break;
+        case 4:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal8Default4::newInstance(env, java_object);
+            break;
+        case 5:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal8Default5::newInstance(env, java_object);
+            break;
+        case 6:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal8Default6::newInstance(env, java_object);
+            break;
+        case 7:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal8Default7::newInstance(env, java_object);
+            break;
+        case 8:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal8Default8::newInstance(env, java_object);
+            break;
+        default:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal8::newInstance(env, java_object);
+            break;
+        }
         break;
     case 9:
-        signalObject = Java::QtJambi::QInstanceMemberSignals$Signal9::newInstance(env, java_object);
+        switch(cloneCount){
+        case 1:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal9Default1::newInstance(env, java_object);
+            break;
+        case 2:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal9Default2::newInstance(env, java_object);
+            break;
+        case 3:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal9Default3::newInstance(env, java_object);
+            break;
+        case 4:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal9Default4::newInstance(env, java_object);
+            break;
+        case 5:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal9Default5::newInstance(env, java_object);
+            break;
+        case 6:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal9Default6::newInstance(env, java_object);
+            break;
+        case 7:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal9Default7::newInstance(env, java_object);
+            break;
+        case 8:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal9Default8::newInstance(env, java_object);
+            break;
+        case 9:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal9Default9::newInstance(env, java_object);
+            break;
+        default:
+            signalObject = Java::QtJambi::QInstanceMemberSignals$Signal9::newInstance(env, java_object);
+            break;
+        }
         break;
     default:
         break;

@@ -121,6 +121,8 @@ QString CppGenerator::translateType(const MetaType *java_type, Option option) {
                 || jniName.endsWith(QStringLiteral(u"Array")))
                 return QStringLiteral(u"jobjectArray");
             return jniName + "Array";
+        }else{
+            return QStringLiteral(u"jobjectArray");
         }
     } else if (java_type->isInitializerList()){
         Q_ASSERT(java_type->instantiations().size()==1);
@@ -592,16 +594,24 @@ void CppGenerator::writeFunctionSignature(QTextStream &s,
     if (implementor) {
         if((option & JNIProxyFunction)){
             if(implementor->typeEntry()->designatedInterface()){
-                s << implementor->extractInterface()->name() + "_access" << "::";
+                s << implementor->extractInterface()->name() + "_access";
             }else{
-                s << implementor->name() + "_access" << "::";
+                s << implementor->name() + "_access";
             }
         }else{
-            if (classname_prefix.isEmpty())
-                s << shellClassName(implementor) << "::";
-            else
-                s << classname_prefix << implementor->qualifiedCppName() << "::";
+            if (classname_prefix.isEmpty()){
+                if((option & MShell)){
+                    s << mshellClassName(implementor);
+                }else if((option & PlainShell)){
+                    s << shellClassName(implementor);
+                }else{
+                    s << oshellClassName(implementor);
+                }
+            }else{
+                s << classname_prefix << implementor->qualifiedCppName();
+            }
         }
+        s << "::";
     }
 
     QString function_name;
@@ -618,9 +628,15 @@ void CppGenerator::writeFunctionSignature(QTextStream &s,
     if (option & UnderscoreSpaces)
         function_name = function_name.replace(' ', '_');
 
-    if (java_function->isConstructor())
-        function_name = shellClassName(java_function->ownerClass());
-    else if(option & JNIProxyFunction)
+    if (java_function->isConstructor()){
+        if((option & MShell)){
+            function_name = mshellClassName(java_function->ownerClass());
+        }else if((option & PlainShell)){
+            function_name = shellClassName(java_function->ownerClass());
+        }else{
+            function_name = oshellClassName(java_function->ownerClass());
+        }
+    }else if(option & JNIProxyFunction)
         function_name += marshalledArguments(java_function);
 
     s << name_prefix << function_name;
@@ -1118,7 +1134,7 @@ QString CppGenerator::jni_signature(const MetaType *java_type, JNISignatureForma
         else
             return "[" + jni_signature(instantiation, format);
     }
-    if (java_type->isPointerContainer() && java_type->instantiations().size()==1) {
+    if (java_type->isSmartPointer() && java_type->instantiations().size()==1) {
         MetaType* instantiation = java_type->instantiations()[0]->copy();
         instantiation->setIndirections(QList<bool>(instantiation->indirections()) << false);
         MetaBuilder::decideUsagePattern(instantiation);
@@ -1262,6 +1278,28 @@ QString CppGenerator::shellClassName(const MetaClass *java_class) {
     return java_class->generateShellClass()
            ? java_class->name() + "_shell"
            : java_class->qualifiedCppName();
+}
+
+QString CppGenerator::mshellClassName(const MetaClass *java_class) {
+    if(java_class->typeEntry()->designatedInterface() && java_class->enclosingClass()){
+        return java_class->generateShellClass()
+                   ? java_class->enclosingClass()->name() + "_mshell"
+                   : java_class->enclosingClass()->qualifiedCppName();
+    }
+    return java_class->generateShellClass()
+               ? java_class->name() + "_mshell"
+               : java_class->qualifiedCppName();
+}
+
+QString CppGenerator::oshellClassName(const MetaClass *java_class) {
+    if(java_class->typeEntry()->designatedInterface() && java_class->enclosingClass()){
+        return java_class->generateShellClass()
+                   ? java_class->enclosingClass()->name() + "_oshell"
+                   : java_class->enclosingClass()->qualifiedCppName();
+    }
+    return java_class->generateShellClass()
+               ? java_class->name() + "_oshell"
+               : java_class->qualifiedCppName();
 }
 
 QString CppGenerator::shellClassName(const MetaFunctional *java_class) {

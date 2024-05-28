@@ -38,6 +38,7 @@ import org.junit.Test;
 import io.qt.autotests.generated.General;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QThread;
 import io.qt.gui.QTextCursor;
 import io.qt.gui.QTextDocument;
@@ -47,8 +48,8 @@ public class TestOwnedDestruction extends ApplicationInitializer {
     public void testOwnedValueObjectThreadedDisposeWithoutCrash() throws InterruptedException {
     	long tstart = System.currentTimeMillis();
     	int numberOfTests = 20;
-    	int numberOfThreads = 20;
-    	int numberOfCursors = 1000;
+    	int numberOfThreads = QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android) ? 8 : 20;
+    	int numberOfCursors = QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android) ? 100 : 1000;
     	for (int k = 0; k < numberOfTests; k++) {
     		if(System.currentTimeMillis()-tstart>120000)
     			break;

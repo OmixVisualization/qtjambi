@@ -1390,16 +1390,8 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QShaderData"
-
         EnumType{
             name: "TransformType"
-        }
-        ModifyFunction{
-            signature: "event(QEvent*)"
-            ModifyArgument{
-                index: 1
-                invalidateAfterUse: true
-            }
         }
     }
     
@@ -2086,6 +2078,15 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DRender::QPickingSettings"
+        EnumType{
+            name: "PickMethod"
+        }
+        EnumType{
+            name: "PickResultMode"
+        }
+        EnumType{
+            name: "FaceOrientationPickingMode"
+        }
         since: [5, 7]
     }
     

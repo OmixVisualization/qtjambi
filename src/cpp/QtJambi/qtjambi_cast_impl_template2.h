@@ -84,16 +84,15 @@ struct qtjambi_jnitype_template2_cast<false, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        std::unique_ptr<NativeType> list;
-        if(in){
-            list.reset(new NativeType());
-            jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
-            while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
-                jobject element = QtJambiAPI::nextOfJavaIterator(env, iterator);
-                list->push_back(qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, element, nullptr, scope));
-            }
+        if(!in)
+            return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, nullptr);
+        NativeType list;
+        jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
+        while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
+            jobject element = QtJambiAPI::nextOfJavaIterator(env, iterator);
+            list.push_back(qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, element, nullptr, scope));
         }
-        return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, list);
+        return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, std::move(list));
     }
 };
 
@@ -134,16 +133,15 @@ struct qtjambi_jnitype_template2_cast<false, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        std::unique_ptr<NativeType> list;
-        if(in){
-            list.reset(new NativeType());
-            jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
-            while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
-                jobject element = QtJambiAPI::nextOfJavaIterator(env, iterator);
-                list->push_back(qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, element, nullptr, scope));
-            }
+        if(!in)
+            return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, nullptr);
+        NativeType list;
+        jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
+        while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
+            jobject element = QtJambiAPI::nextOfJavaIterator(env, iterator);
+            list.push_back(qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, element, nullptr, scope));
         }
-        return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, list);
+        return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, std::move(list));
     }
 };
 #endif
@@ -185,16 +183,15 @@ struct qtjambi_jnitype_template2_cast<false, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        std::unique_ptr<NativeType> list;
-        if(in){
-            list.reset(new NativeType());
-            jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
-            while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
-                jobject element = QtJambiAPI::nextOfJavaIterator(env, iterator);
-                list->push_back(qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, element, nullptr, scope));
-            }
+        if(!in)
+            return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, nullptr);
+        NativeType list;
+        jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
+        while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
+            jobject element = QtJambiAPI::nextOfJavaIterator(env, iterator);
+            list.push_back(qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, element, nullptr, scope));
         }
-        return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, list);
+        return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, std::move(list));
     }
 };
 #endif
@@ -238,13 +235,15 @@ struct qtjambi_jnitype_template2_cast<false, has_scope,
     Q_STATIC_ASSERT_X(!is_reference, "Cannot cast jobject to std::pair<K,T> &");
 
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        std::unique_ptr<std::pair<K,T>> pair;
-        if(in){
-            jobject first = QtJambiAPI::getQPairFirst(env, in);
-            jobject second = QtJambiAPI::getQPairSecond(env, in);
-            pair.reset(new std::pair<K,T>(qtjambi_scoped_cast<has_scope,K,jobject>::cast(env, first, nullptr, scope), qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, second, nullptr, scope)));
-        }
-        return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, pair);
+        if(!in)
+            return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, nullptr);
+        jobject first = QtJambiAPI::getQPairFirst(env, in);
+        jobject second = QtJambiAPI::getQPairSecond(env, in);
+        return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(
+            env,
+            scope,
+            std::pair<K,T>{qtjambi_scoped_cast<has_scope,K,jobject>::cast(env, first, nullptr, scope), qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, second, nullptr, scope)}
+        );
     }
 };
 
@@ -288,13 +287,15 @@ struct qtjambi_jnitype_template2_cast<false, has_scope,
     Q_STATIC_ASSERT_X(!is_reference, "Cannot cast jobject to QPair<K,T> &");
 
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        std::unique_ptr<QPair<K,T>> pair;
-        if(in){
-            jobject first = QtJambiAPI::getQPairFirst(env, in);
-            jobject second = QtJambiAPI::getQPairSecond(env, in);
-            pair.reset(new QPair<K,T>(qtjambi_scoped_cast<has_scope,K,jobject>::cast(env, first, nullptr, scope), qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, second, nullptr, scope)));
-        }
-        return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, pair);
+        if(!in)
+            return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, nullptr);
+        jobject first = QtJambiAPI::getQPairFirst(env, in);
+        jobject second = QtJambiAPI::getQPairSecond(env, in);
+        return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(
+            env,
+            scope,
+            QPair<K,T>{qtjambi_scoped_cast<has_scope,K,jobject>::cast(env, first, nullptr, scope), qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, second, nullptr, scope)}
+        );
     }
 };
 #endif
@@ -313,9 +314,9 @@ struct qtjambi_jnitype_template2_cast<true, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope* scope){
         NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
-        jobject o = qtjambi_scoped_cast<has_scope,jobject,K*>::cast(env, _in.data(), nullptr, scope);
-        if(scope)
-            scope->addObjectInvalidation(env, o, false, false);
+        K* qo = _in.take();
+        jobject o = qtjambi_scoped_cast<has_scope,jobject,K*>::cast(env, qo, nullptr, scope);
+        qtjambi_ownership_decider<K>::setJavaOwnership(env, o, qo);
         return o;
    }
 };
@@ -332,16 +333,38 @@ struct qtjambi_jnitype_template2_cast<false, has_scope,
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast jobject to QScopedPointer<K,T> &");
+    Q_STATIC_ASSERT_X(has_scope, "Cannot cast jobject to QScopedPointer<K,T>* without scope");
 
     static NativeType_out cast(JNIEnv * env, jobject in, const char*, QtJambiScope* scope){
-        std::unique_ptr<QScopedPointer<K,T>> scp;
+        if(!scope)
+            JavaException::raiseError(env, QStringLiteral("Cannot cast to %1%2 without scope.").arg(QLatin1String(QtJambiAPI::typeName(typeid(NativeType))), is_reference ? "&" : "*") QTJAMBI_STACKTRACEINFO );
+        NativeType* scp = new NativeType(qtjambi_scoped_cast<has_scope,K*,jobject>::cast(env, in, nullptr, scope));
+        scope->addDeletion(scp);
+        qtjambi_ownership_decider<K>::setCppOwnershipAndInvalidate(env, in, scp->get(), scope);
+        return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, scp);
+    }
+};
+
+template<bool has_scope,
+         bool is_const,
+         typename K, typename T>
+struct qtjambi_jnitype_template2_cast<false, has_scope,
+                                      jobject,
+                                      QScopedPointer, false, is_const, false,
+                                      K, T>{
+    typedef QScopedPointer<K,T> NativeType;
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
+    typedef NativeType_c NativeType_cr;
+    typedef NativeType_c NativeType_in;
+    typedef NativeType_cr NativeType_out;
+
+    static NativeType_out cast(JNIEnv * env, jobject in, const char*, QtJambiScope* scope){
+        K* pointer{nullptr};
         if(in){
-            scp.reset(new QScopedPointer<K,T>(qtjambi_scoped_cast<has_scope,K,jobject>::cast(env, in, nullptr, scope)));
-            if(scope)
-                scope->addObjectInvalidation(env, in, false, false);
+            pointer = qtjambi_scoped_cast<has_scope,K*,jobject>::cast(env, in, nullptr, scope);
+            qtjambi_ownership_decider<K>::setCppOwnershipAndInvalidate(env, in, pointer, scope);
         }
-        return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, scp);
+        return QScopedPointer<K,T>(pointer);
     }
 };
 
@@ -383,545 +406,114 @@ struct qtjambi_jnitype_template2_cast<false, has_scope,
 };
 #endif //QURL_H
 
-template<bool has_scope,
-         bool is_pointer, bool is_const, bool is_reference,
-         typename K, typename T>
-struct qtjambi_jnitype_template2_cast<true, has_scope,
-                                        jobject,
-                                        QMap, is_pointer, is_const, is_reference,
-                                        K, T>{
-    typedef typename std::conditional<is_const, const QMap<K,T>,QMap<K,T>>::type Container;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
-    static jobject cast(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){
-          return  QtJambiAPI::convertQMapToJavaObject(env,
-                                           scope ? scope->relatedNativeID() : InvalidNativeID,
-                                           ref_ptr<is_pointer, Container>::ref(in),
-                                           CloneAssociativeContainer<QMap,K,T, is_pointer>::function,
-                                           DeleteAssociativeContainer<QMap,K,T>::function,
-                                           QMapAccess<K,T,is_pointer && is_const>::newInstance()
-                              );
-     }
+#define QTJAMBI_CONTAINER2_CASTER(TYPE)\
+template<bool has_scope,\
+         bool is_pointer, bool is_const, bool is_reference,\
+         typename K, typename T>\
+struct qtjambi_jnitype_template2_cast<true, has_scope,\
+                                        jobject,\
+                                        TYPE, is_pointer, is_const, is_reference,\
+                                        K, T>{\
+    typedef typename std::conditional<is_const, const TYPE<K,T>,TYPE<K,T>>::type Container;\
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;\
+    static jobject cast(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){\
+        return  QtJambiAPI::convert##TYPE##ToJavaObject(env,\
+                                           scope ? scope->relatedNativeID() : InvalidNativeID,\
+                                           ref_ptr<is_pointer, Container>::ref(in),\
+                                           CloneAssociativeContainer<TYPE,K,T, is_pointer>::function,\
+                                           DeleteAssociativeContainer<TYPE,K,T>::function,\
+                                           TYPE##Access<K,T,is_pointer && is_const>::newInstance()\
+                              );\
+     }\
+};\
+\
+template<bool has_scope,\
+         bool is_pointer, bool is_const, bool is_reference,\
+         typename K, typename T>\
+struct qtjambi_jnitype_template2_cast<false, has_scope,\
+                                        jobject,\
+                                        TYPE, is_pointer, is_const, is_reference,\
+                                        K, T>{\
+    typedef TYPE<K,T> NativeType;\
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;\
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;\
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;\
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;\
+    STATICASSERT\
+\
+    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){\
+        NativeType* pointer{nullptr};\
+        if(in){\
+            if (!ContainerAPI::getAs##TYPE<K,T>(env, in, pointer)) {\
+                if(!scope)\
+                    JavaException::raiseError(env, QStringLiteral("Cannot cast to %1%2 without scope.").arg(QLatin1String(QtJambiAPI::typeName(typeid(NativeType))), is_reference ? "&" : "*") QTJAMBI_STACKTRACEINFO );\
+                if(is_const){\
+                    pointer = new NativeType();\
+                    scope->addDeletion(pointer);\
+                }else{\
+                    auto ipointer = new IntermediateAssociativeContainer<TYPE,K,T>(env, in, *scope);\
+                    pointer = ipointer;\
+                    scope->addDeletion(ipointer);\
+                }\
+                jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);\
+                while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {\
+                    jobject entry = QtJambiAPI::nextOfJavaIterator(env, iterator);\
+                    jobject key = QtJambiAPI::keyOfJavaMapEntry(env, entry);\
+                    jobject val = QtJambiAPI::valueOfJavaMapEntry(env, entry);\
+                    pointer->insert(qtjambi_scoped_cast<has_scope,K,jobject>::cast(env, key, nullptr, scope), qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, val, nullptr, scope));\
+                }\
+            }\
+        }\
+        return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, false, NativeType>::convert(env, scope, pointer);\
+    }\
+};\
+\
+template<bool has_scope,\
+         bool is_const,\
+         typename K, typename T>\
+struct qtjambi_jnitype_template2_cast<false, has_scope,\
+                                        jobject,\
+                                        TYPE, false, is_const, false,\
+                                        K, T>\
+{\
+    static constexpr bool is_pointer = false;\
+    static constexpr bool is_reference = false;\
+    typedef TYPE<K,T> NativeType;\
+    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;\
+    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;\
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;\
+    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;\
+    STATICASSERT\
+\
+    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){\
+        if(!in)\
+            return {};\
+        NativeType* pointer{nullptr};\
+        if (ContainerAPI::getAs##TYPE<K,T>(env, in, pointer)) {\
+            return *pointer;\
+        } else {\
+            NativeType map;\
+            jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);\
+            while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {\
+                jobject entry = QtJambiAPI::nextOfJavaIterator(env, iterator);\
+                jobject key = QtJambiAPI::keyOfJavaMapEntry(env, entry);\
+                jobject val = QtJambiAPI::valueOfJavaMapEntry(env, entry);\
+                map.insert(qtjambi_scoped_cast<has_scope,K,jobject>::cast(env, key, nullptr, scope), qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, val, nullptr, scope));\
+            }\
+            return map;\
+        }\
+    }\
 };
 
-template<bool has_scope,
-         bool is_pointer, bool is_const, bool is_reference,
-         typename K, typename T>
-struct qtjambi_jnitype_template2_cast<false, has_scope,
-                                        jobject,
-                                        QMap, is_pointer, is_const, is_reference,
-                                        K, T>{
-    typedef QMap<K,T> NativeType;
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    Q_STATIC_ASSERT_X(supports_less_than<K>::value, "Key type of map does not support operator <.");
-
-    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-          std::unique_ptr<NativeType> map;
-          if(in){
-              NativeType* pointer{nullptr};
-              if (ContainerAPI::getAsQMap<K,T>(env, in, pointer)) {
-                  return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
-              } else {
-                  map.reset(new NativeType());
-                  jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);
-                  while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
-                      jobject entry = QtJambiAPI::nextOfJavaIterator(env, iterator);
-                      jobject key = QtJambiAPI::keyOfJavaMapEntry(env, entry);
-                      jobject val = QtJambiAPI::valueOfJavaMapEntry(env, entry);
-                      map->insert(qtjambi_scoped_cast<has_scope,K,jobject>::cast(env, key, nullptr, scope), qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, val, nullptr, scope));
-                  }
-              }
-          }
-          return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, map);
-    }
-};
-
-template<bool has_scope,
-         bool is_const,
-         typename K, typename T>
-struct qtjambi_jnitype_template2_cast<false, has_scope,
-                                        jobject,
-                                        QMap, true, is_const, false,
-                                        K, T>
-{
-    static constexpr bool is_pointer = true;
-    static constexpr bool is_reference = false;
-    typedef QMap<K,T> NativeType;
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    Q_STATIC_ASSERT_X(supports_less_than<K>::value, "Key type of map does not support operator <.");
-
-    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-          std::unique_ptr<NativeType> map;
-          if(in){
-              NativeType* pointer{nullptr};
-              if (ContainerAPI::getAsQMap<K,T>(env, in, pointer)) {
-                  return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
-              } else {
-                  map.reset(new NativeType());
-                  jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);
-                  while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
-                      jobject entry = QtJambiAPI::nextOfJavaIterator(env, iterator);
-                      jobject key = QtJambiAPI::keyOfJavaMapEntry(env, entry);
-                      jobject val = QtJambiAPI::valueOfJavaMapEntry(env, entry);
-                      map->insert(qtjambi_scoped_cast<has_scope,K,jobject>::cast(env, key, nullptr, scope), qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, val, nullptr, scope));
-                  }
-              }
-          }
-          return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, map);
-     }
-};
-
-template<bool is_const,
-         typename K, typename T>
-struct qtjambi_jnitype_template2_cast<false, true,
-                                        jobject,
-                                        QMap, false, is_const, true,
-                                        K, T>
-{
-    typedef QMap<K,T> NativeType;
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<true, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    Q_STATIC_ASSERT_X(supports_less_than<K>::value, "Key type of map does not support operator <.");
-
-    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-         if(scope==nullptr)
-             JavaException::raiseError(env, "Cannot cast to QMap<K,T>& without scope." QTJAMBI_STACKTRACEINFO );
-         NativeType *map = nullptr;
-         if (in) {
-             if (!ContainerAPI::getAsQMap<K,T>(env, in, map)) {
-                 if(is_const){
-                     map = new NativeType();
-                     scope->addDeletion(map);
-                 }else{
-                     map = new IntermediateAssociativeContainer<QMap,K,T>(env, in, *scope);
-                     scope->addDeletion(static_cast<IntermediateAssociativeContainer<QMap,K,T>*>(map));
-                 }
-                 jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);
-                 while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
-                     jobject entry = QtJambiAPI::nextOfJavaIterator(env, iterator);
-                     jobject key = QtJambiAPI::keyOfJavaMapEntry(env, entry);
-                     jobject val = QtJambiAPI::valueOfJavaMapEntry(env, entry);
-                     map->insert(qtjambi_scoped_cast<true,K,jobject>::cast(env, key, nullptr, scope), qtjambi_scoped_cast<true,T,jobject>::cast(env, val, nullptr, scope));
-                 }
-             }
-         }else{
-             map = new NativeType();
-             scope->addDeletion(map);
-         }
-         return *map;
-    }
-};
-
-template<bool has_scope,
-         bool is_pointer, bool is_const, bool is_reference,
-         typename K, typename T>
-struct qtjambi_jnitype_template2_cast<true, has_scope,
-                                        jobject,
-                                        QMultiMap, is_pointer, is_const, is_reference,
-                                        K, T>{
-    typedef typename std::conditional<is_const, const QMultiMap<K,T>,QMultiMap<K,T>>::type Container;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
-    static jobject cast(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){
-          return  QtJambiAPI::convertQMultiMapToJavaObject(env,
-                                           scope ? scope->relatedNativeID() : InvalidNativeID,
-                                           ref_ptr<is_pointer, Container>::ref(in),
-                                           CloneAssociativeContainer<QMultiMap,K,T,is_pointer>::function,
-                                           DeleteAssociativeContainer<QMultiMap,K,T>::function,
-                                           QMultiMapAccess<K,T, is_pointer && is_const>::newInstance()
-                              );
-     }
-};
-
-template<bool has_scope,
-         bool is_pointer, bool is_const, bool is_reference,
-         typename K, typename T>
-struct qtjambi_jnitype_template2_cast<false, has_scope,
-                                        jobject,
-                                        QMultiMap, is_pointer, is_const, is_reference,
-                                        K, T>{
-    typedef QMultiMap<K,T> NativeType;
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    Q_STATIC_ASSERT_X(supports_less_than<K>::value, "Key type of map does not support operator <.");
-
-    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        std::unique_ptr<NativeType> map;
-        if(in){
-            NativeType* pointer{nullptr};
-            if (ContainerAPI::getAsQMultiMap<K,T>(env, in, pointer)) {
-                return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
-            } else {
-                map.reset(new NativeType());
-                jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);
-                while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
-                    jobject entry = QtJambiAPI::nextOfJavaIterator(env, iterator);
-                    jobject key = QtJambiAPI::keyOfJavaMapEntry(env, entry);
-                    jobject val = QtJambiAPI::valueOfJavaMapEntry(env, entry);
-                    map->insert(qtjambi_scoped_cast<has_scope,K,jobject>::cast(env, key, nullptr, scope), qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, val, nullptr, scope));
-                }
-            }
-        }
-        return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, map);
-    }
-};
-
-template<bool has_scope,
-         bool is_const,
-         typename K, typename T>
-struct qtjambi_jnitype_template2_cast<false, has_scope,
-                                        jobject,
-                                        QMultiMap, true, is_const, false,
-                                        K, T>
-{
-    static constexpr bool is_pointer = true;
-    static constexpr bool is_reference = false;
-    typedef QMultiMap<K,T> NativeType;
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    Q_STATIC_ASSERT_X(supports_less_than<K>::value, "Key type of map does not support operator <.");
-
-    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        std::unique_ptr<NativeType> map;
-        if(in){
-            NativeType* pointer{nullptr};
-            if (ContainerAPI::getAsQMultiMap<K,T>(env, in, pointer)) {
-                return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
-            } else {
-                map.reset(new NativeType());
-                jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);
-                while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
-                    jobject entry = QtJambiAPI::nextOfJavaIterator(env, iterator);
-                    jobject key = QtJambiAPI::keyOfJavaMapEntry(env, entry);
-                    jobject val = QtJambiAPI::valueOfJavaMapEntry(env, entry);
-                    map->insert(qtjambi_scoped_cast<has_scope,K,jobject>::cast(env, key, nullptr, scope), qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, val, nullptr, scope));
-                }
-            }
-        }
-        return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, map);
-    }
-};
-
-template<bool is_const,
-         typename K, typename T>
-struct qtjambi_jnitype_template2_cast<false, true,
-                                        jobject,
-                                        QMultiMap, false, is_const, true,
-                                        K, T>
-{
-    typedef QMultiMap<K,T> NativeType;
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<true, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    Q_STATIC_ASSERT_X(supports_less_than<K>::value, "Key type of map does not support operator <.");
-
-    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast to QMultiMap<K,T>& without scope." QTJAMBI_STACKTRACEINFO );
-        NativeType *map = nullptr;
-        if (in) {
-            if (!ContainerAPI::getAsQMultiMap<K,T>(env, in, map)) {
-                if(is_const){
-                    map = new NativeType();
-                    scope->addDeletion(map);
-                }else{
-                    map = new IntermediateAssociativeContainer<QMultiMap,K,T>(env, in, *scope);
-                    scope->addDeletion(static_cast<IntermediateAssociativeContainer<QMultiMap,K,T>*>(map));
-                }
-                scope->addDeletion(map);
-                jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);
-                while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
-                    jobject entry = QtJambiAPI::nextOfJavaIterator(env, iterator);
-                    jobject key = QtJambiAPI::keyOfJavaMapEntry(env, entry);
-                    jobject val = QtJambiAPI::valueOfJavaMapEntry(env, entry);
-                    map->insert(qtjambi_scoped_cast<true,K,jobject>::cast(env, key, nullptr, scope), qtjambi_scoped_cast<true,T,jobject>::cast(env, val, nullptr, scope));
-                }
-            }
-        }else{
-            map = new NativeType();
-            scope->addDeletion(map);
-        }
-        return *map;
-    }
-};
-
-template<bool has_scope,
-         bool is_pointer, bool is_const, bool is_reference,
-         typename K, typename T>
-struct qtjambi_jnitype_template2_cast<true, has_scope,
-                                        jobject,
-                                        QHash, is_pointer, is_const, is_reference,
-                                        K, T>{
-    typedef typename std::conditional<is_const, const QHash<K,T>,QHash<K,T>>::type Container;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
-    static jobject cast(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){
-          return  QtJambiAPI::convertQHashToJavaObject(env,
-                                           scope ? scope->relatedNativeID() : InvalidNativeID,
-                                           ref_ptr<is_pointer, Container>::ref(in),
-                                           CloneAssociativeContainer<QHash,K,T, is_pointer>::function,
-                                           DeleteAssociativeContainer<QHash,K,T>::function,
-                                           QHashAccess<K,T,is_pointer && is_const>::newInstance()
-                              );
-     }
-};
-
-template<bool has_scope,
-         bool is_pointer, bool is_const, bool is_reference,
-         typename K, typename T>
-struct qtjambi_jnitype_template2_cast<false, has_scope,
-                                        jobject,
-                                        QHash, is_pointer, is_const, is_reference,
-                                        K, T>{
-    typedef QHash<K,T> NativeType;
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-          std::unique_ptr<NativeType> map;
-          if(in){
-              NativeType* pointer{nullptr};
-              if (ContainerAPI::getAsQHash<K,T>(env, in, pointer)) {
-                  return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
-              } else {
-                  map.reset(new NativeType());
-                  jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);
-                  while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
-                      jobject entry = QtJambiAPI::nextOfJavaIterator(env, iterator);
-                      jobject key = QtJambiAPI::keyOfJavaMapEntry(env, entry);
-                      jobject val = QtJambiAPI::valueOfJavaMapEntry(env, entry);
-                      map->insert(qtjambi_scoped_cast<has_scope,K,jobject>::cast(env, key, nullptr, scope), qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, val, nullptr, scope));
-                  }
-              }
-          }
-          return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, map);
-    }
-};
-
-template<bool has_scope,
-         bool is_const,
-         typename K, typename T>
-struct qtjambi_jnitype_template2_cast<false, has_scope,
-                                        jobject,
-                                        QHash, true, is_const, false,
-                                        K, T>
-{
-    static constexpr bool is_pointer = true;
-    static constexpr bool is_reference = false;
-    typedef QHash<K,T> NativeType;
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-          std::unique_ptr<NativeType> map;
-          if(in){
-              NativeType* pointer{nullptr};
-              if (ContainerAPI::getAsQHash<K,T>(env, in, pointer)) {
-                  return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
-              } else {
-                  map.reset(new NativeType());
-                  jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);
-                  while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
-                      jobject entry = QtJambiAPI::nextOfJavaIterator(env, iterator);
-                      jobject key = QtJambiAPI::keyOfJavaMapEntry(env, entry);
-                      jobject val = QtJambiAPI::valueOfJavaMapEntry(env, entry);
-                      map->insert(qtjambi_scoped_cast<has_scope,K,jobject>::cast(env, key, nullptr, scope), qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, val, nullptr, scope));
-                  }
-              }
-          }
-          return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, map);
-      }
-};
-
-template<bool is_const,
-         typename K, typename T>
-struct qtjambi_jnitype_template2_cast<false, true,
-                                        jobject,
-                                        QHash, false, is_const, true,
-                                        K, T>
-{
-    typedef QHash<K,T> NativeType;
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<true, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-         if(scope==nullptr)
-             JavaException::raiseError(env, "Cannot cast to QHash<K,T>& without scope." QTJAMBI_STACKTRACEINFO );
-         NativeType *map = nullptr;
-         if (in) {
-            if (!ContainerAPI::getAsQHash<K,T>(env, in, map)) {
-                if(is_const){
-                    map = new NativeType();
-                    scope->addDeletion(map);
-                }else{
-                    map = new IntermediateAssociativeContainer<QHash,K,T>(env, in, *scope);
-                    scope->addDeletion(static_cast<IntermediateAssociativeContainer<QHash,K,T>*>(map));
-                }
-                jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);
-                while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
-                    jobject entry = QtJambiAPI::nextOfJavaIterator(env, iterator);
-                    jobject key = QtJambiAPI::keyOfJavaMapEntry(env, entry);
-                    jobject val = QtJambiAPI::valueOfJavaMapEntry(env, entry);
-                    map->insert(qtjambi_scoped_cast<true,K,jobject>::cast(env, key, nullptr, scope), qtjambi_scoped_cast<true,T,jobject>::cast(env, val, nullptr, scope));
-                }
-            }
-         }else{
-            map = new NativeType();
-            scope->addDeletion(map);
-         }
-         return *map;
-     }
-};
-
-template<bool has_scope,
-         bool is_pointer, bool is_const, bool is_reference,
-         typename K, typename T>
-struct qtjambi_jnitype_template2_cast<true, has_scope,
-                                        jobject,
-                                        QMultiHash, is_pointer, is_const, is_reference,
-                                        K, T>{
-    typedef typename std::conditional<is_const, const QMultiHash<K,T>,QMultiHash<K,T>>::type Container;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<Container>::type, typename std::add_lvalue_reference<Container>::type>::type Container_in;
-    static jobject cast(JNIEnv *env, Container_in in, const char*, QtJambiScope* scope){
-          return  QtJambiAPI::convertQMultiHashToJavaObject(env,
-                                           scope ? scope->relatedNativeID() : InvalidNativeID,
-                                           ref_ptr<is_pointer, Container>::ref(in),
-                                           CloneAssociativeContainer<QMultiHash,K,T, is_pointer>::function,
-                                           DeleteAssociativeContainer<QMultiHash,K,T>::function,
-                                           QMultiHashAccess<K,T,is_pointer && is_const>::newInstance()
-                              );
-     }
-};
-
-template<bool has_scope,
-         bool is_pointer, bool is_const, bool is_reference,
-         typename K, typename T>
-struct qtjambi_jnitype_template2_cast<false, has_scope,
-                                        jobject,
-                                        QMultiHash, is_pointer, is_const, is_reference,
-                                        K, T>{
-    typedef QMultiHash<K,T> NativeType;
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        std::unique_ptr<NativeType> map;
-        if(in){
-            NativeType* pointer{nullptr};
-            if (ContainerAPI::getAsQMultiHash<K,T>(env, in, pointer)) {
-                return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
-            } else {
-                map.reset(new NativeType());
-                jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);
-                while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
-                    jobject entry = QtJambiAPI::nextOfJavaIterator(env, iterator);
-                    jobject key = QtJambiAPI::keyOfJavaMapEntry(env, entry);
-                    jobject val = QtJambiAPI::valueOfJavaMapEntry(env, entry);
-                    map->insert(qtjambi_scoped_cast<has_scope,K,jobject>::cast(env, key, nullptr, scope), qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, val, nullptr, scope));
-                }
-            }
-        }
-        return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, map);
-    }
-};
-
-template<bool has_scope,
-         bool is_const,
-         typename K, typename T>
-struct qtjambi_jnitype_template2_cast<false, has_scope,
-                                        jobject,
-                                        QMultiHash, true, is_const, false,
-                                        K, T>
-{
-    static constexpr bool is_pointer = true;
-    static constexpr bool is_reference = false;
-    typedef QMultiHash<K,T> NativeType;
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    /*static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope* scope){
-        NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
-        jobject list = QtJambiAPI::newJavaHashMap(env, _in.size());
-        qtjambi_bicollection_fill<has_scope, NativeType, is_const, K, T, QtJambiAPI::putJavaMultiMap>::fill(env, _in, list, scope);
-        return list;
-    }*/
-
-    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        std::unique_ptr<NativeType> map;
-        if(in){
-            NativeType* pointer{nullptr};
-            if (ContainerAPI::getAsQMultiHash<K,T>(env, in, pointer)) {
-                return create_container_pointer<is_pointer, is_const, is_reference, false, NativeType>::create(env, scope, pointer);
-            } else {
-                map.reset(new NativeType());
-                jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);
-                while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
-                    jobject entry = QtJambiAPI::nextOfJavaIterator(env, iterator);
-                    jobject key = QtJambiAPI::keyOfJavaMapEntry(env, entry);
-                    jobject val = QtJambiAPI::valueOfJavaMapEntry(env, entry);
-                    map->insert(qtjambi_scoped_cast<has_scope,K,jobject>::cast(env, key, nullptr, scope), qtjambi_scoped_cast<has_scope,T,jobject>::cast(env, val, nullptr, scope));
-                }
-            }
-        }
-        return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, map);
-    }
-};
-
-template<bool is_const,
-         typename K, typename T>
-struct qtjambi_jnitype_template2_cast<false, true,
-                                        jobject,
-                                        QMultiHash, false, is_const, true,
-                                        K, T>
-{
-    typedef QMultiHash<K,T> NativeType;
-    typedef typename std::conditional<is_const, typename std::add_const<NativeType>::type, NativeType>::type NativeType_c;
-    typedef typename std::conditional<true, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
-    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
-    typedef typename std::conditional<false, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        if(scope==nullptr)
-            JavaException::raiseError(env, "Cannot cast to QMultiHash<K,T>& without scope." QTJAMBI_STACKTRACEINFO );
-        NativeType *map = nullptr;
-        if (in) {
-           if (!ContainerAPI::getAsQMultiHash<K,T>(env, in, map)) {
-               if(is_const){
-                   map = new NativeType();
-                   scope->addDeletion(map);
-               }else{
-                   map = new IntermediateAssociativeContainer<QMultiHash,K,T>(env, in, *scope);
-                   scope->addDeletion(static_cast<IntermediateAssociativeContainer<QMultiHash,K,T>*>(map));
-               }
-               jobject iterator = QtJambiAPI::entrySetIteratorOfJavaMap(env, in);
-               while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
-                   jobject entry = QtJambiAPI::nextOfJavaIterator(env, iterator);
-                   jobject key = QtJambiAPI::keyOfJavaMapEntry(env, entry);
-                   jobject val = QtJambiAPI::valueOfJavaMapEntry(env, entry);
-                   map->insert(qtjambi_scoped_cast<true,K,jobject>::cast(env, key, nullptr, scope), qtjambi_scoped_cast<true,T,jobject>::cast(env, val, nullptr, scope));
-               }
-           }
-        }else{
-           map = new NativeType();
-           scope->addDeletion(map);
-        }
-        return *map;
-    }
-};
+#define STATICASSERT Q_STATIC_ASSERT_X(supports_less_than<K>::value, "Key type of map does not support operator <.");
+QTJAMBI_CONTAINER2_CASTER(QMap)
+QTJAMBI_CONTAINER2_CASTER(QMultiMap)
+#undef STATICASSERT
+#define STATICASSERT
+QTJAMBI_CONTAINER2_CASTER(QHash)
+QTJAMBI_CONTAINER2_CASTER(QMultiHash)
+#undef QTJAMBI_CONTAINER2_CASTER
+#undef STATICASSERT
 
 #if defined(_MEMORY_) || defined(_LIBCPP_MEMORY) || defined(_GLIBCXX_MEMORY)
 template<bool has_scope,
@@ -938,9 +530,9 @@ struct qtjambi_jnitype_template2_cast<true, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static jobject cast(JNIEnv *env, NativeType_in in, const char*, QtJambiScope* scope){
         NativeType_c& _in = deref_ptr<is_pointer, NativeType_c>::deref(in);
-        jobject o = qtjambi_scoped_cast<has_scope,jobject,K*>::cast(env, _in.get(), nullptr, scope);
-        if(scope)
-            scope->addObjectInvalidation(env, o, false, false);
+        K* qo = _in.release();
+        jobject o = qtjambi_scoped_cast<has_scope,jobject,K*>::cast(env, qo, nullptr, scope);
+        qtjambi_ownership_decider<K>::setJavaOwnership(env, o, qo);
         return o;
    }
 };
@@ -957,19 +549,15 @@ struct qtjambi_jnitype_template2_cast<false, has_scope,
     typedef typename std::conditional<is_reference, typename std::add_lvalue_reference<NativeType_c>::type, NativeType_c>::type NativeType_cr;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
-    Q_STATIC_ASSERT_X(!is_reference, "Cannot cast jobject to std::unique_ptr<K,T> &");
+    Q_STATIC_ASSERT_X(!(is_reference || is_pointer) || has_scope, "Cannot cast jobject to std::unique_ptr<K,T> pointer or reference");
 
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        if(in){
-            QScopedPointer<std::unique_ptr<K,T>> scp(new std::unique_ptr<K,T>(qtjambi_scoped_cast<has_scope,K,jobject>::cast(env, in, nullptr, scope)));
-            if(scope)
-                scope->addObjectInvalidation(env, in, false, false);
-            return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(
-                        env, scope, scp);
-        }else{
-            return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(
-                        env, scope, nullptr);
-        }
+        if(!in)
+            return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, nullptr);
+        NativeType pointer;
+        pointer.reset(qtjambi_scoped_cast<has_scope,K*,jobject>::cast(env, in, nullptr, scope));
+        qtjambi_ownership_decider<K>::setCppOwnershipAndInvalidate(env, in, pointer.get(), scope);
+        return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, std::move(pointer));
     }
 };
 #endif // defined(_MEMORY_)

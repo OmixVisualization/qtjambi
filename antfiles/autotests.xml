@@ -77,15 +77,42 @@
 				</and>
 			</or>
         </condition>
+        <condition property="less.qt68" value="true">
+			<or>
+				<less arg1="6" arg2="${qtjambi.soname.version.major}"/>
+				<and>
+					<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+					<less arg1="7" arg2="${qtjambi.soname.version.minor}"/>
+				</and>
+			</or>
+        </condition>
+        <condition property="less.qt69" value="true">
+			<or>
+				<less arg1="6" arg2="${qtjambi.soname.version.major}"/>
+				<and>
+					<equals arg1="${qtjambi.soname.version.major}" arg2="6"/>
+					<less arg1="8" arg2="${qtjambi.soname.version.minor}"/>
+				</and>
+			</or>
+        </condition>
+        <condition property="less.jdk17" value="true">
+			<less arg1="${target.java.version}" arg2="17"/>
+        </condition>
+        <condition property="less.jdk21" value="true">
+			<less arg1="${target.java.version}" arg2="21"/>
+        </condition>
 		<property name="qtjambi.isqt${qtjambi.soname.version.major}" value="true"/>
         <fileset id="qtjambi.autotest.classes" dir="${java.srcdir}/autotests">
             <include name="io/qt/**/Test${test.includes}.java"/>
+            <exclude name="io/qt/**/TestJDK*.java"/>
             <exclude name="io/qt/**/Test*Qt5.java" unless="${qtjambi.isqt5}"/>
             <exclude name="io/qt/**/Test*Qt6.java" unless="${qtjambi.isqt6}"/>
             <exclude name="io/qt/**/Test*Qt63.java" unless="${less.qt63}"/>
             <exclude name="io/qt/**/Test*Qt65.java" unless="${less.qt65}"/>
             <exclude name="io/qt/**/Test*Qt66.java" unless="${less.qt66}"/>
             <exclude name="io/qt/**/Test*Qt67.java" unless="${less.qt67}"/>
+            <exclude name="io/qt/**/Test*Qt68.java" unless="${less.qt68}"/>
+            <exclude name="io/qt/**/Test*Qt69.java" unless="${less.qt69}"/>
             <exclude name="io/qt/**/Test*Qml.java" unless="${qtjambi.qml.any.true}"/>
             <exclude name="io/qt/**/Test*ActiveX.java" unless="${qtjambi.activex.any.true}"/>
             <exclude name="io/qt/**/Test*OpenGL.java" unless="${qtjambi.opengl.any.true}"/>
@@ -94,6 +121,7 @@
             <exclude name="io/qt/**/Test*Bluetooth.java" unless="${qtjambi.bluetooth.any.true}"/>
             <exclude name="io/qt/**/Test*Script.java" unless="${qtjambi.script.any.true}"/>
             <exclude name="io/qt/**/Test*ScriptTools.java" unless="${qtjambi.scripttools.any.true}"/>
+            <exclude name="io/qt/**/TestUnknownTypeQt6.java" unless="${qtjambi.webengine.any.true}"/>
             <exclude name="io/qt/**/Test*WebEngine.java" unless="${qtjambi.webengine.any.true}"/>
             <exclude name="io/qt/**/Test*WebView.java" unless="${qtjambi.webview.any.true}"/>
             <exclude name="io/qt/**/Test*Concurrent.java" unless="${qtjambi.concurrent.any.true}"/>
@@ -137,6 +165,7 @@
             <exclude name="io/qt/**/Test*3DCore.java" unless="${qtjambi.3dcore.any.true}"/>
             <exclude name="io/qt/**/Test*Quick3D.java" unless="${qtjambi.quick3d.any.true}"/>
             <exclude name="io/qt/**/Test*VirtualKeyboard.java" unless="${qtjambi.virtualkeyboard.any.true}"/>
+            <exclude name="io/qt/**/Test*TestQ.java" unless="${qtjambi.test.any.true}"/>
             <exclude name="io/qt/**/Test*Testlib.java" unless="${qtjambi.test.any.true}"/>
             <exclude name="io/qt/**/Test*Qml.java" unless="${qtjambi.qml.any.true}"/>
             <exclude name="io/qt/**/Test*Sensors.java" unless="${qtjambi.sensors.any.true}"/>
@@ -168,6 +197,7 @@
             <exclude name="io/qt/**/TestQml*.java" unless="${qtjambi.qml.any.true}"/>
             <exclude name="io/qt/**/TestOpenGL*.java" unless="${qtjambi.opengl.any.true}"/>
             <exclude name="io/qt/**/TestAuth*.java" unless="${qtjambi.networkauth.any.true}"/>
+            <exclude name="io/qt/**/QtDBus*.java" unless="${qtjambi.dbus.any.true}"/>
             <exclude name="io/qt/**/TestDBus*.java" unless="${qtjambi.dbus.any.true}"/>
             <exclude name="io/qt/**/TestBluetooth*.java" unless="${qtjambi.bluetooth.any.true}"/>
             <exclude name="io/qt/**/TestScript*.java" unless="${qtjambi.script.any.true}"/>
@@ -203,13 +233,15 @@
             <exclude name="io/qt/**/TestQmlVariantQt6.java" unless="${qtjambi.qml.any.true}"/>
             <exclude name="io/qt/**/TestQmlVariantQt6.java" unless="${qtjambi.location.any.true}"/>
             <exclude name="io/qt/**/TestQtjambiCast*.java" unless="${qtjambi.qml.any.true}"/>
+            <exclude name="io/qt/**/TestQTest*.java" unless="${qtjambi.test.any.true}"/>
             <exclude name="io/qt/**/TestTestlib*.java" unless="${qtjambi.test.any.true}"/>
 			<exclude name="io/qt/**/TestHttpServer*.java" unless="${qtjambi.httpserver.any.true}"/>
             <exclude name="io/qt/**/TestQQmlListProperty.java" unless="${qtjambi.quick.any.true}"/>
-            <exclude name="io/qt/**/QtDBus*.java" unless="${qtjambi.dbus.any.true}"/>
-            <exclude name="io/qt/qml*/**" unless="${qtjambi.qml.any.true}"/>
             <exclude name="io/qt/**/TestBluetoothDiscovery.java"/>
             <exclude name="io/qt/**/TestQuickTextureMetalQt6.java"/>
+        </fileset>
+		<fileset id="qtjambi.autotest.jdkextended.classes" dir="${java.srcdir}/autotests">
+            <include name="io/qt/**/TestJDK${test.includes}.java" unless="${less.jdk17}"/>
         </fileset>
     </target>
     <property file="tests.properties"/>
@@ -423,6 +455,8 @@
     <target name="compile.java">
         <ant inheritrefs="true" target="compile.java.impl">
             <property name="module.suffix" value=""/>
+            <property name="test.javaext.outdir" location="${outputDir}/${qtjambi.osname}/tests/javaext"/>
+            <property name="test.javaext.srcoutdir" location="${outputDir}/${qtjambi.osname}/tests/javaext-src"/>
             <property name="test.java.outdir" location="${outputDir}/${qtjambi.osname}/tests/java"/>
             <property name="test.java.srcoutdir" location="${outputDir}/${qtjambi.osname}/tests/java-src"/>
         </ant>
@@ -430,6 +464,8 @@
     <target name="compile.plugins.java">
         <ant inheritrefs="true" target="compile.java.plugins.impl">
             <property name="module.suffix" value=""/>
+            <property name="test.javaext.outdir" location="${outputDir}/${qtjambi.osname}/tests/javaext"/>
+            <property name="test.javaext.srcoutdir" location="${outputDir}/${qtjambi.osname}/tests/javaext-src"/>
             <property name="test.java.outdir" location="${outputDir}/${qtjambi.osname}/tests/java"/>
             <property name="test.java.srcoutdir" location="${outputDir}/${qtjambi.osname}/tests/java-src"/>
         </ant>
@@ -445,12 +481,22 @@
         <copy todir="${test.java.srcoutdir}">
             <fileset dir="src/java/autotests">
                 <include name="io/qt/**/*"/>
+				<exclude name="io/qt/**/QtDBus*.java" unless="${qtjambi.dbus.any.true}"/>
+				<exclude name="io/qt/**/QtRemoteObjects*.java" unless="${qtjambi.remoteobjects.any.true}"/>
+				<exclude name="io/qt/qml*/**" unless="${qtjambi.qml.any.true}"/>
                 <exclude name="io/qt/**/Test*.java"/>
             </fileset>
         </copy>
 		<echo>copying ${outputDir}/tests/java/autotests/*</echo>
         <copy todir="${test.java.srcoutdir}">
             <fileset dir="${outputDir}/tests/java/autotests" includes="*.java,io/qt/**/*.java"/>
+        </copy>
+        <delete dir="${test.javaext.outdir}" failonerror="no"/>
+        <mkdir dir="${test.javaext.outdir}"/>
+        <delete dir="${test.javaext.srcoutdir}" failonerror="false"/>
+        <mkdir dir="${test.javaext.srcoutdir}"/>
+        <copy todir="${test.javaext.srcoutdir}">
+            <fileset refid="qtjambi.autotest.jdkextended.classes"/>
         </copy>
         <javac destdir="${test.java.outdir}" debug="true" srcdir="${test.java.srcoutdir}"
                 includeantruntime="false" excludes="module-info.java"
@@ -467,6 +513,36 @@
 				<pathelement location="${resourcesdir}/hamcrest.jar" />
             </classpath>
         </javac>
+		<if>
+			<not>
+				<or>
+					<istrue value="${less.jdk17}"/>
+					<equals arg1="${qtjambi.osname}" arg2="android"/>
+					<equals arg1="${qtjambi.osname}" arg2="android-x86"/>
+					<equals arg1="${qtjambi.osname}" arg2="android-x64"/>
+					<equals arg1="${qtjambi.osname}" arg2="android-arm"/>
+					<equals arg1="${qtjambi.osname}" arg2="android-arm64"/>
+				</or>
+			</not>
+			<then>
+				<javac destdir="${test.javaext.outdir}" debug="true" srcdir="${test.javaext.srcoutdir}"
+						includeantruntime="false" encoding="UTF-8" source="${target.java.version}">
+					<compilerarg value="-Xlint:deprecation" />
+					<compilerarg value="-Xlint:unchecked" />
+					<compilerarg value="-Xlint:-options" />
+					<compilerarg value="--enable-preview" />
+					<classpath>
+						<fileset dir="${deploymentdir}">
+							<include name="qtjambi*-${qtjambi.jar.version}.jar"/>
+							<exclude name="qtjambi-*native-*.jar"/>
+						</fileset>
+						<pathelement location="${resourcesdir}/junit.jar" />
+						<pathelement location="${resourcesdir}/hamcrest.jar" />
+						<pathelement location="${test.java.outdir}" />
+					</classpath>
+				</javac>
+			</then>
+		</if>
         <antcall inheritrefs="true" target="copy-resources">
             <param name="src" value="${basedir}/src/java/autotests"/>
         </antcall>
@@ -484,6 +560,7 @@
 				<attribute name="QtJambi-Plugin-Name"    value="${module}"/>
 			</manifest>
 			<fileset dir="${test.java.outdir}"/>
+			<fileset dir="${test.javaext.outdir}"/>
 		</jar>
 		<jar destfile="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-${qtjambi.jar.version}-sources.jar" excludes="${jar.excludes}">
 			<manifest>
@@ -492,6 +569,7 @@
 				<attribute name="Bundle-Description"      value="QtJambi Autotests sources"/>
 			</manifest>
 			<fileset dir="${test.java.srcoutdir}" excludes="**/*.class"/>
+			<fileset dir="${test.javaext.srcoutdir}" excludes="**/*.class"/>
 		</jar>
     </target>
     <target name="compile.java.plugins.impl">
@@ -588,6 +666,10 @@
 				<if>
 					<equals arg1="${jdk-exec-version}" arg2="8"/>
 					<then>
+						<path id="qtjambi.autotest.classes.junit">
+							<fileset refid="qtjambi.autotest.classes"/>
+						</path>
+						<property name="qtjambi.autotest.extended" value="qtjambi.autotest.empty"/>
 						<if>
 							<os family="windows"/>
 							<then>
@@ -610,6 +692,10 @@
 						</if>
 					</then>
 					<else>
+						<path id="qtjambi.autotest.classes.junit">
+							<fileset refid="qtjambi.autotest.classes"/>
+							<fileset refid="qtjambi.autotest.jdkextended.classes"/>
+						</path>
 						<if>
 							<equals arg1="${jdk-exec-version}" arg2="arm64"/>
 							<then>
@@ -749,6 +835,9 @@
 						<condition property="Ddeploymentdir" value="-Dio.qt.deploymentdir=${io.qt.deploymentdir}" else="-Dx">
 							<isset property="io.qt.deploymentdir"/>
 						</condition>
+						<condition property="enablepreview" value="-Dx" else="--enable-preview">
+							<equals arg1="${jdk-exec-version}" arg2="8"/>
+						</condition>
 						<trycatch>
 							<try>
 								<mkdir dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}"/>
@@ -791,13 +880,15 @@
 									<jvmarg value="${Dattach}"/>
 									<jvmarg value="${Dkeep-temp-deployment}"/>
 									<jvmarg value="${Ddeploymentdir}"/>
+									<jvmarg value="${enablepreview}"/>
+									<jvmarg value="-Dx-verbose:class"/>
 									<env key="${env.qtjambi.debug.trace}" value="1"/>
 									<env key="QT_MULTIMEDIA_PREFERRED_PLUGINS" value="Test"/>
 									<!--env key="QML_IMPORT_PATH" value="${absQtPath}/../qml"/-->
 						<!--            <jvmarg value="-verbose"/> -->
 									<formatter type="xml" usefile="yes" />
 									<batchtest fork="yes" todir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}">
-										<fileset refid="qtjambi.autotest.classes"/>
+										<path refid="qtjambi.autotest.classes.junit"/>
 									</batchtest>
 								</junit>
 							</try>

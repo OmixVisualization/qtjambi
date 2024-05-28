@@ -325,6 +325,7 @@ TypeSystem{
         ModifyFunction{
             signature: "addHeaders<Container>(Container)"
             remove: RemoveFlag.All
+            until: 6.7
         }
         ModifyFunction{
             signature: "QHttpServerResponse(QJsonArray, QHttpServerResponder::StatusCode)"

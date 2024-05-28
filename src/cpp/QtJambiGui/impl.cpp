@@ -102,6 +102,19 @@ void initialize_meta_info_gui(){
     GuiAPI::installThreadedPixmapsChecker([]()->bool{ return QGuiApplicationPrivate::platformIntegration()->hasCapability(QPlatformIntegration::ThreadedPixmaps); });
 }
 
+const QObject* getPointerOwner(const QTextCursor* __qt_this){
+    if(__qt_this->isNull()){
+        return nullptr;
+    }else if(const QTextDocument* document = __qt_this->document()){
+        if(!RegistryAPI::Private::PolymorphicTypeInfoSupplier<QTextDocument>::value(document)){
+            document = nullptr;
+        }
+        return document;
+    }else{
+        return nullptr;
+    }
+}
+
 extern "C" Q_DECL_EXPORT void JNICALL
 QTJAMBI_FUNCTION_PREFIX(Java_io_qt_gui_QPainter_threadCheck)
 (JNIEnv *env, jclass, jobject _object)

@@ -69,7 +69,7 @@ TypeSystem{
 
     ObjectType{
         name: "QQuick3DExtensionHelpers"
-        targetType: "final class"
+        forceFinal: true
         ModifyFunction{
             signature: "QQuick3DExtensionHelpers()"
             remove: RemoveFlag.All
@@ -84,7 +84,7 @@ TypeSystem{
     
     ObjectType{
         name: "QQuick3D"
-        targetType: "final class"
+        forceFinal: true
         ModifyFunction{
             signature: "QQuick3D()"
             remove: RemoveFlag.All

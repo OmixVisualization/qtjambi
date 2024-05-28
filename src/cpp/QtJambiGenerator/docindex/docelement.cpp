@@ -89,3 +89,13 @@ void DocElement::setBrief(const QString& brief){
 void DocElement::setSubdir(const QDir& subdir){
     m_subdir = subdir;
 }
+
+const QString& DocElement::since() const
+{
+    return m_since;
+}
+
+void DocElement::setSince(const QString &newSince)
+{
+    m_since = newSince;
+}

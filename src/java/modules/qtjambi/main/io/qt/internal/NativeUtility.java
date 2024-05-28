@@ -33,15 +33,18 @@ import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.logging.Level;
 
-import io.qt.InternalAccess;
 import io.qt.InternalAccess.Cleanable;
 import io.qt.NativeAccess;
 import io.qt.QNoNativeResourcesException;
@@ -57,16 +60,60 @@ import io.qt.core.QObject;
  * @hidden
  */
 public abstract class NativeUtility {
+	private static final java.util.logging.Logger CLEANUP_LOGGER = java.util.logging.Logger.getLogger("io.qt.cleanup");
 	private static Function<java.lang.Object, QMetaObject.DisposedSignal> disposedSignalFactory;
-	private static final Map<Integer, InterfaceNativeLink> interfaceLinks;
+	private static final Map<Integer, NativeLink> interfaceLinks;
 	private static final Map<NativeLink, QMetaObject.DisposedSignal> disposedSignals;
-	private static final Map<AssociativeReference, java.lang.Object> object2ObjectAssociations = new HashMap<>();
-	static final ReferenceQueue<java.lang.Object> referenceQueue = new ReferenceQueue<>();
 	private static final Thread cleanupRegistrationThread;
+	private static final Function<QtObjectInterface, NativeLink> new_NativeLink;
+	private static final Function<QtObjectInterface, PureInterfaceNativeLink> new_PureInterfaceNativeLink;
+	private static final Function<QtObjectInterface, ReferenceCountingNativeLink> new_ReferenceCountingNativeLink;
+	private static final BiFunction<QtObjectInterface, Map<Class<? extends QtObjectInterface>, io.qt.MemberAccess<?>>, MemberAccessReferenceCountingNativeLink> new_MemberAccessReferenceCountingNativeLink;
+	private static final BiFunction<QtObjectInterface, Map<Class<? extends QtObjectInterface>, io.qt.MemberAccess<?>>, MemberAccessPureInterfaceNativeLink> new_MemberAccessPureInterfaceNativeLink;
 	static {
 		interfaceLinks = Collections.synchronizedMap(new HashMap<>());
 		disposedSignals = Collections.synchronizedMap(new HashMap<>());
-		cleanupRegistrationThread = new Thread(() -> {
+		cleanupRegistrationThread = new Thread(QueuedCleaner::cleanup);
+		cleanupRegistrationThread.setName("QtJambiCleanupThread");
+		cleanupRegistrationThread.setDaemon(true);
+		if(Boolean.getBoolean("io.qt.enable-cleanup-logs")) {
+			new_NativeLink = LoggingNativeLink::new;
+			new_ReferenceCountingNativeLink = ReferenceCountingLoggingNativeLink::new;
+			new_MemberAccessPureInterfaceNativeLink = MemberAccessPureInterfaceLoggingNativeLink::new;
+			new_PureInterfaceNativeLink = PureInterfaceLoggingNativeLink::new;
+			new_MemberAccessReferenceCountingNativeLink = MemberAccessReferenceCountingLoggingNativeLink::new;
+		}else {
+			new_NativeLink = NativeLink::new;
+			new_ReferenceCountingNativeLink = ReferenceCountingNativeLink::new;
+			new_MemberAccessPureInterfaceNativeLink = MemberAccessPureInterfaceNativeLink::new;
+			new_PureInterfaceNativeLink = PureInterfaceNativeLink::new;
+			new_MemberAccessReferenceCountingNativeLink = MemberAccessReferenceCountingNativeLink::new;
+		}
+		QtJambi_LibraryUtilities.initialize();
+		cleanupRegistrationThread.start();
+	}
+
+	@NativeAccess
+	@QtUninvokable
+	private static void terminateCleanupThread() throws Throwable {
+		switch (cleanupRegistrationThread.getState()) {
+		case TERMINATED:
+			break;
+		default:
+			cleanupRegistrationThread.interrupt();
+			cleanupRegistrationThread.join();
+			break;
+		}
+	}
+	
+	static abstract class QueuedCleaner<Ref> extends WeakReference<Ref> implements Cleanable {
+		private static final ReferenceQueue<java.lang.Object> referenceQueue = new ReferenceQueue<>();
+		
+		QueuedCleaner(Ref object) {
+			super(object, referenceQueue);
+		}
+		
+		static void cleanup() {
 			while (true) {
 				if(Thread.interrupted())
 					break;
@@ -91,34 +138,15 @@ public abstract class NativeUtility {
 				if(Thread.interrupted())
 					break;
 			}
-		});
-		cleanupRegistrationThread.setName("QtJambiCleanupThread");
-		cleanupRegistrationThread.setDaemon(true);
-		QtJambi_LibraryUtilities.initialize();
-		cleanupRegistrationThread.start();
-	}
-
-	@NativeAccess
-	@QtUninvokable
-	private static void terminateCleanupThread() throws Throwable {
-		switch (cleanupRegistrationThread.getState()) {
-		case TERMINATED:
-			break;
-		default:
-			cleanupRegistrationThread.interrupt();
-			cleanupRegistrationThread.join();
-			break;
 		}
 	}
 
-	static class NativeLink extends WeakReference<QtObjectInterface> implements Cleanable {
+	static class NativeLink extends QueuedCleaner<QtObjectInterface> {
 
 		private NativeLink(QtObjectInterface object) {
-			super(object, NativeUtility.referenceQueue);
-//			cls = object == null ? null : object.getClass();
+			super(object);
 		}
 
-//		Class<?> cls;
 		private @NativeAccess long native__id = 0;
 
 		@NativeAccess
@@ -154,6 +182,10 @@ public abstract class NativeUtility {
 					disposed.disconnect();
 			}
 		}
+		
+		@Override
+		public void dismiss() {
+		}
 
 		@NativeAccess
 		private final synchronized void reset() {
@@ -169,7 +201,7 @@ public abstract class NativeUtility {
 		private static native boolean hasDisposedSignal(long native__id);
 		private static native void setHasDisposedSignal(long native__id);
 
-		final synchronized void dispose() {
+		synchronized void dispose() {
 			if (native__id != 0) {
 				dispose(native__id);
 			}
@@ -183,7 +215,7 @@ public abstract class NativeUtility {
 
 		private static native String qtTypeName(long native__id);
 
-		java.lang.Object getMemberAccess(Class<?> interfaceClass) {
+		io.qt.MemberAccess<?> getMemberAccess(Class<? extends QtObjectInterface> interfaceClass) {
 			throw new RuntimeException("Requesting member access of non-interface object is not permitted.");
 		}
 
@@ -194,7 +226,7 @@ public abstract class NativeUtility {
 		public final String toString() {
 			QtObjectInterface o = get();
 			if (o != null) {
-				return ClassAnalyzerUtility.getClass(o).getName() + "@" + Integer.toHexString(System.identityHashCode(o));
+				return AccessUtility.instance.getClass(o).getName() + "@" + Integer.toHexString(System.identityHashCode(o));
 			} else {
 				String qtTypeName = null;
 				synchronized (this) {
@@ -230,48 +262,32 @@ public abstract class NativeUtility {
 			return native__id;
 		}
 	}
-
-	static class InterfaceNativeLink extends NativeLink {
-
-		private static final Map<Class<?>, Function<java.lang.Object,java.lang.Object>> memberAccessConstructorHandles = new HashMap<>();
-
-		private final Map<Class<?>, java.lang.Object> memberAccesses;
-
-		private InterfaceNativeLink(QtObjectInterface object, List<Class<? extends QtObjectInterface>> interfaces) {
+	
+	private static class LoggingNativeLink extends NativeLink {
+		
+		private final Class<?> cls;
+		private final int hashCode;
+		private LoggingNativeLink(QtObjectInterface object) {
 			super(object);
-			Map<Class<?>, java.lang.Object> memberAccesses = new HashMap<>();
-			synchronized (memberAccessConstructorHandles) {
-				for (Class<? extends QtObjectInterface> _iface : interfaces) {
-					@SuppressWarnings("unchecked")
-					Function<java.lang.Object,java.lang.Object> constructorHandle = memberAccessConstructorHandles.computeIfAbsent(_iface, iface -> {
-						for (Class<?> innerClass : iface.getClasses()) {
-							if (io.qt.MemberAccess.class.isAssignableFrom(innerClass)) {
-								try {
-									return (Function<java.lang.Object,java.lang.Object>)ReflectionUtility.methodInvocationHandler.getFactory1(innerClass.getDeclaredConstructor(iface));
-								} catch (Exception e) {
-									e.printStackTrace();
-								}
-							}
-						}
-						return null;
-					});
-					if (constructorHandle != null) {
-						try {
-							java.lang.Object memberAccess = constructorHandle.apply(object);
-							memberAccesses.put(_iface, memberAccess);
-						} catch (Throwable e) {
-							e.printStackTrace();
-						}
-					}
-				}
+			cls = AccessUtility.instance.getClass(object);
+			hashCode = System.identityHashCode(object);
+		}
+		
+		@Override
+		public synchronized void clean() {
+			if (nativeId() != 0) {
+				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Begin cleanup of 0x%1$s@%2$s...", Integer.toHexString(hashCode), cls.getName()));
+				super.clean();
+				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Cleanup of 0x%1$s@%2$s finished.", Integer.toHexString(hashCode), cls.getName()));
 			}
-			this.memberAccesses = Collections.unmodifiableMap(memberAccesses);
 		}
-
-		java.lang.Object getMemberAccess(Class<?> interfaceClass) {
-			return memberAccesses.get(interfaceClass);
+	}
+	
+	static class ReferenceCountingNativeLink extends NativeLink {
+		private ReferenceCountingNativeLink(QtObjectInterface object) {
+			super(object);
 		}
-
+		
 		private Map<Class<?>, Map<String, java.lang.Object>> referenceCounts;
 
 		public void setReferenceCount(Class<? extends QtObjectInterface> declaringClass, String fieldName,
@@ -328,12 +344,64 @@ public abstract class NativeUtility {
 			initializeNativeObject(obj, this);
 		}
 	}
+	
+	private static class ReferenceCountingLoggingNativeLink extends ReferenceCountingNativeLink {
+		private final Class<?> cls;
+		private final int hashCode;
+		private ReferenceCountingLoggingNativeLink(QtObjectInterface object) {
+			super(object);
+			cls = AccessUtility.instance.getClass(object);
+			hashCode = System.identityHashCode(object);
+		}
+		
+		@Override
+		public synchronized void clean() {
+			if (nativeId() != 0) {
+				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Begin cleanup of 0x%1$s@%2$s...", Integer.toHexString(hashCode), cls.getName()));
+				super.clean();
+				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Cleanup of 0x%1$s@%2$s finished.", Integer.toHexString(hashCode), cls.getName()));
+			}
+		}
+	}
 
-	private static final class InterfaceBaseNativeLink extends InterfaceNativeLink {
+	private static class MemberAccessReferenceCountingNativeLink extends ReferenceCountingNativeLink {
+
+		private final Map<Class<? extends QtObjectInterface>, io.qt.MemberAccess<?>> memberAccesses;
+
+		private MemberAccessReferenceCountingNativeLink(QtObjectInterface object, Map<Class<? extends QtObjectInterface>, io.qt.MemberAccess<?>> memberAccesses) {
+			super(object);
+			this.memberAccesses = memberAccesses;
+		}
+
+		io.qt.MemberAccess<?> getMemberAccess(Class<? extends QtObjectInterface> interfaceClass) {
+			return memberAccesses.get(interfaceClass);
+		}
+	}
+	
+	private static final class MemberAccessReferenceCountingLoggingNativeLink extends MemberAccessReferenceCountingNativeLink {
+		private final Class<?> cls;
+		private final int hashCode;
+		private MemberAccessReferenceCountingLoggingNativeLink(QtObjectInterface object, Map<Class<? extends QtObjectInterface>, io.qt.MemberAccess<?>> memberAccesses) {
+			super(object, memberAccesses);
+			cls = AccessUtility.instance.getClass(object);
+			hashCode = System.identityHashCode(object);
+		}
+		
+		@Override
+		public synchronized void clean() {
+			if (nativeId() != 0) {
+				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Begin cleanup of 0x%1$s@%2$s...", Integer.toHexString(hashCode), cls.getName()));
+				super.clean();
+				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Cleanup of 0x%1$s@%2$s finished.", Integer.toHexString(hashCode), cls.getName()));
+			}
+		}
+	}
+
+	private static class MemberAccessPureInterfaceNativeLink extends MemberAccessReferenceCountingNativeLink {
 		final int ownerHashCode;
 
-		private InterfaceBaseNativeLink(QtObjectInterface object, List<Class<? extends QtObjectInterface>> interfaces) {
-			super(object, interfaces);
+		private MemberAccessPureInterfaceNativeLink(QtObjectInterface object, Map<Class<? extends QtObjectInterface>, io.qt.MemberAccess<?>> memberAccesses) {
+			super(object, memberAccesses);
 			ownerHashCode = System.identityHashCode(object);
 			interfaceLinks.put(ownerHashCode, this);
 		}
@@ -342,6 +410,68 @@ public abstract class NativeUtility {
 		public synchronized void clean() {
 			super.clean();
 			interfaceLinks.remove(ownerHashCode);
+		}
+		
+		@Override
+		synchronized void dispose() {
+			super.dispose();
+			interfaceLinks.remove(ownerHashCode);
+		}
+	}
+	
+	private static class MemberAccessPureInterfaceLoggingNativeLink extends MemberAccessPureInterfaceNativeLink {
+		private final Class<?> cls;
+		private MemberAccessPureInterfaceLoggingNativeLink(QtObjectInterface object, Map<Class<? extends QtObjectInterface>, io.qt.MemberAccess<?>> memberAccesses) {
+			super(object, memberAccesses);
+			cls = AccessUtility.instance.getClass(object);
+		}
+		
+		@Override
+		public synchronized void clean() {
+			if (nativeId() != 0) {
+				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Begin cleanup of 0x%1$s@%2$s...", Integer.toHexString(ownerHashCode), cls.getName()));
+				super.clean();
+				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Cleanup of 0x%1$s@%2$s finished.", Integer.toHexString(ownerHashCode), cls.getName()));
+			}
+		}
+	}
+	
+	private static class PureInterfaceNativeLink extends ReferenceCountingNativeLink {
+		final int ownerHashCode;
+
+		private PureInterfaceNativeLink(QtObjectInterface object) {
+			super(object);
+			ownerHashCode = System.identityHashCode(object);
+			interfaceLinks.put(ownerHashCode, this);
+		}
+
+		@Override
+		public synchronized void clean() {
+			super.clean();
+			interfaceLinks.remove(ownerHashCode);
+		}
+		
+		@Override
+		synchronized void dispose() {
+			super.dispose();
+			interfaceLinks.remove(ownerHashCode);
+		}
+	}
+	
+	private static class PureInterfaceLoggingNativeLink extends PureInterfaceNativeLink {
+		private final Class<?> cls;
+		private PureInterfaceLoggingNativeLink(QtObjectInterface object) {
+			super(object);
+			cls = AccessUtility.instance.getClass(object);
+		}
+		
+		@Override
+		public synchronized void clean() {
+			if (nativeId() != 0) {
+				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Begin cleanup of 0x%1$s@%2$s...", Integer.toHexString(ownerHashCode), cls.getName()));
+				super.clean();
+				NativeUtility.CLEANUP_LOGGER.log(Level.FINE, ()->String.format("Cleanup of 0x%1$s@%2$s finished.", Integer.toHexString(ownerHashCode), cls.getName()));
+			}
 		}
 	}
 
@@ -358,7 +488,7 @@ public abstract class NativeUtility {
 			if (link == null && forceCreation) {
 				link = createNativeLink(iface);
 				if (link == null) {
-					link = new InterfaceBaseNativeLink(iface, Collections.emptyList());
+					link = new_PureInterfaceNativeLink.apply(iface);
 				}else if (initialize) {
 					initializeNativeObject(iface, link);
 				}
@@ -389,7 +519,7 @@ public abstract class NativeUtility {
 							QtObjectInterface object = lnk.get();
 							if(disposedSignalFactory==null)
 								disposedSignalFactory = SignalUtility.<QMetaObject.DisposedSignal>getSignalFactory(QMetaObject.DisposedSignal.class);
-							return disposedSignalFactory.apply(ClassAnalyzerUtility.getClass(object));
+							return disposedSignalFactory.apply(AccessUtility.instance.getClass(object));
 						});
 					} catch (NullPointerException e) {
 					}
@@ -404,21 +534,48 @@ public abstract class NativeUtility {
 		return disposedSignals.remove(nativeLink);
 	}
 
-	@NativeAccess
+	private static Map<Class<? extends QtObjectInterface>, io.qt.MemberAccess<?>> findMemberAccesses(QtObjectInterface object){
+		Map<Class<? extends QtObjectInterface>, Function<QtObjectInterface,io.qt.MemberAccess<?>>> interfaceInfos = getInterfaceInfos(object);
+		Map<Class<? extends QtObjectInterface>, io.qt.MemberAccess<?>> memberAccesses;
+		if (interfaceInfos != null) {
+			memberAccesses = new HashMap<>();
+			for (Map.Entry<Class<? extends QtObjectInterface>, Function<QtObjectInterface,io.qt.MemberAccess<?>>> entry : interfaceInfos.entrySet()) {
+				Function<QtObjectInterface,io.qt.MemberAccess<?>> factory = entry.getValue();
+				if (factory != null) {
+					try {
+						io.qt.MemberAccess<?> memberAccess = factory.apply(object);
+						if(memberAccess!=null)
+							memberAccesses.put(entry.getKey(), memberAccess);
+					} catch (Throwable e) {
+						e.printStackTrace();
+					}
+				}
+			}
+		}else {
+			memberAccesses = null;
+		}
+		return memberAccesses;
+	}
+
 	private static NativeLink createNativeLink(NativeUtility.Object object) {
-		List<Class<? extends QtObjectInterface>> interfaces = getInterfaces(object);
-		if (interfaces != null) {
-			return new InterfaceNativeLink(object, interfaces);
+		Map<Class<? extends QtObjectInterface>, io.qt.MemberAccess<?>> memberAccesses = findMemberAccesses(object);
+		if (memberAccesses != null) {
+			if(memberAccesses.isEmpty())
+				return new_ReferenceCountingNativeLink.apply(object);
+			else
+				return new_MemberAccessReferenceCountingNativeLink.apply(object, Collections.unmodifiableMap(memberAccesses));
 		} else {
-			return new NativeLink(object);
+			return new_NativeLink.apply(object);
 		}
 	}
 
-	@NativeAccess
 	private static NativeLink createNativeLink(QtObjectInterface iface) {
-		List<Class<? extends QtObjectInterface>> interfaces = getInterfaces(iface);
-		if (interfaces != null) {
-			return new InterfaceBaseNativeLink(iface, interfaces);
+		Map<Class<? extends QtObjectInterface>, io.qt.MemberAccess<?>> memberAccesses = findMemberAccesses(iface);
+		if (memberAccesses != null) {
+			if(memberAccesses.isEmpty())
+				return new_PureInterfaceNativeLink.apply(iface);
+			else
+				return new_MemberAccessPureInterfaceNativeLink.apply(iface, Collections.unmodifiableMap(memberAccesses));
 		} else {
 			return null;
 		}
@@ -431,7 +588,7 @@ public abstract class NativeUtility {
 	private native static void initializeNativeObject(Class<?> callingClass, QtObjectInterface object, NativeLink link, Map<Class<?>, List<?>> arguments) throws IllegalArgumentException;
 
 	static void initializeNativeObject(QtObjectInterface object, NativeLink link) throws IllegalArgumentException {
-		Class<?> cls = ClassAnalyzerUtility.getClass(object);
+		Class<?> cls = AccessUtility.instance.getClass(object);
 		QtUtilities.initializePackage(cls);
 		initializeNativeObject(cls, object, link, Collections.emptyMap());
 	}
@@ -501,113 +658,151 @@ public abstract class NativeUtility {
 			return null;
 	}
 
-	private static class AssociativeReference extends WeakReference<java.lang.Object> implements Cleanable {
+	private static class AssociativeReference extends QueuedCleaner<java.lang.Object> {
+		
+		private static final List<AssociativeReference> associativeReferences = new ArrayList<>();
+		
+		private java.lang.Object association;
 
-		public AssociativeReference(java.lang.Object r) {
-			super(r, referenceQueue);
+		AssociativeReference(java.lang.Object reference, java.lang.Object association) {
+			super(reference);
+			this.association = association;
+			if(association!=null) {
+				synchronized(associativeReferences) {
+					associativeReferences.add(this);
+				}
+				if(reference instanceof QtObjectInterface) {
+					QMetaObject.DisposedSignal disposed = getSignalOnDispose((QtObjectInterface)reference, true);
+					if (disposed != null)
+						disposed.connect(this::clean);
+				}
+			}
 		}
 
 		@Override
 		public void clean() {
-			synchronized (object2ObjectAssociations) {
-				object2ObjectAssociations.remove(this);
+			if(this.association!=null) {
+				this.association = null;
+				synchronized(associativeReferences) {
+					associativeReferences.remove(this);
+				}
 			}
+		}
+		
+		@Override
+		public boolean enqueue() {
+			clean();
+			return super.enqueue();
+		}
+		
+		@Override
+		public void dismiss() {
+			enqueue();
+		}
+
+		java.lang.Object association() {
+			return association;
+		}
+		
+		static AssociativeReference find(java.lang.Object reference) {
+			AssociativeReference result = null;
+			synchronized(associativeReferences) {
+				for (AssociativeReference ref : associativeReferences) {
+					if(ref.get() == reference) {
+						result = ref;
+						break;
+					}
+				}
+			}
+			return result;
 		}
 	}
 
 	@NativeAccess
 	private static void createAssociation(java.lang.Object o1, java.lang.Object o2) {
-		synchronized (object2ObjectAssociations) {
-			AssociativeReference reference = new AssociativeReference(o1);
-			object2ObjectAssociations.put(reference, o2);
-			if(o2 instanceof QtObjectInterface) {
-				QMetaObject.DisposedSignal disposed = getSignalOnDispose((QtObjectInterface)o2, true);
-				if (disposed != null)
-					disposed.connect(()->object2ObjectAssociations.remove(reference));
-			}
-		}
+		new AssociativeReference(o1, o2);
 	}
 
 	@NativeAccess
 	private static boolean deleteAssociation(java.lang.Object o1) {
-		AssociativeReference matchingReference = null;
-		synchronized (object2ObjectAssociations) {
-			for (AssociativeReference ref : object2ObjectAssociations.keySet()) {
-				if (ref.get() == o1) {
-					matchingReference = ref;
-					break;
-				}
-			}
-			if (matchingReference != null)
-				object2ObjectAssociations.remove(matchingReference);
-		}
+		AssociativeReference matchingReference = AssociativeReference.find(o1);
 		if (matchingReference != null) {
 			matchingReference.enqueue();
 			return true;
 		} else
 			return false;
 	}
-
+	
 	@NativeAccess
 	private static java.lang.Object findAssociation(java.lang.Object o1) {
-		synchronized (object2ObjectAssociations) {
-			AssociativeReference matchingReference = null;
-			for (AssociativeReference ref : object2ObjectAssociations.keySet()) {
-				if (ref.get() == o1) {
-					matchingReference = ref;
-					break;
-				}
-			}
-			return matchingReference == null ? null : object2ObjectAssociations.get(matchingReference);
-		}
+		AssociativeReference matchingReference = AssociativeReference.find(o1);
+		return matchingReference == null ? null : matchingReference.association();
 	}
+
+	static class FinalizerReference<Ref> extends QueuedCleaner<Ref> {
+		private final AtomicReference<Runnable> runnableRef = new AtomicReference<Runnable>();
 	
-	static class CleanableReference extends WeakReference<java.lang.Object> implements InternalAccess.Cleanable{
-		private InternalAccess.Cleanable cleanable;
-
-		public CleanableReference(java.lang.Object referent) {
-			super(referent, referenceQueue);
-		}
-
-		public void clean() {
-			if(cleanable!=null)
-				cleanable.clean();
+		FinalizerReference(Ref referent) {
+			super(referent);
 		}
 		
-		public void setCleanable(InternalAccess.Cleanable cleanable) {
-			this.cleanable = cleanable;
+		FinalizerReference(Ref referent, Runnable runnable) {
+			super(referent);
+			runnableRef.set(runnable);
 		}
-	}
-
-	private static final Map<Cleaner, Runnable> cleaners = new HashMap<>();
-
-	private static class Cleaner extends WeakReference<java.lang.Object> implements Cleanable {
-
-		public Cleaner(java.lang.Object r) {
-			super(r, referenceQueue);
-		}
-
+	
 		@Override
 		public void clean() {
-			synchronized (cleaners) {
-				Runnable runnable = cleaners.remove(this);
-				if (runnable != null) {
-					try {
-						runnable.run();
-					} catch (Throwable e) {
-						e.printStackTrace();
-					}
-				}
-			}
+			Runnable runnable = runnableRef.getAndSet(null);
+			if(runnable!=null)
+				runnable.run();
+		}
+		
+		void setFinally(Runnable runnable) {
+			runnableRef.set(runnable);
+		}
+		
+		@Override
+		public boolean enqueue() {
+			runnableRef.set(null);
+			return super.enqueue();
+		}
+		
+		@Override
+		public void dismiss() {
+			enqueue();
 		}
 	}
 	
-	static InternalAccess.Cleanable registerCleaner(java.lang.Object object, Runnable action) {
-		synchronized (cleaners) {
-			Cleaner cleanable = new Cleaner(object);
-			cleaners.put(cleanable, action);
-			return cleanable;
+	private static class CleaningReference extends FinalizerReference<java.lang.Object> {
+		private static final List<CleaningReference> cleaningReferences = new ArrayList<>();
+		
+		CleaningReference(java.lang.Object referent, Runnable runnable) {
+			super(referent, runnable);
+			synchronized (cleaningReferences) {
+				cleaningReferences.add(this);
+			}
 		}
+		
+		@Override
+		public void clean() {
+			super.clean();
+			synchronized (cleaningReferences) {
+				cleaningReferences.remove(this);
+			}
+		}
+		
+		@Override
+		public boolean enqueue() {
+			synchronized (cleaningReferences) {
+				cleaningReferences.remove(this);
+			}
+			return super.enqueue();
+		}
+	}
+
+	static Cleanable registerCleaner(java.lang.Object object, Runnable action) {
+		return new CleaningReference(object, action);
 	}
 
 	protected static void loadQtJambiLibrary(Class<?> callerClass, String library) {
@@ -760,7 +955,7 @@ public abstract class NativeUtility {
 			long nid = nativeId(object);
 			if (nid == 0) {
 				QNoNativeResourcesException e = new QNoNativeResourcesException(
-						"Function call on incomplete object of type: " + ClassAnalyzerUtility.getClass(object).getName());
+						"Function call on incomplete object of type: " + AccessUtility.instance.getClass(object).getName());
 				StackTraceElement[] st = e.getStackTrace();
 				st = Arrays.copyOfRange(st, 1, st.length);
 				e.setStackTrace(st);
@@ -781,7 +976,7 @@ public abstract class NativeUtility {
 		long nid = nativeId(object);
 		if (nid == 0) {
 			QNoNativeResourcesException e = new QNoNativeResourcesException(
-					"Function call on incomplete object of type: " + ClassAnalyzerUtility.getClass(object).getName());
+					"Function call on incomplete object of type: " + AccessUtility.instance.getClass(object).getName());
 			StackTraceElement[] st = e.getStackTrace();
 			st = Arrays.copyOfRange(st, 1, st.length);
 			e.setStackTrace(st);
@@ -850,5 +1045,5 @@ public abstract class NativeUtility {
 
 	private native static void unregisterDependentObject(long dependentObject, long owner);
 	
-	private native static List<Class<? extends QtObjectInterface>> getInterfaces(QtObjectInterface object);
+	private native static Map<Class<? extends QtObjectInterface>, Function<QtObjectInterface,io.qt.MemberAccess<?>>> getInterfaceInfos(QtObjectInterface object);
 }

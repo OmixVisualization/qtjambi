@@ -389,22 +389,32 @@ void QtJambiAPI::setCppOwnershipForTopLevelObject(JNIEnv *env, QObject* qobject)
 
 void QtJambiAPI::setJavaOwnership(JNIEnv *env, jobject object)
 {
-    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, object)){
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, object)){
         link->setJavaOwnership(env);
     }
 }
 
 void QtJambiAPI::setDefaultOwnership(JNIEnv *env, jobject object)
 {
-    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, object)){
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, object)){
         link->setDefaultOwnership(env);
     }
 }
 
 void QtJambiAPI::setCppOwnership(JNIEnv *env, jobject object)
 {
-    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, object)){
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, object)){
         link->setCppOwnership(env);
+    }
+}
+
+void QtJambiAPI::setCppOwnershipAndInvalidate(JNIEnv *env, jobject object)
+{
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, object)){
+        link->setCppOwnership(env);
+        if(!link->isShell() && !link->isQObject()){
+            link->invalidate(env);
+        }
     }
 }
 
@@ -426,6 +436,16 @@ void QtJambiAPI::setCppOwnership(JNIEnv *env, QtJambiNativeID objectId)
 {
     if(QSharedPointer<QtJambiLink> link = QtJambiLink::fromNativeId(objectId)){
         link->setCppOwnership(env);
+    }
+}
+
+void QtJambiAPI::setCppOwnershipAndInvalidate(JNIEnv *env, QtJambiNativeID objectId)
+{
+    if(QSharedPointer<QtJambiLink> link = QtJambiLink::fromNativeId(objectId)){
+        link->setCppOwnership(env);
+        if(!link->isShell() && !link->isQObject()){
+            link->invalidate(env);
+        }
     }
 }
 
@@ -498,70 +518,53 @@ bool enabledDanglingPointerCheck(JNIEnv * env){
     return b;
 }
 
-#if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS) || defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD) || defined(Q_OS_SOLARIS)) && !defined(Q_OS_ANDROID)
+#if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS) || defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD) || defined(Q_OS_SOLARIS)) && !defined(Q_OS_ANDROID) && !defined(Q_PROCESSOR_ARM)
+#define DO_TYPECHECK_BY_CATCHING_SIGNAL
 #include <signal.h>
-#include <ucontext.h>
-
-struct bad_typeid : std::bad_typeid{
-    QByteArray _what;
-    const char* what() const Q_DECL_NOEXCEPT override{
-        return _what;
-    }
-};
 #endif
 
 const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, const void* ptr){
     Q_ASSERT(typeInfoSupplier);
-#if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS) || defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD) || defined(Q_OS_SOLARIS)) && !defined(Q_OS_ANDROID)
-    static QThreadStorage<bool> isSigSegv;
+#if defined(DO_TYPECHECK_BY_CATCHING_SIGNAL)
+    struct SigData{
+        struct sigaction sa_old;
+        bool isRegistered = false;
+        bool isSigSegv = false;
+    };
+    static QThreadStorage<SigData> sigData;
+    SigData& _sigData = sigData.localData();
     struct sigaction sa;
-    struct sigaction sa_old;
+    struct sigaction &sa_old = sigData.localData().sa_old;
     memset(&sa, 0, sizeof(sa));
     memset(&sa_old, 0, sizeof(sa_old));
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_NODEFER | SA_SIGINFO;
     sa.sa_sigaction = [](int, siginfo_t *, void *){
-        isSigSegv.setLocalData(true);
-        if(JniEnvironment _env{200}){
-            jobject exn = Java::Runtime::Error::newInstance(_env, _env->NewStringUTF("Error when trying to get type of dangling pointer."));
-            jbyteArray array = Java::QtJambi::ExceptionUtility::printException(_env, exn);
-            bad_typeid exception;
-            jsize len = _env->GetArrayLength(array);
-            exception._what.fill(0, len);
-            _env->GetByteArrayRegion(array, 0, len, reinterpret_cast<jbyte*>(exception._what.data()));
-            throw exception;
-        }
+        SigData& _sigData = sigData.localData();
+        _sigData.isSigSegv = true;
+        if(_sigData.isRegistered)
+            sigaction(SIGSEGV, &_sigData.sa_old, nullptr);
+        _sigData.isRegistered = false;
         throw std::bad_typeid();
-        //ucontext_t *context = reinterpret_cast<ucontext_t *>(v_context);
-        //context->uc_mcontext.gregs[REG_RIP] += 10;
     };
-    bool success = sigaction(SIGSEGV, &sa, &sa_old)==0;
-    auto sc = qScopeGuard([&](){
-        if(success){
-            sigaction(SIGSEGV, &sa_old, nullptr);
-        }
-    });
+    _sigData.isSigSegv = false;
+    _sigData.isRegistered = sigaction(SIGSEGV, &sa, &sa_old)==0;
     try{
-        isSigSegv.setLocalData(false);
-        const std::type_info* typeId = typeInfoSupplier(ptr);
+        const std::type_info* typeId{nullptr};
+        if(sigData.localData().isRegistered){
+            auto sc = qScopeGuard([](){
+                SigData& _sigData = sigData.localData();
+                if(_sigData.isRegistered)
+                    sigaction(SIGSEGV, &_sigData.sa_old, nullptr);
+            });
+            typeId = typeInfoSupplier(ptr);
+        }else{
+            typeId = typeInfoSupplier(ptr);
+        }
         if(typeId){
             const char* typeName = typeId->name();
-//          fprintf(stderr, "got type %s\n", typeName);
-//          fflush(stderr);
-//          std::strlen(typeName);
-            switch(typeName[0]){
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-            case '6':
-            case '7':
-            case '8':
-            case '9':
-                break;
-            case 'N':
-                switch(typeName[1]){
+            if(typeName && std::strlen(typeName)>1){
+                switch(typeName[0]){
                 case '1':
                 case '2':
                 case '3':
@@ -572,15 +575,28 @@ const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, cons
                 case '8':
                 case '9':
                     break;
+                case 'N':
+                    switch(typeName[1]){
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+                    case '7':
+                    case '8':
+                    case '9':
+                        break;
+                    default: // not valid name of class
+                        return nullptr;
+                    }
+                    break;
                 default: // not valid name of class
                     return nullptr;
                 }
-                break;
-            default: // not valid name of class
-                return nullptr;
             }
         }
-        if(isSigSegv.localData())
+        if(_sigData.isSigSegv)
             return nullptr;
         return typeId;
     }catch(const std::bad_typeid&){
@@ -599,7 +615,7 @@ const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, cons
 
 const std::type_info* tryGetTypeInfo(JNIEnv *env, TypeInfoSupplier typeInfoSupplier, const void* ptr){
     Q_ASSERT(typeInfoSupplier);
-#if (defined(Q_OS_LINUX) || defined(Q_OS_MACOS) || defined(Q_OS_FREEBSD) || defined(Q_OS_NETBSD) || defined(Q_OS_OPENBSD) || defined(Q_OS_SOLARIS)) && !defined(Q_OS_ANDROID)
+#if defined(DO_TYPECHECK_BY_CATCHING_SIGNAL)
     if(enabledDanglingPointerCheck(env)){
         return checkedGetTypeInfo(typeInfoSupplier, ptr);
     }

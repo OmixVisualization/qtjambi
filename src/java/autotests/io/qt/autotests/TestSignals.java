@@ -43,16 +43,22 @@ import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import io.qt.QNoNativeResourcesException;
 import io.qt.QSignalAccessException;
 import io.qt.QSignalDeclarationException;
 import io.qt.QSignalInitializationException;
+import io.qt.QtObjectInterface;
 import io.qt.QtPrimitiveType;
 import io.qt.QtSignalEmitterInterface;
+import io.qt.QtUninvokable;
+import io.qt.core.QCoreApplication;
 import io.qt.core.QDeclarableSignals;
+import io.qt.core.QEvent;
 import io.qt.core.QInstanceMemberSignals;
 import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QStaticMemberSignals;
 import io.qt.core.Qt;
 import io.qt.gui.*;
@@ -75,6 +81,34 @@ public class TestSignals extends ApplicationInitializer{
 	
 	public static class QObjectSignalOwner extends QObject{
 		final Signal1<String> testSignal = new Signal1<>();
+	}
+	
+	public static class QObjectLightweightSignalOwner extends QObject{
+		@QtUninvokable
+		final Signal1<String> testSignal = new Signal1<>();
+		@QtUninvokable
+		final PrivateSignal1<String> testPrivateSignal = new PrivateSignal1<>();
+		final Signal1<String> testInvokableSignal = new Signal1<>();
+		final PrivateSignal1<String> testPrivateInvokableSignal = new PrivateSignal1<>();
+		@QtUninvokable
+		final Signal9<  String,
+						@QtPrimitiveType Integer,
+						@QtPrimitiveType Long,
+						@QtPrimitiveType Byte,
+						@QtPrimitiveType Double,
+						@QtPrimitiveType Float,
+						@QtPrimitiveType Boolean,
+						@QtPrimitiveType Character,
+						@QtPrimitiveType Short> signal9 = new Signal9<>();
+		final Signal9<  String,
+						@QtPrimitiveType Integer,
+						@QtPrimitiveType Long,
+						@QtPrimitiveType Byte,
+						@QtPrimitiveType Double,
+						@QtPrimitiveType Float,
+						@QtPrimitiveType Boolean,
+						@QtPrimitiveType Character,
+						@QtPrimitiveType Short> invokableSignal9 = new Signal9<>();
 	}
 	
 	public static class QObjectNonFinalSignalOwner extends QObject{
@@ -172,6 +206,141 @@ public class TestSignals extends ApplicationInitializer{
 	}
 	
 	@Test
+    public void testQObjectLightweightSignal() {
+		QObjectLightweightSignalOwner obj = new QObjectLightweightSignalOwner();
+		Assert.assertFalse(obj.metaObject().method("testSignal", String.class).isValid());
+		class Receiver extends QObject{
+    		String value = "";
+    		public void receive(String value) {
+    			this.value = value;
+    		}
+    		
+    		public void receive9(String t,
+									int i,
+									long l,
+									byte b,
+									double d,
+									float f,
+									boolean z,
+									char c,
+									short s) {
+    			System.out.println("MemberFunction: "+t);
+    		}
+    	}
+    	Receiver receiver1 = new Receiver();
+    	QMetaObject.Connection connection1 = obj.testSignal.connect(receiver1::receive);
+    	Assert.assertTrue(connection1.isConnected());
+    	Assert.assertFalse(connection1 instanceof QtObjectInterface);
+    	Assert.assertTrue(obj.testSignal.isConnected());
+    	Assert.assertEquals(1, obj.testSignal.receivers());
+    	Receiver receiver2 = new Receiver();
+    	QMetaObject.Connection connection2 = obj.testSignal.connect(receiver2::receive);
+    	Assert.assertTrue(connection2.isConnected());
+    	Assert.assertFalse(connection2 instanceof QtObjectInterface);
+    	Assert.assertTrue(obj.testSignal.isConnected());
+    	Assert.assertEquals(2, obj.testSignal.receivers());
+    	String[] array = {null};
+    	obj.testSignal.connect(text->array[0] = text);
+    	class Receiver3{
+    		Receiver3(QObjectLightweightSignalOwner obj){
+        		int i = 5;
+    			obj.testSignal.connect(text->receive(text, i));
+    		}
+    		String value = "";
+    		public void receive(String value, int i) {
+    			this.value = value;
+    		}
+    	}
+    	Receiver3 receiver3 = new Receiver3(obj);
+    	obj.testSignal.connect(t->receiver2.receive(t));
+    	obj.testSignal.emit("TEST1");
+    	Assert.assertEquals("TEST1", receiver1.value);
+    	Assert.assertEquals("TEST1", receiver2.value);
+    	receiver1.dispose();
+		Assert.assertFalse(connection1.isConnected());
+    	obj.testSignal.emit("TEST2");
+		Assert.assertEquals("TEST1", receiver1.value);
+    	Assert.assertEquals("TEST2", receiver2.value);
+    	obj.signal9.connect(receiver2::receive9);
+    	obj.signal9.connect((t,i,l,b,d,f,z,c,s)->System.out.println("Lambda: "+t));
+    	obj.signal9.emit("TEST9", 9, 9l, (byte)9, 9., 9.f, true, '9', (short)9);
+    	obj.dispose();
+    	try {
+	    	obj.testSignal.emit("TEST3");
+			Assert.fail("QNoNativeResourcesException expected to be thrown");
+		}catch(QNoNativeResourcesException e) {
+		}
+    	if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android))
+    		Assert.assertEquals("TEST1", receiver1.value);
+    	Assert.assertEquals("TEST2", receiver2.value);
+    	Assert.assertFalse(connection2.isConnected());
+    	QObjectSignalOwner obj2 = new QObjectSignalOwner();
+    	obj2.dispose();
+    	try {
+    		obj2.testSignal.emit("TEST");
+    		Assert.fail("QNoNativeResourcesException expected to be thrown");
+    	}catch(QNoNativeResourcesException e) {
+    	}
+    	
+    	obj = new QObjectLightweightSignalOwner();
+    	receiver1 = new Receiver();
+    	connection1 = obj.testSignal.connect(receiver1::receive, Qt.ConnectionType.QueuedConnection);
+    	Assert.assertTrue(connection1.isConnected());
+    	obj.testSignal.emit("TEST1");
+    	Assert.assertTrue(obj.testSignal.isConnected());
+    	Assert.assertEquals(1, obj.testSignal.receivers());
+    	Assert.assertEquals("", receiver1.value);
+    	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+    	Assert.assertEquals("TEST1", receiver1.value);
+    	QMetaObject.Connection connection3 = obj.objectNameChanged.connect(receiver1::receive);
+    	Assert.assertTrue(connection3.isConnected());
+    	Assert.assertTrue(connection3 instanceof QtObjectInterface);
+    	QMetaObject.Connection connection3Clone = connection3.clone();
+    	Assert.assertEquals(connection3, connection3Clone);
+    	Assert.assertEquals(connection3.hashCode(), connection3Clone.hashCode());
+    	Assert.assertTrue(obj.objectNameChanged.isConnected());
+    	Assert.assertEquals(1, obj.objectNameChanged.receivers());
+    	obj.disconnect();
+    	Assert.assertFalse(obj.testSignal.isConnected());
+    	Assert.assertEquals(0, obj.testSignal.receivers());
+    	Assert.assertFalse(obj.objectNameChanged.isConnected());
+    	Assert.assertEquals(0, obj.objectNameChanged.receivers());
+    	Assert.assertFalse(connection3.isConnected());
+    	Assert.assertEquals(connection3, connection3Clone);
+    	Assert.assertEquals(connection3.hashCode(), connection3Clone.hashCode());
+    	
+    	{
+    		class Receiver4{
+    			String value = "";
+        		public void receive(String value) {
+        			this.value = value;
+        		}
+    		}
+    		Receiver4 receiver = new Receiver4();
+    		@SuppressWarnings("serial")
+			QMetaObject.Slot1<String> slot = new QMetaObject.Slot1<String>(){
+				@Override
+				public void invoke(String a) throws Throwable {
+				}
+    		};
+    		QMetaObject.Connection conn = obj.testInvokableSignal.connect(receiver::receive, Qt.ConnectionType.QueuedConnection);
+    		obj.testInvokableSignal.connect(slot);
+    		obj.testInvokableSignal.emit("TEST4");
+    		if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android))
+    			Assert.assertTrue(obj.testInvokableSignal.disconnect(conn));
+    		else
+    			Assert.assertTrue(obj.testInvokableSignal.disconnect(receiver::receive));
+    		Assert.assertTrue(obj.testInvokableSignal.disconnect(slot));
+    		receiver = new Receiver4();
+    		obj.testInvokableSignal.connect(receiver::receive, Qt.ConnectionType.QueuedConnection);
+    		obj.dispose();
+    		receiver = null;
+    		System.gc();
+//    		System.out.println();
+    	}
+	}
+	
+	@Test
     public void testQObjectSignal() {
 		try {
 			new QObjectStaticSignalOwner();
@@ -258,61 +427,61 @@ public class TestSignals extends ApplicationInitializer{
     public void testQObjectSignal_connect_to_QObject() {
     	QObject sender = new QObject();
     	class Receiver extends QObject{
-    		String name;
-    		public void receiveName(String name) {
-    			this.name = name;
+    		String value;
+    		public void receive(String value) {
+    			this.value = value;
     		}
     	}
     	Receiver receiver = new Receiver();
-    	QMetaObject.Connection connection = sender.objectNameChanged.connect(receiver::receiveName);
+    	QMetaObject.Connection connection = sender.objectNameChanged.connect(receiver::receive);
     	sender.setObjectName("TEST");
-    	assertEquals("TEST", receiver.name);
+    	assertEquals("TEST", receiver.value);
     	if(hasSerializableLambdas)
-    		sender.objectNameChanged.disconnect(receiver::receiveName);
+    		sender.objectNameChanged.disconnect(receiver::receive);
     	else
     		sender.objectNameChanged.disconnect(connection);
     	sender.setObjectName("TEST2");
-    	assertEquals("TEST", receiver.name);
+    	assertEquals("TEST", receiver.value);
     }
     
     @Test
     public void testQObjectSignal_connect_to_Object() {
     	QObject sender = new QObject();
     	class Receiver{
-    		String name;
-    		public void receiveName(String name) {
-    			this.name = name;
+    		String value;
+    		public void receive(String value) {
+    			this.value = value;
     		}
     	}
     	Receiver receiver = new Receiver();
-    	QMetaObject.Connection connection = sender.objectNameChanged.connect(receiver::receiveName);
+    	QMetaObject.Connection connection = sender.objectNameChanged.connect(receiver::receive);
     	sender.setObjectName("TEST");
-    	assertEquals("TEST", receiver.name);
+    	assertEquals("TEST", receiver.value);
     	if(hasSerializableLambdas)
-    		sender.objectNameChanged.disconnect(receiver::receiveName);
+    		sender.objectNameChanged.disconnect(receiver::receive);
     	else
     		sender.objectNameChanged.disconnect(connection);
     	sender.setObjectName("TEST2");
-    	assertEquals("TEST", receiver.name);
+    	assertEquals("TEST", receiver.value);
     }
     
     @Test
     public void testQObjectSignal_connect_to_Lambda() {
     	QObject sender = new QObject();
     	class Receiver{
-    		String name;
-    		public void receiveName(String name, int i) {
-    			this.name = name;
+    		String value;
+    		public void receiveName(String value, int i) {
+    			this.value = value;
     		}
     	}
     	Receiver receiver = new Receiver();
     	QMetaObject.Slot1<String> slot = name -> receiver.receiveName(name, receiver.hashCode());
     	sender.objectNameChanged.connect(slot);
     	sender.setObjectName("TEST");
-    	assertEquals("TEST", receiver.name);
+    	assertEquals("TEST", receiver.value);
     	sender.objectNameChanged.disconnect(slot);
     	sender.setObjectName("TEST2");
-    	assertEquals("TEST", receiver.name);
+    	assertEquals("TEST", receiver.value);
     }
     
     @Test
@@ -322,21 +491,21 @@ public class TestSignals extends ApplicationInitializer{
     	}
     	Sender sender = new Sender();
     	class Receiver extends QObject{
-    		String name;
-    		public void receiveName(String name) {
-    			this.name = name;
+    		String value;
+    		public void receive(String value) {
+    			this.value = value;
     		}
     	}
     	Receiver receiver = new Receiver();
-    	QMetaObject.Connection connection = sender.testSignal.connect(receiver::receiveName);
+    	QMetaObject.Connection connection = sender.testSignal.connect(receiver::receive);
     	sender.testSignal.emit("TEST");
-    	assertEquals("TEST", receiver.name);
+    	assertEquals("TEST", receiver.value);
     	if(hasSerializableLambdas)
-    		sender.testSignal.disconnect(receiver::receiveName);
+    		sender.testSignal.disconnect(receiver::receive);
     	else
     		sender.testSignal.disconnect(connection);
     	sender.testSignal.emit("TEST2");
-    	assertEquals("TEST", receiver.name);
+    	assertEquals("TEST", receiver.value);
     }
     
     @Test
@@ -346,21 +515,21 @@ public class TestSignals extends ApplicationInitializer{
     	}
     	Sender sender = new Sender();
     	class Receiver{
-    		String name;
-    		public void receiveName(String name) {
-    			this.name = name;
+    		String value;
+    		public void receive(String value) {
+    			this.value = value;
     		}
     	}
     	Receiver receiver = new Receiver();
-    	QMetaObject.Connection connection = sender.testSignal.connect(receiver::receiveName);
+    	QMetaObject.Connection connection = sender.testSignal.connect(receiver::receive);
     	sender.testSignal.emit("TEST");
-    	assertEquals("TEST", receiver.name);
+    	assertEquals("TEST", receiver.value);
     	if(hasSerializableLambdas)
-    		sender.testSignal.disconnect(receiver::receiveName);
+    		sender.testSignal.disconnect(receiver::receive);
     	else
     		sender.testSignal.disconnect(connection);
     	sender.testSignal.emit("TEST2");
-    	assertEquals("TEST", receiver.name);
+    	assertEquals("TEST", receiver.value);
     }
     
     @Test
@@ -540,6 +709,24 @@ public class TestSignals extends ApplicationInitializer{
 		});
     	object.mySignal.emit();
     	assertTrue(invoked.get());
+    }
+    
+    @Test
+    public void testRuntimeConnect(){
+    	QMetaObject.Connection connection;
+    	QDeclarableSignals.Signal2<?,?> sg;
+    	if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+    		@SuppressWarnings({ "rawtypes", "unchecked" })
+			QDeclarableSignals.Signal2<String, ClassLoader> loadLibrary = new QDeclarableSignals.Signal2(String.class, ClassLoader.class);
+    		sg = loadLibrary;
+    		connection = loadLibrary.connect(Runtime.getRuntime(), "load(String, ClassLoader)");
+    	}else {
+    		@SuppressWarnings({ "rawtypes", "unchecked" })
+    		QDeclarableSignals.Signal2<Class<?>, String> loadLibrary = new QDeclarableSignals.Signal2(Class.class, String.class);
+    		sg = loadLibrary;
+    		connection = loadLibrary.connect(Runtime.getRuntime(), "load0(Class, String)");
+    	}
+    	assertTrue(connection.isConnected());
     }
 
     public static void main(String args[]) {

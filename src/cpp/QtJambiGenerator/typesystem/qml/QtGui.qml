@@ -3590,6 +3590,10 @@ TypeSystem{
         EnumType{
             name: "Unit"
         }
+        EnumType{
+            name: "OutOfBoundsPolicy"
+            since: 6.8
+        }
     }
     
     NamespaceType{
@@ -3628,6 +3632,11 @@ TypeSystem{
 
         EnumType{
             name: "TextBoundaryType"
+        }
+
+        EnumType{
+            name: "Attribute"
+            since: 6.8
         }
 
         ValueType{
@@ -4223,6 +4232,11 @@ TypeSystem{
     InterfaceType{
         name: "QAccessibleHyperlinkInterface"
         since: [6, 2]
+    }
+
+    InterfaceType{
+        name: "QAccessibleAttributesInterface"
+        since: 6.8
     }
     
     ObjectType{
@@ -5313,7 +5327,7 @@ TypeSystem{
     ValueType{
         name: "QBitmap"
         noImplicitConstructors: true
-        threadAffinity: "pixmap"
+        threadAffinity: Affinity.Pixmap
         ModifyFunction{
             signature: "operator=(QPixmap)"
             remove: RemoveFlag.All
@@ -5638,7 +5652,7 @@ TypeSystem{
     
     ValueType{
         name: "QCursor"
-        threadAffinity: "pixmap"
+        threadAffinity: Affinity.Pixmap
         ExtraIncludes{
             Include{
                 fileName: "QPixmap"
@@ -7250,7 +7264,10 @@ const char* %out = info.name;
         EnumType{
             name: "State"
         }
-        threadAffinity: "pixmap"
+        EnumType{
+            name: "ThemeIcon"
+        }
+        threadAffinity: Affinity.Pixmap
         ModifyFunction{
             signature: "QIcon()"
             threadAffinity: Affinity.Pixmap
@@ -7338,11 +7355,11 @@ switch(%1){
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 case QIconEngine::IconNameHook:
     %out = QtJambiAPI::convertQStringToJavaObject(%env, reinterpret_cast<QString*>(%in));
-    %scope.addObjectInvalidation(%env, %out, true);
+    %scope.addObjectInvalidation(%env, %out);
     break;
 case QIconEngine::AvailableSizesHook:
     %out = qtjambi_cast<jobject>(%env, reinterpret_cast<QIconEngine::AvailableSizesArgument*>(%in));
-    %scope.addObjectInvalidation(%env, %out, true);
+    %scope.addObjectInvalidation(%env, %out);
     break;
 #endif
 case QIconEngine::IsNullHook:
@@ -7354,7 +7371,7 @@ case QIconEngine::IsNullHook:
     break;
 case QIconEngine::ScaledPixmapHook:
     %out = qtjambi_cast<jobject>(%env, reinterpret_cast<QIconEngine::ScaledPixmapArgument*>(%in));
-    %scope.addObjectInvalidation(%env, %out, true);
+    %scope.addObjectInvalidation(%env, %out);
     break;
 default:
     switch(__jni_env->GetObjectRefType(jobject(data1))){
@@ -9010,22 +9027,27 @@ default:
         }
         InjectCode{
             target: CodeClass.DestructorFunction
-            Text{content: "if(QPainter* painter = %shelltype::sharedPainter()){\n" +
-                          "    if(painter->isActive()){\n" +
-                          "        painter->end();\n" +
-                          "    }\n" +
-                          "}"}
+            Text{content: String.raw`
+if(QPainter* painter = %oshellclass::sharedPainter()){
+    if(painter->isActive()){
+        painter->end();
+    }
+}
+                `}
         }
         InjectCode{
             target: CodeClass.DeleterFunction
-            Text{content: "struct PaintDeviceAccess : QPaintDevice{\n" +
-                          "    inline QPainter* getSharedPainter() const { return sharedPainter(); }\n" +
-                          "};\n" +
-                          "if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(dynamic_cast<QPaintDevice*>(%this))->getSharedPainter()){\n" +
-                          "    if(painter->isActive()){\n" +
-                          "        painter->end();\n" +
-                          "    }\n" +
-                          "}"}
+            Text{content: String.raw`
+struct PaintDeviceAccess : QPaintDevice{
+    inline QPainter* getSharedPainter() const { return sharedPainter(); }
+};
+QPaintDevice* device = %this;
+if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPainter()){
+    if(painter->isActive()){
+        painter->end();
+    }
+}
+                `}
         }
         ModifyFunction{
             signature: "devicePixelRatio()const"
@@ -9302,7 +9324,7 @@ default:
     
     ObjectType{
         name: "QPaintEngineState"
-        targetType: "final class"
+        forceFinal: true
         generate: "no-shell"
         noMetaType: true
         ExtraIncludes{
@@ -9341,6 +9363,29 @@ default:
         EnumType{
             name: "ElementType"
         }
+        ValueType{
+            name: "Element"
+            ModifyField{
+                name: "x"
+                write: false
+            }
+            ModifyField{
+                name: "y"
+                write: false
+            }
+            ModifyField{
+                name: "type"
+                write: false
+            }
+            Include{
+                fileName: "QPainterPath"
+                location: Include.Global
+            }
+            ModifyFunction{
+                signature: "operator QPointF()const"
+                rename: "toPoint"
+            }
+        }
         ModifyFunction{
             signature: "operator|(const QPainterPath &)const"
             remove: RemoveFlag.All
@@ -9373,34 +9418,6 @@ default:
         }
     }
     
-    ValueType{
-        name: "QPainter::PixmapFragment"
-    }
-    
-    ValueType{
-        name: "QPainterPath::Element"
-        ModifyField{
-            name: "x"
-            write: false
-        }
-        ModifyField{
-            name: "y"
-            write: false
-        }
-        ModifyField{
-            name: "type"
-            write: false
-        }
-        Include{
-            fileName: "QPainterPath"
-            location: Include.Global
-        }
-        ModifyFunction{
-            signature: "operator QPointF()const"
-            rename: "toPoint"
-        }
-    }
-    
     ObjectType{
         name: "QPainterPathStroker"
     }
@@ -9420,6 +9437,10 @@ default:
                 fileName: "utils_p.h"
                 location: Include.Local
             }
+        }
+
+        ValueType{
+            name: "PixmapFragment"
         }
 
         EnumType{
@@ -10225,6 +10246,10 @@ default:
             signature: "devType() const"
             remove: RemoveFlag.All
         }
+        EnumType{
+            name: "ColorModel"
+            since: 6.8
+        }
     }
     
     ValueType{
@@ -10253,7 +10278,7 @@ default:
         Rejection{
             functionName: "grabWindow"
         }
-        threadAffinity: "pixmap"
+        threadAffinity: Affinity.Pixmap
         noImplicitConstructors: true
         ModifyFunction{
             signature: "devType() const"
@@ -11260,6 +11285,13 @@ default:
     
     ValueType{
         name: "QTextCursor"
+        InjectCode{
+            position: Position.Comment
+            target: CodeClass.Java
+            Text{
+                content: String.raw`<p>Either each <code>QTextCursor</code> object or the <code>QTextDocument</code> object should be explicitly disposed by calling <code>dispose()</code> to avoid crashes during garbage collection.</p>`
+            }
+        }
 
         EnumType{
             name: "MoveMode"
@@ -11272,7 +11304,7 @@ default:
         EnumType{
             name: "SelectionType"
         }
-        threadAffinity: "%1->isNull() ? nullptr : %1->document()"
+        threadAffinity: "getPointerOwner(%1)"
         ExtraIncludes{
             Include{
                 fileName: "QTextBlock"
@@ -11533,6 +11565,14 @@ default:
     
     ObjectType{
         name: "QTextDocument"
+
+        InjectCode{
+            position: Position.Comment
+            target: CodeClass.Java
+            Text{
+                content: String.raw`<p>Either the <code>QTextDocument</code> object or each associated <code>QTextCursor</code> object should be explicitly disposed by calling <code>dispose()</code> to avoid crashes during garbage collection.</p>`
+            }
+        }
 
         FunctionalType{
             name: "ResourceProvider"
@@ -12240,6 +12280,14 @@ default:
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
             since: [6, 1]
         }
         ModifyFunction{
@@ -12248,12 +12296,28 @@ default:
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "focusInEvent(QFocusEvent*)"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -12262,12 +12326,28 @@ default:
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "hideEvent(QHideEvent*)"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -12276,12 +12356,28 @@ default:
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "keyReleaseEvent(QKeyEvent*)"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -12290,12 +12386,28 @@ default:
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "mouseMoveEvent(QMouseEvent*)"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -12304,12 +12416,28 @@ default:
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "mouseReleaseEvent(QMouseEvent*)"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -12318,12 +12446,28 @@ default:
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "resizeEvent(QResizeEvent*)"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -12332,12 +12476,28 @@ default:
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "tabletEvent(QTabletEvent*)"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ModifyFunction{
@@ -12346,12 +12506,28 @@ default:
                 index: 1
                 invalidateAfterUse: true
             }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
+            }
         }
         ModifyFunction{
             signature: "wheelEvent(QWheelEvent*)"
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
         }
         ExtraIncludes{
@@ -12590,6 +12766,14 @@ default:
             ModifyArgument{
                 index: 1
                 invalidateAfterUse: true
+            }
+            InjectCode{
+                target: CodeClass.Java
+                ArgumentMap{
+                    index: 1
+                    metaName: "%1"
+                }
+                Text{content: "java.util.Objects.requireNonNull(%1, \"Argument '%1': null not expected.\");"}
             }
             isPaintMethod: true
         }
@@ -12906,6 +13090,14 @@ default:
         }
         EnumType{
             name: "TransferFunction"
+        }
+        EnumType{
+            name: "ColorModel"
+            since: 6.8
+        }
+        EnumType{
+            name: "TransformModel"
+            since: 6.8
         }
         since: [5, 14]
     }
@@ -16105,7 +16297,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_1_0"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_1_0_template_full"
         }
@@ -16115,7 +16307,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_1_1"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_1_0_template_full"
         }
@@ -16128,7 +16320,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_1_2"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_1_0_template_full"
         }
@@ -16141,7 +16333,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_1_3"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_1_0_template_full"
         }
@@ -16154,7 +16346,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_1_4"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_1_4A"
         }
@@ -16170,7 +16362,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_1_5"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         Import{
             template: "QOpenGLFunctions_1_4A"
         }
@@ -16192,7 +16384,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_2_0"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QSharedPointer"
@@ -16214,7 +16406,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_2_1"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QSharedPointer"
@@ -16236,7 +16428,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_3_0"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QSharedPointer"
@@ -16261,7 +16453,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_3_1"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QSharedPointer"
@@ -16286,7 +16478,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_3_2_Compatibility"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QSharedPointer"
@@ -16314,7 +16506,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_3_2_Core"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QSharedPointer"
@@ -16342,7 +16534,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_3_3_Compatibility"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QSharedPointer"
@@ -16370,7 +16562,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_3_3_Core"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QSharedPointer"
@@ -16398,7 +16590,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_4_0_Compatibility"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QSharedPointer"
@@ -16426,7 +16618,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_4_0_Core"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QSharedPointer"
@@ -16454,7 +16646,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_4_1_Compatibility"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QSharedPointer"
@@ -16482,7 +16674,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_4_1_Core"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QSharedPointer"
@@ -16510,7 +16702,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_4_2_Compatibility"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QSharedPointer"
@@ -16538,7 +16730,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_4_2_Core"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QSharedPointer"
@@ -16566,7 +16758,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_4_3_Compatibility"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QSharedPointer"
@@ -16594,7 +16786,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_4_3_Core"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QSharedPointer"
@@ -16622,7 +16814,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_4_4_Compatibility"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QSharedPointer"
@@ -16650,7 +16842,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_4_4_Core"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QSharedPointer"
@@ -16678,7 +16870,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_4_5_Compatibility"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QSharedPointer"
@@ -16706,7 +16898,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_4_5_Core"
         ppCondition: "!defined(QT_NO_OPENGL) && !defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QSharedPointer"
@@ -16734,7 +16926,7 @@ default:
     ObjectType{
         name: "QOpenGLFunctions_ES2"
         ppCondition: "defined(QT_OPENGL_ES_2)"
-        targetType: "final class"
+        forceFinal: true
         ExtraIncludes{
             Include{
                 fileName: "QtCore/QSharedPointer"
@@ -17721,6 +17913,9 @@ default:
     ObjectType{
         name: "QUtiMimeConverter"
         ppCondition: "defined(Q_OS_MACOS)"
+        EnumType{
+            name: "HandlerScopeFlag"
+        }
         since: 6.5
     }
 

@@ -58,10 +58,13 @@ jobject CoreAPI::javaObject(QtJambiNativeID nativeId, JNIEnv* env)
 
 jobject CoreAPI::fromDestroyedQObject(JNIEnv *env, QObject* object)
 {
+    jobject result{nullptr};
     if(QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForQObject(object)){
-        return link->getJavaObjectLocalRef(env);
+        result = link->getJavaObjectLocalRef(env);
     }
-    return nullptr;
+    if(!result)
+        result = QtJambiAPI::convertQObjectToJavaObject(env, object);
+    return result;
 }
 
 jobject CoreAPI::convertReflectedMethodToMeta(JNIEnv * env, jlong metaObjectPointer, jobjectArray ok)
@@ -681,7 +684,7 @@ jobject CoreAPI::metaObjectCast(JNIEnv *env, jobject object, jclass targetType){
             void* targetTypePointer = nullptr;
             if(objectLink->isQObject()){
                 if(isInterface(*targetTypeId)){
-                    if(const char* iid = registeredInterfaceID(*targetTypeId)){
+                    if(const char* iid = registeredInterfaceIDForClassName(targetTypeJavaName)){
                         targetTypePointer = objectLink->qobject()->qt_metacast(iid);
                     }
                     if(!targetTypePointer){
@@ -1419,6 +1422,10 @@ jclass CoreAPI::getClassForMetaType(JNIEnv *env, const QMetaType& metaType)
 }
 
 QVariant CoreAPI::convertCheckedObjectToQVariant(JNIEnv *env, jobject object, const QMetaType& metaType){
+    if(env->ExceptionCheck()){
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+    }
     if(env->IsSameObject(object, nullptr)){
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
         return QVariant(metaType, nullptr);
@@ -1485,7 +1492,7 @@ jobject CoreAPI::getExtraSignal(JNIEnv *env, QtJambiNativeID sender__id, QtJambi
         if(QSharedPointer<QtJambiLink> sender = QtJambiLink::fromNativeId(sender__id)){
             if(const QMetaMethod *method = QtJambiAPI::objectFromNativeId<QMetaMethod>(method__id)){
                 if(sender->isSmartPointer()){
-                    QSharedPointerToQObjectLink* slink = static_cast<QSharedPointerToQObjectLink*>(sender.data());
+                    SmartPointerToQObjectLink* slink = static_cast<SmartPointerToQObjectLink*>(sender.data());
                     return slink->getExtraSignal(env, *method);
                 }else{
                     PointerToQObjectLink* plink = static_cast<PointerToQObjectLink*>(sender.data());

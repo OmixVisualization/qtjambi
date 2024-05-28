@@ -169,6 +169,8 @@ public class GeneratorTask extends Task {
 		if(o instanceof String && !o.toString().isEmpty())
 			commandList.add("--static="+o);
 		o = AntUtil.getProperty(props, Constants.GENERATOR_PREPROC_FILE);
+		if(o==null)
+			o = AntUtil.getProperty(props, "ppfile");
 		if(o instanceof String && !o.toString().isEmpty())
 			commandList.add("--output-preprocess-file="+o);
 

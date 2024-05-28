@@ -340,6 +340,7 @@ void QmlTypeSystemReaderPrivate::parseTypeSystem(TypeSystem* typeSystem, const Q
                         {Position::Position3, CodeSnip::Position3},
                         {Position::Position4, CodeSnip::Position4},
                         {Position::Position5, CodeSnip::Position5},
+                        {Position::CommentIntro, CodeSnip::CommentIntro},
                         {Position::Comment, CodeSnip::Comment},
                         {Position::End, CodeSnip::End}
                     };
@@ -505,6 +506,7 @@ void QmlTypeSystemReaderPrivate::parseInjectCode(InjectCode* element, ComplexTyp
         {Position::HashCode, CodeSnip::HashCode},
         {Position::ToString, CodeSnip::ToString},
         {Position::Clone, CodeSnip::Clone},
+        {Position::CommentIntro, CodeSnip::CommentIntro},
         {Position::Comment, CodeSnip::Comment},
         {Position::End, CodeSnip::End}
     };
@@ -553,6 +555,7 @@ void QmlTypeSystemReaderPrivate::parseInjectCode(InjectCode* element, Functional
         {Position::HashCode, CodeSnip::HashCode},
         {Position::ToString, CodeSnip::ToString},
         {Position::Clone, CodeSnip::Clone},
+        {Position::CommentIntro, CodeSnip::CommentIntro},
         {Position::Comment, CodeSnip::Comment},
         {Position::End, CodeSnip::End}
     };
@@ -851,10 +854,7 @@ void QmlTypeSystemReaderPrivate::parseAttributesOfComplexType(ComplexType* eleme
                 ctype->designatedInterface()->setInclude(incl);
         }
     }
-    QString targetType = element->getTargetType();
-    if (!targetType.isEmpty()){
-        ctype->setTargetType(targetType);
-    }
+    ctype->setForceFinal(element->getForceFinal());
     ctype->setSkipMetaTypeRegistration(element->getNoMetaType());
     if (element->getDisableNativeIdUsage())
         ctype->disableNativeIdUsage();
@@ -869,11 +869,38 @@ void QmlTypeSystemReaderPrivate::parseAttributesOfComplexType(ComplexType* eleme
     ctype->setNotAssignable(element->getNotAssignable());
     ctype->setNotMoveAssignable(element->getNotMoveAssignable());
     ctype->setNotCloneable(element->getNotCloneable());
+    ctype->setNoInstance(element->getNoInstance());
+    if(element->getNoInstance()){
+        ctype->setHasPrivateCopyConstructor();
+        ctype->setHasPrivateMoveConstructor();
+        ctype->setHasPrivateDefaultConstructor();
+        ctype->setHasPrivateMoveAssignment();
+        ctype->setHasPrivateDefaultAssignment();
+        ctype->setHasPrivateConstructors();
+    }
     if(!ctype->isNamespace() && !ctype->isIterator()){
-        QString threadAffine = element->getThreadAffinity();
-        if (!threadAffine.trimmed().isEmpty()){
-            ctype->setThreadAffine();
-            ctype->setThreadAffinity(threadAffine);
+        if(element->getThreadAffinity().userType()==QMetaType::QString){
+            if(!element->getThreadAffinity().toString().isEmpty()){
+                ctype->setThreadAffine();
+                ctype->setThreadAffinity(element->getThreadAffinity().toString());
+            }
+        }else if(element->getThreadAffinity().canConvert<int>()){
+            bool ok = false;
+            int v = element->getThreadAffinity().toInt(&ok);
+            if(ok){
+                switch(v){
+                case Affinity::UI:
+                    ctype->setThreadAffine();
+                    ctype->setThreadAffinity("ui");
+                    break;
+                case Affinity::Pixmap:
+                    ctype->setThreadAffine();
+                    ctype->setThreadAffinity("pixmap");
+                    break;
+                default:
+                    break;
+                }
+            }
         }
     }
 
@@ -914,8 +941,6 @@ void QmlTypeSystemReaderPrivate::parseAttributesOfComplexType(ComplexType* eleme
     ctype->setDefaultSuperclass(defaultSuperclass);
     ctype->setImplements(implements);
     if(ctype->designatedInterface()){
-        if (!targetType.isEmpty())
-            ctype->designatedInterface()->setTargetType(targetType);
         ctype->designatedInterface()->setGenericClass(ctype->isGenericClass());
         ctype->designatedInterface()->setTargetTypeSystem(m_defaultPackage);
         ctype->designatedInterface()->setTargetLangPackage(package);
@@ -1433,6 +1458,7 @@ void QmlTypeSystemReaderPrivate::parseDelegate(Delegate* element, AbstractFuncti
 
                 static const QHash<Position::Entries, CodeSnip::Position> positionNames{
                     {Position::Beginning, CodeSnip::Beginning},
+                    {Position::CommentIntro, CodeSnip::CommentIntro},
                     {Position::Comment, CodeSnip::Comment},
                     {Position::End, CodeSnip::End}
                 };
@@ -1934,6 +1960,7 @@ TemplateInstantiation QmlTypeSystemReaderPrivate::parseInstantiation(Instantiati
                     {Position::Position3, CodeSnip::Position3},
                     {Position::Position4, CodeSnip::Position4},
                     {Position::Position5, CodeSnip::Position5},
+                    {Position::CommentIntro, CodeSnip::CommentIntro},
                     {Position::Comment, CodeSnip::Comment},
                     {Position::End, CodeSnip::End}
                 };
@@ -2198,6 +2225,7 @@ void QmlTypeSystemReaderPrivate::parseModifyFunction(ModifyFunction* element, Ty
                         {Position::Position3, CodeSnip::Position3},
                         {Position::Position4, CodeSnip::Position4},
                         {Position::Position5, CodeSnip::Position5},
+                        {Position::CommentIntro, CodeSnip::CommentIntro},
                         {Position::Comment, CodeSnip::Comment},
                         {Position::End, CodeSnip::End}
                     };
@@ -2816,6 +2844,14 @@ void QmlTypeSystemReaderPrivate::parseEnumType(const QString& nameSpace, EnumTyp
                         }
                         eentry->addRenamedEnumValue(name, rename);
                     }
+                }else if(Rename* childElement = qobject_cast<Rename*>(item)){
+                    if (checkQtVersion(childElement)){
+                        QString name = childElement->getTo();
+                        if (name.isEmpty()) {
+                            TypesystemException::raise(QStringLiteral(u"No 'to' attribute specified for RenameEnumValue"));
+                        }
+                        eentry->setTargetLangName(name);
+                    }
                 }else if(InjectCode* childElement = qobject_cast<InjectCode*>(item)){
                     static const QHash<CodeClass::Entries, TS::Language> languageNames{
                         {CodeClass::Java, TS::TargetLangCode},
@@ -2832,6 +2868,7 @@ void QmlTypeSystemReaderPrivate::parseEnumType(const QString& nameSpace, EnumTyp
                         {Position::Position3, CodeSnip::Position3},
                         {Position::Position4, CodeSnip::Position4},
                         {Position::Position5, CodeSnip::Position5},
+                        {Position::CommentIntro, CodeSnip::CommentIntro},
                         {Position::Comment, CodeSnip::Comment},
                         {Position::End, CodeSnip::End}
                     };
@@ -2863,7 +2900,7 @@ void QmlTypeSystemReaderPrivate::parseEnumType(const QString& nameSpace, EnumTyp
                 QStringList lst = n.split("::");
                 if (QStringList(lst.mid(0, lst.size() - 1)).join("::") != QStringList(names.mid(0, names.size() - 1)).join("::")) {
                     ReportHandler::warning(QStringLiteral(u"Enum %1 and flags %2 differ in qualifiers")
-                                           .arg(eentry->qualifiedCppName()));
+                                           .arg(eentry->qualifiedCppName(), flags));
                 }
 
                 ftype->setFlagsName(lst.last());

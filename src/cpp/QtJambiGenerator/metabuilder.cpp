@@ -151,6 +151,8 @@ void MetaBuilder::checkFunctionModifications() {
             const FunctionModificationList& functionModifications = centry->functionModifications();
             MetaClass *clazz = nullptr;
             for(const FunctionModification& modification : functionModifications) {
+                if(centry->usedFunctionSignatures().contains(modification.signature))
+                    continue;
                 QString name = modification.signature.trimmed();
                 if(!name.isEmpty()){
                     name = name.mid(0, modification.signature.indexOf("("));
@@ -206,7 +208,7 @@ void MetaBuilder::checkFunctionModifications() {
                         }
                     }
 
-                    if (!found && (clazz->typeEntry()->codeGeneration() & ~TypeEntry::InheritedByTypeSystem)!=TypeEntry::GenerateNothing && modification.template_instantiations.isEmpty()) {
+                    if (!found && (clazz->typeEntry()->codeGeneration() & ~(TypeEntry::GenerateNoShell | TypeEntry::InheritedByTypeSystem))!=TypeEntry::GenerateNothing && modification.template_instantiations.isEmpty()) {
                         QString warning
                         = QString("signature '%1' for function modification in '%2' not found. Possible candidates: %3")
                           .arg(modification.originalSignature.isEmpty() ? modification.signature : modification.originalSignature, clazz->qualifiedCppName(), possibleSignatures.join(",\n    "));
@@ -552,6 +554,9 @@ bool MetaBuilder::build(FileModelItem&& dom) {
                 cls->addEnum(enm);
                 enm->setEnclosingClass(cls);
             }
+        }else{
+            ReportHandler::warning(QString("Unknown Java scope '%1' for enum %2.")
+                                   .arg(enm->typeEntry()->javaScope(), enm->typeEntry()->name()));
         }
     }
 
@@ -643,7 +648,7 @@ bool MetaBuilder::build(FileModelItem&& dom) {
                 && !entry->isString()
                 && !entry->isQChar()
                 && !entry->isContainer()
-                && !entry->isPointerContainer()
+                && !entry->isSmartPointer()
                 && !entry->isInitializerList()
                 && !entry->isQMetaObjectType()
                 && !entry->isQMetaObjectConnectionType()
@@ -874,6 +879,7 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                 if(ns){
                     meta_class->setHref(ns->href());
                     meta_class->setBrief(ns->brief());
+                    meta_class->setSince(ns->since());
                 }
                 for(MetaFunction * meta_function : meta_class->functions()){
                     for(int i=0; i<meta_function->arguments().size(); ++i){
@@ -911,6 +917,7 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                     if(functions.size()==1){
                         meta_function->setHref(functions[0]->href());
                         meta_function->setBrief(functions[0]->brief());
+                        meta_function->setSince(functions[0]->since());
                     }else{
                         for(const DocFunction* function : qAsConst(functions)){
                             if(meta_function->isConstant()==function->isConst()
@@ -981,6 +988,7 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                                 if(ok){
                                     meta_function->setHref(function->href());
                                     meta_function->setBrief(function->brief());
+                                    meta_function->setSince(function->since());
                                     break;
                                 }else if(meta_function->functionTemplate().first){
                                     ok = true;
@@ -1040,6 +1048,7 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                                     if(ok){
                                         meta_function->setHref(function->href());
                                         meta_function->setBrief(function->brief());
+                                        meta_function->setSince(function->since());
                                         break;
                                     }
                                 }
@@ -1051,6 +1060,7 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                                     || (meta_function->functionTemplate().first && function->minimalSignature()==meta_function->functionTemplate().first->minimalSignatureNoTemplate())){
                                     meta_function->setHref(function->href());
                                     meta_function->setBrief(function->brief());
+                                    meta_function->setSince(function->since());
                                     break;
                                 }
                             }
@@ -1087,6 +1097,7 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                 if(cls){
                     meta_class->setHref(cls->href());
                     meta_class->setBrief(cls->brief());
+                    meta_class->setSince(cls->since());
                     for(MetaFunction * meta_function : meta_class->functions()){
                         for(int i=0; i<meta_function->arguments().size(); ++i){
                             MetaArgument *argument = meta_function->arguments()[i];
@@ -1134,6 +1145,7 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                         if(functions.size()==1){
                             meta_function->setHref(functions[0]->href());
                             meta_function->setBrief(functions[0]->brief());
+                            meta_function->setSince(functions[0]->since());
                         }else for(const DocFunction* function : qAsConst(functions)){
                             if(meta_function->isConstant()==function->isConst()
                                     && meta_function->isStatic()==function->isStatic()
@@ -1197,6 +1209,7 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                                 if(ok){
                                     meta_function->setHref(function->href());
                                     meta_function->setBrief(function->brief());
+                                    meta_function->setSince(function->since());
                                     break;
                                 }
                             }
@@ -1205,6 +1218,7 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                                 if(const DocProperty* prop = _cls->getProperty(meta_function->propertySpec()->name())){
                                     meta_function->setHref(prop->href());
                                     meta_function->setBrief(prop->brief());
+                                    meta_function->setSince(prop->since());
                                 }
                         }
                         if(meta_function->href().isEmpty()){
@@ -1213,6 +1227,7 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                                         || (meta_function->functionTemplate().first && function->minimalSignature()==meta_function->functionTemplate().first->minimalSignatureNoTemplate())){
                                     meta_function->setHref(function->href());
                                     meta_function->setBrief(function->brief());
+                                    meta_function->setSince(function->since());
                                     break;
                                 }
                             }
@@ -1223,6 +1238,7 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                         if(const DocVariable* variable = cls->getVariable(meta_field->name())){
                             meta_field->setHref(variable->href());
                             meta_field->setBrief(variable->brief());
+                            meta_field->setSince(variable->since());
                         }
                     }
                 }
@@ -1307,6 +1323,7 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                     if(docEnum){
                         meta_enum->setHref(docEnum->href());
                         meta_enum->setBrief(docEnum->brief());
+                        meta_enum->setSince(docEnum->since());
                     }
                 }
 
@@ -1380,6 +1397,7 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                         if(const DocTypeDef* def = embeddingClass->getTypeDef(functionalName)){
                             meta_class->setHref(def->href());
                             meta_class->setBrief(def->brief());
+                            meta_class->setSince(def->since());
                         }
                     }
                 }
@@ -1387,6 +1405,7 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
             if(cls){
                 meta_class->setHref(cls->href());
                 meta_class->setBrief(cls->brief());
+                meta_class->setSince(cls->since());
             }
         }
         for(MetaEnum* meta_enum : qAsConst(m_enums)){
@@ -1420,6 +1439,7 @@ void MetaBuilder::applyDocs(const DocModel* docModel){
                 if(docEnum){
                     meta_enum->setHref(docEnum->href());
                     meta_enum->setBrief(docEnum->brief());
+                    meta_enum->setSince(docEnum->since());
                 }
             }
         }
@@ -3562,6 +3582,8 @@ MetaEnum *MetaBuilder::traverseEnum(EnumModelItem enum_item, MetaClass *enclosin
         eentry->setTargetTypeSystem(enclosing->typeEntry()->targetTypeSystem());
         ReportHandler::debugTypes("Adding to TypeDatabase(1): " + eentry->name());
         m_database->addType(type_entry = eentry.release());
+//        ReportHandler::warning(QStringLiteral(u"Adding unknown enum %1")
+//                               .arg(type_entry->qualifiedCppName()));
     }
 
     if (!type_entry || !type_entry->isEnum()) {
@@ -3846,8 +3868,11 @@ MetaClass *MetaBuilder::traverseClass(ClassModelItem class_item, QList<PendingCl
         }else if(type->isQVariant() && m_database->qvariantType()){
             type = m_database->qvariantType();
         }else if(type->isQChar() && m_database->qcharType()){
-            type = m_database->qcharType();
+            if(full_class_name=="QChar")
+                type = m_database->qcharType();
         }
+    }else if(full_class_name=="QChar" && m_database->qcharType()){
+        type = m_database->qcharType();
     }
     if(type && type->designatedInterface())
         type = type->designatedInterface();
@@ -3868,6 +3893,50 @@ MetaClass *MetaBuilder::traverseClass(ClassModelItem class_item, QList<PendingCl
     }
 
     if (reason != NoReason) {
+        if (type && ((type->codeGeneration() & ~TypeEntry::InheritedByTypeSystem) == TypeEntry::GenerateNothing)){
+            bool hasEnums = false;
+            bool hasInnerClasses = false;
+            const TypeEntryHash& entries = m_database->allEntries();
+            QString _full_class_name = full_class_name + "::";
+            for(const QList<TypeEntry *>& lst : entries) {
+                for(const TypeEntry * entry : lst){
+                    if(entry->isEnum()
+                            && !reinterpret_cast<const EnumTypeEntry *>(entry)->javaScope().isEmpty()
+                            && entry->qualifiedCppName().startsWith(_full_class_name)){
+                        hasEnums = true;
+                        break;
+                    }
+                }
+            }
+            for(const QList<TypeEntry *>& lst : entries) {
+                for(const TypeEntry * entry : lst){
+                    if(entry->isComplex()
+                            && (reinterpret_cast<const ComplexTypeEntry *>(entry)->codeGeneration() & ~TypeEntry::InheritedByTypeSystem) == TypeEntry::GenerateAll
+                            && entry->qualifiedCppName().startsWith(_full_class_name)){
+                        hasInnerClasses = true;
+                        break;
+                    }
+                }
+            }
+            if(hasEnums){
+                QSet<QString> metaEnums;
+                for(const FunctionModelItem& function_item : class_item->functions()){
+                    if(function_item->name()==QStringLiteral("qt_getEnumMetaObject")
+                            && function_item->arguments().size()==1){
+                        metaEnums << function_item->arguments()[0]->type().toString();
+                    }
+                }
+                traverseEnums(model_dynamic_cast<ScopeModelItem>(class_item), nullptr, metaEnums, class_item->flagsMap());
+            }
+            if(hasInnerClasses){
+                for(ClassModelItem ci : class_item->classes()) {
+                    MetaClass *cl = traverseClass(ci, pendingClasses, pendingFunctionals);
+                    if (cl)
+                        addClass(cl);
+                }
+            }
+        }
+
         if(class_item->isTemplate() && !class_item->templateInstantiations().isEmpty()){
             QStringList targs;
             for(const TypeInfo& ti : class_item->templateInstantiations()){
@@ -4070,6 +4139,10 @@ MetaClass *MetaBuilder::traverseClass(ClassModelItem class_item, QList<PendingCl
             }
         }
     }
+    if(type->getNoInstance()){
+        meta_class->setHasJustPrivateConstructors(true);
+        meta_class->setHasEqualsOperator(false);
+    }
     return meta_class;
 }
 
@@ -4093,10 +4166,12 @@ MetaField *MetaBuilder::traverseField(VariableModelItem field) {
     if (m_database->isFieldRejected(class_name, field_name)) {
         if(field_name==QLatin1String("static_assert"))
             return nullptr;
-        if(m_current_class)
-            m_rejected_fields.insert({class_name + "::" + field_name, field->fileName()}, GenerationDisabled);
-        else
+        if(m_current_class){
+            if((m_current_class->typeEntry()->codeGeneration() & ~TypeEntry::InheritedByTypeSystem)==TypeEntry::GenerateAll)
+                m_rejected_fields.insert({class_name + "::" + field_name, field->fileName()}, GenerationDisabled);
+        }else{
             m_rejected_fields.insert({field_name, field->fileName()}, GenerationDisabled);
+        }
         return nullptr;
     }
 
@@ -4166,8 +4241,11 @@ void MetaBuilder::traverseFields(ScopeModelItem scope_item) {
                             meta_field->type()->setTypeEntry(targetClass->typeEntry());
                         }
                     }
+                }else if(targetClass->typeEntry()->getNoInstance()){
+                    delete meta_field;
+                    continue;
                 }
-                if(meta_field->type()->isPointerContainer()){
+                if(meta_field->type()->isSmartPointer()){
                     if(field->type().toString().startsWith("QScopedPointer<")
                             || field->type().toString().startsWith("QScopedArrayPointer<")
                             || field->type().toString().startsWith("std::unique_ptr<")){
@@ -4309,18 +4387,19 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
             }
         }
         if (function_item->isFriend() && !((function_item->hasBody() || function_item->isDllExported()) && function_scope.isEmpty())){
-            if(function_item->functionType() == CodeModel::Signal
-                    || function_item->functionType() == CodeModel::PrivateSignal){
-                m_rejected_signals.insert({_function_name, function_item->fileName()}, NoReason);
-            }else if(function_item->isTemplate()){
-                m_rejected_template_functions.insert({_function_name, function_item->fileName()}, NoReason);
-            }else{
-                m_rejected_functions.insert({_function_name, function_item->fileName()}, NoReason);
+            if(!m_current_class || (m_current_class->typeEntry()->codeGeneration() & ~TypeEntry::InheritedByTypeSystem)==TypeEntry::GenerateAll){
+                if(function_item->functionType() == CodeModel::Signal
+                        || function_item->functionType() == CodeModel::PrivateSignal){
+                    m_rejected_signals.insert({_function_name, function_item->fileName()}, NoReason);
+                }else if(function_item->isTemplate()){
+                    m_rejected_template_functions.insert({_function_name, function_item->fileName()}, NoReason);
+                }else{
+                    m_rejected_functions.insert({_function_name, function_item->fileName()}, NoReason);
+                }
             }
             continue;
         }
         MetaFunction *meta_function = traverseFunction(function_item, _function_name, tparams);
-
         if (meta_function) {
             if(!m_current_class){
                 meta_function->setFunctionType(MetaFunction::GlobalScopeFunction);
@@ -4492,6 +4571,16 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
             }
 
             if(targetClass){
+                if(targetClass->typeEntry()->getNoInstance()){
+                    if(!meta_function->isStatic()
+                            || meta_function->isConstructor()
+                            || meta_function->isDestructor()
+                            || meta_function->operatorType()!=OperatorType::None){
+                        delete meta_function;
+                        meta_function = nullptr;
+                        continue;
+                    }
+                }
                 if(meta_function->isStatic() && !meta_function->isConstructor() && !meta_function->isDestructor() && !meta_function->isEmptyFunction() && !meta_function->isInvalid() && !meta_function->isInGlobalScope()){
                     MetaClass* previousClass = targetClass;
                     while(targetClass->baseClass() && targetClass->typeEntry()->getPushUpStatics()){
@@ -4523,7 +4612,7 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                             if(arg->type()->typeEntry()->isQString())
                                 arg->type()->setTypeEntry(m_database->qstringType());
                         }
-                    }else if(targetClass->typeEntry()==m_database->qcharType()){
+                    }else if(targetClass->typeEntry()==m_database->qcharType() && !m_database->qcharType()->getNoInstance()){
                         if(meta_function->type() && meta_function->type()->typeEntry()->isQChar())
                             meta_function->type()->setTypeEntry(m_database->qcharType());
                         for(MetaArgument* arg : meta_function->arguments()){
@@ -4758,6 +4847,11 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                                         meta_function = nullptr;
                                         continue;
                                     }
+                                    if(cls->typeEntry()->getNoInstance()){
+                                        delete meta_function;
+                                        meta_function = nullptr;
+                                        continue;
+                                    }
                                     meta_function->setFunctionType(MetaFunction::GlobalScopeFunction);
                                     oldMinimalSignature = meta_function->minimalSignature();
                                     // Strip away last argument, since that is the containing object
@@ -4777,7 +4871,7 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                                             if(arg->type()->typeEntry()->isQString())
                                                 arg->type()->setTypeEntry(m_database->qstringType());
                                         }
-                                    }else if(cls->typeEntry()==m_database->qcharType()){
+                                    }else if(cls->typeEntry()==m_database->qcharType() && !m_database->qcharType()->getNoInstance()){
                                         if(meta_function->type() && meta_function->type()->typeEntry()->isQChar())
                                             meta_function->type()->setTypeEntry(m_database->qcharType());
                                         for(MetaArgument* arg : arguments){
@@ -4864,7 +4958,8 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                                         && meta_function->type()->typeEntry()==arguments[0]->type()->typeEntry()){
                                     if(meta_function->operatorType()==OperatorType::ShiftLeft && arguments[0]->type()->typeEntry()->qualifiedCppName()=="QDebug"){
                                         if (MetaClass *cls = argumentToClass(arguments[1]->type())) {
-                                            if (arguments[1]->type()->actualIndirections()<=1) {
+                                            if (arguments[1]->type()->actualIndirections()<=1
+                                                    && !cls->typeEntry()->getNoInstance()) {
                                                 cls->setToStringCapability(meta_function);
                                                 addInclude(cls->typeEntry(), function_item->fileName(), true);
                                             }
@@ -4875,7 +4970,8 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                                              && (arguments[0]->type()->typeEntry()->qualifiedCppName()=="QDataStream"
                                                 || arguments[0]->type()->typeEntry()->qualifiedCppName()=="QTextStream")){
                                         targetClass = nullptr;
-                                        if (MetaClass *cls = argumentToClass(arguments[1]->type())) {
+                                        MetaClass *cls = argumentToClass(arguments[1]->type());
+                                        if (cls && !cls->typeEntry()->getNoInstance()) {
                                             meta_function->setFunctionType(MetaFunction::GlobalScopeFunction);
                                             oldMinimalSignature = meta_function->minimalSignature();
                                             meta_function->setName(meta_function->operatorType()==OperatorType::ShiftRight ? "readFrom" : "writeTo");
@@ -5000,7 +5096,7 @@ void MetaBuilder::traverseFunctions(ScopeModelItem scope_item) {
                                             if(arg->type()->typeEntry()->isQString())
                                                 arg->type()->setTypeEntry(m_database->qstringType());
                                         }
-                                    }else if(cls->typeEntry()==m_database->qcharType()){
+                                    }else if(cls->typeEntry()==m_database->qcharType() && !m_database->qcharType()->getNoInstance()){
                                         if(meta_function->type() && meta_function->type()->typeEntry()->isQChar())
                                             meta_function->type()->setTypeEntry(m_database->qcharType());
                                         for(MetaArgument* arg : arguments){
@@ -5789,15 +5885,30 @@ bool MetaBuilder::setupFunctionTemplateInstantiations(MetaClass *meta_class){
                         }
                     }
 
+                    bool add = true;
                     if(!untreatedTemplateParameters.isEmpty()){
                         QStringList templ;
                         for(MetaTemplateParameter* tparam : untreatedTemplateParameters){
                             templ << (tparam->name().isEmpty() ? tparam->parameterType() : tparam->name());
                         }
                         ReportHandler::warning(QString("template method %1::%2 has uninstantiated parameters <%3>").arg(func->implementingClass()->qualifiedCppName(), func->minimalSignature(), templ.join(", ")));
+                        add = false;
                     }else if(func2->type() && func2->type()->typeUsagePattern()==MetaType::AutoPattern){
-                        ReportHandler::warning(QString("method %1::%2 returns auto").arg(func->implementingClass()->qualifiedCppName(), func->minimalSignature()));
-                    }else{
+                        add = false;
+                        for(int i=0; i<template_instantiation.argument_mods.size(); ++i){
+                            if(template_instantiation.argument_mods[i].index==0){
+                                if(!template_instantiation.argument_mods[i].modified_type.isEmpty()){
+                                    add = true;
+                                    func2->type()->setTypeEntry(new UnknownTypeEntry("auto"));
+                                    func2->type()->setTypeUsagePattern(MetaType::InvalidPattern);
+                                    break;
+                                }
+                            }
+                        }
+                        if(!add)
+                            ReportHandler::warning(QString("method %1::%2 returns auto").arg(func->implementingClass()->qualifiedCppName(), func->minimalSignature()));
+                    }
+                    if(add){
                         {
                             FunctionModification mod = *templateInstantiationPair.second;
                             if(mod.ppCondition.isEmpty())
@@ -6623,9 +6734,10 @@ void MetaBuilder::traverseEnums(ScopeModelItem scope_item, MetaClass *meta_class
             meta_enum->setOriginalAttributes(meta_enum->attributes());
             if(!meta_enum->typeEntry()->javaScope().isEmpty()){
                 m_scopeChangedEnums << meta_enum;
+            }else{
+                meta_class->addEnum(meta_enum);
+                meta_enum->setEnclosingClass(meta_class);
             }
-            meta_class->addEnum(meta_enum);
-            meta_enum->setEnclosingClass(meta_class);
         }
     }
 }
@@ -6808,7 +6920,7 @@ MetaFunction *MetaBuilder::traverseFunction(FunctionModelItem function_item, con
                     type->setTypeEntry(m_database->qvariantType());
                 }else if(type->typeEntry()->isQString() && m_current_class->typeEntry()==m_database->qstringType()){
                     type->setTypeEntry(m_database->qstringType());
-                }else if(type->typeEntry()->isQChar() && m_current_class->typeEntry()==m_database->qcharType()){
+                }else if(type->typeEntry()->isQChar() && m_current_class->typeEntry()==m_database->qcharType() && !m_database->qcharType()->getNoInstance()){
                     type->setTypeEntry(m_database->qcharType());
                 }
             }
@@ -6966,7 +7078,7 @@ MetaFunction *MetaBuilder::traverseFunction(FunctionModelItem function_item, con
                     argumentType->setTypeEntry(m_database->qvariantType());
                 }else if(argumentType->typeEntry()->isQString() && m_current_class->typeEntry()==m_database->qstringType()){
                     argumentType->setTypeEntry(m_database->qstringType());
-                }else if(argumentType->typeEntry()->isQChar() && m_current_class->typeEntry()==m_database->qcharType()){
+                }else if(argumentType->typeEntry()->isQChar() && m_current_class->typeEntry()==m_database->qcharType() && !m_database->qcharType()->getNoInstance()){
                     argumentType->setTypeEntry(m_database->qcharType());
                 }
             }
@@ -7190,13 +7302,15 @@ MetaFunction *MetaBuilder::traverseFunction(FunctionModelItem function_item, con
     if (!isRemoved && function_item->operatorType()!=OperatorType::None) {
         meta_function->setOperatorType(function_item->operatorType());
         auto rejectFunction = [&](){
-            if(function_item->functionType() == CodeModel::Signal
-                    || function_item->functionType() == CodeModel::PrivateSignal){
-                m_rejected_signals.insert({class_name + "::" + _function_name, function_item->fileName()}, GenerationDisabled);
-            }else if(function_item->isTemplate()){
-                m_rejected_template_functions.insert({class_name + "::" + _function_name, function_item->fileName()}, GenerationDisabled);
-            }else{
-                m_rejected_functions.insert({class_name + "::" + _function_name, function_item->fileName()}, GenerationDisabled);
+            if(!m_current_class || (m_current_class->typeEntry()->codeGeneration() & ~TypeEntry::InheritedByTypeSystem)==TypeEntry::GenerateAll){
+                if(function_item->functionType() == CodeModel::Signal
+                        || function_item->functionType() == CodeModel::PrivateSignal){
+                    m_rejected_signals.insert({class_name + "::" + _function_name, function_item->fileName()}, GenerationDisabled);
+                }else if(function_item->isTemplate()){
+                    m_rejected_template_functions.insert({class_name + "::" + _function_name, function_item->fileName()}, GenerationDisabled);
+                }else{
+                    m_rejected_functions.insert({class_name + "::" + _function_name, function_item->fileName()}, GenerationDisabled);
+                }
             }
         };
         switch(function_item->operatorType()){
@@ -8046,15 +8160,15 @@ MetaType *MetaBuilder::translateType(TypeInfo typei,
         }
         meta_type->addInstantiation(targ_type);
 
-    }else if (meta_type->typeEntry()->isPointerContainer()) {
-        PointerContainerTypeEntry::Type pointer_container_type = static_cast<const PointerContainerTypeEntry *>(type)->type();
-        if (    pointer_container_type == PointerContainerTypeEntry::QPointer
-             || pointer_container_type == PointerContainerTypeEntry::QSharedPointer
-             || pointer_container_type == PointerContainerTypeEntry::QWeakPointer
-             || pointer_container_type == PointerContainerTypeEntry::QScopedPointer
-             || pointer_container_type == PointerContainerTypeEntry::unique_ptr
-             || pointer_container_type == PointerContainerTypeEntry::shared_ptr
-             || pointer_container_type == PointerContainerTypeEntry::weak_ptr ) {
+    }else if (meta_type->typeEntry()->isSmartPointer()) {
+        SmartPointerTypeEntry::Type pointer_container_type = static_cast<const SmartPointerTypeEntry *>(type)->type();
+        if (    pointer_container_type == SmartPointerTypeEntry::QPointer
+             || pointer_container_type == SmartPointerTypeEntry::QSharedPointer
+             || pointer_container_type == SmartPointerTypeEntry::QWeakPointer
+             || pointer_container_type == SmartPointerTypeEntry::QScopedPointer
+             || pointer_container_type == SmartPointerTypeEntry::unique_ptr
+             || pointer_container_type == SmartPointerTypeEntry::shared_ptr
+             || pointer_container_type == SmartPointerTypeEntry::weak_ptr ) {
             Q_ASSERT(typei.arguments().size() >= 1);
             TypeInfo info = typei.arguments()[0];
             QList<bool> ic = info.indirections();
@@ -8422,8 +8536,8 @@ void MetaBuilder::decideUsagePattern(MetaType *meta_type) {
     } else if (type->isContainer() && meta_type->indirections().size() <= 1) {
         meta_type->setTypeUsagePattern(MetaType::ContainerPattern);
 
-    } else if (type->isPointerContainer() && meta_type->indirections().size() == 0) {
-        meta_type->setTypeUsagePattern(MetaType::PointerContainerPattern);
+    } else if (type->isSmartPointer() && meta_type->indirections().size() == 0) {
+        meta_type->setTypeUsagePattern(MetaType::SmartPointerPattern);
 
     } else if (type->isInitializerList() && meta_type->indirections().size() == 0) {
         meta_type->setTypeUsagePattern(MetaType::InitializerListPattern);
@@ -9794,12 +9908,12 @@ void MetaBuilder::setupConstructorAvailability(MetaClass *meta_class){
                             inheritingPublicDefaultAssignment = false;
                             break;
                         }
-                    }else if(field->type()->typeEntry()->isPointerContainer()){
-                        const PointerContainerTypeEntry* centry = reinterpret_cast<const PointerContainerTypeEntry*>(field->type()->typeEntry());
+                    }else if(field->type()->typeEntry()->isSmartPointer()){
+                        const SmartPointerTypeEntry* centry = reinterpret_cast<const SmartPointerTypeEntry*>(field->type()->typeEntry());
                         switch(centry->type()){
-                        case PointerContainerTypeEntry::QPointer:
-                        case PointerContainerTypeEntry::QScopedPointer:
-                        case PointerContainerTypeEntry::unique_ptr:
+                        case SmartPointerTypeEntry::QPointer:
+                        case SmartPointerTypeEntry::QScopedPointer:
+                        case SmartPointerTypeEntry::unique_ptr:
                             inheritingPublicDefaultAssignment = false;
                             break;
                         default:break;
@@ -9821,12 +9935,12 @@ void MetaBuilder::setupConstructorAvailability(MetaClass *meta_class){
                             inheritingPublicMoveAssignment = false;
                             break;
                         }
-                    }else if(field->type()->typeEntry()->isPointerContainer()){
-                        const PointerContainerTypeEntry* centry = reinterpret_cast<const PointerContainerTypeEntry*>(field->type()->typeEntry());
+                    }else if(field->type()->typeEntry()->isSmartPointer()){
+                        const SmartPointerTypeEntry* centry = reinterpret_cast<const SmartPointerTypeEntry*>(field->type()->typeEntry());
                         switch(centry->type()){
-                        case PointerContainerTypeEntry::QPointer:
-                        case PointerContainerTypeEntry::QScopedPointer:
-                        case PointerContainerTypeEntry::unique_ptr:
+                        case SmartPointerTypeEntry::QPointer:
+                        case SmartPointerTypeEntry::QScopedPointer:
+                        //case SmartPointerTypeEntry::unique_ptr:
                             inheritingPublicMoveAssignment = false;
                             break;
                         default:break;
@@ -10016,6 +10130,27 @@ void MetaBuilder::setupConstructorAvailability(MetaClass *meta_class){
                 }
             }
         }
+    }
+    QSet<const ComplexTypeEntry *> classes;
+    const MetaClass *_cls = meta_class;
+    while(_cls){
+        classes << (_cls->typeEntry()->designatedInterface() ? _cls->typeEntry()->designatedInterface() : _cls->typeEntry());
+        for(const MetaClass *ifc : _cls->interfaces()){
+            classes << (ifc->typeEntry()->designatedInterface() ? ifc->typeEntry()->designatedInterface() : ifc->typeEntry());
+        }
+        _cls = _cls->baseClass();
+    }
+    for(const ComplexTypeEntry * _cls : qAsConst(classes)){
+        for(const CodeSnip& snip : _cls->codeSnips()) {
+            if (snip.language == TS::DestructorFunction) {
+                if(snip.code().contains("%oshellclass")){
+                    meta_class->setNeedsOShellDestructor(true);
+                    break;
+                }
+            }
+        }
+        if(meta_class->needsOShellDestructor())
+            break;
     }
 }
 

@@ -286,6 +286,10 @@ JObjectWrapper::JObjectWrapper(jobject obj)
 {
     if(obj){
         if(JniEnvironment env{500}){
+            if(env->ExceptionCheck()){
+                env->ExceptionDescribe();
+                env->ExceptionClear();
+            }
             if(!env->IsSameObject(obj, nullptr)){
                 REF_JOBJECT;
                 m_data = static_cast<JObjectWrapperData*>(new JObjectGlobalWrapperData(env, obj));
@@ -297,6 +301,10 @@ JObjectWrapper::JObjectWrapper(jobject obj)
 JObjectWrapper::JObjectWrapper(JNIEnv *env, jobject obj, bool globalRefs)
     : m_data()
 {
+    if(env->ExceptionCheck()){
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+    }
     if(!env->IsSameObject(obj, nullptr)){
         REF_JOBJECT;
         m_data = globalRefs ? static_cast<JObjectWrapperData*>(new JObjectGlobalWrapperData(env, obj)) : static_cast<JObjectWrapperData*>(new JObjectWeakWrapperData(env, obj));
@@ -306,6 +314,10 @@ JObjectWrapper::JObjectWrapper(JNIEnv *env, jobject obj, bool globalRefs)
 JObjectWrapper::JObjectWrapper(JNIEnv *env, jobject obj, bool globalRefs, const std::type_info& typeId)
  : m_data()
 {
+    if(env->ExceptionCheck()){
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+    }
     if(!env->IsSameObject(obj, nullptr)){
         REF_JOBJECT;
         if(globalRefs){
@@ -556,6 +568,10 @@ jsize JObjectWrapper::arrayLength() const {
 
 JObjectWrapper& JObjectWrapper::operator=(jobject object) {
     if(JniEnvironment env{500}){
+        if(env->ExceptionCheck()){
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+        }
         if(env->IsSameObject(object, nullptr)){
             m_data.reset();
         }else if(Java::Runtime::Enum::isInstanceOf(env, object)

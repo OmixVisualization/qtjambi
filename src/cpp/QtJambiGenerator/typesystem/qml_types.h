@@ -127,9 +127,6 @@ public:
     bool getIsGeneric() const;
     void setIsGeneric(bool newIsGeneric);
 
-    const QString &getTargetType() const;
-    void setTargetType(const QString &newTargetType);
-
     bool getDisableNativeIdUsage() const;
     void setDisableNativeIdUsage(bool newDisableNativeIdUsage);
 
@@ -142,8 +139,8 @@ public:
     bool getForceFriendly() const;
     void setForceFriendly(bool newForceFriendly);
 
-    const QString &getThreadAffinity() const;
-    void setThreadAffinity(const QString &newThreadAffinity);
+    const QVariant &getThreadAffinity() const;
+    void setThreadAffinity(const QVariant &newThreadAffinity);
 
     bool getIsNativeInterface() const;
     void setIsNativeInterface(bool newIsNativeInterface);
@@ -178,6 +175,12 @@ public:
     bool getPushUpStatics() const;
     void setPushUpStatics(bool newPushUpStatics);
 
+    bool getNoInstance() const;
+    void setNoInstance(bool newNoInstance);
+
+    bool getForceFinal() const;
+    void setForceFinal(bool newIsFinal);
+
 signals:
     void packageNameChanged();
 
@@ -190,8 +193,6 @@ signals:
     void defaultSuperClassChanged();
 
     void isGenericChanged();
-
-    void targetTypeChanged();
 
     void disableNativeIdUsageChanged();
 
@@ -225,6 +226,10 @@ signals:
 
     void pushUpStaticsChanged();
 
+    void noInstanceChanged();
+
+    void forceFinalChanged();
+
 private:
     QString packageName;
     QString implementing;
@@ -232,12 +237,12 @@ private:
     QString javaName;
     QString defaultSuperClass;
     bool isGeneric = false;
-    QString targetType;
+    bool forceFinal = false;
     bool disableNativeIdUsage = false;
     bool forceAbstract = false;
     bool forceFriendly = false;
     bool deprecated = false;
-    QString threadAffinity;
+    QVariant threadAffinity;
     bool isNativeInterface = false;
     bool m_template = false;
     QVariant generate = true;
@@ -249,18 +254,18 @@ private:
     bool notMoveAssignable = false;
     bool notCloneable = false;
     bool pushUpStatics = false;
+    bool noInstance = false;
     Q_PROPERTY(QString packageName READ getPackageName WRITE setPackageName NOTIFY packageNameChanged)
     Q_PROPERTY(QString implementing READ getImplementing WRITE setImplementing NOTIFY implementingChanged)
     Q_PROPERTY(QString using READ getUsing WRITE setUsing NOTIFY usingChanged)
     Q_PROPERTY(QString javaName READ getJavaName WRITE setJavaName NOTIFY javaNameChanged)
     Q_PROPERTY(QString defaultSuperClass READ getDefaultSuperClass WRITE setDefaultSuperClass NOTIFY defaultSuperClassChanged)
     Q_PROPERTY(bool isGeneric READ getIsGeneric WRITE setIsGeneric NOTIFY isGenericChanged)
-    Q_PROPERTY(QString targetType READ getTargetType WRITE setTargetType NOTIFY targetTypeChanged)
     Q_PROPERTY(bool disableNativeIdUsage READ getDisableNativeIdUsage WRITE setDisableNativeIdUsage NOTIFY disableNativeIdUsageChanged)
     Q_PROPERTY(bool forceAbstract READ getForceAbstract WRITE setForceAbstract NOTIFY forceAbstractChanged)
     Q_PROPERTY(bool deprecated READ getDeprecated WRITE setDeprecated NOTIFY deprecatedChanged)
     Q_PROPERTY(bool forceFriendly READ getForceFriendly WRITE setForceFriendly NOTIFY forceFriendlyChanged)
-    Q_PROPERTY(QString threadAffinity READ getThreadAffinity WRITE setThreadAffinity NOTIFY threadAffinityChanged)
+    Q_PROPERTY(QVariant threadAffinity READ getThreadAffinity WRITE setThreadAffinity NOTIFY threadAffinityChanged)
     Q_PROPERTY(bool isNativeInterface READ getIsNativeInterface WRITE setIsNativeInterface NOTIFY isNativeInterfaceChanged)
     Q_PROPERTY(bool template READ getTemplate WRITE setTemplate NOTIFY templateChanged)
     Q_PROPERTY(QVariant generate READ getGenerate WRITE setGenerate NOTIFY generateChanged)
@@ -272,6 +277,8 @@ private:
     Q_PROPERTY(bool notMoveAssignable READ getNotMoveAssignable WRITE setNotMoveAssignable NOTIFY notMoveAssignableChanged FINAL)
     Q_PROPERTY(bool notCloneable READ getNotCloneable WRITE setNotCloneable NOTIFY notCloneableChanged FINAL)
     Q_PROPERTY(bool pushUpStatics READ getPushUpStatics WRITE setPushUpStatics NOTIFY pushUpStaticsChanged FINAL)
+    Q_PROPERTY(bool noInstance READ getNoInstance WRITE setNoInstance NOTIFY noInstanceChanged FINAL)
+    Q_PROPERTY(bool forceFinal READ getForceFinal WRITE setForceFinal NOTIFY forceFinalChanged FINAL)
 };
 
 class ObjectType : public ComplexType

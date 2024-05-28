@@ -80,16 +80,15 @@ struct qtjambi_jnitype_template3_cast<false, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        std::unique_ptr<NativeType> list;
-        if(in){
-            list.reset(new NativeType());
-            jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
-            while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
-                jobject element = QtJambiAPI::nextOfJavaIterator(env, iterator);
-                list->insert(qtjambi_scoped_cast<has_scope,K,jobject>::cast(env, element, nullptr, scope));
-            }
+        if(!in)
+            return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, nullptr);
+        NativeType list;
+        jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
+        while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
+            jobject element = QtJambiAPI::nextOfJavaIterator(env, iterator);
+            list.insert(qtjambi_scoped_cast<has_scope,K,jobject>::cast(env, element, nullptr, scope));
         }
-        return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, list);
+        return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, std::move(list));
     }
 };
 
@@ -129,16 +128,15 @@ struct qtjambi_jnitype_template3_cast<false, has_scope,
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, typename std::add_lvalue_reference<NativeType_c>::type>::type NativeType_in;
     typedef typename std::conditional<is_pointer, typename std::add_pointer<NativeType_c>::type, NativeType_cr>::type NativeType_out;
     static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope* scope){
-        std::unique_ptr<NativeType> list;
-        if(in){
-            list.reset(new NativeType());
-            jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
-            while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
-                jobject element = QtJambiAPI::nextOfJavaIterator(env, iterator);
-                list->insert(qtjambi_scoped_cast<has_scope,K,jobject>::cast(env, element, nullptr, scope));
-            }
+        if(!in)
+            return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, nullptr);
+        NativeType list;
+        jobject iterator = QtJambiAPI::iteratorOfJavaCollection(env, in);
+        while(QtJambiAPI::hasJavaIteratorNext(env, iterator)) {
+            jobject element = QtJambiAPI::nextOfJavaIterator(env, iterator);
+            list.insert(qtjambi_scoped_cast<has_scope,K,jobject>::cast(env, element, nullptr, scope));
         }
-        return create_container_pointer<is_pointer, is_const, is_reference, has_scope, NativeType>::create(env, scope, list);
+        return pointer_ref_or_clone_decider<is_pointer, is_const, is_reference, has_scope, NativeType>::convert(env, scope, std::move(list));
     }
 };
 #endif

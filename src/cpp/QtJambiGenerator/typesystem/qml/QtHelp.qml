@@ -68,6 +68,11 @@ TypeSystem{
     ObjectType{
         name: "QHelpContentWidget"
     }
+
+    ObjectType{
+        name: "QHelpSearchEngineCore"
+        since: 6.8
+    }
     
     ObjectType{
         name: "QHelpIndexWidget"
@@ -101,6 +106,22 @@ TypeSystem{
     
     ObjectType{
         name: "QHelpIndexModel"
+
+        ModifyFunction{
+            signature: "createIndexForCurrentFilter()"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Shell
+                    ownership: Ownership.Cpp
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            since: 6.8
+        }
     }
     
     ObjectType{
@@ -113,6 +134,22 @@ TypeSystem{
                     ownership: Ownership.Ignore
                 }
             }
+        }
+
+        ModifyFunction{
+            signature: "createContentsForCurrentFilter()"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Shell
+                    ownership: Ownership.Cpp
+                }
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+            since: 6.8
         }
     }
     
@@ -197,6 +234,25 @@ TypeSystem{
     
     ObjectType{
         name: "QHelpFilterEngine"
+        ExtraIncludes{
+            Include{
+                fileName: "hashes.h"
+                location: Include.Local
+            }
+        }
+        InjectCode{
+            target: CodeClass.Native
+            position: Position.Beginning
+            Text{content: String.raw`
+namespace QHashPrivate {
+template <>
+constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QVersionNumber>> = false;
+template <>
+constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QString>> = false;
+}`
+            }
+            since: 6.8
+        }
         since: [5, 13]
     }
     
@@ -247,7 +303,6 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QHelpLink."}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QHelpSearchQuery."}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QHelpSearchResult."}
-    SuppressedWarning{text: "WARNING(CppImplGenerator) :: protected function '*' in final class '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: visibility of function '*' modified in class '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: hiding of function '*' in class '*'"}
 }

@@ -29,8 +29,6 @@
 ****************************************************************************/
 package io.qt.internal;
 
-import java.io.IOException;
-import java.io.NotSerializableException;
 import java.io.Serializable;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -52,7 +50,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -61,16 +58,23 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import io.qt.NativeAccess;
+import io.qt.NonNull;
+import io.qt.Nullable;
 import io.qt.QMisfittingSignatureException;
+import io.qt.QNoNativeResourcesException;
 import io.qt.QNoSuchSignalException;
 import io.qt.QNoSuchSlotException;
 import io.qt.QSignalDeclarationException;
 import io.qt.QSignalInitializationException;
 import io.qt.QSignalInvocationException;
 import io.qt.QUninvokableSlotException;
+import io.qt.QUnsuccessfulInvocationException;
 import io.qt.QtObject;
 import io.qt.QtObjectInterface;
 import io.qt.QtPointerType;
@@ -83,6 +87,7 @@ import io.qt.QtUninvokable;
 import io.qt.QtUtilities;
 import io.qt.core.QByteArray;
 import io.qt.core.QDeclarableSignals;
+import io.qt.core.QEvent;
 import io.qt.core.QHash;
 import io.qt.core.QInstanceMemberSignals;
 import io.qt.core.QList;
@@ -183,15 +188,19 @@ abstract class SignalUtility {
 	}
 
 	private interface SlotConnectionFactory<Slot>{
-    	public SlotObjectConnection<Slot> create(Object lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot slotObject, Qt.ConnectionType[] connectionType);
+    	public SlotObjectConnection<Slot> create(Reference<?> lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot slotObject, Qt.ConnectionType[] connectionType);
     }
 	
 	private static abstract class AbstractSignalCore {
+		abstract QMetaMethod signalMethod(AbstractSignal signal);
 		abstract List<SignalParameterType> signalTypes(AbstractSignal signal);
 		abstract String name(AbstractSignal signal);
+		abstract String fullName(AbstractSignal signal);
+		abstract boolean isConnected(AbstractSignal signal);
+		abstract int receivers(AbstractSignal signal);
 		abstract void emitSignal(AbstractSignal signal, final Object[] args, Supplier<?>... suppliers);
-		abstract QMetaObject.Connection addConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, MethodHandle slotHandle, List<Supplier<?>> lambdaArgs, Qt.ConnectionType... connectionType);
-		abstract QMetaObject.Connection addConnectionToMethod(AbstractSignal signal, Object receiver, QMetaMethod slot, Qt.ConnectionType... connectionType);
+		abstract QMetaObject.Connection addConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, MethodHandle slotHandle, LambdaArgsProvider lambdaArgs, Qt.ConnectionType[] connectionType);
+		abstract QMetaObject.Connection addConnectionToMethod(AbstractSignal signal, Object receiver, QMetaMethod slot, Qt.ConnectionType[] connectionType);
 		abstract <Slot extends Serializable> QMetaObject.Connection addConnectionToSlotObject(AbstractSignal signal, SlotConnectionFactory<Slot> factory, Object lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHash, Slot slotObject, Qt.ConnectionType[] connectionType);
 		abstract boolean removeConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, Object[] lambdaArgs, boolean allowNativeDisconnect);
 		abstract boolean removeConnectionToMethod(AbstractSignal signal, Object receiver, QMetaMethod slot, boolean allowNativeDisconnect);
@@ -200,20 +209,13 @@ abstract class SignalUtility {
 		abstract boolean removeConnectionToSlotObject(AbstractSignal signal,
 				Serializable slotObject, Class<?> _functionalInterfaceClass, Object _lambdaOwner, Class<?> _lambdaOwnerClass,
 				int _lambdaHashCode, boolean useLambdaInfo);
-		abstract boolean removeConnection(AbstractSignal signal, JavaConnection javaConnection);
-		boolean removeConnection(AbstractSignal signal, NativeConnection nativeConnection) {
-			if(nativeConnection.receiver()!=null && nativeConnection.method()!=null && !nativeConnection.isSlotObject()) {
-				return QObject.disconnect(nativeConnection.sender(), nativeConnection.signal(), nativeConnection.receiver(), nativeConnection.method());
-			}else {
-				long nativeId = NativeUtility.nativeId(nativeConnection);
-				if(nativeId!=0)
-					return disconnectConnection(nativeId);
-				else return false;
-			}
-		}
+		abstract boolean removeConnection(AbstractSignal signal, LightweightConnection javaConnection);
+		abstract boolean removeConnection(AbstractSignal signal, NativeConnection nativeConnection);
 		String toString(AbstractSignal signal) {
-			return String.format("%1$s(%2$s)", signal.fullName(), signal.signalParameters());
+			return String.format("%1$s(%2$s)", signal.name(), signal.signalParameters());
 		}
+		abstract boolean isStaticSignal(AbstractSignal signal);
+		abstract boolean isQObjectSignal(AbstractSignal signal);
 	}
 	
 	private interface AnalyzingSignalCoreInterface{
@@ -221,6 +223,12 @@ abstract class SignalUtility {
 	
 	private static class AnalyzingSignalCore extends AbstractSignalCore implements AnalyzingSignalCoreInterface{
 		final static AnalyzingSignalCore instance = new AnalyzingSignalCore();
+		
+		@Override
+		final QMetaMethod signalMethod(AbstractSignal signal) {
+			signal.resolveSignal();
+			return signal.core.signalMethod(signal);
+		}
 		
 		@Override
 		final List<SignalParameterType> signalTypes(AbstractSignal signal) {
@@ -233,16 +241,46 @@ abstract class SignalUtility {
 			signal.resolveSignal();
 			return signal.core.name(signal);
 		}
+		
+		@Override
+		final String fullName(AbstractSignal signal) {
+			signal.resolveSignal();
+			return signal.core.fullName(signal);
+		}
+		
+		@Override
+		final boolean isConnected(AbstractSignal signal) {
+			signal.resolveSignal();
+			return signal.core.isConnected(signal);
+		}
+		
+		@Override
+		final int receivers(AbstractSignal signal) {
+			signal.resolveSignal();
+			return signal.core.receivers(signal);
+		}
+		
+		@Override
+		final boolean isStaticSignal(AbstractSignal signal) {
+			signal.resolveSignal();
+			return signal.core.isStaticSignal(signal);
+		}
+		
+		@Override
+		final boolean isQObjectSignal(AbstractSignal signal) {
+			signal.resolveSignal();
+			return signal.core.isQObjectSignal(signal);
+		}
 
 		@Override
 		final Connection addConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, MethodHandle slotHandle, 
-				List<Supplier<?>> lambdaArgs, ConnectionType... connectionType) {
+				LambdaArgsProvider lambdaArgs, ConnectionType[] connectionType) {
 			signal.resolveSignal();
 			return signal.core.addConnectionToMethod(signal, receiver, slot, slotHandle, lambdaArgs, connectionType);
 		}
 		
 		@Override
-		final QMetaObject.Connection addConnectionToMethod(AbstractSignal signal, Object receiver, QMetaMethod slot, Qt.ConnectionType... connectionType){
+		final QMetaObject.Connection addConnectionToMethod(AbstractSignal signal, Object receiver, QMetaMethod slot, Qt.ConnectionType[] connectionType){
 			signal.resolveSignal();
 			return signal.core.addConnectionToMethod(signal, receiver, slot, connectionType);
 		}
@@ -287,7 +325,7 @@ abstract class SignalUtility {
 		}
 		
 		@Override
-		final boolean removeConnection(AbstractSignal signal, JavaConnection javaConnection) {
+		final boolean removeConnection(AbstractSignal signal, LightweightConnection javaConnection) {
 			signal.resolveSignal();
 			return signal.core.removeConnection(signal, javaConnection);
 		}
@@ -339,36 +377,84 @@ abstract class SignalUtility {
 		@Override
 		List<SignalParameterType> signalTypes(AbstractSignal signal) {
 			return signalParameterTypes;
-		}		
+		}
+		
+        private String signalParameters() {
+        	List<String> args = new ArrayList<>();
+        	for (SignalParameterType type : signalParameterTypes) {
+        		if(type.genericType!=null)
+        			args.add(type.genericType.getTypeName());
+        		else
+        			args.add(type.type.getName());
+        	}
+        	return String.join(", ", args);
+        }
+        
+        abstract String name();
+		
+        @Override
+		public String toString() {
+			return String.format("%1$s(%2$s)", name(), signalParameters());
+		}
+        
+        @Override
+        String toString(AbstractSignal signal) {
+        	return toString();
+        }
 	}
 	
-	private abstract static class AbstractQObjectsSignalCore extends AbstractParameterSignalCore {
-		private final List<QPair<AbstractConnection<?>,QMetaObject.Connection>> nativeConnectionHandles = new LinkedList<>();
-    	
-    	public AbstractQObjectsSignalCore(List<SignalParameterType> signalParameterTypes, final int methodIndex, final long metaObjectId) {
+	private static class QObjectsNativeSignalCore extends AbstractParameterSignalCore {
+		
+    	public QObjectsNativeSignalCore(List<SignalParameterType> signalParameterTypes, final int methodIndex, final long metaObjectId) {
 			super(signalParameterTypes);
+        	assert methodIndex>=0;
+        	assert metaObjectId!=0;
 			this.methodIndex = methodIndex;
 			this.metaObjectId = metaObjectId;
 		}
-
+    	
 		final int methodIndex;
 		final long metaObjectId;
 		
+		@Override
+		final boolean isStaticSignal(AbstractSignal signal) {
+			return false;
+		}
+		
+		@Override
+		final boolean isQObjectSignal(AbstractSignal signal) {
+			return true;
+		}
+		
+		@Override
+		final QMetaMethod signalMethod(AbstractSignal signal) {
+			return SignalUtility.signalMethod(methodIndex, metaObjectId);
+		}
+		
 		String toString(AbstractSignal signal) {
-			QMetaMethod method = QMetaMethod.fromSignal(signal);
-			if(method!=null && method.isValid())
-				return method.cppMethodSignature().toString();
+			if(methodIndex>=0 && metaObjectId!=0)
+				return signalSignature(methodIndex, metaObjectId);
 			return super.toString(signal);
 		}
 		
 		@Override
-		final String name(AbstractSignal signal) {
-			if(methodIndex>=0) {
-				QMetaMethod method = QMetaMethod.fromSignal(signal);
-				if(method!=null && method.isValid())
-					return method.name().toString();
-			}
+		final String name() {
+			if(methodIndex>=0 && metaObjectId!=0)
+				return signalName(methodIndex, metaObjectId);
 			return null;
+		}
+		
+		@Override
+		final String name(AbstractSignal signal) {
+			return name();
+		}
+		
+		@Override
+		final String fullName(AbstractSignal signal) {
+			QMetaMethod mtd = signalMethod(signal);
+			if(mtd!=null && mtd.isValid())
+				return mtd.enclosingMetaObject().type().getName()+"."+mtd.name();
+			return "<unknown>()";
 		}
 		
 		@Override
@@ -376,40 +462,32 @@ abstract class SignalUtility {
 
 		@Override
 		final Connection addConnectionToMethod(AbstractSignal signal, Object receiver, QMetaMethod slot,
-				ConnectionType... connectionType) {
+				ConnectionType[] connectionType) {
 			QObject senderObject = (QObject)signal.containingObject();
+			int flags = 0;
+            if(connectionType!=null && connectionType.length>0) {
+        		for (Qt.ConnectionType ct : connectionType) {
+        			flags |= ct.value();
+				}
+        	}
 			if(receiver instanceof QObject) {
-				int flags = 0;
-	            if(connectionType!=null && connectionType.length>0) {
-	        		for (Qt.ConnectionType ct : connectionType) {
-	        			flags |= ct.value();
-					}
-	        	}
 				return connectNativeToMetaMethod(NativeUtility.checkedNativeId(senderObject), methodIndex, metaObjectId, NativeUtility.checkedNativeId((QObject)receiver), NativeUtility.checkedNativeId(slot), flags);
 			}else {
-				NativeUtility.CleanableReference reference = receiver==null ? null : new NativeUtility.CleanableReference(receiver);
-				MetaMethodConnection c = new MetaMethodConnection(reference, slot, connectionType);
-				int flags = 0;
-	            if(connectionType!=null && connectionType.length>0) {
-	        		for (Qt.ConnectionType ct : connectionType) {
-	        			flags |= ct.value();
-					}
-	        	}
+				NativeUtility.FinalizerReference<?> cleanable;
+				MetaMethodConnection<?> c;
+				if(receiver instanceof QtObjectInterface){
+					NativeUtility.FinalizerReference<QtObjectInterface> reference = new NativeUtility.FinalizerReference<>((QtObjectInterface)receiver);
+					cleanable = reference;
+					c = new QtInstanceMetaMethodConnection(new WeakReference<>((QtObjectInterface)receiver), slot, connectionType);
+				}else {
+					c = new MetaMethodConnection<>(cleanable = new NativeUtility.FinalizerReference<>(receiver), slot, connectionType);
+				}
 	            QMetaObject.Connection connection = connectNative(NativeUtility.checkedNativeId(senderObject), methodIndex, metaObjectId, 0, c, slot.parameterTypes().size(), flags);
-				if(connection.isConnected()) {
-					QPair<AbstractConnection<?>,QMetaObject.Connection> pair = new QPair<>(c, connection);
-					synchronized(nativeConnectionHandles) {
-						nativeConnectionHandles.add(pair);
-					}
-					if(reference!=null) {
-						List<QPair<AbstractConnection<?>,QMetaObject.Connection>> nativeConnectionHandles = this.nativeConnectionHandles;
-						reference.setCleanable(()->{
-							disconnectOne(pair.second);
-							synchronized(nativeConnectionHandles) {
-								nativeConnectionHandles.remove(pair);
-							}
-						});
-					}
+	            if(connection.isConnected()) {
+					SignalUtility.NativeConnection nativeConnection = (SignalUtility.NativeConnection)connection.clone();
+					cleanable.setFinally(()->{
+						disconnectConnection(NativeUtility.nativeId(nativeConnection));
+					});
 				}
 				return connection;
 			}
@@ -417,9 +495,15 @@ abstract class SignalUtility {
 
 		@Override
 		final Connection addConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, MethodHandle slotHandle, 
-				List<Supplier<?>> lambdaArgs, ConnectionType... connectionType) {
+				LambdaArgsProvider lambdaArgs, ConnectionType[] connectionType) {
 			QObject senderObject = (QObject)signal.containingObject();
-    		if((lambdaArgs==null || lambdaArgs.isEmpty()) 
+			int flags = 0;
+            if(connectionType!=null && connectionType.length>0) {
+        		for (Qt.ConnectionType ct : connectionType) {
+        			flags |= ct.value();
+				}
+        	}
+    		if(lambdaArgs==null 
     		    && (receiver instanceof QObject || 
 					( receiver instanceof QMetaObject.AbstractSignal 
 						&& slot.getName().equals("emit") 
@@ -429,19 +513,13 @@ abstract class SignalUtility {
         		QMetaMethod slotMethod = null;
         		if(receiver instanceof QObject) {
         			receiverObject = (QObject)receiver;
-    				slotMethod = QMetaMethod.fromReflectedMethod(slot);
+        			slotMethod = QMetaMethod.fromReflectedMethod(slot);
         		}else {
         			AbstractSignal otherSignal = (AbstractSignal)receiver;
         			receiverObject = (QObject)otherSignal.containingObject();
-    				slotMethod = QMetaMethod.fromSignal(otherSignal);
+    				slotMethod = otherSignal.signalMethod();
         		}
         		if(slotMethod!=null && slotMethod.isValid()) {
-        			int flags = 0;
-    	            if(connectionType!=null && connectionType.length>0) {
-    	        		for (Qt.ConnectionType ct : connectionType) {
-    	        			flags |= ct.value();
-    					}
-    	        	}
         			try{
         				return connectNativeToMetaMethod(NativeUtility.checkedNativeId(senderObject), methodIndex, metaObjectId, NativeUtility.checkedNativeId(receiverObject), NativeUtility.checkedNativeId(slotMethod), flags);
         			} catch (QMisfittingSignatureException e) {
@@ -460,56 +538,167 @@ abstract class SignalUtility {
 					return new NonConnection();
 				}
 			}
-			NativeUtility.CleanableReference reference = receiver==null ? null : new NativeUtility.CleanableReference(receiver);
-			ReflectiveConnection c = new ReflectiveConnection(reference, slot, slotHandle, lambdaArgs, connectionType);
-			int flags = 0;
-            if(connectionType!=null && connectionType.length>0) {
-        		for (Qt.ConnectionType ct : connectionType) {
-        			flags |= ct.value();
+			if(Modifier.isStatic(slot.getModifiers())/* && !(slot.isSynthetic() && receiver!=null)*/) {
+				AbstractReflectiveConnection<?> conn;
+				if(lambdaArgs==null){
+					StaticSlotInvoker invoker = ReflectionUtility.getStaticSlotInvoker(slot, slotHandle);
+					if(invoker==null) {
+						conn = new StaticReflectiveConnection(slot, connectionType);
+					}else {
+						conn = new StaticInvokerConnection(invoker, slot, connectionType);
+					}
+				}else {
+					StaticLambdaArgsSlotInvoker invoker = ReflectionUtility.getStaticSlotInvoker(slot, slotHandle, lambdaArgs.size());
+					if(invoker==null) {
+						conn = new StaticLambdaArgsReflectiveConnection(slot, lambdaArgs, connectionType);
+					}else {
+						conn = new StaticLambdaArgsInvokerConnection(invoker, slot, lambdaArgs, connectionType);
+					}
 				}
-        	}
-            QMetaObject.Connection connection = connectNative(NativeUtility.checkedNativeId(senderObject), methodIndex, metaObjectId, 
-            		receiver instanceof QObject ? NativeUtility.checkedNativeId((QObject)receiver) : 0, 
-    				c, slot.getParameterCount()-(lambdaArgs==null ? 0 : lambdaArgs.size()), flags);
-			if(connection.isConnected()) {
-				QPair<AbstractConnection<?>,QMetaObject.Connection> pair = new QPair<>(c, connection);
-				synchronized(nativeConnectionHandles) {
-					nativeConnectionHandles.add(pair);
+				return connectNative(NativeUtility.checkedNativeId(senderObject), methodIndex, metaObjectId, 0, conn, 
+										slot.getParameterCount()-(lambdaArgs==null ? 0 : lambdaArgs.size()), flags);
+			}else {
+				AbstractReflectiveConnection<?> conn;
+				long receiverId = 0;
+				NativeUtility.FinalizerReference<?> cleanable = null;
+				if(lambdaArgs==null){
+					SlotInvoker invoker = ReflectionUtility.getSlotInvoker(slot, slotHandle);
+					if(invoker==null) {
+						if(receiver instanceof QtObjectInterface) {
+							if(receiver instanceof QObject) {
+								receiverId = NativeUtility.checkedNativeId((QObject)receiver);
+								NativeUtility.FinalizerReference<QObject> reference = new NativeUtility.FinalizerReference<>((QObject)receiver);
+								cleanable = reference;
+								if(isDirect(flags))
+									conn = new QObjectDirectReflectiveConnection(reference, slot, connectionType);
+								else
+									conn = new QObjectReflectiveConnection(reference, slot, connectionType);
+							}else if(receiver instanceof QtThreadAffineInterface && !isDirect(flags)){
+								NativeUtility.FinalizerReference<QtObjectInterface> reference = new NativeUtility.FinalizerReference<>((QtObjectInterface)receiver);
+								cleanable = reference;
+								conn = new QtInstanceThreadAffineReflectiveConnection(reference, slot, connectionType);
+			            	}else {
+								NativeUtility.FinalizerReference<QtObjectInterface> reference = new NativeUtility.FinalizerReference<>((QtObjectInterface)receiver);
+								cleanable = reference;
+		            			conn = new QtInstanceReflectiveConnection(reference, slot, connectionType);
+			            	}
+			            }else if(receiver instanceof QtThreadAffineInterface && !isDirect(flags)){
+							NativeUtility.FinalizerReference<QtThreadAffineInterface> reference = new NativeUtility.FinalizerReference<>((QtThreadAffineInterface)receiver);
+							cleanable = reference;
+		            		conn = new ThreadAffineReflectiveConnection(reference, slot, connectionType);
+			        	}else {
+		        			conn = new ReflectiveConnection<>(cleanable = new NativeUtility.FinalizerReference<>(receiver), slot, connectionType);
+			        	}
+					}else {
+						if(receiver instanceof QtObjectInterface) {
+							if(receiver instanceof QObject) {
+								receiverId = NativeUtility.checkedNativeId((QObject)receiver);
+								NativeUtility.FinalizerReference<QObject> reference = new NativeUtility.FinalizerReference<>((QObject)receiver);
+								cleanable = reference;
+								if(isDirect(flags))
+									conn = new QObjectDirectInvokerConnection(reference, invoker, slot, connectionType);
+								else
+									conn = new QObjectInvokerConnection(reference, invoker, slot, connectionType);
+							}else if(receiver instanceof QtThreadAffineInterface && !isDirect(flags)){
+								NativeUtility.FinalizerReference<QtObjectInterface> reference = new NativeUtility.FinalizerReference<>((QtObjectInterface)receiver);
+								cleanable = reference;
+			            		conn = new QtInstanceThreadAffineInvokerConnection(reference, invoker, slot, connectionType);
+			            	}else {
+								NativeUtility.FinalizerReference<QtObjectInterface> reference = new NativeUtility.FinalizerReference<>((QtObjectInterface)receiver);
+								cleanable = reference;
+			            		conn = new QtInstanceInvokerConnection(reference, invoker, slot, connectionType);
+			            	}
+			            }else if(receiver instanceof QtThreadAffineInterface && !isDirect(flags)){
+							NativeUtility.FinalizerReference<QtThreadAffineInterface> reference = new NativeUtility.FinalizerReference<>((QtThreadAffineInterface)receiver);
+							cleanable = reference;
+			        		conn = new ThreadAffineInvokerConnection(reference, invoker, slot, connectionType);
+			        	}else {
+			        		conn = new InvokerConnection<>(cleanable = new NativeUtility.FinalizerReference<>(receiver), invoker, slot, connectionType);
+			        	}
+					}
+				}else {
+					LambdaArgsSlotInvoker invoker = ReflectionUtility.getSlotInvoker(slot, slotHandle, lambdaArgs.size());
+					if(invoker==null) {
+						if(receiver instanceof QtObjectInterface) {
+							if(receiver instanceof QObject) {
+								receiverId = NativeUtility.checkedNativeId((QObject)receiver);
+								NativeUtility.FinalizerReference<QObject> reference = new NativeUtility.FinalizerReference<>((QObject)receiver);
+								cleanable = reference;
+								if(isDirect(flags))
+									conn = new QObjectLambdaArgsDirectReflectiveConnection(reference, slot, lambdaArgs, connectionType);
+								else
+									conn = new QObjectLambdaArgsReflectiveConnection(reference, slot, lambdaArgs, connectionType);
+							}else if(receiver instanceof QtThreadAffineInterface && !isDirect(flags)){
+								NativeUtility.FinalizerReference<QtObjectInterface> reference = new NativeUtility.FinalizerReference<>((QtObjectInterface)receiver);
+								cleanable = reference;
+		            			conn = new QtInstanceThreadAffineLambdaArgsReflectiveConnection(reference, slot, lambdaArgs, connectionType);
+			            	}else {
+								NativeUtility.FinalizerReference<QtObjectInterface> reference = new NativeUtility.FinalizerReference<>((QtObjectInterface)receiver);
+								cleanable = reference;
+		            			conn = new QtInstanceLambdaArgsReflectiveConnection(reference, slot, lambdaArgs, connectionType);
+			            	}
+			            }else if(receiver instanceof QtThreadAffineInterface && !isDirect(flags)){
+							NativeUtility.FinalizerReference<QtThreadAffineInterface> reference = new NativeUtility.FinalizerReference<>((QtThreadAffineInterface)receiver);
+							cleanable = reference;
+	            			conn = new ThreadAffineLambdaArgsReflectiveConnection(reference, slot, lambdaArgs, connectionType);
+			        	}else {
+	            			conn = new LambdaArgsReflectiveConnection<>(cleanable = new NativeUtility.FinalizerReference<>(receiver), slot, lambdaArgs, connectionType);
+			        	}
+					}else {
+						if(receiver instanceof QtObjectInterface) {
+							if(receiver instanceof QObject) {
+								receiverId = NativeUtility.checkedNativeId((QObject)receiver);
+								NativeUtility.FinalizerReference<QObject> reference = new NativeUtility.FinalizerReference<>((QObject)receiver);
+								cleanable = reference;
+								if(isDirect(flags))
+									conn = new QObjectLambdaArgsDirectInvokerConnection(reference, invoker, slot, lambdaArgs, connectionType);
+								else
+									conn = new QObjectLambdaArgsInvokerConnection(reference, invoker, slot, lambdaArgs, connectionType);
+							}else if(receiver instanceof QtThreadAffineInterface && !isDirect(flags)){
+								NativeUtility.FinalizerReference<QtObjectInterface> reference = new NativeUtility.FinalizerReference<>((QtObjectInterface)receiver);
+								cleanable = reference;
+			            		conn = new QtInstanceThreadAffineLambdaArgsInvokerConnection(reference, invoker, slot, lambdaArgs, connectionType);
+			            	}else {
+								NativeUtility.FinalizerReference<QtObjectInterface> reference = new NativeUtility.FinalizerReference<>((QtObjectInterface)receiver);
+								cleanable = reference;
+			            		conn = new QtInstanceLambdaArgsInvokerConnection(reference, invoker, slot, lambdaArgs, connectionType);
+			            	}
+			            }else if(receiver instanceof QtThreadAffineInterface && !isDirect(flags)){
+							NativeUtility.FinalizerReference<QtThreadAffineInterface> reference = new NativeUtility.FinalizerReference<>((QtThreadAffineInterface)receiver);
+							cleanable = reference;
+			        		conn = new ThreadAffineLambdaArgsInvokerConnection(reference, invoker, slot, lambdaArgs, connectionType);
+			        	}else {
+			        		conn = new LambdaArgsInvokerConnection<>(cleanable = new NativeUtility.FinalizerReference<>(receiver), invoker, slot, lambdaArgs, connectionType);
+			        	}
+					}
 				}
-				if(reference!=null) {
-					List<QPair<AbstractConnection<?>,QMetaObject.Connection>> nativeConnectionHandles = this.nativeConnectionHandles;
-					reference.setCleanable(()->{
-						disconnectOne(pair.second);
-						synchronized(nativeConnectionHandles) {
-							nativeConnectionHandles.remove(pair);
-						}
+	            QMetaObject.Connection connection = connectNative(NativeUtility.checkedNativeId(senderObject), methodIndex, metaObjectId, receiverId, 
+	            				conn, slot.getParameterCount()-(lambdaArgs==null ? 0 : lambdaArgs.size()), flags);
+				if(connection.isConnected() && cleanable!=null) {
+					SignalUtility.NativeConnection nativeConnection = (SignalUtility.NativeConnection)connection.clone();
+					cleanable.setFinally(()->{
+						disconnectConnection(NativeUtility.nativeId(nativeConnection));
 					});
 				}
+				return connection;
 			}
-			return connection;
 		}
 		
 		@Override
 		final <Slot extends Serializable> Connection addConnectionToSlotObject(AbstractSignal signal,
-				SlotConnectionFactory<Slot> factory, Object lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot slotObject, ConnectionType[] connectionType) {
+				SlotConnectionFactory<Slot> factory, Object context, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot slotObject, ConnectionType[] connectionType) {
     		QObject senderObject = (QObject)signal.containingObject();
-			SlotObjectConnection<Slot> c = factory.create(lambdaOwner, lambdaOwnerClass, lambdaHashCode, slotObject, connectionType);
 			int flags = 0;
             if(connectionType!=null && connectionType.length>0) {
         		for (Qt.ConnectionType ct : connectionType) {
         			flags |= ct.value();
 				}
         	}
-            QMetaObject.Connection connection = connectNative(NativeUtility.checkedNativeId(senderObject), 
+			SlotObjectConnection<Slot> c = factory.create(new WeakReference<Object>(context), lambdaOwnerClass, lambdaHashCode, slotObject, connectionType);
+            return connectNative(NativeUtility.checkedNativeId(senderObject), 
             		methodIndex, metaObjectId, 
-            		lambdaOwner instanceof QObject ? NativeUtility.checkedNativeId((QObject)lambdaOwner) : 0,
+            		context instanceof QObject ? NativeUtility.checkedNativeId((QObject)context) : 0,
     				c, -1, flags);
-			if(connection.isConnected()) {
-				synchronized(nativeConnectionHandles) {
-					nativeConnectionHandles.add(new QPair<>(c, connection));
-				}
-			}
-			return connection;
 		}
 		
 		@Override
@@ -517,70 +706,31 @@ abstract class SignalUtility {
 			QObject senderObject = (QObject)signal.containingObject();
 			if(senderObject==null || senderObject.isDisposed())
 				return false;
+			final long senderObjectId = NativeUtility.checkedNativeId(senderObject);
 			boolean success = false;
 			if(((receiver == null || receiver instanceof QObject) && slot == null)
 					|| (receiver instanceof QObject && slot != null)) {
-				success |= disconnectNative(NativeUtility.checkedNativeId(senderObject), methodIndex, metaObjectId, NativeUtility.nativeId((QObject)receiver), NativeUtility.nativeId(slot));
+				success |= disconnectNative(senderObjectId, methodIndex, metaObjectId, NativeUtility.nativeId((QObject)receiver), NativeUtility.nativeId(slot));
 			}
-			synchronized(nativeConnectionHandles) {
-				List<QPair<AbstractConnection<?>, Connection>> foundPairs = null;
-				for(QPair<AbstractConnection<?>, Connection> pair : nativeConnectionHandles) {
-					if(pair.first instanceof MetaMethodConnection) {
-						MetaMethodConnection rc = (MetaMethodConnection)pair.first;
-						if(receiver == null) {
-							if(slot == null) {
-								if(foundPairs==null) {
-									foundPairs = Collections.singletonList(pair);
-								}else {
-									if(foundPairs.size()==1){
-										foundPairs = new ArrayList<>(foundPairs);
-									}
-									foundPairs.add(pair);
-								}
-							}else if(rc.slot.equals(slot)){
-								if(foundPairs==null) {
-									foundPairs = Collections.singletonList(pair);
-								}else {
-									if(foundPairs.size()==1){
-										foundPairs = new ArrayList<>(foundPairs);
-									}
-									foundPairs.add(pair);
-								}
-							}
-						}else if(rc.resolveReceiver() == receiver){
-							if(slot == null) {
-								if(foundPairs==null) {
-									foundPairs = Collections.singletonList(pair);
-								}else {
-									if(foundPairs.size()==1){
-										foundPairs = new ArrayList<>(foundPairs);
-									}
-									foundPairs.add(pair);
-								}
-							}else if(rc.slot.equals(slot)){
-								if(foundPairs==null) {
-									foundPairs = Collections.singletonList(pair);
-								}else {
-									if(foundPairs.size()==1){
-										foundPairs = new ArrayList<>(foundPairs);
-									}
-									foundPairs.add(pair);
-								}
-							}
+			success |= disconnectNative(senderObjectId, methodIndex, metaObjectId, c->{
+				if(c instanceof MetaMethodConnection) {
+					MetaMethodConnection<?> rc = (MetaMethodConnection<?>)c;
+					if(receiver == null) {
+						if(slot == null) {
+							return true;
+						}else if(rc.slot.equals(slot)){
+							return true;
+						}
+					}else if(rc.resolveReceiver() == receiver){
+						if(slot == null) {
+							return true;
+						}else if(rc.slot.equals(slot)){
+							return true;
 						}
 					}
 				}
-				if(foundPairs!=null) {
-					for (QPair<AbstractConnection<?>, Connection> qPair : foundPairs) {
-						if(QObject.disconnect(qPair.second)) {
-							success = true;
-							synchronized(nativeConnectionHandles) {
-								nativeConnectionHandles.remove(qPair);
-							}
-						}
-					}
-				}
-			}
+				return false;
+			});
 			return success;
 		}
 		
@@ -589,94 +739,11 @@ abstract class SignalUtility {
 			QObject senderObject = (QObject)signal.containingObject();
 			if(senderObject==null || senderObject.isDisposed())
 				return false;
+			final long senderObjectId = NativeUtility.checkedNativeId(senderObject);
 			boolean success = false;
 			if((receiver == null || receiver instanceof QObject) && slot == null) {
-				success |= disconnectNative(NativeUtility.checkedNativeId(senderObject), methodIndex, metaObjectId, NativeUtility.nativeId((QObject)receiver), 0);
+				success |= disconnectNative(senderObjectId, methodIndex, metaObjectId, NativeUtility.nativeId((QObject)receiver), 0);
 			}
-			synchronized(nativeConnectionHandles) {
-				List<QPair<AbstractConnection<?>, Connection>> foundPairs = null;
-				for(QPair<AbstractConnection<?>, Connection> pair : nativeConnectionHandles) {
-					if(pair.first instanceof AbstractReflectiveConnection) {
-						AbstractReflectiveConnection rc = (AbstractReflectiveConnection)pair.first;
-						if(receiver == null) {
-							if(slot == null) {
-								if(foundPairs==null) {
-									foundPairs = Collections.singletonList(pair);
-								}else {
-									if(foundPairs.size()==1){
-										foundPairs = new ArrayList<>(foundPairs);
-									}
-									foundPairs.add(pair);
-								}
-							}else if(rc.slot.equals(slot)){
-								boolean isLambdaArgsEquals = true;
-								if(rc.lambdaArgs!=null && lambdaArgs!=null) {
-									for (int i = 0; i < lambdaArgs.length; i++) {
-										Supplier<?> arg = rc.lambdaArgs.get(i);
-										if(!Objects.equals(arg.get(), lambdaArgs[i])) {
-											isLambdaArgsEquals = false;
-											break;
-										}
-									}
-								}
-								if(isLambdaArgsEquals) {
-									if(foundPairs==null) {
-										foundPairs = Collections.singletonList(pair);
-									}else {
-										if(foundPairs.size()==1){
-											foundPairs = new ArrayList<>(foundPairs);
-										}
-										foundPairs.add(pair);
-									}
-								}
-							}
-						}else if(rc.resolveReceiver() == receiver){
-							if(slot == null) {
-								if(foundPairs==null) {
-									foundPairs = Collections.singletonList(pair);
-								}else {
-									if(foundPairs.size()==1){
-										foundPairs = new ArrayList<>(foundPairs);
-									}
-									foundPairs.add(pair);
-								}
-							}else if(rc.slot.equals(slot)){
-								boolean isLambdaArgsEquals = true;
-								if(rc.lambdaArgs!=null && lambdaArgs!=null) {
-									for (int i = 0; i < lambdaArgs.length; i++) {
-										Supplier<?> arg = rc.lambdaArgs.get(i);
-										if(!Objects.equals(arg.get(), lambdaArgs[i])) {
-											isLambdaArgsEquals = false;
-											break;
-										}
-									}
-								}
-								if(isLambdaArgsEquals) {
-									if(foundPairs==null) {
-										foundPairs = Collections.singletonList(pair);
-									}else {
-										if(foundPairs.size()==1){
-											foundPairs = new ArrayList<>(foundPairs);
-										}
-										foundPairs.add(pair);
-									}
-								}
-							}
-						}
-					}
-				}
-				if(foundPairs!=null) {
-					for (QPair<AbstractConnection<?>, Connection> qPair : foundPairs) {
-						if(QObject.disconnect(qPair.second)) {
-							success = true;
-							synchronized(nativeConnectionHandles) {
-								nativeConnectionHandles.remove(qPair);
-							}
-						}
-					}
-				}
-			}
-    		
     		if(receiver instanceof QObject || 
 					( receiver instanceof QMetaObject.AbstractSignal 
 						&& slot!=null 
@@ -694,137 +761,230 @@ abstract class SignalUtility {
         			AbstractSignal otherSignal = (AbstractSignal)receiver;
         			receiverObject = (QObject)otherSignal.containingObject();
 	        		if(otherSignal.methodIndex()>=0) {
-	        			slotMethod = QMetaMethod.fromSignal(otherSignal);
+	        			slotMethod = otherSignal.signalMethod();
 	        		}
         		}
-				success |= disconnectNative(NativeUtility.checkedNativeId(senderObject), methodIndex, metaObjectId, NativeUtility.checkedNativeId(receiverObject), NativeUtility.checkedNativeId(slotMethod));
+        		if(slotMethod!=null)
+        			success |= disconnectNative(senderObjectId, methodIndex, metaObjectId, NativeUtility.checkedNativeId(receiverObject), NativeUtility.checkedNativeId(slotMethod));
     		}
+			success |= disconnectNative(senderObjectId, methodIndex, metaObjectId, c->{
+				if(c instanceof AbstractReflectiveConnection) {
+					AbstractReflectiveConnection<?> rc = (AbstractReflectiveConnection<?>)c;
+					if(receiver == null) {
+						if(slot == null) {
+							return true;
+						}else if(rc.slot.equals(slot)){
+							boolean isLambdaArgsEquals = true;
+							if(rc.lambdaArgs()!=null && lambdaArgs!=null) {
+					    		Object[] _lambdaArgs;
+					    		try{
+					    			_lambdaArgs = rc.lambdaArgs().lambdaArgs();
+					    		}catch(LambdaArgumentGoneException e) {
+					    			return false;
+					    		}
+								if(lambdaArgs.length!=_lambdaArgs.length) {
+									isLambdaArgsEquals = false;
+								}else {
+									for (int i = 0; i < lambdaArgs.length; i++) {
+										if(!Objects.equals(_lambdaArgs[i], lambdaArgs[i])) {
+											isLambdaArgsEquals = false;
+											break;
+										}
+									}
+								}
+							}
+							return isLambdaArgsEquals;
+						}
+					}else if(rc.resolveReceiver() == receiver){
+						if(slot == null) {
+							return true;
+						}else if(rc.slot.equals(slot)){
+							boolean isLambdaArgsEquals = true;
+							if(rc.lambdaArgs()!=null && lambdaArgs!=null) {
+								Object[] _lambdaArgs;
+					    		try{
+					    			_lambdaArgs = rc.lambdaArgs().lambdaArgs();
+					    		}catch(LambdaArgumentGoneException e) {
+					    			return false;
+					    		}
+								if(lambdaArgs.length!=_lambdaArgs.length) {
+									isLambdaArgsEquals = false;
+								}else {
+									for (int i = 0; i < lambdaArgs.length; i++) {
+										if(!Objects.equals(_lambdaArgs[i], lambdaArgs[i])) {
+											isLambdaArgsEquals = false;
+											break;
+										}
+									}
+								}
+							}
+							return isLambdaArgsEquals;
+						}
+					}
+				}
+				return false;
+			});
 			return success;
 		}
 		
 		final boolean removeConnectionToSlotObject(AbstractSignal signal,
 				Serializable slotObject, Class<?> _functionalInterfaceClass, Object _lambdaOwner, Class<?> _lambdaOwnerClass,
 				int _lambdaHashCode, boolean useLambdaInfo) {
+			QObject senderObject = (QObject)signal.containingObject();
+			if(senderObject==null || senderObject.isDisposed())
+				return false;
+			final long senderObjectId = NativeUtility.checkedNativeId(senderObject);
 			boolean success = false;
-			QPair<AbstractConnection<?>, Connection> foundPair = null;
-			synchronized(nativeConnectionHandles) {
-				for(QPair<AbstractConnection<?>, Connection> pair : nativeConnectionHandles) {
-					if(pair.first instanceof SlotObjectConnection<?>) {
-						SlotObjectConnection<?> sc = (SlotObjectConnection<?>)pair.first;
-						if(sc.receiver == slotObject) {
-							foundPair = pair;
-							break;
-						}
+			success |= disconnectNative(senderObjectId, methodIndex, metaObjectId, c->{
+					if(c instanceof SlotObjectConnection<?>) {
+						SlotObjectConnection<?> sc = (SlotObjectConnection<?>)c;
+						if(sc.slotObject() == slotObject)
+							return true;
 					}
-				}
-			}
-			if(foundPair!=null) {
-				if(QObject.disconnect(foundPair.second)) {
-					synchronized(nativeConnectionHandles) {
-						nativeConnectionHandles.remove(foundPair);
-					}
-				}
-			}
+					return false;
+				});
 			return success;
 		}
 
 		@Override
-		final boolean removeConnection(AbstractSignal signal, JavaConnection javaConnection) {
+		final boolean removeConnection(AbstractSignal signal, LightweightConnection javaConnection) {
 			return false;
 		};
 		
 		@Override
 		final boolean removeConnection(AbstractSignal signal, NativeConnection nativeConnection) {
-			if(super.removeConnection(signal, nativeConnection)) {
-				synchronized(nativeConnectionHandles) {
-					QPair<AbstractConnection<?>, Connection> foundPair = null;
-					for(QPair<AbstractConnection<?>, Connection> pair : nativeConnectionHandles) {
-						if(pair.second.equals(nativeConnection)) {
-							foundPair = pair;
-							break;
-						}
-					}
-					nativeConnectionHandles.remove(foundPair);
-				}
-				return true;
-			}
-			return false;
+			return disconnectConnection(NativeUtility.nativeId(nativeConnection));
 		}
-	}
-	
-	private static class QObjectsPrivateSignalCore extends AbstractQObjectsSignalCore {
-		public QObjectsPrivateSignalCore(List<SignalParameterType> signalParameterTypes, int methodIndex, long metaObjectId) {
-			super(signalParameterTypes, methodIndex, metaObjectId);
-		}
-
+		
 		@Override
-		void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
+		final boolean isConnected(AbstractSignal signal) {
+			QObject senderObject = (QObject)signal.containingObject();
+			if(senderObject==null || senderObject.isDisposed())
+				return false;
+			return isSignalConnected(NativeUtility.nativeId(senderObject), methodIndex, metaObjectId);
 		}
-	}
-	
-	private static class QObjectsSignalCore extends QObjectsPrivateSignalCore {
-		public QObjectsSignalCore(Class<?> declaringClass, boolean isNativeSignal, List<SignalParameterType> signalParameterTypes, int methodIndex, long metaObjectId) {
-			super(signalParameterTypes, methodIndex, metaObjectId);
-			this.isNativeSignal = isNativeSignal;
-			this.declaringClass = declaringClass;
+		
+		@Override
+		final int receivers(AbstractSignal signal) {
+			QObject senderObject = (QObject)signal.containingObject();
+			if(senderObject==null || senderObject.isDisposed())
+				return 0;
+			return signalReceivers(NativeUtility.nativeId(senderObject), methodIndex, metaObjectId);
 		}
-
-		private final boolean isNativeSignal;
-		private final Class<?> declaringClass;
 		
 		Class<?> getDeclaringClass(AbstractSignal signal){ 
-			return declaringClass; 
+			return null; 
 		}
 
 		@Override
 		void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
 			QObject senderObject = (QObject)signal.containingObject();
-			logger.finest(()->String.format("Emit native signal %1$s(%2$s)", signal.fullName(), signal.signalParameters()));
-        	if(this.methodIndex>=0) {
-        		if(suppliers.length>0) {
-        			if(isNativeSignal) {
-        				emitNativeSignal(senderObject, this.methodIndex, this.metaObjectId, suppliers.length, args);
-        			}else {
-        				int offset = args.length;
-        				args = Arrays.copyOf(args, args.length+suppliers.length);
-                		for (int i = 0; i < suppliers.length; i++) {
-                			Supplier<?> supplier = suppliers[i];
-                			args[offset+i] = supplier==null ? null : supplier.get();
-        				}
-        				emitNativeSignal(senderObject, this.methodIndex, this.metaObjectId, 0, args);
-        			}
-        		}else {
-        			emitNativeSignal(senderObject, this.methodIndex, this.metaObjectId, 0, args);
-        		}
-        	}else {
-        		throw new RuntimeException("QObject signal without method index"); 
-        	}
+			logger.finest(()->String.format("Emit native signal %1$s", signalSignature(methodIndex, metaObjectId)));
+			emitSignal(senderObject, args, args, suppliers.length);
+		}
+		
+		void emitSignal(QObject senderObject, Object[] originalArgs, Object[] args, int suppliers) {
+			emitNativeSignal(NativeUtility.checkedNativeId(senderObject), this.methodIndex, this.metaObjectId, suppliers, args);
+		}
+	}
+	
+	private static class QObjectsSignalCore extends QObjectsNativeSignalCore {
+		public QObjectsSignalCore(List<SignalParameterType> signalParameterTypes, int methodIndex, long metaObjectId) {
+			super(signalParameterTypes, methodIndex, metaObjectId);
+		}
+		
+		@Override
+		void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
+        	assert this.methodIndex>=0;
+			QObject senderObject = (QObject)signal.containingObject();
+			logger.finest(()->String.format("Emit native signal %1$s", signalSignature(methodIndex, metaObjectId)));
+			Object[] originalArgs = args;
+        	if(suppliers.length>0) {
+				int offset = args.length;
+				args = Arrays.copyOf(args, args.length+suppliers.length);
+        		for (int i = 0; i < suppliers.length; i++) {
+        			Supplier<?> supplier = suppliers[i];
+        			args[offset+i] = supplier==null ? null : supplier.get();
+				}
+    		}
+        	emitSignal(senderObject, originalArgs, args, 0);
+		}
+	}
+	
+	private static class QObjectsPrivateNativeSignalCore extends QObjectsNativeSignalCore {
+		public QObjectsPrivateNativeSignalCore(Class<?> declaringClass,
+				List<SignalParameterType> signalParameterTypes, int methodIndex, long metaObjectId) {
+			super(signalParameterTypes, methodIndex, metaObjectId);
+			this.declaringClass = declaringClass;
+		}
+		
+		private final Class<?> declaringClass;
+		
+		Class<?> getDeclaringClass(AbstractSignal signal){ 
+			return declaringClass; 
+		}
+		
+		@Override
+		void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
+			throw new RuntimeException(signal.fullName()+".emit()");
+		}
+	}
+	
+	private static class QObjectsPrivateSignalCore extends QObjectsSignalCore {
+		public QObjectsPrivateSignalCore(Class<?> declaringClass,
+				List<SignalParameterType> signalParameterTypes, int methodIndex, long metaObjectId) {
+			super(signalParameterTypes, methodIndex, metaObjectId);
+			this.declaringClass = declaringClass;
+		}
+		
+		private final Class<?> declaringClass;
+		
+		Class<?> getDeclaringClass(AbstractSignal signal){ 
+			return declaringClass; 
+		}
+	}
+	
+	private static class QObjectsCheckingNativeSignalCore extends QObjectsNativeSignalCore {
+		private final Consumer<Object[]> argumentTest;
+		
+		public QObjectsCheckingNativeSignalCore(List<SignalParameterType> signalParameterTypes, int methodIndex, long metaObjectId, Consumer<Object[]> argumentTest) {
+			super(signalParameterTypes, methodIndex, metaObjectId);
+			this.argumentTest = argumentTest;
+		}
+		
+		@Override
+		void emitSignal(QObject senderObject, Object[] originalArgs, Object[] args, int suppliers) {
+			argumentTest.accept(originalArgs);
+			super.emitSignal(senderObject, originalArgs, args, suppliers);
 		}
 	}
 	
 	private static class QObjectsCheckingSignalCore extends QObjectsSignalCore {
 		private final Consumer<Object[]> argumentTest;
 		
-		public QObjectsCheckingSignalCore(Class<?> declaringClass, boolean isNativeSignal,
-				List<SignalParameterType> signalParameterTypes, int methodIndex, long metaObjectId, Consumer<Object[]> argumentTest) {
-			super(declaringClass, isNativeSignal, signalParameterTypes, methodIndex, metaObjectId);
+		public QObjectsCheckingSignalCore(List<SignalParameterType> signalParameterTypes, int methodIndex, long metaObjectId, Consumer<Object[]> argumentTest) {
+			super(signalParameterTypes, methodIndex, metaObjectId);
 			this.argumentTest = argumentTest;
 		}
 		
 		@Override
-		final void emitSignal(AbstractSignal signal, final Object[] args, Supplier<?>... suppliers) {
-			if(suppliers.length>0) {
-				int offset = args.length;
-				Object[] args2 = Arrays.copyOf(args, args.length+suppliers.length);
-        		for (int i = 0; i < suppliers.length; i++) {
-        			Supplier<?> supplier = suppliers[i];
-        			args2[offset+i] = supplier==null ? null : supplier.get();
-				}
-        		argumentTest.accept(args2);
-			}else {
-				argumentTest.accept(args);
-			}
-			super.emitSignal(signal, args, suppliers);
+		void emitSignal(QObject senderObject, Object[] originalArgs, Object[] args, int suppliers) {
+			argumentTest.accept(originalArgs);
+			super.emitSignal(senderObject, originalArgs, args, suppliers);
+		}
+	}
+	
+	private static class QObjectsCheckingPrivateSignalCore extends QObjectsCheckingSignalCore {
+		public QObjectsCheckingPrivateSignalCore(Class<?> declaringClass,
+				List<SignalParameterType> signalParameterTypes, int methodIndex, long metaObjectId, Consumer<Object[]> argumentTest) {
+			super(signalParameterTypes, methodIndex, metaObjectId, argumentTest);
+			this.declaringClass = declaringClass;
+		}
+		
+		private final Class<?> declaringClass;
+		
+		Class<?> getDeclaringClass(AbstractSignal signal){ 
+			return declaringClass; 
 		}
 	}
 	
@@ -840,6 +1000,12 @@ abstract class SignalUtility {
 		}
 		
 		@Override
+		final QMetaMethod signalMethod(AbstractSignal signal) {
+			multiSignal.resolveMultiSignal();
+			return signal.core.signalMethod(signal);
+		}
+		
+		@Override
 		List<SignalParameterType> signalTypes(AbstractSignal signal) {
 			multiSignal.resolveMultiSignal();
 			return signal.core.signalTypes(signal);
@@ -850,6 +1016,24 @@ abstract class SignalUtility {
 			return multiSignal.name();
 		}
 		
+		@Override
+		String fullName(AbstractSignal signal) {
+			multiSignal.resolveMultiSignal();
+			return signal.core.fullName(signal);
+		}
+		
+		@Override
+		final boolean isConnected(AbstractSignal signal) {
+			multiSignal.resolveMultiSignal();
+			return signal.core.isConnected(signal);
+		}
+		
+		@Override
+		final int receivers(AbstractSignal signal) {
+			multiSignal.resolveMultiSignal();
+			return signal.core.receivers(signal);
+		}
+		
 		int methodIndex(AbstractSignal signal) { 
 			multiSignal.resolveMultiSignal();
 			return signal.core.methodIndex(signal);
@@ -857,7 +1041,7 @@ abstract class SignalUtility {
 
 		@Override
 		Connection addConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, MethodHandle slotHandle,
-				List<Supplier<?>> lambdaArgs, ConnectionType... connectionType) {
+				LambdaArgsProvider lambdaArgs, ConnectionType[] connectionType) {
 			multiSignal.resolveMultiSignal();
 			return signal.core.addConnectionToMethod(signal, receiver, slot, slotHandle, lambdaArgs, connectionType);
 		}
@@ -896,7 +1080,7 @@ abstract class SignalUtility {
 		}
 		
 		@Override
-		boolean removeConnection(AbstractSignal signal, JavaConnection javaConnection) {
+		boolean removeConnection(AbstractSignal signal, LightweightConnection javaConnection) {
 			multiSignal.resolveMultiSignal();
 			return signal.core.removeConnection(signal, javaConnection);
 		}
@@ -908,7 +1092,7 @@ abstract class SignalUtility {
 		}
 
 		@Override
-		Connection addConnectionToMethod(AbstractSignal signal, Object receiver, QMetaMethod slot, ConnectionType... connectionType) {
+		Connection addConnectionToMethod(AbstractSignal signal, Object receiver, QMetaMethod slot, ConnectionType[] connectionType) {
 			multiSignal.resolveMultiSignal();
 			return signal.core.addConnectionToMethod(signal, receiver, slot, connectionType);
 		}
@@ -922,33 +1106,103 @@ abstract class SignalUtility {
 			multiSignal.resolveMultiSignal();
 			return signal.core.toString(signal); 
 		}
-	}
-	
-	private abstract static class AbstractJavaSignalCore extends AbstractParameterSignalCore {
-		public AbstractJavaSignalCore(List<SignalParameterType> signalParameterTypes) {
-			super(signalParameterTypes);
+
+		@Override
+		boolean isStaticSignal(AbstractSignal signal) {
+			multiSignal.resolveMultiSignal();
+			return signal.core.isStaticSignal(signal); 
 		}
 
+		@Override
+		boolean isQObjectSignal(AbstractSignal signal) {
+			multiSignal.resolveMultiSignal();
+			return signal.core.isQObjectSignal(signal); 
+		}
+	}
+	
+	private static class LeightweightSignalCore<Emitter extends QtSignalEmitterInterface> extends AbstractParameterSignalCore {
+		public LeightweightSignalCore(Class<?> declaringClass, String name, List<SignalParameterType> signalParameterTypes) {
+			super(signalParameterTypes);
+			this.name = name;
+			this.declaringClass = declaringClass;
+		}
+
+		private final Class<?> declaringClass;
+		private final String name;
 		private int currentConnectionId = 0;
-		private AbstractConnection<?> firstConnection;
-		private AbstractConnection<?> lastConnection;
+		private AbstractConnection firstConnection;
+		private AbstractConnection lastConnection;
 		private ReentrantReadWriteLock connectionsLock = new ReentrantReadWriteLock();
 		
-		AbstractConnection<?> next(AbstractConnection<?> current){
+		@Override
+		boolean isStaticSignal(AbstractSignal signal) {
+			return false;
+		}
+		
+		@Override
+		final boolean isQObjectSignal(AbstractSignal signal) {
+			return false;
+		}
+		
+		AbstractConnection next(AbstractConnection current){
 			connectionsLock.readLock().lock();
-			AbstractConnection<?> next = current.next;
+			AbstractConnection next = current.next;
 			connectionsLock.readLock().unlock();
 			return next;
 		}
 		
-		AbstractConnection<?> begin(){
+		@Override
+		final String name() {
+			return name;
+		}
+		
+		@Override
+		final String name(AbstractSignal signal) {
+			return name();
+		}
+		
+		@Override
+		final String fullName(AbstractSignal signal) {
+			return declaringClass.getName() + "." + name;
+		}
+		
+		Class<?> getDeclaringClass(AbstractSignal signal){ 
+			return declaringClass; 
+		}
+		
+		@Override
+		final QMetaMethod signalMethod(AbstractSignal signal) {
+			return new QMetaMethod();
+		}
+		
+		@Override
+		final boolean isConnected(AbstractSignal signal) {
+			return begin()!=null;
+		}
+		
+		@Override
+		final int receivers(AbstractSignal signal) {
+		    int receivers = 0;
 			connectionsLock.readLock().lock();
-			AbstractConnection<?> next = firstConnection;
+			int highestConnectionId = lastConnection==null ? 0 : lastConnection.id;
+			AbstractConnection currentConnection = firstConnection;
+			while(currentConnection!=null && currentConnection.id<=highestConnectionId){
+				if(currentConnection.isConnected() && currentConnection.receiverAvailable())
+					++receivers;
+				currentConnection = next(currentConnection);
+			}
+			connectionsLock.readLock().unlock();
+			return receivers;
+		}
+		
+		AbstractConnection begin(){
+			connectionsLock.readLock().lock();
+			AbstractConnection next = firstConnection;
 			connectionsLock.readLock().unlock();
 			return next;
 		}
 		
-		AbstractConnection<?> eraseAndNext(AbstractConnection<?> current){
+		AbstractConnection eraseAndNext(AbstractConnection current){
 			connectionsLock.writeLock().lock();
 			current.setDisconnected();
 			if(current==firstConnection) {
@@ -973,7 +1227,7 @@ abstract class SignalUtility {
 			return current;
 		}
 		
-		private void addConnection(AbstractConnection<?> connection) {
+		private void addConnection(AbstractConnection connection) {
             connectionsLock.writeLock().lock();
 			try{
 				connection.id = ++currentConnectionId;
@@ -990,17 +1244,40 @@ abstract class SignalUtility {
 			}
 		}
 		
+		void disconnectAll() {
+			connectionsLock.writeLock().lock();
+			int highestConnectionId = lastConnection==null ? 0 : lastConnection.id;
+			AbstractConnection currentConnection = firstConnection;
+			while(currentConnection!=null && currentConnection.id<=highestConnectionId){
+				currentConnection.setDisconnected();
+				if(currentConnection==firstConnection) {
+					if(currentConnection.next==null) {
+						firstConnection = null;
+						lastConnection = null;
+						currentConnection = null;
+					}else {
+						firstConnection = currentConnection.next;
+						currentConnection = currentConnection.next;
+					}
+				}else {
+					currentConnection.previous.next = currentConnection.next;
+					if(currentConnection.next==null) {
+						lastConnection = currentConnection.previous;
+					}else {
+						currentConnection.next.previous = currentConnection.previous;
+					}
+					currentConnection = currentConnection.next;
+				}
+			}
+			connectionsLock.writeLock().unlock();
+		}
+		
 		@Override
 		void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
-			QtSignalEmitterInterface senderObject = signal.containingObject();
-            Object currentThread = null;
-            boolean senderWithAffinity = senderObject instanceof QtThreadAffineInterface 
-            		&& ((QtThreadAffineInterface) senderObject).thread() == (currentThread = QThread.currentThread());
-        	if ( senderWithAffinity && senderObject instanceof QtSignalBlockerInterface && ((QtSignalBlockerInterface)senderObject).signalsBlocked()) {
-            	logger.finest(()->String.format("Blocking signal %1$s", signal.fullName()));
-                return;
-            }
-
+        	emitSignal(signal, args, suppliers, null, null);
+		}
+		
+		void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>[] suppliers, Emitter senderObject, QThread currentThread) {
         	if(suppliers.length>0) {
         		int offset = args.length;
 				args = Arrays.copyOf(args, args.length+suppliers.length);
@@ -1011,7 +1288,7 @@ abstract class SignalUtility {
         	}
 
 			connectionsLock.readLock().lock();
-			AbstractConnection<?> currentConnection = firstConnection;
+			AbstractConnection currentConnection = firstConnection;
 			int highestConnectionId = lastConnection==null ? 0 : lastConnection.id;
 			connectionsLock.readLock().unlock();
 			
@@ -1022,138 +1299,116 @@ abstract class SignalUtility {
                 // 3. If it is automatic, the receiver is a QObject and the sender and receiver
                 //    are both in the current thread
                 Object receiver;
-				Object[] _args = args;
-				if(currentConnection.argumentCount()<args.length) {
-					_args = Arrays.copyOf(_args, currentConnection.argumentCount());
-				}
-                boolean isStatic = false;
                 if(currentConnection instanceof SlotObjectConnection<?>){
                     Object lambdaOwner = ((SlotObjectConnection<?>) currentConnection).lambdaOwner();
                     if(lambdaOwner!=null)
                     	receiver = lambdaOwner;
                     else
                     	receiver = currentConnection.resolveReceiver();
-                }else if(currentConnection instanceof AbstractReflectiveConnection){
-                	receiver = currentConnection.resolveReceiver();
-                	AbstractReflectiveConnection reflectiveConnection = (AbstractReflectiveConnection)currentConnection;
-					isStatic = Modifier.isStatic(reflectiveConnection.slot.getModifiers());
-                }else if(currentConnection instanceof MetaMethodConnection){
-                	receiver = currentConnection.resolveReceiver();
 				}else {
-					continue;
+                	receiver = currentConnection.resolveReceiver();
 				}
-                
-                if(
-					   (receiver == null && !isStatic)
-					|| (receiver instanceof QtObjectInterface && NativeUtility.nativeId((QtObjectInterface)receiver) == 0)
-				  ){
+                if(!currentConnection.receiverAvailable()){
 					currentConnection = eraseAndNext(currentConnection);
 					continue;
 				}
+                QThread receiverThread = currentConnection.receiverThread();
+				Object[] _args = args;
+				if(currentConnection.argumentCount()<args.length) {
+					_args = Arrays.copyOf(_args, currentConnection.argumentCount());
+				}
                 boolean directCall = false;
                 boolean receiverThreadIsCurrent;
-                if(receiver instanceof QtThreadAffineInterface && !currentConnection.isDirectConnection()) {
-                	Object receiverThread = ((QtThreadAffineInterface) receiver).thread();
-                	if(receiverThread==null) {
-                		directCall = true;
-                		receiverThreadIsCurrent = true;
-                	}else {
-	                	if(currentThread==null) {
-	                		currentThread = QThread.currentThread();
-	                		receiverThreadIsCurrent = receiverThread==currentThread;
-	                	}else {
-	                		receiverThreadIsCurrent = receiverThread==currentThread;
-	                	}
-	                	directCall = receiverThreadIsCurrent && currentConnection.isAutoConnection();
-                	}
-                }else{
-                	receiverThreadIsCurrent = true;
-                	directCall = true;
-                }
+                if(receiverThread==null) {
+            		directCall = true;
+            		receiverThreadIsCurrent = true;
+            	}else {
+                	if(currentThread==null)
+                		currentThread = QThread.currentThread();
+            		receiverThreadIsCurrent = receiverThread==currentThread;
+                	directCall = receiverThreadIsCurrent && currentConnection.isAutoConnection();
+            	}
                 if (directCall) {
-            		AbstractConnection<?> c = currentConnection;
+            		AbstractConnection c = currentConnection;
                 	logger.finest(()->{
-						if(c instanceof ReflectiveConnection){
-                            ReflectiveConnection methodConnection = (ReflectiveConnection)c;
+						if(c instanceof AbstractReflectiveConnection){
+							AbstractReflectiveConnection<?> methodConnection = (AbstractReflectiveConnection<?>)c;
                             return String.format("Emit signal %1$s: direct invocation of %2$s, receiver=%3$s", 
                             		signal.fullName(), 
                             		methodConnection.slot, 
-                            		receiver==null ? "(static)" : ClassAnalyzerUtility.getClass(receiver).getName());
+                            		receiver==null ? "(static)" : AccessUtility.instance.getClass(receiver).getName());
 						}else {
 							return String.format("Emit signal %1$s: direct invocation of slot object.", signal.fullName());
 						}
                 	});
-					try (CurrentSenderSetter setter = new CurrentSenderSetter(senderObject, receiver)){
-                        currentConnection.invoke(_args);
+					try{
+						invokeConnection(senderObject, currentConnection, _args);
                     } catch (RuntimeException | Error e) {
                     	throw e;
                     } catch (Throwable e) {
-                        if(currentConnection instanceof ReflectiveConnection){
-                            ReflectiveConnection methodConnection = (ReflectiveConnection)currentConnection;
+                        if(currentConnection instanceof AbstractReflectiveConnection){
+                        	AbstractReflectiveConnection<?> methodConnection = (AbstractReflectiveConnection<?>)currentConnection;
                             throw new QSignalInvocationException(String.format("Exception caught in signal %1$s after invoking slot %2$s: sender=%3$s, receiver=%4$s", 
                             		signal.fullName(), 
 									methodConnection.slot,
-									senderObject != null ? ClassAnalyzerUtility.getClass(senderObject).getName() : "N/A",
-											receiver==null ? "(static)" : ClassAnalyzerUtility.getClass(receiver).getName()
+									senderObject != null ? AccessUtility.instance.getClass(senderObject).getName() : "N/A",
+											receiver==null ? "(static)" : AccessUtility.instance.getClass(receiver).getName()
 								),e);
 						}else{
 							throw new QSignalInvocationException(String.format("Exception caught in signal %1$s: sender=%2$s, receiver=%3$s", 
 									signal.fullName(), 
-									senderObject != null ? ClassAnalyzerUtility.getClass(senderObject).getName() : "N/A",
-											receiver==null ? "N/A" : ClassAnalyzerUtility.getClass(receiver).getName()
+									senderObject != null ? AccessUtility.instance.getClass(senderObject).getName() : "N/A",
+											receiver==null ? "N/A" : AccessUtility.instance.getClass(receiver).getName()
 								),e);
 						}
                     }
                 } else {
                     if (receiver instanceof QtThreadAffineInterface) {
                     	QtThreadAffineInterface eventReceiver = (QtThreadAffineInterface) receiver;
-                		AbstractConnection<?> c = currentConnection;
+                		AbstractConnection c = currentConnection;
                         logger.finest(()->{
-							if(c instanceof ReflectiveConnection){
-                                ReflectiveConnection methodConnection = (ReflectiveConnection)c;
+							if(c instanceof AbstractReflectiveConnection){
+								AbstractReflectiveConnection<?> methodConnection = (AbstractReflectiveConnection<?>)c;
                                 return String.format("Emit signal %1$s: queueing invocation of %2$s, receiver=%3$s", 
                                 		signal.fullName(), 
                                 		methodConnection.slot, 
-                                		ClassAnalyzerUtility.getClass(receiver).getName());
+                                		AccessUtility.instance.getClass(receiver).getName());
 							}else {
 								return String.format("Emit signal %1$s: queueing invocation of slot object.", signal.fullName());
 							}
                     	});
-                        logger.finest(()->"new MetaCall() current thread = "+Thread.currentThread() + "event receiver thread = "+eventReceiver.thread()+" of object "+ClassAnalyzerUtility.getClass(eventReceiver).getName());
+                        logger.finest(()->"new MetaCall() current thread = "+Thread.currentThread() + "event receiver thread = "+eventReceiver.thread()+" of object "+AccessUtility.instance.getClass(eventReceiver).getName());
                         logger.finest(()->c.isBlockingQueuedConnection() ? "invokeAndWait" : "invokeLater");
+                        MetaCall<Emitter> metaCall;
                         if(currentConnection.isBlockingQueuedConnection()) {
                         	if(receiverThreadIsCurrent) {
                         		logger.log(java.util.logging.Level.SEVERE, 
             							()->String.format("Qt: Dead lock detected while activating a BlockingQueuedConnection: signal is %1$s, receiver is %2$s", 
             									signal.fullName(), 
-            									ClassAnalyzerUtility.getClass(receiver).getName()
+            									AccessUtility.instance.getClass(receiver).getName()
             								)
             							);
                         	}
-                        	MetaCall metaCall;
-                        	if(currentConnection instanceof ReflectiveConnection){
-                				ReflectiveConnection methodConnection = (ReflectiveConnection)currentConnection;
-                				metaCall = new MetaCall(eventReceiver, signal, currentConnection, senderObject, methodConnection.slot, _args);
+                        	if(currentConnection instanceof AbstractReflectiveConnection){
+                        		AbstractReflectiveConnection<?> methodConnection = (AbstractReflectiveConnection<?>)currentConnection;
+                				metaCall = new BlockedMetaCall<>(eventReceiver, this, currentConnection, senderObject, methodConnection.slot, _args);
                         	}else {
-                        		metaCall = new MetaCall(eventReceiver, signal, currentConnection, senderObject, null, _args);
+                        		metaCall = new BlockedMetaCall<>(eventReceiver, this, currentConnection, senderObject, null, _args);
                         	}
-                        	QMetaObject.invokeMethod(metaCall, Qt.ConnectionType.BlockingQueuedConnection);
-                        	metaCall.throwException();
                         }else {
-                        	MetaCall metaCall;
-                        	if(currentConnection instanceof ReflectiveConnection){
-                				ReflectiveConnection methodConnection = (ReflectiveConnection)currentConnection;
-                				metaCall = new ThrowingMetaCall(eventReceiver, signal, currentConnection, senderObject, methodConnection.slot, _args);
+                        	if(currentConnection instanceof AbstractReflectiveConnection){
+                        		AbstractReflectiveConnection<?> methodConnection = (AbstractReflectiveConnection<?>)currentConnection;
+                				metaCall = new MetaCall<>(eventReceiver, this, currentConnection, senderObject, methodConnection.slot, _args);
                         	}else {
-                        		metaCall = new ThrowingMetaCall(eventReceiver, signal, currentConnection, senderObject, null, _args);
+                        		metaCall = new MetaCall<>(eventReceiver, this, currentConnection, senderObject, null, _args);
                         	}
-                        	QMetaObject.invokeMethod(metaCall, Qt.ConnectionType.QueuedConnection);
                         }
+                        metaCall.start();
                     }else{
 						logger.log(java.util.logging.Level.SEVERE, 
 							()->String.format("Cannot emit signal %1$s: queued connection to not thread-affine receiver %2$s.", 
 									signal.fullName(), 
-									receiver==null ? "N/A" : ClassAnalyzerUtility.getClass(receiver).getName()
+									receiver==null ? "N/A" : AccessUtility.instance.getClass(receiver).getName()
 								)
 							);
 						currentConnection = next(currentConnection);
@@ -1164,16 +1419,154 @@ abstract class SignalUtility {
             }
 		}
 		
+		void invokeConnection(Emitter senderObject, AbstractConnection connection, Object[] args) throws Throwable {
+			connection.invoke(args);
+		}
+		
+		private static class MetaCall<Emitter extends QtSignalEmitterInterface> extends QObject{
+			final QtThreadAffineInterface eventReceiver;
+	        private final Object arguments[];
+	        private final LeightweightSignalCore<Emitter> core;
+	        private final AbstractConnection connection;
+	        private final Emitter signalEmitter;
+	        private Throwable throwable;
+			private final Method slot;
+			
+			public MetaCall(QtThreadAffineInterface eventReceiver, LeightweightSignalCore<Emitter> core, AbstractConnection connection,
+					Emitter senderObject, Method slot, Object[] arguments) {
+				super();
+	            this.eventReceiver = eventReceiver;
+	            this.arguments = arguments;
+	            this.core = core;
+	            this.connection = connection;
+	            this.signalEmitter = senderObject;
+	            this.slot = slot;
+	            moveToThread(eventReceiver.thread());
+			}
+			
+			final void throwException() {
+	        	if(throwable instanceof RuntimeException)
+	    			throw (RuntimeException)throwable;
+	    		else if(throwable instanceof Error)
+	    			throw (Error)throwable;
+	    		else if(throwable!=null) {
+	    			if(slot!=null){
+	                    throw new QSignalInvocationException(String.format("Exception caught in signal %1$s after invoking slot %2$s: sender=%3$s, receiver=%4$s", 
+	                    		core, 
+								slot,
+								this.signalEmitter != null ? AccessUtility.instance.getClass(this.signalEmitter).getName() : "N/A",
+										eventReceiver==null ? "(static)" : eventReceiver
+							),throwable);
+					}else{
+						throw new QSignalInvocationException(String.format("Exception caught in signal %1$s: sender=%2$s, receiver=%3$s", 
+								core, 
+								this.signalEmitter != null ? AccessUtility.instance.getClass(this.signalEmitter).getName() : "N/A",
+										eventReceiver==null ? "N/A" : eventReceiver
+							),throwable);
+					}
+	    		}
+			}
+
+			final void invoke() {
+	            Object receiver;
+	            boolean isStatic = false;
+	            if(connection instanceof SlotObjectConnection){
+	            	Object lambdaOwner = ((SlotObjectConnection<?>) connection).lambdaOwner();
+	            	if(lambdaOwner!=null)
+	            		receiver = lambdaOwner;
+	            	else
+	            		receiver = connection.resolveReceiver();
+	            }else if(slot!=null){
+	                isStatic = Modifier.isStatic(slot.getModifiers());
+	                receiver = connection.resolveReceiver();
+	            }else {
+	            	return;
+	            }
+				if ((receiver == null && isStatic)
+						|| (receiver instanceof NativeUtility.Object && ((NativeUtility.Object)receiver).isDisposed()) )
+					return;
+	            try{
+	            	logger.finest(()->{
+	            		if(slot!=null){
+	                        return String.format("Emit signal %1$s: queued invoke %2$s, receiver=%3$s", 
+	                        		core, 
+	                        		slot, 
+	                        		receiver==null ? "(static)" : receiver);
+						}else {
+							return String.format("Emit signal %1$s: queued invoke slot object.", core);
+						}
+	            	});
+	            	core.invokeConnection(signalEmitter, connection, arguments);
+				} catch (Throwable e) {
+					throwable = e;
+	            }
+	        }
+			
+			@Override
+	        public final boolean event(QEvent event) {
+	            if(event.type()==QEvent.Type.DeferredDispose
+	                    && !(eventReceiver instanceof QtObjectInterface && ((QtObjectInterface)eventReceiver).isDisposed() )) {
+	                try {
+	                	invoke();
+	                } catch (Throwable e) {
+	                    Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
+	                }
+	                finished();
+	            }
+	            return super.event(event);
+	        }
+
+			void finished() {
+	            try {
+	    			throwException();
+	            } catch (Throwable e) {
+	                Logger.getLogger("io.qt.core").log(Level.SEVERE, "Exception thrown during method invocation.", e);
+	            }
+			}
+			
+			void start() {
+	            NativeUtility.setCppOwnership(this);
+	            disposeLater();
+			}
+		}
+		
+		private static class BlockedMetaCall<Emitter extends QtSignalEmitterInterface> extends MetaCall<Emitter>{
+
+	        public BlockedMetaCall(QtThreadAffineInterface eventReceiver, LeightweightSignalCore<Emitter> core, AbstractConnection connection, Emitter senderObject, Method slot, Object[] arguments) {
+	            super(eventReceiver, core, connection, senderObject, slot, arguments);
+	        }
+			
+			@Override
+			void finished() {
+				synchronized (this) {
+	                notifyAll();
+	            }
+			}
+			
+			@Override
+			void start() {
+	            synchronized (this) {
+	                disposeLater();
+	                try {
+	                    wait();
+	                } catch (InterruptedException e) {
+	                    throw new QUnsuccessfulInvocationException(e);
+	                }
+	            }
+	        	throwException();
+			}
+	    }
+		
 		@Override
 		final Connection addConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, MethodHandle slotHandle, 
-				List<Supplier<?>> lambdaArgs, ConnectionType... connectionType) {
+				LambdaArgsProvider lambdaArgs, ConnectionType[] connectionType) {
 			if(isUnique(connectionType)){
-				AbstractConnection<?> currentConnection = begin();
+				AbstractConnection currentConnection = begin();
 				while(currentConnection!=null){
 					Object resolvedReceiver = currentConnection.resolveReceiver();
-					if(currentConnection instanceof ReflectiveConnection){
+					if(currentConnection instanceof AbstractReflectiveConnection){
 						if (resolvedReceiver == receiver
-							&& slot.equals(((ReflectiveConnection)currentConnection).slot)) {
+							&& slot.equals(((AbstractReflectiveConnection<?>)currentConnection).slot)) {
 							return new NonConnection();
 						}
 					}
@@ -1193,20 +1586,113 @@ abstract class SignalUtility {
 				}
 			}
 			
-            ReflectiveConnection conn = new ReflectiveConnection(new WeakReference<Object>(receiver), slot, slotHandle, lambdaArgs, connectionType);
+			AbstractConnection conn;
+			if(Modifier.isStatic(slot.getModifiers())/* && !(slot.isSynthetic() && receiver!=null)*/) {
+				if(lambdaArgs==null){
+					StaticSlotInvoker invoker = ReflectionUtility.getStaticSlotInvoker(slot, slotHandle);
+					if(invoker==null) {
+						conn = new StaticReflectiveConnection(slot, connectionType);
+					}else {
+						conn = new StaticInvokerConnection(invoker, slot, connectionType);
+					}
+				}else {
+					StaticLambdaArgsSlotInvoker invoker = ReflectionUtility.getStaticSlotInvoker(slot, slotHandle, lambdaArgs.size());
+					if(invoker==null) {
+						conn = new StaticLambdaArgsReflectiveConnection(slot, lambdaArgs, connectionType);
+					}else {
+						conn = new StaticLambdaArgsInvokerConnection(invoker, slot, lambdaArgs, connectionType);
+					}
+				}
+			}else {
+				if(lambdaArgs==null){
+					SlotInvoker invoker = ReflectionUtility.getSlotInvoker(slot, slotHandle);
+					if(invoker==null) {
+						if(receiver instanceof QtObjectInterface) {
+							if(receiver instanceof QObject) {
+								if(isDirect(connectionType))
+									conn = new QObjectDirectReflectiveConnection(new WeakReference<>((QObject)receiver), slot, connectionType);
+								else
+									conn = new QObjectReflectiveConnection(new WeakReference<>((QObject)receiver), slot, connectionType);
+							}else if(receiver instanceof QtThreadAffineInterface && !isDirect(connectionType)){
+		            			conn = new QtInstanceThreadAffineReflectiveConnection(new WeakReference<>((QtObjectInterface)receiver), slot, connectionType);
+			            	}else {
+		            			conn = new QtInstanceReflectiveConnection(new WeakReference<>((QtObjectInterface)receiver), slot, connectionType);
+			            	}
+			            }else if(receiver instanceof QtThreadAffineInterface && !isDirect(connectionType)){
+		            		conn = new ThreadAffineReflectiveConnection(new WeakReference<>((QtThreadAffineInterface)receiver), slot, connectionType);
+			        	}else {
+		        			conn = new ReflectiveConnection<>(new WeakReference<>(receiver), slot, connectionType);
+			        	}
+					}else {
+						if(receiver instanceof QtObjectInterface) {
+							if(receiver instanceof QObject) {
+								if(isDirect(connectionType))
+									conn = new QObjectDirectInvokerConnection(new WeakReference<>((QObject)receiver), invoker, slot, connectionType);
+								else
+									conn = new QObjectInvokerConnection(new WeakReference<>((QObject)receiver), invoker, slot, connectionType);
+							}else if(receiver instanceof QtThreadAffineInterface && !isDirect(connectionType)){
+			            		conn = new QtInstanceThreadAffineInvokerConnection(new WeakReference<>((QtObjectInterface)receiver), invoker, slot, connectionType);
+			            	}else {
+			            		conn = new QtInstanceInvokerConnection(new WeakReference<>((QtObjectInterface)receiver), invoker, slot, connectionType);
+			            	}
+			            }else if(receiver instanceof QtThreadAffineInterface && !isDirect(connectionType)){
+			        		conn = new ThreadAffineInvokerConnection(new WeakReference<>((QtThreadAffineInterface)receiver), invoker, slot, connectionType);
+			        	}else {
+			        		conn = new InvokerConnection<>(new WeakReference<>(receiver), invoker, slot, connectionType);
+			        	}
+					}
+				}else {
+					LambdaArgsSlotInvoker invoker = ReflectionUtility.getSlotInvoker(slot, slotHandle, lambdaArgs.size());
+					if(invoker==null) {
+						if(receiver instanceof QtObjectInterface) {
+							if(receiver instanceof QObject) {
+								if(isDirect(connectionType))
+									conn = new QObjectLambdaArgsDirectReflectiveConnection(new WeakReference<>((QObject)receiver), slot, lambdaArgs, connectionType);
+								else
+									conn = new QObjectLambdaArgsReflectiveConnection(new WeakReference<>((QObject)receiver), slot, lambdaArgs, connectionType);
+							}else if(receiver instanceof QtThreadAffineInterface && !isDirect(connectionType)){
+		            			conn = new QtInstanceThreadAffineLambdaArgsReflectiveConnection(new WeakReference<>((QtObjectInterface)receiver), slot, lambdaArgs, connectionType);
+			            	}else {
+		            			conn = new QtInstanceLambdaArgsReflectiveConnection(new WeakReference<>((QtObjectInterface)receiver), slot, lambdaArgs, connectionType);
+			            	}
+			            }else if(receiver instanceof QtThreadAffineInterface && !isDirect(connectionType)){
+	            			conn = new ThreadAffineLambdaArgsReflectiveConnection(new WeakReference<>((QtThreadAffineInterface)receiver), slot, lambdaArgs, connectionType);
+			        	}else {
+	            			conn = new LambdaArgsReflectiveConnection<>(new WeakReference<>(receiver), slot, lambdaArgs, connectionType);
+			        	}
+					}else {
+						if(receiver instanceof QtObjectInterface) {
+							if(receiver instanceof QObject) {
+								if(isDirect(connectionType))
+									conn = new QObjectLambdaArgsDirectInvokerConnection(new WeakReference<>((QObject)receiver), invoker, slot, lambdaArgs, connectionType);
+								else
+									conn = new QObjectLambdaArgsInvokerConnection(new WeakReference<>((QObject)receiver), invoker, slot, lambdaArgs, connectionType);
+							}else if(receiver instanceof QtThreadAffineInterface && !isDirect(connectionType)){
+			            		conn = new QtInstanceThreadAffineLambdaArgsInvokerConnection(new WeakReference<>((QtObjectInterface)receiver), invoker, slot, lambdaArgs, connectionType);
+			            	}else {
+			            		conn = new QtInstanceLambdaArgsInvokerConnection(new WeakReference<>((QtObjectInterface)receiver), invoker, slot, lambdaArgs, connectionType);
+			            	}
+			            }else if(receiver instanceof QtThreadAffineInterface && !isDirect(connectionType)){
+			        		conn = new ThreadAffineLambdaArgsInvokerConnection(new WeakReference<>((QtThreadAffineInterface)receiver), invoker, slot, lambdaArgs, connectionType);
+			        	}else {
+			        		conn = new LambdaArgsInvokerConnection<>(new WeakReference<>(receiver), invoker, slot, lambdaArgs, connectionType);
+			        	}
+					}
+				}
+			}
             if(!(receiver instanceof QtThreadAffineInterface) && (conn.isQueuedConnection() || conn.isBlockingQueuedConnection())) {
             	throw new IllegalArgumentException(String.format("Cannot establish %1$s connection to slot of not thread-affine receiver", 
             			conn.isBlockingQueuedConnection() ? "blocking-queued" : "queued"));
             }
             addConnection(conn);
-            return new JavaConnection(signal, conn);
+            return new LightweightConnection(signal, conn);
 		}
 		
 		@Override
 		final <Slot extends Serializable> Connection addConnectionToSlotObject(AbstractSignal signal,
 				SlotConnectionFactory<Slot> factory, Object lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot slotObject, ConnectionType[] connectionType) {
 			if(isUnique(connectionType)){
-				AbstractConnection<?> currentConnection = begin();
+				AbstractConnection currentConnection = begin();
 				while(currentConnection!=null){
 					Object resolvedReceiver = currentConnection.resolveReceiver();
 					if(currentConnection instanceof SlotObjectConnection){
@@ -1224,7 +1710,7 @@ abstract class SignalUtility {
             			conn.isBlockingQueuedConnection() ? "blocking-queued" : "queued"));
             }
             addConnection(conn);
-            return new JavaConnection(signal, conn);
+            return new LightweightConnection(signal, conn);
 		}
 
 		@Override
@@ -1245,7 +1731,7 @@ abstract class SignalUtility {
 					break;
 				}
 			}
-			AbstractConnection<?> currentConnection = begin();
+			AbstractConnection currentConnection = begin();
 			while(currentConnection!=null){
 				Object resolvedReceiver = currentConnection.resolveReceiver();
 				if(currentConnection instanceof MetaMethodConnection){
@@ -1253,17 +1739,17 @@ abstract class SignalUtility {
 						currentConnection = eraseAndNext(currentConnection);
 						continue;
 					} else if ((receiver == null || resolvedReceiver == receiver)
-						&& (slot == null || slot.equals(((MetaMethodConnection)currentConnection).slot))) {
+						&& (slot == null || slot.equals(((MetaMethodConnection<?>)currentConnection).slot))) {
 						currentConnection = eraseAndNext(currentConnection);
 						returned = true;
 						continue;
 					}
-				}else if(currentConnection instanceof ReflectiveConnection){
+				}else if(currentConnection instanceof AbstractReflectiveConnection){
 					if (resolvedReceiver == null) {  // GCed receiver
 						currentConnection = eraseAndNext(currentConnection);
 						continue;
 					} else if ((receiver == null || resolvedReceiver == receiver)
-						&& (slot==null || (slotMethod != null && slotMethod.equals(((ReflectiveConnection)currentConnection).slot)))) {
+						&& (slot==null || (slotMethod != null && slotMethod.equals(((AbstractReflectiveConnection<?>)currentConnection).slot)))) {
 						currentConnection = eraseAndNext(currentConnection);
 						returned = true;
 						continue;
@@ -1305,7 +1791,7 @@ abstract class SignalUtility {
 		@Override
 		final boolean removeConnectionToMethod(AbstractSignal signal, Object receiver, Method slot, Object[] lambdaArgs, boolean allowNativeDisconnect) {
 			boolean returned = false;
-			AbstractConnection<?> currentConnection = begin();
+			AbstractConnection currentConnection = begin();
 			while(currentConnection!=null) {
 				Object resolvedReceiver = currentConnection.resolveReceiver();
 				if(currentConnection instanceof MetaMethodConnection){
@@ -1317,12 +1803,12 @@ abstract class SignalUtility {
 						returned = true;
 						continue;
 					}
-				}else if(currentConnection instanceof ReflectiveConnection){
+				}else if(currentConnection instanceof AbstractReflectiveConnection){
 					if (resolvedReceiver == null) {  // GCed receiver
 						currentConnection = eraseAndNext(currentConnection);
 						continue;
 					} else if ((receiver == null || resolvedReceiver == receiver)
-						&& (slot == null || slot.equals(((ReflectiveConnection)currentConnection).slot))) {
+						&& (slot == null || slot.equals(((AbstractReflectiveConnection<?>)currentConnection).slot))) {
 						currentConnection = eraseAndNext(currentConnection);
 						returned = true;
 						continue;
@@ -1367,7 +1853,7 @@ abstract class SignalUtility {
 				int _lambdaHashCode, boolean useLambdaInfo) {
 			boolean returned = true;
 			if(useLambdaInfo) {
-				AbstractConnection<?> currentConnection = begin();
+				AbstractConnection currentConnection = begin();
 				while(currentConnection!=null) {
 					Object resolvedReceiver = currentConnection.resolveReceiver();
 					if(currentConnection instanceof SlotObjectConnection){
@@ -1389,7 +1875,7 @@ abstract class SignalUtility {
 					currentConnection = next(currentConnection);
 				}
 			}else {
-				AbstractConnection<?> currentConnection = begin();
+				AbstractConnection currentConnection = begin();
 				while(currentConnection!=null) {
 					Object resolvedReceiver = currentConnection.resolveReceiver();
 					if(resolvedReceiver==slotObject){
@@ -1404,23 +1890,17 @@ abstract class SignalUtility {
 		}
 		
 		@Override
-		final boolean removeConnection(AbstractSignal signal, JavaConnection javaConnection) {
+		final boolean removeConnection(AbstractSignal signal, LightweightConnection javaConnection) {
 			boolean returned = false;
-			AbstractConnection<?> currentConnection = begin();
+			AbstractConnection currentConnection = begin();
 			while(currentConnection!=null){
 				Object resolvedReceiver = currentConnection.resolveReceiver();
-				if(currentConnection instanceof ReflectiveConnection){
-					if (resolvedReceiver == null   // GCed receiver
-						|| currentConnection.equals(javaConnection)) {
-						currentConnection = eraseAndNext(currentConnection);
-						continue;
-					}
-				}else if(currentConnection instanceof SlotObjectConnection){
+				if(currentConnection instanceof SlotObjectConnection){
 					SlotObjectConnection<?> slotObjectConnection = (SlotObjectConnection<?>)currentConnection;
 					Object lambdaOwner = slotObjectConnection.lambdaOwner();
 					Class<?> lambdaOwnerClass = slotObjectConnection.lambdaOwnerClass;
 					if(lambdaOwner!=null || lambdaOwnerClass!=null){
-						if(currentConnection.equals(javaConnection)){
+						if(currentConnection.equals(javaConnection.connection.get())){
 							currentConnection = eraseAndNext(currentConnection);
 							returned = true;
 							continue;
@@ -1431,9 +1911,15 @@ abstract class SignalUtility {
 								continue;
 							}
 						}
-					}else if(currentConnection.equals(javaConnection)){
+					}else if(currentConnection.equals(javaConnection.connection.get())){
 						currentConnection = eraseAndNext(currentConnection);
 						returned = true;
+						continue;
+					}
+				}else {
+					if (resolvedReceiver == null   // GCed receiver
+						|| currentConnection.equals(javaConnection.connection.get())) {
+						currentConnection = eraseAndNext(currentConnection);
 						continue;
 					}
 				}
@@ -1444,7 +1930,7 @@ abstract class SignalUtility {
 
 		@Override
 		final Connection addConnectionToMethod(AbstractSignal signal, Object receiver, QMetaMethod slot,
-				ConnectionType... connectionType) {
+				ConnectionType[] connectionType) {
 			Method slotMethod = null;
 			switch(slot.methodType()) {
 			case Slot:
@@ -1456,48 +1942,161 @@ abstract class SignalUtility {
 			default:
 				break;
 			}
-			AbstractConnection<?> conn;
+			AbstractConnection conn;
 			if(slotMethod!=null) {
-				conn = new ReflectiveConnection(new WeakReference<Object>(receiver), slotMethod, null, null, connectionType);
+				if(Modifier.isStatic(slotMethod.getModifiers())) {
+					StaticSlotInvoker invoker = ReflectionUtility.getStaticSlotInvoker(slotMethod, null);
+					if(invoker==null) {
+						conn = new StaticReflectiveConnection(slotMethod, connectionType);
+					}else {
+						conn = new StaticInvokerConnection(invoker, slotMethod, connectionType);
+					}
+				}else {
+					SlotInvoker invoker = ReflectionUtility.getSlotInvoker(slotMethod, null);
+					if(invoker==null) {
+						if(receiver instanceof QtObjectInterface) {
+			            	if(receiver instanceof QtThreadAffineInterface && !isDirect(connectionType)){
+			            		conn = new QtInstanceThreadAffineReflectiveConnection(new WeakReference<>((QtObjectInterface)receiver), slotMethod, connectionType);
+			            	}else {
+			            		conn = new QtInstanceReflectiveConnection(new WeakReference<>((QtObjectInterface)receiver), slotMethod, connectionType);
+			            	}
+			            }else if(receiver instanceof QtThreadAffineInterface && !isDirect(connectionType)){
+			        		conn = new ThreadAffineReflectiveConnection(new WeakReference<>((QtThreadAffineInterface)receiver), slotMethod, connectionType);
+			        	}else {
+			        		conn = new ReflectiveConnection<>(new WeakReference<>(receiver), slotMethod, connectionType);
+			        	}
+					}else {
+						if(receiver instanceof QtObjectInterface) {
+			            	if(receiver instanceof QtThreadAffineInterface && !isDirect(connectionType)){
+			            		conn = new QtInstanceThreadAffineInvokerConnection(new WeakReference<>((QtObjectInterface)receiver), invoker, slotMethod, connectionType);
+			            	}else {
+			            		conn = new QtInstanceInvokerConnection(new WeakReference<>((QtObjectInterface)receiver), invoker, slotMethod, connectionType);
+			            	}
+			            }else if(receiver instanceof QtThreadAffineInterface && !isDirect(connectionType)){
+			        		conn = new ThreadAffineInvokerConnection(new WeakReference<>((QtThreadAffineInterface)receiver), invoker, slotMethod, connectionType);
+			        	}else {
+			        		conn = new InvokerConnection<>(new WeakReference<>(receiver), invoker, slotMethod, connectionType);
+			        	}
+					}
+				}
+			}else if(receiver instanceof QObject){
+				conn = new QObjectMetaMethodConnection(new WeakReference<>((QObject)receiver), slot, connectionType);
+			}else if(receiver instanceof QtObjectInterface){
+				if(receiver instanceof QtThreadAffineInterface){
+					conn = new QtInstanceThreadAffineMetaMethodConnection(new WeakReference<>((QtObjectInterface)receiver), slot, connectionType);
+				}else {
+					conn = new QtInstanceMetaMethodConnection(new WeakReference<>((QtObjectInterface)receiver), slot, connectionType);
+				}
 			}else {
-				conn = new MetaMethodConnection(new WeakReference<Object>(receiver), slot, connectionType);
+				conn = new MetaMethodConnection<>(new WeakReference<>(receiver), slot, connectionType);
 			}
+            if(!(receiver instanceof QtThreadAffineInterface) && (conn.isQueuedConnection() || conn.isBlockingQueuedConnection())) {
+            	throw new IllegalArgumentException(String.format("Cannot establish %1$s connection to slot of not thread-affine receiver", 
+            			conn.isBlockingQueuedConnection() ? "blocking-queued" : "queued"));
+            }
 			addConnection(conn);
-            return new JavaConnection(signal, conn);
+            return new LightweightConnection(signal, conn);
+		}
+
+		@Override
+		boolean removeConnection(AbstractSignal signal, NativeConnection nativeConnection) {
+			return false;
 		}
 	}
 	
-	private static class JavaSignalCore extends AbstractJavaSignalCore {
-		public JavaSignalCore(Class<?> declaringClass, String name, List<SignalParameterType> signalParameterTypes) {
-			super(signalParameterTypes);
-			this.name = name;
-			this.declaringClass = declaringClass;
+	private static class LeightweightSignalBlockerSignalCore extends LeightweightSignalCore<QtSignalEmitterInterface> {
+		public LeightweightSignalBlockerSignalCore(Class<?> declaringClass, String name, List<SignalParameterType> signalParameterTypes) {
+			super(declaringClass, name, signalParameterTypes);
 		}
-
-		private final String name;
 		
 		@Override
-		final String name(AbstractSignal signal) {
-			return name;
-		}
-
-		private final Class<?> declaringClass;
-		
-		Class<?> getDeclaringClass(AbstractSignal signal){ 
-			return declaringClass; 
+		void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
+			QtSignalEmitterInterface senderObject = signal.containingObject();
+			QThread currentThread = QThread.currentThread();
+            boolean senderWithAffinity = ((QtThreadAffineInterface) senderObject).thread() == currentThread;
+        	if ( senderWithAffinity && ((QtSignalBlockerInterface)senderObject).signalsBlocked()) {
+            	logger.finest(()->String.format("Blocking signal %1$s", signal.fullName()));
+                return;
+            }
+        	emitSignal(signal, args, suppliers, senderObject, currentThread);
 		}
 	}
 	
-	private static class JavaCheckingSignalCore extends JavaSignalCore {
+	private static class LeightweightQtInstanceSignalCore extends LeightweightSignalCore<QtSignalEmitterInterface> {
+		public LeightweightQtInstanceSignalCore(Class<?> declaringClass, String name, List<SignalParameterType> signalParameterTypes) {
+			super(declaringClass, name, signalParameterTypes);
+		}
+		
+		@Override
+		void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
+			QtSignalEmitterInterface senderObject = signal.containingObject();
+			if(((QtObjectInterface) senderObject).isDisposed()) {
+				disconnectAll();
+				throw new QNoNativeResourcesException(
+						"Function call on incomplete object of type: " + AccessUtility.instance.getClass(senderObject).getName());
+			}else {
+				super.emitSignal(signal, args, suppliers, senderObject, null);
+			}
+		}
+	}
+	
+	private static class LeightweightQObjectSignalCore extends LeightweightSignalCore<QObject> {
+		public LeightweightQObjectSignalCore(Class<?> declaringClass, String name, List<SignalParameterType> signalParameterTypes) {
+			super(declaringClass, name, signalParameterTypes);
+		}
+		
+		@Override
+		void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
+			QObject senderObject = (QObject)signal.containingObject();
+			if(senderObject.isDisposed()) {
+				disconnectAll();
+				throw new QNoNativeResourcesException(
+						"Function call on incomplete object of type: " + AccessUtility.instance.getClass(senderObject).getName());
+			}else {
+				super.emitSignal(signal, args, suppliers, senderObject, null);
+			}
+		}
+		
+		void invokeConnection(QObject senderObject, AbstractConnection connection, Object[] args) throws Throwable {
+			connection.invokeOnLock(senderObject, args);
+		}
+	}
+	
+	private static class LeightweightQtInstanceSignalBlockerSignalCore extends LeightweightSignalCore<QtSignalEmitterInterface> {
+		public LeightweightQtInstanceSignalBlockerSignalCore(Class<?> declaringClass, String name, List<SignalParameterType> signalParameterTypes) {
+			super(declaringClass, name, signalParameterTypes);
+		}
+		
+		@Override
+		void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
+			QtSignalEmitterInterface senderObject = signal.containingObject();
+			if(((QtObjectInterface) senderObject).isDisposed()) {
+				disconnectAll();
+				throw new QNoNativeResourcesException(
+						"Function call on incomplete object of type: " + AccessUtility.instance.getClass(senderObject).getName());
+			}else {
+				QThread currentThread = QThread.currentThread();
+	            boolean senderWithAffinity = ((QtThreadAffineInterface) senderObject).thread() == currentThread;
+	        	if ( senderWithAffinity && ((QtSignalBlockerInterface)senderObject).signalsBlocked()) {
+	            	logger.finest(()->String.format("Blocking signal %1$s", signal.fullName()));
+	                return;
+	            }
+				super.emitSignal(signal, args, suppliers, senderObject, currentThread);
+			}
+		}
+	}
+	
+	private static class LeightweightCheckingSignalCore extends LeightweightSignalCore<QtSignalEmitterInterface> {
 		private final Consumer<Object[]> argumentTest;
 		
-		public JavaCheckingSignalCore(Class<?> declaringClass, String name, List<SignalParameterType> signalParameterTypes, Consumer<Object[]> argumentTest) {
+		public LeightweightCheckingSignalCore(Class<?> declaringClass, String name, List<SignalParameterType> signalParameterTypes, Consumer<Object[]> argumentTest) {
 			super(declaringClass, name, signalParameterTypes);
 			this.argumentTest = argumentTest;
 		}
 		
 		@Override
-		final void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
+		void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>[] suppliers, QtSignalEmitterInterface senderObject, QThread currentThread) {
+			argumentTest.accept(args);
 			if(suppliers.length>0) {
 				int offset = args.length;
 				args = Arrays.copyOf(args, args.length+suppliers.length);
@@ -1505,16 +2104,134 @@ abstract class SignalUtility {
         			Supplier<?> supplier = suppliers[i];
         			args[offset+i] = supplier==null ? null : supplier.get();
 				}
-        		suppliers = new Supplier[0];
+        		suppliers = AbstractSignal.zeroarray;
 			}
+			super.emitSignal(signal, args, suppliers, senderObject, currentThread);
+		}
+	}
+	
+	private static class LeightweightSignalBlockerCheckingSignalCore extends LeightweightCheckingSignalCore {
+		public LeightweightSignalBlockerCheckingSignalCore(Class<?> declaringClass, String name, List<SignalParameterType> signalParameterTypes, Consumer<Object[]> argumentTest) {
+			super(declaringClass, name, signalParameterTypes, argumentTest);
+		}
+		
+		@Override
+		void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
+			QtSignalEmitterInterface senderObject = signal.containingObject();
+			QThread currentThread = QThread.currentThread();
+            boolean senderWithAffinity = ((QtThreadAffineInterface) senderObject).thread() == currentThread;
+        	if ( senderWithAffinity && ((QtSignalBlockerInterface)senderObject).signalsBlocked()) {
+            	logger.finest(()->String.format("Blocking signal %1$s", signal.fullName()));
+                return;
+            }
+        	emitSignal(signal, args, suppliers, senderObject, currentThread);
+		}
+	}
+	
+	private static class LeightweightQtInstanceSignalBlockerCheckingSignalCore extends LeightweightCheckingSignalCore {
+		public LeightweightQtInstanceSignalBlockerCheckingSignalCore(Class<?> declaringClass, String name, List<SignalParameterType> signalParameterTypes, Consumer<Object[]> argumentTest) {
+			super(declaringClass, name, signalParameterTypes, argumentTest);
+		}
+		
+		@Override
+		void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
+			QtSignalEmitterInterface senderObject = signal.containingObject();
+			if(((QtObjectInterface) senderObject).isDisposed()) {
+				disconnectAll();
+				throw new QNoNativeResourcesException(
+						"Function call on incomplete object of type: " + AccessUtility.instance.getClass(senderObject).getName());
+			}else {
+				QThread currentThread = QThread.currentThread();
+	            boolean senderWithAffinity = ((QtThreadAffineInterface) senderObject).thread() == currentThread;
+	        	if ( senderWithAffinity && ((QtSignalBlockerInterface)senderObject).signalsBlocked()) {
+	            	logger.finest(()->String.format("Blocking signal %1$s", signal.fullName()));
+	                return;
+	            }
+				super.emitSignal(signal, args, suppliers, senderObject, currentThread);
+			}
+		}
+	}
+	
+	private static class LeightweightQtInstanceCheckingSignalCore extends LeightweightCheckingSignalCore {
+		public LeightweightQtInstanceCheckingSignalCore(Class<?> declaringClass, String name, List<SignalParameterType> signalParameterTypes, Consumer<Object[]> argumentTest) {
+			super(declaringClass, name, signalParameterTypes, argumentTest);
+		}
+		
+		@Override
+		void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
+			QtSignalEmitterInterface senderObject = signal.containingObject();
+			if(((QtObjectInterface) senderObject).isDisposed()) {
+				disconnectAll();
+				throw new QNoNativeResourcesException(
+						"Function call on incomplete object of type: " + AccessUtility.instance.getClass(senderObject).getName());
+			}else {
+				super.emitSignal(signal, args, suppliers, senderObject, null);
+			}
+		}
+	}
+	
+	private static class LeightweightQObjectCheckingSignalCore extends LeightweightQObjectSignalCore {
+		private final Consumer<Object[]> argumentTest;
+		
+		public LeightweightQObjectCheckingSignalCore(Class<?> declaringClass, String name, List<SignalParameterType> signalParameterTypes, Consumer<Object[]> argumentTest) {
+			super(declaringClass, name, signalParameterTypes);
+			this.argumentTest = argumentTest;
+		}
+		
+		@Override
+		void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
 			argumentTest.accept(args);
+			if(suppliers.length>0) {
+				int offset = args.length;
+				args = Arrays.copyOf(args, args.length+suppliers.length);
+        		for (int i = 0; i < suppliers.length; i++) {
+        			Supplier<?> supplier = suppliers[i];
+        			args[offset+i] = supplier==null ? null : supplier.get();
+				}
+        		suppliers = AbstractSignal.zeroarray;
+			}
 			super.emitSignal(signal, args, suppliers);
 		}
 	}
 	
-	private static class JavaStaticSignalCore extends JavaSignalCore {
-		private JavaStaticSignalCore(String name, List<SignalParameterType> signalParameterTypes, Class<?> declaringClass) {
+	private static class StaticSignalCore extends LeightweightSignalCore<QtSignalEmitterInterface> {
+		private StaticSignalCore(String name, List<SignalParameterType> signalParameterTypes, Class<?> declaringClass) {
 			super(declaringClass, name, signalParameterTypes);
+		}
+		
+		@Override
+		final boolean isStaticSignal(AbstractSignal signal) {
+			return true;
+		}
+	}
+	
+	private static class DeclarativeSignalCore extends LeightweightSignalCore<QtSignalEmitterInterface> {
+		private DeclarativeSignalCore(String name, List<SignalParameterType> signalParameterTypes) {
+			super(null, name, signalParameterTypes);
+		}
+	}
+	
+	private static class StaticCheckingSignalCore extends StaticSignalCore {
+		private final Consumer<Object[]> argumentTest;
+		
+		public StaticCheckingSignalCore(String name, List<SignalParameterType> signalParameterTypes, Class<?> declaringClass, Consumer<Object[]> argumentTest) {
+			super(name, signalParameterTypes, declaringClass);
+			this.argumentTest = argumentTest;
+		}
+		
+		@Override
+		void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>[] suppliers, QtSignalEmitterInterface senderObject, QThread currentThread) {
+			argumentTest.accept(args);
+			if(suppliers.length>0) {
+				int offset = args.length;
+				args = Arrays.copyOf(args, args.length+suppliers.length);
+        		for (int i = 0; i < suppliers.length; i++) {
+        			Supplier<?> supplier = suppliers[i];
+        			args[offset+i] = supplier==null ? null : supplier.get();
+				}
+        		suppliers = AbstractSignal.zeroarray;
+			}
+			super.emitSignal(signal, args, suppliers, senderObject, currentThread);
 		}
 	}
 	
@@ -1553,7 +2270,7 @@ abstract class SignalUtility {
 		 * @see QtUtilities#getSignalOnDispose(QtObjectInterface)
 		 */
 		protected AbstractSignal(Class<?> declaringClass, boolean isDisposed) {
-			this.core = new JavaStaticSignalCore("disposed", Collections.emptyList(), declaringClass);
+			this.core = new StaticSignalCore("disposed", Collections.emptyList(), declaringClass);
         }
         
 		/**
@@ -1562,21 +2279,21 @@ abstract class SignalUtility {
 		 */
         protected AbstractSignal(String name, Class<?>[] types) {
         	name = Objects.requireNonNull(name);
-        	List<SignalParameterType> typeList = Collections.emptyList();
-        	for (int i = 0; i < types.length; i++) {
-        		SignalParameterType signalType = new SignalParameterType(types[i], types[i], null, false, false);
-        		if(i==0) {
-        			if(types.length>1) {
-        				typeList = new ArrayList<>();
-        				typeList.add(signalType);
-        			}else {
-        				typeList = Collections.singletonList(signalType);
-        			}
-        		}else {
-        			typeList.add(signalType);
-        		}
-			}
-        	this.core = new JavaSignalCore(null, name, types.length>1 ? Collections.unmodifiableList(typeList) : typeList);
+        	switch(types.length){
+        	case 0:
+        		this.core = new DeclarativeSignalCore(name, Collections.emptyList());
+        		break;
+        	case 1:
+        		this.core = new DeclarativeSignalCore(name, Collections.singletonList(new SignalParameterType(types[0], types[0], null, false, false)));
+        		break;
+        	default:
+	        	SignalParameterType[] typeList = new SignalParameterType[types.length];
+	        	for (int i = 0; i < types.length; i++) {
+	        		typeList[i] = new SignalParameterType(types[i], types[i], null, false, false);
+				}
+	        	this.core = new DeclarativeSignalCore(name, Collections.unmodifiableList(Arrays.asList(typeList)));
+        		break;
+        	}
         }
 		
         @io.qt.QtUninvokable
@@ -1584,6 +2301,9 @@ abstract class SignalUtility {
 			return core.methodIndex(this);
 		}
 
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final Class<?> getDeclaringClass() {
 			return core.getDeclaringClass(this);
@@ -1593,6 +2313,13 @@ abstract class SignalUtility {
         final List<SignalParameterType> signalTypes() {
     		return core.signalTypes(this);
 		}
+        
+        /**
+         * @hidden
+         */
+        protected boolean isPrivateSignal() {
+        	return true;
+        }
 
         @io.qt.QtUninvokable
         public final List<Class<?>> argumentTypes() {
@@ -1603,22 +2330,22 @@ abstract class SignalUtility {
         	case 1:
         		return Collections.singletonList(types.get(0).type);
     		default:
-    			List<Class<?>> result = new ArrayList<>();
-    			for(SignalParameterType signalType : types) {
-    				result.add(signalType.type);
-    			}
-    			return Collections.unmodifiableList(result);
+    			Class<?>[] result = new Class[types.size()];
+    			for (int i = 0; i < result.length; i++) {
+    				result[i] = types.get(i).type;
+				}
+    			return Arrays.asList(result);
         	}
 		}
 
         @io.qt.QtUninvokable
         private boolean isStaticSignal() {
-			return core instanceof JavaStaticSignalCore;
+			return core.isStaticSignal(this);
 		}
 
         @io.qt.QtUninvokable
         private boolean isQObjectSignal() {
-			return core instanceof AbstractQObjectsSignalCore;
+			return core.isQObjectSignal(this);
 		}
 
         /**
@@ -1640,19 +2367,41 @@ abstract class SignalUtility {
         }
         
         /**
+         * Returns true if signal is connected
+         * @return connected
+         * @see QObject#isSignalConnected(io.qt.core.QMetaMethod)
+         */
+        @io.qt.QtUninvokable
+        public final boolean isConnected() {
+            return core.isConnected(this);
+        }
+        
+        /**
+         * Returns the number of receivers connected to this signal
+         * @return receivers
+         * @see QObject#receivers(String)
+         */
+        @io.qt.QtUninvokable
+        public final int receivers() {
+            return core.receivers(this);
+        }
+        
+        /**
          * Returns the full name of the signal, on the form "package.class.signalName"
          *  @return The fully qualified name of the signal
          */
         @io.qt.QtUninvokable
         public final String fullName() {
-        	String name = name();
-        	Class<?> declaringClass = getDeclaringClass();
-            return declaringClass == null ? name : declaringClass.getName() + "." + name;
+        	return core.fullName(this);
+        }
+        
+        final QMetaMethod signalMethod() {
+        	return core.signalMethod(this);
         }
 
 		@io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnection(Object receiver, String method, Qt.ConnectionType... connectionType) {
-        	QMetaObject metaObject = receiver instanceof QObject ? ((QObject)receiver).metaObject() : QMetaObject.forType(ClassAnalyzerUtility.getClass(receiver));
+        	QMetaObject metaObject = receiver instanceof QObject ? ((QObject)receiver).metaObject() : QMetaObject.forType(AccessUtility.instance.getClass(receiver));
         	Method slotMethod = null;
         	if(metaObject!=null) {
         		QMetaMethod metaMethod = metaObject.method(method);
@@ -1661,7 +2410,8 @@ abstract class SignalUtility {
         			if (slotMethod == null) {
         	            throw new QNoSuchSlotException(receiver, method);
         	        }
-        			metaMethod = QMetaMethod.fromReflectedMethod(slotMethod);
+        			if(methodIndex()>=0)
+        				metaMethod = QMetaMethod.fromReflectedMethod(slotMethod);
         		}
         		if(metaMethod!=null && metaMethod.isValid()) {
         			return addConnectionToMethod(receiver, metaMethod, connectionType);
@@ -1681,11 +2431,11 @@ abstract class SignalUtility {
 	            	annotatedParameterTypes = slotMethod.getAnnotatedParameterTypes();
 	        	Match match = matchMethodTypes(slotMethod.getParameterTypes(), slotMethod.getGenericParameterTypes(), annotatedParameterTypes);
 				if(match==Match.NoMatch) {
-					QMetaMethod signal = QMetaMethod.fromSignal(this);
-					if(signal!=null && signal.isValid()) {
+					QMetaMethod signal = signalMethod();
+					if(signal.isValid()) {
 						throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s -> %2$s", signal.cppMethodSignature(), slotMethod.toGenericString()));
 					}
-					throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", fullName(), signalParameters(), slotMethod.toGenericString()));
+					throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", name(), signalParameters(), slotMethod.toGenericString()));
 				}
 	            return addConnectionToMethod(receiver, slotMethod, null, null, connectionType);
 	        }
@@ -1693,7 +2443,7 @@ abstract class SignalUtility {
 
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnection(Object receiver, Method slotMethod, Qt.ConnectionType... connectionType) {
-            if (slotMethod.isAnnotationPresent(QtUninvokable.class)) {
+            if (slotMethod.isAnnotationPresent(QtUninvokable.class) && methodIndex()>=0) {
             	QMetaMethod method = QMetaMethod.fromReflectedMethod(slotMethod);
             	if(method!=null && method.isValid() && method.methodType()!=QMetaMethod.MethodType.Constructor) {
             		return addConnectionToMethod(receiver, method, connectionType);
@@ -1706,15 +2456,15 @@ abstract class SignalUtility {
             if(ClassAnalyzerUtility.useAnnotatedType)
             	annotatedParameterTypes = slotMethod.getAnnotatedParameterTypes();
 			if(matchMethodTypes(slotMethod.getParameterTypes(), slotMethod.getGenericParameterTypes(), annotatedParameterTypes)==Match.NoMatch) {
-				QMetaMethod signal = QMetaMethod.fromSignal(this);
-				if(signal!=null && signal.isValid()) {
+				QMetaMethod signal = signalMethod();
+				if(signal.isValid()) {
 					QMetaMethod method = QMetaMethod.fromReflectedMethod(slotMethod);
 					if(method!=null && method.isValid()) {
 						throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s -> %2$s", signal.cppMethodSignature(), method.cppMethodSignature()));
 					}
 					throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s -> %2$s", signal.cppMethodSignature(), slotMethod.toGenericString()));
 				}
-				throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", fullName(), signalParameters(), slotMethod.toGenericString()));
+				throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", name(), signalParameters(), slotMethod.toGenericString()));
 			}
             return addConnectionToMethod(receiver, slotMethod, null, null, connectionType);
         }
@@ -1752,7 +2502,7 @@ abstract class SignalUtility {
                     	throw new QSignalInitializationException("Static signals must be declared as static members of a class.");
                 }else {
                 	QtSignalEmitterInterface containingObject = containingObject();
-                	Class<?> cls = containingObject==null ? null : ClassAnalyzerUtility.getClass(containingObject);
+                	Class<?> cls = containingObject==null ? null : AccessUtility.instance.getClass(containingObject);
                     loop: while (cls != null) {
                         Field fields[] = cls.getDeclaredFields();
                         for (Field field : fields) {
@@ -1777,9 +2527,9 @@ abstract class SignalUtility {
                         cls = cls.getSuperclass();
                     }
                     if (!found) {
-                    	if(QObject.class.isAssignableFrom(ClassAnalyzerUtility.getClass(this).getDeclaringClass()))
+                    	if(QObject.class.isAssignableFrom(AccessUtility.instance.getClass(this).getDeclaringClass()))
                     		throw new QSignalDeclarationException("Signals must be declared as members of QObject subclasses.");
-                    	else if(QInstanceMemberSignals.class.isAssignableFrom(ClassAnalyzerUtility.getClass(this).getDeclaringClass()))
+                    	else if(QInstanceMemberSignals.class.isAssignableFrom(AccessUtility.instance.getClass(this).getDeclaringClass()))
                     		throw new QSignalDeclarationException("Signals must be declared as members of QInstanceMemberSignals subclasses.");
                     	else
                     		throw new QSignalInitializationException("Unable to resolve signal.");
@@ -1807,9 +2557,16 @@ abstract class SignalUtility {
         	if(methodIndex>=0 && core instanceof AnalyzingSignalCoreInterface) {
         		if(core instanceof AnalyzingCheckingSignalCore) {
     				Consumer<Object[]> argumentTest = ((AnalyzingCheckingSignalCore)core).argumentTest;
-    				this.core = new QObjectsCheckingSignalCore(declaringClass, true, signalTypes, methodIndex, metaObjectId, argumentTest);
+    				if(isPrivateSignal()) {
+    					// private signals don't need checks
+    					this.core = new QObjectsPrivateNativeSignalCore(declaringClass, signalTypes, methodIndex, metaObjectId);
+    				}else {
+    					this.core = new QObjectsCheckingNativeSignalCore(signalTypes, methodIndex, metaObjectId, argumentTest);
+    				}
+        		}else if(isPrivateSignal()) {
+        			this.core = new QObjectsPrivateNativeSignalCore(declaringClass, signalTypes, methodIndex, metaObjectId);
         		}else {
-        			this.core = new QObjectsSignalCore(declaringClass, true, signalTypes, methodIndex, metaObjectId);
+        			this.core = new QObjectsNativeSignalCore(signalTypes, methodIndex, metaObjectId);
         		}
         	}
 		}
@@ -1819,29 +2576,42 @@ abstract class SignalUtility {
         @io.qt.QtUninvokable
         private synchronized void analyzeSignalField(Field field) {
         	if(core instanceof AnalyzingSignalCoreInterface) {
+        		boolean isStatic = java.lang.reflect.Modifier.isStatic(field.getModifiers());
         		Class<?> declaringClass = field.getDeclaringClass();
 	            String name = field.getName();
 	            List<SignalParameterType> signalTypes;
-	            if(QObject.class.isAssignableFrom(declaringClass)) {
+	            if(QObject.class.isAssignableFrom(declaringClass) && !isStatic) {
             		QMetaObject metaObject = QMetaObject.forType(declaringClass);
             		SignalInfo signalInfo = SignalUtility.signalInfo(containingObject(), metaObject, field, null);
             		if(signalInfo.methodIndex>=0 && signalInfo.enclosingMetaObject!=0) {
-            			boolean isGenerated = ClassAnalyzerUtility.isGeneratedClass(declaringClass);
+            			boolean isNativeSignal = ClassAnalyzerUtility.isGeneratedClass(declaringClass);
+            			signalTypes = signalInfo.signalTypes;
+            			if(signalTypes==null)
+            				signalTypes = signalTypesByField.computeIfAbsent(field, SignalUtility::resolveSignal);
             			if(core instanceof AnalyzingCheckingSignalCore) {
             				Consumer<Object[]> argumentTest = ((AnalyzingCheckingSignalCore)core).argumentTest;
-            				if(signalInfo.signalTypes!=null) {
-                				this.core = new QObjectsCheckingSignalCore(declaringClass, isGenerated, signalInfo.signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject, argumentTest);
-                			}else {
-                				signalTypes = signalTypesByField.computeIfAbsent(field, SignalUtility::resolveSignal);
-                				this.core = new QObjectsCheckingSignalCore(declaringClass, isGenerated, signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject, argumentTest);
-                			}
+            				if(isPrivateSignal()) {
+            					if(isNativeSignal)
+                					// private signals don't need checks
+            						this.core = new QObjectsPrivateNativeSignalCore(declaringClass, signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject);
+            					else
+            						this.core = new QObjectsCheckingPrivateSignalCore(declaringClass, signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject, argumentTest);
+            				}else {
+            					if(isNativeSignal)
+            						this.core = new QObjectsCheckingNativeSignalCore(signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject, argumentTest);
+            					else
+            						this.core = new QObjectsCheckingSignalCore(signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject, argumentTest);
+            				}
+                		}else if(isPrivateSignal()) {
+                			if(isNativeSignal)
+                				this.core = new QObjectsPrivateNativeSignalCore(declaringClass, signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject);
+                			else
+                				this.core = new QObjectsPrivateSignalCore(declaringClass, signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject);
             			}else {
-            				if(signalInfo.signalTypes!=null) {
-                				this.core = new QObjectsSignalCore(declaringClass, isGenerated, signalInfo.signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject);
-                			}else {
-                				signalTypes = signalTypesByField.computeIfAbsent(field, SignalUtility::resolveSignal);
-                				this.core = new QObjectsSignalCore(declaringClass, isGenerated, signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject);
-                			}
+            				if(isNativeSignal)
+            					this.core = new QObjectsNativeSignalCore(signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject);
+            				else
+            					this.core = new QObjectsSignalCore(signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject);
             			}
             			return;
             		}
@@ -1849,30 +2619,115 @@ abstract class SignalUtility {
             	signalTypes = signalTypesByField.computeIfAbsent(field, SignalUtility::resolveSignal);
             	if(core instanceof AnalyzingCheckingSignalCore) {
     				Consumer<Object[]> argumentTest = ((AnalyzingCheckingSignalCore)core).argumentTest;
-    				core = new JavaCheckingSignalCore(declaringClass, name, signalTypes, argumentTest);
+    				if(isStatic) {
+    					core = new StaticCheckingSignalCore(name, signalTypes, declaringClass, argumentTest);
+    				}else if(QtObjectInterface.class.isAssignableFrom(declaringClass)) {
+    					if(QObject.class.isAssignableFrom(declaringClass)) {
+    						core = new LeightweightQObjectCheckingSignalCore(declaringClass, name, signalTypes, argumentTest);
+    					}else if(QtThreadAffineInterface.class.isAssignableFrom(declaringClass) 
+        						&& QtSignalBlockerInterface.class.isAssignableFrom(declaringClass)) {
+    						core = new LeightweightQtInstanceSignalBlockerCheckingSignalCore(declaringClass, name, signalTypes, argumentTest);
+    					}else {
+    						core = new LeightweightQtInstanceCheckingSignalCore(declaringClass, name, signalTypes, argumentTest);
+    					}
+    				}else if(QtThreadAffineInterface.class.isAssignableFrom(declaringClass) 
+    						&& QtSignalBlockerInterface.class.isAssignableFrom(declaringClass)) {
+    					core = new LeightweightSignalBlockerCheckingSignalCore(declaringClass, name, signalTypes, argumentTest);
+    				}else{
+    					core = new LeightweightCheckingSignalCore(declaringClass, name, signalTypes, argumentTest);
+    				}
             	}else {
-            		core = new JavaSignalCore(declaringClass, name, signalTypes);
+        			if(isStatic) {
+        				core = new StaticSignalCore(name, signalTypes, declaringClass);
+    				}else if(QtObjectInterface.class.isAssignableFrom(declaringClass)) {
+    					if(QObject.class.isAssignableFrom(declaringClass)) {
+    						core = new LeightweightQObjectSignalCore(declaringClass, name, signalTypes);
+    					}else if(QtThreadAffineInterface.class.isAssignableFrom(declaringClass) 
+        						&& QtSignalBlockerInterface.class.isAssignableFrom(declaringClass)) {
+        					core = new LeightweightQtInstanceSignalBlockerSignalCore(declaringClass, name, signalTypes);
+        				}else {
+        					core = new LeightweightQtInstanceSignalCore(declaringClass, name, signalTypes);
+        				}
+        			}else if(QtThreadAffineInterface.class.isAssignableFrom(declaringClass) 
+    						&& QtSignalBlockerInterface.class.isAssignableFrom(declaringClass)) {
+        				core = new LeightweightSignalBlockerSignalCore(declaringClass, name, signalTypes);
+    				}else{
+    					core = new LeightweightSignalCore<>(declaringClass, name, signalTypes);
+    				}
             	}
         	}
 		}
         
         @io.qt.QtUninvokable
-        synchronized void setCore(Class<?> declaringClass, String name, List<SignalParameterType> signalTypes, int methodIndex, long metaObjectId) {
+        synchronized void setCore(Class<?> declaringClass, String name, boolean isStatic, List<SignalParameterType> signalTypes, int methodIndex, long metaObjectId) {
         	if(core instanceof AnalyzingSignalCoreInterface) {
                 final boolean isQObjectSignal = QObject.class.isAssignableFrom(declaringClass);
                 final boolean isNativeSignal = ClassAnalyzerUtility.isGeneratedClass(declaringClass);
                 if(core instanceof AnalyzingCheckingSignalCore) {
     				Consumer<Object[]> argumentTest = ((AnalyzingCheckingSignalCore)core).argumentTest;
-    				if(methodIndex>=0 && signalTypes!=null && isQObjectSignal) {
-    	        		core = new QObjectsCheckingSignalCore(declaringClass, isNativeSignal, signalTypes, methodIndex, metaObjectId, argumentTest);
+    				if(isStatic) {
+    					core = new StaticCheckingSignalCore(name, signalTypes, declaringClass, argumentTest);
+    				}else if(methodIndex>=0 && signalTypes!=null && isQObjectSignal) {
+    					if(isPrivateSignal()) {
+    						if(isNativeSignal)
+    	    					// private signals don't need checks
+    							core = new QObjectsPrivateNativeSignalCore(declaringClass, signalTypes, methodIndex, metaObjectId);
+    						else
+    							core = new QObjectsCheckingPrivateSignalCore(declaringClass, signalTypes, methodIndex, metaObjectId, argumentTest);
+        				}else {
+    						if(isNativeSignal)
+    							core = new QObjectsCheckingNativeSignalCore(signalTypes, methodIndex, metaObjectId, argumentTest);
+    						else
+    							core = new QObjectsCheckingSignalCore(signalTypes, methodIndex, metaObjectId, argumentTest);
+        				}
     	        	}else {
-    	        		core = new JavaCheckingSignalCore(declaringClass, name, signalTypes, argumentTest);
+    	        		if(QtObjectInterface.class.isAssignableFrom(declaringClass)) {
+    	        			if(QObject.class.isAssignableFrom(declaringClass)) {
+        						core = new LeightweightQObjectCheckingSignalCore(declaringClass, name, signalTypes, argumentTest);
+        					}else if(QtThreadAffineInterface.class.isAssignableFrom(declaringClass) 
+            						&& QtSignalBlockerInterface.class.isAssignableFrom(declaringClass)) {
+        						core = new LeightweightQtInstanceSignalBlockerCheckingSignalCore(declaringClass, name, signalTypes, argumentTest);
+        					}else {
+        						core = new LeightweightQtInstanceCheckingSignalCore(declaringClass, name, signalTypes, argumentTest);
+        					}
+        				}else if(QtThreadAffineInterface.class.isAssignableFrom(declaringClass) 
+        						&& QtSignalBlockerInterface.class.isAssignableFrom(declaringClass)) {
+    						core = new LeightweightSignalBlockerCheckingSignalCore(declaringClass, name, signalTypes, argumentTest);
+    					}else {
+        					core = new LeightweightCheckingSignalCore(declaringClass, name, signalTypes, argumentTest);
+        				}
     	        	}
                 }else {
-                	if(methodIndex>=0 && signalTypes!=null && isQObjectSignal) {
-    	        		core = new QObjectsSignalCore(declaringClass, isNativeSignal, signalTypes, methodIndex, metaObjectId);
+                	if(isStatic) {
+    					core = new StaticSignalCore(name, signalTypes, declaringClass);
+    				}else if(methodIndex>=0 && signalTypes!=null && isQObjectSignal) {
+	            		if(isPrivateSignal()) {
+    						if(isNativeSignal)
+    							core = new QObjectsPrivateNativeSignalCore(declaringClass, signalTypes, methodIndex, metaObjectId);
+    						else
+    							core = new QObjectsPrivateSignalCore(declaringClass, signalTypes, methodIndex, metaObjectId);
+	            		}else {
+    						if(isNativeSignal)
+    							core = new QObjectsNativeSignalCore(signalTypes, methodIndex, metaObjectId);
+    						else
+    							core = new QObjectsSignalCore(signalTypes, methodIndex, metaObjectId);
+	            		}
     	        	}else {
-    	        		core = new JavaSignalCore(declaringClass, name, signalTypes);
+    	        		if(QtObjectInterface.class.isAssignableFrom(declaringClass)) {
+    	        			if(QObject.class.isAssignableFrom(declaringClass)) {
+        						core = new LeightweightQObjectSignalCore(declaringClass, name, signalTypes);
+        					}else if(QtThreadAffineInterface.class.isAssignableFrom(declaringClass) 
+	        						&& QtSignalBlockerInterface.class.isAssignableFrom(declaringClass)) {
+	            				core = new LeightweightQtInstanceSignalBlockerSignalCore(declaringClass, name, signalTypes);
+	        				}else{
+	            				core = new LeightweightQtInstanceSignalCore(declaringClass, name, signalTypes);
+	        				}
+            			}else if(QtThreadAffineInterface.class.isAssignableFrom(declaringClass) 
+        						&& QtSignalBlockerInterface.class.isAssignableFrom(declaringClass)) {
+            				core = new LeightweightSignalBlockerSignalCore(declaringClass, name, signalTypes);
+        				}else{
+        					core = new LeightweightSignalCore<>(declaringClass, name, signalTypes);
+        				}
     	        	}
                 }
         	}
@@ -1890,6 +2745,9 @@ abstract class SignalUtility {
         	return String.join(", ", args);
         }
         
+        /**
+         * @hidden
+         */
         @io.qt.QtUninvokable
         protected final void emitDefaultSignal(Supplier<?> arg1Default, final Object ... args) {
         	core.emitSignal(this, args, arg1Default);
@@ -1954,10 +2812,12 @@ abstract class SignalUtility {
 								        		arg4Default, arg5Default, arg6Default, 
 								        		arg7Default, arg8Default, arg9Default);
         }
+        
+        private final static Supplier<?>[] zeroarray = {};
 
         @io.qt.QtUninvokable
         protected final void emitSignal(final Object ... args) {
-        	core.emitSignal(this, args);
+        	core.emitSignal(this, args, zeroarray);
         }
         
         private enum Match{
@@ -1986,7 +2846,7 @@ abstract class SignalUtility {
         	if(sentTypes.equals(receivedTypes)) {
         		return true;
         	}else {
-        		String signalClassName = ClassAnalyzerUtility.getClass(this).getName();
+        		String signalClassName = AccessUtility.instance.getClass(this).getName();
         		if(signalClassName.endsWith("Default1")
         				|| signalClassName.endsWith("Default2")
         				|| signalClassName.endsWith("Default3")
@@ -2277,7 +3137,7 @@ abstract class SignalUtility {
         	if(sentClass==int.class)
         		sentClass = Integer.class;
         	if(sentClass==byte.class)
-        		sentClass = byte.class;
+        		sentClass = Byte.class;
         	if(sentClass==short.class)
         		sentClass = Short.class;
         	if(sentClass==long.class)
@@ -2667,26 +3527,48 @@ abstract class SignalUtility {
         @io.qt.QtUninvokable
         private QMetaObject.Connection addConnectionToMethod(Object receiver, Method slot, MethodHandle slotHandle, Object[] lambdaArgs, Qt.ConnectionType... connectionType) {
     		checkConnection(receiver, false);
-        	List<Supplier<?>> _lambdaArgs = null;
+        	LambdaArgsProvider _lambdaArgs;
 			if(lambdaArgs!=null && lambdaArgs.length>0) {
-				if(lambdaArgs.length==1) {
-					if(lambdaArgs[0]!=null && lambdaArgs[0] == this.containingObject()) {
-						_lambdaArgs = Collections.singletonList(new WeakReference<>(lambdaArgs[0])::get);
-					}else {
-						Object arg = lambdaArgs[0];
-						_lambdaArgs = Collections.singletonList(()->arg);
+	        	boolean hasWeakLambdaArgs = false;
+	        	if(this.containingObject()!=null) {
+					for (int i = 0; i < lambdaArgs.length; i++) {
+						if(lambdaArgs[i] == this.containingObject()) {
+							hasWeakLambdaArgs = true;
+							break;
+						}
 					}
-				}else {
-					_lambdaArgs = new ArrayList<>();
+	        	}
+	        	boolean isThreadAffine = receiver==null && lambdaArgs[0] instanceof QtThreadAffineInterface;
+				if(hasWeakLambdaArgs) {
+					Supplier<?>[] array = new Supplier[lambdaArgs.length];
 					for (int i = 0; i < lambdaArgs.length; i++) {
 						Object arg = lambdaArgs[i];
 						if(arg!=null && arg == this.containingObject()) {
-							_lambdaArgs.add(new WeakReference<>(arg)::get);
+							WeakReference<Object> reference = new WeakReference<>(arg);
+							array[i] = ()->{
+								Object result = reference.get();
+								if(result==null)
+									throw new LambdaArgumentGoneException();
+								return result;
+							};
 						}else {
-							_lambdaArgs.add(()->arg);
+							array[i] = ()->arg;
 						}
 					}
+					if(isThreadAffine) {
+						_lambdaArgs = new ThreadAffineSupplierLambdaArgsProvider(new WeakReference<>((QtThreadAffineInterface)lambdaArgs[0]), array);
+					}else {
+						_lambdaArgs = new SupplierLambdaArgsProvider(array);
+					}
+				}else {
+					if(isThreadAffine) {
+						_lambdaArgs = new ThreadAffineLambdaArgsProvider(new WeakReference<>((QtThreadAffineInterface)lambdaArgs[0]), lambdaArgs);
+					}else {
+						_lambdaArgs = new ObjectLambdaArgsProvider(lambdaArgs);
+					}
 				}
+			}else {
+				_lambdaArgs = null;
 			}
         	return core.addConnectionToMethod(this, receiver, slot, slotHandle, _lambdaArgs, connectionType);
         }
@@ -2694,10 +3576,9 @@ abstract class SignalUtility {
         @io.qt.QtUninvokable
         private QMetaObject.Connection addConnectionToMethod(Object receiver, QMetaMethod slot, Qt.ConnectionType... connectionType) {
     		checkConnection(receiver, false);
-    		QMetaMethod signalMethod = QMetaMethod.fromSignal(this);
+    		QMetaMethod signalMethod = signalMethod();
     		boolean checkConnectArgs = false;
-			if(signalMethod!=null 
-					&& signalMethod.isValid() 
+			if(signalMethod.isValid() 
 					&& (checkConnectArgs = QMetaObject.checkConnectArgs(signalMethod, slot))) {
 				boolean hasWrappers = false;
 				if(isDynamic(signalMethod.enclosingMetaObject())) {
@@ -2723,18 +3604,18 @@ abstract class SignalUtility {
 			if(receiver instanceof QObject && slot.methodType()==QMetaMethod.MethodType.Signal) {
 				AbstractSignal signal = slot.toSignal((QObject)receiver);
 				if(signal!=null) {
-					Match match = matchMethodTypes(signal.signalTypes(), ClassAnalyzerUtility.getClass(signal).getName());
+					Match match = matchMethodTypes(signal.signalTypes(), AccessUtility.instance.getClass(signal).getName());
 					switch(match) {
 					case NoMatch:
     					if(signalMethod!=null && signalMethod.isValid()) {
 							throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s -> %2$s", signalMethod.cppMethodSignature(), slot.cppMethodSignature()));
     					}
-    					throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", fullName(), signalParameters(), slot.cppMethodSignature()));
+    					throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", name(), signalParameters(), slot.cppMethodSignature()));
 					case NativeMatch:
 						if(!checkConnectArgs)
-	    					throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", fullName(), signalParameters(), slot.cppMethodSignature()));
+	    					throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", name(), signalParameters(), slot.cppMethodSignature()));
 					case JavaMatch:
-    					throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", fullName(), signalParameters(), slot.cppMethodSignature()));
+    					throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", name(), signalParameters(), slot.cppMethodSignature()));
 					default:
 						break;
 					}
@@ -2752,7 +3633,7 @@ abstract class SignalUtility {
     					if(signalMethod!=null && signalMethod.isValid()) {
 							throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s -> %2$s", signalMethod.cppMethodSignature(), slot.cppMethodSignature()));
     					}
-						throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", fullName(), signalParameters(), slot.cppMethodSignature()));
+						throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", name(), signalParameters(), slot.cppMethodSignature()));
 					case NativeMatch:
 						if(checkConnectArgs)
 							break;
@@ -2826,10 +3707,10 @@ abstract class SignalUtility {
             Object lambdaOwner = null;
             Class<?> lambdaOwnerClass = null;
 			int lambdaHashCode = 0;
-			Class<?> lambdaClass = ClassAnalyzerUtility.getClass(slotObject);
+			Class<?> lambdaClass = AccessUtility.instance.getClass(slotObject);
 			SerializedLambda serializedLambda = ClassAnalyzerUtility.serializeLambdaExpression(slotObject);
             if(serializedLambda!=null){
-				MethodHandle methodHandle = ReflectionUtility.lambdaSlotHandles(lambdaClass, serializedLambda);
+				MethodHandle methodHandle = ClassAnalyzerUtility.LambdaTools.lambdaSlotHandles(lambdaClass, serializedLambda);
 				Method reflectiveMethod = null;
 				if(methodHandle!=null){
 					try{
@@ -2844,16 +3725,21 @@ abstract class SignalUtility {
 				
 				if(reflectiveMethod!=null && methodHandle!=null){
 					Object arg1;
-					if(Modifier.isStatic(reflectiveMethod.getModifiers())){
+					if(Modifier.isStatic(reflectiveMethod.getModifiers())) {
 						Object[] lambdaArgs = null;
 						Object owner = null;
-						if(serializedLambda.getCapturedArgCount()>0){
-							lambdaArgs = new Object[serializedLambda.getCapturedArgCount()];
-							for(int i=0; i<serializedLambda.getCapturedArgCount(); i++) {
-								lambdaArgs[i] = serializedLambda.getCapturedArg(i);
-								if(owner==null && serializedLambda.getCapturedArg(i) instanceof QObject){
-									owner = serializedLambda.getCapturedArg(i);
-								}
+						if(isStaticAsInstance(reflectiveMethod, serializedLambda)){
+							owner = ClassAnalyzerUtility.LambdaTools.getCapturedArg(serializedLambda, 0);
+				        	checkConnection(owner, true);
+							lambdaArgs = new Object[ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda)-1];
+							for(int i=0; i<ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda)-1; i++) {
+								lambdaArgs[i] = ClassAnalyzerUtility.LambdaTools.getCapturedArg(serializedLambda, i+1);
+					        	checkConnection(lambdaArgs[i], true);
+							}
+						}else if(ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda)>0){
+							lambdaArgs = new Object[ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda)];
+							for(int i=0; i<ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda); i++) {
+								lambdaArgs[i] = ClassAnalyzerUtility.LambdaTools.getCapturedArg(serializedLambda, i);
 					        	checkConnection(lambdaArgs[i], true);
 							}
 						}
@@ -2862,30 +3748,30 @@ abstract class SignalUtility {
 						AnnotatedElement[] annTypes = null;
 			            if(ClassAnalyzerUtility.useAnnotatedType)
 			            	annTypes = reflectiveMethod.getAnnotatedParameterTypes();
-			            if(lambdaArgs!=null && lambdaArgs.length>0) {
-			            	Class<?>[] _paraTypes = new Class[paraTypes.length-lambdaArgs.length];
-							Type[] _genTypes = new Type[genTypes.length-lambdaArgs.length];
-							System.arraycopy(paraTypes, lambdaArgs.length, _paraTypes, 0, _paraTypes.length);
-							System.arraycopy(genTypes, lambdaArgs.length, _genTypes, 0, _genTypes.length);
+						if(ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda)>0) {
+			            	Class<?>[] _paraTypes = new Class[paraTypes.length-ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda)];
+							Type[] _genTypes = new Type[genTypes.length-ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda)];
+							System.arraycopy(paraTypes, ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda), _paraTypes, 0, _paraTypes.length);
+							System.arraycopy(genTypes, ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda), _genTypes, 0, _genTypes.length);
 							paraTypes = _paraTypes;
 							genTypes = _genTypes;
 							if(annTypes!=null) {
-								AnnotatedElement[] _annTypes = new AnnotatedElement[annTypes.length-lambdaArgs.length];
-								System.arraycopy(annTypes, lambdaArgs.length, _annTypes, 0, _annTypes.length);
+								AnnotatedElement[] _annTypes = new AnnotatedElement[annTypes.length-ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda)];
+								System.arraycopy(annTypes, ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda), _annTypes, 0, _annTypes.length);
 								annTypes = _annTypes;
 							}
 			            }
 						Match match = matchMethodTypes(paraTypes, genTypes, annTypes);
 						if(match==Match.NoMatch) {
-							QMetaMethod signal = QMetaMethod.fromSignal(this);
-							if(signal!=null && signal.isValid()) {
+							QMetaMethod signal = this.signalMethod();
+							if(signal.isValid()) {
 								throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s -> %2$s", signal.cppMethodSignature(), reflectiveMethod.toGenericString()));
 							}
-							throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", fullName(), signalParameters(), reflectiveMethod.toGenericString()));
+							throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", name(), signalParameters(), reflectiveMethod.toGenericString()));
 						}
 						return addConnectionToMethod(owner, reflectiveMethod, methodHandle, lambdaArgs, connectionType);
-					}else if(serializedLambda.getCapturedArgCount()>0
-							&& (arg1 = serializedLambda.getCapturedArg(0))!=null
+					}else if(ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda)>0
+							&& (arg1 = ClassAnalyzerUtility.LambdaTools.getCapturedArg(serializedLambda, 0))!=null
 							&& reflectiveMethod.getDeclaringClass().isInstance(arg1)){
 						if (reflectiveMethod.isAnnotationPresent(QtUninvokable.class)) {
 							QMetaMethod method = QMetaMethod.fromReflectedMethod(reflectiveMethod);
@@ -2894,15 +3780,15 @@ abstract class SignalUtility {
 			            	}
 						}
 						Object[] lambdaArgs = null;
-						if(serializedLambda.getCapturedArgCount()>1){
-							lambdaArgs = new Object[serializedLambda.getCapturedArgCount()-1];
-							for(int i=1; i<serializedLambda.getCapturedArgCount(); i++) {
-								lambdaArgs[i-1] = serializedLambda.getCapturedArg(i);
+						if(ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda)>1){
+							lambdaArgs = new Object[ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda)-1];
+							for(int i=1; i<ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda); i++) {
+								lambdaArgs[i-1] = ClassAnalyzerUtility.LambdaTools.getCapturedArg(serializedLambda, i);
 							}
-						}else if(arg1 instanceof QMetaObject.AbstractSignal && reflectiveMethod.getName().equals("emit")) {
-							QMetaObject.AbstractSignal signal = (QMetaObject.AbstractSignal)arg1;
-							QMetaMethod method = QMetaMethod.fromSignal(signal);
-				    		if(method!=null && method.isValid()) {
+						}else if(arg1 instanceof AbstractSignal && reflectiveMethod.getName().equals("emit")) {
+							AbstractSignal signal = (AbstractSignal)arg1;
+							QMetaMethod method = signal.signalMethod();
+				    		if(method.isValid()) {
 				    			return addConnectionToMethod(signal.containingObject(), method, connectionType);
 				    		}
 			        	}
@@ -2912,7 +3798,7 @@ abstract class SignalUtility {
 			            if(ClassAnalyzerUtility.useAnnotatedType)
 			            	annTypes = reflectiveMethod.getAnnotatedParameterTypes();
 						if(lambdaArgs==null || lambdaArgs.length==0) {
-							QMetaMethod metaMethod = QMetaMethod.fromReflectedMethod(reflectiveMethod);
+							QMetaMethod metaMethod = methodIndex()>=0 ? QMetaMethod.fromReflectedMethod(reflectiveMethod) : null;
 							if(metaMethod!=null && metaMethod.isValid()) {
 								if(metaMethod.methodType()==QMetaMethod.MethodType.Signal) {
 									Method _reflectiveMethod = reflectiveMethod;
@@ -2935,16 +3821,16 @@ abstract class SignalUtility {
 						}
 						Match match = matchMethodTypes(paraTypes, genTypes, annTypes);
 						if(match==Match.NoMatch) {
-							QMetaMethod signal = QMetaMethod.fromSignal(this);
-							if(signal!=null && signal.isValid()) {
+							QMetaMethod signal = this.signalMethod();
+							if(signal.isValid()) {
 								throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s -> %2$s", signal.cppMethodSignature(), reflectiveMethod.toGenericString()));
 							}
-							throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", fullName(), signalParameters(), reflectiveMethod.toGenericString()));
+							throw new QMisfittingSignatureException(String.format("Incompatible sender/receiver arguments %1$s(%2$s) -> %3$s", name(), signalParameters(), reflectiveMethod.toGenericString()));
 						}
 						return addConnectionToMethod(arg1, reflectiveMethod, methodHandle, lambdaArgs, connectionType);
 					}else{
 						try {
-							lambdaOwnerClass = Class.forName(serializedLambda.getCapturingClass().replace('/', '.'));
+							lambdaOwnerClass = Class.forName(ClassAnalyzerUtility.LambdaTools.getCapturingClass(serializedLambda).replace('/', '.'));
 						} catch (Throwable e) {
 						}
 					}
@@ -2966,12 +3852,12 @@ abstract class SignalUtility {
 	        		checkConnection(lambdaOwner, true);
 				}
 				
-				lambdaHashCode = hashcode(serializedLambda);
-				if(serializedLambda.getCapturedArgCount()>0){
-					lambdaOwner = serializedLambda.getCapturedArg(0);
+				lambdaHashCode = ClassAnalyzerUtility.LambdaTools.hashcode(serializedLambda);
+				if(ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda)>0){
+					lambdaOwner = ClassAnalyzerUtility.LambdaTools.getCapturedArg(serializedLambda, 0);
 					if(!(lambdaOwner instanceof QtThreadAffineInterface) && !(lambdaOwner instanceof SignalUtility.AbstractSignal)){
-						for(int i=1; i<serializedLambda.getCapturedArgCount(); i++) {
-							Object arg = serializedLambda.getCapturedArg(i);
+						for(int i=1; i<ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda); i++) {
+							Object arg = ClassAnalyzerUtility.LambdaTools.getCapturedArg(serializedLambda, i);
 							if(arg instanceof QtThreadAffineInterface){
 								lambdaOwner = arg;
 								break;
@@ -3005,9 +3891,9 @@ abstract class SignalUtility {
         @io.qt.QtUninvokable
         protected final QMetaObject.Connection addConnectionToSignalObject(AbstractSignal signalObject, Qt.ConnectionType[] connectionType) {
         	this.name();
-    		QMetaMethod method = QMetaMethod.fromSignal((QMetaObject.AbstractSignal)signalObject);
+    		QMetaMethod method = signalObject.signalMethod();
     		QMisfittingSignatureException mfe = null;
-    		if(method!=null && method.isValid()) {
+    		if(method.isValid()) {
     			try {
 					return addConnectionToMethod(signalObject.containingObject(), method, connectionType);
 				} catch (QMisfittingSignatureException e) {
@@ -3015,7 +3901,7 @@ abstract class SignalUtility {
 				}
     		}
     		for(int signalTypeCount = signalTypes().size(); signalTypeCount>=0; --signalTypeCount) {
-	    		for(Method mtd : ClassAnalyzerUtility.getClass(signalObject).getMethods()) {
+	    		for(Method mtd : AccessUtility.instance.getClass(signalObject).getMethods()) {
 	    			if(mtd.getName().equals("emit") 
 	    					&& mtd.getReturnType()==void.class
 	    					&& mtd.getParameterCount()==signalTypeCount) {
@@ -3031,14 +3917,14 @@ abstract class SignalUtility {
         @io.qt.QtUninvokable
 		protected final boolean removeConnectionToSignalObject(AbstractSignal signalObject) {
         	this.name();
-    		QMetaMethod method = QMetaMethod.fromSignal((QMetaObject.AbstractSignal)signalObject);
-    		if(method!=null && method.isValid()) {
+    		QMetaMethod method = signalObject.signalMethod();
+    		if(method.isValid()) {
     			boolean result = removeConnectionToMethod(signalObject.containingObject(), method, true);
     			if(result)
     				return result;
     		}
     		for(int signalTypeCount = signalTypes().size(); signalTypeCount>=0; --signalTypeCount) {
-	    		for(Method mtd : ClassAnalyzerUtility.getClass(signalObject).getMethods()) {
+	    		for(Method mtd : AccessUtility.instance.getClass(signalObject).getMethods()) {
 	    			if(mtd.getName().equals("emit") 
 	    					&& mtd.getReturnType()==void.class
 	    					&& mtd.getParameterCount()==signalTypeCount) {
@@ -3059,11 +3945,11 @@ abstract class SignalUtility {
 			Class<?> _functionalInterfaceClass = null;
             if(_serializedLambda!=null){
         		try {
-					_lambdaOwnerClass = ClassAnalyzerUtility.getClass(slotObject).getClassLoader().loadClass(_serializedLambda.getCapturingClass().replace('/', '.'));
-					_functionalInterfaceClass = ClassAnalyzerUtility.getClass(slotObject).getClassLoader().loadClass(_serializedLambda.getFunctionalInterfaceClass().replace('/', '.'));
+					_lambdaOwnerClass = AccessUtility.instance.getClass(slotObject).getClassLoader().loadClass(ClassAnalyzerUtility.LambdaTools.getCapturingClass(_serializedLambda).replace('/', '.'));
+					_functionalInterfaceClass = AccessUtility.instance.getClass(slotObject).getClassLoader().loadClass(ClassAnalyzerUtility.LambdaTools.getFunctionalInterfaceClass(_serializedLambda).replace('/', '.'));
 				} catch (Throwable e) {
 				}
-            	MethodHandle methodHandle = ReflectionUtility.lambdaSlotHandles(ClassAnalyzerUtility.getClass(slotObject), _serializedLambda);
+            	MethodHandle methodHandle = ClassAnalyzerUtility.LambdaTools.lambdaSlotHandles(AccessUtility.instance.getClass(slotObject), _serializedLambda);
 				Method reflectiveMethod = null;
 				if(methodHandle!=null){
 					reflectiveMethod = MethodHandles.reflectAs(Method.class, methodHandle);
@@ -3075,45 +3961,45 @@ abstract class SignalUtility {
 				if(reflectiveMethod!=null && _serializedLambda!=null && methodHandle!=null){
 					if(Modifier.isStatic(reflectiveMethod.getModifiers())){
 						Object[] lambdaArgs = null;
-						if(_serializedLambda.getCapturedArgCount()>0){
-							lambdaArgs = new Object[_serializedLambda.getCapturedArgCount()];
-							for(int i=0; i<_serializedLambda.getCapturedArgCount(); i++) {
-								lambdaArgs[i] = _serializedLambda.getCapturedArg(i);
+						if(ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(_serializedLambda)>0){
+							lambdaArgs = new Object[ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(_serializedLambda)];
+							for(int i=0; i<ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(_serializedLambda); i++) {
+								lambdaArgs[i] = ClassAnalyzerUtility.LambdaTools.getCapturedArg(_serializedLambda, i);
 							}
 						}
 						if(removeConnectionToMethod(null, reflectiveMethod, lambdaArgs, true))
 							return true;
-					}else if(_serializedLambda.getCapturedArgCount()>0 
-							&& reflectiveMethod.getDeclaringClass().isInstance(_serializedLambda.getCapturedArg(0))){
+					}else if(ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(_serializedLambda)>0 
+							&& reflectiveMethod.getDeclaringClass().isInstance(ClassAnalyzerUtility.LambdaTools.getCapturedArg(_serializedLambda, 0))){
 						Object[] lambdaArgs = null;
-						if(_serializedLambda.getCapturedArgCount()>1){
-							if(_serializedLambda.getCapturedArg(0) instanceof QMetaObject.AbstractSignal && reflectiveMethod.getName().equals("emit")) {
-								QMetaObject.AbstractSignal signalObject = (QMetaObject.AbstractSignal)_serializedLambda.getCapturedArg(0);
-								QMetaMethod method = QMetaMethod.fromSignal(signalObject);
-					    		if(method!=null && method.isValid()) {
+						if(ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(_serializedLambda)>1){
+							if(ClassAnalyzerUtility.LambdaTools.getCapturedArg(_serializedLambda, 0) instanceof AbstractSignal && reflectiveMethod.getName().equals("emit")) {
+								AbstractSignal signalObject = (AbstractSignal)ClassAnalyzerUtility.LambdaTools.getCapturedArg(_serializedLambda, 0);
+								QMetaMethod method = signalObject.signalMethod();
+					    		if(method.isValid()) {
 					    			boolean result = removeConnectionToMethod(signalObject.containingObject(), method, true);
 					    			if(result)
 					    				return result;
 					    		}
 				        	}
-							lambdaArgs = new Object[_serializedLambda.getCapturedArgCount()-1];
-							for(int i=1; i<_serializedLambda.getCapturedArgCount(); i++) {
-								lambdaArgs[i-1] = _serializedLambda.getCapturedArg(i);
+							lambdaArgs = new Object[ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(_serializedLambda)-1];
+							for(int i=1; i<ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(_serializedLambda); i++) {
+								lambdaArgs[i-1] = ClassAnalyzerUtility.LambdaTools.getCapturedArg(_serializedLambda, i);
 							}
 						}
-						if(removeConnectionToMethod(_serializedLambda.getCapturedArg(0), reflectiveMethod, lambdaArgs, true))
+						if(removeConnectionToMethod(ClassAnalyzerUtility.LambdaTools.getCapturedArg(_serializedLambda, 0), reflectiveMethod, lambdaArgs, true))
 							return true;
 					}
 				}
 
 				int _lambdaHashCode = 0;
 				if(_serializedLambda!=null){
-					_lambdaHashCode = hashcode(_serializedLambda);
-					if(_serializedLambda.getCapturedArgCount()>0){
-						_lambdaOwner = _serializedLambda.getCapturedArg(0);
+					_lambdaHashCode = ClassAnalyzerUtility.LambdaTools.hashcode(_serializedLambda);
+					if(ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(_serializedLambda)>0){
+						_lambdaOwner = ClassAnalyzerUtility.LambdaTools.getCapturedArg(_serializedLambda, 0);
 						if(!(_lambdaOwner instanceof QtThreadAffineInterface) || !(_lambdaOwner instanceof SignalUtility.AbstractSignal)){
-							for(int i=1; i<_serializedLambda.getCapturedArgCount(); i++) {
-								Object arg = _serializedLambda.getCapturedArg(i);
+							for(int i=1; i<ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(_serializedLambda); i++) {
+								Object arg = ClassAnalyzerUtility.LambdaTools.getCapturedArg(_serializedLambda, i);
 								if(arg instanceof QtThreadAffineInterface){
 									_lambdaOwner = arg;
 									break;
@@ -3132,31 +4018,10 @@ abstract class SignalUtility {
 			}
 		}
 
-		private static int hashcode(SerializedLambda serializedLambda) {
-			if(serializedLambda==null)
-				return 0;
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((serializedLambda.getCapturingClass() == null) ? 0 : serializedLambda.getCapturingClass().hashCode());
-			result = prime * result + ((serializedLambda.getFunctionalInterfaceClass() == null) ? 0 : serializedLambda.getFunctionalInterfaceClass().hashCode());
-			result = prime * result + ((serializedLambda.getFunctionalInterfaceMethodName() == null) ? 0 : serializedLambda.getFunctionalInterfaceMethodName().hashCode());
-			result = prime * result + ((serializedLambda.getFunctionalInterfaceMethodSignature() == null) ? 0 : serializedLambda.getFunctionalInterfaceMethodSignature().hashCode());
-			result = prime * result + ((serializedLambda.getImplClass() == null) ? 0 : serializedLambda.getImplClass().hashCode());
-			result = prime * result + serializedLambda.getImplMethodKind();
-			result = prime * result + ((serializedLambda.getImplMethodName() == null) ? 0 : serializedLambda.getImplMethodName().hashCode());
-			result = prime * result + ((serializedLambda.getImplMethodSignature() == null) ? 0 : serializedLambda.getImplMethodSignature().hashCode());
-			result = prime * result + ((serializedLambda.getInstantiatedMethodType() == null) ? 0 : serializedLambda.getInstantiatedMethodType().hashCode());
-			result = prime * result + serializedLambda.getCapturedArgCount();
-			for(int i=0; i<serializedLambda.getCapturedArgCount(); i++) {
-				result = prime * result + ((serializedLambda.getCapturedArg(i) == null) ? 0 : serializedLambda.getCapturedArg(i).hashCode());
-			}
-			return result;
-		}
-
         @io.qt.QtUninvokable
         protected final boolean removeConnection(Object receiver, String method) {
         	if(receiver!=null && method!=null) {
-	        	QMetaObject metaObject = receiver instanceof QObject ? ((QObject)receiver).metaObject() : QMetaObject.forType(ClassAnalyzerUtility.getClass(receiver));
+	        	QMetaObject metaObject = receiver instanceof QObject ? ((QObject)receiver).metaObject() : QMetaObject.forType(AccessUtility.instance.getClass(receiver));
 	        	Method slotMethod = null;
 	        	if(metaObject!=null) {
 	        		QMetaMethod metaMethod = metaObject.method(method);
@@ -3194,8 +4059,8 @@ abstract class SignalUtility {
         @io.qt.QtUninvokable
 		protected final boolean removeConnection(QMetaObject.Connection conn) {
             boolean returned = false;
-        	if(conn instanceof JavaConnection) {
-				JavaConnection javaConnection = (JavaConnection)conn;
+        	if(conn instanceof LightweightConnection) {
+				LightweightConnection javaConnection = (LightweightConnection)conn;
 				if(javaConnection.signal.get()==this) {
 					returned = core.removeConnection(this, javaConnection);
 				}
@@ -3329,7 +4194,7 @@ abstract class SignalUtility {
         		AnalyzingMultiSignalCore<Signal> core = (AnalyzingMultiSignalCore<Signal>)this.core;
         		boolean found = false;
         		QtSignalEmitterInterface containingObject = containingObject();
-            	Class<?> cls = containingObject==null ? ClassAnalyzerUtility.getClass(this).getDeclaringClass() : ClassAnalyzerUtility.getClass(containingObject);
+            	Class<?> cls = containingObject==null ? AccessUtility.instance.getClass(this).getDeclaringClass() : AccessUtility.instance.getClass(containingObject);
                 loop: while (cls != null) {
                     Field fields[] = cls.getDeclaredFields();
                     for (Field field : fields) {
@@ -3360,6 +4225,7 @@ abstract class SignalUtility {
 	                    				throw new QSignalDeclarationException(String.format("Declaration error at signal %1$s.%2$s: Multi signal class has to be declared in the class using it.", cls.getSimpleName(), field.getName()));
 	                                String name = field.getName();
 	                                final Class<?> declaringClass = field.getDeclaringClass();
+	                                boolean isStatic = java.lang.reflect.Modifier.isStatic(field.getModifiers());
 	                    			QMetaObject metaObject = QMetaObject.forType(declaringClass);
 	                    			List<Signal> signals = core.preparedSignals();
 	                    			if(signals==null) {
@@ -3373,7 +4239,7 @@ abstract class SignalUtility {
 	                    				SignalClasses signalClasses = signalClasses(multiSignalSuperType.getEnclosingClass());
 	                            		if(signalClasses==null)
 	                            			throw new QSignalInitializationException("Unable to resolve multi signal "+name+".");
-	                            		Map<List<Class<?>>,EmitMethodInfo> emitMethods = SignalUtility.findEmitMethods(ClassAnalyzerUtility.getClass(this));
+	                            		Map<List<Class<?>>,EmitMethodInfo> emitMethods = SignalUtility.findEmitMethods(AccessUtility.instance.getClass(this));
 	                    				if(emitMethods==null)
 	                            			throw new QSignalInitializationException("Unable to resolve multi signal "+name+".");
 	                    				signals = new ArrayList<>();
@@ -3398,24 +4264,24 @@ abstract class SignalUtility {
 	                	    				signals.add(signal);
 	                	    				SignalInfo signalInfo = SignalUtility.signalInfo(null, metaObject, field, entry.getValue().method);
 	                	            		if(signalInfo.signalTypes==null) {
-	                	            			signal.setCore(declaringClass, name, resolveSignal(entry.getValue().method), -1, 0);
+	                	            			signal.setCore(declaringClass, name, isStatic, resolveSignal(entry.getValue().method), -1, 0);
 	                	            		}else {
-	                	            			signal.setCore(declaringClass, name, signalInfo.signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject);
+	                	            			signal.setCore(declaringClass, name, isStatic, signalInfo.signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject);
 	                	            		}
 	                    				}
 	                    				signals = Collections.unmodifiableList(signals);
 	                    			}else {
 		                                for (AbstractSignal signal : signals) {
 		                                	MultiSignalAnalyingSignalCore signalCore = (MultiSignalAnalyingSignalCore)signal.core;
-		                                	Class<?> _cls = ClassAnalyzerUtility.getClass(this);
+		                                	Class<?> _cls = AccessUtility.instance.getClass(this);
 		                                	while (_cls != SignalUtility.AbstractMultiSignal.class) {
 		                                		try {
 		                                			Method emitMethod = _cls.getDeclaredMethod("emit", signalCore.types);
 		                    	            		SignalInfo signalInfo = SignalUtility.signalInfo(null, metaObject, field, emitMethod);
 		                    	            		if(signalInfo.signalTypes==null) {
-		                    	            			signal.setCore(declaringClass, name, resolveSignal(emitMethod), -1, 0);
+		                    	            			signal.setCore(declaringClass, name, isStatic, resolveSignal(emitMethod), -1, 0);
 		                    	            		}else {
-		                    	            			signal.setCore(declaringClass, name, signalInfo.signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject);
+		                    	            			signal.setCore(declaringClass, name, isStatic, signalInfo.signalTypes, signalInfo.methodIndex, signalInfo.enclosingMetaObject);
 		                    	            		}
 		                                        	break;
 		                                		}catch(Throwable t) {}
@@ -3461,6 +4327,7 @@ abstract class SignalUtility {
     			List<Signal> signals = ((AnalyzingMultiSignalCore<Signal>)core).preparedSignals();
 				String name = field.getName();
 				Class<?> declaringClass = field.getDeclaringClass();
+				boolean isStatic = java.lang.reflect.Modifier.isStatic(field.getModifiers());
 				List<Signal> _signals = signals;
 				if(_signals==null)
 					_signals = new ArrayList<>();
@@ -3480,7 +4347,7 @@ abstract class SignalUtility {
 	    				signal = signals.get(i);
 	    			}
 					List<SignalParameterType> signalTypes = signalParameterTypes[i];
-    				signal.setCore(declaringClass, name, signalTypes, methodIndexes[i], metaObjectIds[i]);
+    				signal.setCore(declaringClass, name, isStatic, signalTypes, methodIndexes[i], metaObjectIds[i]);
 	    		}
 	    		core = new MultiSignalCore<>(_signals, name, declaringClass);
     		}
@@ -3659,7 +4526,7 @@ abstract class SignalUtility {
         protected final QMetaObject.Connection connect(AbstractSignal signalObject, Qt.ConnectionType... connectionType) {
         	List<AbstractSignal> matchingSignals = new ArrayList<>();
         	for(AbstractSignal _signal : signals()) {
-				if(_signal.matchMethodTypes(signalObject.signalTypes(), ClassAnalyzerUtility.getClass(signalObject).getName())!=AbstractSignal.Match.NoMatch) {
+				if(_signal.matchMethodTypes(signalObject.signalTypes(), AccessUtility.instance.getClass(signalObject).getName())!=AbstractSignal.Match.NoMatch) {
 					matchingSignals.add(_signal);
 				}
 			}
@@ -3751,7 +4618,7 @@ abstract class SignalUtility {
             	}else if(slotObject instanceof QMetaObject.Slot9) {
             		parameterTypes = ClassAnalyzerUtility.lambdaClassTypes(QMetaObject.Slot9.class, (QMetaObject.Slot9<?,?,?,?,?,?,?,?,?>)slotObject);
             	}else{
-            		throw new QMisfittingSignatureException("Invalid slot type "+ClassAnalyzerUtility.getClass(slotObject));
+            		throw new QMisfittingSignatureException("Invalid slot type "+AccessUtility.instance.getClass(slotObject));
             	}
         		if(parameterTypes!=null) {
 	        		Class<?>[] parameterClassTypes = new Class[parameterTypes.length-1];
@@ -3803,7 +4670,7 @@ abstract class SignalUtility {
         	}else if(slotObject instanceof QMetaObject.Slot9) {
         		return matchingSignals.get(0).addConnectionToSlotObject((QMetaObject.Slot9<?,?,?,?,?,?,?,?,?>)slotObject, connectionType);
         	}else if(slotObject!=null){
-        		throw new QMisfittingSignatureException("Invalid slot type "+ClassAnalyzerUtility.getClass(slotObject));
+        		throw new QMisfittingSignatureException("Invalid slot type "+AccessUtility.instance.getClass(slotObject));
         	}else {
         		return null;
         	}
@@ -3811,7 +4678,7 @@ abstract class SignalUtility {
         
 		@io.qt.QtUninvokable
         protected QMetaObject.Connection connect(Object receiver, String method, Qt.ConnectionType... connectionType) {
-        	QMetaObject metaObject = receiver instanceof QObject ? ((QObject)receiver).metaObject() : QMetaObject.forType(ClassAnalyzerUtility.getClass(receiver));
+        	QMetaObject metaObject = receiver instanceof QObject ? ((QObject)receiver).metaObject() : QMetaObject.forType(AccessUtility.instance.getClass(receiver));
 	        Class<?>[] parameterClassTypes = null;
         	List<AbstractSignal> matchingSignals = new ArrayList<>();
         	Map<AbstractSignal,AbstractSignal.Match> matches = new HashMap<>();
@@ -3831,9 +4698,8 @@ abstract class SignalUtility {
         			boolean done = false;
         			for(AbstractSignal signal : signals()) {
         	        	signal.name();
-        				QMetaMethod signalMethod = QMetaMethod.fromSignal(signal);
-        				if(signalMethod!=null 
-            					&& signalMethod.isValid() 
+        				QMetaMethod signalMethod = signal.signalMethod();
+        				if(signalMethod.isValid() 
             					&& QMetaObject.checkConnectArgs(signalMethod, metaMethod)) {
             				boolean hasWrappers = false;
             				for(QByteArray ba : signalMethod.parameterTypes()) {
@@ -3861,7 +4727,7 @@ abstract class SignalUtility {
 	        				AbstractSignal signal = metaMethod.toSignal((QObject)receiver);
 	        				if(signal!=null) {
 	        					for(AbstractSignal _signal : signals()) {
-	        						AbstractSignal.Match match = _signal.matchMethodTypes(signal.signalTypes(), ClassAnalyzerUtility.getClass(signal).getName());
+	        						AbstractSignal.Match match = _signal.matchMethodTypes(signal.signalTypes(), AccessUtility.instance.getClass(signal).getName());
 	    	        				if(match!=AbstractSignal.Match.NoMatch) {
 	    	        					matches.put(_signal, match);
 	    	    						matchingSignals.add(_signal);
@@ -3995,146 +4861,8 @@ abstract class SignalUtility {
         }
     }
 	
-	private static class MetaCall implements QMetaObject.Slot0, QtThreadAffineInterface, QtObjectInterface {
-        private static final long serialVersionUID = 0L;
-        private void writeObject(java.io.ObjectOutputStream s) throws IOException{
-        	throw new NotSerializableException(ClassAnalyzerUtility.getClass(this).getName());
-    	}
-		
-		private final QtThreadAffineInterface eventReceiver;
-		private final AbstractSignal signal;
-        private final Object arguments[];
-        private final AbstractConnection<?> connection;
-        private final QtSignalEmitterInterface signalEmitter;
-        private Throwable throwable;
-		private final Method slot;
-
-        public MetaCall(QtThreadAffineInterface eventReceiver, AbstractSignal signal, AbstractConnection<?> connection, QtSignalEmitterInterface senderObject, Method slot, Object[] arguments) {
-            super();
-            this.eventReceiver = eventReceiver;
-            this.signal = signal;
-            this.arguments = arguments;
-            this.connection = connection;
-            this.signalEmitter = senderObject;
-            this.slot = slot;
-        }
-
-        public void throwException() {
-        	if(throwable instanceof RuntimeException)
-    			throw (RuntimeException)throwable;
-    		else if(throwable instanceof Error)
-    			throw (Error)throwable;
-    		else if(throwable!=null) {
-    			if(slot!=null){
-                    throw new QSignalInvocationException(String.format("Exception caught in signal %1$s after invoking slot %2$s: sender=%3$s, receiver=%4$s", 
-                    		signal.fullName(), 
-							slot,
-							this.signalEmitter != null ? ClassAnalyzerUtility.getClass(this.signalEmitter).getName() : "N/A",
-									eventReceiver==null ? "(static)" : eventReceiver
-						),throwable);
-				}else{
-					throw new QSignalInvocationException(String.format("Exception caught in signal %1$s: sender=%2$s, receiver=%3$s", 
-							signal.fullName(), 
-							this.signalEmitter != null ? ClassAnalyzerUtility.getClass(this.signalEmitter).getName() : "N/A",
-									eventReceiver==null ? "N/A" : eventReceiver
-						),throwable);
-				}
-    		}
-		}
-
-		public void invoke() {
-            Object receiver;
-            boolean isStatic = false;
-            if(connection instanceof SlotObjectConnection){
-            	Object lambdaOwner = ((SlotObjectConnection<?>) connection).lambdaOwner();
-            	if(lambdaOwner!=null)
-            		receiver = lambdaOwner;
-            	else
-            		receiver = connection.resolveReceiver();
-            }else if(connection instanceof ReflectiveConnection){
-                ReflectiveConnection methodConnection = (ReflectiveConnection)connection;
-                isStatic = Modifier.isStatic(methodConnection.slot.getModifiers());
-                receiver = connection.resolveReceiver();
-            }else {
-            	return;
-            }
-			if ((receiver == null && isStatic)
-					|| (receiver instanceof NativeUtility.Object && ((NativeUtility.Object)receiver).isDisposed()) )
-				return;
-            try (CurrentSenderSetter setter = new CurrentSenderSetter(signalEmitter, receiver)){
-            	logger.finest(()->{
-            		if(connection instanceof ReflectiveConnection){
-                        ReflectiveConnection methodConnection = (ReflectiveConnection)connection;
-                        return String.format("Emit signal %1$s: queued invoke %2$s, receiver=%3$s", 
-                        		signal.fullName(), 
-                        		methodConnection.slot, 
-                        		receiver==null ? "(static)" : receiver);
-					}else {
-						return String.format("Emit signal %1$s: queued invoke slot object.", signal.fullName());
-					}
-            	});
-                connection.invoke(arguments);
-			} catch (Throwable e) {
-				throwable = e;
-            }
-        }
-
-		@Override
-		public boolean isDisposed() {
-			return eventReceiver instanceof QtObjectInterface && ((QtObjectInterface)eventReceiver).isDisposed();
-		}
-
-		@Override
-		public QThread thread() {
-			return eventReceiver==null ? QThread.currentThread() : eventReceiver.thread();
-		}
-
-		@Override
-		public void dispose() {
-		}
-    }
-	
-	private static class ThrowingMetaCall extends MetaCall{
-        private static final long serialVersionUID = 0L;
-
-		public ThrowingMetaCall(QtThreadAffineInterface eventReceiver, AbstractSignal signal, AbstractConnection<?> connection,
-				QtSignalEmitterInterface senderObject, Method slot, Object[] arguments) {
-			super(eventReceiver, signal, connection, senderObject, slot, arguments);
-		}
-
-		public void invoke() {
-			super.invoke();
-			super.throwException();
-		}
-	}
-	
-	private static class CurrentSenderSetter implements AutoCloseable{
-		public CurrentSenderSetter(QtSignalEmitterInterface signalEmitter, Object resolvedReceiver) {
-			super();
-			this.receiver = resolvedReceiver;
-			this.signalEmitter = signalEmitter;
-            if(signalEmitter instanceof QObject && receiver instanceof QObject){
-                ptr = setQObjectSender(NativeUtility.nativeId((QObject) receiver),
-                		NativeUtility.nativeId((QObject)signalEmitter));
-        	}else {
-        		ptr = 0;
-            }
-		}
-		@Override
-		public void close() throws Exception {
-            if(signalEmitter instanceof QObject && receiver instanceof QObject){
-                resetQObjectSender(NativeUtility.nativeId((QObject) receiver), ptr);
-            }
-		}
-		private final QtSignalEmitterInterface signalEmitter;
-		private final Object receiver;
-		private final long ptr;
-		private native long setQObjectSender(long receiver, long sender);
-		private native void resetQObjectSender(long receiver, long data);
-	}
-	
 	@NativeAccess
-	static class NativeConnection extends QtObject implements QMetaObject.Connection{
+	private static class NativeConnection extends QtObject implements QMetaObject.Connection{
 		private NativeConnection(QPrivateConstructor p) {
 			super(p);
 		}
@@ -4145,24 +4873,24 @@ abstract class SignalUtility {
 		}
 
 		@Override
-		public QObject sender() {
+		public @Nullable QObject sender() {
 			return sender(NativeUtility.checkedNativeId(this));
 		}
 
 		@Override
-		public QObject receiver() {
+		public @Nullable QObject receiver() {
 			return receiver(NativeUtility.checkedNativeId(this));
 		}
 		
-		public QMetaMethod signal() {
+		@NonNull QMetaMethod signal() {
 			return signal(NativeUtility.checkedNativeId(this));
 		}
 		
-		public QMetaMethod method() {
+		@NonNull QMetaMethod method() {
 			return method(NativeUtility.checkedNativeId(this));
 		}
 		
-		public boolean isSlotObject() {
+		boolean isSlotObject() {
 			return isSlotObject(NativeUtility.checkedNativeId(this));
 		}
 		
@@ -4187,6 +4915,27 @@ abstract class SignalUtility {
 		private static native boolean isSlotObject(long nativeId);
 		
 		private static native boolean equals(long nativeId, long otherNativeId);
+		
+		private static native NativeConnection clone(long nativeId);
+		
+		private static native int hashCode(long nativeId);
+		
+		private static native String toString(long nativeId);
+
+		@Override
+		public @NonNull NativeConnection clone(){
+			return clone(NativeUtility.checkedNativeId(this));
+		}
+
+		@Override
+		public int hashCode() {
+			return hashCode(NativeUtility.checkedNativeId(this));
+		}
+
+		@Override
+		public String toString() {
+			return toString(NativeUtility.checkedNativeId(this));
+		}
 	}
 	
 	public static QMetaMethod method(QMetaObject.Connection connection) {
@@ -4201,7 +4950,13 @@ abstract class SignalUtility {
 		return false;
 	}
 	
-	static class NonConnection implements QMetaObject.Connection{
+	public static QMetaMethod signal(QMetaObject.Connection connection) {
+		if(connection instanceof NativeConnection)
+			return ((NativeConnection)connection).signal();
+		return null;
+	}
+	
+	private static class NonConnection implements QMetaObject.Connection{
 		@Override
 		public boolean isConnected() {
 			return false;
@@ -4214,65 +4969,90 @@ abstract class SignalUtility {
 		public Object receiver() {
 			return null;
 		}
+		@Override
+		public @NonNull NonConnection clone(){
+			return new NonConnection();
+		}
+		@Override
+		public int hashCode() {
+			return 0;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			return obj instanceof NonConnection;
+		}
+		@Override
+		public String toString() {
+			return "QMetaObject::Connection(0x0)";
+		}
 	}
     
-    static class JavaConnection implements QMetaObject.Connection{
-		private final WeakReference<AbstractConnection<?>> connection;
+    private static final class LightweightConnection implements QMetaObject.Connection{
+		private final WeakReference<AbstractConnection> connection;
 		private final WeakReference<AbstractSignal> signal;
+		private final long hashCode;
 		
-		JavaConnection(AbstractSignal signal, AbstractConnection<?> connection){
+		LightweightConnection(AbstractSignal signal, AbstractConnection connection){
 			this.connection = new WeakReference<>(connection);
 			this.signal = new WeakReference<>(signal);
+			final long prime = 31;
+			long hashCode = 1;
+			hashCode = prime * hashCode + ((connection == null) ? 0 : connection.hashCode());
+			this.hashCode = hashCode;
+		}
+		
+		private LightweightConnection(LightweightConnection other){
+			this.connection = other.connection;
+			this.signal = other.signal;
+			this.hashCode = other.hashCode;
 		}
 
 		@Override
 		public int hashCode() {
-			AbstractConnection<?> connection = this.connection.get();
-			AbstractSignal signal = this.signal.get();
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((connection == null) ? 0 : connection.hashCode());
-			result = prime * result + ((signal == null) ? 0 : signal.hashCode());
-			return result;
+			return Long.hashCode(hashCode);
 		}
 
 		@Override
 		public boolean equals(Object obj) {
-			AbstractConnection<?> connection = this.connection.get();
-			AbstractSignal signal = this.signal.get();
-			if(!(obj instanceof JavaConnection)) {
+			if(!(obj instanceof LightweightConnection)) {
 				return false;
 			}
-			AbstractConnection<?> connection2 = ((JavaConnection)obj).connection.get();
-			AbstractSignal signal2 = ((JavaConnection)obj).signal.get();
-			if (connection == null) {
-				if (connection2 != null)
-					return false;
-			} else if (connection!=connection2)
-				return false;
-			if (signal == null) {
-				if (signal2 != null)
-					return false;
-			} else if (signal!=signal2)
-				return false;
-			return true;
+			return hashCode==((LightweightConnection)obj).hashCode;
 		}
 
 		@Override
 		public boolean isConnected() {
-			AbstractConnection<?> connection = this.connection.get();
-			return connection!=null && connection.isConnected();
+			AbstractSignal signal = this.signal.get();
+			if(signal!=null) {
+				AbstractConnection connection = this.connection.get();
+				if(connection!=null && connection.isConnected()) {
+					QtSignalEmitterInterface sender = sender();
+					if(sender instanceof QtObjectInterface) {
+						if(((QtObjectInterface) sender).isDisposed()) {
+							connection.setDisconnected();
+							return false;
+						}
+					}
+					if(!connection.receiverAvailable()) {
+						signal.removeConnection(this);
+						connection.setDisconnected();
+						return false;
+					}
+					return true;
+				}
+			}
+			return false;
 		}
 
 		@Override
-		public QtSignalEmitterInterface sender() {
+		public @Nullable QtSignalEmitterInterface sender() {
 			AbstractSignal signal = this.signal.get();
 			return signal==null ? null : signal.containingObject();
 		}
 
 		@Override
-		public Object receiver() {
-			AbstractConnection<?> connection = this.connection.get();
+		public @Nullable Object receiver() {
+			AbstractConnection connection = this.connection.get();
 			if(connection instanceof SlotObjectConnection) {
 				Object lambdaOwner = ((SlotObjectConnection<?>) connection).lambdaOwner();
 				if(lambdaOwner!=null) {
@@ -4282,23 +5062,122 @@ abstract class SignalUtility {
 			return connection==null ? null : connection.resolveReceiver();
 		}
 
-		public AbstractSignal signal() {
+		@Nullable AbstractSignal signalObject() {
 			return signal.get();
+		}
+
+		@Override
+		public LightweightConnection clone(){
+			return new LightweightConnection(this);
+		}
+		
+		@Override
+		public String toString() {
+			return "QMetaObject::Connection(0x"+Long.toHexString(hashCode)+")";
+		}
+	}
+    
+//    public static boolean isStaticAsInstance(Method reflectiveMethod, Object receiver) {
+//    	return reflectiveMethod.isSynthetic() && receiver!=null;
+//    }
+    
+    public static boolean isStaticAsInstance(Method reflectiveMethod, SerializedLambda serializedLambda) {
+//    	if(reflectiveMethod.isSynthetic() && reflectiveMethod.getParameterCount()>0 && ClassAnalyzerUtility.LambdaTools.getCapturedArgCount(serializedLambda)>0) {
+//    		Class<?> firstArgType = reflectiveMethod.getParameterTypes()[0];
+//    		if(firstArgType.isInstance(ClassAnalyzerUtility.LambdaTools.getCapturedArg(serializedLambda, 0)))
+//    			return true;
+//    	}
+    	return false;
+    }
+    
+    private static class LambdaArgumentGoneException extends NullPointerException{
+		private static final long serialVersionUID = 1L;
+    }
+    
+    private static abstract class LambdaArgsProvider{
+		LambdaArgsProvider() {
+		}
+		
+		abstract Object[] lambdaArgs();
+		
+		abstract int size();
+		
+    	QThread thread() {return null;}
+	}
+    
+    private static class ObjectLambdaArgsProvider extends LambdaArgsProvider{
+    	private final Object[] lambdaArgs;
+    	
+    	ObjectLambdaArgsProvider(Object[] lambdaArgs) {
+			this.lambdaArgs = lambdaArgs;
+		}
+		
+		Object[] lambdaArgs() {
+			return lambdaArgs;
+		}
+		
+		int size() {return lambdaArgs.length;}
+		
+    	QThread thread() {return null;}
+	}
+    
+    private static class SupplierLambdaArgsProvider extends LambdaArgsProvider{
+    	private final Supplier<?>[] lambdaArgs;
+    	
+    	SupplierLambdaArgsProvider(Supplier<?>[] lambdaArgs) {
+			this.lambdaArgs = lambdaArgs;
+		}
+		
+		Object[] lambdaArgs() {
+			Object[] result = new Object[lambdaArgs.length];
+			for (int i = 0; i < lambdaArgs.length; i++) {
+				result[i] = lambdaArgs[i].get();
+			}
+			return result;
+		}
+		
+		int size() {return lambdaArgs.length;}
+		
+    	QThread thread() {return null;}
+	}
+    
+    private static class ThreadAffineLambdaArgsProvider extends ObjectLambdaArgsProvider{
+    	private final WeakReference<QtThreadAffineInterface> wta;
+    	
+		ThreadAffineLambdaArgsProvider(WeakReference<QtThreadAffineInterface> wta, Object[] lambdaArgs) {
+			super(lambdaArgs);
+			this.wta = wta;
+		}
+		@Override
+		public QThread thread() {
+			QtThreadAffineInterface ta = wta.get();
+			return ta==null ? null : ta.thread();
+		}
+	}
+    
+    private static class ThreadAffineSupplierLambdaArgsProvider extends SupplierLambdaArgsProvider{
+    	private final WeakReference<QtThreadAffineInterface> wta;
+    	
+		ThreadAffineSupplierLambdaArgsProvider(WeakReference<QtThreadAffineInterface> wta, Supplier<?>[] lambdaArgs) {
+			super(lambdaArgs);
+			this.wta = wta;
+		}
+		@Override
+		public QThread thread() {
+			QtThreadAffineInterface ta = wta.get();
+			return ta==null ? null : ta.thread();
 		}
 	}
 	
-    private static abstract class AbstractConnection<T>{
+    private static abstract class AbstractConnection{
     	private final static int Disconnected = 0x08;
-        public final T receiver;
         private byte flags;
         
-        AbstractConnection<?> previous;
-        AbstractConnection<?> next;
+        AbstractConnection previous;
+        AbstractConnection next;
         int id = 0;
         
-        AbstractConnection(T receiver, Qt.ConnectionType... connectionType) {
-            this.receiver = receiver;
-
+        AbstractConnection(Qt.ConnectionType[] connectionType) {
             byte flags = 0;
             if(connectionType!=null && connectionType.length>0) {
         		for (Qt.ConnectionType c : connectionType) {
@@ -4314,7 +5193,8 @@ abstract class SignalUtility {
         public final void setDisconnected() {
         	flags |= Disconnected;
         }
-        public final boolean isDirectConnection() {
+        @SuppressWarnings("unused")
+		public final boolean isDirectConnection() {
             return ((flags & Qt.ConnectionType.QueuedConnection.value()) == 0) && ((flags & Qt.ConnectionType.DirectConnection.value()) == Qt.ConnectionType.DirectConnection.value());
         }
 		public final boolean isQueuedConnection() {
@@ -4327,8 +5207,21 @@ abstract class SignalUtility {
             return (flags & (Qt.ConnectionType.QueuedConnection.value() | Qt.ConnectionType.DirectConnection.value())) == 0;
         }
         public abstract Object resolveReceiver();
+        public boolean receiverAvailable() {
+    		return resolveReceiver()!=null;
+    	}
+        
+        public QThread receiverThread() {
+        	return null;
+        }
 		
 		abstract void invoke(Object[] args) throws Throwable;
+		
+		void invokeOnLock(QObject senderObject, Object[] args) throws Throwable{
+    		invoke(args);
+		}
+		
+		native void invokeOnLock(long senderObject, long receiver, Object[] args) throws Throwable;
 		
 		@Override
 		public boolean equals(Object obj) {
@@ -4336,42 +5229,35 @@ abstract class SignalUtility {
 				return true;
 			if (obj == null)
 				return false;
-			if ((Object)ClassAnalyzerUtility.getClass(this) != ClassAnalyzerUtility.getClass(obj) && !(obj instanceof JavaConnection))
+			if ((Object)AccessUtility.instance.getClass(this) != AccessUtility.instance.getClass(obj) && !(obj instanceof LightweightConnection))
 				return false;
 			if (obj.hashCode() != hashCode())
 				return false;
 			return true;
 		}
 		
-		public boolean equals(QMetaObject.Connection connection) {
-			if(connection instanceof JavaConnection) {
-				JavaConnection javaConnection = (JavaConnection)connection;
-				return javaConnection.connection.get()==this;
-			}
-			return false;
-		}
-		
 		abstract int argumentCount();
+		
+		void onDisconnect() {}
     } // protected abstract class QConnection
 
     /**
      * Contains book holding info about a single connection
      */
-    private static class MetaMethodConnection extends AbstractConnection<WeakReference<Object>>{
-        public final QMetaMethod slot;
+    private static class MetaMethodConnection<Ref> extends AbstractConnection{
+        final QMetaMethod slot;
+        private final WeakReference<Ref> receiver;
         
-        private MetaMethodConnection(WeakReference<Object> receiver, QMetaMethod slot, Qt.ConnectionType... connectionType) {
-            super(receiver, connectionType);
-            this.slot = slot;
+        private MetaMethodConnection(WeakReference<Ref> receiver, QMetaMethod slot, Qt.ConnectionType... connectionType) {
+            super(connectionType);
+            this.slot = slot.clone();
+            this.receiver = receiver;
         }
         
 		void invoke(Object[] args) throws Throwable{
 			Object receiver = resolveReceiver();
-			if(receiver instanceof QObject){
-				slot.invoke((QObject)receiver, args, Qt.ConnectionType.DirectConnection);
-			}else if(receiver!=null){
+			if(receiver!=null)
 				slot.invokeOnGadget(receiver, args);
-			}
 		}
 		
 		@Override
@@ -4380,178 +5266,733 @@ abstract class SignalUtility {
 		}
 
 		@Override
-		public Object resolveReceiver() {
+		public Ref resolveReceiver() {
         	return receiver!=null ? receiver.get() : null;
 		}
 		
 		int argumentCount() {
 			return slot.parameterCount();
 		}
-    } // private class AbstractConnection
-    
-    static interface SlotInvoker{
-    	void invoke(Object[] _arguments) throws Throwable;
+		
+		public boolean receiverAvailable() {
+    		return resolveReceiver()!=null;
+    	}
+		
+		@Override
+		void onDisconnect() {
+			if(receiver instanceof NativeUtility.FinalizerReference<?>)
+				((NativeUtility.FinalizerReference<?>)receiver).setFinally(null);
+		}
     }
-
-    /**
-     * Contains book holding info about a single connection
-     */
-    private static abstract class AbstractReflectiveConnection extends AbstractConnection<Reference<Object>>{
-        public final Method slot;
-        public final SlotInvoker slotHandle;
-        private List<Supplier<?>> lambdaArgs = null;
-        
-        private AbstractReflectiveConnection(Reference<Object> receiver, Method slot, MethodHandle slotHandle, List<Supplier<?>> lambdaArgs, Qt.ConnectionType... connectionType) {
-            super(receiver, connectionType);
-            this.slot = slot;
-            if(slotHandle==null) {
-            	try {
-					slotHandle = ReflectionUtility.getMethodHandle(slot);
-				} catch (Exception e) {
-				}
-            }
-			this.slotHandle = ReflectionUtility.getSlotInvoker(slot, slotHandle);
-			if(lambdaArgs==null)
-				lambdaArgs = Collections.emptyList();
-			this.lambdaArgs = lambdaArgs;
-        }
-        
-        int argumentCount() {
-    		return slot.getParameterCount() - lambdaArgs.size();
+    
+    private static class QtInstanceMetaMethodConnection extends MetaMethodConnection<QtObjectInterface>{
+    	QtInstanceMetaMethodConnection(WeakReference<QtObjectInterface> receiver, QMetaMethod slot, Qt.ConnectionType... connectionType) {
+			super(receiver, slot, connectionType);
 		}
 
-    	private byte typeConversionCode(Class<?> cls) {
-    		if (cls.isPrimitive()) {
-    			if (cls == int.class) {
-    				return 'I';
-    			} else if (cls == long.class) {
-    				return 'J';
-    			} else if (cls == short.class) {
-    				return 'S';
-    			} else if (cls == boolean.class) {
-    				return 'Z';
-    			} else if (cls == byte.class) {
-    				return 'B';
-    			} else if (cls == float.class) {
-    				return 'F';
-    			} else if (cls == double.class) {
-    				return 'D';
-    			} else if (cls == char.class) {
-    				return 'C';
-    			} else if (cls == void.class) {
-    				return 'V';
-    			} else {
-    				throw new RuntimeException("Error in conversion to primitive for complex type " + cls.getName());
-    			}
-    		}else return 'L';
+		void invoke(Object[] args) throws Throwable{
+			QtObjectInterface receiver = resolveReceiver();
+    		if(receiver!=null && !receiver.isDisposed())
+    			slot.invokeOnGadget(receiver, args);
+		}
+		
+		public boolean receiverAvailable() {
+    		QtObjectInterface receiver = resolveReceiver();
+    		return receiver!=null && !receiver.isDisposed();
     	}
+    }
+    
+    private static class QtInstanceThreadAffineMetaMethodConnection extends QtInstanceMetaMethodConnection{
+    	QtInstanceThreadAffineMetaMethodConnection(WeakReference<QtObjectInterface> receiver, QMetaMethod slot, Qt.ConnectionType... connectionType) {
+			super(receiver, slot, connectionType);
+		}
+    	
+    	public QThread receiverThread() {
+			QtThreadAffineInterface receiver = (QtThreadAffineInterface)resolveReceiver();
+    		if(receiver!=null)
+    			return receiver.thread();
+    		return null;
+    	}
+    }
+    
+    private static class QObjectMetaMethodConnection extends MetaMethodConnection<QObject>{
+    	QObjectMetaMethodConnection(WeakReference<QObject> receiver, QMetaMethod slot, Qt.ConnectionType... connectionType) {
+			super(receiver, slot, connectionType);
+		}
+
+		void invoke(Object[] args) throws Throwable{
+    		QObject receiver = resolveReceiver();
+    		if(receiver!=null && !receiver.isDisposed())
+    			slot.invoke(receiver, Qt.ConnectionType.DirectConnection, args);
+		}
+		
+		public boolean receiverAvailable() {
+    		QObject receiver = resolveReceiver();
+    		return receiver!=null && !receiver.isDisposed();
+    	}
+		
+		public QThread receiverThread() {
+			QObject receiver = resolveReceiver();
+    		if(receiver!=null)
+    			return receiver.thread();
+    		return null;
+    	}
+		
+		void invokeOnLock(QObject senderObject, Object[] args) throws Throwable{
+			invokeOnLock(NativeUtility.nativeId(senderObject), NativeUtility.nativeId(resolveReceiver()), args);
+		}
+    }
+    
+    public static interface StaticSlotInvoker{
+    	void invoke(Object[] _arguments) throws Throwable;
+    }
+    
+    public static interface SlotInvoker{
+    	void invoke(Object instance, Object[] _arguments) throws Throwable;
+    }
+    
+    public static interface StaticLambdaArgsSlotInvoker{
+    	void invoke(Object[] lambdaArgs, Object[] _arguments) throws Throwable;
+    }
+    
+    public static interface LambdaArgsSlotInvoker{
+    	void invoke(Object instance, Object[] lambdaArgs, Object[] _arguments) throws Throwable;
+    }
+    
+    private static abstract class AbstractReflectiveConnection<Ref> extends AbstractConnection{
+    	final Method slot;
+
+		AbstractReflectiveConnection(Method slot, ConnectionType[] connectionType) {
+			super(connectionType);
+			this.slot = slot;
+		}
+		
+		int argumentCount() {
+    		return slot.getParameterCount();
+		}
+    	
+    	LambdaArgsProvider lambdaArgs(){
+    		return null;
+    	}
+    	
+    	public Object resolveReceiver() {
+    		return null;
+    	}
+    	
+    	public boolean receiverAvailable() {
+    		return true;
+    	}
+    	
+    	@Override
+		public String toString() {
+			return "connection to "+this.slot;
+		}
+    }
+    
+    private static class InvokerConnection<Ref> extends AbstractReflectiveConnection<Ref>{
+        private final SlotInvoker slotHandle;
+        private final Reference<? extends Ref> receiver;
+        
+        private InvokerConnection(Reference<? extends Ref> receiver, SlotInvoker slotHandle, Method slot, Qt.ConnectionType[] connectionType) {
+            super(slot, connectionType);
+			this.slotHandle = slotHandle;
+			this.receiver = receiver;
+        }
+    	
+    	public Ref resolveReceiver() {
+        	return receiver!=null ? receiver.get() : null;
+        }
+    	
+    	public boolean receiverAvailable() {
+    		return resolveReceiver()!=null;
+    	}
+    	
+    	@Override
+		public String toString() {
+			return super.toString()+" ["+resolveReceiver()+"]";
+		}
+
+		void invoke(Object[] args) throws Throwable{
+			Object receiver = resolveReceiver();
+			if(receiver==null)
+				return;
+			slotHandle.invoke(receiver, args);
+		}
+		
+		@Override
+		void onDisconnect() {
+			if(receiver instanceof NativeUtility.FinalizerReference<?>)
+				((NativeUtility.FinalizerReference<?>)receiver).enqueue();
+		}
+    }
+    
+    private static class ThreadAffineInvokerConnection extends InvokerConnection<QtThreadAffineInterface>{
+    	private ThreadAffineInvokerConnection(Reference<QtThreadAffineInterface> receiver, SlotInvoker slotHandle, Method slot, Qt.ConnectionType[] connectionType) {
+    		super(receiver, slotHandle, slot, connectionType);
+    	}
+    	
+    	public QThread receiverThread() {
+    		QtThreadAffineInterface receiver = resolveReceiver();
+    		if(receiver!=null)
+    			return receiver.thread();
+    		return null;
+    	}
+    }
+    
+    private static class QtInstanceInvokerConnection extends InvokerConnection<QtObjectInterface>{
+    	private QtInstanceInvokerConnection(Reference<? extends QtObjectInterface> receiver, SlotInvoker slotHandle, Method slot, Qt.ConnectionType[] connectionType) {
+    		super(receiver, slotHandle, slot, connectionType);
+    	}
+    	
+    	public boolean receiverAvailable() {
+    		QtObjectInterface receiver = resolveReceiver();
+    		return receiver!=null && !receiver.isDisposed();
+    	}
+    }
+    
+    private static class QtInstanceThreadAffineInvokerConnection extends QtInstanceInvokerConnection{
+    	private QtInstanceThreadAffineInvokerConnection(Reference<? extends QtObjectInterface> receiver, SlotInvoker slotHandle, Method slot, Qt.ConnectionType[] connectionType) {
+    		super(receiver, slotHandle, slot, connectionType);
+    	}
+    	
+    	public QThread receiverThread() {
+    		QtThreadAffineInterface receiver = (QtThreadAffineInterface)resolveReceiver();
+    		if(receiver!=null)
+    			return receiver.thread();
+    		return null;
+    	}
+    }
+    
+    private static class QObjectDirectInvokerConnection extends InvokerConnection<QObject>{
+    	private QObjectDirectInvokerConnection(Reference<? extends QObject> receiver, SlotInvoker slotHandle, Method slot, Qt.ConnectionType[] connectionType) {
+    		super(receiver, slotHandle, slot, connectionType);
+    	}
+    	
+    	public boolean receiverAvailable() {
+    		QObject receiver = resolveReceiver();
+    		return receiver!=null && !receiver.isDisposed();
+    	}
+    	
+    	void invokeOnLock(QObject senderObject, Object[] args) throws Throwable{
+			invokeOnLock(NativeUtility.nativeId(senderObject), NativeUtility.nativeId(resolveReceiver()), args);
+		}
+    }
+    
+    private static class QObjectInvokerConnection extends QObjectDirectInvokerConnection{
+    	private QObjectInvokerConnection(Reference<? extends QObject> receiver, SlotInvoker slotHandle, Method slot, Qt.ConnectionType[] connectionType) {
+    		super(receiver, slotHandle, slot, connectionType);
+    	}
+    	
+    	public QThread receiverThread() {
+    		QObject receiver = (QObject)resolveReceiver();
+    		if(receiver!=null)
+    			return receiver.thread();
+    		return null;
+    	}
+    }
+    
+    private static class StaticInvokerConnection extends AbstractReflectiveConnection<Object>{
+        private final StaticSlotInvoker slotHandle;
+        
+    	private StaticInvokerConnection(StaticSlotInvoker slotHandle, Method slot, Qt.ConnectionType[] connectionType) {
+            super(slot, connectionType);
+			this.slotHandle = slotHandle;
+        }
+    	
+    	void invoke(Object[] args) throws Throwable{
+    		slotHandle.invoke(args);
+    	}
+    }
+    
+    private static class LambdaArgsInvokerConnection<Ref> extends AbstractReflectiveConnection<Ref>{
+    	private final LambdaArgsSlotInvoker slotHandle;
+        private final LambdaArgsProvider lambdaArgs;
+        private final Reference<? extends Ref> receiver;
+    	
+    	public Ref resolveReceiver() {
+        	return receiver!=null ? receiver.get() : null;
+        }
+    	
+    	public boolean receiverAvailable() {
+    		return resolveReceiver()!=null;
+    	}
+    	
+    	@Override
+		public String toString() {
+			return super.toString()+" ["+resolveReceiver()+"]";
+		}
+    	
+    	private LambdaArgsInvokerConnection(Reference<? extends Ref> receiver, LambdaArgsSlotInvoker slotHandle, Method slot, LambdaArgsProvider lambdaArgs, Qt.ConnectionType[] connectionType) {
+    		super(slot, connectionType);
+    		this.slotHandle = slotHandle;
+    		this.lambdaArgs = lambdaArgs;
+    		this.receiver = receiver;
+    	}
+    	
+    	LambdaArgsProvider lambdaArgs(){
+    		return lambdaArgs;
+    	}
+    	
+    	final int argumentCount() {
+    		return super.argumentCount() - lambdaArgs.size();
+		}
+    	
+    	void invoke(Object[] args) throws Throwable{
+    		Object receiver = resolveReceiver();
+    		if(receiver==null)
+				return;
+    		Object[] lambdaArgs;
+    		try{
+    			lambdaArgs = this.lambdaArgs.lambdaArgs();
+    		}catch(LambdaArgumentGoneException e) {
+    			return;
+    		}
+			slotHandle.invoke(receiver, lambdaArgs, args);
+    	}
+    	
+    	@Override
+		void onDisconnect() {
+			if(receiver instanceof NativeUtility.FinalizerReference<?>)
+				((NativeUtility.FinalizerReference<?>)receiver).enqueue();
+		}
+    }
+    
+    private static class ThreadAffineLambdaArgsInvokerConnection extends LambdaArgsInvokerConnection<QtThreadAffineInterface>{
+    	private ThreadAffineLambdaArgsInvokerConnection(Reference<QtThreadAffineInterface> receiver, LambdaArgsSlotInvoker slotHandle, Method slot, LambdaArgsProvider lambdaArgs, Qt.ConnectionType[] connectionType) {
+    		super(receiver, slotHandle, slot, lambdaArgs, connectionType);
+    	}
+    	
+    	public QThread receiverThread() {
+    		QtThreadAffineInterface receiver = resolveReceiver();
+    		if(receiver!=null)
+    			return receiver.thread();
+    		return null;
+    	}
+    }
+    
+    private static class QtInstanceLambdaArgsInvokerConnection extends LambdaArgsInvokerConnection<QtObjectInterface>{
+    	private QtInstanceLambdaArgsInvokerConnection(Reference<? extends QtObjectInterface> receiver, LambdaArgsSlotInvoker slotHandle, Method slot, LambdaArgsProvider lambdaArgs, Qt.ConnectionType[] connectionType) {
+    		super(receiver, slotHandle, slot, lambdaArgs, connectionType);
+    	}
+    	
+    	public boolean receiverAvailable() {
+    		QtObjectInterface receiver = resolveReceiver();
+    		return receiver!=null && !receiver.isDisposed();
+    	}
+    }
+    
+    private static class QtInstanceThreadAffineLambdaArgsInvokerConnection extends QtInstanceLambdaArgsInvokerConnection{
+    	private QtInstanceThreadAffineLambdaArgsInvokerConnection(Reference<? extends QtObjectInterface> receiver, LambdaArgsSlotInvoker slotHandle, Method slot, LambdaArgsProvider lambdaArgs, Qt.ConnectionType[] connectionType) {
+    		super(receiver, slotHandle, slot, lambdaArgs, connectionType);
+    	}
+    	
+    	public QThread receiverThread() {
+    		QtThreadAffineInterface receiver = (QtThreadAffineInterface)resolveReceiver();
+    		if(receiver!=null)
+    			return receiver.thread();
+    		return null;
+    	}
+    }
+    
+    private static class QObjectLambdaArgsDirectInvokerConnection extends LambdaArgsInvokerConnection<QObject>{
+    	private QObjectLambdaArgsDirectInvokerConnection(Reference<? extends QObject> receiver, LambdaArgsSlotInvoker slotHandle, Method slot, LambdaArgsProvider lambdaArgs, Qt.ConnectionType[] connectionType) {
+    		super(receiver, slotHandle, slot, lambdaArgs, connectionType);
+    	}
+    	
+    	public boolean receiverAvailable() {
+    		QObject receiver = resolveReceiver();
+    		return receiver!=null && !receiver.isDisposed();
+    	}
+    	
+    	void invokeOnLock(QObject senderObject, Object[] args) throws Throwable{
+			invokeOnLock(NativeUtility.nativeId(senderObject), NativeUtility.nativeId(resolveReceiver()), args);
+		}
+    }
+    
+    private static class QObjectLambdaArgsInvokerConnection extends QObjectLambdaArgsDirectInvokerConnection{
+    	private QObjectLambdaArgsInvokerConnection(Reference<? extends QObject> receiver, LambdaArgsSlotInvoker slotHandle, Method slot, LambdaArgsProvider lambdaArgs, Qt.ConnectionType[] connectionType) {
+    		super(receiver, slotHandle, slot, lambdaArgs, connectionType);
+    	}
+    	
+    	public QThread receiverThread() {
+    		QObject receiver = resolveReceiver();
+    		if(receiver!=null)
+    			return receiver.thread();
+    		return null;
+    	}
+    }
+    
+    private static class StaticLambdaArgsInvokerConnection extends AbstractReflectiveConnection<Object>{
+    	private final StaticLambdaArgsSlotInvoker slotHandle;
+        private final LambdaArgsProvider lambdaArgs;
+        
+    	private StaticLambdaArgsInvokerConnection(StaticLambdaArgsSlotInvoker slotHandle, Method slot, LambdaArgsProvider lambdaArgs, Qt.ConnectionType[] connectionType) {
+    		super(slot, connectionType);
+    		this.lambdaArgs = lambdaArgs;
+    		this.slotHandle = slotHandle;
+    	}
+    	
+    	LambdaArgsProvider lambdaArgs(){
+    		return lambdaArgs;
+    	}
+    	
+    	final int argumentCount() {
+    		return super.argumentCount() - lambdaArgs.size();
+		}
+    	
+    	void invoke(Object[] args) throws Throwable{
+    		Object[] lambdaArgs;
+    		try{
+    			lambdaArgs = this.lambdaArgs.lambdaArgs();
+    		}catch(LambdaArgumentGoneException e) {
+    			return;
+    		}
+			slotHandle.invoke(lambdaArgs, args);
+    	}
+    	
+    	@Override
+		public QThread receiverThread() {
+			return lambdaArgs.thread();
+		}
+    }
+
+    private static class ReflectiveConnection<Ref> extends AbstractReflectiveConnection<Ref>{
+		private final Reference<? extends Ref> receiver;
+    	
+    	public Ref resolveReceiver() {
+        	return receiver!=null ? receiver.get() : null;
+        }
+    	
+    	public boolean receiverAvailable() {
+    		return resolveReceiver()!=null;
+    	}
+    	
+    	@Override
+		public String toString() {
+			return super.toString()+" ["+resolveReceiver()+"]";
+		}
+    	
+        private ReflectiveConnection(Reference<? extends Ref> receiver, Method slot, Qt.ConnectionType[] connectionType) {
+            super(slot, connectionType);
+            this.receiver = receiver;
+        }
         
 		void invoke(Object[] args) throws Throwable{
 			Object receiver = resolveReceiver();
-			if(slotHandle!=null){
-				Object[] _arguments;
-				if(Modifier.isStatic(slot.getModifiers())){
-					if(lambdaArgs.isEmpty()){
-						_arguments = args;
-					}else{
-						_arguments = new Object[args.length + lambdaArgs.size()];
-						for (int i = 0; i < lambdaArgs.size(); i++) {
-							_arguments[i] = lambdaArgs.get(i).get();
-						}
-						System.arraycopy(args, 0, _arguments, lambdaArgs.size(), args.length);
-					}
-				}else{
-					if(receiver==null)
-						return;
-					if(lambdaArgs.isEmpty()){
-						_arguments = new Object[args.length + 1];
-						_arguments[0] = receiver;
-						System.arraycopy(args, 0, _arguments, 1, args.length);
-					}else{
-						_arguments = new Object[args.length + lambdaArgs.size() + 1];
-						_arguments[0] = receiver;
-						for (int i = 0; i < lambdaArgs.size(); i++) {
-							_arguments[i+1] = lambdaArgs.get(i).get();
-						}
-						System.arraycopy(args, 0, _arguments, lambdaArgs.size() + 1, args.length);
-					}
-				}
-				slotHandle.invoke(_arguments);
-			}else{
-				if(receiver==null && !Modifier.isStatic(slot.getModifiers()))
-					return;
-				Object[] _arguments;
-				if(lambdaArgs.isEmpty()){
-					_arguments = args;
-				}else{
-					_arguments = new Object[args.length + lambdaArgs.size()];
-					for (int i = 0; i < lambdaArgs.size(); i++) {
-						_arguments[i] = lambdaArgs.get(i).get();
-					}
-					System.arraycopy(args, 0, _arguments, lambdaArgs.size(), args.length);
-				}
-				try{
-					slot.invoke(Modifier.isStatic(slot.getModifiers()) ? null : receiver, _arguments);
-				} catch (IllegalAccessException e) {
-					Class<?>[] slotParameterTypes = slot.getParameterTypes();
-					if(lambdaArgs!=null && lambdaArgs.size()>0){
-						Class<?>[] _slotParameterTypes = (Class<?>[])new Class[slotParameterTypes.length - lambdaArgs.size()];
-						System.arraycopy(slotParameterTypes, lambdaArgs.size(), _slotParameterTypes, 0, slotParameterTypes.length - lambdaArgs.size());
-						slotParameterTypes = _slotParameterTypes;
-					}
-					byte returnType = typeConversionCode(slot.getReturnType());
-		            byte[] _convertTypes = new byte[slotParameterTypes.length];
-		    		for (int i = 0; i < _convertTypes.length; ++i) {
-		    			_convertTypes[i] = typeConversionCode(slotParameterTypes[i]);
-		    		}
-					if(Modifier.isStatic(slot.getModifiers())) {
-						invokeSignal(slot.getDeclaringClass(), slot, true, returnType, _arguments, _convertTypes);
-					}else {
-						invokeSignal(receiver, slot, false, returnType, _arguments, _convertTypes);
-					}
-				} catch (InvocationTargetException e) {
-					throw e.getTargetException();
-				}
+			if(receiver==null)
+				return;
+			try{
+				slot.invoke(receiver, args);
+			} catch (IllegalAccessException e) {
+				Class<?>[] slotParameterTypes = slot.getParameterTypes();
+				byte returnType = typeConversionCode(slot.getReturnType());
+	            byte[] _convertTypes = new byte[slotParameterTypes.length];
+	    		for (int i = 0; i < _convertTypes.length; ++i) {
+	    			_convertTypes[i] = typeConversionCode(slotParameterTypes[i]);
+	    		}
+	    		invokeReflectiveMethod(receiver, slot, false, returnType, args, _convertTypes);
+			} catch (InvocationTargetException e) {
+				throw e.getTargetException();
 			}
 		}
 		
-		private static native Object invokeSignal(Object receiver, Method method, boolean isStatic, byte returnType, Object args[], byte slotTypes[]);
-		
 		@Override
-		public String toString() {
-			return "connection to "+this.slot+" ["+resolveReceiver()+"]";
+		void onDisconnect() {
+			if(receiver instanceof NativeUtility.FinalizerReference<?>)
+				((NativeUtility.FinalizerReference<?>)receiver).enqueue();
+		}
+    }
+    
+    private static class LambdaArgsReflectiveConnection<Ref> extends ReflectiveConnection<Ref>{
+    	final LambdaArgsProvider lambdaArgs;
+    	private LambdaArgsReflectiveConnection(Reference<? extends Ref> receiver, Method slot, LambdaArgsProvider lambdaArgs, Qt.ConnectionType[] connectionType) {
+    		super(receiver, slot, connectionType);
+    		this.lambdaArgs = lambdaArgs;
+    	}
+    	
+    	int argumentCount() {
+    		return super.argumentCount() - lambdaArgs.size();
 		}
     	
-    	public Object resolveReceiver() {
-        	return receiver!=null ? receiver.get() : null;
-        }
-    } // private class AbstractReflectiveConnection
+    	void invoke(Object[] args) throws Throwable{
+    		Object[] lambdaArgs;
+    		try{
+    			lambdaArgs = this.lambdaArgs.lambdaArgs();
+    		}catch(LambdaArgumentGoneException e) {
+    			return;
+    		}
+			Object[] _arguments = Arrays.copyOf(lambdaArgs, lambdaArgs.length + args.length);
+			System.arraycopy(args, 0, _arguments, lambdaArgs.length, args.length);
+			super.invoke(_arguments);
+		}
+    }
     
-    private static class ReflectiveConnection extends AbstractReflectiveConnection{
+    private static class ThreadAffineReflectiveConnection extends ReflectiveConnection<QtThreadAffineInterface>{
+    	private ThreadAffineReflectiveConnection(Reference<? extends QtThreadAffineInterface> receiver, Method slot, Qt.ConnectionType[] connectionType) {
+    		super(receiver, slot, connectionType);
+    	}
     	
-    	private ReflectiveConnection(Reference<Object> receiver, Method slot, MethodHandle slotHandle, List<Supplier<?>> lambdaArgs, Qt.ConnectionType... connectionType) {
-    		super(receiver, slot, slotHandle, lambdaArgs, connectionType);
+    	public QThread receiverThread() {
+    		QtThreadAffineInterface receiver = resolveReceiver();
+    		if(receiver!=null)
+    			return receiver.thread();
+    		return null;
     	}
     }
     
-    private abstract static class SlotObjectConnection<S> extends AbstractConnection<S> {
+    private static class ThreadAffineLambdaArgsReflectiveConnection extends ReflectiveConnection<QtThreadAffineInterface>{
+    	final LambdaArgsProvider lambdaArgs;
+    	private ThreadAffineLambdaArgsReflectiveConnection(Reference<? extends QtThreadAffineInterface> receiver, Method slot, LambdaArgsProvider lambdaArgs, Qt.ConnectionType[] connectionType) {
+    		super(receiver, slot, connectionType);
+    		this.lambdaArgs = lambdaArgs;
+    	}
+    	
+    	public QThread receiverThread() {
+    		QtThreadAffineInterface receiver = resolveReceiver();
+    		if(receiver!=null)
+    			return receiver.thread();
+    		return null;
+    	}
+    	
+    	int argumentCount() {
+    		return super.argumentCount() - lambdaArgs.size();
+		}
+    	
+    	void invoke(Object[] args) throws Throwable{
+    		Object[] lambdaArgs;
+    		try{
+    			lambdaArgs = this.lambdaArgs.lambdaArgs();
+    		}catch(LambdaArgumentGoneException e) {
+    			return;
+    		}
+			Object[] _arguments = Arrays.copyOf(lambdaArgs, lambdaArgs.length + args.length);
+			System.arraycopy(args, 0, _arguments, lambdaArgs.length, args.length);
+			super.invoke(_arguments);
+		}
+    }
+    
+    private static class QtInstanceReflectiveConnection extends ReflectiveConnection<QtObjectInterface>{
+    	private QtInstanceReflectiveConnection(Reference<? extends QtObjectInterface> receiver, Method slot, Qt.ConnectionType[] connectionType) {
+    		super(receiver, slot, connectionType);
+    	}
+    	
+    	public boolean receiverAvailable() {
+    		QtObjectInterface receiver = resolveReceiver();
+    		return receiver!=null && !receiver.isDisposed();
+    	}
+    }
+    
+    private static class QtInstanceLambdaArgsReflectiveConnection extends ReflectiveConnection<QtObjectInterface>{
+    	final LambdaArgsProvider lambdaArgs;
+    	private QtInstanceLambdaArgsReflectiveConnection(Reference<? extends QtObjectInterface> receiver, Method slot, LambdaArgsProvider lambdaArgs, Qt.ConnectionType[] connectionType) {
+    		super(receiver, slot, connectionType);
+    		this.lambdaArgs = lambdaArgs;
+    	}
+    	
+    	public boolean receiverAvailable() {
+    		QtObjectInterface receiver = resolveReceiver();
+    		return receiver!=null && !receiver.isDisposed();
+    	}
+    	
+    	int argumentCount() {
+    		return super.argumentCount() - lambdaArgs.size();
+		}
+    	
+    	void invoke(Object[] args) throws Throwable{
+    		Object[] lambdaArgs;
+    		try{
+    			lambdaArgs = this.lambdaArgs.lambdaArgs();
+    		}catch(LambdaArgumentGoneException e) {
+    			return;
+    		}
+			Object[] _arguments = Arrays.copyOf(lambdaArgs, lambdaArgs.length + args.length);
+			System.arraycopy(args, 0, _arguments, lambdaArgs.length, args.length);
+			super.invoke(_arguments);
+		}
+    }
+    
+    private static class QtInstanceThreadAffineReflectiveConnection extends QtInstanceReflectiveConnection{
+    	private QtInstanceThreadAffineReflectiveConnection(Reference<? extends QtObjectInterface> receiver, Method slot, Qt.ConnectionType[] connectionType) {
+    		super(receiver, slot, connectionType);
+    	}
+    	
+    	public QThread receiverThread() {
+    		QtThreadAffineInterface receiver = (QtThreadAffineInterface)resolveReceiver();
+    		if(receiver!=null)
+    			return receiver.thread();
+    		return null;
+    	}
+    }
+    
+    private static class QtInstanceThreadAffineLambdaArgsReflectiveConnection extends QtInstanceLambdaArgsReflectiveConnection{
+    	private QtInstanceThreadAffineLambdaArgsReflectiveConnection(Reference<? extends QtObjectInterface> receiver, Method slot, LambdaArgsProvider lambdaArgs, Qt.ConnectionType[] connectionType) {
+    		super(receiver, slot, lambdaArgs, connectionType);
+    	}
+    	
+    	public QThread receiverThread() {
+    		QtThreadAffineInterface receiver = (QtThreadAffineInterface)resolveReceiver();
+    		if(receiver!=null)
+    			return receiver.thread();
+    		return null;
+    	}
+    }
+    
+    private static class QObjectDirectReflectiveConnection extends ReflectiveConnection<QObject>{
+    	private QObjectDirectReflectiveConnection(Reference<? extends QObject> receiver, Method slot, Qt.ConnectionType[] connectionType) {
+    		super(receiver, slot, connectionType);
+    	}
+    	
+    	public boolean receiverAvailable() {
+    		QObject receiver = resolveReceiver();
+    		return receiver!=null && !receiver.isDisposed();
+    	}
+    	
+    	void invokeOnLock(QObject senderObject, Object[] args) throws Throwable{
+			invokeOnLock(NativeUtility.nativeId(senderObject), NativeUtility.nativeId(resolveReceiver()), args);
+		}
+    }
+    
+    private static class QObjectReflectiveConnection extends QObjectDirectReflectiveConnection{
+    	private QObjectReflectiveConnection(Reference<? extends QObject> receiver, Method slot, Qt.ConnectionType[] connectionType) {
+    		super(receiver, slot, connectionType);
+    	}
+    	
+    	public QThread receiverThread() {
+    		QObject receiver = resolveReceiver();
+    		if(receiver!=null)
+    			return receiver.thread();
+    		return null;
+    	}
+    }
+    
+    private static class QObjectLambdaArgsDirectReflectiveConnection extends ReflectiveConnection<QObject>{
+    	final LambdaArgsProvider lambdaArgs;
+    	private QObjectLambdaArgsDirectReflectiveConnection(Reference<? extends QObject> receiver, Method slot, LambdaArgsProvider lambdaArgs, Qt.ConnectionType[] connectionType) {
+    		super(receiver, slot, connectionType);
+    		this.lambdaArgs = lambdaArgs;
+    	}
+    	
+    	int argumentCount() {
+    		return super.argumentCount() - lambdaArgs.size();
+		}
+    	
+    	void invoke(Object[] args) throws Throwable{
+    		Object[] lambdaArgs;
+    		try{
+    			lambdaArgs = this.lambdaArgs.lambdaArgs();
+    		}catch(LambdaArgumentGoneException e) {
+    			return;
+    		}
+			Object[] _arguments = Arrays.copyOf(lambdaArgs, lambdaArgs.length + args.length);
+			System.arraycopy(args, 0, _arguments, lambdaArgs.length, args.length);
+			super.invoke(_arguments);
+		}
+    	
+    	public boolean receiverAvailable() {
+    		QObject receiver = resolveReceiver();
+    		return receiver!=null && !receiver.isDisposed();
+    	}
+    	
+    	void invokeOnLock(QObject senderObject, Object[] args) throws Throwable{
+			invokeOnLock(NativeUtility.nativeId(senderObject), NativeUtility.nativeId(resolveReceiver()), args);
+		}
+    }
+    
+    private static class QObjectLambdaArgsReflectiveConnection extends QObjectLambdaArgsDirectReflectiveConnection{
+    	
+    	private QObjectLambdaArgsReflectiveConnection(Reference<? extends QObject> receiver, Method slot, LambdaArgsProvider lambdaArgs, Qt.ConnectionType[] connectionType) {
+    		super(receiver, slot, lambdaArgs, connectionType);
+    	}
+    	
+    	public QThread receiverThread() {
+    		QObject receiver = resolveReceiver();
+    		if(receiver!=null)
+    			return receiver.thread();
+    		return null;
+    	}
+    }
+    
+    private static class StaticReflectiveConnection extends AbstractReflectiveConnection<Object>{
+    	private StaticReflectiveConnection(Method slot, Qt.ConnectionType... connectionType) {
+    		super(slot, connectionType);
+    	}
+    	
+    	void invoke(Object[] args) throws Throwable{
+			try{
+				slot.invoke(null, args);
+			} catch (IllegalAccessException e) {
+				Class<?>[] slotParameterTypes = slot.getParameterTypes();
+				byte returnType = typeConversionCode(slot.getReturnType());
+	            byte[] _convertTypes = new byte[slotParameterTypes.length];
+	    		for (int i = 0; i < _convertTypes.length; ++i) {
+	    			_convertTypes[i] = typeConversionCode(slotParameterTypes[i]);
+	    		}
+	    		invokeReflectiveMethod(slot.getDeclaringClass(), slot, true, returnType, args, _convertTypes);
+			} catch (InvocationTargetException e) {
+				throw e.getTargetException();
+			}
+		}
+    }
+    
+    private static class StaticLambdaArgsReflectiveConnection extends StaticReflectiveConnection{
+        final LambdaArgsProvider lambdaArgs;
+    	private StaticLambdaArgsReflectiveConnection(Method slot, LambdaArgsProvider lambdaArgs, Qt.ConnectionType... connectionType) {
+    		super(slot, connectionType);
+    		this.lambdaArgs = lambdaArgs;
+    	}
+    	
+    	void invoke(Object[] args) throws Throwable{
+    		Object[] lambdaArgs;
+    		try{
+    			lambdaArgs = this.lambdaArgs.lambdaArgs();
+    		}catch(LambdaArgumentGoneException e) {
+    			return;
+    		}
+			Object[] _arguments = Arrays.copyOf(lambdaArgs, lambdaArgs.length + args.length);
+			System.arraycopy(args, 0, _arguments, lambdaArgs.length, args.length);
+			super.invoke(_arguments);
+		}
+    	
+    	@Override
+		public QThread receiverThread() {
+			return lambdaArgs.thread();
+		}
+    }
+    
+    private abstract static class SlotObjectConnection<S> extends AbstractConnection {
 		private final int lambdaHashCode;
-        private final Object lambdaOwner;
+        private final Reference<?> lambdaOwner;
         public final Class<?> lambdaOwnerClass;
+        private final S slotObject;
         
-        private SlotObjectConnection(Object lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, S slotObject, Qt.ConnectionType... connectionType) {
-            super(slotObject, connectionType);
+        private SlotObjectConnection(Reference<?> lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, S slotObject, Qt.ConnectionType... connectionType) {
+            super(connectionType);
 			this.lambdaHashCode = lambdaHashCode;
             this.lambdaOwner = lambdaOwner;
             this.lambdaOwnerClass = lambdaOwnerClass;
+            this.slotObject = slotObject;
         }
         
         public S resolveReceiver() {
-        	return receiver;
+        	return slotObject;
+        }
+        
+        public boolean receiverAvailable(){
+        	Object receiver = lambdaOwner();
+        	if(receiver==null)
+        		receiver = this.slotObject;
+        	return !(receiver instanceof QtObjectInterface && NativeUtility.nativeId((QtObjectInterface)receiver) == 0);
+        }
+        
+        public QThread receiverThread(){
+        	Object receiver = lambdaOwner();
+        	if(receiver==null)
+        		receiver = this.slotObject;
+        	return receiver instanceof QtThreadAffineInterface ? ((QtThreadAffineInterface)receiver).thread() : null;
         }
         
         public Object lambdaOwner(){
-            return lambdaOwner;
+            return lambdaOwner.get();
         }
 		
 		abstract void invoke(Object[] args) throws Throwable;
@@ -4560,15 +6001,20 @@ abstract class SignalUtility {
 		public String toString() {
 			return "slot connection to "+this.resolveReceiver();
 		}
+		
+		public S slotObject() {
+			return slotObject;
+		}
     } // private class SlotObjectConnection
     
     private static final class GenericSlotObjectConnection extends SlotObjectConnection<GenericSlot>{
-    	private GenericSlotObjectConnection(Object lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, GenericSlot slotObject, Qt.ConnectionType[] connectionType) {
+    	private GenericSlotObjectConnection(Reference<?> lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, GenericSlot slotObject, Qt.ConnectionType[] connectionType) {
 			super(lambdaOwner, lambdaOwnerClass, lambdaHashCode, slotObject, connectionType);
 		}
 
 		void invoke(Object[] args) throws Throwable{
-    		resolveReceiver().invoke(args[0]);
+			if(receiverAvailable())
+				resolveReceiver().invoke(args[0]);
     	}
 		
 		int argumentCount() {
@@ -4577,12 +6023,13 @@ abstract class SignalUtility {
     }
     
     private static final class SlotObjectConnection0 extends SlotObjectConnection<Slot0>{
-    	private SlotObjectConnection0(Object lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot0 slotObject, Qt.ConnectionType[] connectionType) {
+    	private SlotObjectConnection0(Reference<?> lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot0 slotObject, Qt.ConnectionType[] connectionType) {
 			super(lambdaOwner, lambdaOwnerClass, lambdaHashCode, slotObject, connectionType);
 		}
 
 		void invoke(Object[] args) throws Throwable{
-    		resolveReceiver().invoke();
+			if(receiverAvailable())
+				resolveReceiver().invoke();
     	}
 		
 		int argumentCount() {
@@ -4592,13 +6039,14 @@ abstract class SignalUtility {
     
     @SuppressWarnings("rawtypes")
 	private static final class SlotObjectConnection1 extends SlotObjectConnection<Slot1>{
-    	private SlotObjectConnection1(Object lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot1 slotObject, Qt.ConnectionType[] connectionType) {
+    	private SlotObjectConnection1(Reference<?> lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot1 slotObject, Qt.ConnectionType[] connectionType) {
 			super(lambdaOwner, lambdaOwnerClass, lambdaHashCode, slotObject, connectionType);
 		}
 
     	@SuppressWarnings("unchecked")
 		void invoke(Object[] args) throws Throwable{
-    		resolveReceiver().invoke(args[0]);
+    		if(receiverAvailable())
+				resolveReceiver().invoke(args[0]);
     	}
     	
     	int argumentCount() {
@@ -4608,13 +6056,14 @@ abstract class SignalUtility {
     
     @SuppressWarnings("rawtypes")
     private static final class SlotObjectConnection2 extends SlotObjectConnection<Slot2>{
-    	private SlotObjectConnection2(Object lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot2 slotObject, Qt.ConnectionType[] connectionType) {
+    	private SlotObjectConnection2(Reference<?> lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot2 slotObject, Qt.ConnectionType[] connectionType) {
 			super(lambdaOwner, lambdaOwnerClass, lambdaHashCode, slotObject, connectionType);
 		}
 
 		@SuppressWarnings("unchecked")
 		void invoke(Object[] args) throws Throwable{
-    		resolveReceiver().invoke(
+			if(receiverAvailable())
+				resolveReceiver().invoke(
 						args[0], args[1]
     				);
     	}
@@ -4626,13 +6075,14 @@ abstract class SignalUtility {
     
     @SuppressWarnings("rawtypes")
     private static final class SlotObjectConnection3 extends SlotObjectConnection<Slot3>{
-    	private SlotObjectConnection3(Object lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot3 slotObject, Qt.ConnectionType[] connectionType) {
+    	private SlotObjectConnection3(Reference<?> lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot3 slotObject, Qt.ConnectionType[] connectionType) {
 			super(lambdaOwner, lambdaOwnerClass, lambdaHashCode, slotObject, connectionType);
 		}
 
 		@SuppressWarnings("unchecked")
 		void invoke(Object[] args) throws Throwable{
-    		resolveReceiver().invoke(
+			if(receiverAvailable())
+				resolveReceiver().invoke(
 						args[0], args[1], args[2]
     				);
     	}
@@ -4644,13 +6094,14 @@ abstract class SignalUtility {
     
     @SuppressWarnings("rawtypes")
     private static final class SlotObjectConnection4 extends SlotObjectConnection<Slot4>{
-    	private SlotObjectConnection4(Object lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot4 slotObject, Qt.ConnectionType[] connectionType) {
+    	private SlotObjectConnection4(Reference<?> lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot4 slotObject, Qt.ConnectionType[] connectionType) {
 			super(lambdaOwner, lambdaOwnerClass, lambdaHashCode, slotObject, connectionType);
 		}
 
 		@SuppressWarnings("unchecked")
 		void invoke(Object[] args) throws Throwable{
-    		resolveReceiver().invoke(
+			if(receiverAvailable())
+				resolveReceiver().invoke(
 						args[0], args[1], args[2],
 						args[3]
     				);
@@ -4663,13 +6114,14 @@ abstract class SignalUtility {
     
     @SuppressWarnings("rawtypes")
     private static final class SlotObjectConnection5 extends SlotObjectConnection<Slot5>{
-    	private SlotObjectConnection5(Object lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot5 slotObject, Qt.ConnectionType[] connectionType) {
+    	private SlotObjectConnection5(Reference<?> lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot5 slotObject, Qt.ConnectionType[] connectionType) {
 			super(lambdaOwner, lambdaOwnerClass, lambdaHashCode, slotObject, connectionType);
 		}
 
 		@SuppressWarnings("unchecked")
 		void invoke(Object[] args) throws Throwable{
-    		resolveReceiver().invoke(
+			if(receiverAvailable())
+				resolveReceiver().invoke(
 						args[0], args[1], args[2],
 						args[3], args[4]
     				);
@@ -4682,13 +6134,14 @@ abstract class SignalUtility {
     
     @SuppressWarnings("rawtypes")
     private static final class SlotObjectConnection6 extends SlotObjectConnection<Slot6>{
-    	private SlotObjectConnection6(Object lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot6 slotObject, Qt.ConnectionType[] connectionType) {
+    	private SlotObjectConnection6(Reference<?> lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot6 slotObject, Qt.ConnectionType[] connectionType) {
 			super(lambdaOwner, lambdaOwnerClass, lambdaHashCode, slotObject, connectionType);
 		}
 
 		@SuppressWarnings("unchecked")
 		void invoke(Object[] args) throws Throwable{
-    		resolveReceiver().invoke(
+			if(receiverAvailable())
+				resolveReceiver().invoke(
 						args[0], args[1], args[2],
 						args[3], args[4], args[5]
     				);
@@ -4701,13 +6154,14 @@ abstract class SignalUtility {
     
     @SuppressWarnings("rawtypes")
     private static final class SlotObjectConnection7 extends SlotObjectConnection<Slot7>{
-    	private SlotObjectConnection7(Object lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot7 slotObject, Qt.ConnectionType[] connectionType) {
+    	private SlotObjectConnection7(Reference<?> lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot7 slotObject, Qt.ConnectionType[] connectionType) {
 			super(lambdaOwner, lambdaOwnerClass, lambdaHashCode, slotObject, connectionType);
 		}
 
 		@SuppressWarnings("unchecked")
 		void invoke(Object[] args) throws Throwable{
-    		resolveReceiver().invoke(
+			if(receiverAvailable())
+				resolveReceiver().invoke(
 						args[0], args[1], args[2],
 						args[3], args[4], args[5], 
 						args[6]
@@ -4721,13 +6175,14 @@ abstract class SignalUtility {
     
     @SuppressWarnings("rawtypes")
     private static final class SlotObjectConnection8 extends SlotObjectConnection<Slot8>{
-    	private SlotObjectConnection8(Object lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot8 slotObject, Qt.ConnectionType[] connectionType) {
+    	private SlotObjectConnection8(Reference<?> lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot8 slotObject, Qt.ConnectionType[] connectionType) {
 			super(lambdaOwner, lambdaOwnerClass, lambdaHashCode, slotObject, connectionType);
 		}
 
 		@SuppressWarnings("unchecked")
 		void invoke(Object[] args) throws Throwable{
-    		resolveReceiver().invoke(
+			if(receiverAvailable())
+				resolveReceiver().invoke(
 						args[0], args[1], args[2],
 						args[3], args[4], args[5], 
 						args[6], args[7]
@@ -4741,13 +6196,14 @@ abstract class SignalUtility {
     
     @SuppressWarnings("rawtypes")
     private static final class SlotObjectConnection9 extends SlotObjectConnection<Slot9>{
-    	private SlotObjectConnection9(Object lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot9 slotObject, Qt.ConnectionType[] connectionType) {
+    	private SlotObjectConnection9(Reference<?> lambdaOwner, Class<?> lambdaOwnerClass, int lambdaHashCode, Slot9 slotObject, Qt.ConnectionType[] connectionType) {
 			super(lambdaOwner, lambdaOwnerClass, lambdaHashCode, slotObject, connectionType);
 		}
 
 		@SuppressWarnings("unchecked")
 		void invoke(Object[] args) throws Throwable{
-    		resolveReceiver().invoke(
+			if(receiverAvailable())
+				resolveReceiver().invoke(
 						args[0], args[1], args[2],
 						args[3], args[4], args[5], 
 						args[6], args[7], args[8]
@@ -4766,14 +6222,40 @@ abstract class SignalUtility {
 		}
     	return false;
     }
+    
+    private static boolean isDirect(Qt.ConnectionType... connectionType) {
+	    int flags = 0;
+	    if(connectionType!=null && connectionType.length>0) {
+			for (Qt.ConnectionType ct : connectionType) {
+				flags |= ct.value();
+			}
+		}
+	    return isDirect(flags);
+    }
+    
+    private static boolean isDirect(int value) {
+    	return (value & Qt.ConnectionType.DirectConnection.value()) == Qt.ConnectionType.DirectConnection.value();
+    }
 
-	private static native final Connection connectNative(long senderObjectId, int signal, long senderMetaObjectId, long contextNativeId, AbstractConnection<?> connection, int argumentCount, int connectionType);
+	private static native final Connection connectNative(long senderObjectId, int signal, long senderMetaObjectId, long contextNativeId, AbstractConnection connection, int argumentCount, int connectionType);
 	
 	private static native final Connection connectNativeToMetaMethod(long senderObjectId, int signal, long senderMetaObjectId, long receiverObjectId, long slotId, int connectionType);
 	
+	private static native final QMetaMethod signalMethod(int signal, long senderMetaObjectId);
+	
+	private static native final String signalName(int signal, long senderMetaObjectId);
+	
+	private static native final String signalSignature(int signal, long senderMetaObjectId);
+	
 	private static native final boolean disconnectNative(long senderObjectId, int signal, long senderMetaObjectId, long receiverObjectId, long slotId);
 
-	protected native static void emitNativeSignal(QObject senderNative, int methodIndex, long senderMetaObjectId, int defaults, Object args[]);
+	private static native final boolean disconnectNative(long senderObjectId, int signal, long senderMetaObjectId, Predicate<AbstractConnection> predicate);
+	
+	protected native static void emitNativeSignal(long senderNative, int methodIndex, long senderMetaObjectId, int defaults, Object args[]);
+	
+	protected native static boolean isSignalConnected(long senderNative, int methodIndex, long senderMetaObjectId);
+	
+	protected native static int signalReceivers(long senderNative, int methodIndex, long senderMetaObjectId);
 	
     protected static void checkConnectionToDisposedSignalImpl(QMetaObject.DisposedSignal signal, Object receiver, boolean slotObject) {
     	if(receiver==signal) {
@@ -4796,7 +6278,7 @@ abstract class SignalUtility {
 	protected static boolean disconnectAll(QtSignalEmitterInterface sender, Object receiver) {
 		boolean result = false;
 		if (sender != null) {
-			Class<?> cls = ClassAnalyzerUtility.getClass(sender);
+			Class<?> cls = AccessUtility.instance.getClass(sender);
 			while (cls != null && cls != Object.class) {
 				Field fields[] = cls.getDeclaredFields();
 
@@ -4840,11 +6322,13 @@ abstract class SignalUtility {
 	}
 
 	protected static boolean disconnectOne(QMetaObject.Connection connection) {
-		if (connection instanceof SignalUtility.JavaConnection) {
-			SignalUtility.JavaConnection javaConnection = (SignalUtility.JavaConnection) connection;
-			SignalUtility.AbstractSignal signal = javaConnection.signal();
-			if (signal != null) {
-				return signal.removeConnection(connection);
+		if (connection instanceof SignalUtility.LightweightConnection) {
+			SignalUtility.LightweightConnection javaConnection = (SignalUtility.LightweightConnection) connection;
+			if(javaConnection.isConnected()) {
+				SignalUtility.AbstractSignal signal = javaConnection.signalObject();
+				if (signal != null) {
+					return signal.removeConnection(connection);
+				}
 			}
 		} else if (connection instanceof SignalUtility.NativeConnection) {
 			SignalUtility.NativeConnection nativeConnection = (SignalUtility.NativeConnection) connection;
@@ -4859,7 +6343,7 @@ abstract class SignalUtility {
     
 	@NativeAccess
 	private static Method lookupSlot(Object object, String signature, Class<?>[] requiredParameters) {
-		Class<?> cls = (object instanceof Class) ? (Class<?>) object : ClassAnalyzerUtility.getClass(object);
+		Class<?> cls = (object instanceof Class) ? (Class<?>) object : AccessUtility.instance.getClass(object);
 		int h = 1;
 		h = 31 * h + cls.hashCode();
 		h = 31 * h + signature.hashCode();
@@ -5012,7 +6496,7 @@ abstract class SignalUtility {
 			QPair<?,?> pair = (QPair<?,?>)data;
 			if(pair.first instanceof AbstractMultiSignal<?>) {
 				AbstractMultiSignal<?> multisignal = (AbstractMultiSignal<?>)pair.first;
-				Map<List<Class<?>>,EmitMethodInfo> emitMethodInfos = findEmitMethods(ClassAnalyzerUtility.getClass(multisignal));
+				Map<List<Class<?>>,EmitMethodInfo> emitMethodInfos = findEmitMethods(AccessUtility.instance.getClass(multisignal));
 				if(pair.second instanceof Integer) {
 					AbstractSignal signal = multisignal.signal((int)pair.second);
 					if(signal.core instanceof MultiSignalAnalyingSignalCore) {
@@ -5170,7 +6654,7 @@ abstract class SignalUtility {
     private static native SignalInfo signalInfo(Object containingObject, QMetaObject metaObject, Field field, Method emitMethod);
     
     static final class EmitMethodInfo{
-    	public EmitMethodInfo(Method method, long methodId, List<SignalParameterType> parameterTypes) {
+    	EmitMethodInfo(Method method, long methodId, List<SignalParameterType> parameterTypes) {
 			super();
 			this.method = method;
 			this.methodId = methodId;
@@ -5294,4 +6778,34 @@ abstract class SignalUtility {
 			return null;
 		});
 	}
+	
+	static native void invokeMethod(long context, Runnable runnable, boolean blocking);
+	
+	private static byte typeConversionCode(Class<?> cls) {
+		if (cls.isPrimitive()) {
+			if (cls == int.class) {
+				return 'I';
+			} else if (cls == long.class) {
+				return 'J';
+			} else if (cls == short.class) {
+				return 'S';
+			} else if (cls == boolean.class) {
+				return 'Z';
+			} else if (cls == byte.class) {
+				return 'B';
+			} else if (cls == float.class) {
+				return 'F';
+			} else if (cls == double.class) {
+				return 'D';
+			} else if (cls == char.class) {
+				return 'C';
+			} else if (cls == void.class) {
+				return 'V';
+			} else {
+				throw new RuntimeException("Error in conversion to primitive for complex type " + cls.getName());
+			}
+		}else return 'L';
+	}
+	
+	private static native Object invokeReflectiveMethod(Object receiver, Method method, boolean isStatic, byte returnType, Object args[], byte slotTypes[]);
 }

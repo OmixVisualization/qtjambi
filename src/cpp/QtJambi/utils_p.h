@@ -65,6 +65,7 @@ jobject resolveLongEnum(JNIEnv *env, jint hashCode, jclass enumClass, jlong valu
 jobject resolveByteEnum(JNIEnv *env, jint hashCode, jclass enumClass, jbyte value, jstring entryName);
 jobject resolveShortEnum(JNIEnv *env, jint hashCode, jclass enumClass, jshort value, jstring entryName);
 jobject resolveIntEnum(JNIEnv *env, jint hashCode, jclass enumClass, jint value, jstring entryName);
+void registerSwitchTableFields(JNIEnv *env, jobject switchTableFields);
 
 bool simpleEventNotify(void **data);
 bool threadAffineEventNotify(void **data);
@@ -96,5 +97,14 @@ namespace DebugAPI{
 Q_DECLARE_LOGGING_CATEGORY(internalCategory)
 Q_DECLARE_LOGGING_CATEGORY(debugAPIJavaOverloadsCategory)
 }
+
+class QtJambiExceptionUnraiser{
+public:
+    QtJambiExceptionUnraiser();
+    ~QtJambiExceptionUnraiser();
+private:
+    quint8 data;
+    Q_DISABLE_COPY_MOVE(QtJambiExceptionUnraiser)
+};
 
 #endif // QTJAMBI_UTILS_P_H

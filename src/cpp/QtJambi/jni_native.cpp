@@ -312,11 +312,11 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_NativeUtility_registerDependentObjec
 }
 
 extern "C" Q_DECL_EXPORT jobject JNICALL
-QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_NativeUtility_getInterfaces)
+QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_NativeUtility_getInterfaceInfos)
 (JNIEnv *env, jclass, jobject object)
 {
     try{
-        return SuperTypeInfos::fromClass(env, env->IsSameObject(object,nullptr) ? nullptr : env->GetObjectClass(object)).interfaceList(env);
+        return SuperTypeInfos::fromClass(env, env->IsSameObject(object,nullptr) ? nullptr : env->GetObjectClass(object)).interfaceInfos();
     }catch(const JavaException& exn){
         exn.raiseInJava(env);
         return nullptr;

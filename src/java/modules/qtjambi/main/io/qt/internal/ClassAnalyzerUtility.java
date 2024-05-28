@@ -33,7 +33,9 @@ import java.io.Serializable;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandleInfo;
 import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
 import java.lang.invoke.SerializedLambda;
+import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -52,6 +54,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.Function;
 
 import io.qt.NativeAccess;
@@ -89,8 +92,9 @@ public abstract class ClassAnalyzerUtility {
 		useAnnotatedType = _useAnnotatedType;
 	}
 	
-	private static final Map<Class<?>, Boolean> isClassGenerated = Collections.synchronizedMap(new HashMap<>());
+	private static final Map<Class<?>, Boolean> isClassGenerated = new HashMap<>();
 	private static final Map<Class<?>, Function<Object,Object>> lambdaWriteReplaceHandles = Collections.synchronizedMap(new HashMap<>());
+	private static final Map<Class<?>, Function<QtObjectInterface,io.qt.MemberAccess<?>>> memberAccessFactories = Collections.synchronizedMap(new HashMap<>());
 	private static interface Check {
 		void check() throws Exception;
 	}
@@ -149,7 +153,8 @@ public abstract class ClassAnalyzerUtility {
 			if(pair.first.isInterface()) {
 				cls = findDefaultImplementation(pair.first);
 				if (cls == null) {
-					return new Throwing(new ClassNotFoundException("Implementation of " + pair.first.getName()));
+					if(pair.first!=pair.second)
+						return new Throwing(new ClassNotFoundException("Implementation of " + pair.first.getName()));
 				}
 			}
 			List<Method> virtualProtectedMethods = new ArrayList<>();
@@ -456,16 +461,33 @@ public abstract class ClassAnalyzerUtility {
 		}).check();
 	}
 	
+	private static Function<QtObjectInterface,io.qt.MemberAccess<?>> findMemberAccessFactory(Class<? extends QtObjectInterface> _iface){
+		return memberAccessFactories.computeIfAbsent(_iface, iface -> {
+			for (Class<?> innerClass : iface.getClasses()) {
+				if (io.qt.MemberAccess.class.isAssignableFrom(innerClass)) {
+					try {
+						@SuppressWarnings("unchecked")
+						Class<io.qt.MemberAccess<?>> maClass = (Class<io.qt.MemberAccess<?>>)innerClass;
+						return ReflectionUtility.methodInvocationHandler.getFactory1(maClass.getDeclaredConstructor(iface));
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			return null;
+		});
+	}
+	
 	@SuppressWarnings("unchecked")
 	@NativeAccess
-	private static List<Class<? extends QtObjectInterface>> getImplementedInterfaces(Class<?> cls) {
+	private static Map<Class<? extends QtObjectInterface>, Function<QtObjectInterface,io.qt.MemberAccess<?>>> getImplementedInterfaceInfo(Class<?> cls) {
 		if (cls == null) {
 			return null;
 		} else {
 			QtUtilities.initializePackage(cls);
 			if (isGeneratedClass(cls) || cls.isInterface())
 				return null;
-			List<Class<? extends QtObjectInterface>> result = new ArrayList<>();
+			Map<Class<? extends QtObjectInterface>, Function<QtObjectInterface,io.qt.MemberAccess<?>>> result = new TreeMap<>((c1,c2)->c1==c2 ? 0 : -1);
 			Class<?> generatedSuperClass = findGeneratedSuperclass(cls);
 			for (Class<?> _interface : cls.getInterfaces()) {
 				QtUtilities.initializePackage(_interface);
@@ -478,70 +500,29 @@ public abstract class ClassAnalyzerUtility {
 					if (generatedSuperClass != null && __interface.isAssignableFrom(generatedSuperClass)) {
 						continue;
 					}
-					if (!result.contains(__interface)) {
-						result.add(0, __interface);
+					if (!result.containsKey(__interface)) {
+						result.put(__interface, findMemberAccessFactory(__interface));
 						QtUtilities.initializePackage(__interface);
 					}
 				}
 			}
-			List<Class<? extends QtObjectInterface>> superInterfaces = getImplementedInterfaces(cls.getSuperclass());
+			Map<Class<? extends QtObjectInterface>, Function<QtObjectInterface,io.qt.MemberAccess<?>>> superInterfaces = getImplementedInterfaceInfo(cls.getSuperclass());
 			if (superInterfaces != null) {
-				for (Class<? extends QtObjectInterface> _interface : superInterfaces) {
-					if (!result.contains(_interface)) {
-						result.add(0, _interface);
+				for (Map.Entry<Class<? extends QtObjectInterface>, Function<QtObjectInterface,io.qt.MemberAccess<?>>> entry : superInterfaces.entrySet()) {
+					if (!result.containsKey(entry.getKey())) {
+						result.put(entry.getKey(), entry.getValue());
 					}
 				}
 			}
 			if (result.isEmpty() && !Proxy.isProxyClass(cls)) {
 				result = null;
 			} else {
-				result = Collections.unmodifiableList(result);
+				result = Collections.unmodifiableMap(result);
 			}
 			return result;
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	@NativeAccess
-	private static List<Class<? extends QtObjectInterface>> getAllImplementedInterfaces(Class<?> cls) {
-		if (cls == null) {
-			return null;
-		} else {
-			QtUtilities.initializePackage(cls);
-			if (cls.isInterface())
-				return null;
-			List<Class<? extends QtObjectInterface>> result = new ArrayList<>();
-			for (Class<?> _interface : cls.getInterfaces()) {
-				QtUtilities.initializePackage(_interface);
-				if (QtObjectInterface.class.isAssignableFrom(_interface)) {
-					Class<? extends QtObjectInterface> __interface = (Class<? extends QtObjectInterface>) _interface;
-					Class<?> defaultImplementationClass = findDefaultImplementation(__interface);
-					if (defaultImplementationClass != null && defaultImplementationClass.isAssignableFrom(cls)) {
-						continue;
-					}
-					if (!result.contains(__interface)) {
-						result.add(0, __interface);
-						QtUtilities.initializePackage(__interface);
-					}
-				}
-			}
-			List<Class<? extends QtObjectInterface>> superInterfaces = getAllImplementedInterfaces(cls.getSuperclass());
-			if (superInterfaces != null) {
-				for (Class<? extends QtObjectInterface> _interface : superInterfaces) {
-					if (!result.contains(_interface)) {
-						result.add(0, _interface);
-					}
-				}
-			}
-			if (result.isEmpty()) {
-				result = null;
-			} else {
-				result = Collections.unmodifiableList(result);
-			}
-			return result;
-		}
-	}
-	
 	@NativeAccess
 	private static boolean isImplementedInJava(boolean isAbstract, Method method, Class<?> expectedClass) {
 		Class<?> declaringClass = method.getDeclaringClass();
@@ -570,19 +551,39 @@ public abstract class ClassAnalyzerUtility {
 
 	@NativeAccess
 	static boolean isGeneratedClass(Class<?> clazz) {
-		return isClassGenerated.computeIfAbsent(clazz, cls -> {
-			QtUtilities.initializePackage(cls);
-			if (QtObjectInterface.class.isAssignableFrom(cls)) {
-				if (isGeneratedClass(cls.getName())) {
-					return true;
-				} else if (cls.getSimpleName().equals("ConcreteWrapper") && cls.getEnclosingClass() != null) {
-					return isGeneratedClass(cls.getEnclosingClass().getName());
-				} else if (cls.getSimpleName().equals("Impl") && cls.getEnclosingClass() != null) {
-					return isGeneratedClass(cls.getEnclosingClass().getName());
+		synchronized (isClassGenerated) {
+			Boolean b = isClassGenerated.get(clazz);
+			if (b != null) {
+				return b;
+			}
+		}
+		QtUtilities.initializePackage(clazz);
+		boolean value = false;
+		if (QtObjectInterface.class.isAssignableFrom(clazz)) {
+			Class<?> originalClass = clazz;
+			if(clazz.getEnclosingClass() != null) {
+				switch(clazz.getSimpleName()) {
+				case "ConcreteWrapper":
+					clazz = clazz.getEnclosingClass();
+					if (clazz.getEnclosingClass() != null && clazz.getSimpleName().equals("Impl")) {
+						clazz = clazz.getEnclosingClass();
+					}
+					break;
+				case "Impl":
+					clazz = clazz.getEnclosingClass();
+					break;
 				}
 			}
-			return false;
-		});
+			if (isGeneratedClass(clazz.getName())) {
+				value = true;
+			} else if (originalClass != clazz) {
+				value = isGeneratedClass(originalClass.getName());
+			}
+		}
+		synchronized (isClassGenerated) {
+			isClassGenerated.put(clazz, value);
+		}
+		return value;
 	}
 
 	private static native boolean isGeneratedClass(String className);
@@ -616,11 +617,9 @@ public abstract class ClassAnalyzerUtility {
 			else
 				return toClass(bounds[0]);
 		} else {
-			throw new RuntimeException("Unable to find raw type for " + type.getTypeName()+"; type: "+getClass(type));
+			throw new RuntimeException("Unable to find raw type for " + type.getTypeName()+"; type: "+AccessUtility.instance.getClass(type));
 		}
 	}
-	
-	public native static <T> Class<T> getClass(T object);//Class.getClass() lead to recursive calls on android when using inside of interface default methods.
 	
 	/**
 	 * @hidden
@@ -648,17 +647,126 @@ public abstract class ClassAnalyzerUtility {
 		public final Constructor<?> reflectiveConstructor;
 		public final List<Object> lambdaArgs;
 	}
+	
+	static class LambdaTools{
+		
+		private static final Map<Class<?>, MethodHandle> lambdaSlotHandles;
+		
+		static {
+			QtJambi_LibraryUtilities.initialize();
+			lambdaSlotHandles = Collections.synchronizedMap(new HashMap<>());
+		}
+		
+		static int getCapturedArgCount(SerializedLambda serializedLambda) {
+			return serializedLambda.getCapturedArgCount();
+		}
+		
+		static Object getCapturedArg(SerializedLambda serializedLambda, int i) {
+			return serializedLambda.getCapturedArg(i);
+		}
+		
+		static String getCapturingClass(SerializedLambda serializedLambda) {
+			return serializedLambda.getCapturingClass();
+		}
+		
+		static String getFunctionalInterfaceClass(SerializedLambda serializedLambda) {
+			return serializedLambda.getFunctionalInterfaceClass();
+		}
+		
+		static String getFunctionalInterfaceMethodSignature(SerializedLambda serializedLambda) {
+			return serializedLambda.getFunctionalInterfaceMethodSignature();
+		}
+		
+		static String getFunctionalInterfaceMethodName(SerializedLambda serializedLambda) {
+			return serializedLambda.getFunctionalInterfaceMethodName();
+		}
+		
+		static String getImplClass(SerializedLambda serializedLambda) {
+			return serializedLambda.getImplClass();
+		}
+		
+		static String getImplMethodName(SerializedLambda serializedLambda) {
+			return serializedLambda.getImplMethodName();
+		}
+		
+		static int getImplMethodKind(SerializedLambda serializedLambda) {
+			return serializedLambda.getImplMethodKind();
+		}
+		
+		static String getImplMethodSignature(SerializedLambda serializedLambda) {
+			return serializedLambda.getImplMethodSignature();
+		}
+		
+		static String getInstantiatedMethodType(SerializedLambda serializedLambda) {
+			return serializedLambda.getInstantiatedMethodType();
+		}
+
+		static int hashcode(SerializedLambda serializedLambda) {
+			if(serializedLambda==null)
+				return 0;
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((serializedLambda.getCapturingClass() == null) ? 0 : serializedLambda.getCapturingClass().hashCode());
+			result = prime * result + ((serializedLambda.getFunctionalInterfaceClass() == null) ? 0 : serializedLambda.getFunctionalInterfaceClass().hashCode());
+			result = prime * result + ((serializedLambda.getFunctionalInterfaceMethodName() == null) ? 0 : serializedLambda.getFunctionalInterfaceMethodName().hashCode());
+			result = prime * result + ((serializedLambda.getFunctionalInterfaceMethodSignature() == null) ? 0 : serializedLambda.getFunctionalInterfaceMethodSignature().hashCode());
+			result = prime * result + ((serializedLambda.getImplClass() == null) ? 0 : serializedLambda.getImplClass().hashCode());
+			result = prime * result + serializedLambda.getImplMethodKind();
+			result = prime * result + ((serializedLambda.getImplMethodName() == null) ? 0 : serializedLambda.getImplMethodName().hashCode());
+			result = prime * result + ((serializedLambda.getImplMethodSignature() == null) ? 0 : serializedLambda.getImplMethodSignature().hashCode());
+			result = prime * result + ((serializedLambda.getInstantiatedMethodType() == null) ? 0 : serializedLambda.getInstantiatedMethodType().hashCode());
+			result = prime * result + serializedLambda.getCapturedArgCount();
+			for(int i=0, l=serializedLambda.getCapturedArgCount(); i<l; i++) {
+				result = prime * result + ((serializedLambda.getCapturedArg(i) == null) ? 0 : serializedLambda.getCapturedArg(i).hashCode());
+			}
+			return result;
+		}
+
+		static MethodHandle lambdaSlotHandles(Class<?> slotClass, SerializedLambda serializedLambda) {
+			return lambdaSlotHandles.computeIfAbsent(slotClass, cls -> {
+				try {
+					Class<?> implClass = slotClass.getClassLoader()
+							.loadClass(serializedLambda.getImplClass().replace('/', '.'));
+					Lookup lookup = ReflectionUtility.privateLookup(implClass);
+					if (serializedLambda.getImplMethodKind() == MethodHandleInfo.REF_invokeVirtual
+							|| serializedLambda.getImplMethodKind() == MethodHandleInfo.REF_invokeInterface) {
+						return lookup.findVirtual(implClass, serializedLambda.getImplMethodName(),
+								MethodType.fromMethodDescriptorString(serializedLambda.getImplMethodSignature(),
+										implClass.getClassLoader()));
+					} else if (serializedLambda.getImplMethodKind() == MethodHandleInfo.REF_invokeSpecial) {
+						return lookup.findSpecial(implClass, serializedLambda.getImplMethodName(),
+								MethodType.fromMethodDescriptorString(serializedLambda.getImplMethodSignature(),
+										implClass.getClassLoader()),
+								implClass);
+					} else if (serializedLambda.getImplMethodKind() == MethodHandleInfo.REF_invokeStatic) {
+						return lookup.findStatic(implClass, serializedLambda.getImplMethodName(),
+								MethodType.fromMethodDescriptorString(serializedLambda.getImplMethodSignature(),
+										implClass.getClassLoader()));
+					} else if (serializedLambda.getImplMethodKind() == MethodHandleInfo.REF_newInvokeSpecial) {
+						return lookup.findConstructor(implClass,
+								MethodType.fromMethodDescriptorString(serializedLambda.getImplMethodSignature(),
+										implClass.getClassLoader()));
+					}
+				} catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | IllegalArgumentException
+						| TypeNotPresentException e) {
+					java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.WARNING,
+							"Exception caught while analyzing slot", e);
+				}
+				return null;
+			});
+		}
+	}
 
 	public static LambdaInfo lambdaInfo(Serializable slotObject) {
 		//String className = slotObject.getClass().getName();
-		Class<?> slotClass = ClassAnalyzerUtility.getClass(slotObject);
+		Class<?> slotClass = AccessUtility.instance.getClass(slotObject);
 		if (slotClass.isSynthetic()
 				//&& className.contains("Lambda$") && className.contains("/")
 				) {
 			SerializedLambda serializedLambda = serializeLambdaExpression(slotObject);
 			if(serializedLambda == null)
 				return null;
-			MethodHandle methodHandle = ReflectionUtility.lambdaSlotHandles(slotClass, serializedLambda);
+			MethodHandle methodHandle = LambdaTools.lambdaSlotHandles(slotClass, serializedLambda);
 			Method reflectiveMethod = null;
 			Constructor<?> reflectiveConstructor = null;
 			Class<?> ownerClass = null;
@@ -676,47 +784,47 @@ public abstract class ClassAnalyzerUtility {
 				if (reflectiveConstructor != null || reflectiveMethod != null) {
 					ownerClass = reflectiveMethod==null ? reflectiveConstructor.getDeclaringClass() : reflectiveMethod.getDeclaringClass();
 					if (Modifier.isStatic(reflectiveMethod==null ? reflectiveConstructor.getModifiers() : reflectiveMethod.getModifiers())) {
-						if (serializedLambda.getCapturedArgCount() > 0) {
-							if (serializedLambda.getCapturedArgCount() > 0)
+						if (LambdaTools.getCapturedArgCount(serializedLambda) > 0) {
+							if (LambdaTools.getCapturedArgCount(serializedLambda) > 0)
 								lambdaArgsList = new ArrayList<>();
-							for (int i = 0; i < serializedLambda.getCapturedArgCount(); i++) {
-								if (qobject == null && serializedLambda.getCapturedArg(i) instanceof QObject) {
-									qobject = (QObject) serializedLambda.getCapturedArg(i);
+							for (int i = 0; i < LambdaTools.getCapturedArgCount(serializedLambda); i++) {
+								if (qobject == null && LambdaTools.getCapturedArg(serializedLambda, i) instanceof QObject) {
+									qobject = (QObject) LambdaTools.getCapturedArg(serializedLambda, i);
 								} else {
-									lambdaArgsList.add(serializedLambda.getCapturedArg(i));
+									lambdaArgsList.add(LambdaTools.getCapturedArg(serializedLambda, i));
 								}
 							}
 						}
 						return new LambdaInfo(ownerClass, owner, qobject, true, methodHandle, reflectiveMethod,
 								reflectiveConstructor, lambdaArgsList == Collections.emptyList() ? lambdaArgsList
 										: Collections.unmodifiableList(lambdaArgsList));
-					} else if (serializedLambda.getCapturedArgCount() > 0
-							&& ownerClass.isInstance(serializedLambda.getCapturedArg(0))) {
-						if (serializedLambda.getCapturedArg(0) instanceof QObject)
-							qobject = (QObject) serializedLambda.getCapturedArg(0);
-						owner = serializedLambda.getCapturedArg(0);
-						if (serializedLambda.getCapturedArgCount() > 1)
+					} else if (LambdaTools.getCapturedArgCount(serializedLambda) > 0
+							&& ownerClass.isInstance(LambdaTools.getCapturedArg(serializedLambda, 0))) {
+						if (LambdaTools.getCapturedArg(serializedLambda, 0) instanceof QObject)
+							qobject = (QObject) LambdaTools.getCapturedArg(serializedLambda, 0);
+						owner = LambdaTools.getCapturedArg(serializedLambda, 0);
+						if (LambdaTools.getCapturedArgCount(serializedLambda) > 1)
 							lambdaArgsList = new ArrayList<>();
-						for (int i = 1; i < serializedLambda.getCapturedArgCount(); i++) {
-							lambdaArgsList.add(serializedLambda.getCapturedArg(i));
+						for (int i = 1; i < LambdaTools.getCapturedArgCount(serializedLambda); i++) {
+							lambdaArgsList.add(LambdaTools.getCapturedArg(serializedLambda, i));
 						}
 						return new LambdaInfo(ownerClass, owner, qobject, false, methodHandle, reflectiveMethod,
 								reflectiveConstructor, lambdaArgsList == Collections.emptyList() ? lambdaArgsList
 										: Collections.unmodifiableList(lambdaArgsList));
-					} else if (serializedLambda.getCapturedArgCount() == 0) {
+					} else if (LambdaTools.getCapturedArgCount(serializedLambda) == 0) {
 						return new LambdaInfo(ownerClass, owner, qobject, false, methodHandle, reflectiveMethod,
 								reflectiveConstructor, lambdaArgsList == Collections.emptyList() ? lambdaArgsList
 										: Collections.unmodifiableList(lambdaArgsList));
 					} else if(reflectiveConstructor!=null 
-							&& serializedLambda.getCapturedArgCount() > 0
+							&& LambdaTools.getCapturedArgCount(serializedLambda) > 0
 							&& (
-								(ownerClass.getEnclosingClass()!=null && ownerClass.getEnclosingClass().isInstance(serializedLambda.getCapturedArg(0)))
-							 || (ownerClass.getDeclaringClass()!=null && ownerClass.getDeclaringClass().isInstance(serializedLambda.getCapturedArg(0)))
+								(ownerClass.getEnclosingClass()!=null && ownerClass.getEnclosingClass().isInstance(LambdaTools.getCapturedArg(serializedLambda, 0)))
+							 || (ownerClass.getDeclaringClass()!=null && ownerClass.getDeclaringClass().isInstance(LambdaTools.getCapturedArg(serializedLambda, 0)))
 								)
 							) {
 						lambdaArgsList = new ArrayList<>();
-						for (int i = 0; i < serializedLambda.getCapturedArgCount(); i++) {
-							lambdaArgsList.add(serializedLambda.getCapturedArg(i));
+						for (int i = 0; i < LambdaTools.getCapturedArgCount(serializedLambda); i++) {
+							lambdaArgsList.add(LambdaTools.getCapturedArg(serializedLambda, i));
 						}
 						return new LambdaInfo(ownerClass, owner, qobject, false, methodHandle, reflectiveMethod,
 								reflectiveConstructor, lambdaArgsList == Collections.emptyList() ? lambdaArgsList
@@ -729,7 +837,7 @@ public abstract class ClassAnalyzerUtility {
 	}
 
 	public static SerializedLambda serializeLambdaExpression(Serializable slotObject) {
-		Class<?> slotClass = ClassAnalyzerUtility.getClass(slotObject);
+		Class<?> slotClass = AccessUtility.instance.getClass(slotObject);
 		if (slotClass.isSynthetic()) {
 			Function<Object,Object> writeReplaceHandle = lambdaWriteReplaceHandles.computeIfAbsent(slotClass, cls -> {
 				Method writeReplace = null;
@@ -851,7 +959,7 @@ public abstract class ClassAnalyzerUtility {
 		if (lamdaInfo!=null && lamdaInfo.methodHandle != null) {
 			return lamdaInfo.methodHandle.type().returnType();
 		} else {
-			Class<?> objectType = ClassAnalyzerUtility.getClass(lambdaExpression);
+			Class<?> objectType = AccessUtility.instance.getClass(lambdaExpression);
 			if(type.isInterface() && !objectType.isSynthetic()) {
 				Method functionalMethod = null;
 				for(Method method : type.getMethods()) {
@@ -909,7 +1017,7 @@ public abstract class ClassAnalyzerUtility {
 			}
 			return metaTypes;
 		}else {
-			Class<?> objectType = ClassAnalyzerUtility.getClass(lambdaExpression);
+			Class<?> objectType = AccessUtility.instance.getClass(lambdaExpression);
 			if(type.isInterface() && !objectType.isSynthetic()) {
 				Method functionalMethod = null;
 				for(Method method : type.getMethods()) {
@@ -981,7 +1089,7 @@ public abstract class ClassAnalyzerUtility {
 			}catch(java.lang.reflect.MalformedParametersException e) {}
 			return classTypes;
 		}else {
-			Class<?> objectType = ClassAnalyzerUtility.getClass(lambdaExpression);
+			Class<?> objectType = AccessUtility.instance.getClass(lambdaExpression);
 			if(type.isInterface() && !objectType.isSynthetic()) {
 				Method functionalMethod = null;
 				for(Method method : type.getMethods()) {
@@ -1040,7 +1148,7 @@ public abstract class ClassAnalyzerUtility {
 	private static String objectToString(Object object) {
 		if (object != null) {
 			try {
-				Method toStringMethod = getClass(object).getMethod("toString");
+				Method toStringMethod = AccessUtility.instance.getClass(object).getMethod("toString");
 				if (toStringMethod.getDeclaringClass() != Object.class) {
 					return object.toString();
 				}

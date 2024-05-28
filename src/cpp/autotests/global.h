@@ -58,7 +58,7 @@
 #include <QtGui/QtGui>
 
 #include "abstractclass.h"
-#include "sharedpointertest.h"
+#include "smartpointertest.h"
 #include "destruction.h"
 #include "enums.h"
 #include "injectedcode.h"

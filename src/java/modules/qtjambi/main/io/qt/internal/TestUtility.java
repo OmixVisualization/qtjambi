@@ -34,7 +34,6 @@ import io.qt.QtObjectInterface;
 import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
 import io.qt.internal.NativeUtility.NativeLink;
-import io.qt.internal.SignalUtility.NativeConnection;
 
 /**
  * @hidden
@@ -107,8 +106,6 @@ public abstract class TestUtility {
 	}
 	
 	public static QMetaMethod signal(QMetaObject.Connection connection) {
-		if(connection instanceof NativeConnection)
-			return ((NativeConnection)connection).signal();
-		return null;
+		return SignalUtility.signal(connection);
 	}
 }

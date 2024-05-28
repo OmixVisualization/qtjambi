@@ -161,6 +161,11 @@ namespace Runtime
                      jobject result = env->CallObjectMethod(object,_this.__getDeclaredMethod, name, parameters);
                      return jstring(result);
                  }
+                 public: static inline jobject tryGetDeclaredField(JNIEnv* env,jclass object,jstring name){
+                     auto _this = __qt_get_this(env);
+                     jobject result = env->CallObjectMethod(object,_this.__getDeclaredField, name);
+                     return jstring(result);
+                 }
             )
 
     QTJAMBI_REPOSITORY_DECLARE_CLASS(Method,

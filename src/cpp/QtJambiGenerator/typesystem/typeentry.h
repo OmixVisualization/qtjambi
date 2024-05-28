@@ -39,6 +39,7 @@
 
 #include <QHash>
 #include <QStringList>
+#include <QSet>
 #include "codesnip.h"
 #include "modification.h"
 
@@ -111,7 +112,7 @@ class TypeEntry {
             TemplateType,
             NamespaceType,
             QVariantType,
-            PointerContainerType,
+            SmartPointerType,
             InitializerListType,
             JObjectWrapperType,
             QAndroidJniObjectType,
@@ -269,8 +270,8 @@ class TypeEntry {
         bool isUnknown() const {
             return m_type == UnknownType;
         }
-        bool isPointerContainer() const {
-            return m_type == PointerContainerType;
+        bool isSmartPointer() const {
+            return m_type == SmartPointerType;
         }
         bool isInitializerList() const {
             return m_type == InitializerListType;
@@ -907,6 +908,10 @@ class EnumTypeEntry : public TypeEntry {
         QString targetLangName() const override {
             return m_java_name;
         }
+
+        void setTargetLangName(const QString &name) {
+            m_java_name = name;
+        }
         QString javaQualifier() const;
         QString qualifiedTargetLangName() const override {
             QString pkg = javaPackage();
@@ -1246,6 +1251,9 @@ class ComplexTypeEntry : public TypeEntry {
         void setFieldModifications(const FieldModificationList &mods);
         void addFieldModifications(const FieldModificationList &mods);
         void addFieldModification(const FieldModification &mod);
+        void useFunctionSignature(const QString& sign) const{
+            m_usedFunctionSignatures.insert(sign);
+        }
         const FieldModificationList& fieldModifications() const;
 
         QString javaPackage() const override;
@@ -1295,8 +1303,8 @@ class ComplexTypeEntry : public TypeEntry {
         void setExpensePolicy(const ExpensePolicy &policy);
         const ExpensePolicy &expensePolicy() const;
 
-        const QString& targetType() const;
-        void setTargetType(const QString &code);
+        bool forceFinal() const;
+        void setForceFinal(bool isFinal);
 
         QString targetLangName() const override;
         void setTargetLangName(const QString &name);
@@ -1475,6 +1483,11 @@ class ComplexTypeEntry : public TypeEntry {
         bool getPushUpStatics() const;
         void setPushUpStatics(bool newPushUpStatics);
 
+        const QSet<QString>& usedFunctionSignatures(){return m_usedFunctionSignatures;}
+
+        bool getNoInstance() const;
+        void setNoInstance(bool newNoInstance);
+
     protected:
         enum ComplexAttributeFlag{
             IsQObject = 0x01,
@@ -1534,6 +1547,7 @@ private:
         Include m_include;
         QMap<QString, bool> m_includes_used;
         FunctionModificationList m_function_mods;
+        mutable QSet<QString> m_usedFunctionSignatures;
         FieldModificationList m_field_mods;
         CodeSnipList m_code_snips;
         QString m_pp_condition;
@@ -1549,7 +1563,7 @@ private:
         QString m_polymorphic_id_value;
         QMap<QString,QString> m_interface_polymorphic_id_values;
         QString m_lookup_name;
-        QString m_target_type;
+        bool m_forceFinal = false;
         ExpensePolicy m_expense_policy;
         TypeFlags m_type_flags;
         QMap<QString,QString> m_delegatedBaseClasses;
@@ -1562,6 +1576,7 @@ private:
         bool notMoveAssignable = false;
         bool notCloneable = false;
         bool pushUpStatics = false;
+        bool noInstance = false;
         friend GeneratorApplication;
         friend class FunctionalTypeEntry;
 };
@@ -1799,7 +1814,7 @@ class VariantTypeEntry: public ValueTypeEntry {
         }
 };
 
-class PointerContainerTypeEntry: public ValueTypeEntry {
+class SmartPointerTypeEntry: public ValueTypeEntry {
     public:
         enum Type {
             QSharedPointer,
@@ -1811,7 +1826,7 @@ class PointerContainerTypeEntry: public ValueTypeEntry {
             weak_ptr
         };
 
-        PointerContainerTypeEntry(const QString &name, Type type) : ValueTypeEntry(name, PointerContainerType) {
+        SmartPointerTypeEntry(const QString &name, Type type) : ValueTypeEntry(name, SmartPointerType) {
             m_type = type;
         }
 

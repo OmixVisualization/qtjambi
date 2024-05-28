@@ -70,6 +70,10 @@ void clear_type_entry(const std::type_info& typeId)
     }
 }
 
+#if QT_VERSION < 0x060000
+typedef QCborValueRef QCborValueConstRef;
+#endif
+
 QtJambiTypeEntryPtr get_type_entry(JNIEnv* env, const std::type_info& typeId, bool recursive, const char* qtName)
 {
     {
@@ -697,7 +701,7 @@ QtJambiTypeEntryPtr get_type_entry(JNIEnv* env, const std::type_info& typeId, bo
             }else if(typeid_equals(typeId, typeid(QVariant))){
                 result = new QVariantTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
 #if QT_VERSION >= 0x050C00
-            }else if(typeid_equals(typeId, typeid(QCborValueRef))){
+            }else if(typeid_equals(typeId, typeid(QCborValueRef)) || typeid_equals(typeId, typeid(QCborValueConstRef))){
                 result = new QCborValueRefTypeEntry(env, typeId, qt_name, java_name, java_class, value_size);
 #endif
             }
@@ -1081,7 +1085,7 @@ QtJambiTypeEntryPtr getFittingTypeEntry(JNIEnv *env, const QObject *qt_object, q
     if(qt_object){
         const std::type_info& type = entry->type();
         qintptr _offset = 0;
-        const std::type_info* _typeId = tryGetTypeInfo(env, QtJambiPrivate::CheckPointer<QObject>::supplyType, qt_object);
+        const std::type_info* _typeId = tryGetTypeInfo(env, RegistryAPI::Private::PolymorphicTypeInfoSupplier<QObject>::value, qt_object);
         if(!_typeId){
             QLatin1String java_type(getJavaName(type));
             Java::QtJambi::QDanglingPointerException::throwNew(env, QString("Cannot convert dangling pointer to object of type %1").arg(QString(QLatin1String(java_type)).replace(QLatin1Char('/'), QLatin1Char('.')).replace(QLatin1Char('$'), QLatin1Char('.'))) QTJAMBI_STACKTRACEINFO );
@@ -1850,7 +1854,7 @@ bool InterfaceTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_share
                 bool is_shell = link->isShell();
                 QtJambiShellImpl* shell = nullptr;
                 if(is_shell){
-                    const SuperTypeInfos& infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
+                    const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
                     Q_ASSERT(infos.size());
                     shell = *reinterpret_cast<QtJambiShellImpl**>( quintptr(qt_object) + infos.at(0).size() );
                 }
@@ -1995,7 +1999,7 @@ bool InterfaceIFTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_sha
                 bool is_shell = link->isShell();
                 QtJambiShellImpl* shell = nullptr;
                 if(is_shell){
-                    const SuperTypeInfos& infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
+                    const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
                     Q_ASSERT(infos.size());
                     shell = *reinterpret_cast<QtJambiShellImpl**>( quintptr(qt_object) + infos.at(0).size() );
                 }
@@ -2153,7 +2157,7 @@ bool InterfaceValueTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_
                 bool is_shell = link->isShell();
                 QtJambiShellImpl* shell = nullptr;
                 if(is_shell){
-                    const SuperTypeInfos& infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
+                    const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
                     Q_ASSERT(infos.size());
                     shell = *reinterpret_cast<QtJambiShellImpl**>( quintptr(qt_object) + infos.at(0).size() );
                 }
@@ -2395,7 +2399,7 @@ bool ObjectTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_p
                 bool is_shell = link->isShell();
                 QtJambiShellImpl* shell = nullptr;
                 if(is_shell){
-                    const SuperTypeInfos& infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
+                    const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
                     Q_ASSERT(infos.size());
                     shell = *reinterpret_cast<QtJambiShellImpl**>( quintptr(qt_object) + infos.at(0).size() );
                 }
@@ -2587,7 +2591,7 @@ bool ObjectIFTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_shared
                 bool is_shell = link->isShell();
                 QtJambiShellImpl* shell = nullptr;
                 if(is_shell){
-                    const SuperTypeInfos& infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
+                    const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
                     Q_ASSERT(infos.size());
                     shell = *reinterpret_cast<QtJambiShellImpl**>( quintptr(qt_object) + infos.at(0).size() );
                 }
@@ -2745,7 +2749,7 @@ bool ObjectValueTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_sha
                 bool is_shell = link->isShell();
                 QtJambiShellImpl* shell = nullptr;
                 if(is_shell){
-                    const SuperTypeInfos& infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
+                    const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
                     Q_ASSERT(infos.size());
                     shell = *reinterpret_cast<QtJambiShellImpl**>( quintptr(qt_object) + infos.at(0).size() );
                 }
@@ -3084,7 +3088,7 @@ bool ObjectContainerTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr
                 bool is_shell = link->isShell();
                 QtJambiShellImpl* shell = nullptr;
                 if(is_shell){
-                    const SuperTypeInfos& infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
+                    const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
                     Q_ASSERT(infos.size());
                     shell = *reinterpret_cast<QtJambiShellImpl**>( quintptr(qt_object) + infos.at(0).size() );
                 }
@@ -3207,7 +3211,7 @@ bool ObjectContainerIFTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *p
                 bool is_shell = link->isShell();
                 QtJambiShellImpl* shell = nullptr;
                 if(is_shell){
-                    const SuperTypeInfos& infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
+                    const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
                     Q_ASSERT(infos.size());
                     shell = *reinterpret_cast<QtJambiShellImpl**>( quintptr(qt_object) + infos.at(0).size() );
                 }
@@ -3330,7 +3334,7 @@ bool ObjectAbstractContainerTypeEntry::convertSharedPointerToJava(JNIEnv *env, v
                 bool is_shell = link->isShell();
                 QtJambiShellImpl* shell = nullptr;
                 if(is_shell){
-                    const SuperTypeInfos& infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
+                    const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
                     Q_ASSERT(infos.size());
                     shell = *reinterpret_cast<QtJambiShellImpl**>( quintptr(qt_object) + infos.at(0).size() );
                 }
@@ -3497,7 +3501,7 @@ bool ObjectAbstractContainerIFTypeEntry::convertSharedPointerToJava(JNIEnv *env,
                 bool is_shell = link->isShell();
                 QtJambiShellImpl* shell = nullptr;
                 if(is_shell){
-                    const SuperTypeInfos& infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
+                    const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
                     Q_ASSERT(infos.size());
                     shell = *reinterpret_cast<QtJambiShellImpl**>( quintptr(qt_object) + infos.at(0).size() );
                 }
@@ -3577,6 +3581,7 @@ QtJambiTypeEntry::NativeToJavaResult QObjectTypeEntry::convertToJava(JNIEnv *env
                 delete p;
                 // It should already be split ownership, but in case it has been changed, we need to make sure the c++
                 // object isn't deleted.
+                JavaException::check(env QTJAMBI_STACKTRACEINFO );
                 Java::QtJambi::NativeUtility$NativeLink::reset(env, nativeLink);
                 link->setSplitOwnership(env);
                 link.clear();
@@ -3585,7 +3590,7 @@ QtJambiTypeEntry::NativeToJavaResult QObjectTypeEntry::convertToJava(JNIEnv *env
         }
         if(link){
             output.l = link->getJavaObjectLocalRef(env);
-            if(!output.l && link->ownership()==QtJambiLink::Ownership::Split){
+            if(!output.l && (link->ownership()==QtJambiLink::Ownership::Split || link->isCleanedUp())){
                 {
                     bool isInvalidated = false;
                     {
@@ -3659,7 +3664,7 @@ bool QObjectTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_
                 bool is_shell = link->isShell();
                 QtJambiShellImpl* shell = nullptr;
                 if(is_shell){
-                    const SuperTypeInfos& infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
+                    const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
                     Q_ASSERT(infos.size());
                     shell = *reinterpret_cast<QtJambiShellImpl**>( quintptr(qt_object) + infos.at(0).size() );
                 }
@@ -3757,7 +3762,7 @@ bool QObjectIFTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_share
                 bool is_shell = link->isShell();
                 QtJambiShellImpl* shell = nullptr;
                 if(is_shell){
-                    const SuperTypeInfos& infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
+                    const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
                     Q_ASSERT(infos.size());
                     shell = *reinterpret_cast<QtJambiShellImpl**>( quintptr(qt_object) + infos.at(0).size() );
                 }
@@ -3883,7 +3888,7 @@ bool FunctionalTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValue
                 *reinterpret_cast<void**>(output) = *reinterpret_cast<void**>(link->pointer());
             }
         }else if(java_value.l){
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QLatin1String(this->javaName())) QTJAMBI_STACKTRACEINFO );
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QString(QLatin1String(this->javaName())).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
         }
     }else{
         if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, java_value.l)){
@@ -3897,8 +3902,12 @@ bool FunctionalTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValue
                 }
             }
         }else if(java_value.l){
-            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QLatin1String(this->javaName())) QTJAMBI_STACKTRACEINFO );
+            Java::QtJambi::QNoNativeResourcesException::throwNew(env, QStringLiteral("Incomplete object of type: %1").arg(QString(QLatin1String(this->javaName())).replace('/', '.').replace('$', '.')) QTJAMBI_STACKTRACEINFO );
         }
+    }
+    if(!m_is_std_function && !*reinterpret_cast<void**>(output) && java_value.l){
+        QString funTypeName = QtJambiAPI::typeName(type());
+        Java::Runtime::ClassCastException::throwNew(env, QStringLiteral("Unable to convert java object of type '%1' to function pointer '%2'.").arg(QString(QLatin1String(this->javaName())).replace('/', '.').replace('$', '.'), funTypeName) QTJAMBI_STACKTRACEINFO );
     }
     return true;
 }
@@ -4205,7 +4214,7 @@ QCborValueRefTypeEntry::QCborValueRefTypeEntry(JNIEnv* env, const std::type_info
 }
 
 QtJambiTypeEntry::NativeToJavaResult QCborValueRefTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType javaType) const{
-    const QCborValueRef* vref = reinterpret_cast<const QCborValueRef*>(qt_object);
+    const QCborValueConstRef* vref = reinterpret_cast<const QCborValueConstRef*>(qt_object);
     QtJambiTypeEntryPtr typeEntry = QtJambiTypeEntry::getTypeEntry(env, typeid(QCborValue), "QCborValue");
     Q_ASSERT(typeEntry);
     QCborValue value = *vref;
@@ -4585,21 +4594,40 @@ MetaUtilTypeEntry::MetaUtilTypeEntry(JNIEnv* env, const std::type_info& typeId, 
 {
 }
 
-QtJambiTypeEntry::NativeToJavaResult MetaUtilTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode, jvalue& output, jValueType javaType) const{
+QtJambiTypeEntry::NativeToJavaResult MetaUtilTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType javaType) const{
     if(javaType!=jValueType::l)
         JavaException::raiseIllegalArgumentException(env, "Cannot convert to primitive value" QTJAMBI_STACKTRACEINFO );
     if(qt_object){
         if(typeid_equals(type(), typeid(QMetaObject::Connection))){
+            bool makeCopyOfValues = false;
+            switch(mode){
+            case NativeToJavaConversionMode::None:
+                for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
+                    if(link){
+                        jobject obj = link->getJavaObjectLocalRef(env);
+                        if(obj && env->IsInstanceOf(obj, javaClass())){
+                            output.l = obj;
+                            return true;
+                        }
+                    }
+                }
+                break;
+            case NativeToJavaConversionMode::MakeCopyOfValues:
+                makeCopyOfValues = true;
+                break;
+            default: break;
+            }
+
             static QMetaType metaTypeId(registeredMetaTypeID(typeid(QMetaObject::Connection)));
             output.l = Java::QtJambi::SignalUtility$NativeConnection::newInstance(env, nullptr);
             const QSharedPointer<QtJambiLink>& link = QtJambiLink::createLinkForNativeObject(
                     env,
                     output.l,
-                    new QMetaObject::Connection(*reinterpret_cast<const QMetaObject::Connection*>(qt_object)),
+                    makeCopyOfValues ? new QMetaObject::Connection(*reinterpret_cast<const QMetaObject::Connection*>(qt_object)) : const_cast<void*>(qt_object),
                     metaTypeId,
                     false,
                     false,
-                    QtJambiLink::Ownership::Java
+                    mode==NativeToJavaConversionMode::None ? QtJambiLink::Ownership::None : QtJambiLink::Ownership::Java
                 );
             Q_UNUSED(link)
         }else if(typeid_equals(type(), typeid(QMetaObject))){
@@ -4622,7 +4650,7 @@ bool MetaUtilTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValueTy
         if(!env->IsSameObject(java_value.l, nullptr)){
             if(!Java::QtCore::QMetaObject$Connection::isInstanceOf(env, java_value.l))
                 return false;
-            if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaObject(env, java_value.l)){
+            if (QSharedPointer<QtJambiLink> link = QtJambiLink::findLinkForJavaInterface(env, java_value.l)){
                 Q_ASSERT(!link->isQObject());
                 *reinterpret_cast<QMetaObject::Connection*>(output) = *reinterpret_cast<QMetaObject::Connection*>(link->pointer());
             }
@@ -4763,7 +4791,7 @@ bool QModelIndexTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_sha
                 bool is_shell = link->isShell();
                 QtJambiShellImpl* shell = nullptr;
                 if(is_shell){
-                    const SuperTypeInfos& infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
+                    const SuperTypeInfos infos = SuperTypeInfos::fromClass(env, env->GetObjectClass(output.l));
                     Q_ASSERT(infos.size());
                     shell = *reinterpret_cast<QtJambiShellImpl**>( quintptr(index) + infos.at(0).size() );
                 }

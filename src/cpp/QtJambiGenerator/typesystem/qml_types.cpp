@@ -167,19 +167,6 @@ void ComplexType::setIsGeneric(bool newIsGeneric)
     emit isGenericChanged();
 }
 
-const QString &ComplexType::getTargetType() const
-{
-    return targetType;
-}
-
-void ComplexType::setTargetType(const QString &newTargetType)
-{
-    if (targetType == newTargetType)
-        return;
-    targetType = newTargetType;
-    emit targetTypeChanged();
-}
-
 bool ComplexType::getDisableNativeIdUsage() const
 {
     return disableNativeIdUsage;
@@ -232,12 +219,12 @@ void ComplexType::setForceFriendly(bool newForceFriendly)
     emit forceFriendlyChanged();
 }
 
-const QString &ComplexType::getThreadAffinity() const
+const QVariant &ComplexType::getThreadAffinity() const
 {
     return threadAffinity;
 }
 
-void ComplexType::setThreadAffinity(const QString &newThreadAffinity)
+void ComplexType::setThreadAffinity(const QVariant &newThreadAffinity)
 {
     if (threadAffinity == newThreadAffinity)
         return;
@@ -607,6 +594,32 @@ void ComplexType::setPushUpStatics(bool newPushUpStatics)
         return;
     pushUpStatics = newPushUpStatics;
     emit pushUpStaticsChanged();
+}
+
+bool ComplexType::getNoInstance() const
+{
+    return noInstance;
+}
+
+void ComplexType::setNoInstance(bool newNoInstance)
+{
+    if (noInstance == newNoInstance)
+        return;
+    noInstance = newNoInstance;
+    emit noInstanceChanged();
+}
+
+bool ComplexType::getForceFinal() const
+{
+    return forceFinal;
+}
+
+void ComplexType::setForceFinal(bool newIsFinal)
+{
+    if (forceFinal == newIsFinal)
+        return;
+    forceFinal = newIsFinal;
+    emit forceFinalChanged();
 }
 
 bool ValueType::getIsPolymorphicBase() const

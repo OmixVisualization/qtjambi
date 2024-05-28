@@ -85,6 +85,7 @@ ComplexTypeEntry *ComplexTypeEntry::copy() const {
     centry->setCodeSnips(codeSnips());
     centry->setTargetLangPackage(javaPackage());
     centry->setTargetTypeSystem(targetTypeSystem());
+    centry->m_forceFinal = m_forceFinal;
     centry->m_attributes = m_attributes;
     return centry;
 }
@@ -334,11 +335,11 @@ const ExpensePolicy &ComplexTypeEntry::expensePolicy() const {
     return m_expense_policy;
 }
 
-const QString& ComplexTypeEntry::targetType() const {
-    return m_target_type;
+bool ComplexTypeEntry::forceFinal() const {
+    return m_forceFinal;
 }
-void ComplexTypeEntry::setTargetType(const QString &code) {
-    m_target_type = code;
+void ComplexTypeEntry::setForceFinal(bool isFinal) {
+    m_forceFinal = isFinal;
 }
 
 QString ComplexTypeEntry::targetLangName() const {
@@ -1160,6 +1161,16 @@ bool ComplexTypeEntry::getPushUpStatics() const
 void ComplexTypeEntry::setPushUpStatics(bool newPushUpStatics)
 {
     pushUpStatics = newPushUpStatics;
+}
+
+bool ComplexTypeEntry::getNoInstance() const
+{
+    return noInstance;
+}
+
+void ComplexTypeEntry::setNoInstance(bool newNoInstance)
+{
+    noInstance = newNoInstance;
 }
 
 bool ImplementorTypeEntry::isValueOwner() const

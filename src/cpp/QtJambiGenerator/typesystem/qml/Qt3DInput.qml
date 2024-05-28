@@ -81,6 +81,9 @@ TypeSystem{
     
     ObjectType{
         name: "Qt3DInput::QMouseDevice"
+        EnumType{
+            name: "Axis"
+        }
         since: [5, 7]
     }
     

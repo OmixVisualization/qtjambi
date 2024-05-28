@@ -403,7 +403,7 @@ public final class MetaTypeUtility {
 			s.writeInt(NULL_MAGIC);
 			return;
 		}
-		Class<?> objectClass = ClassAnalyzerUtility.getClass(o);
+		Class<?> objectClass = AccessUtility.instance.getClass(o);
 		if(objectClass.isArray()) {
 			if(objectClass==byte[].class) {
 				byte[] array = (byte[])o;
@@ -516,7 +516,7 @@ public final class MetaTypeUtility {
 		if(o==null) {
 			s.append("null");
 		}else{
-			Class<?> objectClass = ClassAnalyzerUtility.getClass(o);
+			Class<?> objectClass = AccessUtility.instance.getClass(o);
 			if(objectClass.isArray()) {
 				if(objectClass==byte[].class) {
 					byte[] array = (byte[])o;
@@ -746,7 +746,7 @@ public final class MetaTypeUtility {
 		if (o == null) {
 			return QMetaType.Type.Nullptr.value();
 		} else {
-			return QMetaType.qMetaTypeId(ClassAnalyzerUtility.getClass(o));
+			return QMetaType.qMetaTypeId(AccessUtility.instance.getClass(o));
 		}
 	}
 

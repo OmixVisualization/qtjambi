@@ -48,7 +48,8 @@ struct SuperTypeInfo{
                     const QVector<ResolvedConstructorInfo>& _constructorInfos,
                     Destructor _destructor,
                     PtrOwnerFunction _ownerFunction,
-                    const std::type_info& typeId);
+                    const std::type_info& typeId,
+                  char const* _iid);
     SuperTypeInfo();
     SuperTypeInfo(  const SuperTypeInfo& other );
     SuperTypeInfo(  SuperTypeInfo&& other );
@@ -57,6 +58,7 @@ struct SuperTypeInfo{
     void swap(SuperTypeInfo& other);
     const std::type_info& typeId() const;
     const char* qtName() const;
+    const char* interfaceID() const;
     const QString& className() const;
     jclass javaClass() const;
     size_t size() const;
@@ -76,6 +78,7 @@ private:
     Destructor m_destructor;
     PtrOwnerFunction m_ownerFunction;
     std::type_info const* m_typeId;
+    char const* m_iid;
 };
 
 void swap(SuperTypeInfo& a, SuperTypeInfo& b) noexcept;
@@ -85,14 +88,14 @@ public:
     SuperTypeInfos() = default;
     SuperTypeInfos(const SuperTypeInfos&);
     SuperTypeInfos(SuperTypeInfos&&);
-    SuperTypeInfos(JNIEnv *env, jobject obj);
     ~SuperTypeInfos();
     SuperTypeInfos& operator=(const SuperTypeInfos&);
     SuperTypeInfos& operator=(SuperTypeInfos&&);
-    jobject interfaceList(JNIEnv *env) const;
-    static const SuperTypeInfos& fromClass(JNIEnv *env, jclass cls);
+    jobject interfaceInfos() const;
+    static SuperTypeInfos fromClass(JNIEnv *env, jclass cls);
 private:
-    jobject m_interfaceList;
+    SuperTypeInfos(JNIEnv *env, jobject interfaceInfos);
+    JObjectWrapper m_interfaceInfos;
     friend void clearSuperTypesAtShutdown(JNIEnv *env);
 };
 

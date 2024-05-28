@@ -32,8 +32,10 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -52,10 +54,12 @@ import io.qt.QtShortEnumerator;
 import io.qt.autotests.generated.FlagsAndEnumTest;
 import io.qt.autotests.generated.FunctionManager;
 import io.qt.autotests.generated.General;
+import io.qt.autotests.generated.UnMoccedObject;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEasingCurve;
 import io.qt.core.QEvent;
 import io.qt.core.QFileInfo;
+import io.qt.core.QInstanceMemberSignals;
 import io.qt.core.QList;
 import io.qt.core.QMetaEnum;
 import io.qt.core.QMetaMethod;
@@ -117,6 +121,30 @@ public class TestMetaProgramming extends ApplicationInitializer {
     public void testSignalAsMetaMethod() {
     	QPushButton button = new QPushButton();
     	assertEquals(button.pressed, QMetaMethod.fromSignal(button.pressed).toSignal(button));
+    }
+    
+    @Test
+    public void testExtraSignal() {
+    	QObject object = UnMoccedObject.create(6);
+    	Map<String,QMetaObject.AbstractSignal> signals = new HashMap<>();
+    	for(QMetaMethod method : object.metaObject().methods()) {
+    		switch(method.methodType()) {
+    		case Signal:
+    			QMetaObject.AbstractSignal sgn = method.toSignal(object);
+    			System.out.println(method.cppMethodSignature()+" (attributes: " + method.attributes() + ") = "+(sgn==null ? "null" : sgn.getClass().getName()));
+    			String signalName = ""+method.name();
+    			if(signals.containsKey(signalName)) {
+    				Assert.assertEquals("not the same signal instances for "+signalName, signals.get(signalName), sgn);
+    			}else {
+    				signals.put(signalName, sgn);
+    			}
+    			break;
+    			default: break;
+			}
+    	}
+    	Assert.assertTrue(signals.get("clonedSignal") instanceof QInstanceMemberSignals.Signal2Default2);
+    	Assert.assertTrue(signals.get("clonedSignal2") instanceof QInstanceMemberSignals.Signal2Default1);
+    	Assert.assertTrue(signals.get("clonedSignal3") instanceof QInstanceMemberSignals.Signal3Default1);
     }
     
     @Test
@@ -1859,7 +1887,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
 			try {
 				value = QList.of(Qt.GlobalColor.darkGreen);
 				invokableMethod.invoke(b, value);
-				Assert.fail("IllegalArgumentException expected to be thrown.");
+				Assert.fail("IllegalArgumentException expected to be thrown when invoking "+invokableMethod.cppMethodSignature()+" with argument "+QMetaType.fromObject(value).name());
 			} catch (IllegalArgumentException e) {
 				Assert.assertEquals("Wrong collection content given: io.qt.core.Qt.GlobalColor, expected: io.qt.core.QFileInfo", e.getMessage());
 			}

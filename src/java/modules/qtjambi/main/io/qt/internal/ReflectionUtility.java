@@ -30,18 +30,12 @@
 package io.qt.internal;
 
 import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandleInfo;
-import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.invoke.MethodType;
-import java.lang.invoke.SerializedLambda;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -78,16 +72,60 @@ abstract class ReflectionUtility {
 		Object invokeInterfaceDefaultMethod(Method method, Object object, Object... args) throws Throwable;
 		void setField(Object owner, Field f, Object newValue)throws Throwable;
 		Object fetchField(Object owner, Field f)throws Throwable;
-		SignalUtility.SlotInvoker getSlotInvoker(Method slot, MethodHandle slotHandle);
+		
+		public default SignalUtility.SlotInvoker getSlotInvoker(Method slot, MethodHandle _slotHandle){
+        	try {
+				MethodHandle slotHandle = _slotHandle.asSpreader(1, Object[].class, _slotHandle.type().parameterCount()-1);
+				return (instance, _arguments)->slotHandle.invoke(instance, _arguments);
+			} catch (Throwable e) {
+			}
+			return null;
+		}
+		
+		public default SignalUtility.StaticSlotInvoker getStaticSlotInvoker(Method slot, MethodHandle _slotHandle){
+        	try {
+				MethodHandle slotHandle = _slotHandle.asSpreader(0, Object[].class, _slotHandle.type().parameterCount());
+				return _arguments->slotHandle.invoke(_arguments);
+			} catch (Throwable e) {
+			}
+			return null;
+		}
+		
+		public default SignalUtility.LambdaArgsSlotInvoker getSlotInvoker(Method slot, MethodHandle _slotHandle, int lambdaArgsCount){
+			try {
+				MethodType mt = _slotHandle.type();
+				for(int i=0; i<mt.parameterCount(); ++i){
+					mt = mt.changeParameterType(i, Object.class);
+				}
+				_slotHandle = _slotHandle.asType(mt);
+				MethodHandle slotHandle = _slotHandle.asSpreader(1, Object[].class, lambdaArgsCount).asSpreader(2, Object[].class, _slotHandle.type().parameterCount() - 1 - lambdaArgsCount);
+				return (instance, args, _arguments)->slotHandle.invoke(instance, args, _arguments);
+			} catch (Throwable e) {
+			}
+			return null;
+		}
+		
+		public default SignalUtility.StaticLambdaArgsSlotInvoker getStaticSlotInvoker(Method slot, MethodHandle _slotHandle, int lambdaArgsCount){
+			try {
+				MethodType mt = _slotHandle.type();
+				for(int i=0; i<mt.parameterCount(); ++i){
+					mt = mt.changeParameterType(i, Object.class);
+				}
+				_slotHandle = _slotHandle.asType(mt);
+				MethodHandle slotHandle = _slotHandle.asSpreader(0, Object[].class, lambdaArgsCount).asSpreader(1, Object[].class, _slotHandle.type().parameterCount() - lambdaArgsCount);
+				return (args, _arguments)->slotHandle.invoke(args, _arguments);
+			} catch (Throwable e) {
+			}
+			return null;
+		}
+		
 		<T,V> BiConsumer<T,V> getFieldSetter(Field f);
 	}
 	
-	private static final Map<Class<?>, MethodHandle> lambdaSlotHandles;
 	static final MethodInvocationHandler methodInvocationHandler;
 
 	static {
 		QtJambi_LibraryUtilities.initialize();
-		lambdaSlotHandles = Collections.synchronizedMap(new HashMap<>());
 		MethodInvocationHandler _methodInvoker = null;
 		try {
 			_methodInvoker = new JavaMethodHandles();
@@ -363,11 +401,6 @@ abstract class ReflectionUtility {
 				}
 				
 				@Override
-				public SignalUtility.SlotInvoker getSlotInvoker(Method slot, MethodHandle slotHandle){
-					return null;
-				}
-
-				@Override
 				public <T,V> BiConsumer<T,V> getFieldSetter(Field f) {
 					try {
 						f.setAccessible(true);
@@ -392,7 +425,43 @@ abstract class ReflectionUtility {
 	}
 
 	static SignalUtility.SlotInvoker getSlotInvoker(Method slot, MethodHandle slotHandle){
-		return methodInvocationHandler.getSlotInvoker(slot, slotHandle);
+		if(slotHandle==null) {
+        	try {
+				slotHandle = getMethodHandle(slot);
+			} catch (Exception e) {
+			}
+        }
+		return slotHandle==null ? null : methodInvocationHandler.getSlotInvoker(slot, slotHandle);
+	}
+	
+	static SignalUtility.StaticSlotInvoker getStaticSlotInvoker(Method slot, MethodHandle slotHandle){
+		if(slotHandle==null) {
+        	try {
+				slotHandle = getMethodHandle(slot);
+			} catch (Exception e) {
+			}
+        }
+		return slotHandle==null ? null : methodInvocationHandler.getStaticSlotInvoker(slot, slotHandle);
+	}
+	
+	static SignalUtility.LambdaArgsSlotInvoker getSlotInvoker(Method slot, MethodHandle slotHandle, int lambdaArgsCount){
+		if(slotHandle==null) {
+        	try {
+				slotHandle = getMethodHandle(slot);
+			} catch (Exception e) {
+			}
+        }
+		return slotHandle==null ? null : methodInvocationHandler.getSlotInvoker(slot, slotHandle, lambdaArgsCount);
+	}
+	
+	static SignalUtility.StaticLambdaArgsSlotInvoker getStaticSlotInvoker(Method slot, MethodHandle slotHandle, int lambdaArgsCount){
+		if(slotHandle==null) {
+        	try {
+				slotHandle = getMethodHandle(slot);
+			} catch (Exception e) {
+			}
+        }
+		return slotHandle==null ? null : methodInvocationHandler.getStaticSlotInvoker(slot, slotHandle, lambdaArgsCount);
 	}
 	
 	static <A,B> Function<A,B> functionFromMethod(Method method){
@@ -479,7 +548,7 @@ abstract class ReflectionUtility {
 	@SuppressWarnings("unchecked")
 	static <V> V readField(Object owner, Class<?> declaringClass, String fieldName, Class<V> fieldType) {
 		if(declaringClass==null)
-			declaringClass = ClassAnalyzerUtility.getClass(owner);
+			declaringClass = AccessUtility.instance.getClass(owner);
 		try {
 			Field field = null;
 			while(declaringClass!=null) {
@@ -523,40 +592,6 @@ abstract class ReflectionUtility {
 	}
 	
 	private static native Object readField(Object owner, Field field, boolean isStatic);
-
-	static MethodHandle lambdaSlotHandles(Class<?> slotClass, SerializedLambda serializedLambda) {
-		return lambdaSlotHandles.computeIfAbsent(slotClass, cls -> {
-			try {
-				Class<?> implClass = slotClass.getClassLoader()
-						.loadClass(serializedLambda.getImplClass().replace('/', '.'));
-				Lookup lookup = ReflectionUtility.privateLookup(implClass);
-				if (serializedLambda.getImplMethodKind() == MethodHandleInfo.REF_invokeVirtual
-						|| serializedLambda.getImplMethodKind() == MethodHandleInfo.REF_invokeInterface) {
-					return lookup.findVirtual(implClass, serializedLambda.getImplMethodName(),
-							MethodType.fromMethodDescriptorString(serializedLambda.getImplMethodSignature(),
-									implClass.getClassLoader()));
-				} else if (serializedLambda.getImplMethodKind() == MethodHandleInfo.REF_invokeSpecial) {
-					return lookup.findSpecial(implClass, serializedLambda.getImplMethodName(),
-							MethodType.fromMethodDescriptorString(serializedLambda.getImplMethodSignature(),
-									implClass.getClassLoader()),
-							implClass);
-				} else if (serializedLambda.getImplMethodKind() == MethodHandleInfo.REF_invokeStatic) {
-					return lookup.findStatic(implClass, serializedLambda.getImplMethodName(),
-							MethodType.fromMethodDescriptorString(serializedLambda.getImplMethodSignature(),
-									implClass.getClassLoader()));
-				} else if (serializedLambda.getImplMethodKind() == MethodHandleInfo.REF_newInvokeSpecial) {
-					return lookup.findConstructor(implClass,
-							MethodType.fromMethodDescriptorString(serializedLambda.getImplMethodSignature(),
-									implClass.getClassLoader()));
-				}
-			} catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | IllegalArgumentException
-					| TypeNotPresentException e) {
-				java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.WARNING,
-						"Exception caught while analyzing slot", e);
-			}
-			return null;
-		});
-	}
 
 	static native java.lang.invoke.MethodHandles.Lookup privateLookup(Class<?> targetClass);
 	

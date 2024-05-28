@@ -53,6 +53,10 @@ QT_WARNING_DISABLE_DEPRECATED
 
 #include "qtjambi_cast.h"
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 6, 0)
+#define qAsConst std::as_const
+#endif
+
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 QT_WARNING_DISABLE_GCC("-Wdeprecated-declarations")
 QT_WARNING_DISABLE_DEPRECATED
@@ -672,6 +676,9 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
 
 #if QT_VERSION >= 0x050C00
             registerSpecialTypeInfo<QCborValueRef>("QCborValueRef", "io/qt/core/QCborValue");
+#if QT_VERSION >= 0x060000
+            registerSpecialTypeInfo<QCborValueConstRef>("QCborValueConstRef", "io/qt/core/QCborValue");
+#endif
 #endif
             {
                 registerSpecialTypeInfo<QUrl::FormattingOptions>("QUrlTwoFlags<QUrl::UrlFormattingOption,QUrl::ComponentFormattingOption>", "io/qt/core/QUrl$FormattingOptions");

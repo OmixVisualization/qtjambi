@@ -86,18 +86,26 @@ public class QStandardItemEditorCreator<T extends QWidget> implements QItemEdito
 	    	}else {
 	    		metaObject = QMetaObject.forType(implClass);
 	    	}
-        }else if(serializedLambda.getImplMethodKind()==MethodHandleInfo.REF_newInvokeSpecial){
-	        try {
-	        	metaObject = QMetaObject.forType(QtJambi_LibraryUtilities.internal.getClass(constructor).getClassLoader().loadClass(serializedLambda.getImplClass().replace('/', '.')));
-			} catch (ClassNotFoundException e) {
-				throw new RuntimeException(e);
-			}
         }else{
-        	MethodType methodType = MethodType.fromMethodDescriptorString(serializedLambda.getImplMethodSignature(), QtJambi_LibraryUtilities.internal.getClass(constructor).getClassLoader());
-        	metaObject = QMetaObject.forType(methodType.returnType());
+        	metaObject = LambdaTools.metaObjectFromLambda(serializedLambda, constructor);
         }
 		this.valuePropertyName = new QByteArray(metaObject.userProperty().name());
         this.constructorHandle = constructor;
+    }
+    
+    private static class LambdaTools{
+    	static <T> QMetaObject metaObjectFromLambda(SerializedLambda serializedLambda, Factory<T> constructor) {
+    		if(serializedLambda.getImplMethodKind()==MethodHandleInfo.REF_newInvokeSpecial){
+    	        try {
+    	        	return QMetaObject.forType(QtJambi_LibraryUtilities.internal.getClass(constructor).getClassLoader().loadClass(serializedLambda.getImplClass().replace('/', '.')));
+    			} catch (ClassNotFoundException e) {
+    				throw new RuntimeException(e);
+    			}
+            }else{
+            	MethodType methodType = MethodType.fromMethodDescriptorString(serializedLambda.getImplMethodSignature(), QtJambi_LibraryUtilities.internal.getClass(constructor).getClassLoader());
+            	return QMetaObject.forType(methodType.returnType());
+            }
+    	}
     }
     
     public QStandardItemEditorCreator(Class<T> widgetType) {

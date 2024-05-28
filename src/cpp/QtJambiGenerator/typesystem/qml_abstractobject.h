@@ -130,6 +130,7 @@ public:
         HashCode,
         ToString,
         Clone,
+        CommentIntro,
         Comment,
         End = 1024
     };

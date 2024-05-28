@@ -34,6 +34,7 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import io.qt.InternalAccess.CallerContext;
 import io.qt.core.QCoreApplication;
@@ -45,10 +46,8 @@ import io.qt.core.QVersionNumber;
 */
 public final class QtUtilities {
 	
-	private static final Map<String, Boolean> initializedPackages;
+	private static final Map<String, Boolean> initializedPackages = new HashMap<>(Collections.singletonMap("io.qt.internal", Boolean.TRUE));
 	static {
-		initializedPackages = Collections.synchronizedMap(new HashMap<>());
-		initializedPackages.put("io.qt.internal", Boolean.TRUE);
 		initializePackage("io.qt.internal");
 	}
 	
@@ -75,51 +74,51 @@ public final class QtUtilities {
         ProvideOnly
     };
 	
-    public static boolean isAvailableQtLibrary(String library) {
+    public static boolean isAvailableQtLibrary(@NonNull String library) {
         return Utility.isAvailableQtLibrary(Utility.callerClassProvider().get(), library);
     }
     
-    public static boolean isAvailableUtilityLibrary(String library) {
+    public static boolean isAvailableUtilityLibrary(@NonNull String library) {
     	return isAvailableUtilityLibrary(library, null);
     }
     
-    public static boolean isAvailableUtilityLibrary(String library, String versionString) {
+    public static boolean isAvailableUtilityLibrary(@NonNull String library, @NonNull String versionString) {
         return Utility.isAvailableLibrary(library, versionString);
     }
     
-    public static void loadQtLibrary(String library) {
+    public static void loadQtLibrary(@NonNull String library) {
     	Utility.loadQtLibrary(Utility.callerClassProvider().get(), library, LibraryRequirementMode.Mandatory);
     }
     
-    public static void loadQtLibrary(String library, LibraryRequirementMode mode, String...platforms) {
+    public static void loadQtLibrary(@NonNull String library, @NonNull LibraryRequirementMode mode, @NonNull String @NonNull...platforms) {
     	Utility.loadQtLibrary(Utility.callerClassProvider().get(), library, mode, platforms);
     }
 
-    public static void loadUtilityLibrary(String library) {
+    public static void loadUtilityLibrary(@NonNull String library) {
     	Utility.loadUtilityLibrary(library, null, LibraryRequirementMode.Mandatory);
     }
     
-    public static void loadUtilityLibrary(String library, LibraryRequirementMode mode, String...platforms) {
+    public static void loadUtilityLibrary(@NonNull String library, @NonNull LibraryRequirementMode mode, @NonNull String @NonNull...platforms) {
     	Utility.loadUtilityLibrary(library, null, mode, platforms);
     }
     
-    public static void loadUtilityLibrary(String library, String version) {
+    public static void loadUtilityLibrary(@NonNull String library, @NonNull String version) {
     	Utility.loadUtilityLibrary(library, version, LibraryRequirementMode.Mandatory);
     }
     
-    public static void loadUtilityLibrary(String library, String version, LibraryRequirementMode mode, String...platforms) {
+    public static void loadUtilityLibrary(@NonNull String library, @NonNull String version, @NonNull LibraryRequirementMode mode, @NonNull String @NonNull...platforms) {
     	Utility.loadUtilityLibrary(library, version, mode);
     }
 
-    public static void loadQtJambiLibrary(String library) {
+    public static void loadQtJambiLibrary(@NonNull String library) {
     	Utility.loadQtJambiLibrary(Utility.callerClassProvider().get(), library);
     }
     
-    public static void loadJambiLibrary(String library) {
+    public static void loadJambiLibrary(@NonNull String library) {
     	Utility.loadJambiLibrary(Utility.callerClassProvider().get(), library);
     }
     
-    public static void loadLibrary(String lib) {
+    public static void loadLibrary(@NonNull String lib) {
     	Utility.loadLibrary(lib);
     }
     
@@ -128,7 +127,7 @@ public final class QtUtilities {
      * @see io.qt.QtAsGadget
      * @see io.qt.core.QMetaObject#forType(Class)
      */
-    public static void useAsGadget(Class<?> clazz) {
+    public static void useAsGadget(@Nullable Class<?> clazz) {
     	Utility.useAsGadget(clazz);
     }
     
@@ -137,11 +136,11 @@ public final class QtUtilities {
      * @see io.qt.QtAsGadget
      * @see io.qt.core.QMetaObject#forType(Class)
      */
-    public static void usePackageContentAsGadgets(String _package) {
+    public static void usePackageContentAsGadgets(@NonNull String _package) {
     	Utility.usePackageContentAsGadgets(_package);
     }
 
-    public static File jambiDeploymentDir() {
+    public static @Nullable File jambiDeploymentDir() {
         return Utility.jambiDeploymentDir();
     }
     
@@ -150,94 +149,98 @@ public final class QtUtilities {
      * @return
      */
     @Deprecated
-    public static File jambiTempDir() {
+    public static @Nullable File jambiTempDir() {
         return Utility.jambiDeploymentDir();
     }
     
-    public static boolean initializePackage(String packagePath){
+    public static boolean initializePackage(@NonNull String packagePath){
     	Class<?> callerClass = Utility.callerClassProvider().get();
     	if(callerClass==null)
     		callerClass = QtUtilities.class;
     	return initializePackage(callerClass.getClassLoader(), packagePath);
     }
     
-    public static boolean initializePackage(java.lang.Package pkg){
+    public static boolean initializePackage(java.lang.@StrictNonNull Package pkg){
     	Class<?> callerClass = Utility.callerClassProvider().get();
     	if(callerClass==null)
     		callerClass = QtUtilities.class;
     	return initializePackage(callerClass.getClassLoader(), pkg);
     }
     
-	private static boolean initializePackage(ClassLoader classLoader, java.lang.Package pkg) {
+	private static boolean initializePackage(@Nullable ClassLoader classLoader, java.lang.@StrictNonNull Package pkg) {
 		return pkg != null && initializePackage(classLoader, pkg.getName());
 	}
 
 	@NativeAccess
-	public static boolean initializePackage(java.lang.Class<?> cls) {
+	public static boolean initializePackage(java.lang.@Nullable Class<?> cls) {
 		return cls != null && cls.getPackage() != null && initializePackage(cls.getClassLoader(), cls.getPackage().getName());
 	}
 	
-	private static boolean initializePackage(ClassLoader classLoader, String packagePath) {
+	private static boolean initializePackage(@Nullable ClassLoader classLoader, @NonNull String packagePath) {
 		synchronized (initializedPackages) {
 			Boolean b = initializedPackages.get(packagePath);
 			if (b != null) {
 				return b;
 			}
-			Class<?> cls;
+		}
+		Class<?> cls;
+		try {
 			try {
-				try {
-					cls = Class.forName(packagePath + ".QtJambi_LibraryUtilities");
-				} catch (ClassNotFoundException e) {
-					if(classLoader!=null && classLoader!=QtUtilities.class.getClassLoader()) {
-						cls = Class.forName(packagePath + ".QtJambi_LibraryUtilities", true, classLoader);
-					}else {
-						throw e;
-					}
+				cls = Class.forName(packagePath + ".QtJambi_LibraryUtilities");
+			} catch (ClassNotFoundException e) {
+				if(classLoader!=null && classLoader!=QtUtilities.class.getClassLoader()) {
+					cls = Class.forName(packagePath + ".QtJambi_LibraryUtilities", true, classLoader);
+				}else {
+					throw e;
 				}
-			} catch (NoClassDefFoundError t) {
-				if (t.getCause() instanceof Error && t.getCause() != t)
-					throw (Error) t.getCause();
-				else if (t.getCause() instanceof RuntimeException)
-					throw (RuntimeException) t.getCause();
-				throw t;
-			} catch (ExceptionInInitializerError t) {
-				if (t.getCause() instanceof Error && t.getCause() != t)
-					throw (Error) t.getCause();
-				else if (t.getCause() instanceof RuntimeException)
-					throw (RuntimeException) t.getCause();
-				throw t;
-			} catch (ClassNotFoundException e1) {
+			}
+		} catch (NoClassDefFoundError t) {
+			if (t.getCause() instanceof Error && t.getCause() != t)
+				throw (Error) t.getCause();
+			else if (t.getCause() instanceof RuntimeException)
+				throw (RuntimeException) t.getCause();
+			throw t;
+		} catch (ExceptionInInitializerError t) {
+			if (t.getCause() instanceof Error && t.getCause() != t)
+				throw (Error) t.getCause();
+			else if (t.getCause() instanceof RuntimeException)
+				throw (RuntimeException) t.getCause();
+			throw t;
+		} catch (ClassNotFoundException e1) {
+			synchronized (initializedPackages) {
 				initializedPackages.put(packagePath, Boolean.FALSE);
-				return false;
 			}
-			try {
-				Method initialize = cls.getDeclaredMethod("initialize");
-				QtJambi_LibraryUtilities.internal.invokeMethod(initialize, null);
+			return false;
+		}
+		try {
+			Method initialize = cls.getDeclaredMethod("initialize");
+			QtJambi_LibraryUtilities.internal.invokeMethod(initialize, null);
+			synchronized (initializedPackages) {
 				initializedPackages.put(packagePath, Boolean.TRUE);
-				return true;
-			} catch (NoSuchMethodException | NoSuchMethodError t) {
-				return true;
-			} catch (NoClassDefFoundError t) {
-				if (t.getCause() instanceof Error && t.getCause() != t)
-					throw (Error) t.getCause();
-				else if (t.getCause() instanceof RuntimeException)
-					throw (RuntimeException) t.getCause();
-				throw t;
-			} catch (RuntimeException | Error t) {
-				throw t;
-			} catch (Throwable t) {
-				java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.WARNING,
-						"initializePackage", t);
-				throw new RuntimeException(t);
 			}
+			return true;
+		} catch (NoSuchMethodException | NoSuchMethodError t) {
+			return true;
+		} catch (NoClassDefFoundError t) {
+			if (t.getCause() instanceof Error && t.getCause() != t)
+				throw (Error) t.getCause();
+			else if (t.getCause() instanceof RuntimeException)
+				throw (RuntimeException) t.getCause();
+			throw t;
+		} catch (RuntimeException | Error t) {
+			throw t;
+		} catch (Throwable t) {
+			java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.WARNING,
+					"initializePackage", t);
+			throw new RuntimeException(t);
 		}
 	}
 	
-    public static QMetaObject.DisposedSignal getSignalOnDispose(QtObjectInterface object) {
+    public static QMetaObject.@NonNull DisposedSignal getSignalOnDispose(@NonNull QtObjectInterface object) {
     	return Utility.getSignalOnDispose(object, true);
     }
     
-    public static void initializeNativeObject(QtObjectInterface object) {
+    public static void initializeNativeObject(@NonNull QtObjectInterface object) {
     	Class<?> cls = QtJambi_LibraryUtilities.internal.getClass(object);
     	CallerContext callerInfo = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
     	if (callerInfo.declaringClass == null || !callerInfo.declaringClass.isAssignableFrom(cls)
@@ -251,7 +254,7 @@ public final class QtUtilities {
     	Utility.initializeNativeObject(callerInfo.declaringClass, object, Collections.emptyMap());
     }
     
-    public static void initializeNativeObject(QtObjectInterface object, QtArgument.Stream arguments) {
+    public static void initializeNativeObject(@NonNull QtObjectInterface object, QtArgument.@NonNull Stream arguments) {
     	Class<?> cls = QtJambi_LibraryUtilities.internal.getClass(object);
     	CallerContext callerInfo = QtJambi_LibraryUtilities.internal.callerContextProvider().get();
     	if (callerInfo.declaringClass == null || !callerInfo.declaringClass.isAssignableFrom(cls)
@@ -296,19 +299,83 @@ public final class QtUtilities {
     public interface Supplier<T> extends java.util.function.Supplier<T>, java.io.Serializable { }
     
     /**
+     * Equivalent to {@link java.util.function.Consumer} with three arguments.
+     */
+    @FunctionalInterface
+    public static interface Consumer3<A,B,C>{
+        public void accept(A a, B b, C c);
+    }
+    
+    /**
+     * Equivalent to {@link java.util.function.Consumer} with four arguments.
+     */
+    @FunctionalInterface
+    public static interface Consumer4<A,B,C,D>{
+        public void accept(A a, B b, C c, D d);
+    }
+    
+    /**
+     * Equivalent to {@link java.util.function.Consumer} with five arguments.
+     */
+    @FunctionalInterface
+    public static interface Consumer5<A,B,C,D,E>{
+        public void accept(A a, B b, C c, D d, E e);
+    }
+    
+    /**
+     * Equivalent to {@link java.util.function.Consumer} with six arguments.
+     */
+    @FunctionalInterface
+    public static interface Consumer6<A,B,C,D,E,F>{
+        public void accept(A a, B b, C c, D d, E e, F f);
+    }
+    
+    /**
+     * Equivalent to {@link java.util.function.Consumer} with seven arguments.
+     */
+    @FunctionalInterface
+    public static interface Consumer7<A,B,C,D,E,F,G>{
+        public void accept(A a, B b, C c, D d, E e, F f, G g);
+    }
+    
+    /**
+     * Equivalent to {@link java.util.function.Consumer} with eight arguments.
+     */
+    @FunctionalInterface
+    public static interface Consumer8<A,B,C,D,E,F,G,H>{
+        public void accept(A a, B b, C c, D d, E e, F f, G g, H h);
+    }
+    
+    /**
+     * Equivalent to {@link java.util.function.Consumer} with nine arguments.
+     */
+    @FunctionalInterface
+    public static interface Consumer9<A,B,C,D,E,F,G,H,I>{
+        public void accept(A a, B b, C c, D d, E e, F f, G g, H h, I i);
+    }
+    
+    /**
+     * Equivalent to {@link java.util.function.Consumer} with ten arguments.
+     */
+    @FunctionalInterface
+    public static interface Consumer10<A,B,C,D,E,F,G,H,I,J>{
+        public void accept(A a, B b, C c, D d, E e, F f, G g, H h, I i, J j);
+    }
+    
+    /**
      * This function sets the value of the environment variable named varName.
      * @see https://doc.qt.io/qt/qtglobal.html#qputenv
      * @param varName
      * @param value
      */
-    public static native boolean putenv(String varName, String value);
+    public static native boolean putenv(@NonNull String varName, @NonNull String value);
 
     /**
      * This function deletes the variable varName from the environment.
      * @see https://doc.qt.io/qt/qtglobal.html#qunsetenv
      * @param varName
      */
-    public static native boolean unsetenv(String varName);
+    public static native boolean unsetenv(@NonNull String varName);
     
     /**
      * This function gets the value of the environment variable named varName.
@@ -316,7 +383,7 @@ public final class QtUtilities {
      * @param varName
      * @return value
      */
-    public static native String getenv(String varName);
+    public static native @Nullable String getenv(@NonNull String varName);
     
     /**
      * This method allows to reinstall the QtJambi event notify callback as the last callback.
@@ -344,7 +411,7 @@ public final class QtUtilities {
      * Return the version of QtJambi
      * @return qtjambi version
      */
-    public static QVersionNumber qtjambiVersion() {
+    public static @NonNull QVersionNumber qtjambiVersion() {
     	return new QVersionNumber(Utility.majorVersion(), Utility.minorVersion(), Utility.qtjambiPatchVersion());
     }
     
@@ -358,9 +425,22 @@ public final class QtUtilities {
      * Checks if the current thread is the given object's thread and throws QThreadAffinityException otherwise.
      * @throws QThreadAffinityException
      */
-    public static void threadCheck(io.qt.core.QObject object) throws QThreadAffinityException{
+    public static void threadCheck(io.qt.core.@Nullable QObject object) throws QThreadAffinityException{
     	threadCheck(QtJambi_LibraryUtilities.internal.checkedNativeId(object));
     }
     
     private static native void threadCheck(long objectId) throws QThreadAffinityException;
+    
+    /**
+     * Reduces the number of native-to-java conversions by pre-filtering the events according to the given event types.
+     * @param eventFilter
+     * @param eventType
+     * @param eventTypes
+     * @return selective event filter
+     */
+    public static io.qt.core.@NonNull QObject asSelectiveEventFilter(io.qt.core.@StrictNonNull QObject eventFilter, io.qt.core.QEvent.@NonNull Type eventType, io.qt.core.QEvent.@NonNull Type @NonNull... eventTypes) {
+    	return asSelectiveEventFilter(QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(eventFilter)), eventType, eventTypes);
+    }
+    
+    private static native io.qt.core.@NonNull QObject asSelectiveEventFilter(long objectId, io.qt.core.QEvent.@NonNull Type eventType, io.qt.core.QEvent.@NonNull Type @NonNull... eventTypes);
 }

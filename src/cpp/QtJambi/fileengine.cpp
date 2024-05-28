@@ -72,6 +72,13 @@ private:
 
 class QJarEntryEngine final : public QAbstractFileEngine, public QClassPathEntry {
 public:
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 1)
+    typedef QFileDevice::FileTime FileTime;
+    static constexpr FileTime BirthTime = FileTime::FileBirthTime;
+    static constexpr FileTime AccessTime = FileTime::FileAccessTime;
+    static constexpr FileTime MetadataChangeTime = FileTime::FileMetadataChangeTime;
+    static constexpr FileTime ModificationTime = FileTime::FileModificationTime;
+#endif
     QJarEntryEngine(JNIEnv* env, jobject myJarFile, const QString& fileName, bool isDirectory, const QString& classPathEntryFileName, const QString& prefix);
     ~QJarEntryEngine() override;
 
@@ -793,6 +800,15 @@ private:
 class QClassPathEngine final : public QAbstractFileEngine {
 
 public:
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    typedef QFile::FileTime FileTime;
+    typedef IteratorUniquePtr IteratorPtr;
+#else
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 1)
+    typedef QFileDevice::FileTime FileTime;
+#endif
+    typedef Iterator* IteratorPtr;
+#endif
     QClassPathEngine(QStringList&& resourceEntries);
 
     ~QClassPathEngine() override;
@@ -861,7 +877,11 @@ public:
 
     qint64 write(const char *data, qint64 len) override;
 
-    Iterator* beginEntryList(QDir::Filters filters, const QStringList& nameFilters) override;
+    IteratorPtr beginEntryList(
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+        const QString &path,
+#endif
+        QDir::Filters filters, const QStringList& nameFilters) override;
 
     bool isValid(){return !m_engines.isEmpty();}
 private:
@@ -879,22 +899,47 @@ private:
 
 class QClassPathEngineIterator final : public QAbstractFileEngineIterator{
 public:
-    QClassPathEngineIterator(const QStringList& entries, QDir::Filters filters, const QStringList &nameFilters);
+    QClassPathEngineIterator(
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+        const QString &path,
+#endif
+        const QStringList& entries, QDir::Filters filters, const QStringList &nameFilters);
     ~QClassPathEngineIterator() override = default;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    bool advance() override;
+#else
     QString next() override;
     bool hasNext() const override;
+#endif
     QString currentFileName() const override;
     QListIterator<QString> m_iterator;
     QString m_current;
 };
 
-QClassPathEngineIterator::QClassPathEngineIterator(const QStringList& entries, QDir::Filters filters, const QStringList &nameFilters)
-    : QAbstractFileEngineIterator(filters, nameFilters),
+QClassPathEngineIterator::QClassPathEngineIterator(
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    const QString &path,
+#endif
+    const QStringList& entries, QDir::Filters filters, const QStringList &nameFilters)
+    : QAbstractFileEngineIterator(
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+        path,
+#endif
+        filters, nameFilters),
       m_iterator(entries),
       m_current(m_iterator.hasNext() ? m_iterator.peekNext() : "")
 {
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+bool QClassPathEngineIterator::advance(){
+    bool hasNext = m_iterator.hasNext();
+    if(hasNext){
+        m_current = m_iterator.next();
+    }
+    return hasNext;
+}
+#else
 QString QClassPathEngineIterator::next() {
     m_current = m_iterator.peekNext();
     return m_iterator.next();
@@ -903,6 +948,7 @@ QString QClassPathEngineIterator::next() {
 bool QClassPathEngineIterator::hasNext() const{
     return m_iterator.hasNext();
 }
+#endif
 
 QString QClassPathEngineIterator::currentFileName() const{
     return m_current;
@@ -1319,7 +1365,11 @@ qint64 QClassPathEngine::write(const char *data, qint64 maxlen) {
     return -1;
 }
 
-QAbstractFileEngineIterator* QClassPathEngine::beginEntryList(QDir::Filters filters, const QStringList& nameFilters) {
+QClassPathEngine::IteratorPtr QClassPathEngine::beginEntryList(
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    const QString &path,
+#endif
+    QDir::Filters filters, const QStringList& nameFilters) {
     QList<QAbstractFileEngine*> engines;
     {
         QMutexLocker locker(&m_mutex);
@@ -1330,7 +1380,12 @@ QAbstractFileEngineIterator* QClassPathEngine::beginEntryList(QDir::Filters filt
         entries << engine->entryList(filters, nameFilters);
     }
     entries.removeDuplicates();
-    return new QClassPathEngineIterator(entries, filters, nameFilters);
+    QClassPathEngineIterator* iter = new QClassPathEngineIterator(
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+        path,
+#endif
+        entries, filters, nameFilters);
+    return QClassPathEngine::IteratorPtr(iter);
 }
 
 bool QClassPathEngine::addFromPath(JNIEnv* env, jobject url, const QString& fileName, const QString& prefix) {
@@ -1531,7 +1586,12 @@ bool AccessResource::needsClassPathEngine(const QString &fileName, QStringList& 
 class QClassPathFileEngineHandler: public QAbstractFileEngineHandler
 {
 public:
-    QAbstractFileEngine *create(const QString &fileName) const override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
+    typedef std::unique_ptr<QAbstractFileEngine> QAbstractFileEnginePointer;
+#else
+    typedef QAbstractFileEngine* QAbstractFileEnginePointer;
+#endif
+    QAbstractFileEnginePointer create(const QString &fileName) const override;
 private:
     QClassPathFileEngineHandler() = default;
     ~QClassPathFileEngineHandler() override = default;
@@ -1541,7 +1601,7 @@ private:
 
 QClassPathFileEngineHandler QClassPathFileEngineHandler::INSTANCE;
 
-QAbstractFileEngine *QClassPathFileEngineHandler::create(const QString &fileName) const
+QClassPathFileEngineHandler::QAbstractFileEnginePointer QClassPathFileEngineHandler::create(const QString &fileName) const
 {
     QClassPathEngine *rv = nullptr;
     bool mightBeResource = false;
@@ -1558,5 +1618,5 @@ QAbstractFileEngine *QClassPathFileEngineHandler::create(const QString &fileName
             }
         }
     }
-    return rv;
+    return QAbstractFileEnginePointer(rv);
 }

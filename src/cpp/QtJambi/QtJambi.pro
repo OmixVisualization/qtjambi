@@ -58,7 +58,6 @@ SOURCES += \
     javainvalidate.cpp \
     javastrings.cpp \
     jna.cpp \
-    jni_classanalyser.cpp \
     jni_deployer.cpp \
     jni_enum.cpp \
     jni_metaobjecttools.cpp \

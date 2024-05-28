@@ -43,8 +43,8 @@ class FunctorBasePrivate : public QSharedData{
 public:
     FunctorBasePrivate(const std::type_info& typeId, FunctionalBase& functional)
         : QSharedData(),
-          m_method(functional.__shell()->javaMethod(typeId, 0)),
-          m_link(static_cast<const QtJambiShellImpl*>(functional.__shell())->link()),
+          m_method(QtJambiShellImpl::javaMethod(&functional, typeId, 0)),
+          m_link(QtJambiShellImpl::link(&functional)),
           m_typeId(typeId)
     {
         if(0==functional.m_ref++){
@@ -100,7 +100,7 @@ QtJambiShell* FunctorBase::shell() const
 {
     if(QSharedPointer<QtJambiLink> link = d->m_link.toStrongRef()){
         void* ptr = link->pointer();
-        return reinterpret_cast<FunctionalBase*>(ptr)->__shell();
+        return QtJambiShellImpl::get(reinterpret_cast<FunctionalBase*>(ptr));
     }
     return nullptr;
 }

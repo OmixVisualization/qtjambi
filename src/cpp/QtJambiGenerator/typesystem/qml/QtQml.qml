@@ -2228,7 +2228,6 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: enum 'QQmlModuleImportSpecialVersions' does not have a type entry or is not an enum"}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QJSValue."}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QQmlContext::PropertyPair."}
-    SuppressedWarning{text: "WARNING(CppImplGenerator) :: protected function '*' in final class '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: visibility of function '*' modified in class '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: hiding of function '*' in class '*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping field 'QQmlListProperty::*' with unmatched type 'QQmlListProperty::*'"}

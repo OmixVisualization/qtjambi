@@ -102,7 +102,7 @@ struct QTJAMBI_EXPORT FunctionInfo{
 };
 
 struct QTJAMBI_EXPORT ConstructorInfo{
-    typedef void (*Constructor)(void*, JNIEnv*, jobject, jvalue*, bool);
+    typedef void (*Constructor)(void*, JNIEnv*, jobject, jvalue*, bool, bool, bool);
     ConstructorInfo();
     ConstructorInfo(const ConstructorInfo& other);
     ConstructorInfo(Constructor _constructorFunction, const char *_signature);
@@ -309,7 +309,7 @@ QTJAMBI_EXPORT void registerMetaObject(const std::type_info& typeId, const QMeta
                                        ParameterInfoProvider parameterTypeInfoProvider,
                                        QMetaMethodRenamer methodRenamer = nullptr);
 QTJAMBI_EXPORT void registerFunctionInfos(const std::type_info& typeId, std::initializer_list<FunctionInfo> virtualFunctions);
-QTJAMBI_EXPORT void registerConstructorInfos(const std::type_info& typeId, Destructor destructor, std::initializer_list<ConstructorInfo> constructors);
+QTJAMBI_EXPORT void registerConstructorInfos(const std::type_info& typeId, uint returnScopes, Destructor destructor, std::initializer_list<ConstructorInfo> constructors);
 QTJAMBI_EXPORT void registerMediaControlInfo(const std::type_info& typeId, const char *media_control_iid);
 QTJAMBI_EXPORT void registerMetaTypeID(const std::type_info& typeId, int qtMetaType);
 
@@ -619,7 +619,10 @@ struct PolymorphicTypeInfoSupplier{
     static const std::type_info* value(const void *ptr) {
         const T* object = reinterpret_cast<const T*>(ptr);
         try{
-            return &typeid(*object);
+            const std::type_info* typeId = &typeid(*object);
+            if(!typeId)
+                typeId = &typeid(T);
+            return typeId;
         }catch(const std::bad_typeid&){
             return nullptr;
         }catch(...){
@@ -868,7 +871,7 @@ const std::type_info& registerInterfaceValueTypeInfo(const char *qt_name, const 
 }
 
 template<typename T,typename Tshell>
-const std::type_info& registerFunctionalTypeInfo(const char *qt_name, const char *java_name,
+const std::type_info& registerFunctionalTypeInfo(const char *qt_name, const char *java_name, bool needsReturnScope,
                                                  PtrDeleterFunction deleter,
                                                  Destructor destructor, std::initializer_list<ConstructorInfo> constructors,
                                                  std::initializer_list<FunctionInfo> virtualFunctions)
@@ -880,7 +883,7 @@ const std::type_info& registerFunctionalTypeInfo(const char *qt_name, const char
     registerMetaTypeID(id, qRegisterMetaType<T>(qt_name));
     registerSizeOfShell(id, sizeof(Tshell));
     registerFunctionalResolver(id, &Tshell::resolveFunctional);
-    registerConstructorInfos(id, destructor, constructors);
+    registerConstructorInfos(id, needsReturnScope ? 1 : 0, destructor, constructors);
     registerDeleter(id, deleter);
     registerFunctionInfos(id, virtualFunctions);
     return id;

@@ -1185,8 +1185,8 @@ void XmlTypeSystemReaderPrivate::parseAttributesOfComplexType(const QDomElement 
     }
     ctype->setPPCondition(attributeValue(attributes.removeNamedItem("pp-condition")));
     QString targetType = attributeValue(attributes.removeNamedItem("target-type"));
-    if (!targetType.isEmpty()){
-        ctype->setTargetType(targetType);
+    if (targetType=="final class"){
+        ctype->setForceFinal(true);
     }
     if (convertBoolean(attributeValue(attributes.removeNamedItem("disable-native-id-usage"), "no"), "disable-native-id-usage", false))
         ctype->disableNativeIdUsage();
@@ -1244,8 +1244,6 @@ void XmlTypeSystemReaderPrivate::parseAttributesOfComplexType(const QDomElement 
     ctype->setDefaultSuperclass(defaultSuperclass);
     ctype->setImplements(implements);
     if(ctype->designatedInterface()){
-        if (!targetType.isEmpty())
-            ctype->designatedInterface()->setTargetType(targetType);
         ctype->designatedInterface()->setGenericClass(ctype->isGenericClass());
         ctype->designatedInterface()->setTargetTypeSystem(m_defaultPackage);
         ctype->designatedInterface()->setTargetLangPackage(package);
@@ -1970,9 +1968,9 @@ TemplateInstantiation XmlTypeSystemReaderPrivate::parseInstantiation(const QDomE
                             if(parameter.isEmpty()){
                                 TypesystemException::raise(QString("Attribute 'type' or 'parameter' required in tag <%1> in line %2").arg(childElement.localName()).arg(childElement.lineNumber()));
                             }
-                            mod.arguments << Parameter{type,parameter,extends,implicit};
+                            mod.arguments << Parameter{type,parameter,extends,implicit,{}};
                         }else{
-                            mod.arguments << Parameter{type,{},{},implicit};
+                            mod.arguments << Parameter{type,{},{},implicit,{}};
                         }
                         if(attributes.count()){
                             TypesystemException::raise(QString("Unexpected attribute '%2' of tag <%1> in line %3").arg(childElement.localName()).arg(attributes.item(0).localName()).arg(childElement.lineNumber()));

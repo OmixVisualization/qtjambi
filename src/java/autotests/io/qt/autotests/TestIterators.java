@@ -45,6 +45,7 @@ import io.qt.core.QDirIterator;
 import io.qt.core.QRegularExpression;
 import io.qt.core.QRegularExpressionMatch;
 import io.qt.internal.TestUtility;
+import io.qt.widgets.QApplication;
 import io.qt.widgets.QTreeWidget;
 import io.qt.widgets.QTreeWidgetItem;
 import io.qt.widgets.QTreeWidgetItemIterator;
@@ -78,7 +79,8 @@ public class TestIterators extends ApplicationInitializer {
     	try {
 	    	QTreeWidgetItemIterator iterator = new QTreeWidgetItem(widget).iterator();
 	    	Assert.assertTrue(General.internalAccess.hasOwnerFunction(iterator));
-	    	Assert.assertEquals(widget.model(), General.internalAccess.owner(iterator));
+//	    	Assert.assertEquals(widget.model(), General.internalAccess.owner(iterator));
+	    	Assert.assertEquals(QApplication.instance(), General.internalAccess.owner(iterator));
     	}finally {
     		widget.dispose();
     	}

@@ -137,6 +137,9 @@ TypeSystem{
                 location: Include.Local
             }
         }
+        EnumType{
+            name: "DropType"
+        }
         ModifyFunction{
             signature: "domUi()const"
             ModifyArgument{

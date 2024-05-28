@@ -30,7 +30,6 @@
 package io.qt.internal;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Collections;
@@ -72,7 +71,7 @@ public final class EnumUtility {
 	
 	@SuppressWarnings("unchecked")
 	public static QFlags<?> asFlags(QtAbstractFlagEnumerator flag, Function<Integer, QFlags<?>> constructor) {
-		Object flagsConstructor = flagsConstructorsByEnumType.computeIfAbsent(ClassAnalyzerUtility.getClass(flag), cls -> {
+		Object flagsConstructor = flagsConstructorsByEnumType.computeIfAbsent(AccessUtility.instance.getClass(flag), cls -> {
 			Class<?> declClass = cls.getDeclaringClass();
 			if (declClass != null) {
 				for (Class<?> flagClass : declClass.getDeclaredClasses()) {
@@ -139,7 +138,7 @@ public final class EnumUtility {
 	public static boolean isSmallEnum(QtAbstractFlagEnumerator enm) {
 		try {
 			QtAbstractFlagEnumerator[] values;
-			Class<? extends QtAbstractFlagEnumerator> cls = ClassAnalyzerUtility.getClass(enm);
+			Class<? extends QtAbstractFlagEnumerator> cls = AccessUtility.instance.getClass(enm);
 			if (cls.isAnnotationPresent(QtExtensibleEnum.class)) {
 				values = cls.getEnumConstants();
 			} else {
@@ -177,53 +176,12 @@ public final class EnumUtility {
 	}
 	
 	@NativeAccess
-	private static <T extends Enum<T>> boolean extendEnum(Class<T> enumClass, T[] array, T enumEntry) {
-		try {
-			Field enumConstantsField = Class.class.getDeclaredField("enumConstants");
-			Field enumConstantDirectoryField = Class.class.getDeclaredField("enumConstantDirectory");
-			ReflectionUtility.writeField(enumClass, enumConstantsField, array);
-			@SuppressWarnings("unchecked")
-			Map<String, T> directory = (Map<String, T>)ReflectionUtility.readField(enumClass, enumConstantDirectoryField);
-			if (directory != null) {
-				directory.put(enumEntry.name(), enumEntry);
-			}
-			return true;
-		} catch (Throwable e) {
-			try {
-				Field enumVarsField = Class.class.getDeclaredField("enumVars");
-				Object enumVars = ReflectionUtility.readField(enumClass, enumVarsField);
-				if (enumVars == null) {
-					Constructor<?> enumVarsConstr = enumVarsField.getType().getDeclaredConstructor();
-					enumVars = ReflectionUtility.invokeContructor(enumVarsConstr);
-					ReflectionUtility.writeField(enumClass, enumVarsField, enumVars);
-				}
-				Field enumConstantsField = enumVarsField.getType().getDeclaredField("cachedEnumConstants");
-				Field enumConstantDirectoryField = enumVarsField.getType().getDeclaredField("cachedEnumConstantDirectory");
-				ReflectionUtility.writeField(enumVars, enumConstantsField, array);
-				@SuppressWarnings("unchecked")
-				Map<String, T> directory = (Map<String, T>) ReflectionUtility.readField(enumVars, enumConstantDirectoryField);
-				if (directory != null) {
-					directory.put(enumEntry.name(), enumEntry);
-				}
-				return true;
-			} catch (Throwable e1) {
-				if(!LibraryUtility.operatingSystem.isAndroid()) {
-					e.addSuppressed(e1);
-					e.printStackTrace();
-				}
-			}
-		}
-		return false;
-	}
-	
-	@NativeAccess
     static Class<?> getEnumForQFlags(Class<?> flagsType) {
         Type t = flagsType.getGenericSuperclass();
         if (t instanceof ParameterizedType) {
             Type typeArguments[] = ((ParameterizedType)t).getActualTypeArguments();
             return ((Class<?>) typeArguments[0]);
         }
-
         return null;
     }
 
