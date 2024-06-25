@@ -349,8 +349,17 @@ abstract class SignalUtility {
 	
 	private static class AnalyzingCheckingSignalCore extends AnalyzingSignalCore{
 		private final Consumer<Object[]> argumentTest;
-		AnalyzingCheckingSignalCore(Consumer<Object[]> argumentTest) {
-			this.argumentTest = argumentTest;
+		private AnalyzingCheckingSignalCore(Consumer<Object[]> argumentTest) {
+			this.argumentTest = Objects.requireNonNull(argumentTest);
+		}
+		
+		final static Function<Consumer<Object[]>,AnalyzingSignalCore> FACTORY;
+		static {
+			if(Boolean.getBoolean("io.qt.enable-signal-argument-check")) {
+				FACTORY = AnalyzingCheckingSignalCore::new;
+			}else {
+				FACTORY = argumentTest->AnalyzingSignalCore.instance;
+			}
 		}
 	}
 	
@@ -953,9 +962,19 @@ abstract class SignalUtility {
 		}
 		
 		@Override
-		void emitSignal(QObject senderObject, Object[] originalArgs, Object[] args, int suppliers) {
-			argumentTest.accept(originalArgs);
-			super.emitSignal(senderObject, originalArgs, args, suppliers);
+		void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
+			QObject senderObject = (QObject)signal.containingObject();
+			logger.finest(()->String.format("Emit native signal %1$s", signalSignature(methodIndex, metaObjectId)));
+			if(suppliers.length>0) {
+				Object[] args2 = Arrays.copyOf(args, args.length + suppliers.length);
+				for(int i=0; i<suppliers.length; ++i) {
+					args2[args.length + i] = suppliers[i].get();
+				}
+				argumentTest.accept(args2);
+			}else {
+				argumentTest.accept(args);
+			}
+			emitSignal(senderObject, args, args, suppliers.length);
 		}
 	}
 	
@@ -968,9 +987,19 @@ abstract class SignalUtility {
 		}
 		
 		@Override
-		void emitSignal(QObject senderObject, Object[] originalArgs, Object[] args, int suppliers) {
-			argumentTest.accept(originalArgs);
-			super.emitSignal(senderObject, originalArgs, args, suppliers);
+		void emitSignal(AbstractSignal signal, Object[] args, Supplier<?>... suppliers) {
+			QObject senderObject = (QObject)signal.containingObject();
+			logger.finest(()->String.format("Emit native signal %1$s", signalSignature(methodIndex, metaObjectId)));
+			if(suppliers.length>0) {
+				Object[] args2 = Arrays.copyOf(args, args.length + suppliers.length);
+				for(int i=0; i<suppliers.length; ++i) {
+					args2[args.length + i] = suppliers[i].get();
+				}
+				argumentTest.accept(args2);
+			}else {
+				argumentTest.accept(args);
+			}
+			emitSignal(senderObject, args, args, suppliers.length);
 		}
 	}
 	
@@ -1124,7 +1153,13 @@ abstract class SignalUtility {
 		public LeightweightSignalCore(Class<?> declaringClass, String name, List<SignalParameterType> signalParameterTypes) {
 			super(signalParameterTypes);
 			this.name = name;
-			this.declaringClass = declaringClass;
+			this.declaringClass = Objects.requireNonNull(declaringClass);
+		}
+		
+		LeightweightSignalCore(String name, List<SignalParameterType> signalParameterTypes) {
+			super(signalParameterTypes);
+			this.name = name;
+			this.declaringClass = null;
 		}
 
 		private final Class<?> declaringClass;
@@ -1162,7 +1197,7 @@ abstract class SignalUtility {
 		}
 		
 		@Override
-		final String fullName(AbstractSignal signal) {
+		String fullName(AbstractSignal signal) {
 			return declaringClass.getName() + "." + name;
 		}
 		
@@ -1317,17 +1352,21 @@ abstract class SignalUtility {
 				if(currentConnection.argumentCount()<args.length) {
 					_args = Arrays.copyOf(_args, currentConnection.argumentCount());
 				}
-                boolean directCall = false;
+                boolean directCall = currentConnection.isDirectConnection();
                 boolean receiverThreadIsCurrent;
-                if(receiverThread==null) {
-            		directCall = true;
-            		receiverThreadIsCurrent = true;
-            	}else {
-                	if(currentThread==null)
-                		currentThread = QThread.currentThread();
-            		receiverThreadIsCurrent = receiverThread==currentThread;
-                	directCall = receiverThreadIsCurrent && currentConnection.isAutoConnection();
-            	}
+                if(!directCall) {
+	                if(receiverThread==null) {
+	            		directCall = true;
+	            		receiverThreadIsCurrent = true;
+	            	}else {
+	                	if(currentThread==null)
+	                		currentThread = QThread.currentThread();
+	            		receiverThreadIsCurrent = receiverThread==currentThread;
+	                	directCall = receiverThreadIsCurrent && currentConnection.isAutoConnection();
+	            	}
+                }else {
+                	receiverThreadIsCurrent = true;
+                }
                 if (directCall) {
             		AbstractConnection c = currentConnection;
                 	logger.finest(()->{
@@ -1363,8 +1402,15 @@ abstract class SignalUtility {
 						}
                     }
                 } else {
-                    if (receiver instanceof QtThreadAffineInterface) {
-                    	QtThreadAffineInterface eventReceiver = (QtThreadAffineInterface) receiver;
+                	QtThreadAffineInterface eventReceiver;
+                	if (receiver instanceof QtThreadAffineInterface) {
+                    	eventReceiver = (QtThreadAffineInterface) receiver;
+                	}else if (receiver==null && receiverThread!=null) {
+                    	eventReceiver = ()->receiverThread;
+                	}else {
+                		eventReceiver = null;
+                	}
+                    if (eventReceiver!=null) {
                 		AbstractConnection c = currentConnection;
                         logger.finest(()->{
 							if(c instanceof AbstractReflectiveConnection){
@@ -1482,7 +1528,7 @@ abstract class SignalUtility {
 	            }else {
 	            	return;
 	            }
-				if ((receiver == null && isStatic)
+				if ((receiver == null && !isStatic)
 						|| (receiver instanceof NativeUtility.Object && ((NativeUtility.Object)receiver).isDisposed()) )
 					return;
 	            try{
@@ -2205,9 +2251,14 @@ abstract class SignalUtility {
 		}
 	}
 	
-	private static class DeclarativeSignalCore extends LeightweightSignalCore<QtSignalEmitterInterface> {
+	private static final class DeclarativeSignalCore extends LeightweightSignalCore<QtSignalEmitterInterface> {
 		private DeclarativeSignalCore(String name, List<SignalParameterType> signalParameterTypes) {
-			super(null, name, signalParameterTypes);
+			super(name, signalParameterTypes);
+		}
+		
+		@Override
+		String fullName(AbstractSignal signal) {
+			return name();
 		}
 	}
 	
@@ -2253,8 +2304,7 @@ abstract class SignalUtility {
     	 * @see QInstanceMemberSignals
     	 */
 		protected AbstractSignal(Consumer<Object[]> argumentTest) {
-			Objects.requireNonNull(argumentTest);
-			this.core = new AnalyzingCheckingSignalCore(argumentTest);
+			this.core = AnalyzingCheckingSignalCore.FACTORY.apply(argumentTest);
         }
 		
 		/**
@@ -2737,7 +2787,7 @@ abstract class SignalUtility {
         private String signalParameters() {
         	List<String> args = new ArrayList<>();
         	for (SignalUtility.SignalParameterType type : signalTypes()) {
-        		if(type.genericType!=null)
+        		if(type.genericType!=null && !type.type.isPrimitive())
         			args.add(type.genericType.getTypeName());
         		else
         			args.add(type.type.getName());
@@ -5193,7 +5243,6 @@ abstract class SignalUtility {
         public final void setDisconnected() {
         	flags |= Disconnected;
         }
-        @SuppressWarnings("unused")
 		public final boolean isDirectConnection() {
             return ((flags & Qt.ConnectionType.QueuedConnection.value()) == 0) && ((flags & Qt.ConnectionType.DirectConnection.value()) == Qt.ConnectionType.DirectConnection.value());
         }

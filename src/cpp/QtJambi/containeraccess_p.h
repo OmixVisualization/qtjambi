@@ -83,7 +83,9 @@ int registerContainerMetaType(const QByteArray& typeName,
                      const QMetaObject *metaObject,
                      AfterRegistrationFunction afterRegistrationFunction);
 
-void insertHashFunctionByMetaType(int type, const QHashFunction& fct);
+void insertHashFunctionByMetaType(int type, const QtJambiUtils::QHashFunction& fct);
+
+void insertHashFunctionByMetaType(int type, QtJambiUtils::QHashFunction&& fct);
 
 class WrapperListAccess : public AbstractListAccess{
 public:
@@ -1017,16 +1019,16 @@ class AutoPairAccess : public AbstractPairAccess{
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     size_t m_keyAlign;
 #endif
-    QHashFunction m_keyHashFunction;
-    InternalToExternalConverter m_keyInternalToExternalConverter;
-    ExternalToInternalConverter m_keyExternalToInternalConverter;
+    QtJambiUtils::QHashFunction m_keyHashFunction;
+    QtJambiUtils::InternalToExternalConverter m_keyInternalToExternalConverter;
+    QtJambiUtils::ExternalToInternalConverter m_keyExternalToInternalConverter;
     QMetaType m_valueMetaType;
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     size_t m_valueAlign;
 #endif
-    QHashFunction m_valueHashFunction;
-    InternalToExternalConverter m_valueInternalToExternalConverter;
-    ExternalToInternalConverter m_valueExternalToInternalConverter;
+    QtJambiUtils::QHashFunction m_valueHashFunction;
+    QtJambiUtils::InternalToExternalConverter m_valueInternalToExternalConverter;
+    QtJambiUtils::ExternalToInternalConverter m_valueExternalToInternalConverter;
     size_t m_align;
     size_t m_offset;
     size_t m_size;
@@ -1041,18 +1043,18 @@ public:
 #else
             const QMetaType& keyMetaType,
 #endif
-            const QHashFunction& keyHashFunction,
-            const InternalToExternalConverter& keyInternalToExternalConverter,
-            const ExternalToInternalConverter& keyExternalToInternalConverter,
+            const QtJambiUtils::QHashFunction& keyHashFunction,
+            const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
+            const QtJambiUtils::ExternalToInternalConverter& keyExternalToInternalConverter,
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
             int valueMetaType,
             size_t valueAlign,
 #else
             const QMetaType& valueMetaType,
 #endif
-            const QHashFunction& valueHashFunction,
-            const InternalToExternalConverter& valueInternalToExternalConverter,
-            const ExternalToInternalConverter& valueExternalToInternalConverter
+            const QtJambiUtils::QHashFunction& valueHashFunction,
+            const QtJambiUtils::InternalToExternalConverter& valueInternalToExternalConverter,
+            const QtJambiUtils::ExternalToInternalConverter& valueExternalToInternalConverter
             );
 
     void dispose() override;
@@ -1094,7 +1096,7 @@ public:
     typedef std::function<bool(const void*,const void*)> LessThanFn;
     typedef std::function<bool(const void*,const void*)> EqualsFn;
 private:
-    InternalToExternalConverter m_internalToExternalConverter;
+    QtJambiUtils::InternalToExternalConverter m_internalToExternalConverter;
     IncrementFn m_increment;
     DecrementFn m_decrement;
     ValueFn m_value;
@@ -1103,7 +1105,7 @@ private:
 public:
     ~AutoSequentialConstIteratorAccess() override;
     AutoSequentialConstIteratorAccess(
-            const InternalToExternalConverter& internalToExternalConverter,
+            const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
             IncrementFn increment,
             DecrementFn decrement,
             ValueFn value,
@@ -1130,13 +1132,13 @@ public:
     typedef std::function<void*(void*)> SetValueFn;
     ~AutoSequentialIteratorAccess() override;
     AutoSequentialIteratorAccess(
-            const InternalToExternalConverter& internalToExternalConverter,
+            const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
             IncrementFn increment,
             DecrementFn decrement,
             ValueFn value,
             LessThanFn lessThan,
             EqualsFn equals,
-            const ExternalToInternalConverter& externalToInternalConverter,
+            const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter,
             SetValueFn setValue
         );
     void setValue(JNIEnv * env, void* iterator, jobject newValue) override;
@@ -1149,7 +1151,7 @@ public:
     AbstractSequentialConstIteratorAccess* clone() override;
 private:
     Q_DISABLE_COPY_MOVE(AutoSequentialIteratorAccess)
-    ExternalToInternalConverter m_externalToInternalConverter;
+    QtJambiUtils::ExternalToInternalConverter m_externalToInternalConverter;
     SetValueFn m_setValue;
 };
 
@@ -1157,18 +1159,18 @@ class AutoAssociativeConstIteratorAccess : public virtual AbstractAssociativeCon
 public:
     typedef std::function<const void*(const void*)> KeyFn;
 private:
-    InternalToExternalConverter m_keyInternalToExternalConverter;
+    QtJambiUtils::InternalToExternalConverter m_keyInternalToExternalConverter;
     KeyFn m_key;
 public:
     ~AutoAssociativeConstIteratorAccess() override;
     AutoAssociativeConstIteratorAccess(
-            const InternalToExternalConverter& internalToExternalConverter,
+            const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
             IncrementFn increment,
             DecrementFn decrement,
             ValueFn value,
             LessThanFn lessThan,
             EqualsFn equals,
-            const InternalToExternalConverter& keyInternalToExternalConverter,
+            const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
             KeyFn key
             );
     jobject value(JNIEnv * env, const void* iterator) override;
@@ -1189,15 +1191,15 @@ class AutoAssociativeIteratorAccess : public virtual AbstractAssociativeIterator
 public:
     ~AutoAssociativeIteratorAccess() override;
     AutoAssociativeIteratorAccess(
-            const InternalToExternalConverter& internalToExternalConverter,
+            const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
             IncrementFn increment,
             DecrementFn decrement,
             ValueFn value,
             LessThanFn lessThan,
             EqualsFn equals,
-            const InternalToExternalConverter& keyInternalToExternalConverter,
+            const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
             KeyFn key,
-            const ExternalToInternalConverter& valueExternalToInternalConverter,
+            const QtJambiUtils::ExternalToInternalConverter& valueExternalToInternalConverter,
             SetValueFn setValue
             );
     void setValue(JNIEnv * env, void* iterator, jobject newValue) override;
@@ -1211,7 +1213,7 @@ public:
     jobject key(JNIEnv * env, const void* iterator) override;
 private:
     Q_DISABLE_COPY_MOVE(AutoAssociativeIteratorAccess)
-    ExternalToInternalConverter m_valueExternalToInternalConverter;
+    QtJambiUtils::ExternalToInternalConverter m_valueExternalToInternalConverter;
     SetValueFn m_setValue;
 };
 
@@ -1220,9 +1222,9 @@ class AutoListAccess : public AbstractListAccess{
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     bool m_isLargeOrStaticType;
 #endif
-    QHashFunction m_hashFunction;
-    InternalToExternalConverter m_internalToExternalConverter;
-    ExternalToInternalConverter m_externalToInternalConverter;
+    QtJambiUtils::QHashFunction m_hashFunction;
+    QtJambiUtils::InternalToExternalConverter m_internalToExternalConverter;
+    QtJambiUtils::ExternalToInternalConverter m_externalToInternalConverter;
     size_t m_offset;
 
     AutoListAccess(const AutoListAccess& other);
@@ -1235,9 +1237,9 @@ public:
 #else
             const QMetaType& elementMetaType,
 #endif
-            const QHashFunction& hashFunction,
-            const InternalToExternalConverter& internalToExternalConverter,
-            const ExternalToInternalConverter& externalToInternalConverter
+            const QtJambiUtils::QHashFunction& hashFunction,
+            const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
+            const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter
             );
 
     void dispose() override;
@@ -1338,16 +1340,16 @@ class AutoMapAccess : public AbstractMapAccess{
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     size_t m_keyAlign;
 #endif
-    QHashFunction m_keyHashFunction;
-    InternalToExternalConverter m_keyInternalToExternalConverter;
-    ExternalToInternalConverter m_keyExternalToInternalConverter;
+    QtJambiUtils::QHashFunction m_keyHashFunction;
+    QtJambiUtils::InternalToExternalConverter m_keyInternalToExternalConverter;
+    QtJambiUtils::ExternalToInternalConverter m_keyExternalToInternalConverter;
     QMetaType m_valueMetaType;
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     size_t m_valueAlign;
 #endif
-    QHashFunction m_valueHashFunction;
-    InternalToExternalConverter m_valueInternalToExternalConverter;
-    ExternalToInternalConverter m_valueExternalToInternalConverter;
+    QtJambiUtils::QHashFunction m_valueHashFunction;
+    QtJambiUtils::InternalToExternalConverter m_valueInternalToExternalConverter;
+    QtJambiUtils::ExternalToInternalConverter m_valueExternalToInternalConverter;
     size_t m_align;
     size_t m_offset1;
     size_t m_offset2;
@@ -1363,18 +1365,18 @@ public:
 #else
                     const QMetaType& keyMetaType,
 #endif
-                    const QHashFunction& keyHashFunction,
-                    const InternalToExternalConverter& keyInternalToExternalConverter,
-                    const ExternalToInternalConverter& keyExternalToInternalConverter,
+                    const QtJambiUtils::QHashFunction& keyHashFunction,
+                    const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
+                    const QtJambiUtils::ExternalToInternalConverter& keyExternalToInternalConverter,
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
                     int valueMetaType,
                     size_t valueAlign,
 #else
                     const QMetaType& valueMetaType,
 #endif
-                    const QHashFunction& valueHashFunction,
-                    const InternalToExternalConverter& valueInternalToExternalConverter,
-                    const ExternalToInternalConverter& valueExternalToInternalConverter
+                    const QtJambiUtils::QHashFunction& valueHashFunction,
+                    const QtJambiUtils::InternalToExternalConverter& valueInternalToExternalConverter,
+                    const QtJambiUtils::ExternalToInternalConverter& valueExternalToInternalConverter
             );
     void assign(void* container, const void* other) override;
     int registerContainer(const QByteArray& containerTypeName) override;
@@ -1470,18 +1472,18 @@ public:
 #else
                     const QMetaType& keyMetaType,
 #endif
-                    const QHashFunction& keyHashFunction,
-                    const InternalToExternalConverter& keyInternalToExternalConverter,
-                    const ExternalToInternalConverter& keyExternalToInternalConverter,
+                    const QtJambiUtils::QHashFunction& keyHashFunction,
+                    const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
+                    const QtJambiUtils::ExternalToInternalConverter& keyExternalToInternalConverter,
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
                     int valueMetaType,
                     size_t valueAlign,
 #else
                     const QMetaType& valueMetaType,
 #endif
-                    const QHashFunction& valueHashFunction,
-                    const InternalToExternalConverter& valueInternalToExternalConverter,
-                    const ExternalToInternalConverter& valueExternalToInternalConverter
+                    const QtJambiUtils::QHashFunction& valueHashFunction,
+                    const QtJambiUtils::InternalToExternalConverter& valueInternalToExternalConverter,
+                    const QtJambiUtils::ExternalToInternalConverter& valueExternalToInternalConverter
             );
     void assign(void* container, const void* other) override;
     int registerContainer(const QByteArray& containerTypeName) override;
@@ -1542,16 +1544,16 @@ class AutoHashAccess : public AbstractHashAccess{
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     size_t m_keyAlign;
 #endif
-    QHashFunction m_keyHashFunction;
-    InternalToExternalConverter m_keyInternalToExternalConverter;
-    ExternalToInternalConverter m_keyExternalToInternalConverter;
+    QtJambiUtils::QHashFunction m_keyHashFunction;
+    QtJambiUtils::InternalToExternalConverter m_keyInternalToExternalConverter;
+    QtJambiUtils::ExternalToInternalConverter m_keyExternalToInternalConverter;
     QMetaType m_valueMetaType;
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     size_t m_valueAlign;
 #endif
-    QHashFunction m_valueHashFunction;
-    InternalToExternalConverter m_valueInternalToExternalConverter;
-    ExternalToInternalConverter m_valueExternalToInternalConverter;
+    QtJambiUtils::QHashFunction m_valueHashFunction;
+    QtJambiUtils::InternalToExternalConverter m_valueInternalToExternalConverter;
+    QtJambiUtils::ExternalToInternalConverter m_valueExternalToInternalConverter;
     size_t m_align;
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
     size_t m_offset1;
@@ -1569,18 +1571,18 @@ public:
 #else
                     const QMetaType& keyMetaType,
 #endif
-                    const QHashFunction& keyHashFunction,
-                    const InternalToExternalConverter& keyInternalToExternalConverter,
-                    const ExternalToInternalConverter& keyExternalToInternalConverter,
+                    const QtJambiUtils::QHashFunction& keyHashFunction,
+                    const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
+                    const QtJambiUtils::ExternalToInternalConverter& keyExternalToInternalConverter,
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
                     int valueMetaType,
                     size_t valueAlign,
 #else
                     const QMetaType& valueMetaType,
 #endif
-                    const QHashFunction& valueHashFunction,
-                    const InternalToExternalConverter& valueInternalToExternalConverter,
-                    const ExternalToInternalConverter& valueExternalToInternalConverter
+                    const QtJambiUtils::QHashFunction& valueHashFunction,
+                    const QtJambiUtils::InternalToExternalConverter& valueInternalToExternalConverter,
+                    const QtJambiUtils::ExternalToInternalConverter& valueExternalToInternalConverter
             );
     bool isConstant() override;
     void assign(void* container, const void* other) override;
@@ -1852,18 +1854,18 @@ public:
 #else
                     const QMetaType& keyMetaType,
 #endif
-                    const QHashFunction& keyHashFunction,
-                    const InternalToExternalConverter& keyInternalToExternalConverter,
-                    const ExternalToInternalConverter& keyExternalToInternalConverter,
+                    const QtJambiUtils::QHashFunction& keyHashFunction,
+                    const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
+                    const QtJambiUtils::ExternalToInternalConverter& keyExternalToInternalConverter,
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
                     int valueMetaType,
                     size_t valueAlign,
 #else
                     const QMetaType& valueMetaType,
 #endif
-                    const QHashFunction& valueHashFunction,
-                    const InternalToExternalConverter& valueInternalToExternalConverter,
-                    const ExternalToInternalConverter& valueExternalToInternalConverter
+                    const QtJambiUtils::QHashFunction& valueHashFunction,
+                    const QtJambiUtils::InternalToExternalConverter& valueInternalToExternalConverter,
+                    const QtJambiUtils::ExternalToInternalConverter& valueExternalToInternalConverter
             );
     void assign(void* container, const void* other) override;
     int registerContainer(const QByteArray& containerTypeName) override;
@@ -1962,9 +1964,9 @@ public:
 #else
                     const QMetaType& elementMetaType,
 #endif
-                    const QHashFunction& hashFunction,
-                    const InternalToExternalConverter& internalToExternalConverter,
-                    const ExternalToInternalConverter& externalToInternalConverter
+                    const QtJambiUtils::QHashFunction& hashFunction,
+                    const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
+                    const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter
             );
     void assign(void* container, const void* other) override;
     int registerContainer(const QByteArray& containerTypeName) override;
@@ -2011,9 +2013,9 @@ private:
 class AutoVectorAccess : public AbstractVectorAccess{
     QMetaType m_elementMetaType;
     size_t m_elementAlign;
-    QHashFunction m_hashFunction;
-    InternalToExternalConverter m_internalToExternalConverter;
-    ExternalToInternalConverter m_externalToInternalConverter;
+    QtJambiUtils::QHashFunction m_hashFunction;
+    QtJambiUtils::InternalToExternalConverter m_internalToExternalConverter;
+    QtJambiUtils::ExternalToInternalConverter m_externalToInternalConverter;
     size_t m_offset;
     bool m_isComplex;
 
@@ -2030,9 +2032,9 @@ public:
     AutoVectorAccess(
                     int elementMetaType,
                     size_t elementAlign,
-                    const QHashFunction& hashFunction,
-                    const InternalToExternalConverter& internalToExternalConverter,
-                    const ExternalToInternalConverter& externalToInternalConverter
+                    const QtJambiUtils::QHashFunction& hashFunction,
+                    const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
+                    const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter
             );
     size_t sizeOf() override;
     void* constructContainer(void* placement, const void* container = nullptr) override;
@@ -2079,9 +2081,9 @@ public:
 
 class AutoLinkedListAccess : public AbstractLinkedListAccess{
     QMetaType m_elementMetaType;
-    QHashFunction m_hashFunction;
-    InternalToExternalConverter m_internalToExternalConverter;
-    ExternalToInternalConverter m_externalToInternalConverter;
+    QtJambiUtils::QHashFunction m_hashFunction;
+    QtJambiUtils::InternalToExternalConverter m_internalToExternalConverter;
+    QtJambiUtils::ExternalToInternalConverter m_externalToInternalConverter;
     size_t m_offset;
 
     AutoLinkedListAccess(const AutoLinkedListAccess& other);
@@ -2089,9 +2091,9 @@ public:
     AutoLinkedListAccess(
             int elementMetaType,
             size_t elementAlign,
-            const QHashFunction& hashFunction,
-            const InternalToExternalConverter& internalToExternalConverter,
-            const ExternalToInternalConverter& externalToInternalConverter
+            const QtJambiUtils::QHashFunction& hashFunction,
+            const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
+            const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter
             );
     AutoLinkedListAccess* clone() override;
     size_t sizeOf() override;

@@ -998,7 +998,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
     	{
         	metaMethod = b.metaObject().method("metaMethod");
         	Assert.assertTrue(metaMethod!=null);
-        	Assert.assertFalse(metaMethod.isValid());
+        	Assert.assertTrue(metaMethod.isValid());
     	}
     	{
     		metaProperty = b.metaObject().property("metaMethod");
@@ -1009,7 +1009,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
     	{
         	metaMethod = b.metaObject().method("currentIndex");
         	Assert.assertTrue(metaMethod!=null);
-        	Assert.assertFalse(metaMethod.isValid());
+        	Assert.assertTrue(metaMethod.isValid());
     	}
     	{
     		metaProperty = b.metaObject().property("currentIndex");
@@ -1023,7 +1023,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
     	{
         	metaMethod = b.metaObject().method("formattingOptions");
         	Assert.assertTrue(metaMethod!=null);
-        	Assert.assertFalse(metaMethod.isValid());
+        	Assert.assertTrue(metaMethod.isValid());
     	}
     	{
         	metaMethod = b.metaObject().method("setFormattingOptions", QUrl.FormattingOptions.class);
@@ -1043,7 +1043,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
     	{
         	metaMethod = b.metaObject().method("intList");
         	Assert.assertTrue(metaMethod!=null);
-        	Assert.assertFalse(metaMethod.isValid());
+        	Assert.assertTrue(metaMethod.isValid());
     	}
     	{
     		metaProperty = b.metaObject().property("intList");
@@ -1095,7 +1095,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
     	{
         	metaMethod = b.metaObject().method("convertibleEnum");
         	Assert.assertTrue(metaMethod!=null);
-        	Assert.assertFalse(metaMethod.isValid());
+        	Assert.assertTrue(metaMethod.isValid());
     	}
     	{
         	metaProperty = b.metaObject().property("convertibleEnum");
@@ -1107,7 +1107,7 @@ public class TestMetaProgramming extends ApplicationInitializer {
     	{
         	metaMethod = b.metaObject().method("connection");
         	Assert.assertTrue(metaMethod!=null);
-        	Assert.assertFalse(metaMethod.isValid());
+        	Assert.assertTrue(metaMethod.isValid());
     	}
     	{
         	metaProperty = b.metaObject().property("connection");

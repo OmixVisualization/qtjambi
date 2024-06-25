@@ -116,7 +116,7 @@ public final class QmlTypes {
 	 * @param uri qml import namespace
 	 * @throws QmlNoMajorVersionException if {@link QmlImport} not available
 	 */
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings({ "deprecation", "removal" })
 	public static void registerPackage(Package pkg, String uri) {
 		QmlImportMajorVersion importMajorVersion = pkg.getAnnotation(QmlImportMajorVersion.class);
 		QmlImport qmlimport = pkg.getAnnotation(QmlImport.class);
@@ -311,7 +311,7 @@ public final class QmlTypes {
 	 * @throws QmlNoMajorVersionException if {@link QmlImport} not available in the package
 	 * @throws QmlTypeRegistrationException when class cannot be registered as qml type
 	 */
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings({ "deprecation", "removal" })
 	public static int registerType(Class<?> type) {
 		if(type.getPackage()==null)
 			throw new QmlTypeRegistrationException("Cannot register classes from default package.");
@@ -363,7 +363,7 @@ public final class QmlTypes {
 		return versionMinor;
 	}
 	
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings({ "deprecation", "removal" })
 	@NativeAccess
 	private static void registerModule(String libraryDir, String uri) {
 		QDir directory = new QDir(libraryDir);

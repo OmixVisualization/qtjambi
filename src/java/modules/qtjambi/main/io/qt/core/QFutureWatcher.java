@@ -1,5 +1,9 @@
 package io.qt.core;
 
+import java.util.Objects;
+
+import io.qt.NonNull;
+import io.qt.Nullable;
 import io.qt.QNoImplementationException;
 
 /**
@@ -24,7 +28,7 @@ public final class QFutureWatcher<T> extends io.qt.core.QFutureWatcherBase
     /**
      * <p>See <code><a href="http://doc.qt.io/qt/qfuturewatcher.html#QFutureWatcher">QFutureWatcher::<wbr>QFutureWatcher(QObject*)</a></code></p>
      */
-    public QFutureWatcher(io.qt.core.QObject parent){
+    public QFutureWatcher(io.qt.core.@Nullable QObject parent){
         super((QPrivateConstructor)null);
         long[] functions = {0,0,0};
         initialize_native(this, parent, functions);
@@ -39,7 +43,7 @@ public final class QFutureWatcher<T> extends io.qt.core.QFutureWatcherBase
      * <p>See <code><a href="http://doc.qt.io/qt/qfuturewatcher.html#future">QFutureWatcher::<wbr>future()const</a></code></p>
      */
     @io.qt.QtUninvokable
-    public final io.qt.core.QFuture<T> future(){
+    public final io.qt.core.@NonNull QFuture<T> future(){
         return future(QtJambi_LibraryUtilities.internal.nativeId(this), futureGetter);
     }
     
@@ -71,8 +75,8 @@ public final class QFutureWatcher<T> extends io.qt.core.QFutureWatcherBase
      * <p>See <code><a href="http://doc.qt.io/qt/qfuturewatcher.html#setFuture">QFutureWatcher::<wbr>setFuture(QFuture&lt;T&gt;)</a></code></p>
      */
     @io.qt.QtUninvokable
-    public final void setFuture(io.qt.core.QFuture<T> future){
-		setFuture(QtJambi_LibraryUtilities.internal.nativeId(this), futureSetter, future);
+    public final void setFuture(io.qt.core.@NonNull QFuture<T> future){
+		setFuture(QtJambi_LibraryUtilities.internal.nativeId(this), futureSetter, Objects.requireNonNull(future));
     }
     
     @io.qt.QtUninvokable

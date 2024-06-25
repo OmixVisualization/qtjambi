@@ -34,6 +34,7 @@ import org.junit.Test;
 
 import io.qt.core.QMetaObject;
 import io.qt.core.QThread;
+import io.qt.autotests.generated.PerformanceTests;
 
 public class TestJDKVirtualThreads extends ApplicationInitializer {
 	
@@ -56,7 +57,23 @@ public class TestJDKVirtualThreads extends ApplicationInitializer {
 		Assert.assertTrue(currentThreads[1]!=null);
 		Assert.assertEquals(vthread, currentThreads[1].javaThread());
     }
-    
+	
+	@Test
+    public void testThreadLocal() throws InterruptedException {
+		System.out.println("acquireThreadLocal in virtual Thread");
+		System.out.flush();
+		Thread vThread = Thread.ofVirtual().start(PerformanceTests::acquireThreadLocal);
+		vThread.join();
+	}
+	
+	@Test
+    public void testThreadStorage() throws InterruptedException {
+		System.out.println("acquireQThreadStorage in virtual Thread");
+		System.out.flush();
+		Thread vThread = Thread.ofVirtual().start(PerformanceTests::acquireQThreadStorage);
+		vThread.join();
+	}
+	
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestJDKVirtualThreads.class.getName());
     }

@@ -56,10 +56,21 @@ inline hash_type qHash(const QVideoFrameFormat& value, hash_type seed = 0){
     if(!value.isValid())
         return seed;
     return qHashMulti(seed, int(value.pixelFormat()), value.frameWidth(),
-               value.frameHeight(), value.planeCount(), value.viewport(),
-               int(value.scanLineDirection()), int(value.frameRate()),
-               int(value.yCbCrColorSpace()), value.isMirrored(), value.vertexShaderFileName(),
-               value.fragmentShaderFileName());
+                        value.frameHeight(), value.planeCount(), value.viewport(),
+                        int(value.scanLineDirection()),
+#if QT_VERSION < QT_VERSION_CHECK(6, 8, 0)
+                        int(value.frameRate()),
+#else
+                      int(value.streamFrameRate()),
+#endif
+#if QT_VERSION < QT_VERSION_CHECK(6, 4, 0)
+                        int(value.yCbCrColorSpace()),
+#else
+                      int(value.colorSpace()),
+#endif
+                        value.isMirrored(),
+                        value.vertexShaderFileName(),
+                        value.fragmentShaderFileName());
 }
 
 inline hash_type qHash(const QAudioDevice& value, hash_type seed = 0){

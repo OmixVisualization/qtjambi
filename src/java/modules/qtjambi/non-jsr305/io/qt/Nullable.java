@@ -35,7 +35,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation marks a parameter to accept null.
+ * <p>This annotation marks a parameter to accept <code>null</code>.</p>
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE_USE)

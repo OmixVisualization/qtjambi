@@ -1,6 +1,6 @@
 package io.qt.core;
 
-import io.qt.QNoImplementationException;
+import io.qt.*;
 
 /**
  * <p>Represents the result of an asynchronous computation</p>
@@ -26,7 +26,7 @@ public final class QFuture<T>
     /**
      * <p>See <a href="http://doc.qt.io/qt-5/qfuture.html#QFuture-2">QFuture::QFuture(QFutureInterface&lt;T&gt;*)</a></p>
      */
-    public QFuture(io.qt.core.QFutureInterface<T> d){
+    public QFuture(io.qt.core.@StrictNonNull QFutureInterface<T> d){
         super();
         this.d = d.clone();
     }
@@ -179,7 +179,7 @@ public final class QFuture<T>
      * <p>See <a href="http://doc.qt.io/qt-5/qfuture.html#results">QFuture::results()const</a></p>
      */
 	@io.qt.QtUninvokable
-    public final io.qt.core.QList<T> results(){
+    public final io.qt.core.@NonNull QList<T> results(){
     	if(d instanceof QFutureInterface) {
 	    	try{
                 return QFutureInterface.results(QtJambi_LibraryUtilities.internal.nativeId(d));
@@ -224,7 +224,7 @@ public final class QFuture<T>
     }
     
     @Override
-    public java.util.Iterator<T> iterator() {
+    public java.util.@NonNull Iterator<T> iterator() {
     	if(d instanceof QFutureInterface) {
 	    	if(d.isFinished())
 	    		return results().iterator();
@@ -250,11 +250,15 @@ public final class QFuture<T>
     @io.qt.QtUninvokable
     public boolean equals(Object other) {
         if (other instanceof io.qt.core.QFuture<?>) {
-            return d.equals(((io.qt.core.QFuture<?>) other).d);
+            return equals((io.qt.core.QFuture<?>) other);
         }
         return false;
     }
-
+	
+	@io.qt.QtUninvokable
+    public boolean equals(io.qt.core.@StrictNonNull QFuture<?> other) {
+    	return d.equals(other.d);
+    }
 
     @io.qt.QtUninvokable
     @Override
@@ -263,7 +267,7 @@ public final class QFuture<T>
     }
     
     @Override
-    public QFuture<T> clone() {
+    public @NonNull QFuture<T> clone() {
         return new QFuture<T>(d.clone(), true);
     }
     

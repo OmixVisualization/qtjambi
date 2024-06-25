@@ -35,7 +35,7 @@
 #include "qtjambilink_p.h"
 #include "qtjambishell_p.h"
 
-DoFinally::DoFinally(std::function<void()> _action) : action(_action)
+DoFinally::DoFinally(QtJambiUtils::Runnable&& _action) : action(std::move(_action))
 {
 
 }
@@ -55,35 +55,50 @@ DoFinally::~DoFinally(){
     }
 }
 
-class QtJambiScopePrivate : public QVector<std::function<void()>>
+class QtJambiScopePrivate : public QVector<QtJambiUtils::Runnable>
 {
 public:
     QtJambiScopePrivate();
     virtual ~QtJambiScopePrivate();
     virtual QtJambiLink * link() const;
+    virtual jobject getJavaObjectLocalRef(JNIEnv *env) const;
+    static jobject getJavaObjectLocalRef(JNIEnv *env, QtJambiScope& scope){
+        Q_ASSERT(scope.d);
+        return scope.d->getJavaObjectLocalRef(env);
+    }
 };
 
-QtJambiScopePrivate::QtJambiScopePrivate() : QVector<std::function<void()>>() {}
+namespace QtJambiPrivate{
+jobject getJavaObjectLocalRef(JNIEnv *env, QtJambiScope& scope){
+    return QtJambiScopePrivate::getJavaObjectLocalRef(env, scope);
+}
+}
+
+QtJambiScopePrivate::QtJambiScopePrivate() : QVector<QtJambiUtils::Runnable>() {}
 QtJambiScopePrivate::~QtJambiScopePrivate(){}
 QtJambiLink *QtJambiScopePrivate::link() const { return nullptr; }
+jobject QtJambiScopePrivate::getJavaObjectLocalRef(JNIEnv *) const { return nullptr; }
 
 class QtJambiScopePrivateLink : public QtJambiScopePrivate
 {
 public:
     QtJambiScopePrivateLink(const QSharedPointer<QtJambiLink>& _link);
     QtJambiLink * link() const override;
+    jobject getJavaObjectLocalRef(JNIEnv *env) const override;
 private:
     QSharedPointer<QtJambiLink> m_link;
 };
 
 QtJambiScopePrivateLink::QtJambiScopePrivateLink(const QSharedPointer<QtJambiLink>& _link) : QtJambiScopePrivate(), m_link(_link) {}
 QtJambiLink *QtJambiScopePrivateLink::link() const { return m_link.data(); }
+jobject QtJambiScopePrivateLink::getJavaObjectLocalRef(JNIEnv *env) const { return m_link->getJavaObjectLocalRef(env); }
 
 class QtJambiScopePrivateObject : public QtJambiScopePrivate
 {
 public:
     QtJambiScopePrivateObject(JNIEnv* env, jobject object);
     QtJambiLink * link() const override;
+    jobject getJavaObjectLocalRef(JNIEnv *env) const override;
 private:
     JNIEnv* m_env;
     jobject m_object;
@@ -95,6 +110,8 @@ QtJambiLink *QtJambiScopePrivateObject::link() const {
         return link.data();
     else return nullptr;
 }
+
+jobject QtJambiScopePrivateObject::getJavaObjectLocalRef(JNIEnv *) const { return m_env->NewLocalRef(m_object); }
 
 QtJambiLinkScope::QtJambiLinkScope(const QSharedPointer<QtJambiLink>& _link)
  : QtJambiScope(*new QtJambiScopePrivateLink(_link)){
@@ -284,7 +301,7 @@ void QtJambiScope::addForcedObjectInvalidation(JNIEnv *env, QtJambiNativeID nati
     }
 }
 
-void QtJambiScope::addFinalAction(std::function<void()>&& action){
+void QtJambiScope::addFinalAction(QtJambiUtils::Runnable&& action){
     if(!d)
         d = new QtJambiScopePrivate();
     d->append(std::move(action));

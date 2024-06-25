@@ -895,8 +895,43 @@ class QTest_64__{
 
 }// class
 
-class QSignalSpy__{
-    
+class QTest_68__{
+    /**
+     * <p>See <code>QTest::<wbr/>qCompareOp&lt;op,<wbr/>T1,<wbr/>T2&gt;(T1&amp;&amp;,<wbr/>T2&amp;&amp;,<wbr/>const char*,<wbr/>const char*,<wbr/>const char*,<wbr/>int)</code></p>
+     */
+    @QtUninvokable
+    public static <T extends Comparable<T>> boolean qCompareOp(@NonNull ComparisonOperation op, T t1, T t2, java.lang.@Nullable String lhsExpr, @Nullable String rhsExpr, java.lang.@Nullable String file, int line){
+        boolean result = false;
+        switch(op) {
+                case Equal:
+                        result = t1==null ? t2==null : t1.compareTo(t2)==0;
+                        break;
+                case GreaterThan:
+                        result = t1==null ? false : t1.compareTo(t2)>0;
+                        break;
+                case GreaterThanOrEqual:
+                        result = t1==null ? false : t1.compareTo(t2)>=0;
+                        break;
+                case LessThan:
+                        result = t1==null ? false : t1.compareTo(t2)<0;
+                        break;
+                case LessThanOrEqual:
+                        result = t1==null ? false : t1.compareTo(t2)<=0;
+                        break;
+                case NotEqual:
+                        result = t1==null ? t2!=null : t1.compareTo(t2)!=0;
+                        break;
+                default:
+                        break;
+        }
+        return reportResult(result,
+                        ()->java.util.Objects.toString(t2),
+                        ()->java.util.Objects.toString(t1),
+                lhsExpr, rhsExpr, op, file, line);
+    }
+}// class
+
+class QSignalSpy_fromSignal_{
     /**
      * <p>See <a href="@docRoot/qsignalspy.html#QSignalSpy-1"><code>QSignalSpy::QSignalSpy(const QObject *, PointerToMemberFunction)</code></a></p>
      */
@@ -909,6 +944,9 @@ class QSignalSpy__{
         QMetaMethod signalMethod = QMetaMethod.fromSignal(signal);
         initialize_native(this, obj, signalMethod);
     }
+}// class
+
+class QSignalSpy__{
 
     /**
      * {@inheritDoc}

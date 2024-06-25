@@ -32,6 +32,7 @@ import java.util.Objects;
 
 import io.qt.*;
 
+@Deprecated
 abstract class QAbstractPropertyAlias extends QPropertyObserver {
 	
 	final QBindableInterface iface;

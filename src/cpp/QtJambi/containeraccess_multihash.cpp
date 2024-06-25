@@ -66,18 +66,18 @@ AutoMultiHashAccess::AutoMultiHashAccess(
 #else
                 const QMetaType& keyMetaType,
 #endif
-                const QHashFunction& keyHashFunction,
-                const InternalToExternalConverter& keyInternalToExternalConverter,
-                const ExternalToInternalConverter& keyExternalToInternalConverter,
+                const QtJambiUtils::QHashFunction& keyHashFunction,
+                const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
+                const QtJambiUtils::ExternalToInternalConverter& keyExternalToInternalConverter,
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
                 int valueMetaType,
                 size_t valueAlign,
 #else
                 const QMetaType& valueMetaType,
 #endif
-                const QHashFunction& valueHashFunction,
-                const InternalToExternalConverter& valueInternalToExternalConverter,
-                const ExternalToInternalConverter& valueExternalToInternalConverter
+                const QtJambiUtils::QHashFunction& valueHashFunction,
+                const QtJambiUtils::InternalToExternalConverter& valueInternalToExternalConverter,
+                const QtJambiUtils::ExternalToInternalConverter& valueExternalToInternalConverter
         )
     : AbstractMultiHashAccess(), AutoHashAccess(
           keyMetaType,

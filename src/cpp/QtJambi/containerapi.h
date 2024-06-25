@@ -331,22 +331,22 @@ public:
                                                               bool isStaticType,
 #endif
                                                              bool isPointer,
-                                                             const QHashFunction& hashFunction,
-                                                             const InternalToExternalConverter& memberConverter,
-                                                             const ExternalToInternalConverter& memberReConverter);
+                                                             const QtJambiUtils::QHashFunction& hashFunction,
+                                                             const QtJambiUtils::InternalToExternalConverter& memberConverter,
+                                                             const QtJambiUtils::ExternalToInternalConverter& memberReConverter);
     static AbstractContainerAccess* create(JNIEnv* env, AssociativeContainerType mapType,
                                                             const QMetaType& memberMetaType1,
                                                             size_t align1, size_t size1,
                                                             bool isPointer1,
-                                                            const QHashFunction& hashFunction1,
-                                                            const InternalToExternalConverter& memberConverter1,
-                                                            const ExternalToInternalConverter& memberReConverter1,
+                                                            const QtJambiUtils::QHashFunction& hashFunction1,
+                                                            const QtJambiUtils::InternalToExternalConverter& memberConverter1,
+                                                            const QtJambiUtils::ExternalToInternalConverter& memberReConverter1,
                                                             const QMetaType& memberMetaType2,
                                                             size_t align2, size_t size2,
                                                             bool isPointer2,
-                                                            const QHashFunction& hashFunction2,
-                                                            const InternalToExternalConverter& memberConverter2,
-                                                            const ExternalToInternalConverter& memberReConverter2);
+                                                            const QtJambiUtils::QHashFunction& hashFunction2,
+                                                            const QtJambiUtils::InternalToExternalConverter& memberConverter2,
+                                                            const QtJambiUtils::ExternalToInternalConverter& memberReConverter2);
 
     Q_DISABLE_COPY_MOVE(AbstractContainerAccess)
 protected:
@@ -770,11 +770,11 @@ struct AssociativeContainerAnalyzer<QPair>{
     static constexpr AssociativeContainerType type = AssociativeContainerType::QPair;
 };
 
-typedef hash_type(*HashWrapper)(const void* ptr, hash_type seed, QHashFunction hashFunction);
-typedef hash_type(*HashWrapper2)(const void* ptr, hash_type seed, QHashFunction hashFunction1, QHashFunction hashFunction2);
+typedef hash_type(*HashWrapper)(const void* ptr, hash_type seed, QtJambiUtils::QHashFunction hashFunction);
+typedef hash_type(*HashWrapper2)(const void* ptr, hash_type seed, QtJambiUtils::QHashFunction hashFunction1, QtJambiUtils::QHashFunction hashFunction2);
 
 template<typename Container>
-hash_type sequentialContainerHash(const void* ptr, hash_type seed, QHashFunction hashFunction)
+hash_type sequentialContainerHash(const void* ptr, hash_type seed, QtJambiUtils::QHashFunction hashFunction)
 {
     const Container& container = *reinterpret_cast<const Container*>(ptr);
     hash_type prime = 31;
@@ -788,7 +788,7 @@ hash_type sequentialContainerHash(const void* ptr, hash_type seed, QHashFunction
 }
 
 template<typename Container>
-hash_type associativeContainerHash(const void* ptr, hash_type seed, QHashFunction hashFunction1, QHashFunction hashFunction2)
+hash_type associativeContainerHash(const void* ptr, hash_type seed, QtJambiUtils::QHashFunction hashFunction1, QtJambiUtils::QHashFunction hashFunction2)
 {
     const Container& container = *reinterpret_cast<const Container*>(ptr);
     hash_type prime = 31;
@@ -803,7 +803,7 @@ hash_type associativeContainerHash(const void* ptr, hash_type seed, QHashFunctio
 }
 
 template<typename Container>
-hash_type pairHashWrapper(const void* ptr, hash_type seed, QHashFunction hashFunction1, QHashFunction hashFunction2){
+hash_type pairHashWrapper(const void* ptr, hash_type seed, QtJambiUtils::QHashFunction hashFunction1, QtJambiUtils::QHashFunction hashFunction2){
     const Container& container = *reinterpret_cast<const Container*>(ptr);
     hash_type prime = 31;
     hash_type result = seed;

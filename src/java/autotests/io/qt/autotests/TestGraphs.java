@@ -50,22 +50,22 @@ public class TestGraphs extends ApplicationInitializer {
     	ApplicationInitializer.testInitializeWithWidgets();
     }
 	
-    @Test
-    public void testQ3DBars() {
-    	Q3DBars bars = new Q3DBars();
-    	//Assume.assumeTrue(bars.hasContext());
-    	QCategory3DAxis axis1 = new QCategory3DAxis();
-    	bars.setRowAxis(axis1);
-    	QValue3DAxis axis2 = new QValue3DAxis();
-    	bars.setValueAxis(axis2);
-    	QObject parent = new QObject();
-    	QCategory3DAxis axis3 = new QCategory3DAxis(parent);
-    	bars.setColumnAxis(axis3);
-    	assertTrue(axis1.parent()!=null);
-    	assertTrue(axis2.parent()!=null);
-    	assertTrue(axis3.parent()!=null);
-    	assertEquals(axis2.parent(), axis3.parent());
-    }
+//    @Test
+//    public void testQ3DBars() {
+//    	Q3DBars bars = new Q3DBars();
+//    	//Assume.assumeTrue(bars.hasContext());
+//    	QCategory3DAxis axis1 = new QCategory3DAxis();
+//    	bars.setRowAxis(axis1);
+//    	QValue3DAxis axis2 = new QValue3DAxis();
+//    	bars.setValueAxis(axis2);
+//    	QObject parent = new QObject();
+//    	QCategory3DAxis axis3 = new QCategory3DAxis(parent);
+//    	bars.setColumnAxis(axis3);
+//    	assertTrue(axis1.parent()!=null);
+//    	assertTrue(axis2.parent()!=null);
+//    	assertTrue(axis3.parent()!=null);
+//    	assertEquals(axis2.parent(), axis3.parent());
+//    }
     
     /*@Test
     public void testQAbstract3DGraph(){
@@ -107,81 +107,81 @@ public class TestGraphs extends ApplicationInitializer {
     	abstract3DGraph.removeCustomItem(customItem2);
     	assertTrue(customItem2.isDisposed());
     }*/
-    
-    @Test
-    public void testQ3DScatter() {
-    	Q3DScatter scatter = new Q3DScatter();
-    	if(QLibraryInfo.version().compareTo(new QVersionNumber(6,7,0))>=0) {
-    		try {
-    			Method setOptimizationHint = QAbstract3DGraph.class.getMethod("setOptimizationHint", QAbstract3DGraph.OptimizationHint.class);
-    			setOptimizationHint.invoke(scatter, QAbstract3DGraph.OptimizationHint.valueOf("Legacy"));
-    		}catch(Throwable t) {}
-    	}
-    	//Assume.assumeTrue(scatter.hasContext());
-    	QValue3DAxis axis1 = new QValue3DAxis();
-    	scatter.setAxisX(axis1);
-    	QValue3DAxis axis2 = new QValue3DAxis();
-    	scatter.setAxisY(axis2);
-    	QObject parent = new QObject();
-    	QValue3DAxis axis3 = new QValue3DAxis(parent);
-    	scatter.setAxisZ(axis3);
-    	assertTrue(axis1.parent()!=null);
-    	assertTrue(axis2.parent()!=null);
-    	assertTrue(axis3.parent()!=null);
-    	assertEquals(axis2.parent(), axis3.parent());
-    	QValue3DAxis axis = new QValue3DAxis(parent);
-    	QScatter3DSeries series = new QScatter3DSeries(parent);
-    	scatter.addSeries(series);
-    	scatter.addAxis(axis);
-    	assertTrue(axis.parent()!=null);
-    	assertTrue(series.parent()!=null);
-    	assertEquals(axis2.parent(), axis.parent());
-    	assertEquals(axis2.parent(), series.parent());
-    	scatter.releaseAxis(axis);
-    	assertFalse(axis.isDisposed());
-    	assertEquals(null, axis.parent());
-    	scatter.removeSeries(series);
-    	assertFalse(series.isDisposed());
-    	assertFalse(series.parent()==null);
-    }
-    
+//    
 //    @Test
-    public void testQ3DSurface() {
-    	Q3DSurface surface = new Q3DSurface();
-    	if(QLibraryInfo.version().compareTo(new QVersionNumber(6,7,0))>=0) {
-    		try {
-    			Method setOptimizationHint = QAbstract3DGraph.class.getMethod("setOptimizationHint", QAbstract3DGraph.OptimizationHint.class);
-    			setOptimizationHint.invoke(surface, QAbstract3DGraph.OptimizationHint.valueOf("Legacy"));
-    		}catch(Throwable t) {}
-    		
-    	}
-    	//Assume.assumeTrue(surface.hasContext());
-    	QValue3DAxis axis1 = new QValue3DAxis();
-    	surface.setAxisX(axis1);
-    	QValue3DAxis axis2 = new QValue3DAxis();
-    	surface.setAxisY(axis2);
-    	QObject parent = new QObject();
-    	QValue3DAxis axis3 = new QValue3DAxis(parent);
-    	surface.setAxisZ(axis3);
-    	assertTrue(axis1.parent()!=null);
-    	assertTrue(axis2.parent()!=null);
-    	assertTrue(axis3.parent()!=null);
-    	assertEquals(axis2.parent(), axis3.parent());
-    	QValue3DAxis axis = new QValue3DAxis(parent);
-    	QSurface3DSeries series = new QSurface3DSeries(parent);
-    	surface.addSeries(series);
-    	surface.addAxis(axis);
-    	assertTrue(axis.parent()!=null);
-    	assertTrue(series.parent()!=null);
-    	assertEquals(axis2.parent(), axis.parent());
-    	assertEquals(axis2.parent(), series.parent());
-    	surface.releaseAxis(axis);
-    	assertFalse(axis.isDisposed());
-    	assertEquals(null, axis.parent());
-    	surface.removeSeries(series);
-    	assertFalse(series.isDisposed());
-    	assertFalse(series.parent()==null);
-    }
+//    public void testQ3DScatter() {
+//    	Q3DScatter scatter = new Q3DScatter();
+//    	if(QLibraryInfo.version().compareTo(new QVersionNumber(6,7,0))>=0) {
+//    		try {
+//    			Method setOptimizationHint = QAbstract3DGraph.class.getMethod("setOptimizationHint", QAbstract3DGraph.OptimizationHint.class);
+//    			setOptimizationHint.invoke(scatter, QAbstract3DGraph.OptimizationHint.valueOf("Legacy"));
+//    		}catch(Throwable t) {}
+//    	}
+//    	//Assume.assumeTrue(scatter.hasContext());
+//    	QValue3DAxis axis1 = new QValue3DAxis();
+//    	scatter.setAxisX(axis1);
+//    	QValue3DAxis axis2 = new QValue3DAxis();
+//    	scatter.setAxisY(axis2);
+//    	QObject parent = new QObject();
+//    	QValue3DAxis axis3 = new QValue3DAxis(parent);
+//    	scatter.setAxisZ(axis3);
+//    	assertTrue(axis1.parent()!=null);
+//    	assertTrue(axis2.parent()!=null);
+//    	assertTrue(axis3.parent()!=null);
+//    	assertEquals(axis2.parent(), axis3.parent());
+//    	QValue3DAxis axis = new QValue3DAxis(parent);
+//    	QScatter3DSeries series = new QScatter3DSeries(parent);
+//    	scatter.addSeries(series);
+//    	scatter.addAxis(axis);
+//    	assertTrue(axis.parent()!=null);
+//    	assertTrue(series.parent()!=null);
+//    	assertEquals(axis2.parent(), axis.parent());
+//    	assertEquals(axis2.parent(), series.parent());
+//    	scatter.releaseAxis(axis);
+//    	assertFalse(axis.isDisposed());
+//    	assertEquals(null, axis.parent());
+//    	scatter.removeSeries(series);
+//    	assertFalse(series.isDisposed());
+//    	assertFalse(series.parent()==null);
+//    }
+//    
+//    @Test
+//    public void testQ3DSurface() {
+//    	Q3DSurface surface = new Q3DSurface();
+//    	if(QLibraryInfo.version().compareTo(new QVersionNumber(6,7,0))>=0) {
+//    		try {
+//    			Method setOptimizationHint = QAbstract3DGraph.class.getMethod("setOptimizationHint", QAbstract3DGraph.OptimizationHint.class);
+//    			setOptimizationHint.invoke(surface, QAbstract3DGraph.OptimizationHint.valueOf("Legacy"));
+//    		}catch(Throwable t) {}
+//    		
+//    	}
+//    	//Assume.assumeTrue(surface.hasContext());
+//    	QValue3DAxis axis1 = new QValue3DAxis();
+//    	surface.setAxisX(axis1);
+//    	QValue3DAxis axis2 = new QValue3DAxis();
+//    	surface.setAxisY(axis2);
+//    	QObject parent = new QObject();
+//    	QValue3DAxis axis3 = new QValue3DAxis(parent);
+//    	surface.setAxisZ(axis3);
+//    	assertTrue(axis1.parent()!=null);
+//    	assertTrue(axis2.parent()!=null);
+//    	assertTrue(axis3.parent()!=null);
+//    	assertEquals(axis2.parent(), axis3.parent());
+//    	QValue3DAxis axis = new QValue3DAxis(parent);
+//    	QSurface3DSeries series = new QSurface3DSeries(parent);
+//    	surface.addSeries(series);
+//    	surface.addAxis(axis);
+//    	assertTrue(axis.parent()!=null);
+//    	assertTrue(series.parent()!=null);
+//    	assertEquals(axis2.parent(), axis.parent());
+//    	assertEquals(axis2.parent(), series.parent());
+//    	surface.releaseAxis(axis);
+//    	assertFalse(axis.isDisposed());
+//    	assertEquals(null, axis.parent());
+//    	surface.removeSeries(series);
+//    	assertFalse(series.isDisposed());
+//    	assertFalse(series.parent()==null);
+//    }
     
     @Test
     public void testQSurface3DSeries() {

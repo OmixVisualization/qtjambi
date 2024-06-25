@@ -242,6 +242,18 @@ bool ComplexTypeEntry::isQObject() const {
 void ComplexTypeEntry::setQObject(bool qobject) {
     m_attributes.setFlag(IsQObject, qobject);
 }
+bool ComplexTypeEntry::isQModelIndex() const {
+    return m_attributes.testFlag(IsQModelIndex);
+}
+void ComplexTypeEntry::setQModelIndex(bool b) {
+    m_attributes.setFlag(IsQModelIndex, b);
+}
+bool ComplexTypeEntry::isQAbstractItemModel() const {
+    return m_attributes.testFlag(IsQAbstractItemModel);
+}
+void ComplexTypeEntry::setQAbstractItemModel(bool b) {
+    m_attributes.setFlag(IsQAbstractItemModel, b);
+}
 bool ComplexTypeEntry::isQEvent() const {
     return m_attributes.testFlag(IsQEvent);
 }
@@ -1004,16 +1016,10 @@ IteratorTypeEntry* IteratorTypeEntry::clone(const ComplexTypeEntry* containerTyp
 bool ComplexTypeEntry::hasFunctionCodeInjections(const QString &methodSignature, TS::Language language, const QSet<CodeSnip::Position>& positions) const{
     for (const FunctionModification& mod : m_function_mods) {
         if (mod.signature == methodSignature || (!mod.originalSignature.isEmpty() && mod.originalSignature == methodSignature)) {
-            if (mod.snips.count() <= 0)
-                continue ;
             for(const CodeSnip& snip : mod.snips) {
-                if (!positions.contains(snip.position))
-                    continue;
-
-                if (!(snip.language & language))
-                    continue;
-
-                if(!snip.code().isEmpty())
+                if (positions.contains(snip.position)
+                    && (snip.language & language)
+                    && !snip.code().isEmpty())
                     return true;
             }
         }

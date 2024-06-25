@@ -46,20 +46,20 @@ TypeSystem{
         position: Position.Position1
         Text{content: "void initialize_meta_info_QtCore();"}
     }
-    
+
     InjectCode{
         target: CodeClass.MetaInfo
         position: Position.End
         Text{content: "initialize_meta_info_QtCore();"}
     }
-    
+
     InjectCode{
         target: CodeClass.Java
         position: Position.End
         Text{content: "QLogging.initialize();\n"+
                       "QThread.initialize();"}
     }
-    
+
     InjectCode{
         packageName: "io.qt.internal"
         target: CodeClass.Java
@@ -70,14 +70,14 @@ TypeSystem{
 @QtUninvokable private static native void shutdown();`
         }
     }
-    
+
     InjectCode{
         packageName: "io.qt.internal"
         target: CodeClass.Java
         position: Position.Position1
         Text{content: "Thread shutdownHook = null;"}
     }
-    
+
     InjectCode{
         packageName: "io.qt.internal"
         target: CodeClass.Java
@@ -91,7 +91,7 @@ TypeSystem{
 LibraryUtility.loadQtJambiLibrary();`
         }
     }
-    
+
     InjectCode{
         packageName: "io.qt.internal"
         target: CodeClass.Java
@@ -131,7 +131,7 @@ exports io.qt;`
             `
             }
     }
-    
+
     Template{
         name: "core.comsumer.function"
         Text{content: String.raw
@@ -147,7 +147,7 @@ if(%in){
 }`
             }
     }
-    
+
     Template{
         name: "core.runnable.function"
         Text{content: String.raw
@@ -162,7 +162,7 @@ if(%in){
 }`
         }
     }
-    
+
     Template{
         name: "core.supplier.function"
         Text{content: String.raw
@@ -179,7 +179,7 @@ if(%in){
 }`
         }
     }
-    
+
     Template{
         name: "core.self_iterator"
         Text{content: String.raw
@@ -190,7 +190,7 @@ public final java.util.Iterator<%ELEMENT_TYPE> iterator() {
 }`
         }
     }
-    
+
     Template{
         name: "core.to_iterator"
         Text{content: String.raw
@@ -206,43 +206,48 @@ public final %ITERATOR_TYPE iterator() {
         className: "QScopedPropertyUpdateGroup"
         since: 6.6
     }
-    
+
+    Rejection{
+        className: "QHashHeterogeneousSearch"
+        since: 6.8
+    }
+
     PrimitiveType{
         name: "bool"
         javaName: "boolean"
         jniName: "jboolean"
     }
-    
+
     PrimitiveType{
         name: "double"
         jniName: "jdouble"
     }
-    
+
     PrimitiveType{
         name: "float"
         jniName: "jfloat"
     }
-    
+
     PrimitiveType{
         name: "qfloat16"
         javaName: "float"
         jniName: "jfloat"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "qreal"
         javaName: "double"
         jniName: "jdouble"
     }
-    
+
     PrimitiveType{
         name: "__int64"
         javaName: "long"
         jniName: "jlong"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "unsigned __int64"
         javaName: "long"
@@ -277,48 +282,48 @@ public final %ITERATOR_TYPE iterator() {
         jniName: "jlong"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "size_t"
         javaName: "long"
         jniName: "jlong"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "unsigned long long"
         javaName: "long"
         jniName: "jlong"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "long long"
         javaName: "long"
         jniName: "jlong"
     }
-    
+
     PrimitiveType{
         name: "quintptr"
         javaName: "long"
         jniName: "jlong"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "qintptr"
         javaName: "long"
         jniName: "jlong"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "qsizetype"
         javaName: "long"
         jniName: "jlong"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "short"
         javaName: "char"
@@ -326,20 +331,20 @@ public final %ITERATOR_TYPE iterator() {
         preferredConversion: false
         preferredJavaType: false
     }
-    
+
     PrimitiveType{
         name: "short"
         javaName: "short"
         jniName: "jshort"
     }
-    
+
     PrimitiveType{
         name: "uint16_t"
         javaName: "short"
         jniName: "jshort"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "signed short"
         javaName: "short"
@@ -367,34 +372,34 @@ public final %ITERATOR_TYPE iterator() {
         jniName: "jshort"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "unsigned short"
         javaName: "short"
         jniName: "jshort"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "unsigned short int"
         javaName: "short"
         jniName: "jshort"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "char"
         javaName: "byte"
         jniName: "jbyte"
     }
-    
+
     PrimitiveType{
         name: "signed char"
         javaName: "byte"
         jniName: "jbyte"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "unsigned char"
         javaName: "byte"
@@ -429,68 +434,68 @@ public final %ITERATOR_TYPE iterator() {
         jniName: "jbyte"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "std::byte"
         javaName: "byte"
         jniName: "jbyte"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "int"
         jniName: "jint"
     }
-    
+
     PrimitiveType{
         name: "signed int"
         javaName: "int"
         jniName: "jint"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "uint"
         javaName: "int"
         jniName: "jint"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "ulong"
         javaName: "int"
         jniName: "jint"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "unsigned int"
         javaName: "int"
         jniName: "jint"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "unsigned"
         javaName: "int"
         jniName: "jint"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "signed long"
         javaName: "int"
         jniName: "jint"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "long"
         javaName: "int"
         jniName: "jint"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "unsigned long"
         javaName: "int"
@@ -511,70 +516,70 @@ public final %ITERATOR_TYPE iterator() {
         jniName: "jint"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "WId"
         javaName: "long"
         jniName: "jlong"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "QSocketDescriptor"
         javaName: "long"
         jniName: "jlong"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "QBool"
         javaName: "boolean"
         jniName: "jboolean"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "char16_t"
         javaName: "char"
         jniName: "jchar"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "char32_t"
         javaName: "int"
         jniName: "jint"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "jobject"
         javaName: "java.lang.Object"
         jniName: "jobject"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "jstring"
         javaName: "java.lang.String"
         jniName: "jstring"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "_jobject"
         javaName: "java.lang.Object"
         jniName: "jobject"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "_jstring"
         javaName: "java.lang.String"
         jniName: "jstring"
         preferredConversion: false
     }
-    
+
     PrimitiveType{
         name: "std::nullptr_t"
         javaName: "java.lang.Void"
@@ -597,7 +602,7 @@ public final %ITERATOR_TYPE iterator() {
         preferredConversion: false
         since: 6
     }
-    
+
     TemplateType{
         name: "Stream"
         ModifyFunction{
@@ -666,52 +671,10 @@ public final %ITERATOR_TYPE iterator() {
         signature: "operator==<T>(QFuture<T>,QFuture<T>)"
         remove: RemoveFlag.All
     }
-    
+
     GlobalFunction{
         signature: "qRegisterMetaType<T>(const char*)"
         remove: RemoveFlag.All
-    }
-    
-    GlobalFunction{
-        signature: "qRegisterMetaType<T>()"
-        targetType: "QMetaType"
-        Instantiation{
-            proxyCall: "CoreAPI::registerMetaType"
-            Argument{
-                type: "QObject"
-            }
-            AddArgument{
-                index: 1
-                name: "clazz"
-                type: "java.lang.Class<?>"
-            }
-            AddArgument{
-                index: 2
-                name: "instantiations"
-                type: "io.qt.core.QMetaType..."
-            }
-        }
-    }
-    
-    GlobalFunction{
-        signature: "qMetaTypeId<T>()"
-        targetType: "QMetaType"
-        Instantiation{
-            proxyCall: "CoreAPI::metaTypeId"
-            Argument{
-                type: "QObject"
-            }
-            AddArgument{
-                index: 1
-                name: "clazz"
-                type: "java.lang.Class<?>"
-            }
-            AddArgument{
-                index: 2
-                name: "instantiations"
-                type: "io.qt.core.QMetaType..."
-            }
-        }
     }
 
     Rejection{
@@ -763,48 +726,48 @@ public final %ITERATOR_TYPE iterator() {
         className: ""
         fieldName: "static_assert"
     }
-    
+
     Rejection{
         className: ""
         enumName: "QtJambiNativeID"
     }
-    
+
     Rejection{
         className: "std::string"
     }
-    
+
     Rejection{
         className: "std::seed_seq"
     }
-    
+
     Rejection{
         className: "function_ref"
     }
-    
+
     Rejection{
         className: "QFutureSynchronizer"
     }
-    
+
     Rejection{
         className: "JNIEnv_"
     }
-    
+
     Rejection{
         className: "QJniEnvironment"
     }
-    
+
     Rejection{
         className: "QJniObject"
     }
-    
+
     Rejection{
         className: "JNIInvokeInterface_"
     }
-    
+
     Rejection{
         className: "JNINativeInterface_"
     }
-    
+
     Rejection{
         className: "ProcessOpenModeResult"
     }
@@ -812,187 +775,187 @@ public final %ITERATOR_TYPE iterator() {
     Rejection{
         className: "QAtomicOpsSupport"
     }
-    
+
     Rejection{
         className: "JavaVM_"
     }
-    
+
     Rejection{
         className: "qt_clang_builtin_available_os_version_data"
     }
-    
+
     Rejection{
         className: "_jthrowable"
     }
-    
+
     Rejection{
         className: "_jstring"
     }
-    
+
     Rejection{
         className: "_jshortArray"
     }
-    
+
     Rejection{
         className: "_jobjectArray"
     }
-    
+
     Rejection{
         className: "_jobject"
     }
-    
+
     Rejection{
         className: "_jlongArray"
     }
-    
+
     Rejection{
         className: "_jintArray"
     }
-    
+
     Rejection{
         className: "_jfloatArray"
     }
-    
+
     Rejection{
         className: "_jdoubleArray"
     }
-    
+
     Rejection{
         className: "_jclass"
     }
-    
+
     Rejection{
         className: "_jcharArray"
     }
-    
+
     Rejection{
         className: "_jbyteArray"
     }
-    
+
     Rejection{
         className: "_jbooleanArray"
     }
-    
+
     Rejection{
         className: "_jarray"
     }
-    
+
     Rejection{
         className: "QArgumentType"
     }
-    
+
     Rejection{
         className: "QMetaObjectPrivate"
     }
-    
+
     Rejection{
         className: "QStringView"
     }
-    
+
     Rejection{
         className: "QFSFileEnginePrivate"
     }
-    
+
     Rejection{
         className: "QMatrix"
     }
-    
+
     Rejection{
         className: "QArrayData"
     }
-    
+
     Rejection{
         className: "QTypedArrayData"
     }
-    
+
     Rejection{
         className: "QArrayDataOps"
     }
-    
+
     Rejection{
         className: "QArrayDataPointer"
     }
-    
+
     Rejection{
         className: "QArrayDataPointerRef"
     }
-    
+
     Rejection{
         className: "QStaticArrayData"
     }
-    
+
     Rejection{
         className: "QStaticByteArrayData"
     }
-    
+
     Rejection{
         className: "QStaticByteArrayMatcher"
     }
-    
+
     Rejection{
         className: "QStaticByteArrayMatcherBase"
     }
-    
+
     Rejection{
         className: "QStaticStringData"
     }
-    
+
     Rejection{
         className: "QStringBuilderBase"
     }
-    
+
     Rejection{
         className: "QStringBuilderCommon"
     }
-    
+
     Rejection{
         className: "QStringDataPtr"
     }
-    
+
     Rejection{
         className: "QSemaphoreReleaser"
     }
-    
+
     Rejection{
         className: "QKeyValueIterator"
     }
-    
+
     Rejection{
         className: "QAtomicAdditiveType"
     }
-    
+
     Rejection{
         className: "QBasicAtomicInteger"
     }
-    
+
     Rejection{
         className: "QBigEndianStorageType"
     }
-    
+
     Rejection{
         className: "QFileSystemEntry"
     }
-    
+
     Rejection{
         className: "QFileSystemMetaData"
     }
-    
+
     Rejection{
         className: "QMapDataBase"
     }
-    
+
     Rejection{
         className: "QAnyStringView"
     }
-    
+
     Rejection{
         className: "QUtf8StringView"
     }
-    
+
     Rejection{
         className: "QMapNodeBase"
     }
-    
+
     Rejection{
         className: "QPalette::Data"
     }
@@ -1010,82 +973,82 @@ public final %ITERATOR_TYPE iterator() {
         className: "QList"
         enumName: "MemoryLayout"
     }
-    
+
     Rejection{
         className: "QList"
         functionName: "empty"
     }
-    
+
     Rejection{
         className: "QList"
         functionName: "front"
     }
-    
+
     Rejection{
         className: "QList"
         functionName: "pop_back"
     }
-    
+
     Rejection{
         className: "QList"
         functionName: "pop_front"
     }
-    
+
     Rejection{
         className: "QList"
         functionName: "push_back"
     }
-    
+
     Rejection{
         className: "QList"
         functionName: "push_front"
     }
-    
+
     Rejection{
         className: "QList"
         functionName: "back"
     }
-    
+
     Rejection{
         className: "QList"
         functionName: "shrink_to_fit"
     }
-    
+
     Rejection{
         className: "QQueue"
         functionName: "empty"
     }
-    
+
     Rejection{
         className: "QQueue"
         functionName: "front"
     }
-    
+
     Rejection{
         className: "QQueue"
         functionName: "pop_back"
     }
-    
+
     Rejection{
         className: "QQueue"
         functionName: "pop_front"
     }
-    
+
     Rejection{
         className: "QQueue"
         functionName: "push_back"
     }
-    
+
     Rejection{
         className: "QQueue"
         functionName: "push_front"
     }
-    
+
     Rejection{
         className: "QQueue"
         functionName: "back"
     }
-    
+
     Rejection{
         className: "QQueue"
         functionName: "shrink_to_fit"
@@ -1094,1107 +1057,1107 @@ public final %ITERATOR_TYPE iterator() {
     Rejection{
         className: "QCborNegativeInteger"
     }
-    
+
     Rejection{
         className: "QSet::const_iterator"
     }
-    
+
     Rejection{
         className: "QSet"
         functionName: "empty"
     }
-    
+
     Rejection{
         className: "QCborArray::Iterator"
     }
-    
+
     Rejection{
         className: "QHash::iterator"
     }
-    
+
     Rejection{
         className: "QHash::key_iterator"
     }
-    
+
     Rejection{
         className: "QHash"
         functionName: "empty"
     }
-    
+
     Rejection{
         className: "QLinkedList::iterator"
     }
-    
+
     Rejection{
         className: "QObjectPrivate"
     }
-    
+
     Rejection{
         className: "QAbstractItemModelPrivate"
     }
-    
+
     Rejection{
         className: "FILE"
     }
-    
+
     Rejection{
         className: "QLinkedList"
         functionName: "empty"
     }
-    
+
     Rejection{
         className: "QLinkedList"
         functionName: "back"
     }
-    
+
     Rejection{
         className: "QLinkedList"
         functionName: "front"
     }
-    
+
     Rejection{
         className: "QLinkedList"
         functionName: "push_back"
     }
-    
+
     Rejection{
         className: "QLinkedList"
         functionName: "push_front"
     }
-    
+
     Rejection{
         className: "QLinkedList"
         functionName: "pop_back"
     }
-    
+
     Rejection{
         className: "QLinkedList"
         functionName: "pop_front"
     }
-    
+
     Rejection{
         className: "QList::iterator"
     }
-    
+
     Rejection{
         className: "QMap::iterator"
     }
-    
+
     Rejection{
         className: "QMap::key_iterator"
     }
-    
+
     Rejection{
         className: "QMap"
         functionName: "empty"
     }
-    
+
     Rejection{
         className: "QSpecialInteger"
     }
-    
+
     Rejection{
         className: "QScopeGuard"
     }
-    
+
     Rejection{
         className: ""
         enumName: "QCborNegativeInteger"
     }
-    
+
     Rejection{
         className: "QListSpecialMethods"
     }
-    
+
     Rejection{
         className: "QLittleEndianStorageType"
     }
-    
+
     Rejection{
         className: "QMetaTypeIdQObject"
     }
-    
+
     Rejection{
         className: "QGenericAtomicOps"
     }
-    
+
     Rejection{
         className: "QVector::AlignmentDummy"
     }
-    
+
     Rejection{
         className: "QVector"
         functionName: "back"
     }
-    
+
     Rejection{
         className: "QVector"
         functionName: "empty"
     }
-    
+
     Rejection{
         className: "QVector"
         functionName: "front"
     }
-    
+
     Rejection{
         className: "QVector"
         functionName: "push_back"
     }
-    
+
     Rejection{
         className: "QVector"
         functionName: "push_front"
     }
-    
+
     Rejection{
         className: "QVector"
         functionName: "pop_back"
     }
-    
+
     Rejection{
         className: "QVector"
         functionName: "pop_front"
     }
-    
+
     Rejection{
         className: "QVector"
         functionName: "freeData"
     }
-    
+
     Rejection{
         className: "QVector"
         functionName: "shrink_to_fit"
     }
-    
+
     Rejection{
         className: "QStack"
         functionName: "back"
     }
-    
+
     Rejection{
         className: "QStack"
         functionName: "empty"
     }
-    
+
     Rejection{
         className: "QStack"
         functionName: "front"
     }
-    
+
     Rejection{
         className: "QStack"
         functionName: "push_back"
     }
-    
+
     Rejection{
         className: "QStack"
         functionName: "push_front"
     }
-    
+
     Rejection{
         className: "QStack"
         functionName: "pop_back"
     }
-    
+
     Rejection{
         className: "QStack"
         functionName: "pop_front"
     }
-    
+
     Rejection{
         className: "QStack"
         functionName: "shrink_to_fit"
     }
-    
+
     Rejection{
         className: "QAbstractAnimationPrivate"
     }
-    
+
     Rejection{
         className: "QAbstractButtonPrivate"
     }
-    
+
     Rejection{
         className: "QAbstractEventDispatcherPrivate"
     }
-    
+
     Rejection{
         className: "*"
         functionName: "d_func"
     }
-    
+
     Rejection{
         className: "*"
         functionName: "data_ptr"
     }
-    
+
     Rejection{
         className: "*"
         fieldName: "d_ptr"
     }
-    
+
     Rejection{
         className: "*"
         fieldName: "d"
     }
-    
+
     Rejection{
         className: "*"
         fieldName: "m_reserved"
     }
-    
+
     Rejection{
         className: "*"
         functionName: "qt_getEnumMetaObject"
     }
-    
+
     Rejection{
         className: "*"
         functionName: "qt_getEnumName"
     }
-    
+
     Rejection{
         className: "*"
         functionName: "operator typename *"
     }
-    
+
     Rejection{
         className: "*"
         functionName: "operator QVariant"
     }
-    
+
     Rejection{
         className: "*"
         functionName: "operator_cast_QVariant"
     }
-    
+
     Rejection{
         className: "QVector"
         functionName: "operator="
     }
-    
+
     Rejection{
         className: "QStack"
         functionName: "operator="
     }
-    
+
     Rejection{
         className: "QMap"
         functionName: "operator="
     }
-    
+
     Rejection{
         className: "QMap"
         functionName: "operator[]"
     }
-    
+
     Rejection{
         className: "QHash"
         functionName: "operator="
     }
-    
+
     Rejection{
         className: "QHash"
         functionName: "operator[]"
     }
-    
+
     Rejection{
         className: "QHash"
         functionName: "load_factor"
     }
-    
+
     Rejection{
         className: "QHash"
         functionName: "max_load_factor"
     }
-    
+
     Rejection{
         className: "QHash"
         functionName: "bucket_count"
     }
-    
+
     Rejection{
         className: "QHash"
         functionName: "max_bucket_count"
     }
-    
+
     Rejection{
         className: "QMultiMap"
         functionName: "constFind"
     }
-    
+
     Rejection{
         className: "QMultiMap"
         functionName: "operator[]"
     }
-    
+
     Rejection{
         className: "QMultiHash"
         functionName: "operator="
     }
-    
+
     Rejection{
         className: "QMultiHash"
         functionName: "operator[]"
     }
-    
+
     Rejection{
         className: "QMultiHash"
         functionName: "constFind"
     }
-    
+
     Rejection{
         className: "QMultiHash"
         functionName: "load_factor"
     }
-    
+
     Rejection{
         className: "QMultiHash"
         functionName: "max_load_factor"
     }
-    
+
     Rejection{
         className: "QMultiHash"
         functionName: "bucket_count"
     }
-    
+
     Rejection{
         className: "QMultiHash"
         functionName: "max_bucket_count"
     }
-    
+
     Rejection{
         className: "QMultiHash"
         functionName: "equal_range"
     }
-    
+
     Rejection{
         className: ""
         enumName: "QtValidLicenseForTestModule"
     }
-    
+
     Rejection{
         className: "QTextCodecPlugin"
         functionName: "create(const QString &)"
     }
-    
+
     Rejection{
         className: "QTextCodecPlugin"
         functionName: "keys()const"
     }
-    
+
     Rejection{
         className: "*"
         enumName: "__codecvt_result"
     }
-    
+
     Rejection{
         className: "*"
         enumName: "enum_1"
     }
-    
+
     Rejection{
         className: "*"
         enumName: "enum_2"
     }
-    
+
     Rejection{
         className: "*"
         enumName: "enum_3"
     }
-    
+
     Rejection{
         className: "*"
         enumName: "enum_4"
     }
-    
+
     Rejection{
         className: "*"
         enumName: "enum_5"
     }
-    
+
     Rejection{
         className: "*"
         enumName: "enum_6"
     }
-    
+
     Rejection{
         className: ""
         enumName: "QtValidLicenseForDBusModule"
     }
-    
+
     Rejection{
         className: ""
         enumName: "QtValidLicenseForSqlModule"
     }
-    
+
     Rejection{
         className: ""
         enumName: "QtValidLicenseForOpenGLModule"
     }
-    
+
     Rejection{
         className: ""
         enumName: "QtValidLicenseForXmlModule"
     }
-    
+
     Rejection{
         className: ""
         enumName: "QtValidLicenseForXmlPatternsModule"
     }
-    
+
     Rejection{
         className: ""
         enumName: "QtValidLicenseForActiveQtModule"
     }
-    
+
     Rejection{
         className: ""
         enumName: "QtValidLicenseForCoreModule"
     }
-    
+
     Rejection{
         className: ""
         enumName: "QtValidLicenseForQt3SupportLightModule"
     }
-    
+
     Rejection{
         className: ""
         enumName: "QtValidLicenseForQt3SupportModule"
     }
-    
+
     Rejection{
         className: ""
         enumName: "QtValidLicenseForNetworkModule"
     }
-    
+
     Rejection{
         className: ""
         enumName: "QtValidLicenseForSvgModule"
     }
-    
+
     Rejection{
         className: ""
         enumName: "QtValidLicenseForGuiModule"
     }
-    
+
     Rejection{
         className: ""
         enumName: "QtValidLicenseForScriptModule"
     }
-    
+
     Rejection{
         className: ""
         enumName: "QtValidLicenseForHelpModule"
     }
-    
+
     Rejection{
         className: ""
         enumName: "QtValidLicenseForScriptToolsModule"
     }
-    
+
     Rejection{
         className: ""
         enumName: "QtValidLicenseForMultimediaModule"
     }
-    
+
     Rejection{
         className: ""
         enumName: "QtValidLicenseForOpenVGModule"
     }
-    
+
     Rejection{
         className: ""
         enumName: "QtValidLicenseForDeclarativeModule"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qJsonFromRawLibraryMetaData"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qt_getQtMetaObject"
         until: [5, 15]
     }
-    
+
     Rejection{
         className: ""
         functionName: "qMapLessThanKey"
         until: [5, 15]
     }
-    
+
     Rejection{
         className: ""
         functionName: "qRegisterMetaTypeStreamOperators"
         until: [5, 15]
     }
-    
+
     Rejection{
         className: ""
         functionName: "qLowerBound"
         until: [5, 15]
     }
-    
+
     Rejection{
         className: ""
         functionName: "qIsTrivial"
         until: [5, 15]
     }
-    
+
     Rejection{
         className: ""
         functionName: "qIsRelocatable"
         until: [5, 15]
     }
-    
+
     Rejection{
         className: ""
         functionName: "qFind"
         until: [5, 15]
     }
-    
+
     Rejection{
         className: ""
         functionName: "qFill"
         until: [5, 15]
     }
-    
+
     Rejection{
         className: ""
         functionName: "qBinaryFind"
         until: [5, 15]
     }
-    
+
     Rejection{
         className: ""
         functionName: "qCopyBackward"
         until: [5, 15]
     }
-    
+
     Rejection{
         className: ""
         functionName: "qCopy"
         until: [5, 15]
     }
-    
+
     Rejection{
         className: ""
         functionName: "qCount"
         until: [5, 15]
     }
-    
+
     Rejection{
         className: ""
         functionName: "qSort"
         until: [5, 15]
     }
-    
+
     Rejection{
         className: ""
         functionName: "qStableSort"
         until: [5, 15]
     }
-    
+
     Rejection{
         className: ""
         functionName: "qToVoidFuture"
         until: [5, 15]
     }
-    
+
     Rejection{
         className: ""
         functionName: "qUpperBound"
         until: [5, 15]
     }
-    
+
     Rejection{
         className: ""
         functionName: "qVariantFromValue"
         until: [5, 15]
     }
-    
+
     Rejection{
         className: ""
         functionName: "qVariantSetValue"
         until: [5, 15]
     }
-    
+
     Rejection{
         className: "*"
         functionName: "qRegisterAnimationInterpolator"
     }
-    
+
     Rejection{
         className: "QLocalePrivate"
     }
-    
+
     Rejection{
         className: "*"
         functionName: "Q_STATIC_ASSERT"
     }
-    
+
     Rejection{
         className: "QLoggingCategoryMacroHolder"
         since: [6, 3]
     }
-    
+
     Rejection{
         className: "QVLABase"
         since: [6, 3]
     }
-    
+
     Rejection{
         className: "QVLABaseBase"
         since: [6, 3]
     }
-    
+
     Rejection{
         className: "QVLAStorage"
         since: [6, 3]
     }
-    
+
     Rejection{
         className: "QEnableSharedFromThis"
     }
-    
+
     Rejection{
         className: "QGenericArgument"
     }
-    
+
     Rejection{
         className: "QGenericReturnArgument"
     }
-    
+
     Rejection{
         className: "QWeakPointer"
     }
-    
+
     Rejection{
         className: "QMdi"
     }
-    
+
     Rejection{
         className: "stdext"
     }
-    
+
     Rejection{
         className: "QAlgorithmsPrivate"
     }
-    
+
     Rejection{
         className: "QAtomic"
     }
-    
+
     Rejection{
         className: "QAtomicInteger"
     }
-    
+
     Rejection{
         className: "QAtomicPointer"
     }
-    
+
     Rejection{
         className: "QAtomicInt"
     }
-    
+
     Rejection{
         className: "QBasicAtomicInt"
     }
-    
+
     Rejection{
         className: "QBasicAtomic"
     }
-    
+
     Rejection{
         className: "QBasicAtomicPointer"
     }
-    
+
     Rejection{
         className: "QScopedPointer"
     }
-    
+
     Rejection{
         className: "QScopedArrayPointer"
     }
-    
+
     Rejection{
         className: "QScopedPointerObjectDeleteLater"
     }
-    
+
     Rejection{
         className: "QScopedPointerArrayDeleter"
     }
-    
+
     Rejection{
         className: "QScopedPointerDeleter"
     }
-    
+
     Rejection{
         className: "QScopedPointerPodDeleter"
     }
-    
+
     Rejection{
         className: "QScopedPointerSharedDeleter"
     }
-    
+
     Rejection{
         className: "QScopedSharedPointer"
     }
-    
+
     Rejection{
         className: "QScopedValueRollback"
     }
-    
+
     Rejection{
         className: "QCustomScopedPointer"
     }
-    
+
     Rejection{
         className: "QStringBuilder"
     }
-    
+
     Rejection{
         className: "QOverload"
     }
-    
+
     Rejection{
         className: "QNonConstOverload"
     }
-    
+
     Rejection{
         className: "QConstOverload"
     }
-    
+
     Rejection{
         className: "Null"
     }
-    
+
     Rejection{
         className: "std::filesystem::path"
     }
-    
+
     Rejection{
         className: "std::u16string"
     }
-    
+
     Rejection{
         className: "std::u32string"
     }
-    
+
     Rejection{
         className: "std::wstring"
     }
-    
+
     Rejection{
         className: "QPropertyBindingPrivate"
     }
-    
+
     Rejection{
         className: "QAbstractConcatenable"
     }
-    
+
     Rejection{
         className: "QCache"
     }
-    
+
     Rejection{
         className: "QContiguousCache"
     }
-    
+
     Rejection{
         className: "QContiguousCacheData"
     }
-    
+
     Rejection{
         className: "QContiguousCacheTypedData"
     }
-    
+
     Rejection{
         className: "QNoDebug"
     }
-    
+
     Rejection{
         className: "QExplicitlySharedDataPointer"
     }
-    
+
     Rejection{
         className: "QFlag"
     }
-    
+
     Rejection{
         className: "QFlags"
     }
-    
+
     Rejection{
         className: "QForeachContainer"
     }
-    
+
     Rejection{
         className: "QForeachContainerBase"
     }
-    
+
     Rejection{
         className: "QGlobalStatic"
     }
-    
+
     Rejection{
         className: "QHashData"
     }
-    
+
     Rejection{
         className: "QHashDummyNode"
     }
-    
+
     Rejection{
         className: "QHashIterator"
     }
-    
+
     Rejection{
         className: "QHashNode"
     }
-    
+
     Rejection{
         className: "QInternal"
     }
-    
+
     Rejection{
         className: "QIncompatibleFlag"
     }
-    
+
     Rejection{
         className: "QLinkedListData"
     }
-    
+
     Rejection{
         className: "QLinkedListIterator"
     }
-    
+
     Rejection{
         className: "QLinkedListNode"
     }
-    
+
     Rejection{
         className: "QListData"
     }
-    
+
     Rejection{
         className: "QListIterator"
     }
-    
+
     Rejection{
         className: "QMapNode"
     }
-    
+
     Rejection{
         className: "QMapPayloadNode"
     }
-    
+
     Rejection{
         className: "QMapData"
     }
-    
+
     Rejection{
         className: "QMapIterator"
     }
-    
+
     Rejection{
         className: "QMetaTypeId"
     }
-    
+
     Rejection{
         className: "QMetaClassInfo"
     }
-    
+
     Rejection{
         className: "QMutableHashIterator"
     }
-    
+
     Rejection{
         className: "QMutableLinkedListIterator"
     }
-    
+
     Rejection{
         className: "QMutableListIterator"
     }
-    
+
     Rejection{
         className: "QMutableMapIterator"
     }
-    
+
     Rejection{
         className: "QMutableVectorIterator"
     }
-    
+
     Rejection{
         className: "QMutexLocker"
     }
-    
+
     Rejection{
         className: "QNoImplicitBoolCast"
     }
-    
+
     Rejection{
         className: "QObjectData"
     }
-    
+
     Rejection{
         className: "QObjectUserData"
     }
-    
+
     Rejection{
         className: "QPointer"
     }
-    
+
     Rejection{
         className: "QReadLocker"
     }
-    
+
     Rejection{
         className: "QSetIterator"
     }
-    
+
     Rejection{
         className: "QSharedData"
     }
-    
+
     Rejection{
         className: "QSharedDataPointer"
     }
-    
+
     Rejection{
         className: "QTextStreamManipulator"
     }
-    
+
     Rejection{
         className: "QTextStreamFunction"
     }
-    
+
     Rejection{
         className: "QTSMFI"
     }
-    
+
     Rejection{
         className: "QTSMFC"
     }
-    
+
     Rejection{
         className: "QtCleanUpFunction"
     }
-    
+
     Rejection{
         className: "qInternalCallback"
     }
-    
+
     Rejection{
         className: "QtStartUpFunction"
     }
-    
+
     Rejection{
         className: "QtPluginInstanceFunction"
     }
-    
+
     Rejection{
         className: "QtPluginMetaDataFunction"
     }
-    
+
     Rejection{
         className: "QThreadStorageData"
     }
-    
+
     Rejection{
         className: "QTypeInfo"
     }
-    
+
     Rejection{
         className: "QTypeInfoQuery"
     }
-    
+
     Rejection{
         className: "QTypeInfoMerger"
     }
-    
+
     Rejection{
         className: "QTypeInfo"
         enumName: "enum_1"
     }
-    
+
     Rejection{
         className: "QTypeInfo"
         enumName: "enum_2"
     }
-    
+
     Rejection{
         className: "QArrayData"
         enumName: "AllocationOption"
     }
-    
+
     Rejection{
         className: "QVFbKeyData"
     }
-    
+
     Rejection{
         className: "QVariantComparisonHelper"
     }
-    
+
     Rejection{
         className: "QVectorData"
     }
-    
+
     Rejection{
         className: "QVectorIterator"
     }
-    
+
     Rejection{
         className: "QVectorTypedData"
     }
-    
+
     Rejection{
         className: "QWriteLocker"
     }
-    
+
     Rejection{
         className: "qGreater"
     }
-    
+
     Rejection{
         className: "qLess"
     }
-    
+
     Rejection{
         className: "std"
     }
-    
+
     Rejection{
         className: "QIntForType"
     }
-    
+
     Rejection{
         className: "QList::Node"
     }
-    
+
     Rejection{
         className: "QList::Data"
     }
-    
+
     Rejection{
         className: "QMetaTypeId2"
     }
-    
+
     Rejection{
         className: "QMutableSetIterator"
     }
-    
+
     Rejection{
         className: "QSubString"
     }
-    
+
     Rejection{
         className: "QUintForType"
     }
-    
+
     Rejection{
         className: "QStringMatcher::Data"
     }
@@ -2202,19 +2165,19 @@ public final %ITERATOR_TYPE iterator() {
     Rejection{
         className: "QLatin1StringMatcher"
     }
-    
+
     Rejection{
         className: "StringBuilder"
     }
-    
+
     Rejection{
         className: "QConcatenable"
     }
-    
+
     Rejection{
         className: "QLatin1Literal"
     }
-    
+
     Rejection{
         className: "QIntegerForSizeof"
     }
@@ -2222,423 +2185,427 @@ public final %ITERATOR_TYPE iterator() {
     Rejection{
         className: "QMetaMethod::Data"
     }
-    
+
     Rejection{
         className: "QGlobalStaticDeleter"
     }
-    
+
     Rejection{
         className: "QVarLengthArray"
     }
-    
+
     Rejection{
         className: "_Revbidit"
     }
-    
+
     Rejection{
         className: "_complex"
     }
-    
+
     Rejection{
         className: "_exception"
     }
-    
+
     Rejection{
         className: "_iobuf"
     }
-    
+
     Rejection{
         className: "_stat"
     }
-    
+
     Rejection{
         className: "_wfinddata_t"
     }
-    
+
     Rejection{
         className: "exception"
     }
-    
+
     Rejection{
         className: "istreambuf_iterator"
     }
-    
+
     Rejection{
         className: "ostreambuf_iterator"
     }
-    
+
     Rejection{
         className: "reverse_bidirectional_iterator"
     }
-    
+
     Rejection{
         className: "reverse_iterator"
     }
-    
+
     Rejection{
         className: "stat"
     }
-    
+
     Rejection{
         className: "tm"
     }
-    
+
     Rejection{
         className: "_IO_FILE"
     }
-    
+
     Rejection{
         className: "_IO_marker"
     }
-    
+
     Rejection{
         className: "__exception"
     }
-    
+
     Rejection{
         className: "drand48_data"
     }
-    
+
     Rejection{
         className: "random_data"
     }
-    
+
     Rejection{
         className: "timespec"
     }
-    
+
     Rejection{
         className: "timeval"
     }
-    
+
     Rejection{
         className: "QJsonPrivate::Data"
     }
-    
+
     Rejection{
         className: "QByteArrayDataPtr"
     }
-    
+
     Rejection{
         className: "Data::AllocationOptions"
     }
-    
+
     Rejection{
         className: "QJsonValuePtr"
     }
-    
+
     Rejection{
         className: "QJsonValueRefPtr"
     }
-    
+
     Rejection{
         className: "QMimeTypePrivate"
     }
-    
+
     Rejection{
         className: "QCalendar::SystemId"
         since: [6, 2]
     }
-    
+
     Rejection{
         className: "QFuture::const_iterator"
     }
-    
+
     Rejection{
         className: "QHash"
         functionName: "equal_range"
     }
-    
+
     Rejection{
         className: "QMap"
         functionName: "equal_range"
     }
-    
+
     Rejection{
         className: "QAbstractEventDispatcher"
         functionName: "filterEvent"
     }
-    
+
     Rejection{
         className: "QAbstractEventDispatcher"
         functionName: "filterNativeEvent"
     }
-    
+
     Rejection{
         className: "QAbstractEventDispatcher"
         functionName: "setEventFilter"
     }
-    
+
     Rejection{
         className: "QFile"
         functionName: "setDecodingFunction"
     }
-    
+
     Rejection{
         className: "QFile"
         functionName: "setEncodingFunction"
     }
-    
+
     Rejection{
         className: "QPluginParsedMetaData"
         functionName: "parse"
         since: [6, 3]
     }
-    
+
     Rejection{
         className: "QPluginParsedMetaData"
         functionName: "value"
         since: [6, 3]
     }
-    
+
     Rejection{
         className: "QAbstractEventDispatcher"
         functionName: "installNativeEventFilter"
     }
-    
+
     Rejection{
         className: "QAbstractEventDispatcher"
         functionName: "removeNativeEventFilter"
     }
-    
+
     Rejection{
         className: "QCborContainerPrivate"
     }
-    
+
     Rejection{
         className: "QException"
     }
-    
+
     Rejection{
         className: "QUnhandledException"
     }
-    
+
     Rejection{
         className: "QMessageLogger"
     }
-    
+
     Rejection{
         className: "QAbstractNativeEventFilter"
     }
-    
+
     Rejection{
         className: "QFSFileEnginePrivate"
     }
-    
+
     Rejection{
         className: "QSharedPointer"
     }
-    
+
     Rejection{
         className: "QWeakPointer"
     }
-    
+
     Rejection{
         className: "QModelRoleData"
         functionName: "setData"
     }
-    
+
     Rejection{
         className: "QAtomicOps"
     }
-    
+
     Rejection{
         className: "QAtomicTraits"
     }
-    
+
     Rejection{
         className: "QtJambiNativeID"
     }
-    
+
     Rejection{
         className: "QFutureIterator"
     }
-    
-    
+
+
     Rejection{
         className: "QAudioEngineFactoryInterface"
     }
-    
+
     Rejection{
         className: "QAudioEnginePlugin"
     }
-    
+
     Rejection{
         className: "QHelpGlobal"
     }
-    
+
     Rejection{
         className: "QWinEventNotifier"
     }
-    
+
     Rejection{
         className: "QModelRoleDataSpan"
     }
-    
+
     Rejection{
         className: "QTypeRevision"
     }
-    
+
     Rejection{
         className: "QAdoptSharedDataTag"
     }
-    
+
     Rejection{
         className: "QAssociativeConstIterator"
     }
-    
+
     Rejection{
         className: "QAssociativeIterator"
     }
-    
+
     Rejection{
         className: "QBaseIterator"
     }
-    
+
     Rejection{
         className: "QBasicUtf8StringView"
     }
-    
+
     Rejection{
         className: "QBindingStatus"
     }
-    
+
     Rejection{
         className: "QConstIterator"
     }
-    
+
     Rejection{
         className: "QIterator"
     }
-    
+
     Rejection{
         className: "QListSpecialMethodsBase"
     }
-    
+
     Rejection{
         className: "QMetaAssociation"
     }
-    
+
     Rejection{
         className: "QMetaContainer"
     }
-    
+
     Rejection{
         className: "QMetaSequence"
     }
-    
+
     Rejection{
         className: "QModelRoleData"
     }
-    
+
     Rejection{
         className: "QMultiHash::iterator"
     }
-    
+
     Rejection{
         className: "QMultiHash::key_iterator"
     }
-    
+
     Rejection{
         className: "QMultiHashIterator"
     }
-    
+
     Rejection{
         className: "QMultiMap::iterator"
     }
-    
+
     Rejection{
         className: "QMultiMap::key_iterator"
     }
-    
+
     Rejection{
         className: "QMultiMapIterator"
     }
-    
+
     Rejection{
         className: "QMutableMultiHashIterator"
     }
-    
+
     Rejection{
         className: "QMutableMultiMapIterator"
     }
-    
+
     Rejection{
         className: "TypeInfo"
     }
-    
+
     Rejection{
         className: "QPropertyProxyBindingData"
     }
-    
+
     Rejection{
         className: "QObjectBindableProperty"
     }
-    
+
     Rejection{
         className: "QObjectComputedProperty"
     }
-    
+
     Rejection{
         className: "QPluginMetaData"
     }
-    
+
+    Rejection{
+        className: "QPluginMetaDataV2"
+    }
+
     Rejection{
         className: "QProperty"
     }
-    
+
     Rejection{
         className: "QPropertyAlias"
     }
-    
+
     Rejection{
         className: "QPropertyBindingPrivatePtr"
     }
-    
+
     Rejection{
         className: "QPropertyChangeHandler"
     }
-    
+
     Rejection{
         className: "QPropertyNotifier"
     }
-    
+
     Rejection{
         className: "QPropertyData"
     }
-    
+
     Rejection{
         className: "QSequentialIterator"
     }
-    
+
     Rejection{
         className: "QStringTokenizer"
     }
-    
+
     Rejection{
         className: "QStringTokenizerBase"
     }
-    
+
     Rejection{
         className: "QStringTokenizerBaseBase"
     }
-    
+
     Rejection{
         className: "QTaggedIterator"
     }
-    
+
     Rejection{
         className: "QTaggedPointer"
     }
-    
+
     Rejection{
         className: "QVariantConstPointer"
     }
-    
+
     Rejection{
         className: "QVariantPointer"
     }
-    
+
     ValueType{
         name: "QVariantRef"
         generate: false
@@ -2648,7 +2615,7 @@ public final %ITERATOR_TYPE iterator() {
         name: "QHashDummyValue"
         generate: false
     }
-    
+
     NamespaceType{
         name: "Qt"
         hasMetaObject: true
@@ -2695,6 +2662,7 @@ public final %ITERATOR_TYPE iterator() {
         Rejection{functionName: "ws"}
         Rejection{functionName: "compareThreeWay"}
         Rejection{fieldName: "Disambiguated"}
+        Rejection{className: "totally_ordered_wrapper"}
 
         EnumType{
             name: "InputMethodQuery"
@@ -3526,7 +3494,7 @@ public final %ITERATOR_TYPE iterator() {
         since: 6.7
         remove: RemoveFlag.All
     }
-    
+
     NamespaceType{
         name: "QtPrivate"
         generate: false
@@ -3640,7 +3608,7 @@ public final %ITERATOR_TYPE iterator() {
             since: 6
         }
     } // namespace QtPrivate
-    
+
     EnumType{
         name: "PropertyFlags"
         flags: "PropertyAttributes"
@@ -3651,7 +3619,7 @@ public final %ITERATOR_TYPE iterator() {
             Text{content: "@hidden"}
         }
     }
-    
+
     EnumType{
         name: "MethodFlags"
         flags: "MethodAttributes"
@@ -3668,7 +3636,7 @@ public final %ITERATOR_TYPE iterator() {
             name: "MethodTypeMask"
         }
     }
-    
+
     EnumType{
         name: "EnumFlags"
         flags: "EnumAttributes"
@@ -3679,7 +3647,7 @@ public final %ITERATOR_TYPE iterator() {
             Text{content: "@hidden"}
         }
     }
-    
+
     EnumType{
         name: "MetaObjectFlags"
         flags: "MetaObjectAttributes"
@@ -3691,7 +3659,7 @@ public final %ITERATOR_TYPE iterator() {
         }
         until: 5
     }
-    
+
     EnumType{
         name: "MetaObjectFlag"
         packageName: "io.qt.internal"
@@ -3702,7 +3670,7 @@ public final %ITERATOR_TYPE iterator() {
         }
         since: 6
     }
-    
+
     EnumType{
         name: "MetaDataFlags"
         flags: "MetaDataAttributes"
@@ -3713,20 +3681,20 @@ public final %ITERATOR_TYPE iterator() {
             Text{content: "@hidden"}
         }
     }
-    
+
     EnumType{
         name: "QtMsgType"
         RejectEnumValue{
             name: "QtSystemMsg"
         }
     }
-    
+
     EnumType{
         name: "QtPluginMetaDataKeys"
         packageName: "io.qt.core.internal"
         since: [6, 3]
     }
-    
+
     NamespaceType{
         name: "QSysInfo"
 
@@ -3770,12 +3738,12 @@ public final %ITERATOR_TYPE iterator() {
             write: false
         }
     }
-    
+
     ValueType{
         name: "QVectorSpecialMethods"
         generate: false
     }
-    
+
     ValueType{
         name: "QLine"
         ModifyFunction{
@@ -3783,7 +3751,7 @@ public final %ITERATOR_TYPE iterator() {
             remove: RemoveFlag.All
         }
     }
-    
+
     ValueType{
         name: "QLineF"
 
@@ -3801,7 +3769,7 @@ public final %ITERATOR_TYPE iterator() {
             remove: RemoveFlag.All
         }
     }
-    
+
     ValueType{
         name: "QElapsedTimer"
         Rejection{className: "Duration";  since: 6.6}
@@ -3811,7 +3779,7 @@ public final %ITERATOR_TYPE iterator() {
             name: "ClockType"
         }
     }
-    
+
     ValueType{
         name: "QProcessEnvironment"
         noImplicitConstructors: true
@@ -3820,7 +3788,7 @@ public final %ITERATOR_TYPE iterator() {
             since: [6, 3]
         }
     }
-    
+
     ObjectType{
         name: "QBasicTimer"
         ModifyFunction{
@@ -3834,7 +3802,7 @@ public final %ITERATOR_TYPE iterator() {
             until: 5
         }
     }
-    
+
     ValueType{
         name: "QByteArrayMatcher"
         Rejection{
@@ -3945,7 +3913,7 @@ public final %ITERATOR_TYPE iterator() {
             since: 6.3
         }
     }
-    
+
     ValueType{
         name: "QDate"
         EnumType{
@@ -4089,7 +4057,7 @@ public final %ITERATOR_TYPE iterator() {
             since: 6.7
         }*/
     }
-    
+
     ValueType{
         name: "QDateTime"
         EnumType{
@@ -4198,7 +4166,7 @@ public final %ITERATOR_TYPE iterator() {
             since: 6
         }
     }
-    
+
     ValueType{
         name: "QDir"
         EnumType{
@@ -4281,7 +4249,7 @@ public final %ITERATOR_TYPE iterator() {
         }
         since: 6.8
     }
-    
+
     ValueType{
         name: "QPoint"
         ModifyFunction{// don't provide assignment operator in favor to operator+
@@ -4327,7 +4295,7 @@ public final %ITERATOR_TYPE iterator() {
             }
         }
     }
-    
+
     ValueType{
         name: "QPointF"
         ModifyFunction{
@@ -4376,7 +4344,7 @@ public final %ITERATOR_TYPE iterator() {
                           "}"}
         }
     }
-    
+
     ValueType{
         name: "QRect"
         ModifyFunction{
@@ -4418,7 +4386,7 @@ public final %ITERATOR_TYPE iterator() {
             rename: "add"
         }
     }
-    
+
     ValueType{
         name: "QRectF"
         ModifyFunction{
@@ -4460,7 +4428,7 @@ public final %ITERATOR_TYPE iterator() {
             rename: "add"
         }
     }
-    
+
     ValueType{
         name: "QSize"
         ModifyFunction{
@@ -4490,7 +4458,7 @@ public final %ITERATOR_TYPE iterator() {
             }
         }
     }
-    
+
     ValueType{
         name: "QSizeF"
         ModifyFunction{
@@ -4520,7 +4488,7 @@ public final %ITERATOR_TYPE iterator() {
             }
         }
     }
-    
+
     ValueType{
         name: "QStringMatcher"
         ModifyFunction{
@@ -4558,7 +4526,7 @@ public final %ITERATOR_TYPE iterator() {
             since: [5, 14]
         }
     }
-    
+
     ValueType{
         name: "QTime"
         ModifyFunction{
@@ -4602,7 +4570,7 @@ public final %ITERATOR_TYPE iterator() {
             since: 6.7
         }*/
     }
-    
+
     ValueType{
         name: "QMetaMethod"
 
@@ -4666,7 +4634,7 @@ public final %ITERATOR_TYPE iterator() {
             }
         }
     }
-    
+
     ValueType{
         name: "QMetaProperty"
         Rejection{functionName: "resetOnGadget"}
@@ -4691,7 +4659,7 @@ public final %ITERATOR_TYPE iterator() {
             }
         }
     }
-    
+
     ValueType{
         name: "QMetaEnum"
         ModifyFunction{
@@ -4836,7 +4804,7 @@ public final %ITERATOR_TYPE iterator() {
             }
         }
     }
-    
+
     ValueType{
         name: "QPersistentModelIndex"
         threadAffinity: "model()"
@@ -4860,7 +4828,7 @@ public final %ITERATOR_TYPE iterator() {
             since: 6
         }
     }
-    
+
     ValueType{
         name: "QUuid"
 
@@ -5020,7 +4988,7 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
         }
         since: 6.6
     }
-    
+
     ValueType{
         name: "QLocale"
 
@@ -5608,7 +5576,7 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
         name: "QBitRef"
         generate: false
     }
-    
+
     ValueType{
         name: "QBitArray"
         ModifyFunction{
@@ -5793,7 +5761,7 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             since: 6
         }
     }
-    
+
     ValueType{
         name: "QCborError"
         EnumType{
@@ -5809,26 +5777,26 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
         }
         since: [5, 12]
     }
-    
+
     ValueType{
         name: "QCborParserError"
         since: [5, 12]
     }
-    
+
     ValueType{
         name: "QCborValueConstRef"
         javaName: "QCborValue"
         generate: false
         since: [6, 4]
     }
-    
+
     ValueType{
         name: "QCborValueRef"
         javaName: "QCborValue"
         generate: false
         since: [5, 12]
     }
-    
+
     ValueType{
         name: "QCborValue"
         ExtraIncludes{
@@ -5977,7 +5945,7 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
         }
         since: [5, 12]
     }
-    
+
     ValueType{
         name: "QCborArray"
 
@@ -6079,23 +6047,23 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
         }
         since: [5, 12]
     }
-    
+
     EnumType{
         name: "QCborSimpleType"
         since: [5, 12]
     }
-    
+
     EnumType{
         name: "QCborTag"
         extensible: true
         since: [5, 12]
     }
-    
+
     EnumType{
         name: "QCborKnownTags"
         since: [5, 12]
     }
-    
+
     ValueType{
         name: "QCborMap"
 
@@ -6362,7 +6330,7 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
         }
         since: [5, 12]
     }
-    
+
     ObjectType{
         name: "QCborStreamReader"
 
@@ -6576,7 +6544,7 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
         }
         since: [5, 12]
     }
-    
+
     ObjectType{
         name: "QCborStreamWriter"
         ModifyFunction{
@@ -6695,7 +6663,7 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
         }
         since: [5, 12]
     }
-    
+
     ValueType{
         name: "QJsonArray"
         Rejection{functionName: "empty"}
@@ -6765,7 +6733,7 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             }
         }
     }
-    
+
     ValueType{
         name: "QJsonDocument"
 
@@ -6902,7 +6870,7 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             until: 5
         }
     }
-    
+
     ValueType{
         name: "QJsonObject"
         Rejection{
@@ -7141,7 +7109,7 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             isConst: true
         }
     }
-    
+
     ValueType{
         name: "QJsonParseError"
 
@@ -7149,20 +7117,20 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             name: "ParseError"
         }
     }
-    
+
     ValueType{
         name: "QJsonValueConstRef"
         javaName: "QJsonValue"
         generate: false
         since: [6, 4]
     }
-    
+
     ValueType{
         name: "QJsonValueRef"
         javaName: "QJsonValue"
         generate: false
     }
-    
+
     ValueType{
         name: "QJsonValue"
         EnumType{
@@ -7236,11 +7204,11 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             since: 6.8
         }
     }
-    
+
     ValueType{
         name: "QMimeType"
     }
-    
+
     ValueType{
         name: "QRegularExpression"
 
@@ -7297,11 +7265,6 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             until: 5
         }
         ModifyFunction{
-            signature: "globalMatch(QString, qsizetype, QRegularExpression::MatchType, QRegularExpression::MatchOptions) const"
-            remove: RemoveFlag.All
-            since: 6
-        }
-        ModifyFunction{
             signature: "match(const QStringRef &, int, QRegularExpression::MatchType, QRegularExpression::MatchOptions) const"
             remove: RemoveFlag.All
             until: 5
@@ -7312,12 +7275,45 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             until: 5
         }
         ModifyFunction{
+            signature: "globalMatch(QString, qsizetype, QRegularExpression::MatchType, QRegularExpression::MatchOptions) const"
+            remove: RemoveFlag.All
+            since: 6
+        }
+        ModifyFunction{
             signature: "match(QString, qsizetype, QRegularExpression::MatchType, QRegularExpression::MatchOptions) const"
             remove: RemoveFlag.All
             since: 6
         }
+        ModifyFunction{
+            signature: "globalMatch(QStringView, qsizetype, QRegularExpression::MatchType, QRegularExpression::MatchOptions) const"
+            remove: RemoveFlag.All
+            since: 6.5
+        }
+        ModifyFunction{
+            signature: "match(QStringView, qsizetype, QRegularExpression::MatchType, QRegularExpression::MatchOptions) const"
+            remove: RemoveFlag.All
+            since: 6.5
+        }
+        ModifyFunction{
+            signature: "globalMatchView(QStringView, qsizetype, QRegularExpression::MatchType, QRegularExpression::MatchOptions) const"
+            rename: "globalMatch"
+            Delegate{
+                name: "globalMatchView"
+                deprecated: true
+            }
+            since: 6.5
+        }
+        ModifyFunction{
+            signature: "matchView(QStringView, qsizetype, QRegularExpression::MatchType, QRegularExpression::MatchOptions) const"
+            rename: "match"
+            Delegate{
+                name: "matchView"
+                deprecated: true
+            }
+            since: 6.5
+        }
     }
-    
+
     ValueType{
         name: "QRegularExpressionMatch"
         ModifyFunction{
@@ -7328,16 +7324,19 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             signature: "captured(QStringView) const"
             remove: RemoveFlag.All
             since: [5, 10]
+            until: 6.7
         }
         ModifyFunction{
             signature: "capturedEnd(QStringView) const"
             remove: RemoveFlag.All
             since: [5, 10]
+            until: 6.7
         }
         ModifyFunction{
             signature: "capturedLength(QStringView) const"
             remove: RemoveFlag.All
             since: [5, 10]
+            until: 6.7
         }
         ModifyFunction{
             signature: "capturedRef(int) const"
@@ -7361,16 +7360,49 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             signature: "capturedStart(QStringView) const"
             remove: RemoveFlag.All
             since: [5, 10]
+            until: 6.7
         }
         ModifyFunction{
             signature: "capturedView(QStringView) const"
             remove: RemoveFlag.All
             since: [5, 10]
+            until: 6.7
         }
         ModifyFunction{
             signature: "hasCaptured(QStringView) const"
             remove: RemoveFlag.All
             since: [6, 3]
+            until: 6.7
+        }
+        ModifyFunction{
+            signature: "captured(QAnyStringView) const"
+            remove: RemoveFlag.All
+            since: 6.8
+        }
+        ModifyFunction{
+            signature: "capturedEnd(QAnyStringView) const"
+            remove: RemoveFlag.All
+            since: 6.8
+        }
+        ModifyFunction{
+            signature: "capturedLength(QAnyStringView) const"
+            remove: RemoveFlag.All
+            since: 6.8
+        }
+        ModifyFunction{
+            signature: "capturedStart(QAnyStringView) const"
+            remove: RemoveFlag.All
+            since: 6.8
+        }
+        ModifyFunction{
+            signature: "capturedView(QAnyStringView) const"
+            remove: RemoveFlag.All
+            since: 6.8
+        }
+        ModifyFunction{
+            signature: "hasCaptured(QAnyStringView) const"
+            remove: RemoveFlag.All
+            since: 6.8
         }
         ModifyFunction{
             signature: "capturedView(int) const"
@@ -7378,7 +7410,7 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             since: [5, 10]
         }
     }
-    
+
     ValueType{
         name: "QRegularExpressionMatchIterator"
 
@@ -7404,11 +7436,11 @@ public static Id128Bytes of(long... data) throws IllegalArgumentException{
             }
         }
     }
-    
+
     ValueType{
         name: "QUrlQuery"
     }
-    
+
     ValueType{
         name: "QTimeZone"
         noImplicitConstructors: true
@@ -7442,8 +7474,8 @@ public static final int MaxUtcOffsetSecs = +14 * 3600;`}
             since: [6,5]
         }
     }
-    
-    
+
+
     ObjectType{
         name: "QStandardPaths"
 
@@ -7467,12 +7499,12 @@ public static final int MaxUtcOffsetSecs = +14 * 3600;`}
             }
         }
     }
-    
+
     ObjectType{
         name: "QSaveFile"
     }
-    
-    
+
+
     ObjectType{
         name: "QMimeDatabase"
 
@@ -7487,11 +7519,11 @@ public static final int MaxUtcOffsetSecs = +14 * 3600;`}
             }
         }
     }
-    
+
     ObjectType{
         name: "QEventLoopLocker"
     }
-    
+
     ObjectType{
         name: "QDirIterator"
         EnumType{
@@ -7515,8 +7547,8 @@ public static final int MaxUtcOffsetSecs = +14 * 3600;`}
             }
         }
     }
-    
-    
+
+
     ObjectType{
         name: "QAbstractItemModel"
         ExtraIncludes{
@@ -7787,7 +7819,7 @@ if(destinationChildV<0)
             until: 5
         }
     }
-    
+
     ObjectType{
         name: "QAbstractListModel"
         ExtraIncludes{
@@ -7805,7 +7837,7 @@ if(destinationChildV<0)
             remove: RemoveFlag.All
         }
     }
-    
+
     ObjectType{
         name: "QAbstractTableModel"
         ExtraIncludes{
@@ -7823,7 +7855,7 @@ if(destinationChildV<0)
             remove: RemoveFlag.All
         }
     }
-    
+
     ObjectType{
         name: "QStringListModel"
     }
@@ -7834,7 +7866,7 @@ if(destinationChildV<0)
 //        generate: false
 //    }
     Rejection{className: "QUrlTwoFlags"}
-    
+
     ValueType{
         name: "QUrl"
         ExtraIncludes{
@@ -7935,7 +7967,7 @@ if(destinationChildV<0)
         signature: "operator|=(QUrl::FormattingOptions&,QUrl::ComponentFormattingOptions)"
         remove: RemoveFlag.All
     }
-    
+
     ValueType{
         name: "QRegExp"
 
@@ -7975,7 +8007,7 @@ if(destinationChildV<0)
             }
         }
     }
-    
+
     ValueType{
         name: "QFileInfo"
         ExtraIncludes{
@@ -8004,11 +8036,11 @@ if(destinationChildV<0)
             until: 5
         }
     }
-    
+
     InterfaceType{
         name: "QFactoryInterface"
     }
-    
+
     ValueType{
         name: "QByteArrayView"
 
@@ -8379,7 +8411,7 @@ if(destinationChildV<0)
         name: "QByteRef"
         generate: false
     }
-    
+
     ValueType{
         name: "QByteArray"
         Rejection{functionName: "rbegin"}
@@ -9748,7 +9780,7 @@ if(destinationChildV<0)
         }
         until: [5, 15]
     }
-    
+
     ValueType{
         name: "QTextBoundaryFinder"
         EnumType{
@@ -9774,7 +9806,7 @@ if(destinationChildV<0)
             since: 6
         }
     }
-    
+
     ValueType{
         name: "QEasingCurve"
         FunctionalType{
@@ -9785,7 +9817,7 @@ if(destinationChildV<0)
             name: "Type"
         }
     }
-    
+
     ValueType{
         name: "QItemSelection"
         InjectCode{
@@ -9836,12 +9868,12 @@ if(destinationChildV<0)
             }
         }
     }
-    
+
     ValueType{
         name: "QItemSelectionRange"
         threadAffinity: "model()"
     }
-    
+
     ObjectType{
         name: "QItemSelectionModel"
         EnumType{
@@ -9861,7 +9893,7 @@ if(destinationChildV<0)
             }
         }
     }
-    
+
     ObjectType{
         name: "QAbstractAnimation"
 
@@ -9877,13 +9909,13 @@ if(destinationChildV<0)
             name: "Direction"
         }
     }
-    
+
     ObjectType{
         name: "QVariantAnimation"
         Rejection{className: "Interpolator"}
         Rejection{functionName: "qRegisterAnimationInterpolator"}
     }
-    
+
     ObjectType{
         name: "QAnimationGroup"
         ModifyFunction{
@@ -9924,19 +9956,19 @@ if(destinationChildV<0)
             }
         }
     }
-    
+
     ObjectType{
         name: "QPauseAnimation"
     }
-    
+
     ObjectType{
         name: "QParallelAnimationGroup"
     }
-    
+
     ObjectType{
         name: "QSequentialAnimationGroup"
     }
-    
+
     ObjectType{
         name: "QPropertyAnimation"
         ModifyFunction{
@@ -9956,7 +9988,7 @@ if(destinationChildV<0)
             }
         }
     }
-    
+
     ObjectType{
         name: "QAbstractProxyModel"
         ExtraIncludes{
@@ -9989,7 +10021,7 @@ if(destinationChildV<0)
             since: [6, 2]
         }
     }
-    
+
     ObjectType{
         name: "QSortFilterProxyModel"
         ModifyFunction{
@@ -10031,7 +10063,7 @@ if(destinationChildV<0)
             until: 5
         }
     }
-    
+
     ObjectType{
         name: "QIdentityProxyModel"
         ExtraIncludes{
@@ -10067,7 +10099,7 @@ if(destinationChildV<0)
             }
         }
     }
-    
+
     ObjectType{
         name: "QAbstractState"
         ModifyFunction{
@@ -10086,7 +10118,7 @@ if(destinationChildV<0)
         }
         until: 5
     }
-    
+
     ObjectType{
         name: "QAbstractTransition"
         EnumType{
@@ -10161,7 +10193,7 @@ if(destinationChildV<0)
         }
         until: 5
     }
-    
+
     ObjectType{
         name: "QState"
         EnumType{
@@ -10301,7 +10333,7 @@ if(destinationChildV<0)
         }
         until: 5
     }
-    
+
     ObjectType{
         name: "QStateMachine"
         ObjectType{
@@ -10386,7 +10418,7 @@ if(destinationChildV<0)
         }
         until: 5
     }
-    
+
     ObjectType{
         name: "QHistoryState"
         EnumType{
@@ -10426,7 +10458,7 @@ if(destinationChildV<0)
         }
         until: 5
     }
-    
+
     ObjectType{
         name: "QSignalTransition"
         ModifyFunction{
@@ -10488,7 +10520,7 @@ if(destinationChildV<0)
         }
         until: 5
     }
-    
+
     ObjectType{
         name: "QEventTransition"
         ModifyFunction{
@@ -10503,12 +10535,12 @@ if(destinationChildV<0)
         }
         until: 5
     }
-    
+
     ObjectType{
         name: "QFinalState"
         until: 5
     }
-    
+
     ValueType{
         name: "QMargins"
         ModifyFunction{// don't provide assignment operator in favor to operator-
@@ -10549,7 +10581,7 @@ if(destinationChildV<0)
             since: 6
         }
     }
-    
+
     ValueType{
         name: "QMarginsF"
         ModifyFunction{// don't provide assignment operator in favor to operator-
@@ -10582,11 +10614,16 @@ if(destinationChildV<0)
             since: 6
         }
     }
-    
+
     ObjectType{
         name: "QXmlStreamEntityResolver"
     }
-    
+
+    ObjectType{
+        name: "QAbstractEventDispatcherV2"
+        since: 6.8
+    }
+
     ObjectType{
         name: "QAbstractEventDispatcher"
         ExtraIncludes{
@@ -10773,8 +10810,41 @@ if(destinationChildV<0)
             }
             since: 6.8
         }
+
+        ModifyFunction{
+            signature: "registerTimer(Qt::TimerId, QAbstractEventDispatcher::Duration, Qt::TimerType, QObject *)"
+            access: Modification.NonFinal
+            since: 6.8
+        }
+        ModifyFunction{
+            signature: "unregisterTimer(Qt::TimerId)"
+            access: Modification.NonFinal
+            since: 6.8
+        }
+        ModifyFunction{
+            signature: "timersForObject(QObject *) const"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "java.util.@NonNull List<io.qt.core.QAbstractEventDispatcher.@NonNull TimerInfoV2>"
+                }
+            }
+            access: Modification.NonFinal
+            since: 6.8
+        }
+        ModifyFunction{
+            signature: "remainingTime(Qt::TimerId) const"
+            ModifyArgument{
+                index: 0
+                ReplaceType{
+                    modifiedType: "java.time.temporal.@NonNull TemporalAmount"
+                }
+            }
+            access: Modification.NonFinal
+            since: 6.8
+        }
     }
-    
+
     ValueType{
         name: "QVersionNumber"
         ModifyFunction{
@@ -10862,7 +10932,7 @@ if(destinationChildV<0)
             since: [6, 4]
         }
     }
-    
+
     ObjectType{
         name: "QEventLoop"
         EnumType{
@@ -10873,7 +10943,7 @@ if(destinationChildV<0)
             threadAffinity: false
         }
     }
-    
+
     ObjectType{
         name: "QFile"
         ModifyFunction{
@@ -10931,7 +11001,7 @@ if(destinationChildV<0)
             }
         }
     }
-    
+
     ObjectType{
         name: "QFileDevice"
 
@@ -11016,7 +11086,7 @@ if(destinationChildV<0)
             }
         }
     }
-    
+
     InterfaceType{
         name: "QIODeviceBase"
         noImpl: true
@@ -11031,7 +11101,7 @@ if(destinationChildV<0)
         }
         since: 6
     }
-    
+
     ObjectType{
         name: "QIODevice"
         EnumType{
@@ -11240,7 +11310,7 @@ if(destinationChildV<0)
             noImplicitArguments: true
         }
     }
-    
+
     ObjectType{
         name: "QCryptographicHash"
 
@@ -11309,7 +11379,7 @@ if(destinationChildV<0)
             since: 6
         }
     }
-    
+
     ObjectType{
         name: "QSocketNotifier"
 
@@ -11325,7 +11395,7 @@ if(destinationChildV<0)
             threadAffinity: true
         }
     }
-    
+
     ObjectType{
         name: "QTemporaryFile"
         ModifyFunction{
@@ -11375,11 +11445,11 @@ if(destinationChildV<0)
             }
         }
     }
-    
+
     ObjectType{
         name: "QTemporaryDir"
     }
-    
+
     ObjectType{
         name: "QMimeData"
         ExtraIncludes{
@@ -11393,7 +11463,7 @@ if(destinationChildV<0)
             }
         }
     }
-    
+
     ObjectType{
         name: "QStringConverterBase"
         EnumType{
@@ -11414,7 +11484,7 @@ if(destinationChildV<0)
         }
         since: 6
     }
-    
+
     ObjectType{
         name: "QStringConverter"
 
@@ -11553,6 +11623,11 @@ if(destinationChildV<0)
                 }
             }
         }
+        ModifyFunction{
+            signature: "QStringDecoder<>(QString,QStringConverterBase::Flags)"
+            remove: RemoveFlag.All
+            since: 6.8
+        }
     }
 
     ObjectType{
@@ -11623,9 +11698,14 @@ if(destinationChildV<0)
                 }
             }
         }
+        ModifyFunction{
+            signature: "QStringEncoder<>(QString,QStringConverterBase::Flags)"
+            remove: RemoveFlag.All
+            since: 6.8
+        }
     }
-    
-    
+
+
     ObjectType{
         name: "QTextCodec"
         EnumType{
@@ -11743,7 +11823,7 @@ if(destinationChildV<0)
         }
         until: 5
     }
-    
+
     ObjectType{
         name: "QTextDecoder"
         ModifyFunction{
@@ -11776,7 +11856,7 @@ if(destinationChildV<0)
         }
         until: 5
     }
-    
+
     ObjectType{
         name: "QTextEncoder"
         ModifyFunction{
@@ -11796,7 +11876,7 @@ if(destinationChildV<0)
         }
         until: 5
     }
-    
+
     ObjectType{
         name: "QTimeLine"
 
@@ -11812,7 +11892,7 @@ if(destinationChildV<0)
             name: "State"
         }
     }
-    
+
     ObjectType{
         name: "QTranslator"
         ExtraIncludes{
@@ -11881,7 +11961,7 @@ if(destinationChildV<0)
             }
         }
     }
-    
+
     ObjectType{
         name: "QFileSystemWatcher"
         ExtraIncludes{
@@ -11891,7 +11971,7 @@ if(destinationChildV<0)
             }
         }
     }
-    
+
     ObjectType{
         name: "QBuffer"
         ExtraIncludes{
@@ -11952,7 +12032,7 @@ if(destinationChildV<0)
             since: [6,5]
         }
     }
-    
+
     ObjectType{
         name: "QTimer"
 
@@ -12508,10 +12588,6 @@ if(destinationChildV<0)
             generate: false
         }
 
-        TypeAliasType{
-            name: "FunctorContext"
-        }
-
         ModifyFunction{
             signature: "singleShot<Functor>(std::chrono::nanoseconds,const QChronoTimer::FunctorContext*,Functor&&)"
             Instantiation{
@@ -12656,7 +12732,7 @@ if(destinationChildV<0)
         }
         since: 6.8
     }
-    
+
     ObjectType{
         name: "QProcess"
         ppCondition: "QT_CONFIG(process)"
@@ -12888,8 +12964,8 @@ if(destinationChildV<0)
             since: [5, 10]
         }
     }
-    
-    
+
+
     ObjectType{
         name: "QSignalMapper"
         ExtraIncludes{
@@ -13085,7 +13161,7 @@ if(destinationChildV<0)
             until: 5
         }
     }
-    
+
     ObjectType{
         name: "QThreadStorage"
         template: true
@@ -13093,7 +13169,7 @@ if(destinationChildV<0)
             arguments: ["JObjectWrapper"]
         }
     }
-    
+
     ObjectType{
         name: "QThreadStorage<JObjectWrapper>"
         isGeneric: true
@@ -13114,7 +13190,7 @@ if(destinationChildV<0)
             }
         }
     }
-    
+
     ObjectType{
         name: "QThread"
         ExtraIncludes{
@@ -13257,7 +13333,7 @@ if(destinationChildV<0)
             }
         }
     }
-    
+
     ObjectType{
         name: "QObjectCleanupHandler"
         ModifyFunction{
@@ -13279,7 +13355,7 @@ if(destinationChildV<0)
             }
         }
     }
-    
+
     ObjectType{
         name: "QObject"
         implementing: "QtSignalEmitterInterface, QtSignalBlockerInterface, QtThreadAffineInterface"
@@ -13962,7 +14038,7 @@ try{
             since: 6.7
         }
     }
-    
+
     ObjectType{
         name: "QSignalBlocker"
         implementing: "AutoCloseable"
@@ -13975,7 +14051,7 @@ try{
             Text{content: "public void close(){dispose();}"}
         }
     }
-    
+
     ObjectType{
         name: "QCoreApplication"
         isValueOwner: true
@@ -14349,7 +14425,7 @@ try{
         generate: false
         since: [6, 5]
     }
-    
+
     ValueType{
         name: "QLocationPermission"
 
@@ -14577,8 +14653,8 @@ try{
             blockExceptions: true
         }
     }
-    
-    
+
+
     ObjectType{
         name: "QEvent"
 
@@ -14636,7 +14712,7 @@ try{
             write: false
         }
     }
-    
+
     ObjectType{
         name: "QChildEvent"
         ModifyField{
@@ -14664,7 +14740,7 @@ try{
             since: 6
         }
     }
-    
+
     ObjectType{
         name: "QTimerEvent"
         ModifyField{
@@ -14693,7 +14769,7 @@ try{
             since: 6
         }
     }
-    
+
     ObjectType{
         name: "QDeferredDeleteEvent"
         javaName: "QDeferredDisposeEvent"
@@ -14717,7 +14793,7 @@ try{
             since: 6
         }
     }
-    
+
     ObjectType{
         name: "QDynamicPropertyChangeEvent"
         ModifyFunction{
@@ -14740,7 +14816,7 @@ try{
             since: 6
         }
     }
-    
+
     ObjectType{
         name: "QDataStream"
         ExtraIncludes{
@@ -14812,23 +14888,27 @@ try{
             }
             RejectEnumValue{
                 name: "Qt_6_1"
-                since: [6, 1]
+                since: 6.1
             }
             RejectEnumValue{
                 name: "Qt_6_2"
-                since: [6, 2]
+                since: 6.2
             }
             RejectEnumValue{
                 name: "Qt_6_3"
-                since: [6, 3]
+                since: 6.3
             }
             RejectEnumValue{
                 name: "Qt_6_4"
-                since: [6, 4]
+                since: 6.4
             }
             RejectEnumValue{
                 name: "Qt_6_5"
-                since: [6, 5]
+                since: 6.5
+            }
+            RejectEnumValue{
+                name: "Qt_6_8"
+                since: 6.8
             }
             RejectEnumValue{
                 name: "Qt_DefaultCompiledVersion"
@@ -15308,7 +15388,7 @@ try{
             }
         }
     }
-    
+
     ObjectType{
         name: "QTextStream"
 
@@ -15748,7 +15828,7 @@ try{
             }
         }
     }
-    
+
     ObjectType{
         name: "QPromise"
         disableNativeIdUsage: true
@@ -15758,7 +15838,7 @@ try{
         }
         since: 6
     }
-    
+
     ObjectType{
         name: "QPromise<QVariant>"
         isGeneric: true
@@ -15767,7 +15847,7 @@ try{
         generate: false
         since: 6
     }
-    
+
     ValueType{
         name: "QFuture"
         Rejection{
@@ -15787,7 +15867,7 @@ try{
             arguments: ["QVariant"]
         }
     }
-    
+
     ValueType{
         name: "QFuture<QVariant>"
         isGeneric: true
@@ -15795,7 +15875,7 @@ try{
         disableNativeIdUsage: true
         generate: false
     }
-    
+
     NamespaceType{
         name: "QtFuture"
         ExtraIncludes{
@@ -15890,7 +15970,7 @@ try{
         }
         since: 6
     }
-    
+
     ValueType{
         name: "QFutureInterfaceBase"
         noImplicitConstructors: true
@@ -16020,6 +16100,15 @@ if(%1!=null){
             access: Modification.NonFinal
         }
         ModifyFunction{
+            signature: "reportFinished()"
+            access: Modification.NonFinal
+        }
+        ModifyFunction{
+            signature: "isPaused()const"
+            deprecated: true
+            since: 6.0
+        }
+        ModifyFunction{
             signature: "mutex()const"
             ModifyArgument{
                 index: 0
@@ -16028,6 +16117,7 @@ if(%1!=null){
                     ownership: Ownership.Dependent
                 }
             }
+            since: 6
         }
         ModifyFunction{
             signature: "mutex(int)const"
@@ -16055,7 +16145,7 @@ if(%1!=null){
                           "}"}
         }
     }
-    
+
     ObjectType{
         name: "QFutureWatcherBase"
         ExtraIncludes{
@@ -16109,7 +16199,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     ObjectType{
         name: "QFutureWatcher"
         disableNativeIdUsage: true
@@ -16118,14 +16208,14 @@ if(%1!=null){
             arguments: ["QVariant"]
         }
     }
-    
+
     ObjectType{
         name: "QFutureWatcher<QVariant>"
         isGeneric: true
         disableNativeIdUsage: true
         generate: false
     }
-    
+
     ValueType{
         name: "QFutureInterface"
         disableNativeIdUsage: true
@@ -16134,7 +16224,7 @@ if(%1!=null){
             arguments: ["QVariant"]
         }
     }
-    
+
     ValueType{
         name: "QFutureInterface<QVariant>"
         isGeneric: true
@@ -16142,7 +16232,7 @@ if(%1!=null){
         disableNativeIdUsage: true
         generate: false
     }
-    
+
     ObjectType{
         name: "QThreadPool"
         ExtraIncludes{
@@ -16295,7 +16385,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     InterfaceType{
         name: "QRunnable"
         implementing: "Runnable"
@@ -16323,8 +16413,8 @@ if(%1!=null){
             since: 6.6
         }
     }
-    
-    
+
+
     ValueType{
         name: "QXmlStreamAttribute"
         CustomConstructor{
@@ -16349,7 +16439,7 @@ if(%1!=null){
                           "                                       copy->value().toString());"}
         }
     }
-    
+
     ValueType{
         name: "QXmlStreamAttributes"
         ModifyFunction{
@@ -16420,19 +16510,19 @@ if(%1!=null){
                           "}"}
         }
     }
-    
+
     ValueType{
         name: "QXmlStreamNamespaceDeclaration"
     }
-    
+
     ValueType{
         name: "QXmlStreamNotationDeclaration"
     }
-    
+
     ValueType{
         name: "QXmlStreamEntityDeclaration"
     }
-    
+
     ObjectType{
         name: "QXmlStreamReader"
 
@@ -16496,7 +16586,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     ObjectType{
         name: "QXmlStreamWriter"
         ModifyFunction{
@@ -16545,11 +16635,11 @@ if(%1!=null){
             }
         }
     }
-    
+
     EnumType{
         name: "QLockFile::LockError"
     }
-    
+
     ObjectType{
         name: "QLockFile"
         ExtraIncludes{
@@ -16610,7 +16700,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     ObjectType{
         name: "QMessageAuthenticationCode"
         ModifyFunction{
@@ -16657,7 +16747,7 @@ if(%1!=null){
     Rejection{
         className: "QAbstractFileEnginePrivate"
     }
-    
+
     ObjectType{
         name: "QAbstractFileEngineIterator"
         EnumType{
@@ -16680,7 +16770,7 @@ if(%1!=null){
             until: 6.7
         }
     }
-    
+
     ObjectType{
         name: "QAbstractFileEngineHandler"
         packageName: "io.qt.core.internal"
@@ -16706,7 +16796,7 @@ if(%1!=null){
             until: 6.7 // unique_ptr as of 6.8
         }
     }
-    
+
     ObjectType{
         name: "QAbstractFileEngine"
 
@@ -16926,7 +17016,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     ObjectType{
         name: "QFSFileEngine"
         packageName: "io.qt.core.internal"
@@ -16937,7 +17027,7 @@ if(%1!=null){
             functionName: "supportsExtension"
         }
     }
-    
+
     ObjectType{
         name: "QCommandLineParser"
         Rejection{
@@ -17002,11 +17092,11 @@ if(%1!=null){
             }
         }
     }
-    
+
     ObjectType{
         name: "QFileSelector"
     }
-    
+
     ValueType{
         name: "QCommandLineOption"
         EnumType{
@@ -17025,7 +17115,7 @@ if(%1!=null){
             Text{content: "new(placement) QCommandLineOption(QLatin1String(\" \"));"}
         }
     }
-    
+
     ValueType{
         name: "QCollator"
         implementing: "java.util.Comparator<@StrictNonNull String>"
@@ -17109,7 +17199,7 @@ if(%1!=null){
             signature: "sortKey(const QString &) const"
         }
     }
-    
+
     ValueType{
         name: "QCollatorSortKey"
         ModifyFunction{
@@ -17128,11 +17218,11 @@ if(%1!=null){
             Text{content: "new(placement) QCollatorSortKey(QCollator().sortKey(\"\"));"}
         }
     }
-    
+
     ValueType{
         name: "QStorageInfo"
     }
-    
+
     ValueType{
         name: "QOperatingSystemVersion"
         EnumType{
@@ -17161,7 +17251,7 @@ if(%1!=null){
         }
         until: "6.6.2"
     }
-    
+
     ValueType{
         name: "QOperatingSystemVersionBase"
         javaName: "QOperatingSystemVersion"
@@ -17241,7 +17331,7 @@ if(%1!=null){
         }
         since: "6.6.3"
     }
-    
+
     ObjectType{
         name: "QLibraryInfo"
 
@@ -17259,11 +17349,11 @@ if(%1!=null){
             since: 6
         }
     }
-    
+
     ObjectType{
         name: "QAnimationDriver"
     }
-    
+
     ValueType{
         name: "QDeadlineTimer"
         ModifyFunction{
@@ -17310,7 +17400,7 @@ if(%1!=null){
             since: 6
         }
     }
-    
+
     ObjectType{
         name: "QConcatenateTablesProxyModel"
         ModifyFunction{
@@ -17335,7 +17425,7 @@ if(%1!=null){
         }
         since: [5, 13]
     }
-    
+
     ObjectType{
         name: "QTransposeProxyModel"
         ModifyFunction{
@@ -17350,7 +17440,7 @@ if(%1!=null){
         }
         since: [5, 13]
     }
-    
+
     FunctionalType{
         name: "QFunctionPointer"
         generate: "no-shell"
@@ -17363,7 +17453,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     ObjectType{
         name: "QLibrary"
     }
@@ -17431,7 +17521,7 @@ if(%1!=null){
             since: 6
         }
     }
-    
+
     ValueType{
         name: "QString"
         noImplicitConstructors: true
@@ -19271,23 +19361,23 @@ if(%1!=null){
         signature: "operator+(QString,const char*)"
         remove: RemoveFlag.All
     }
-    
-    
+
+
     ObjectType{
         name: "QtJambiStringList"
         extendType: "QStringList"
     }
-    
+
     ObjectType{
         name: "QtJambiItemSelection"
         extendType: "QItemSelection"
         since: 6
     }
-    
+
     EnumType{
         name: "QLibrary::LoadHint"
     }
-    
+
     ObjectType{
         name: "QPluginLoader"
         ExtraIncludes{
@@ -19470,7 +19560,7 @@ if(%1!=null){
         }
         since: [5, 13]
     }
-    
+
     ValueType{
         name: "QPluginParsedMetaData"
         packageName: "io.qt.core.internal"
@@ -19488,7 +19578,7 @@ if(%1!=null){
         }
         since: [6, 3]
     }
-    
+
     ValueType{
         name: "QStaticPlugin"
         forceFinal: true
@@ -19532,7 +19622,7 @@ if(%1!=null){
         }
         since: [5, 13]
     }
-    
+
     ValueType{
         name: "QMetaType"
         //implementing: "java.util.Comparator<@Nullable Object>"
@@ -19701,18 +19791,26 @@ if(%1!=null){
                 AddArgument{
                     index: 1
                     name: "clazz"
-                    type: "java.lang.Class<?>"
+                    type: "java.lang.@Nullable Class<?>"
                 }
                 AddArgument{
                     index: 2
                     name: "instantiations"
-                    type: "io.qt.core.QMetaType..."
+                    type: "io.qt.core.@NonNull QMetaType @NonNull..."
                 }
                 ModifyArgument{
                     index: 0
                     ConversionRule{
                         codeClass: CodeClass.Native
                         Text{content: "%out = qtjambi_cast<jobject>(%env, QMetaType(%in));"}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Comment
+                    Text{content: "@param clazz Java class of the meta type\n" +
+                                  "@param instantiations only required for generic container types\n" +
+                                  "@return meta type instance representing the class"
                     }
                 }
             }
@@ -20294,8 +20392,79 @@ if(%1!=null){
             }
             since: 6
         }
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Equals
+            Text{content: "if(other instanceof Type) return id()==((Type)other).value();"}
+        }
     }
-    
+
+    GlobalFunction{
+        signature: "qRegisterMetaType<T>()"
+        targetType: "QMetaType"
+        Instantiation{
+            proxyCall: "CoreAPI::registerMetaType"
+            Delegate{
+                name: "registerMetaType"
+                deprecated: true
+            }
+            Argument{
+                type: "QObject"
+            }
+            AddArgument{
+                index: 1
+                name: "clazz"
+                type: "java.lang.@Nullable Class<?>"
+            }
+            AddArgument{
+                index: 2
+                name: "instantiations"
+                type: "io.qt.core.@NonNull QMetaType @NonNull..."
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Comment
+                Text{content: "@param clazz Java class to be registered\n" +
+                              "@param instantiations only required for generic container types\n" +
+                              "@return meta type id"
+                }
+            }
+        }
+    }
+
+    GlobalFunction{
+        signature: "qMetaTypeId<T>()"
+        targetType: "QMetaType"
+        Instantiation{
+            proxyCall: "CoreAPI::metaTypeId"
+            Delegate{
+                name: "metaTypeId"
+                deprecated: true
+            }
+            Argument{
+                type: "QObject"
+            }
+            AddArgument{
+                index: 1
+                name: "clazz"
+                type: "java.lang.@Nullable Class<?>"
+            }
+            AddArgument{
+                index: 2
+                name: "instantiations"
+                type: "io.qt.core.@NonNull QMetaType @NonNull..."
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Comment
+                Text{content: "@param clazz Java class of the meta type\n" +
+                              "@param instantiations only required for generic container types\n" +
+                              "@return found meta type id"
+                }
+            }
+        }
+    }
+
     ValueType{
         name: "QVariant"
         noImplicitConstructors: true
@@ -20412,6 +20581,11 @@ if(%1!=null){
             since: 6.6
         }
         ModifyFunction{
+            signature: "fromValue(QVariant)"
+            remove: RemoveFlag.All
+            until: 6.6
+        }
+        ModifyFunction{
             signature: "setValue<T>(T)"
             remove: RemoveFlag.All
             until: 5
@@ -20453,18 +20627,23 @@ if(%1!=null){
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant variant = QtJambiAPI::convertJavaObjectToQVariant(%env, %in);\n"+
+                    Text{content: "QVariant variant = %in ? QtJambiAPI::convertJavaObjectToQVariant(%env, %in) : QVariant(QMetaType(QMetaType::Nullptr), nullptr);\n"+
                                   "auto __scope = qScopeGuard([&](){reinterpret_cast<QVariant*>(__qtjambi_ptr)->swap(variant);});\n"+
                                   "QMetaType %out(QMetaType::UnknownType);"}
                     since: 6
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant variant = QtJambiAPI::convertJavaObjectToQVariant(%env, %in);\n"+
+                    Text{content: "QVariant variant = %in ? QtJambiAPI::convertJavaObjectToQVariant(%env, %in) : QVariant(QMetaType::Nullptr, nullptr);\n"+
                                   "auto __scope = qScopeGuard([&](){reinterpret_cast<QVariant*>(__qtjambi_ptr)->swap(variant);});\n"+
                                   "int %out = QMetaType::UnknownType;"}
                     until: 5
                 }
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Comment
+                Text{content: "<p>CAUTION: argument <code>null</code> will convert to <code>QVariant(nullptr)</code>.</p>"}
             }
         }
         ModifyFunction{
@@ -20571,18 +20750,30 @@ if(%1!=null){
         }
         ModifyFunction{
             signature: "operator=(QVariant)"
-            rename: "setValue"
+            Delegate{
+                name: "setValue"
+                until: 5
+            }
             ModifyArgument{
                 index: 1
                 ReplaceType{
                     modifiedType: "java.lang.@Nullable Object"
                 }
+                AddImplicitCall{
+                    type: "io.qt.core.@NonNull QVariant"
+                    since: 6
+                }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant %out = QtJambiAPI::convertJavaObjectToQVariant(%env, %in);"}
+                    Text{content: "QVariant %out = %1 ? QtJambiAPI::convertJavaObjectToQVariant(%env, %in) : QVariant(QMetaType::Nullptr, nullptr);"; until: 5}
+                    Text{content: "QVariant %out = %1 ? QtJambiAPI::convertJavaObjectToQVariant(%env, %in) : QVariant(QMetaType(QMetaType::Nullptr), nullptr);"; since: 6}
                 }
             }
-            until: 5
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Comment
+                Text{content: "<p>CAUTION <code>null</code> will convert to <code>QVariant(nullptr)</code>.</p>"}
+            }
         }
         ModifyFunction{
             signature: "setValue(QVariant)"
@@ -20593,8 +20784,13 @@ if(%1!=null){
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "QVariant %out = QtJambiAPI::convertJavaObjectToQVariant(%env, %in);"}
+                    Text{content: "QVariant %out = %in ? QtJambiAPI::convertJavaObjectToQVariant(%env, %in) : QVariant(QMetaType(QMetaType::Nullptr));"}
                 }
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Comment
+                Text{content: "<p>CAUTION: argument <code>null</code> will convert to <code>QVariant(nullptr)</code>.</p>"}
             }
             since: 6
         }
@@ -20630,9 +20826,24 @@ if(%1!=null){
                 }
                 ConversionRule{
                     codeClass: CodeClass.Native
-                    Text{content: "Q_UNUSED(%in)\n"+
-                                  "%out = QtJambiAPI::convertQVariantToJavaObject(%env, *__qt_this);"}
+                    Text{content: String.raw`
+Q_UNUSED(%in)
+int mtid = __qt_this->
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+                        userType();
+#else
+                        metaType().id();
+#endif
+if(mtid==QMetaType::Nullptr || mtid==QMetaType::Void)
+    %out = nullptr;
+else
+    %out = QtJambiAPI::convertQVariantToJavaObject(%env, *__qt_this);`}
                 }
+            }
+            InjectCode{
+                target: CodeClass.Java
+                position: Position.Comment
+                Text{content: "<p>CAUTION: This method returns <code>null</code> in case the variant stores a null pointer and in case it is invalid.</p>"}
             }
         }
         ModifyFunction{
@@ -20752,6 +20963,16 @@ if(%1!=null){
                     ReplaceType{
                         modifiedType: "T"
                     }
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "QVariant %out = %in ? QtJambiAPI::convertJavaObjectToQVariant(%env, %in) : QVariant(QMetaType::Nullptr, nullptr);"; until: 5}
+                        Text{content: "QVariant %out = %in ? QtJambiAPI::convertJavaObjectToQVariant(%env, %in) : QVariant(QMetaType(QMetaType::Nullptr), nullptr);"; since: 6}
+                    }
+                }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Comment
+                    Text{content: "<p>CAUTION: argument <code>null</code> will convert to <code>QVariant(nullptr)</code>.</p>"}
                 }
             }
         }
@@ -20763,11 +20984,11 @@ if(%1!=null){
                 }
                 AddArgument{
                     name: "clazz"
-                    type: "java.lang.Class<T>"
+                    type: "java.lang.@Nullable Class<T>"
                 }
                 AddArgument{
                     name: "instantiations"
-                    type: "io.qt.core.QMetaType..."
+                    type: "io.qt.core.@NonNull QMetaType @NonNull..."
                 }
                 AddTypeParameter{
                     name: "T"
@@ -20794,7 +21015,20 @@ if(%1!=null){
                         since: 6
                     }
                 }
+                InjectCode{
+                    target: CodeClass.Java
+                    position: Position.Comment
+                    Text{content: "@param clazz target Java class the variant is converted into\n" +
+                                  "@param instantiations only required for generic container types\n" +
+                                  "@return value of the variant (converted to target class if necessary)"
+                    }
+                }
             }
+        }
+        InjectCode{
+            target: CodeClass.Java
+            position: Position.Equals
+            Text{content: "if (other instanceof Null) other = fromValue(other);"}
         }
 
         EnumType{
@@ -20802,7 +21036,7 @@ if(%1!=null){
             extensible: true
         }
     }
-    
+
     ObjectType{
         name: "QPartialOrdering"
         forceFinal: true
@@ -20954,7 +21188,7 @@ if(%1!=null){
         since: 6
         remove: RemoveFlag.All
     }
-    
+
     ObjectType{
         name: "QResource"
         EnumType{
@@ -21064,7 +21298,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     ObjectType{
         name: "QSharedMemory"
         ppCondition: "(QT_VERSION_MAJOR==5 && !defined(QT_NO_SHAREDMEMORY)) || QT_CONFIG(sharedmemory)"
@@ -21156,7 +21390,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     ValueType{
         name: "QCalendar"
 
@@ -21186,7 +21420,7 @@ if(%1!=null){
         }
         since: [5, 14]
     }
-    
+
     ObjectType{
         name: "QBasicMutex"
         noMetaType: true
@@ -21228,12 +21462,12 @@ if(%1!=null){
             until: 5
         }
     }
-    
+
     ObjectType{
         name: "QRecursiveMutex"
         noMetaType: true
     }
-    
+
     ObjectType{
         name: "QMutex"
         noMetaType: true
@@ -21260,11 +21494,11 @@ if(%1!=null){
             since: 6.6
         }
     }
-    
+
     ObjectType{
         name: "QSemaphore"
     }
-    
+
     ObjectType{
         name: "QSystemSemaphore"
         EnumType{
@@ -21280,7 +21514,7 @@ if(%1!=null){
             since: [6, 1]
         }
     }
-    
+
     ObjectType{
         name: "QReadWriteLock"
 
@@ -21291,11 +21525,11 @@ if(%1!=null){
             name: "RecursionMode"
         }
     }
-        
+
     EnumType{
         name: "QMutex::RecursionMode"
     }
-    
+
     ObjectType{
         name: "QWaitCondition"
         ModifyFunction{
@@ -21325,12 +21559,12 @@ if(%1!=null){
             }
         }
     }
-    
+
     ObjectType{
         name: "QUntypedPropertyData"
         since: 6
     }
-    
+
     ValueType{
         name: "QUntypedBindable"
         ModifyFunction{
@@ -21429,7 +21663,7 @@ if(%1!=null){
         }
         since: 6
     }
-    
+
     ObjectType{
         name: "QPropertyObserverBase"
         ModifyFunction{
@@ -21441,7 +21675,7 @@ if(%1!=null){
         Rejection{enumName: "ObserverTag"}
         since: 6
     }
-    
+
     ObjectType{
         name: "QPropertyObserver"
         ExtraIncludes{
@@ -21483,7 +21717,7 @@ if(%1!=null){
         }
         since: 6
     }
-    
+
     ValueType{
         name: "QPropertyBindingError"
         EnumType{
@@ -21491,7 +21725,7 @@ if(%1!=null){
         }
         since: 6
     }
-    
+
     ValueType{
         name: "QUntypedPropertyBinding"
         ModifyFunction{
@@ -21511,20 +21745,20 @@ if(%1!=null){
         }
         since: 6
     }
-    
+
     ValueType{
         name: "QPropertyBindingSourceLocation"
         generate: false
         since: 6
     }
-    
+
     ObjectType{
         name: "QBindingStorage"
         forceFriendly: true
         Rejection{functionName: "status"}
         since: 6
     }
-    
+
     ObjectType{
         name: "QLoggingCategory"
         FunctionalType{
@@ -21604,7 +21838,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     ObjectType{
         name: "QMessageLogContext"
         ModifyFunction{
@@ -21633,7 +21867,7 @@ if(%1!=null){
             write: false
         }
     }
-    
+
     ObjectType{
         name: "QDebugStateSaver"
         implementing: "java.lang.AutoCloseable"
@@ -21645,7 +21879,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     ValueType{
         name: "QDebug"
         Rejection{
@@ -21900,7 +22134,7 @@ if(%1!=null){
     Rejection{
         className: "QRandomGenerator64"
     }
-    
+
     ValueType{
         name: "QRandomGenerator"
         Rejection{
@@ -21989,7 +22223,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     FunctionalType{
         name: "QtMessageHandler"
         ModifyArgument{
@@ -22001,19 +22235,19 @@ if(%1!=null){
             }*/
         }
     }
-    
+
     Rejection{
         className: "QUntypedPropertyData::InheritsQUntypedPropertyData"
     }
-    
+
     Rejection{
         className: "QPropertyData::DisableRValueRefs"
     }
-    
+
     Rejection{
         className: "QUntypedPropertyBinding::BindingFunctionVTable"
     }
-    
+
     NamespaceType{
         name: "QNativeInterface"
         generate: false
@@ -22030,7 +22264,7 @@ if(%1!=null){
         }
         since: 6
     }
-    
+
     InterfaceType{
         name: "QNativeInterface::QAndroidApplication"
         packageName: "io.qt.core.nativeinterface"
@@ -22046,7 +22280,7 @@ if(%1!=null){
         }
         since: [6, 2]
     }
-    
+
     ValueType{
         name: "QHashSeed"
         ModifyFunction{
@@ -22055,676 +22289,676 @@ if(%1!=null){
         }
         since: [6, 2]
     }
-    
+
     Rejection{
         className: ""
         functionName: "JNI_CreateJavaVM"
     }
-    
+
     Rejection{
         className: ""
         functionName: "JNI_GetCreatedJavaVMs"
     }
-    
+
     Rejection{
         className: ""
         functionName: "JNI_GetDefaultJavaVMInitArgs"
     }
-    
+
     Rejection{
         className: ""
         functionName: "JNI_OnLoad"
     }
-    
+
     Rejection{
         className: ""
         functionName: "JNI_OnUnload"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qAddPostRoutine"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qAddPreRoutine"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qAppName"
     }
-    
+
     Rejection{
         className: ""
         functionName: "decodeVersion0ArchRequirements"
     }
-    
+
     Rejection{
         className: ""
         functionName: "decodeVersion1ArchRequirements"
     }
-    
+
     Rejection{
         className: ""
         functionName: "is_ident_char"
     }
-    
+
     Rejection{
         className: ""
         functionName: "is_space"
     }
-    
+
     Rejection{
         className: ""
         functionName: "processOpenModeFlags"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qAbort"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qBadAlloc"
     }
-    
+
     Rejection{
         functionName: "static_assert"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qvsnprintf"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qunsetenv"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qt_qnan"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qt_qFindChildren_helper"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qt_qFindChild_helper"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qt_noop"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qt_message_output"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qt_is_nan"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qt_is_inf"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qt_is_finite"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qt_inf"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qt_hash"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qt_fpclassify"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qt_error_string"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qt_custom_file_engine_handler_create"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qt_clang_builtin_available"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qt_check_pointer"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qt_assert"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qt_assert_x"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qt_QMetaEnum_flagDebugOperator"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qt_QMetaEnum_debugOperator"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qtTrId"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qstrnlen"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qstrnicmp"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qstrncpy"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qstrncmp"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qstrlen"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qstricmp"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qstrdup"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qstrcpy"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qstrcmp"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qsnprintf"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qputenv"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qbswap_helper"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qgetenv"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qVersion"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qTzSet"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qTerminate"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qSharedBuild"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qSetRealNumberPrecision"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qSetPadChar"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qSetFieldWidth"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qEnvironmentVariable"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qEnvironmentVariableIntValue"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qEnvironmentVariableIsEmpty"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qEnvironmentVariableIsSet"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qobject_cast"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qobject_iid_cast"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qobject_interface_iid"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qobject_pointer_cast"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qvariant_cast"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qSubOverflow"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qt_ptr_swap"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qt_QMetaEnum_flagDebugOperator_helper"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qbswapFloatHelper"
     }
-    
+
     Rejection{
         className: ""
         functionName: "q_check_ptr"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qWeakPointerFromVariant"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qWeakPointerCast"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qTokenize"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qToUnderlying"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qToUnaligned"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qToStringViewIgnoringNull"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qThreadStorage_setLocalData"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qThreadStorage_localData_const"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qThreadStorage_localData"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qThreadStorage_deleteData"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qSharedPointerObjectCast"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qSharedPointerFromVariant"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qSharedPointerDynamicCast"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qSharedPointerConstCast"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qSharedPointerCast"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qScopeGuard"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qMulOverflow"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qPointerFromVariant"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qMakeStaticByteArrayMatcher"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qMakePair"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qLoadPlugin"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qLoadPlugin1"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qHashRangeCommutative"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qHashRange"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qHashMultiCommutative"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qHashMulti"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qHashEquals"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qGetPtrHelper"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qFromUnaligned"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qAddOverflow"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qAsConst"
     }
-    
+
     Rejection{
         className: ""
         functionName: "genericHash"
     }
-    
+
     Rejection{
         className: ""
         functionName: "erase_if"
     }
-    
+
     Rejection{
         className: ""
         functionName: "erase"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qDeleteInEventHandler"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qFloatFromFloat16"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qFloatToFloat16"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qGetBindingStorage"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qHashBits"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qInstallMessageHandler"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qMallocAligned"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qMetaTypeTypeInternal"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qMkTime"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qReallocAligned"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qRemovePostRoutine"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qAtomicAssign"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qAtomicDetach"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qDeleteAll"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qExchange"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qPluginArchRequirements"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qFreeAligned"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qt_register_signal_spy_callbacks"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qSwap"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qErrnoWarning"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qSetMessagePattern"
     }
-    
+
     Rejection{
         className: ""
         functionName: "qFormatLogMessage"
     }
-    
+
     GlobalFunction{
         signature: "qFuzzyIsNull(qfloat16)"
         remove: RemoveFlag.All
     }
-    
+
     GlobalFunction{
         signature: "qFuzzyCompare(qfloat16, qfloat16)"
         remove: RemoveFlag.All
     }
-    
+
     GlobalFunction{
         signature: "qFpClassify(qfloat16)"
         remove: RemoveFlag.All
     }
-    
+
     GlobalFunction{
         signature: "qIntCast(qfloat16)"
         remove: RemoveFlag.All
     }
-    
+
     GlobalFunction{
         signature: "qIsFinite(qfloat16)"
         remove: RemoveFlag.All
     }
-    
+
     GlobalFunction{
         signature: "qIsInf(qfloat16)"
         remove: RemoveFlag.All
     }
-    
+
     GlobalFunction{
         signature: "qIsNaN(qfloat16)"
         remove: RemoveFlag.All
@@ -22741,12 +22975,12 @@ if(%1!=null){
         remove: RemoveFlag.All
         since: [6,5]
     }
-    
+
     GlobalFunction{
         signature: "qIsNull(qfloat16)"
         remove: RemoveFlag.All
     }
-    
+
     GlobalFunction{
         signature: "qRound(qfloat16)"
         remove: RemoveFlag.All
@@ -22756,7 +22990,7 @@ if(%1!=null){
         signature: "qbswap(qfloat16)"
         remove: RemoveFlag.All
     }
-    
+
     GlobalFunction{
         signature: "qRound64(qfloat16)"
         remove: RemoveFlag.All
@@ -22801,177 +23035,177 @@ if(%1!=null){
         signature: "operator/=(qfloat16&,float)"
         remove: RemoveFlag.All
     }
-    
+
     GlobalFunction{
         signature: "qPopulationCount(long unsigned int)"
         remove: RemoveFlag.All
     }
-    
+
     GlobalFunction{
         signature: "qPopulationCount(quint8)"
         targetType: "QtAlgorithms"
     }
-    
+
     GlobalFunction{
         signature: "qPopulationCount(quint16)"
         targetType: "QtAlgorithms"
     }
-    
+
     GlobalFunction{
         signature: "qPopulationCount(quint32)"
         targetType: "QtAlgorithms"
     }
-    
+
     GlobalFunction{
         signature: "qPopulationCount(quint64)"
         targetType: "QtAlgorithms"
     }
-    
+
     GlobalFunction{
         signature: "qCountLeadingZeroBits(unsigned long)"
         remove: RemoveFlag.All
     }
-    
+
     GlobalFunction{
         signature: "qCountLeadingZeroBits(quint16)"
         targetType: "QtAlgorithms"
     }
-    
+
     GlobalFunction{
         signature: "qCountLeadingZeroBits(quint32)"
         targetType: "QtAlgorithms"
     }
-    
+
     GlobalFunction{
         signature: "qCountLeadingZeroBits(quint8)"
         targetType: "QtAlgorithms"
     }
-    
+
     GlobalFunction{
         signature: "qCountLeadingZeroBits(quint64)"
         targetType: "QtAlgorithms"
     }
-    
+
     GlobalFunction{
         signature: "qCountTrailingZeroBits(unsigned long)"
         remove: RemoveFlag.All
     }
-    
+
     GlobalFunction{
         signature: "qCountTrailingZeroBits(quint16)"
         targetType: "QtAlgorithms"
     }
-    
+
     GlobalFunction{
         signature: "qCountTrailingZeroBits(quint32)"
         targetType: "QtAlgorithms"
     }
-    
+
     GlobalFunction{
         signature: "qCountTrailingZeroBits(quint8)"
         targetType: "QtAlgorithms"
     }
-    
+
     GlobalFunction{
         signature: "qCountTrailingZeroBits(quint64)"
         targetType: "QtAlgorithms"
     }
-    
+
     GlobalFunction{
         signature: "qFastCos(qreal)"
         targetType: "QtMath"
     }
-    
+
     GlobalFunction{
         signature: "qFastSin(qreal)"
         targetType: "QtMath"
     }
-    
+
     GlobalFunction{
         signature: "qNextPowerOfTwo(qint32)"
         targetType: "QtMath"
     }
-    
+
     GlobalFunction{
         signature: "qNextPowerOfTwo(qint64)"
         targetType: "QtMath"
     }
-    
+
     GlobalFunction{
         signature: "qDegreesToRadians(double)"
         targetType: "QtMath"
     }
-    
+
     GlobalFunction{
         signature: "qDegreesToRadians(float)"
         targetType: "QtMath"
     }
-    
+
     GlobalFunction{
         signature: "qRadiansToDegrees(double)"
         targetType: "QtMath"
     }
-    
+
     GlobalFunction{
         signature: "qRadiansToDegrees(float)"
         targetType: "QtMath"
     }
-    
+
     GlobalFunction{
         signature: "qIsNaN(double)"
         targetType: "QtNumeric"
     }
-    
+
     GlobalFunction{
         signature: "qIsInf(double)"
         targetType: "QtNumeric"
     }
-    
+
     GlobalFunction{
         signature: "qIsFinite(double)"
         targetType: "QtNumeric"
     }
-    
+
     GlobalFunction{
         signature: "qFpClassify(double)"
         targetType: "QtNumeric"
     }
-    
+
     GlobalFunction{
         signature: "qFloatDistance(double,double)"
         targetType: "QtNumeric"
     }
-    
+
     GlobalFunction{
         signature: "qIsNaN(float)"
         targetType: "QtNumeric"
     }
-    
+
     GlobalFunction{
         signature: "qIsInf(float)"
         targetType: "QtNumeric"
     }
-    
+
     GlobalFunction{
         signature: "qIsFinite(float)"
         targetType: "QtNumeric"
     }
-    
+
     GlobalFunction{
         signature: "qFpClassify(float)"
         targetType: "QtNumeric"
     }
-    
+
     GlobalFunction{
         signature: "qFloatDistance(float,float)"
         targetType: "QtNumeric"
     }
-    
+
     GlobalFunction{
         signature: "qInf()"
         targetType: "QtNumeric"
     }
-    
+
     GlobalFunction{
         signature: "qQNaN()"
         targetType: "QtNumeric"
@@ -22987,7 +23221,7 @@ if(%1!=null){
         signature: "qSNaN()"
         targetType: "QtNumeric"
     }
-    
+
     GlobalFunction{
         signature: "qIsFinite<T>(T)"
         remove: RemoveFlag.All
@@ -22998,12 +23232,12 @@ if(%1!=null){
         remove: RemoveFlag.All
         since: [6,5]
     }
-    
+
     GlobalFunction{
         signature: "qIsInf<T>(T)"
         remove: RemoveFlag.All
     }
-    
+
     GlobalFunction{
         signature: "qIsNaN<T>(T)"
         remove: RemoveFlag.All
@@ -23013,72 +23247,72 @@ if(%1!=null){
         signature: "qFuzzyCompare(double, double)"
         targetType: "QtGlobal"
     }
-    
+
     GlobalFunction{
         signature: "qFuzzyCompare(double, double)"
         targetType: "QtGlobal"
     }
-    
+
     GlobalFunction{
         signature: "qFuzzyIsNull(double)"
         targetType: "QtGlobal"
     }
-    
+
     GlobalFunction{
         signature: "qFuzzyCompare(float, float)"
         targetType: "QtGlobal"
     }
-    
+
     GlobalFunction{
         signature: "qFuzzyIsNull(float)"
         targetType: "QtGlobal"
     }
-    
+
     GlobalFunction{
         signature: "qIntCast(float)"
         targetType: "QtGlobal"
     }
-    
+
     GlobalFunction{
         signature: "qIsNull(float)"
         targetType: "QtGlobal"
     }
-    
+
     GlobalFunction{
         signature: "qIntCast(double)"
         targetType: "QtGlobal"
     }
-    
+
     GlobalFunction{
         signature: "qIsNull(double)"
         targetType: "QtGlobal"
     }
-    
+
     GlobalFunction{
         signature: "qRound64(float)"
         targetType: "QtGlobal"
     }
-    
+
     GlobalFunction{
         signature: "qRound(float)"
         targetType: "QtGlobal"
     }
-    
+
     GlobalFunction{
         signature: "qRound(double)"
         targetType: "QtGlobal"
     }
-    
+
     GlobalFunction{
         signature: "qRound64(double)"
         targetType: "QtGlobal"
     }
-    
+
     GlobalFunction{
         signature: "qMin<T,U>(T, U)"
         remove: RemoveFlag.All
     }
-    
+
     GlobalFunction{
         signature: "qMax<T,U>(T, U)"
         remove: RemoveFlag.All
@@ -23202,7 +23436,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     GlobalFunction{
         signature: "qMin<T>(T, T)"
         targetType: "QtGlobal"
@@ -23237,7 +23471,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     GlobalFunction{
         signature: "qMax<T>(T, T)"
         targetType: "QtGlobal"
@@ -23272,7 +23506,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     GlobalFunction{
         signature: "qAbs<T>(T)"
         targetType: "QtGlobal"
@@ -23307,7 +23541,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     GlobalFunction{
         signature: "qAcos<T>(T)"
         targetType: "QtMath"
@@ -23328,7 +23562,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     GlobalFunction{
         signature: "qAsin<T>(T)"
         targetType: "QtMath"
@@ -23349,7 +23583,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     GlobalFunction{
         signature: "qAtan2<T1,T2>(T1,T2)"
         targetType: "QtMath"
@@ -23376,7 +23610,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     GlobalFunction{
         signature: "qPow<T1,T2>(T1,T2)"
         targetType: "QtMath"
@@ -23403,7 +23637,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     GlobalFunction{
         signature: "qAtan<T>(T)"
         targetType: "QtMath"
@@ -23424,7 +23658,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     GlobalFunction{
         signature: "qCos<T>(T)"
         targetType: "QtMath"
@@ -23445,7 +23679,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     GlobalFunction{
         signature: "qSin<T>(T)"
         targetType: "QtMath"
@@ -23466,7 +23700,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     GlobalFunction{
         signature: "qTan<T>(T)"
         targetType: "QtMath"
@@ -23487,7 +23721,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     GlobalFunction{
         signature: "qSqrt<T>(T)"
         targetType: "QtMath"
@@ -23508,7 +23742,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     GlobalFunction{
         signature: "qExp<T>(T)"
         targetType: "QtMath"
@@ -23529,7 +23763,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     GlobalFunction{
         signature: "qFabs<T>(T)"
         targetType: "QtMath"
@@ -23550,7 +23784,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     GlobalFunction{
         signature: "qCeil<T>(T)"
         targetType: "QtMath"
@@ -23571,7 +23805,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     GlobalFunction{
         signature: "qFloor<T>(T)"
         targetType: "QtMath"
@@ -23592,7 +23826,7 @@ if(%1!=null){
             }
         }
     }
-    
+
     GlobalFunction{
         signature: "qLn<T>(T)"
         targetType: "QtMath"
@@ -23613,12 +23847,12 @@ if(%1!=null){
             }
         }
     }
-    
+
     GlobalFunction{
         signature: "qHypot<F,Fs...>(F, Fs...)"
         remove: RemoveFlag.All
     }
-    
+
     GlobalFunction{
         signature: "qHypot<Tx,Ty,Tz>(Tx, Ty, Tz)"
         remove: RemoveFlag.All
@@ -23635,7 +23869,7 @@ if(%1!=null){
         remove: RemoveFlag.All
         since: [6,5]
     }
-    
+
     GlobalFunction{
         signature: "qHypot<Tx,Ty>(Tx, Ty)"
         targetType: "QtMath"
@@ -23662,127 +23896,127 @@ if(%1!=null){
             }
         }
     }
-    
+
     GlobalFunction{
         signature: "qGlobalQHashSeed()"
         targetType: "Qt"
     }
-    
+
     GlobalFunction{
         signature: "qSetGlobalQHashSeed(int)"
         targetType: "Qt"
     }
-    
+
     GlobalFunction{
         signature: "qDegreesToRadians(long double)"
         remove: RemoveFlag.All
     }
-    
+
     GlobalFunction{
         signature: "qRadiansToDegrees(long double)"
         remove: RemoveFlag.All
     }
-    
+
     GlobalFunction{
         signature: "qNextPowerOfTwo(quint32)"
         remove: RemoveFlag.All
     }
-    
+
     GlobalFunction{
         signature: "qNextPowerOfTwo(quint64)"
         remove: RemoveFlag.All
     }
-    
+
     GlobalFunction{
         signature: "qAcos(qreal)"
         targetType: "QtMath"
         until: [5, 15]
     }
-    
+
     GlobalFunction{
         signature: "qAsin(qreal)"
         targetType: "QtMath"
         until: [5, 15]
     }
-    
+
     GlobalFunction{
         signature: "qAtan(qreal)"
         targetType: "QtMath"
         until: [5, 15]
     }
-    
+
     GlobalFunction{
         signature: "qAtan2(qreal, qreal)"
         targetType: "QtMath"
         until: [5, 15]
     }
-    
+
     GlobalFunction{
         signature: "qPow(qreal, qreal)"
         targetType: "QtMath"
         until: [5, 15]
     }
-    
+
     GlobalFunction{
         signature: "qCeil(qreal)"
         targetType: "QtMath"
         until: [5, 15]
     }
-    
+
     GlobalFunction{
         signature: "qCos(qreal)"
         targetType: "QtMath"
         until: [5, 15]
     }
-    
+
     GlobalFunction{
         signature: "qExp(qreal)"
         targetType: "QtMath"
         until: [5, 15]
     }
-    
+
     GlobalFunction{
         signature: "qFabs(qreal)"
         targetType: "QtMath"
         until: [5, 15]
     }
-    
+
     GlobalFunction{
         signature: "qFloor(qreal)"
         targetType: "QtMath"
         until: [5, 15]
     }
-    
+
     GlobalFunction{
         signature: "qLn(qreal)"
         targetType: "QtMath"
         until: [5, 15]
     }
-    
+
     GlobalFunction{
         signature: "qSin(qreal)"
         targetType: "QtMath"
         until: [5, 15]
     }
-    
+
     GlobalFunction{
         signature: "qSqrt(qreal)"
         targetType: "QtMath"
         until: [5, 15]
     }
-    
+
     GlobalFunction{
         signature: "qTan(qreal)"
         targetType: "QtMath"
         until: [5, 15]
     }
-    
+
     GlobalFunction{
         signature: "qrand()"
         targetType: "QtGlobal"
         until: [5, 15]
     }
-    
+
     GlobalFunction{
         signature: "qsrand(uint)"
         targetType: "QtGlobal"
@@ -24092,7 +24326,7 @@ if(%1!=null){
         targetType: "QtGlobal"
         since: 6.7
     }
-    
+
     HeaderType{
         name: "QtAlgorithms"
     }
@@ -24100,7 +24334,7 @@ if(%1!=null){
     HeaderType{
         name: "QtEndian"
     }
-    
+
     HeaderType{
         name: "QtGlobal"
         InjectCode{
@@ -24119,11 +24353,11 @@ if(%1!=null){
             }
         }
     }
-    
+
     HeaderType{
         name: "QtNumeric"
     }
-    
+
     HeaderType{
         name: "QtMath"
     }
@@ -24208,7 +24442,7 @@ if(%1!=null){
         signature: "qt_assume_is_deprecated(bool)"
         remove: RemoveFlag.All
     }
-    
+
     SuppressedWarning{text: "WARNING(Preprocessor) :: No such file or directory: *"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'operator<<(char16_t)' for function modification in 'QDebug' not found.*"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: signature 'operator<<(char32_t)' for function modification in 'QDebug' not found.*"}
@@ -24223,7 +24457,7 @@ if(%1!=null){
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QDebug::Latin1Content'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QAbstractFileEngine::ExtensionOption const\\*'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'QAbstractFileEngine::Iterator\\*'"}
-    
+
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function 'QVariantAnimation::registerInterpolator', unmatched parameter type '*Interpolator'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'Qt::Initialization'"}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping * unmatched *type 'std::*'"}

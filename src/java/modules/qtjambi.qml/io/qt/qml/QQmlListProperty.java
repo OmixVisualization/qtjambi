@@ -61,7 +61,7 @@ public final class QQmlListProperty<T extends QtObjectInterface> extends QtObjec
     /**
      * <p>See <a href="https://doc.qt.io/qt/qqmllistproperty.html#QQmlListProperty-1">QQmlListProperty::QQmlListProperty(QObject*, QList&lt;T *>*)</a></p>
      */
-    public QQmlListProperty(QObject o, QList<T> list){
+    public QQmlListProperty(@StrictNonNull QObject o, @StrictNonNull QList<T> list){
         this(o, list, false);
     }
     
@@ -69,7 +69,7 @@ public final class QQmlListProperty<T extends QtObjectInterface> extends QtObjec
      * This constructor allows you to create a read-only property from a QList.
      * <p>See <a href="https://doc.qt.io/qt/qqmllistproperty.html#QQmlListProperty-1">QQmlListProperty::QQmlListProperty(QObject*, QList&lt;T *>*)</a></p>
      */
-    public QQmlListProperty(QObject o, QList<T> list, boolean readonly){
+    public QQmlListProperty(@StrictNonNull QObject o, @StrictNonNull QList<T> list, boolean readonly){
         super((QPrivateConstructor)null);
         long listNativeId = QtJambi_LibraryUtilities.internal.checkedNativeId(Objects.requireNonNull(list));
         initialize_native_list(this, Objects.requireNonNull(o), list, readonly);
@@ -98,10 +98,10 @@ public final class QQmlListProperty<T extends QtObjectInterface> extends QtObjec
      * This constructor creates a read-only QQmlListProperty with given access methods. The access functions should operate on the same data source (e.g. list).
      * <p>See <a href="https://doc.qt.io/qt/qqmllistproperty.html#QQmlListProperty-4">QQmlListProperty::QQmlListProperty(QObject *, void *, CountFunction, AtFunction)</a></p>
      */
-    public <O extends QObject> QQmlListProperty(Class<T> elementType, 
+    public <O extends QObject> QQmlListProperty(@Nullable Class<T> elementType, 
     		O o, 
-    		ToLongFunction<O> countFunction, 
-    		AtFunction<O,T> atFunction) {
+    		@Nullable ToLongFunction<O> countFunction, 
+    		@Nullable AtFunction<O,T> atFunction) {
     	this(elementType, o, null, countFunction, atFunction, null, null, null);
     }
     
@@ -109,12 +109,12 @@ public final class QQmlListProperty<T extends QtObjectInterface> extends QtObjec
      * This constructor creates a writable QQmlListProperty with given access methods. The access functions should operate on the same data source (e.g. list).
      * <p>See <a href="https://doc.qt.io/qt/qqmllistproperty.html#QQmlListProperty-2">QQmlListProperty::QQmlListProperty(QObject *, void *, AppendFunction, CountFunction, AtFunction, ClearFunction)</a></p>
      */
-    public <O extends QObject> QQmlListProperty(Class<T> elementType, 
+    public <O extends QObject> QQmlListProperty(@Nullable Class<T> elementType, 
     		O o, 
-    		BiConsumer<O,T> appendFunction, 
-    		ToLongFunction<O> countFunction, 
-    		AtFunction<O,T> atFunction,
-    		Consumer<O> clearFunction) {
+    		@Nullable BiConsumer<O,T> appendFunction, 
+    		@Nullable ToLongFunction<O> countFunction, 
+    		@Nullable AtFunction<O,T> atFunction,
+    		@Nullable Consumer<O> clearFunction) {
     	this(elementType, o, appendFunction, countFunction, atFunction, clearFunction, null, null);
     }
     
@@ -122,14 +122,14 @@ public final class QQmlListProperty<T extends QtObjectInterface> extends QtObjec
      * This constructor creates a writable QQmlListProperty with given access methods. The access functions should operate on the same data source (e.g. list).
      * <p>See <a href="https://doc.qt.io/qt/qqmllistproperty.html#QQmlListProperty-3">QQmlListProperty::QQmlListProperty(QObject *, void *, AppendFunction, CountFunction, AtFunction, ClearFunction, ReplaceFunction, RemoveLastFunction)</a></p>
      */
-    public <O extends QObject> QQmlListProperty(Class<T> elementType, 
+    public <O extends QObject> QQmlListProperty(@Nullable Class<T> elementType, 
 									    		O o, 
-									    		BiConsumer<O,T> appendFunction, 
-									    		ToLongFunction<O> countFunction, 
-									    		AtFunction<O,T> atFunction,
-									    		Consumer<O> clearFunction,
-									    		ReplaceFunction<O,T> replaceFunction,
-									    		Consumer<O> removeLastFunction) {
+									    		@Nullable BiConsumer<O,T> appendFunction, 
+									    		@Nullable ToLongFunction<O> countFunction, 
+									    		@Nullable AtFunction<O,T> atFunction,
+									    		@Nullable Consumer<O> clearFunction,
+									    		@Nullable ReplaceFunction<O,T> replaceFunction,
+									    		@Nullable Consumer<O> removeLastFunction) {
         super((QPrivateConstructor)null);
         QMetaType metaType = QMetaType.fromType(elementType);
         initialize_native_functions(this, metaType, o, 
@@ -204,14 +204,14 @@ public final class QQmlListProperty<T extends QtObjectInterface> extends QtObjec
     public native final void removeLast();
     
     @QtUninvokable
-    public native final QObject object();
+    public native final @Nullable QObject object();
 
     private QQmlListProperty(QPrivateConstructor p) { 
     	super(p);
 	}
 
     @Override
-    public QQmlListProperty<T> clone(){
+    public @NonNull QQmlListProperty<T> clone(){
     	QQmlListProperty<T> clone = clone_native();
     	clone.elementType = this.elementType;
     	return clone;

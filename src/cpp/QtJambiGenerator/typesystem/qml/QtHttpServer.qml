@@ -46,6 +46,18 @@ TypeSystem{
     
     ObjectType{
         name: "QAbstractHttpServer"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/JavaAPI"
+                location: Include.Global
+                since: 6.8
+            }
+            Include{
+                fileName: "QtJambi/JObjectWrapper"
+                location: Include.Global
+                since: 6.8
+            }
+        }
         ModifyFunction{
             signature: "sslSetup(QSslConfiguration)"
             ppCondition: "QT_CONFIG(ssl)"
@@ -153,8 +165,44 @@ TypeSystem{
             }
             since: [6,5]
         }
+        ModifyFunction{
+            signature: "registerWebSocketUpgradeVerifier<Functor,true>(Functor&&)"
+            Instantiation{
+                Argument{
+                    type: "QVariant"
+                    isImplicit: true
+                }
+                ModifyArgument{
+                    index: 1
+                    ReplaceType{
+                        modifiedType: "java.util.function.Function<@NonNull QHttpServerRequest, @NonNull QHttpServerWebSocketUpgradeResponse>"
+                    }
+                    NoNullPointer{}
+                    ConversionRule{
+                        codeClass: CodeClass.Native
+                        Text{content: "JObjectWrapper functor(%env, %in);\n"+
+                                      "auto %out = [functor](const QHttpServerRequest& request) -> QHttpServerWebSocketUpgradeResponse {\n"+
+                                      "                    if(JniEnvironment env{200}){\n"+
+                                      "                        jobject result = Java::Runtime::Function::apply(env, functor.object(), qtjambi_cast<jobject>(env, request));\n"+
+                                      "                        return qtjambi_cast<QHttpServerWebSocketUpgradeResponse>(env, result);\n"+
+                                      "                    }\n"+
+                                      "                    else return QHttpServerWebSocketUpgradeResponse::deny();\n"+
+                                      "                };"}
+                    }
+                }
+            }
+            since: 6.8
+        }
     }
-    
+
+    ValueType{
+        name: "QHttpServerWebSocketUpgradeResponse"
+        EnumType{
+            name: "ResponseType"
+        }
+        since: 6.8
+    }
+
     ObjectType{
         name: "QHttpServer"
         Rejection{
@@ -236,6 +284,7 @@ TypeSystem{
                     lengthParameter: 2
                 }
             }
+            until: 6.7
         }
         ModifyFunction{
             signature: "write(QIODevice*,QByteArray,QHttpServerResponder::StatusCode)"
@@ -265,6 +314,7 @@ TypeSystem{
                 index: 2
                 AddImplicitCall{type: "java.lang.@NonNull String"}
             }
+            until: 6.7
         }
         InjectCode{
             target: CodeClass.Java

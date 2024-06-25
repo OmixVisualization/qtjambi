@@ -33,7 +33,10 @@ import io.qt.*;
 /**
  * <code>QBooleanPropertyAlias</code> is primitive-typed version of <code>QPropertyAlias&lt;Boolean&gt;</code>.
  * @see QPropertyAlias
+ * @deprecated Class was only meant for internal use, use a <code>QProperty</code> and add a binding to the target
  */
+@Deprecated(forRemoval=true, since="Qt 6.6")
+@SuppressWarnings("removal")
 public final class QBooleanPropertyAlias extends QAbstractPropertyAlias {
 	
 	private static QPropertyAlias<@NonNull@QtPrimitiveType Boolean> check(QPropertyAlias<@NonNull@QtPrimitiveType Boolean> other){

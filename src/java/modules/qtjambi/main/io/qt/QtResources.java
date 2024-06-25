@@ -37,7 +37,7 @@ import io.qt.core.QResource;
  * <br>Deprecated: Use <code>QResource</code> instead.
  * @see QResource
  */
-@Deprecated
+@Deprecated(forRemoval=true)
 public final class QtResources {
 
 	private QtResources() {}
@@ -47,7 +47,7 @@ public final class QtResources {
      * Resources can be accessed using the &quot;classpath:&quot; scheme.
      * @see QResource#addClassPath(String)
      */
-    @Deprecated
+    @Deprecated(forRemoval=true)
 	public static void addSearchPath(String path) {
         io.qt.core.QResource.addClassPath(path);
     }
@@ -57,7 +57,7 @@ public final class QtResources {
      * for resources.
      * @see QResource#removeClassPath(String)
      */
-    @Deprecated
+    @Deprecated(forRemoval=true)
 	public static void removeSearchPath(String path) {
         io.qt.core.QResource.removeClassPath(path);
     }

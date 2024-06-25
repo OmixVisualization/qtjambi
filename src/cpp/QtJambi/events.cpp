@@ -36,7 +36,18 @@
 #include "registryutil_p.h"
 #include "guiapi.h"
 #include "qtjambilink_p.h"
+#include "qtjambishell_p.h"
 #include "utils_p.h"
+
+#ifdef QTJAMBI_NO_METHOD_TRACE
+#define QTJAMBI_DEBUG_METHOD_PRINT_SUPPL(...)
+#define QTJAMBI_DEBUG_METHOD_PRINT_PLAIN(...)
+#else
+#define QTJAMBI_DEBUG_METHOD_PRINT_SUPPL(suppl)\
+DebugAPI::MethodPrintFromSupplier __debug_method_print(DebugAPI::MethodPrint::Internal, __FILE__, __LINE__, __FUNCTION__, suppl);
+#define QTJAMBI_DEBUG_METHOD_PRINT_PLAIN(msg)\
+DebugAPI::MethodPrint __debug_method_print(DebugAPI::MethodPrint::Internal, msg, __FILE__, __LINE__, __FUNCTION__);
+#endif
 
 struct UIInitialCheck{
     typedef void (*WidgetConstructorCheck)(JNIEnv *, const std::type_info&, const QObject*);
@@ -149,8 +160,14 @@ bool UIInitialCheck::trivial(QObject *, QEvent *, bool*){return false;}
 bool UIInitialCheck::initialEventNotify(QObject *receiver, QEvent *event, bool* result){
     QCoreApplication* instance = QCoreApplication::instance();
     if(instance) {
-        if(dynamic_cast<QtJambiShellInterface*>(instance)){
-            UIInitialCheck::eventNotify = &UIInitialCheck::trivial;
+        if(QtJambiShellInterface* shellInterface = dynamic_cast<QtJambiShellInterface*>(instance)){
+            QtJambiShellImpl* shellImpl = QtJambiShellImpl::get(shellInterface);
+            if(!shellImpl->hasEmptyVTable()){
+                UIInitialCheck::eventNotify = &UIInitialCheck::trivial;
+            }else{
+                UIInitialCheck::eventNotify = &UIInitialCheck::enabledEventNotify;
+                return enabledEventNotify(receiver, event, result);
+            }
         }else{
             UIInitialCheck::eventNotify = &UIInitialCheck::enabledEventNotify;
             return enabledEventNotify(receiver, event, result);
@@ -171,6 +188,10 @@ public:
 };
 
 bool UIInitialCheck::enabledEventNotify(QObject *receiver, QEvent *event, bool* result){
+    QTJAMBI_DEBUG_METHOD_PRINT_SUPPL([=](){
+        const std::type_info* ti = &typeid(*receiver);
+        return QString::asprintf("UIInitialCheck::enabledEventNotify(QObject *, QEvent *, bool*) with event=%d, receiver=%p (%s)", event->type(), receiver, ti ? ti->name() : "<unknown type>").toUtf8();
+    });
     QObjectPrivate *d = QObjectPrivate::get(receiver);
     QThreadData *threadData = d->threadData;
     ScopedScopeLevelCounter scopeLevelCounter(threadData);
@@ -622,6 +643,10 @@ void onDynamicPropertyChange(QObject *receiver, QDynamicPropertyChangeEvent* eve
 
 bool eventNotifier(QObject *receiver, QEvent *event, bool* result)
 {
+    QTJAMBI_DEBUG_METHOD_PRINT_SUPPL([=](){
+        const std::type_info* ti = &typeid(*receiver);
+        return QString::asprintf("eventNotifier(QObject *, QEvent *, bool*) with event=%d, receiver=%p (%s)", event->type(), receiver, ti ? ti->name() : "<unknown type>").toUtf8();
+    });
     switch (event->type()) {
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     case QEvent::DynamicPropertyChange:
@@ -680,12 +705,18 @@ bool eventNotifier(QObject *receiver, QEvent *event, bool* result)
         __qt_exceptionHandler.release(nullptr);
         return true;
     }else{
-        return UIInitialCheck::eventNotify(receiver, event, result);
+        bool b = UIInitialCheck::eventNotify(receiver, event, result);
+        if(b)
+            QTJAMBI_DEBUG_PRINT("UIInitialCheck::eventNotify returned true")
+        else
+            QTJAMBI_DEBUG_PRINT("UIInitialCheck::eventNotify returned false")
+        return b;
     }
 }
 
 bool simpleEventNotify(void **data)
 {
+    QTJAMBI_DEBUG_METHOD_PRINT_PLAIN("simpleEventNotify(void **)")
     if(QObject *receiver = reinterpret_cast<QObject *>(data[0])){
         QEvent *event = reinterpret_cast<QEvent *>(data[1]);
         bool* result = reinterpret_cast<bool*>(data[2]);
@@ -696,6 +727,7 @@ bool simpleEventNotify(void **data)
 
 bool threadAffineEventNotify(void **data)
 {
+    QTJAMBI_DEBUG_METHOD_PRINT_PLAIN("threadAffineEventNotify(void **)")
     if(QObject *receiver = reinterpret_cast<QObject *>(data[0])){
         QEvent *event = reinterpret_cast<QEvent *>(data[1]);
         {

@@ -35,7 +35,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation marks a parameter not to be null.
+ * <p>This annotation marks a parameter not to be <code>null</code> internally.</p>
+ * <p>A Qt method with <code>NonNull</code>-annotated return type never returns <code>null</code>.</p>
+ * <p>When giving <code>null</code> to a <code>NonNull</code>-annotated method argument it is internally converted to the type's default value (using standard constructor).</p>
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE_USE)

@@ -1158,8 +1158,14 @@ void JavaGenerator::writeFunctionArgument(QTextStream &s,
     }else {
         addNullness = true;
         modified_type = java_function->typeReplaced(java_argument->argumentIndex() + 1);
-        if(modified_type.isEmpty() && java_function->useArgumentAsSlotContext(java_argument->argumentIndex() + 1)){
-            modified_type = QStringLiteral(u"io.qt.core.@Nullable QObject");
+        if(modified_type.isEmpty()){
+            if(java_function->useArgumentAsSlotContext(java_argument->argumentIndex() + 1)){
+                if (options & NoNullness) {
+                    modified_type = QStringLiteral(u"io.qt.core.QObject");
+                }else{
+                    modified_type = QStringLiteral(u"io.qt.core.@Nullable QObject");
+                }
+            }
         }
         if((options & SkipTemplateParameters) && modified_type.contains("<")){
             auto idx = modified_type.indexOf(u'<');
@@ -6801,6 +6807,8 @@ void JavaGenerator::writeFunctionOverloads(QTextStream &s, const MetaFunction *j
                                         s << ")";
                                     }else if(java_type.startsWith("io.qt.core.QRunnable")){
                                         s << "io.qt.core.QRunnable.of(" << arg->modifiedArgumentName() << ")";
+                                    }else if(java_type=="java.lang.Object"){
+                                        s << "(" << java_type.replace(u'$', u'.') << ")" << arg->modifiedArgumentName();
                                     }else{
                                         s << "new " << java_type.replace(u'$', u'.') << "(" << arg->modifiedArgumentName() << ")";
                                     }
@@ -8279,7 +8287,8 @@ void JavaGenerator::writeFunctionAttributes(QTextStream &s, const MetaFunction *
                         && java_function->typeReplaced(argument->argumentIndex() + 1).isEmpty()
                         && !java_function->useArgumentAsArray(argument->argumentIndex() + 1)
                         && !java_function->useArgumentAsBuffer(argument->argumentIndex() + 1)
-                        && !java_function->useArgumentAsSlot(argument->argumentIndex() + 1)) {
+                        && !java_function->useArgumentAsSlot(argument->argumentIndex() + 1)
+                        && !java_function->useArgumentAsSlotContext(argument->argumentIndex() + 1)) {
 
                     if (argument->type()->isNativePointer()) {
                         if(!argument->type()->typeEntry()->isNativePointer()
@@ -8585,6 +8594,9 @@ void JavaGenerator::writeFunctionArguments(QTextStream &s, const MetaFunction *j
         if((options & VarArgsAsArray) && argType.endsWith(QStringLiteral(u"..."))){
             argType = argType.replace(QStringLiteral(u"..."), QStringLiteral(u"[]"));
         }
+        if((options & NoNullness) && argType.contains(u'@')){
+            argType = annotationFreeTypeName(argType);
+        }
         s << argType;
         if ((options & SkipName) == 0) {
             s << " " << mod.modified_name;
@@ -8630,6 +8642,9 @@ void JavaGenerator::writeFunctionArguments(QTextStream &s, const MetaFunction *j
             if((options & VarArgsAsArray) && argType.endsWith(QStringLiteral(u"..."))){
                 argType = argType.replace(QStringLiteral(u"..."), QStringLiteral(u"[]"));
             }
+            if((options & NoNullness) && argType.contains(u'@')){
+                argType = annotationFreeTypeName(argType);
+            }
             s << argType;
             if ((options & SkipName) == 0) {
                 s << " " << mod.modified_name;
@@ -8660,6 +8675,9 @@ void JavaGenerator::writeFunctionArguments(QTextStream &s, const MetaFunction *j
         }
         if((options & VarArgsAsArray) && argType.endsWith(QStringLiteral(u"..."))){
             argType = argType.replace(QStringLiteral(u"..."), QStringLiteral(u"[]"));
+        }
+        if((options & NoNullness) && argType.contains(u'@')){
+            argType = annotationFreeTypeName(argType);
         }
         s << argType;
         if ((options & SkipName) == 0) {

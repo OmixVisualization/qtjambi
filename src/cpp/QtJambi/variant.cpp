@@ -203,7 +203,7 @@ static bool customConvert(const QVariant::Private *d, int t,
                 jval.l = nullptr;
                 void * in = d->is_shared ? const_cast<void **>(&d->data.shared->ptr) : const_cast<void **>(&d->data.ptr);
                         //in = d->is_shared ? d->data.shared->ptr : d->data.ptr;
-                InternalToExternalConverter variantToJavaConverter;
+                QtJambiUtils::InternalToExternalConverter variantToJavaConverter;
                 {
                     QString qtName = QMetaType::typeName(d_type);
                     QString javaName = QtJambiTypeManager::getExternalTypeName(env, qtName, typeInfo);
@@ -540,7 +540,7 @@ static bool customCanConvert(const QVariant::Private *d, int t)
                     jval.l = nullptr;
                     void * in = d->is_shared ? const_cast<void **>(&d->data.shared->ptr) : const_cast<void **>(&d->data.ptr);
                             //in = d->is_shared ? d->data.shared->ptr : d->data.ptr;
-                    InternalToExternalConverter variantToJavaConverter;
+                    QtJambiUtils::InternalToExternalConverter variantToJavaConverter;
                     {
                         QString qtName = QMetaType::typeName(d_type);
                         QString javaName = QtJambiTypeManager::getExternalTypeName(env, qtName, typeInfo);

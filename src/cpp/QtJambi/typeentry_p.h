@@ -635,15 +635,16 @@ public:
                          const char *qt_name,
                          const char *java_name,
                          jclass java_class,
-                         jmethodID creator_method,
                          PtrDeleterFunction deleter,
                          Destructor destructor,
                          TypeInfoSupplier typeInfoSupplier);
-    static NativeToJavaResult convertNativeToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jobject& output);
+    static NativeToJavaResult convertModelIndexToJava(JNIEnv *env, const QModelIndex *qt_object, NativeToJavaConversionMode mode, jobject& output, QtJambiScope* scope = nullptr);
+    static bool convertJavaToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope);
     NativeToJavaResult convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType valueType) const override;
     bool convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType valueType) const override;
-private:
+    bool convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const override;
     static void deleter(void *ptr, bool isShell);
+private:
 };
 
 class QMessageLogContextTypeEntry : public ObjectTypeEntry{

@@ -195,7 +195,7 @@ public final class QScope implements AutoCloseable {
 	 * @return success
 	 */
 	@QtUninvokable
-	public boolean release(Object object) {
+	public boolean release(@Nullable Object object) {
 		if(this.data.cleanable==null)
 			throw new IllegalStateException("Scope has already been closed.");
 		for(int i=0; i<this.data.objects.size(); ++i) {
@@ -215,7 +215,7 @@ public final class QScope implements AutoCloseable {
 	 * @return success
 	 */
 	@QtUninvokable
-	public boolean cleanup(Object object) {
+	public boolean cleanup(@Nullable Object object) {
 		if(this.data.cleanable==null)
 			throw new IllegalStateException("Scope has already been closed.");
 		for(int i=0; i<this.data.objects.size(); ++i) {
@@ -234,7 +234,7 @@ public final class QScope implements AutoCloseable {
 	 * @param action
 	 */
 	@QtUninvokable
-	public Runnable capture(Runnable action) {
+	public @Nullable Runnable capture(@Nullable Runnable action) {
 		data.addEntry(new RunningEntry(action));
 		return action;
 	}
@@ -257,7 +257,7 @@ public final class QScope implements AutoCloseable {
 	 * @return object
 	 */
 	@QtUninvokable
-	public <T> T capture(Consumer<T> cleanup, T object){
+	public <T> T capture(@StrictNonNull Consumer<T> cleanup, T object){
 		data.addEntry(new CleanupEntry<>(object, cleanup));
 		return object;
 	}
@@ -486,7 +486,7 @@ public final class QScope implements AutoCloseable {
      * @param factory constructor
      * @return new scoped object
      */
-    public <O extends QtObjectInterface> O create(Factory<O> factory) {
+    public <O extends QtObjectInterface> O create(@StrictNonNull Factory<O> factory) {
     	return capture(factory.create());
     }
     
@@ -495,7 +495,7 @@ public final class QScope implements AutoCloseable {
      * @param factory constructor
      * @return new scoped object
      */
-    public <O extends QtObjectInterface,A> O create(Factory1<A,O> factory, A arg0) {
+    public <O extends QtObjectInterface,A> O create(@StrictNonNull Factory1<A,O> factory, A arg0) {
     	return capture(factory.create(arg0));
     }
     
@@ -504,7 +504,7 @@ public final class QScope implements AutoCloseable {
      * @param factory constructor
      * @return new scoped object
      */
-    public <O extends QtObjectInterface,A,B> O create(Factory2<A,B,O> factory, A arg0, B arg1) {
+    public <O extends QtObjectInterface,A,B> O create(@StrictNonNull Factory2<A,B,O> factory, A arg0, B arg1) {
     	return capture(factory.create(arg0, arg1));
     }
     
@@ -513,7 +513,7 @@ public final class QScope implements AutoCloseable {
      * @param factory constructor
      * @return new scoped object
      */
-    public <O extends QtObjectInterface,A,B,C> O create(Factory3<A,B,C,O> factory, A arg0, B arg1, C arg2) {
+    public <O extends QtObjectInterface,A,B,C> O create(@StrictNonNull Factory3<A,B,C,O> factory, A arg0, B arg1, C arg2) {
     	return capture(factory.create(arg0, arg1, arg2));
     }
     
@@ -522,7 +522,7 @@ public final class QScope implements AutoCloseable {
      * @param factory constructor
      * @return new scoped object
      */
-    public <O extends QtObjectInterface,A,B,C,D> O create(Factory4<A,B,C,D,O> factory, A arg0, B arg1, C arg2, D arg3) {
+    public <O extends QtObjectInterface,A,B,C,D> O create(@StrictNonNull Factory4<A,B,C,D,O> factory, A arg0, B arg1, C arg2, D arg3) {
     	return capture(factory.create(arg0, arg1, arg2, arg3));
     }
     
@@ -531,7 +531,7 @@ public final class QScope implements AutoCloseable {
      * @param factory constructor
      * @return new scoped object
      */
-    public <O extends QtObjectInterface,A,B,C,D,E> O create(Factory5<A,B,C,D,E,O> factory, A arg0, B arg1, C arg2, D arg3, E arg4) {
+    public <O extends QtObjectInterface,A,B,C,D,E> O create(@StrictNonNull Factory5<A,B,C,D,E,O> factory, A arg0, B arg1, C arg2, D arg3, E arg4) {
     	return capture(factory.create(arg0, arg1, arg2, arg3, arg4));
     }
     
@@ -540,7 +540,7 @@ public final class QScope implements AutoCloseable {
      * @param factory constructor
      * @return new scoped object
      */
-    public <O extends QtObjectInterface,A,B,C,D,E,F> O create(Factory6<A,B,C,D,E,F,O> factory, A arg0, B arg1, C arg2, D arg3, E arg4, F arg5) {
+    public <O extends QtObjectInterface,A,B,C,D,E,F> O create(@StrictNonNull Factory6<A,B,C,D,E,F,O> factory, A arg0, B arg1, C arg2, D arg3, E arg4, F arg5) {
     	return capture(factory.create(arg0, arg1, arg2, arg3, arg4, arg5));
     }
     
@@ -549,7 +549,7 @@ public final class QScope implements AutoCloseable {
      * @param factory constructor
      * @return new scoped object
      */
-    public <O extends QtObjectInterface,A,B,C,D,E,F,G> O create(Factory7<A,B,C,D,E,F,G,O> factory, A arg0, B arg1, C arg2, D arg3, E arg4, F arg5, G arg6) {
+    public <O extends QtObjectInterface,A,B,C,D,E,F,G> O create(@StrictNonNull Factory7<A,B,C,D,E,F,G,O> factory, A arg0, B arg1, C arg2, D arg3, E arg4, F arg5, G arg6) {
     	return capture(factory.create(arg0, arg1, arg2, arg3, arg4, arg5, arg6));
     }
     
@@ -558,7 +558,7 @@ public final class QScope implements AutoCloseable {
      * @param factory constructor
      * @return new scoped object
      */
-    public <O extends QtObjectInterface,A,B,C,D,E,F,G,H> O create(Factory8<A,B,C,D,E,F,G,H,O> factory, A arg0, B arg1, C arg2, D arg3, E arg4, F arg5, G arg6, H arg7) {
+    public <O extends QtObjectInterface,A,B,C,D,E,F,G,H> O create(@StrictNonNull Factory8<A,B,C,D,E,F,G,H,O> factory, A arg0, B arg1, C arg2, D arg3, E arg4, F arg5, G arg6, H arg7) {
     	return capture(factory.create(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7));
     }
     
@@ -567,7 +567,7 @@ public final class QScope implements AutoCloseable {
      * @param factory constructor
      * @return new scoped object
      */
-    public <O extends QtObjectInterface,A,B,C,D,E,F,G,H,I> O create(Factory9<A,B,C,D,E,F,G,H,I,O> factory, A arg0, B arg1, C arg2, D arg3, E arg4, F arg5, G arg6, H arg7, I arg8) {
+    public <O extends QtObjectInterface,A,B,C,D,E,F,G,H,I> O create(@StrictNonNull Factory9<A,B,C,D,E,F,G,H,I,O> factory, A arg0, B arg1, C arg2, D arg3, E arg4, F arg5, G arg6, H arg7, I arg8) {
     	return capture(factory.create(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8));
     }
 	
@@ -577,7 +577,7 @@ public final class QScope implements AutoCloseable {
      * @param factory constructor
      * @return new scoped object
      */
-    public <O> O create(Consumer<O> cleanup, Factory<O> factory) {
+    public <O> O create(@StrictNonNull Consumer<O> cleanup, @StrictNonNull Factory<O> factory) {
     	return capture(cleanup, factory.create());
     }
     
@@ -587,7 +587,7 @@ public final class QScope implements AutoCloseable {
      * @param factory constructor
      * @return new scoped object
      */
-    public <O,A> O create(Consumer<O> cleanup, Factory1<A,O> factory, A arg0) {
+    public <O,A> O create(@StrictNonNull Consumer<O> cleanup, @StrictNonNull Factory1<A,O> factory, A arg0) {
     	return capture(cleanup, factory.create(arg0));
     }
     
@@ -597,7 +597,7 @@ public final class QScope implements AutoCloseable {
      * @param factory constructor
      * @return new scoped object
      */
-    public <O,A,B> O create(Consumer<O> cleanup, Factory2<A,B,O> factory, A arg0, B arg1) {
+    public <O,A,B> O create(@StrictNonNull Consumer<O> cleanup, @StrictNonNull Factory2<A,B,O> factory, A arg0, B arg1) {
     	return capture(cleanup, factory.create(arg0, arg1));
     }
     
@@ -607,7 +607,7 @@ public final class QScope implements AutoCloseable {
      * @param factory constructor
      * @return new scoped object
      */
-    public <O,A,B,C> O create(Consumer<O> cleanup, Factory3<A,B,C,O> factory, A arg0, B arg1, C arg2) {
+    public <O,A,B,C> O create(@StrictNonNull Consumer<O> cleanup, @StrictNonNull Factory3<A,B,C,O> factory, A arg0, B arg1, C arg2) {
     	return capture(cleanup, factory.create(arg0, arg1, arg2));
     }
     
@@ -617,7 +617,7 @@ public final class QScope implements AutoCloseable {
      * @param factory constructor
      * @return new scoped object
      */
-    public <O,A,B,C,D> O create(Consumer<O> cleanup, Factory4<A,B,C,D,O> factory, A arg0, B arg1, C arg2, D arg3) {
+    public <O,A,B,C,D> O create(@StrictNonNull Consumer<O> cleanup, @StrictNonNull Factory4<A,B,C,D,O> factory, A arg0, B arg1, C arg2, D arg3) {
     	return capture(cleanup, factory.create(arg0, arg1, arg2, arg3));
     }
     
@@ -627,7 +627,7 @@ public final class QScope implements AutoCloseable {
      * @param factory constructor
      * @return new scoped object
      */
-    public <O,A,B,C,D,E> O create(Consumer<O> cleanup, Factory5<A,B,C,D,E,O> factory, A arg0, B arg1, C arg2, D arg3, E arg4) {
+    public <O,A,B,C,D,E> O create(@StrictNonNull Consumer<O> cleanup, @StrictNonNull Factory5<A,B,C,D,E,O> factory, A arg0, B arg1, C arg2, D arg3, E arg4) {
     	return capture(cleanup, factory.create(arg0, arg1, arg2, arg3, arg4));
     }
     
@@ -637,7 +637,7 @@ public final class QScope implements AutoCloseable {
      * @param factory constructor
      * @return new scoped object
      */
-    public <O,A,B,C,D,E,F> O create(Consumer<O> cleanup, Factory6<A,B,C,D,E,F,O> factory, A arg0, B arg1, C arg2, D arg3, E arg4, F arg5) {
+    public <O,A,B,C,D,E,F> O create(@StrictNonNull Consumer<O> cleanup, @StrictNonNull Factory6<A,B,C,D,E,F,O> factory, A arg0, B arg1, C arg2, D arg3, E arg4, F arg5) {
     	return capture(cleanup, factory.create(arg0, arg1, arg2, arg3, arg4, arg5));
     }
     
@@ -647,7 +647,7 @@ public final class QScope implements AutoCloseable {
      * @param factory constructor
      * @return new scoped object
      */
-    public <O,A,B,C,D,E,F,G> O create(Consumer<O> cleanup, Factory7<A,B,C,D,E,F,G,O> factory, A arg0, B arg1, C arg2, D arg3, E arg4, F arg5, G arg6) {
+    public <O,A,B,C,D,E,F,G> O create(@StrictNonNull Consumer<O> cleanup, @StrictNonNull Factory7<A,B,C,D,E,F,G,O> factory, A arg0, B arg1, C arg2, D arg3, E arg4, F arg5, G arg6) {
     	return capture(cleanup, factory.create(arg0, arg1, arg2, arg3, arg4, arg5, arg6));
     }
     
@@ -657,7 +657,7 @@ public final class QScope implements AutoCloseable {
      * @param factory constructor
      * @return new scoped object
      */
-    public <O,A,B,C,D,E,F,G,H> O create(Consumer<O> cleanup, Factory8<A,B,C,D,E,F,G,H,O> factory, A arg0, B arg1, C arg2, D arg3, E arg4, F arg5, G arg6, H arg7) {
+    public <O,A,B,C,D,E,F,G,H> O create(@StrictNonNull Consumer<O> cleanup, @StrictNonNull Factory8<A,B,C,D,E,F,G,H,O> factory, A arg0, B arg1, C arg2, D arg3, E arg4, F arg5, G arg6, H arg7) {
     	return capture(cleanup, factory.create(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7));
     }
     
@@ -667,7 +667,7 @@ public final class QScope implements AutoCloseable {
      * @param factory constructor
      * @return new scoped object
      */
-    public <O,A,B,C,D,E,F,G,H,I> O create(Consumer<O> cleanup, Factory9<A,B,C,D,E,F,G,H,I,O> factory, A arg0, B arg1, C arg2, D arg3, E arg4, F arg5, G arg6, H arg7, I arg8) {
+    public <O,A,B,C,D,E,F,G,H,I> O create(@StrictNonNull Consumer<O> cleanup, @StrictNonNull Factory9<A,B,C,D,E,F,G,H,I,O> factory, A arg0, B arg1, C arg2, D arg3, E arg4, F arg5, G arg6, H arg7, I arg8) {
     	return capture(cleanup, factory.create(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8));
     }
 }

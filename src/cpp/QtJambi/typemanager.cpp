@@ -46,6 +46,7 @@ QT_WARNING_DISABLE_GCC("-Winit-list-lifetime")
 #include <QtCore/QMultiHash>
 #include <QtCore/QMultiMap>
 #include <QtCore/QLoggingCategory>
+#include <QtCore/QModelIndex>
 
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
 #include <QtCore/QLinkedList>
@@ -107,11 +108,11 @@ private:
 const char* getInterface(const char*qt_interface);
 
 Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gCacheLock, (QReadWriteLock::Recursive))
-typedef QHash<hash_type, InternalToExternalConverter> InternalToExternalConverterHash;
-typedef QHash<hash_type, ExternalToInternalConverter> ExternalToInternalConverterHash;
+typedef QHash<hash_type, QtJambiUtils::InternalToExternalConverter> InternalToExternalConverterHash;
+typedef QHash<hash_type, QtJambiUtils::ExternalToInternalConverter> ExternalToInternalConverterHash;
 Q_GLOBAL_STATIC(InternalToExternalConverterHash, gInternalToExternalConverters)
 Q_GLOBAL_STATIC(ExternalToInternalConverterHash, gExternalToInternalConverters)
-typedef QMap<int, QHashFunction> HashFunctionHash;
+typedef QMap<int, QtJambiUtils::QHashFunction> HashFunctionHash;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 typedef QHash<hash_type, QtMetaContainerPrivate::QMetaAssociationInterface> MetaAssociationHash;
 typedef QHash<hash_type, QtMetaContainerPrivate::QMetaSequenceInterface> MetaSequenceHash;
@@ -190,8 +191,12 @@ void reduceMapInstantiations(QStringList& instantiations){
     }
 }
 
-void insertHashFunctionByMetaType(int type, const QHashFunction& fct){
+void insertHashFunctionByMetaType(int type, const QtJambiUtils::QHashFunction& fct){
     gHashFunctionByMetaTypeHash->insert(type, fct);
+}
+
+void insertHashFunctionByMetaType(int type, QtJambiUtils::QHashFunction&& fct){
+    gHashFunctionByMetaTypeHash->insert(type, std::move(fct));
 }
 
 hash_type ContainerAccessAPI::pointerHashFunction(const void* ptr, hash_type seed){ return !ptr ? 0 : ::qHash(*reinterpret_cast<QHashDummyValue*const*>(ptr), seed);}
@@ -249,12 +254,12 @@ bool QtJambiTypeManager::hasRegisteredComparators(int id){
 }
 #endif
 
-QHashFunction hashFunctionByMetaType(int metaType)
+QtJambiUtils::QHashFunction hashFunctionByMetaType(int metaType)
 {
     if(metaType!=QMetaType::UnknownType){
-        return gHashFunctionByMetaTypeHash->value(metaType, QHashFunction());
+        return gHashFunctionByMetaTypeHash->value(metaType, QtJambiUtils::QHashFunction());
     }
-    return QHashFunction();
+    return QtJambiUtils::QHashFunction();
 }
 
 QtJambiTypeManager::TypePattern QtJambiTypeManager::valueTypePattern(const QString &javaName) {
@@ -370,7 +375,9 @@ QString QtJambiTypeManager::getInternalTypeName(JNIEnv* env, jclass externalClas
     // so: primitives, boxed primitives and direct mappings of Qt types
     if(Java::Runtime::Void::isPrimitiveType(env, externalClass))
         return QLatin1String("void");
-    else if(Java::Runtime::Object::isSameClass(env, externalClass))
+    else if(Java::Runtime::Object::isSameClass(env, externalClass)
+            || Java::QtCore::QVariant::isSameClass(env, externalClass)
+            || Java::QtCore::QVariant$Null::isSameClass(env, externalClass))
         return QLatin1String("QVariant");
     else if(Java::Runtime::Byte::isPrimitiveType(env, externalClass) || Java::Runtime::Byte::isSameClass(env, externalClass))
         return QLatin1String(QMetaType::fromType<qint8>().name());
@@ -963,7 +970,7 @@ hash_type computeHash(JNIEnv* env, jclass externalClass, const QString &internal
 #endif
 }
 
-InternalToExternalConverter QtJambiTypeManager::tryGetInternalToExternalConverter(
+QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::tryGetInternalToExternalConverter(
         JNIEnv* env,
         const QString &internalTypeName,
         const QMetaType& internalMetaType,
@@ -978,7 +985,7 @@ InternalToExternalConverter QtJambiTypeManager::tryGetInternalToExternalConverte
     }
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     if(internalMetaType.isValid() && !QMetaType(internalMetaType).iface()->metaObjectFn){
-        InternalToExternalConverter converter = getInternalToExternalConverterImpl(
+        QtJambiUtils::InternalToExternalConverter converter = getInternalToExternalConverterImpl(
                     env,
                     internalTypeName,
                     internalMetaType,
@@ -994,10 +1001,10 @@ InternalToExternalConverter QtJambiTypeManager::tryGetInternalToExternalConverte
         return converter;
     }
 #endif
-    return InternalToExternalConverter();
+    return QtJambiUtils::InternalToExternalConverter();
 }
 
-InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverter(
+QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverter(
                                JNIEnv* env,
                                const QString &internalTypeName,
                                const QMetaType& internalMetaType,
@@ -1010,7 +1017,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverter(
         if(gInternalToExternalConverters()->contains(key))
             return (*gInternalToExternalConverters())[key];
     }
-    InternalToExternalConverter converter = getInternalToExternalConverterImpl(
+    QtJambiUtils::InternalToExternalConverter converter = getInternalToExternalConverterImpl(
                 env,
                 internalTypeName,
                 internalMetaType,
@@ -1026,7 +1033,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverter(
     return converter;
 }
 
-InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterImpl(
+QtJambiUtils::InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterImpl(
                                JNIEnv* _env,
                                QString internalTypeName,
                                const QMetaType& internalMetaType,
@@ -1082,7 +1089,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
             size_t size = getValueSize(*typeId);
             if(size>0){
                 QMetaType _metaType(metaType);
-                InternalToExternalConverter internalToExternalComponentConverter = getInternalToExternalConverter(
+                QtJambiUtils::InternalToExternalConverter internalToExternalComponentConverter = getInternalToExternalConverter(
                                                                 _env,
                                                                 _internalTypeName,
                                                                 _metaType,
@@ -1464,30 +1471,30 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                 return true;
             };
         }else{
-            JObjectWrapper external_class(_env, externalClass);
+            externalClass = getGlobalClassRef(_env, externalClass);
             if (Java::QtJambi::QtEnumerator::isAssignableFrom(_env,externalClass)) {
-                return [external_class](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                    p.l = QtJambiAPI::convertEnumToJavaObject(env, *reinterpret_cast<const qint32 *>(in), jclass(external_class.object()));
+                return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                    p.l = QtJambiAPI::convertEnumToJavaObject(env, *reinterpret_cast<const qint32 *>(in), externalClass);
                     return p.l!=nullptr;
                 };
             }else if (Java::QtJambi::QtShortEnumerator::isAssignableFrom(_env,externalClass)) {
-                return [external_class](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                    p.l = QtJambiAPI::convertEnumToJavaObject(env, *reinterpret_cast<const qint16 *>(in), jclass(external_class.object()));
+                return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                    p.l = QtJambiAPI::convertEnumToJavaObject(env, *reinterpret_cast<const qint16 *>(in), externalClass);
                     return p.l!=nullptr;
                 };
             }else if (Java::QtJambi::QtByteEnumerator::isAssignableFrom(_env,externalClass)) {
-                return [external_class](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                    p.l = QtJambiAPI::convertEnumToJavaObject(env, *reinterpret_cast<const qint8 *>(in), jclass(external_class.object()));
+                return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                    p.l = QtJambiAPI::convertEnumToJavaObject(env, *reinterpret_cast<const qint8 *>(in), externalClass);
                     return p.l!=nullptr;
                 };
             }else if (Java::QtJambi::QtLongEnumerator::isAssignableFrom(_env,externalClass)) {
-                return [external_class](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                    p.l = QtJambiAPI::convertEnumToJavaObject(env, *reinterpret_cast<const qint64 *>(in), jclass(external_class.object()));
+                return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                    p.l = QtJambiAPI::convertEnumToJavaObject(env, *reinterpret_cast<const qint64 *>(in), externalClass);
                     return p.l!=nullptr;
                 };
             }else /*if (Java::Runtime::Enum::isAssignableFrom(_env,externalClass))*/ {
-                return [external_class](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
-                    jobjectArray enumConstants = Java::Runtime::Class::getEnumConstants(env, external_class.object());
+                return [externalClass](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                    jobjectArray enumConstants = Java::Runtime::Class::getEnumConstants(env, externalClass);
                     p.l = env->GetObjectArrayElement(enumConstants, *reinterpret_cast<const qint32 *>(in));
                     return p.l!=nullptr;
                 };
@@ -1535,6 +1542,21 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                     jobject mo = qtjambi_cast<jobject>(env, QMetaType::metaObjectForType(_internalMetaType));
                     Java::QtJambi::QtGadget::set_staticMetaObject(env, p.l, mo);
                 }
+                return true;
+            };
+        }
+    }else if (Java::QtCore::QModelIndex::isAssignableFrom(_env,externalClass)) {
+        if (allowValuePointers && internalTypeName.contains(QLatin1Char('*'))){
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                if(in){
+                    QModelIndex const* ptr = *reinterpret_cast<QModelIndex const* const*>(in);
+                    p.l = ptr ? qtjambi_cast<jobject>(env, *ptr) : nullptr;
+                }
+                return true;
+            };
+        }else{
+            return [](JNIEnv* env, QtJambiScope*, const void* in, jvalue& p, bool)->bool{
+                p.l = qtjambi_cast<jobject>(env, *reinterpret_cast<QModelIndex const*>(in));
                 return true;
             };
         }
@@ -1794,12 +1816,12 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
         if(!clazz.isEmpty()){
             jclass elementClass = JavaAPI::resolveClass(_env, clazz);
             if(!containerAccess){
-                InternalToExternalConverter memberConverter = getInternalToExternalConverter(
+                QtJambiUtils::InternalToExternalConverter memberConverter = getInternalToExternalConverter(
                                                                 _env,
                                                                 instantiation,
                                                                 memberMetaType,
                                                                 elementClass);
-                ExternalToInternalConverter memberReConverter = getExternalToInternalConverter(
+                QtJambiUtils::ExternalToInternalConverter memberReConverter = getExternalToInternalConverter(
                                                                 _env,
                                                                 elementClass,
                                                                 instantiation, memberMetaType);
@@ -1816,7 +1838,7 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                 }
 
                 if(!containerAccess && (size==0 || memberMetaType.isValid())){
-                    QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, memberMetaType.id());
+                    QtJambiUtils::QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, memberMetaType.id());
                     if(containerType == SequentialContainerType::QSet
                             && !hashFunction){
                         if(clazz.startsWith("io/qt/core/QMetaType$Generic")){
@@ -2200,21 +2222,21 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                 }
                 AbstractContainerAccess* containerAccess = AbstractContainerAccess::create(_env, mapType, memberMetaType1, memberMetaType2);
                 if(!containerAccess){
-                    InternalToExternalConverter memberConverter1 = getInternalToExternalConverter(
+                    QtJambiUtils::InternalToExternalConverter memberConverter1 = getInternalToExternalConverter(
                                                                     _env,
                                                                     instantiations[0],
                                                                     memberMetaType1,
                                                                     keyClass);
-                    ExternalToInternalConverter memberReConverter1 = getExternalToInternalConverter(
+                    QtJambiUtils::ExternalToInternalConverter memberReConverter1 = getExternalToInternalConverter(
                                                                     _env,
                                                                     keyClass,
                                                                     instantiations[0], memberMetaType1);
-                    InternalToExternalConverter memberConverter2 = getInternalToExternalConverter(
+                    QtJambiUtils::InternalToExternalConverter memberConverter2 = getInternalToExternalConverter(
                                                                     _env,
                                                                     instantiations[1],
                                                                     memberMetaType2,
                                                                     valueClass);
-                    ExternalToInternalConverter memberReConverter2 = getExternalToInternalConverter(
+                    QtJambiUtils::ExternalToInternalConverter memberReConverter2 = getExternalToInternalConverter(
                                                                     _env,
                                                                     valueClass,
                                                                     instantiations[1], memberMetaType2);
@@ -2244,8 +2266,8 @@ InternalToExternalConverter QtJambiTypeManager::getInternalToExternalConverterIm
                     if(tryAgain)
                         containerAccess = AbstractContainerAccess::create(_env, mapType, memberMetaType1, memberMetaType2);
                     if(!containerAccess && (size1==0 || memberMetaType1.isValid()) && (size2==0 || memberMetaType2.isValid())){
-                        QHashFunction hashFunction1 = findHashFunction(isPointer1, memberMetaType1.id());
-                        QHashFunction hashFunction2 = findHashFunction(isPointer2, memberMetaType2.id());
+                        QtJambiUtils::QHashFunction hashFunction1 = findHashFunction(isPointer1, memberMetaType1.id());
+                        QtJambiUtils::QHashFunction hashFunction2 = findHashFunction(isPointer2, memberMetaType2.id());
                         if(mapType == AssociativeContainerType::QHash
                                 && !hashFunction1){
                             if(clazz1.startsWith("io/qt/core/QMetaType$Generic"))
@@ -3019,7 +3041,7 @@ QVariant int_for_QtEnumerator_or_QFlags(JNIEnv* env, jobject enum_value) {
     return result;
 }
 
-ExternalToInternalConverter QtJambiTypeManager::tryGetExternalToInternalConverter(JNIEnv* env, jclass externalClass, const QString &internalTypeName, const QMetaType& internalMetaType) {
+QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::tryGetExternalToInternalConverter(JNIEnv* env, jclass externalClass, const QString &internalTypeName, const QMetaType& internalMetaType) {
     hash_type key = computeHash(env, externalClass, internalTypeName, internalMetaType);
     {
         QReadLocker locker(gCacheLock());
@@ -3029,7 +3051,7 @@ ExternalToInternalConverter QtJambiTypeManager::tryGetExternalToInternalConverte
     }
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     if(internalMetaType.isValid() && !QMetaType(internalMetaType).iface()->metaObjectFn){
-        ExternalToInternalConverter converter = getExternalToInternalConverterImpl(env, externalClass, internalTypeName, internalMetaType);
+        QtJambiUtils::ExternalToInternalConverter converter = getExternalToInternalConverterImpl(env, externalClass, internalTypeName, internalMetaType);
         Q_ASSERT(converter);
         QWriteLocker locker(gCacheLock());
         Q_UNUSED(locker)
@@ -3039,10 +3061,10 @@ ExternalToInternalConverter QtJambiTypeManager::tryGetExternalToInternalConverte
         return converter;
     }
 #endif
-    return ExternalToInternalConverter();
+    return QtJambiUtils::ExternalToInternalConverter();
 }
 
-ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverter(JNIEnv* env, jclass externalClass, const QString &internalTypeName, const QMetaType& internalMetaType) {
+QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverter(JNIEnv* env, jclass externalClass, const QString &internalTypeName, const QMetaType& internalMetaType) {
     hash_type key = computeHash(env, externalClass, internalTypeName, internalMetaType);
     {
         QReadLocker locker(gCacheLock());
@@ -3050,7 +3072,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverter(J
         if(gExternalToInternalConverters()->contains(key))
             return (*gExternalToInternalConverters())[key];
     }
-    ExternalToInternalConverter converter = getExternalToInternalConverterImpl(env, externalClass, internalTypeName, internalMetaType);
+    QtJambiUtils::ExternalToInternalConverter converter = getExternalToInternalConverterImpl(env, externalClass, internalTypeName, internalMetaType);
     Q_ASSERT(converter);
     QWriteLocker locker(gCacheLock());
     Q_UNUSED(locker)
@@ -3060,7 +3082,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverter(J
     return converter;
 }
 
-ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterImpl(JNIEnv* _env, jclass externalClass, QString internalTypeName, const QMetaType& internalMetaType) {
+QtJambiUtils::ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterImpl(JNIEnv* _env, jclass externalClass, QString internalTypeName, const QMetaType& internalMetaType) {
     PointerType pointerType = PointerType::NoPointer;
     internalTypeName = processInternalTypeName(internalTypeName, pointerType);
     if(_env->GetObjectRefType(externalClass)!=JNIGlobalRefType){
@@ -5183,9 +5205,25 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
             return response;
         };
 #endif
+#if defined(QTJAMBI_LIGHTWEIGHT_MODELINDEX)
+    }else if (Java::QtCore::QModelIndex::isAssignableFrom(_env,externalClass) && (!internalMetaType.isValid() || QByteArray("QModelIndex")==internalMetaType.name() || QByteArray("const QModelIndex&")==internalMetaType.name())) {
+        return [](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
+            if(val.l && !Java::QtCore::QModelIndex::isInstanceOf(env, val.l))
+                Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, Java::QtCore::QMetaObject::getClass(env))) QTJAMBI_STACKTRACEINFO );
+            if(scope && !out){
+                QModelIndex* ptr;
+                out = ptr = new QModelIndex;
+                scope->addDeletion(ptr);
+            }
+            if(!out)
+                return false;
+            *reinterpret_cast<QModelIndex*>(out) = qtjambi_cast<QModelIndex>(env, val.l);
+            return true;
+        };
+#endif
     }else if (Java::QtCore::QMetaObject::isAssignableFrom(_env,externalClass) && (!internalMetaType.isValid() || QByteArray("QMetaObject*")==internalMetaType.name() || QByteArray("const QMetaObject*")==internalMetaType.name())) {
         return [](JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType) -> bool{
-            if(val.l && !env->IsInstanceOf(val.l, Java::QtCore::QMetaObject::getClass(env)))
+            if(val.l && !Java::QtCore::QMetaObject::isInstanceOf(env, val.l))
                 Java::Runtime::IllegalArgumentException::throwNew(env, QString("Wrong argument given: %1, expected: %2").arg(QtJambiAPI::getObjectClassName(env, val.l).replace("$", "."), QtJambiAPI::getClassName(env, Java::QtCore::QMetaObject::getClass(env))) QTJAMBI_STACKTRACEINFO );
             if(scope && !out){
                 QMetaObject** ptr;
@@ -5491,7 +5529,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 }else{
                     QMetaType _metaType(metaType);
                     componentClass = getGlobalClassRef(_env, componentClass);
-                    ExternalToInternalConverter externalToInternalComponentConverter = getExternalToInternalConverter(
+                    QtJambiUtils::ExternalToInternalConverter externalToInternalComponentConverter = getExternalToInternalConverter(
                                                                     _env,
                                                                     componentClass,
                                                                     _internalTypeName,
@@ -5767,12 +5805,12 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                 }
 
                 if(!containerAccess){
-                    InternalToExternalConverter memberConverter = getInternalToExternalConverter(
+                    QtJambiUtils::InternalToExternalConverter memberConverter = getInternalToExternalConverter(
                                                                     _env,
                                                                     instantiation,
                                                                     memberMetaType,
                                                                     elementClass);
-                    ExternalToInternalConverter memberReConverter = getExternalToInternalConverter(
+                    QtJambiUtils::ExternalToInternalConverter memberReConverter = getExternalToInternalConverter(
                                                                     _env,
                                                                     elementClass,
                                                                     instantiation, memberMetaType);
@@ -5788,7 +5826,7 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                         containerAccess = AbstractContainerAccess::create(_env, containerType, memberMetaType);
                     }
                     if(!containerAccess && (size==0 || memberMetaType.isValid())){
-                        QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, memberMetaType.id());
+                        QtJambiUtils::QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, memberMetaType.id());
                         containerAccess = AbstractContainerAccess::create(_env, containerType,
                                                                           memberMetaType,
                                                                           align, size,
@@ -6156,21 +6194,21 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                     }
                     AbstractContainerAccess* containerAccess = AbstractContainerAccess::create(_env, mapType, memberMetaType1, memberMetaType2);
                     if(!containerAccess){
-                        InternalToExternalConverter memberConverter1 = getInternalToExternalConverter(
+                        QtJambiUtils::InternalToExternalConverter memberConverter1 = getInternalToExternalConverter(
                                                                         _env,
                                                                         instantiations[0],
                                                                         memberMetaType1,
                                                                         keyClass);
-                        ExternalToInternalConverter memberReConverter1 = getExternalToInternalConverter(
+                        QtJambiUtils::ExternalToInternalConverter memberReConverter1 = getExternalToInternalConverter(
                                                                         _env,
                                                                         keyClass,
                                                                         instantiations[0], memberMetaType1);
-                        InternalToExternalConverter memberConverter2 = getInternalToExternalConverter(
+                        QtJambiUtils::InternalToExternalConverter memberConverter2 = getInternalToExternalConverter(
                                                                         _env,
                                                                         instantiations[1],
                                                                         memberMetaType2,
                                                                         valueClass);
-                        ExternalToInternalConverter memberReConverter2 = getExternalToInternalConverter(
+                        QtJambiUtils::ExternalToInternalConverter memberReConverter2 = getExternalToInternalConverter(
                                                                         _env,
                                                                         valueClass,
                                                                         instantiations[1], memberMetaType2);
@@ -6200,8 +6238,8 @@ ExternalToInternalConverter QtJambiTypeManager::getExternalToInternalConverterIm
                         if(tryAgain)
                             containerAccess = AbstractContainerAccess::create(_env, mapType, memberMetaType1, memberMetaType2);
                         if(!containerAccess && (size1==0 || memberMetaType1.isValid()) && (size2==0 || memberMetaType2.isValid())){
-                            QHashFunction hashFunction1 = findHashFunction(isPointer1, memberMetaType1.id());
-                            QHashFunction hashFunction2 = findHashFunction(isPointer2, memberMetaType2.id());
+                            QtJambiUtils::QHashFunction hashFunction1 = findHashFunction(isPointer1, memberMetaType1.id());
+                            QtJambiUtils::QHashFunction hashFunction2 = findHashFunction(isPointer2, memberMetaType2.id());
                             containerAccess = AbstractContainerAccess::create(_env, mapType,
                                                                               memberMetaType1,
                                                                               align1, size1,
@@ -7002,16 +7040,16 @@ size_t QtJambiTypeManager::getInternalSize(const QString &internalTypeName){
 struct MetaData{
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     MetaData(int _metaType,
-             const QHashFunction& _hashFunction);
+             const QtJambiUtils::QHashFunction& _hashFunction);
 #endif
     MetaData(const QMetaType& _metaType,
-             const QHashFunction& _hashFunction);
+             const QtJambiUtils::QHashFunction& _hashFunction);
     MetaData(QMetaType&& _metaType = QMetaType(),
-             QHashFunction&& _hashFunction = QHashFunction());
+             QtJambiUtils::QHashFunction&& _hashFunction = QtJambiUtils::QHashFunction());
     MetaData(const MetaData& d);
     MetaData(MetaData&& d);
     QMetaType metaType;
-    QHashFunction hashFunction;
+    QtJambiUtils::QHashFunction hashFunction;
 };
 
 struct Storages{
@@ -7020,14 +7058,14 @@ struct Storages{
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 MetaData::MetaData(int _metaType,
-         const QHashFunction& _hashFunction)
+         const QtJambiUtils::QHashFunction& _hashFunction)
     : metaType(_metaType),
       hashFunction(_hashFunction)
 {}
 #endif
 
 MetaData::MetaData(const QMetaType& _metaType,
-         const QHashFunction& _hashFunction
+         const QtJambiUtils::QHashFunction& _hashFunction
         )
     : metaType(
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -7040,7 +7078,7 @@ MetaData::MetaData(const QMetaType& _metaType,
 {}
 
 MetaData::MetaData(QMetaType&& _metaType,
-         QHashFunction&& _hashFunction)
+         QtJambiUtils::QHashFunction&& _hashFunction)
     : metaType(
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
           _metaType.id()
@@ -7092,7 +7130,7 @@ void setCurrentMetaData(uint i, MetaData&& metaData)
 
 namespace ContainerAccessAPI{
 
-AbstractMetaTypeInfoLocker::AbstractMetaTypeInfoLocker(int index, const QMetaType& _metaType, const QHashFunction& _hashFunction)
+AbstractMetaTypeInfoLocker::AbstractMetaTypeInfoLocker(int index, const QMetaType& _metaType, const QtJambiUtils::QHashFunction& _hashFunction)
     : m_index(index)
 {
     const MetaData& md = currentMetaData(index);
@@ -7243,7 +7281,7 @@ bool ContainerAccessAPI::containerElementLess(uint i, const void* ptr, const voi
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 void destruct(uint index,
               int metaType,
-              QHashFunction hashFunction,
+              QtJambiUtils::QHashFunction hashFunction,
               QMetaType::Destructor destructor,
               void * ptr){
     MetaData oldMetaData = currentMetaData(index);
@@ -7253,7 +7291,7 @@ void destruct(uint index,
 }
 
 QMetaType::Destructor wrapDestructor(int metaType,
-                                    QHashFunction hashFunction,
+                                    QtJambiUtils::QHashFunction hashFunction,
                                     uint index,
                                     QMetaType::Destructor destructor,
                                     uint hash){
@@ -7264,7 +7302,7 @@ QMetaType::Destructor wrapDestructor(int metaType,
 
 void* construct(uint index,
                int metaType,
-               QHashFunction hashFunction,
+               QtJambiUtils::QHashFunction hashFunction,
                QMetaType::Constructor constructor, void *where, const void * copy){
     MetaData oldMetaData = currentMetaData(index);
     setCurrentMetaData(index, MetaData(metaType, hashFunction));
@@ -7274,7 +7312,7 @@ void* construct(uint index,
 }
 
 QMetaType::Constructor wrapConstructor(int metaType,
-                                      QHashFunction hashFunction,
+                                      QtJambiUtils::QHashFunction hashFunction,
                                       uint index,
                                       QMetaType::Constructor constructor, uint hash){
     return qtjambi_function_pointer<16,void*(void*, const void *)>([index, metaType, hashFunction, constructor](void *where, const void * copy)->void *{
@@ -7284,7 +7322,7 @@ QMetaType::Constructor wrapConstructor(int metaType,
 
 void _saveOperator(uint index,
                int metaType,
-               QHashFunction hashFunction,
+               QtJambiUtils::QHashFunction hashFunction,
                QMetaType::SaveOperator saveOperator, QDataStream & stream, const void * data){
     MetaData oldMetaData = currentMetaData(index);
     setCurrentMetaData(index, MetaData(metaType, hashFunction));
@@ -7293,7 +7331,7 @@ void _saveOperator(uint index,
 }
 
 QMetaType::SaveOperator wrapSaveOperator(int metaType,
-                                      QHashFunction hashFunction,
+                                      QtJambiUtils::QHashFunction hashFunction,
                                       uint index,
                                       QMetaType::SaveOperator saveOperator, uint hash){
     return qtjambi_function_pointer<16,void(QDataStream &, const void *)>([index, metaType, hashFunction, saveOperator](QDataStream & stream, const void * data){
@@ -7303,7 +7341,7 @@ QMetaType::SaveOperator wrapSaveOperator(int metaType,
 
 void _loadOperator(uint index,
                int metaType,
-               QHashFunction hashFunction,
+               QtJambiUtils::QHashFunction hashFunction,
                QMetaType::LoadOperator loadOperator, QDataStream & stream, void * data){
     MetaData oldMetaData = currentMetaData(index);
     setCurrentMetaData(index, MetaData(metaType, hashFunction));
@@ -7312,7 +7350,7 @@ void _loadOperator(uint index,
 }
 
 QMetaType::LoadOperator wrapLoadOperator(int metaType,
-                                      QHashFunction hashFunction,
+                                      QtJambiUtils::QHashFunction hashFunction,
                                       uint index,
                                       QMetaType::LoadOperator saveOperator, uint hash){
     return qtjambi_function_pointer<16,void(QDataStream &, void *)>([index, metaType, hashFunction, saveOperator](QDataStream & stream, void * data){
@@ -7321,9 +7359,9 @@ QMetaType::LoadOperator wrapLoadOperator(int metaType,
 }
 
 void destruct(int metaType1,
-              QHashFunction hashFunction1,
+              QtJambiUtils::QHashFunction hashFunction1,
               int metaType2,
-              QHashFunction hashFunction2,
+              QtJambiUtils::QHashFunction hashFunction2,
               QMetaType::Destructor destructor,
               void * ptr){
     MetaData oldMetaData1 = currentMetaData(0);
@@ -7336,9 +7374,9 @@ void destruct(int metaType1,
 }
 
 QMetaType::Destructor wrapDestructor(int metaType1,
-                                    QHashFunction hashFunction1,
+                                    QtJambiUtils::QHashFunction hashFunction1,
                                     int metaType2,
-                                    QHashFunction hashFunction2,
+                                    QtJambiUtils::QHashFunction hashFunction2,
                                     QMetaType::Destructor destructor,
                                     uint hash){
     return qtjambi_function_pointer<16,void(void*)>([metaType1, hashFunction1,
@@ -7351,9 +7389,9 @@ QMetaType::Destructor wrapDestructor(int metaType1,
 }
 
 void* construct(int metaType1,
-                QHashFunction hashFunction1,
+                QtJambiUtils::QHashFunction hashFunction1,
                 int metaType2,
-                QHashFunction hashFunction2,
+                QtJambiUtils::QHashFunction hashFunction2,
                 QMetaType::Constructor constructor, void *where, const void * copy){
     MetaData oldMetaData1 = currentMetaData(0);
     setCurrentMetaData(0, MetaData(metaType1, hashFunction1));
@@ -7366,9 +7404,9 @@ void* construct(int metaType1,
 }
 
 QMetaType::Constructor wrapConstructor(int metaType1,
-                                      QHashFunction hashFunction1,
+                                      QtJambiUtils::QHashFunction hashFunction1,
                                       int metaType2,
-                                      QHashFunction hashFunction2,
+                                      QtJambiUtils::QHashFunction hashFunction2,
                                       QMetaType::Constructor constructor, uint hash){
     return qtjambi_function_pointer<16,void*(void*, const void *)>([metaType1, hashFunction1,
                                                                                          metaType2, hashFunction2,
@@ -7380,9 +7418,9 @@ QMetaType::Constructor wrapConstructor(int metaType1,
 }
 
 void _saveOperator(int metaType1,
-                   QHashFunction hashFunction1,
+                   QtJambiUtils::QHashFunction hashFunction1,
                    int metaType2,
-                   QHashFunction hashFunction2,
+                   QtJambiUtils::QHashFunction hashFunction2,
                    QMetaType::SaveOperator saveOperator, QDataStream & stream, const void * data){
     MetaData oldMetaData1 = currentMetaData(0);
     setCurrentMetaData(0, MetaData(metaType1, hashFunction1));
@@ -7394,9 +7432,9 @@ void _saveOperator(int metaType1,
 }
 
 QMetaType::SaveOperator wrapSaveOperator(int metaType1,
-                                         QHashFunction hashFunction1,
+                                         QtJambiUtils::QHashFunction hashFunction1,
                                          int metaType2,
-                                         QHashFunction hashFunction2,
+                                         QtJambiUtils::QHashFunction hashFunction2,
                                          QMetaType::SaveOperator saveOperator, uint hash){
     return qtjambi_function_pointer<16,void(QDataStream &, const void *)>([metaType1, hashFunction1, metaType2, hashFunction2, saveOperator](QDataStream & stream, const void * data){
         _saveOperator(metaType1, hashFunction1, metaType2, hashFunction2, saveOperator, stream, data);
@@ -7404,9 +7442,9 @@ QMetaType::SaveOperator wrapSaveOperator(int metaType1,
 }
 
 void _loadOperator(int metaType1,
-                   QHashFunction hashFunction1,
+                   QtJambiUtils::QHashFunction hashFunction1,
                    int metaType2,
-                   QHashFunction hashFunction2,
+                   QtJambiUtils::QHashFunction hashFunction2,
                    QMetaType::LoadOperator loadOperator, QDataStream & stream, void * data){
     MetaData oldMetaData1 = currentMetaData(0);
     setCurrentMetaData(0, MetaData(metaType1, hashFunction1));
@@ -7418,9 +7456,9 @@ void _loadOperator(int metaType1,
 }
 
 QMetaType::LoadOperator wrapLoadOperator(int metaType1,
-                                         QHashFunction hashFunction1,
+                                         QtJambiUtils::QHashFunction hashFunction1,
                                          int metaType2,
-                                         QHashFunction hashFunction2,
+                                         QtJambiUtils::QHashFunction hashFunction2,
                                          QMetaType::LoadOperator saveOperator, uint hash){
     return qtjambi_function_pointer<16,void(QDataStream &, void *)>([metaType1, hashFunction1, metaType2, hashFunction2, saveOperator](QDataStream & stream, void * data){
         _loadOperator(metaType1, hashFunction1, metaType2, hashFunction2, saveOperator, stream, data);
@@ -7438,7 +7476,7 @@ int QtJambiPrivate::registerSequentialContainerType(const QByteArray& typeName, 
                                     HashWrapper hashWrapper)
 {
     QtJambiTypeManager::registerInternalAlignment(typeName, containerAlign);
-    QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, metaType.id());
+    QtJambiUtils::QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, metaType.id());
     if(!isPointer){
         destructor = wrapDestructor(metaType.id(), hashFunction, 0, destructor, qHash(typeName));
         constructor = wrapConstructor(metaType.id(), hashFunction, 0, constructor, qHash(typeName));
@@ -7465,11 +7503,11 @@ int QtJambiPrivate::registerSequentialContainerType(const QByteArray& typeName, 
         registerConverter(createConverterFunction(metaType.id()), newMetaType, qMetaTypeId<QtMetaTypePrivate::QSequentialIterableImpl>());
     if(debugStreamFunction && debugStreamFunction->stream){
         struct DebugStreamFunction : QtPrivate::AbstractDebugStreamFunction{
-            DebugStreamFunction(int _metaType, const QHashFunction& _hashFunction, const QtPrivate::AbstractDebugStreamFunction* _debugFunction)
+            DebugStreamFunction(int _metaType, const QtJambiUtils::QHashFunction& _hashFunction, const QtPrivate::AbstractDebugStreamFunction* _debugFunction)
                 : QtPrivate::AbstractDebugStreamFunction(&debugStream, &destroy), metaType(_metaType), hashFunction(_hashFunction), debugFunction(_debugFunction) {}
 
             int metaType;
-            QHashFunction hashFunction;
+            QtJambiUtils::QHashFunction hashFunction;
             const QtPrivate::AbstractDebugStreamFunction* debugFunction;
 
             static void debugStream(const QtPrivate::AbstractDebugStreamFunction *f, QDebug& d, const void * ptr){
@@ -7525,8 +7563,8 @@ int QtJambiPrivate::registerAssociativeContainerType(const QByteArray& typeName,
                                       HashWrapper2 hashWrapper)
 {
     QtJambiTypeManager::registerInternalAlignment(typeName, containerAlign);
-    QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, metaType1.id());
-    QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, metaType2.id());
+    QtJambiUtils::QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, metaType1.id());
+    QtJambiUtils::QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, metaType2.id());
     if(!isPointer1 && !isPointer2){
         destructor = wrapDestructor(metaType1.id(), hashFunction1,
                                     metaType2.id(), hashFunction2,
@@ -7568,17 +7606,17 @@ int QtJambiPrivate::registerAssociativeContainerType(const QByteArray& typeName,
         QMetaType::registerStreamOperators(newMetaType, saveOperator, loadOperator);
     if(debugStreamFunction && debugStreamFunction->stream){
         struct DebugStreamFunction : QtPrivate::AbstractDebugStreamFunction{
-            DebugStreamFunction(int _metaType1, const QHashFunction& _hashFunction1,
-                                int _metaType2, const QHashFunction& _hashFunction2, const QtPrivate::AbstractDebugStreamFunction* _debugFunction)
+            DebugStreamFunction(int _metaType1, const QtJambiUtils::QHashFunction& _hashFunction1,
+                                int _metaType2, const QtJambiUtils::QHashFunction& _hashFunction2, const QtPrivate::AbstractDebugStreamFunction* _debugFunction)
                 : QtPrivate::AbstractDebugStreamFunction(&debugStream, &destroy),
                   metaType1(_metaType1), hashFunction1(_hashFunction1),
                   metaType2(_metaType2), hashFunction2(_hashFunction2),
                   debugFunction(_debugFunction) {}
 
             int metaType1;
-            QHashFunction hashFunction1;
+            QtJambiUtils::QHashFunction hashFunction1;
             int metaType2;
-            QHashFunction hashFunction2;
+            QtJambiUtils::QHashFunction hashFunction2;
             const QtPrivate::AbstractDebugStreamFunction* debugFunction;
 
             static void debugStream(const QtPrivate::AbstractDebugStreamFunction *f, QDebug& d, const void * ptr){
@@ -7632,7 +7670,7 @@ int QtJambiPrivate::registerAssociativeContainerType(const QByteArray& typeName,
 struct ContainerInfo{
     bool isPointer;
     QMetaType metaType;
-    QHashFunction hashFunction;
+    QtJambiUtils::QHashFunction hashFunction;
     QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr;
     QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr;
     QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr;
@@ -7647,10 +7685,10 @@ struct ContainerInfo{
 struct BiContainerInfo{
     bool isPointer1;
     QMetaType metaType1;
-    QHashFunction hashFunction1;
+    QtJambiUtils::QHashFunction hashFunction1;
     bool isPointer2;
     QMetaType metaType2;
-    QHashFunction hashFunction2;
+    QtJambiUtils::QHashFunction hashFunction2;
     QtPrivate::QMetaTypeInterface::DefaultCtrFn defaultCtr;
     QtPrivate::QMetaTypeInterface::CopyCtrFn copyCtr;
     QtPrivate::QMetaTypeInterface::MoveCtrFn moveCtr;
@@ -8062,7 +8100,7 @@ const QtMetaContainerPrivate::QMetaSequenceInterface& qtjambi_find_meta_sequence
     }
 }
 
-const QtMetaContainerPrivate::QMetaAssociationInterface& qtjambi_find_meta_association(QMetaType metaType1, QHashFunction hashFunction1, QMetaType metaType2, QHashFunction hashFunction2, const QtMetaContainerPrivate::QMetaAssociationInterface& defaultInterface)
+const QtMetaContainerPrivate::QMetaAssociationInterface& qtjambi_find_meta_association(QMetaType metaType1, QtJambiUtils::QHashFunction hashFunction1, QMetaType metaType2, QtJambiUtils::QHashFunction hashFunction2, const QtMetaContainerPrivate::QMetaAssociationInterface& defaultInterface)
 {
     hash_type hash = computeHash(defaultInterface, metaType1, metaType2);
     {
@@ -8259,7 +8297,7 @@ int QtJambiPrivate::registerSequentialContainerType(const QByteArray& typeName, 
                                       MetaSequenceConstIteratorFactory createMetaSequenceConstIterator,
                                       HashWrapper hashWrapper)
 {
-    QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, metaType.id());
+    QtJambiUtils::QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, metaType.id());
     if(!const_cast<QMetaType&>(metaType).iface()->equals
             && !(metaType.flags() & QMetaType::IsPointer)
             && !(metaType.flags() & QMetaType::IsEnumeration))
@@ -8362,8 +8400,8 @@ int QtJambiPrivate::registerAssociativeContainerType(const QByteArray& typeName,
                                       PairAccessFactory pairAccessFactory,
                                       HashWrapper2 hashWrapper)
 {
-    QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, metaType1.id());
-    QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, metaType2.id());
+    QtJambiUtils::QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, metaType1.id());
+    QtJambiUtils::QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, metaType2.id());
     if((!const_cast<QMetaType&>(metaType1).iface()->equals
         && !(metaType1.flags() & QMetaType::IsPointer)
         && !(metaType1.flags() & QMetaType::IsEnumeration))
@@ -8478,7 +8516,7 @@ int QtJambiPrivate::registerAssociativeContainerType(const QByteArray& typeName,
 
 bool lessThan(JNIEnv *env, jobject k1, jobject k2);
 
-QHashFunction QtJambiTypeManager::findHashFunction(bool isPointer, int metaType)
+QtJambiUtils::QHashFunction QtJambiTypeManager::findHashFunction(bool isPointer, int metaType)
 {
     if(isPointer){
         return &ContainerAccessAPI::pointerHashFunction;
@@ -8492,7 +8530,7 @@ QHashFunction QtJambiTypeManager::findHashFunction(bool isPointer, int metaType)
         if(!typeId){
             typeId = getTypeByMetaType(metaType);
         }
-        QHashFunction f;
+        QtJambiUtils::QHashFunction f;
         if(typeId)
             f = registeredHashFunction(*typeId);
         if(!f)

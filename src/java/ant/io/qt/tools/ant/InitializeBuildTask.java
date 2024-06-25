@@ -208,9 +208,13 @@ public class InitializeBuildTask extends AbstractInitializeTask {
 					_moduleInfos.put("protobuf", new ModuleInfo("QTJAMBI_NO_PROTOBUF", "QtProtobuf"));
 					skippedModules.add("grpc");
 					skippedModules.add("protobuf");
+					_moduleInfos.put("insidetracker", new ModuleInfo("QTJAMBI_NO_INSIDETRACKER", "QtInsightTracker"));
 				}
 				if((qtMajorVersion==6 && qtMinorVersion>=6) || qtMajorVersion>7) {
 					_moduleInfos.put("graphs", new ModuleInfo("QTJAMBI_NO_GRAPHS", "QtGraphs"));
+				}
+				if((qtMajorVersion==6 && qtMinorVersion>=8) || qtMajorVersion>7) {
+					_moduleInfos.put("graphswidgets", new ModuleInfo("QTJAMBI_NO_GRAPHS_WIDGETS", "QtGraphsWidgets"));
 				}
 				if((qtMajorVersion==6 && qtMinorVersion>=7) || qtMajorVersion>8) {
 					_moduleInfos.put("qmlbuiltins", new ModuleInfo("QTJAMBI_NO_QMLBUILTINS", "QtQmlBuiltins", ModuleInfo.Headers.Public, true));

@@ -5513,6 +5513,58 @@ public final class QMetaObject {
         throw new QUnsuccessfulInvocationException("Unable to invoke method.");
     }
     
+        /**
+     * Calling <code>invokeMethod(signal, AutoConnection)</code>.
+     * @param signal invoked signal
+     */
+    @QtUninvokable
+    public static void invokeMethod(@StrictNonNull AbstractPublicSignal0 signal) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static void invokeMethod(@StrictNonNull AbstractPublicSignal0 signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit();
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type);
+            }else {
+            	invokeMethod(thread, qobject, signal::emit, type);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), (QObject)null, signal::emit, type);
+        }else {
+        	invokeMethod((QThread)null, (QObject)null, signal::emit, type);
+        }
+    }
+    
     /**
      * Calling <code>invokeMethod(signal, AutoConnection)</code>.
      * @param signal invoked signal
@@ -5542,12 +5594,69 @@ public final class QMetaObject {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null) {
+            if(qmethod!=null && qmethod.isValid()) {
                 qmethod.invoke(qobject, type);
                 return;
             }
         }
         throw new QUnsuccessfulInvocationException("Unable to invoke method.");
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     */
+    @QtUninvokable
+    public static <A> void invokeMethod(@StrictNonNull AbstractPublicSignal1<A> signal, A arg1) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1);
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A> void invokeMethod(@StrictNonNull AbstractPublicSignal1<A> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, arg1);
+            }else {
+            	invokeMethod(thread, qobject, signal::emit, type, arg1);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), (QObject)null, signal::emit, type, arg1);
+        }else {
+        	invokeMethod((QThread)null, (QObject)null, signal::emit, type, arg1);
+        }
     }
     
     /**
@@ -5584,7 +5693,7 @@ public final class QMetaObject {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null) {
+            if(qmethod!=null && qmethod.isValid()) {
                 qmethod.invoke(qobject, type, arg1);
                 return;
             }
@@ -5621,7 +5730,53 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A> void invokeMethod(@StrictNonNull AbstractSignal1Default1<A> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, signal.arg1Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit();
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		signal.arg1Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot0)signal::emit, 
+            			type);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot0)signal::emit, 
+        			type);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot0)signal::emit, 
+        			type);
+        }
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     */
+    @QtUninvokable
+    public static <A,B> void invokeMethod(@StrictNonNull AbstractPublicSignal2<A,B> signal, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2);
     }
     
     /**
@@ -5658,11 +5813,58 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
+    public static <A,B> void invokeMethod(@StrictNonNull AbstractPublicSignal2<A,B> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, arg1, arg2);
+            }else {
+            	invokeMethod(thread, qobject, signal::emit, type, arg1, arg2);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), (QObject)null, signal::emit, type, arg1, arg2);
+        }else {
+        	invokeMethod((QThread)null, (QObject)null, signal::emit, type, arg1, arg2);
+        }
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
     public static <A,B> void invokeMethod(@StrictNonNull AbstractPrivateSignal2<A,B> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null) {
+            if(qmethod!=null && qmethod.isValid()) {
                 qmethod.invoke(qobject, type, arg1, arg2);
                 return;
             }
@@ -5703,7 +5905,40 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B> void invokeMethod(@StrictNonNull AbstractSignal2Default1<A,B> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, signal.arg2Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, 
+                		signal.arg2Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot1<A>)signal::emit, 
+            			type, arg1);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot1<A>)signal::emit, 
+        			type, arg1);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot1<A>)signal::emit, 
+        			type, arg1);
+        }
     }
     
     /**
@@ -5737,7 +5972,56 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B> void invokeMethod(@StrictNonNull AbstractSignal2Default2<A,B> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, signal.arg1Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit();
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		signal.arg1Default.get(), 
+                		((AbstractSignal2Default1<A,B>)signal).arg2Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot0)signal::emit, 
+            			type);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot0)signal::emit, 
+        			type);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot0)signal::emit, 
+        			type);
+        }
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C> void invokeMethod(@StrictNonNull AbstractPublicSignal3<A,B,C> signal, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3);
     }
     
     /**
@@ -5778,11 +6062,60 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
+    public static <A,B,C> void invokeMethod(@StrictNonNull AbstractPublicSignal3<A,B,C> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, arg1, arg2, arg3);
+            }else {
+            	invokeMethod(thread, qobject, signal::emit, type, arg1, arg2, arg3);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), (QObject)null, signal::emit, type, arg1, arg2, arg3);
+        }else {
+        	invokeMethod((QThread)null, (QObject)null, signal::emit, type, arg1, arg2, arg3);
+        }
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
     public static <A,B,C> void invokeMethod(@StrictNonNull AbstractPrivateSignal3<A,B,C> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null) {
+            if(qmethod!=null && qmethod.isValid()) {
                 qmethod.invoke(qobject, type, arg1, arg2, arg3);
                 return;
             }
@@ -5827,7 +6160,40 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C> void invokeMethod(@StrictNonNull AbstractSignal3Default1<A,B,C> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, arg2, signal.arg3Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, 
+                		signal.arg3Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot2<A,B>)signal::emit, 
+            			type, arg1, arg2);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot2<A,B>)signal::emit, 
+        			type, arg1, arg2);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot2<A,B>)signal::emit, 
+        			type, arg1, arg2);
+        }
     }
     
     /**
@@ -5865,7 +6231,41 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C> void invokeMethod(@StrictNonNull AbstractSignal3Default2<A,B,C> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, signal.arg2Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, 
+                		signal.arg2Default.get(), 
+                		((AbstractSignal3Default1<A,B,C>)signal).arg3Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot1<A>)signal::emit, 
+            			type, arg1);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot1<A>)signal::emit, 
+        			type, arg1);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot1<A>)signal::emit, 
+        			type, arg1);
+        }
     }
     
     /**
@@ -5901,7 +6301,59 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C> void invokeMethod(@StrictNonNull AbstractSignal3Default3<A,B,C> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, signal.arg1Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit();
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		signal.arg1Default.get(), 
+                		((AbstractSignal3Default2<A,B,C>)signal).arg2Default.get(), 
+                		((AbstractSignal3Default1<A,B,C>)signal).arg3Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot0)signal::emit, 
+            			type);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot0)signal::emit, 
+        			type);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot0)signal::emit, 
+        			type);
+        }
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D> void invokeMethod(@StrictNonNull AbstractPublicSignal4<A,B,C,D> signal, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4);
     }
     
     /**
@@ -5946,11 +6398,62 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
+    public static <A,B,C,D> void invokeMethod(@StrictNonNull AbstractPublicSignal4<A,B,C,D> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3, arg4);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, arg1, arg2, arg3, arg4);
+            }else {
+            	invokeMethod(thread, qobject, signal::emit, type, arg1, arg2, arg3, arg4);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), (QObject)null, signal::emit, type, arg1, arg2, arg3, arg4);
+        }else {
+        	invokeMethod((QThread)null, (QObject)null, signal::emit, type, arg1, arg2, arg3, arg4);
+        }
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
     public static <A,B,C,D> void invokeMethod(@StrictNonNull AbstractPrivateSignal4<A,B,C,D> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null) {
+            if(qmethod!=null && qmethod.isValid()) {
                 qmethod.invoke(qobject, type, arg1, arg2, arg3, arg4);
                 return;
             }
@@ -5999,7 +6502,40 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D> void invokeMethod(@StrictNonNull AbstractSignal4Default1<A,B,C,D> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, arg2, arg3, signal.arg4Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, arg3, 
+                		signal.arg4Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot3<A,B,C>)signal::emit, 
+            			type, arg1, arg2, arg3);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot3<A,B,C>)signal::emit, 
+        			type, arg1, arg2, arg3);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot3<A,B,C>)signal::emit, 
+        			type, arg1, arg2, arg3);
+        }
     }
     
     /**
@@ -6041,7 +6577,41 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D> void invokeMethod(@StrictNonNull AbstractSignal4Default2<A,B,C,D> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, arg2, signal.arg3Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, 
+                		signal.arg3Default.get(), 
+                		((AbstractSignal4Default1<A,B,C,D>)signal).arg4Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot2<A,B>)signal::emit, 
+            			type, arg1, arg2);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot2<A,B>)signal::emit, 
+        			type, arg1, arg2);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot2<A,B>)signal::emit, 
+        			type, arg1, arg2);
+        }
     }
     
     /**
@@ -6081,7 +6651,42 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D> void invokeMethod(@StrictNonNull AbstractSignal4Default3<A,B,C,D> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, signal.arg2Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, 
+                		signal.arg2Default.get(),
+                		((AbstractSignal4Default2<A,B,C,D>)signal).arg3Default.get(),
+                		((AbstractSignal4Default1<A,B,C,D>)signal).arg4Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot1<A>)signal::emit, 
+            			type, arg1);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot1<A>)signal::emit, 
+        			type, arg1);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot1<A>)signal::emit, 
+        			type, arg1);
+        }
     }
     
     /**
@@ -6119,7 +6724,62 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D> void invokeMethod(@StrictNonNull AbstractSignal4Default4<A,B,C,D> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, signal.arg1Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit();
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		signal.arg1Default.get(), 
+                		((AbstractSignal4Default3<A,B,C,D>)signal).arg2Default.get(), 
+                		((AbstractSignal4Default2<A,B,C,D>)signal).arg3Default.get(), 
+                		((AbstractSignal4Default1<A,B,C,D>)signal).arg4Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot0)signal::emit, 
+            			type);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot0)signal::emit, 
+        			type);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot0)signal::emit, 
+        			type);
+        }
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractPublicSignal5<A,B,C,D,E> signal, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5);
     }
     
     /**
@@ -6168,11 +6828,64 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
+    public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractPublicSignal5<A,B,C,D,E> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3, arg4, arg5);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, arg1, arg2, arg3, arg4, arg5);
+            }else {
+            	invokeMethod(thread, qobject, signal::emit, type, arg1, arg2, arg3, arg4, arg5);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), (QObject)null, signal::emit, type, arg1, arg2, arg3, arg4, arg5);
+        }else {
+        	invokeMethod((QThread)null, (QObject)null, signal::emit, type, arg1, arg2, arg3, arg4, arg5);
+        }
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
     public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractPrivateSignal5<A,B,C,D,E> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null) {
+            if(qmethod!=null && qmethod.isValid()) {
                 qmethod.invoke(qobject, type, arg1, arg2, arg3, arg4, arg5);
                 return;
             }
@@ -6225,7 +6938,40 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractSignal5Default1<A,B,C,D,E> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, arg2, arg3, arg4, signal.arg5Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3, arg4);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, arg3, arg4, 
+                		signal.arg5Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot4<A,B,C,D>)signal::emit, 
+            			type, arg1, arg2, arg3, arg4);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot4<A,B,C,D>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot4<A,B,C,D>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4);
+        }
     }
     
     /**
@@ -6271,7 +7017,41 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractSignal5Default2<A,B,C,D,E> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, arg2, arg3, signal.arg4Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, arg3, 
+                		signal.arg4Default.get(), 
+                		((AbstractSignal5Default1<A,B,C,D,E>)signal).arg5Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot3<A,B,C>)signal::emit, 
+            			type, arg1, arg2, arg3);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot3<A,B,C>)signal::emit, 
+        			type, arg1, arg2, arg3);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot3<A,B,C>)signal::emit, 
+        			type, arg1, arg2, arg3);
+        }
     }
     
     /**
@@ -6315,7 +7095,42 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractSignal5Default3<A,B,C,D,E> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, arg2, signal.arg3Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, 
+                		signal.arg3Default.get(),
+                		((AbstractSignal5Default2<A,B,C,D,E>)signal).arg4Default.get(),
+                		((AbstractSignal5Default1<A,B,C,D,E>)signal).arg5Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot2<A,B>)signal::emit, 
+            			type, arg1, arg2);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot2<A,B>)signal::emit, 
+        			type, arg1, arg2);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot2<A,B>)signal::emit, 
+        			type, arg1, arg2);
+        }
     }
     
     /**
@@ -6357,7 +7172,43 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractSignal5Default4<A,B,C,D,E> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, signal.arg2Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, 
+                		signal.arg2Default.get(),
+                		((AbstractSignal5Default3<A,B,C,D,E>)signal).arg3Default.get(),
+                		((AbstractSignal5Default2<A,B,C,D,E>)signal).arg4Default.get(),
+                		((AbstractSignal5Default1<A,B,C,D,E>)signal).arg5Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot1<A>)signal::emit, 
+            			type, arg1);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot1<A>)signal::emit, 
+        			type, arg1);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot1<A>)signal::emit, 
+        			type, arg1);
+        }
     }
     
     /**
@@ -6397,7 +7248,65 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E> void invokeMethod(@StrictNonNull AbstractSignal5Default5<A,B,C,D,E> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, signal.arg1Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit();
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		signal.arg1Default.get(), 
+                		((AbstractSignal5Default4<A,B,C,D,E>)signal).arg2Default.get(), 
+                		((AbstractSignal5Default3<A,B,C,D,E>)signal).arg3Default.get(), 
+                		((AbstractSignal5Default2<A,B,C,D,E>)signal).arg4Default.get(), 
+                		((AbstractSignal5Default1<A,B,C,D,E>)signal).arg5Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot0)signal::emit, 
+            			type);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot0)signal::emit, 
+        			type);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot0)signal::emit, 
+        			type);
+        }
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractPublicSignal6<A,B,C,D,E,F> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6);
     }
     
     /**
@@ -6449,11 +7358,65 @@ public final class QMetaObject {
      * @param arg6 Argument for the sixth parameter.
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
+    public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractPublicSignal6<A,B,C,D,E,F> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3, arg4, arg5, arg6);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, arg1, arg2, arg3, arg4, arg5, arg6);
+            }else {
+            	invokeMethod(thread, qobject, signal::emit, type, arg1, arg2, arg3, arg4, arg5, arg6);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), (QObject)null, signal::emit, type, arg1, arg2, arg3, arg4, arg5, arg6);
+        }else {
+        	invokeMethod((QThread)null, (QObject)null, signal::emit, type, arg1, arg2, arg3, arg4, arg5, arg6);
+        }
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
     public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractPrivateSignal6<A,B,C,D,E,F> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null) {
+            if(qmethod!=null && qmethod.isValid()) {
                 qmethod.invoke(qobject, type, arg1, arg2, arg3, arg4, arg5, arg6);
                 return;
             }
@@ -6509,7 +7472,40 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractSignal6Default1<A,B,C,D,E,F> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, signal.arg6Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3, arg4, arg5);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, arg3, arg4, arg5, 
+                		signal.arg6Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot5<A,B,C,D,E>)signal::emit, 
+            			type, arg1, arg2, arg3, arg4, arg5);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot5<A,B,C,D,E>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4, arg5);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot5<A,B,C,D,E>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4, arg5);
+        }
     }
     
     /**
@@ -6558,7 +7554,41 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractSignal6Default2<A,B,C,D,E,F> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, arg2, arg3, arg4, signal.arg5Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3, arg4);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, arg3, arg4, 
+                		signal.arg5Default.get(), 
+                		((AbstractSignal6Default1<A,B,C,D,E,F>)signal).arg6Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot4<A,B,C,D>)signal::emit, 
+            			type, arg1, arg2, arg3, arg4);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot4<A,B,C,D>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot4<A,B,C,D>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4);
+        }
     }
     
     /**
@@ -6605,7 +7635,42 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractSignal6Default3<A,B,C,D,E,F> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, arg2, arg3, signal.arg4Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, arg3, 
+                		signal.arg4Default.get(),
+                		((AbstractSignal6Default2<A,B,C,D,E,F>)signal).arg5Default.get(),
+                		((AbstractSignal6Default1<A,B,C,D,E,F>)signal).arg6Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot3<A,B,C>)signal::emit, 
+            			type, arg1, arg2, arg3);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot3<A,B,C>)signal::emit, 
+        			type, arg1, arg2, arg3);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot3<A,B,C>)signal::emit, 
+        			type, arg1, arg2, arg3);
+        }
     }
     
     /**
@@ -6650,7 +7715,43 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractSignal6Default4<A,B,C,D,E,F> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, arg2, signal.arg3Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, 
+                		signal.arg3Default.get(),
+                		((AbstractSignal6Default3<A,B,C,D,E,F>)signal).arg4Default.get(),
+                		((AbstractSignal6Default2<A,B,C,D,E,F>)signal).arg5Default.get(),
+                		((AbstractSignal6Default1<A,B,C,D,E,F>)signal).arg6Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot2<A,B>)signal::emit, 
+            			type, arg1, arg2);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot2<A,B>)signal::emit, 
+        			type, arg1, arg2);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot2<A,B>)signal::emit, 
+        			type, arg1, arg2);
+        }
     }
     
     /**
@@ -6693,7 +7794,44 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractSignal6Default5<A,B,C,D,E,F> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, signal.arg2Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, 
+                		signal.arg2Default.get(),
+                		((AbstractSignal6Default4<A,B,C,D,E,F>)signal).arg3Default.get(),
+                		((AbstractSignal6Default3<A,B,C,D,E,F>)signal).arg4Default.get(),
+                		((AbstractSignal6Default2<A,B,C,D,E,F>)signal).arg5Default.get(),
+                		((AbstractSignal6Default1<A,B,C,D,E,F>)signal).arg6Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot1<A>)signal::emit, 
+            			type, arg1);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot1<A>)signal::emit, 
+        			type, arg1);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot1<A>)signal::emit, 
+        			type, arg1);
+        }
     }
     
     /**
@@ -6734,7 +7872,68 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     public static <A,B,C,D,E,F> void invokeMethod(@StrictNonNull AbstractSignal6Default6<A,B,C,D,E,F> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, signal.arg1Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit();
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		signal.arg1Default.get(), 
+                		((AbstractSignal6Default5<A,B,C,D,E,F>)signal).arg2Default.get(), 
+                		((AbstractSignal6Default4<A,B,C,D,E,F>)signal).arg3Default.get(), 
+                		((AbstractSignal6Default3<A,B,C,D,E,F>)signal).arg4Default.get(), 
+                		((AbstractSignal6Default2<A,B,C,D,E,F>)signal).arg5Default.get(), 
+                		((AbstractSignal6Default1<A,B,C,D,E,F>)signal).arg6Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot0)signal::emit, 
+            			type);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot0)signal::emit, 
+        			type);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot0)signal::emit, 
+        			type);
+        }
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractPublicSignal7<A,B,C,D,E,F,G> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
     }
     
     /**
@@ -6791,11 +7990,68 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
+    public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractPublicSignal7<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+            }else {
+            	invokeMethod(thread, qobject, signal::emit, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), (QObject)null, signal::emit, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+        }else {
+        	invokeMethod((QThread)null, (QObject)null, signal::emit, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+        }
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
     public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractPrivateSignal7<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null) {
+            if(qmethod!=null && qmethod.isValid()) {
                 qmethod.invoke(qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
                 return;
             }
@@ -6856,7 +8112,40 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default1<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, arg6, signal.arg7Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3, arg4, arg5, arg6);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, arg3, arg4, arg5, arg6, 
+                		signal.arg7Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot6<A,B,C,D,E,F>)signal::emit, 
+            			type, arg1, arg2, arg3, arg4, arg5, arg6);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot6<A,B,C,D,E,F>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4, arg5, arg6);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot6<A,B,C,D,E,F>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4, arg5, arg6);
+        }
     }
     
     /**
@@ -6910,7 +8199,41 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default2<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, signal.arg6Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3, arg4, arg5);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, arg3, arg4, arg5, 
+                		signal.arg6Default.get(), 
+                		((AbstractSignal7Default1<A,B,C,D,E,F,G>)signal).arg7Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot5<A,B,C,D,E>)signal::emit, 
+            			type, arg1, arg2, arg3, arg4, arg5);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot5<A,B,C,D,E>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4, arg5);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot5<A,B,C,D,E>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4, arg5);
+        }
     }
     
     /**
@@ -6962,7 +8285,42 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default3<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, arg2, arg3, arg4, signal.arg5Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3, arg4);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, arg3, arg4, 
+                		signal.arg5Default.get(),
+                		((AbstractSignal7Default2<A,B,C,D,E,F,G>)signal).arg6Default.get(),
+                		((AbstractSignal7Default1<A,B,C,D,E,F,G>)signal).arg7Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot4<A,B,C,D>)signal::emit, 
+            			type, arg1, arg2, arg3, arg4);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot4<A,B,C,D>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot4<A,B,C,D>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4);
+        }
     }
     
     /**
@@ -7012,7 +8370,43 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default4<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, arg2, arg3, signal.arg4Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, arg3, 
+                		signal.arg4Default.get(),
+                		((AbstractSignal7Default3<A,B,C,D,E,F,G>)signal).arg5Default.get(),
+                		((AbstractSignal7Default2<A,B,C,D,E,F,G>)signal).arg6Default.get(),
+                		((AbstractSignal7Default1<A,B,C,D,E,F,G>)signal).arg7Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot3<A,B,C>)signal::emit, 
+            			type, arg1, arg2, arg3);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot3<A,B,C>)signal::emit, 
+        			type, arg1, arg2, arg3);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot3<A,B,C>)signal::emit, 
+        			type, arg1, arg2, arg3);
+        }
     }
     
     /**
@@ -7060,7 +8454,44 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default5<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, arg2, signal.arg3Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, 
+                		signal.arg3Default.get(),
+                		((AbstractSignal7Default4<A,B,C,D,E,F,G>)signal).arg4Default.get(),
+                		((AbstractSignal7Default3<A,B,C,D,E,F,G>)signal).arg5Default.get(),
+                		((AbstractSignal7Default2<A,B,C,D,E,F,G>)signal).arg6Default.get(),
+                		((AbstractSignal7Default1<A,B,C,D,E,F,G>)signal).arg7Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot2<A,B>)signal::emit, 
+            			type, arg1, arg2);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot2<A,B>)signal::emit, 
+        			type, arg1, arg2);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot2<A,B>)signal::emit, 
+        			type, arg1, arg2);
+        }
     }
     
     /**
@@ -7106,7 +8537,45 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default6<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, signal.arg2Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, 
+                		signal.arg2Default.get(),
+                		((AbstractSignal7Default5<A,B,C,D,E,F,G>)signal).arg3Default.get(),
+                		((AbstractSignal7Default4<A,B,C,D,E,F,G>)signal).arg4Default.get(),
+                		((AbstractSignal7Default3<A,B,C,D,E,F,G>)signal).arg5Default.get(),
+                		((AbstractSignal7Default2<A,B,C,D,E,F,G>)signal).arg6Default.get(),
+                		((AbstractSignal7Default1<A,B,C,D,E,F,G>)signal).arg7Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot1<A>)signal::emit, 
+            			type, arg1);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot1<A>)signal::emit, 
+        			type, arg1);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot1<A>)signal::emit, 
+        			type, arg1);
+        }
     }
     
     /**
@@ -7150,7 +8619,45 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G> void invokeMethod(@StrictNonNull AbstractSignal7Default7<A,B,C,D,E,F,G> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, signal.arg1Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit();
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		signal.arg1Default.get(), 
+                		((AbstractSignal7Default6<A,B,C,D,E,F,G>)signal).arg2Default.get(), 
+                		((AbstractSignal7Default5<A,B,C,D,E,F,G>)signal).arg3Default.get(), 
+                		((AbstractSignal7Default4<A,B,C,D,E,F,G>)signal).arg4Default.get(), 
+                		((AbstractSignal7Default3<A,B,C,D,E,F,G>)signal).arg5Default.get(), 
+                		((AbstractSignal7Default2<A,B,C,D,E,F,G>)signal).arg6Default.get(), 
+                		((AbstractSignal7Default1<A,B,C,D,E,F,G>)signal).arg7Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot0)signal::emit, 
+            			type);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot0)signal::emit, 
+        			type);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot0)signal::emit, 
+        			type);
+        }
     }
     
     /**
@@ -7176,6 +8683,32 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractPrivateSignal8<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractPublicSignal8<A,B,C,D,E,F,G,H> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
     }
     
@@ -7215,12 +8748,71 @@ public final class QMetaObject {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null) {
+            if(qmethod!=null && qmethod.isValid()) {
                 qmethod.invoke(qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
                 return;
             }
         }
         throw new QUnsuccessfulInvocationException("Unable to invoke method.");
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractPublicSignal8<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+            }else {
+            	invokeMethod(thread, qobject, signal::emit, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), (QObject)null, signal::emit, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+        }else {
+        	invokeMethod((QThread)null, (QObject)null, signal::emit, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+        }
     }
     
     /**
@@ -7280,7 +8872,40 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default1<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, signal.arg8Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, arg3, arg4, arg5, arg6, arg7, 
+                		signal.arg8Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot7<A,B,C,D,E,F,G>)signal::emit, 
+            			type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot7<A,B,C,D,E,F,G>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot7<A,B,C,D,E,F,G>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+        }
     }
     
     /**
@@ -7338,7 +8963,41 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default2<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
-        invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, arg6, signal.arg7Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3, arg4, arg5, arg6);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, arg3, arg4, arg5, arg6, 
+                		signal.arg7Default.get(), 
+                		((AbstractSignal8Default1<A,B,C,D,E,F,G,H>)signal).arg8Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot6<A,B,C,D,E,F>)signal::emit, 
+            			type, arg1, arg2, arg3, arg4, arg5, arg6);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot6<A,B,C,D,E,F>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4, arg5, arg6);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot6<A,B,C,D,E,F>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4, arg5, arg6);
+        }
     }
     
     /**
@@ -7394,7 +9053,42 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default3<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
-        invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, signal.arg6Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3, arg4, arg5);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, arg3, arg4, arg5, 
+                		signal.arg6Default.get(),
+                		((AbstractSignal8Default2<A,B,C,D,E,F,G,H>)signal).arg7Default.get(),
+                		((AbstractSignal8Default1<A,B,C,D,E,F,G,H>)signal).arg8Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot5<A,B,C,D,E>)signal::emit, 
+            			type, arg1, arg2, arg3, arg4, arg5);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot5<A,B,C,D,E>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4, arg5);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot5<A,B,C,D,E>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4, arg5);
+        }
     }
     
     /**
@@ -7448,7 +9142,43 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default4<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
-        invokeMethod(signal, type, arg1, arg2, arg3, arg4, signal.arg5Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3, arg4);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, arg3, arg4, 
+                		signal.arg5Default.get(),
+                		((AbstractSignal8Default3<A,B,C,D,E,F,G,H>)signal).arg6Default.get(),
+                		((AbstractSignal8Default2<A,B,C,D,E,F,G,H>)signal).arg7Default.get(),
+                		((AbstractSignal8Default1<A,B,C,D,E,F,G,H>)signal).arg8Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot4<A,B,C,D>)signal::emit, 
+            			type, arg1, arg2, arg3, arg4);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot4<A,B,C,D>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot4<A,B,C,D>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4);
+        }
     }
     
     /**
@@ -7500,7 +9230,44 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default5<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
-        invokeMethod(signal, type, arg1, arg2, arg3, signal.arg4Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, arg3, 
+                		signal.arg4Default.get(),
+                		((AbstractSignal8Default4<A,B,C,D,E,F,G,H>)signal).arg5Default.get(),
+                		((AbstractSignal8Default3<A,B,C,D,E,F,G,H>)signal).arg6Default.get(),
+                		((AbstractSignal8Default2<A,B,C,D,E,F,G,H>)signal).arg7Default.get(),
+                		((AbstractSignal8Default1<A,B,C,D,E,F,G,H>)signal).arg8Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot3<A,B,C>)signal::emit, 
+            			type, arg1, arg2, arg3);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot3<A,B,C>)signal::emit, 
+        			type, arg1, arg2, arg3);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot3<A,B,C>)signal::emit, 
+        			type, arg1, arg2, arg3);
+        }
     }
     
     /**
@@ -7550,7 +9317,45 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default6<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
-        invokeMethod(signal, type, arg1, arg2, signal.arg3Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, 
+                		signal.arg3Default.get(),
+                		((AbstractSignal8Default5<A,B,C,D,E,F,G,H>)signal).arg4Default.get(),
+                		((AbstractSignal8Default4<A,B,C,D,E,F,G,H>)signal).arg5Default.get(),
+                		((AbstractSignal8Default3<A,B,C,D,E,F,G,H>)signal).arg6Default.get(),
+                		((AbstractSignal8Default2<A,B,C,D,E,F,G,H>)signal).arg7Default.get(),
+                		((AbstractSignal8Default1<A,B,C,D,E,F,G,H>)signal).arg8Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot2<A,B>)signal::emit, 
+            			type, arg1, arg2);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot2<A,B>)signal::emit, 
+        			type, arg1, arg2);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot2<A,B>)signal::emit, 
+        			type, arg1, arg2);
+        }
     }
     
     /**
@@ -7598,7 +9403,46 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default7<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
-        invokeMethod(signal, type, arg1, signal.arg2Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, 
+                		signal.arg2Default.get(),
+                		((AbstractSignal8Default6<A,B,C,D,E,F,G,H>)signal).arg3Default.get(),
+                		((AbstractSignal8Default5<A,B,C,D,E,F,G,H>)signal).arg4Default.get(),
+                		((AbstractSignal8Default4<A,B,C,D,E,F,G,H>)signal).arg5Default.get(),
+                		((AbstractSignal8Default3<A,B,C,D,E,F,G,H>)signal).arg6Default.get(),
+                		((AbstractSignal8Default2<A,B,C,D,E,F,G,H>)signal).arg7Default.get(),
+                		((AbstractSignal8Default1<A,B,C,D,E,F,G,H>)signal).arg8Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot1<A>)signal::emit, 
+            			type, arg1);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot1<A>)signal::emit, 
+        			type, arg1);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot1<A>)signal::emit, 
+        			type, arg1);
+        }
     }
     
     /**
@@ -7644,7 +9488,46 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H> void invokeMethod(@StrictNonNull AbstractSignal8Default8<A,B,C,D,E,F,G,H> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
-        invokeMethod(signal, type, signal.arg1Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit();
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		signal.arg1Default.get(), 
+                		((AbstractSignal8Default7<A,B,C,D,E,F,G,H>)signal).arg2Default.get(), 
+                		((AbstractSignal8Default6<A,B,C,D,E,F,G,H>)signal).arg3Default.get(), 
+                		((AbstractSignal8Default5<A,B,C,D,E,F,G,H>)signal).arg4Default.get(), 
+                		((AbstractSignal8Default4<A,B,C,D,E,F,G,H>)signal).arg5Default.get(), 
+                		((AbstractSignal8Default3<A,B,C,D,E,F,G,H>)signal).arg6Default.get(), 
+                		((AbstractSignal8Default2<A,B,C,D,E,F,G,H>)signal).arg7Default.get(), 
+                		((AbstractSignal8Default1<A,B,C,D,E,F,G,H>)signal).arg8Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot0)signal::emit, 
+            			type);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot0)signal::emit, 
+        			type);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot0)signal::emit, 
+        			type);
+        }
     }
     
     /**
@@ -7672,6 +9555,34 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
+        invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+    }
+    
+    /**
+     * Calling <code>invokeMethod(signal, AutoConnection, ...)</code>.
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal invoked signal
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @param arg9 Argument for the ninth parameter.
+     */
+    @QtUninvokable
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractPublicSignal9<A,B,C,D,E,F,G,H,I> signal, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
         invokeMethod(signal, Qt.ConnectionType.AutoConnection, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
     }
     
@@ -7916,11 +9827,72 @@ public final class QMetaObject {
      * @throws QUnsuccessfulInvocationException if not able to invoke signal
      */
     @QtUninvokable
+    public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractPublicSignal9<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+            }else {
+            	invokeMethod(thread, qobject, signal::emit, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), (QObject)null, signal::emit, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+        }else {
+        	invokeMethod((QThread)null, (QObject)null, signal::emit, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
+        }
+    }
+    
+    /**
+     * <p>Invokes the signal.</p>
+     * 
+     * <p>The invocation can be either synchronous or asynchronous, depending on type:</p>
+     * <ul>
+     * <li>If type is {@link Qt.ConnectionType#DirectConnection}, the member will be invoked immediately.</li>
+     * <li>If type is {@link Qt.ConnectionType#QueuedConnection}, a QEvent will be sent and the member is invoked as soon as the application enters the main event loop.</li>
+     * <li>If type is {@link Qt.ConnectionType#BlockingQueuedConnection}, the method will be invoked in the same way as for {@link Qt.ConnectionType#QueuedConnection}, except that the current thread will block until the event is delivered. Using this connection type to communicate between objects in the same thread will lead to deadlocks.</li>
+     * <li>If type is {@link Qt.ConnectionType#AutoConnection}, the member is invoked synchronously if obj lives in the same thread as the caller; otherwise it will invoke the member asynchronously.</li>
+     * </ul>
+     * 
+     * @param <A> The type of the first parameter of the signal.
+     * @param <B> The type of the second parameter of the signal.
+     * @param <C> The type of the third parameter of the signal.
+     * @param <D> The type of the fourth parameter of the signal.
+     * @param <E> The type of the fifth parameter of the signal.
+     * @param <F> The type of the sixth parameter of the signal.
+     * @param <G> The type of the seventh parameter of the signal.
+     * @param <H> The type of the eighth parameter of the signal.
+     * @param <I> The type of the ninth parameter of the signal.
+     * @param signal invoked signal
+     * @param type synchronous or asynchronous invocation
+     * @param arg1 Argument for the first parameter.
+     * @param arg2 Argument for the second parameter.
+     * @param arg3 Argument for the third parameter.
+     * @param arg4 Argument for the fourth parameter.
+     * @param arg5 Argument for the fifth parameter.
+     * @param arg6 Argument for the sixth parameter.
+     * @param arg7 Argument for the seventh parameter.
+     * @param arg8 Argument for the eighth parameter.
+     * @param arg9 Argument for the ninth parameter.
+     * @throws QUnsuccessfulInvocationException if not able to invoke signal
+     */
+    @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractPrivateSignal9<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8, I arg9) throws QUnsuccessfulInvocationException {
         if(signal.containingObject() instanceof QObject && !((QObject)signal.containingObject()).isDisposed()) {
             QObject qobject = (QObject)signal.containingObject();
             QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
-            if(qmethod!=null) {
+            if(qmethod!=null && qmethod.isValid()) {
                 qmethod.invoke(qobject, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
                 return;
             }
@@ -7962,7 +9934,40 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default1<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7, H arg8) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, signal.arg9Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, 
+                		signal.arg9Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot8<A,B,C,D,E,F,G,H>)signal::emit, 
+            			type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot8<A,B,C,D,E,F,G,H>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot8<A,B,C,D,E,F,G,H>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+        }
     }
     
     /**
@@ -7998,7 +10003,41 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default2<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6, G arg7) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, arg6, arg7, signal.arg8Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, arg3, arg4, arg5, arg6, arg7, 
+                		signal.arg8Default.get(), 
+                		((AbstractSignal9Default1<A,B,C,D,E,F,G,H,I>)signal).arg9Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot7<A,B,C,D,E,F,G>)signal::emit, 
+            			type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot7<A,B,C,D,E,F,G>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot7<A,B,C,D,E,F,G>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
+        }
     }
     
     /**
@@ -8033,7 +10072,42 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default3<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5, F arg6) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, arg6, signal.arg7Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3, arg4, arg5, arg6);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, arg3, arg4, arg5, arg6, 
+                		signal.arg7Default.get(), 
+                		((AbstractSignal9Default2<A,B,C,D,E,F,G,H,I>)signal).arg8Default.get(), 
+                		((AbstractSignal9Default1<A,B,C,D,E,F,G,H,I>)signal).arg9Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot6<A,B,C,D,E,F>)signal::emit, 
+            			type, arg1, arg2, arg3, arg4, arg5, arg6);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot6<A,B,C,D,E,F>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4, arg5, arg6);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot6<A,B,C,D,E,F>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4, arg5, arg6);
+        }
     }
     
     /**
@@ -8067,7 +10141,43 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default4<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4, E arg5) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, arg2, arg3, arg4, arg5, signal.arg6Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3, arg4, arg5);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, arg3, arg4, arg5, 
+                		signal.arg6Default.get(),
+                		((AbstractSignal9Default3<A,B,C,D,E,F,G,H,I>)signal).arg7Default.get(),
+                		((AbstractSignal9Default2<A,B,C,D,E,F,G,H,I>)signal).arg8Default.get(),
+                		((AbstractSignal9Default1<A,B,C,D,E,F,G,H,I>)signal).arg9Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot5<A,B,C,D,E>)signal::emit, 
+            			type, arg1, arg2, arg3, arg4, arg5);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot5<A,B,C,D,E>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4, arg5);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot5<A,B,C,D,E>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4, arg5);
+        }
     }
     
     /**
@@ -8100,7 +10210,44 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default5<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3, D arg4) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, arg2, arg3, arg4, signal.arg5Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3, arg4);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, arg3, arg4, 
+                		signal.arg5Default.get(),
+                		((AbstractSignal9Default4<A,B,C,D,E,F,G,H,I>)signal).arg6Default.get(),
+                		((AbstractSignal9Default3<A,B,C,D,E,F,G,H,I>)signal).arg7Default.get(),
+                		((AbstractSignal9Default2<A,B,C,D,E,F,G,H,I>)signal).arg8Default.get(),
+                		((AbstractSignal9Default1<A,B,C,D,E,F,G,H,I>)signal).arg9Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot4<A,B,C,D>)signal::emit, 
+            			type, arg1, arg2, arg3, arg4);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot4<A,B,C,D>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot4<A,B,C,D>)signal::emit, 
+        			type, arg1, arg2, arg3, arg4);
+        }
     }
     
     /**
@@ -8132,7 +10279,45 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default6<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2, C arg3) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, arg2, arg3, signal.arg4Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2, arg3);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, arg3, 
+                		signal.arg4Default.get(),
+                		((AbstractSignal9Default5<A,B,C,D,E,F,G,H,I>)signal).arg5Default.get(),
+                		((AbstractSignal9Default4<A,B,C,D,E,F,G,H,I>)signal).arg6Default.get(),
+                		((AbstractSignal9Default3<A,B,C,D,E,F,G,H,I>)signal).arg7Default.get(),
+                		((AbstractSignal9Default2<A,B,C,D,E,F,G,H,I>)signal).arg8Default.get(),
+                		((AbstractSignal9Default1<A,B,C,D,E,F,G,H,I>)signal).arg9Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot3<A,B,C>)signal::emit, 
+            			type, arg1, arg2, arg3);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot3<A,B,C>)signal::emit, 
+        			type, arg1, arg2, arg3);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot3<A,B,C>)signal::emit, 
+        			type, arg1, arg2, arg3);
+        }
     }
     
     /**
@@ -8163,7 +10348,46 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default7<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1, B arg2) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, arg2, signal.arg3Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1, arg2);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, arg2, 
+                		signal.arg3Default.get(),
+                		((AbstractSignal9Default6<A,B,C,D,E,F,G,H,I>)signal).arg4Default.get(),
+                		((AbstractSignal9Default5<A,B,C,D,E,F,G,H,I>)signal).arg5Default.get(),
+                		((AbstractSignal9Default4<A,B,C,D,E,F,G,H,I>)signal).arg6Default.get(),
+                		((AbstractSignal9Default3<A,B,C,D,E,F,G,H,I>)signal).arg7Default.get(),
+                		((AbstractSignal9Default2<A,B,C,D,E,F,G,H,I>)signal).arg8Default.get(),
+                		((AbstractSignal9Default1<A,B,C,D,E,F,G,H,I>)signal).arg9Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot2<A,B>)signal::emit, 
+            			type, arg1, arg2);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot2<A,B>)signal::emit, 
+        			type, arg1, arg2);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot2<A,B>)signal::emit, 
+        			type, arg1, arg2);
+        }
     }
     
     /**
@@ -8193,7 +10417,47 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default8<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type, A arg1) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, arg1, signal.arg2Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit(arg1);
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		arg1, 
+                		signal.arg2Default.get(),
+                		((AbstractSignal9Default7<A,B,C,D,E,F,G,H,I>)signal).arg3Default.get(),
+                		((AbstractSignal9Default6<A,B,C,D,E,F,G,H,I>)signal).arg4Default.get(),
+                		((AbstractSignal9Default5<A,B,C,D,E,F,G,H,I>)signal).arg5Default.get(),
+                		((AbstractSignal9Default4<A,B,C,D,E,F,G,H,I>)signal).arg6Default.get(),
+                		((AbstractSignal9Default3<A,B,C,D,E,F,G,H,I>)signal).arg7Default.get(),
+                		((AbstractSignal9Default2<A,B,C,D,E,F,G,H,I>)signal).arg8Default.get(),
+                		((AbstractSignal9Default1<A,B,C,D,E,F,G,H,I>)signal).arg9Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot1<A>)signal::emit, 
+            			type, arg1);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot1<A>)signal::emit, 
+        			type, arg1);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot1<A>)signal::emit, 
+        			type, arg1);
+        }
     }
     
     /**
@@ -8222,7 +10486,47 @@ public final class QMetaObject {
      */
     @QtUninvokable
     public static <A,B,C,D,E,F,G,H,I> void invokeMethod(@StrictNonNull AbstractSignal9Default9<A,B,C,D,E,F,G,H,I> signal, Qt.@NonNull ConnectionType type) throws QUnsuccessfulInvocationException {
-    	invokeMethod(signal, type, signal.arg1Default.get());
+    	if(signal.containingObject() instanceof QObject) {
+        	QObject qobject = (QObject)signal.containingObject();
+        	QThread thread = qobject.thread();
+        	switch(type){
+			case AutoConnection:
+				if(thread!=null && thread!=QThread.currentThread())
+					break;
+			case DirectConnection:
+				signal.emit();
+				return;
+			default:
+				break;
+        	}
+        	QMetaMethod qmethod = qobject.metaObject().methodByIndex(qobject.metaObject().metaObjectPointer, signal.methodIndex());
+            if(qmethod!=null && qmethod.isValid()) {
+                qmethod.invoke(qobject, type, 
+                		signal.arg1Default.get(),
+                		((AbstractSignal9Default8<A,B,C,D,E,F,G,H,I>)signal).arg2Default.get(),
+                		((AbstractSignal9Default7<A,B,C,D,E,F,G,H,I>)signal).arg3Default.get(),
+                		((AbstractSignal9Default6<A,B,C,D,E,F,G,H,I>)signal).arg4Default.get(),
+                		((AbstractSignal9Default5<A,B,C,D,E,F,G,H,I>)signal).arg5Default.get(),
+                		((AbstractSignal9Default4<A,B,C,D,E,F,G,H,I>)signal).arg6Default.get(),
+                		((AbstractSignal9Default3<A,B,C,D,E,F,G,H,I>)signal).arg7Default.get(),
+                		((AbstractSignal9Default2<A,B,C,D,E,F,G,H,I>)signal).arg8Default.get(),
+                		((AbstractSignal9Default1<A,B,C,D,E,F,G,H,I>)signal).arg9Default.get());
+            }else {
+            	invokeMethod(thread, qobject, 
+            			(Slot0)signal::emit, 
+            			type);
+            }
+        }else if(signal.containingObject() instanceof QtThreadAffineInterface) {
+        	invokeMethod(((QtThreadAffineInterface)signal.containingObject()).thread(), 
+        			(QObject)null, 
+        			(Slot0)signal::emit, 
+        			type);
+        }else {
+        	invokeMethod((QThread)null, 
+        			(QObject)null, 
+        			(Slot0)signal::emit, 
+        			type);
+        }
     }
     
     private static native void invokeMethod(long context, Runnable runnable, boolean blocking);

@@ -52,6 +52,7 @@ public final class QWeakPointer<O extends QtObjectInterface> {
 	}
 
 	private WeakReference<O> reference;
+	private QMetaObject.Connection connection;
 	
     @QtUninvokable
 	public void clear(){
@@ -81,31 +82,28 @@ public final class QWeakPointer<O extends QtObjectInterface> {
 		if(_object != object) {
 			if(_object!=null) {
 				if(_object instanceof QObject) {
-					((QObject)_object).destroyed.disconnect(this::unset);
+					((QObject)_object).destroyed.disconnect(connection);
 				}else {
 					DisposedSignal disposed = QtUtilities.getSignalOnDispose(_object);
 					if(disposed!=null) {
-						disposed.disconnect(this::unset);
+						disposed.disconnect(connection);
 					}
 				}
 			}
 			this.reference = object==null ? null : new WeakReference<>(object);
 			_object = data();
 			if(_object!=null) {
+				QMetaObject.Slot0 slot = ()->reference = null;
 				if(_object instanceof QObject) {
-					((QObject)_object).destroyed.connect(this::unset);
+					connection = ((QObject)_object).destroyed.connect(slot);
 				}else {
 					DisposedSignal disposed = QtUtilities.getSignalOnDispose(_object);
 					if(disposed!=null) {
-						disposed.connect(this::unset);
+						connection = disposed.connect(slot);
 					}
 				}
 			}
 		}
 		return this;
-	}
-	
-	private void unset() {
-		this.reference = null;
 	}
 }

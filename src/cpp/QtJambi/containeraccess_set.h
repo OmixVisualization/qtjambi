@@ -40,13 +40,13 @@ template<size_t _align, size_t _size>
 class GenericSetAccess : public AbstractSetAccess{
     typedef typename std::conditional<_size==0, void*, ContainerElement<_size, 0, false, _align>>::type T;
     MetaTypeInfo<0,_size==0> m_elementMetaTypeInfo;
-    InternalToExternalConverter m_internalToExternalConverter;
-    ExternalToInternalConverter m_externalToInternalConverter;
+    QtJambiUtils::InternalToExternalConverter m_internalToExternalConverter;
+    QtJambiUtils::ExternalToInternalConverter m_externalToInternalConverter;
     GenericSetAccess(
             const QMetaType& metaType,
-            const QHashFunction& hashFunction,
-            const InternalToExternalConverter& internalToExternalConverter,
-            const ExternalToInternalConverter& externalToInternalConverter
+            const QtJambiUtils::QHashFunction& hashFunction,
+            const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
+            const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter
             )
         :   AbstractSetAccess(),
           m_elementMetaTypeInfo(metaType, hashFunction),
@@ -65,9 +65,9 @@ class GenericSetAccess : public AbstractSetAccess{
 
 public:
     static AbstractSetAccess* newInstance(const QMetaType& metaType,
-                                           const QHashFunction& hashFunction,
-                                           const InternalToExternalConverter& internalToExternalConverter,
-                                           const ExternalToInternalConverter& externalToInternalConverter){
+                                           const QtJambiUtils::QHashFunction& hashFunction,
+                                           const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
+                                           const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter){
         return new GenericSetAccess(metaType,
                                       hashFunction,
                                       internalToExternalConverter,

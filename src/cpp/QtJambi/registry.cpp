@@ -1037,10 +1037,10 @@ const char* registerMetaTypeName(const QByteArray& typeName){
 
 bool QmlAPI::registerMetaTypeConverter(JNIEnv *env, const QMetaType& metaType1, jclass jsvalueClass, const QMetaType& metaType2, jclass targetClass, jmethodID constructor){
     if(!QMetaType::hasRegisteredConverterFunction(metaType1, metaType2)){
-        InternalToExternalConverter converter1 = QtJambiTypeManager::getInternalToExternalConverter(env, metaType1.name(), metaType1, jsvalueClass);
-        ExternalToInternalConverter reconverter1 = QtJambiTypeManager::getExternalToInternalConverter(env, jsvalueClass, metaType1.name(), metaType1);
-        InternalToExternalConverter converter2 = QtJambiTypeManager::getInternalToExternalConverter(env, metaType2.name(), metaType2, targetClass);
-        ExternalToInternalConverter reconverter2 = QtJambiTypeManager::getExternalToInternalConverter(env, targetClass, metaType2.name(), metaType2);
+        QtJambiUtils::InternalToExternalConverter converter1 = QtJambiTypeManager::getInternalToExternalConverter(env, metaType1.name(), metaType1, jsvalueClass);
+        QtJambiUtils::ExternalToInternalConverter reconverter1 = QtJambiTypeManager::getExternalToInternalConverter(env, jsvalueClass, metaType1.name(), metaType1);
+        QtJambiUtils::InternalToExternalConverter converter2 = QtJambiTypeManager::getInternalToExternalConverter(env, metaType2.name(), metaType2, targetClass);
+        QtJambiUtils::ExternalToInternalConverter reconverter2 = QtJambiTypeManager::getExternalToInternalConverter(env, targetClass, metaType2.name(), metaType2);
         if(converter1 && reconverter1 && converter2 && reconverter2){
             ParameterTypeInfo parameter1{metaType1.id(), jsvalueClass, std::move(converter1), std::move(reconverter1)};
             ParameterTypeInfo parameter2{metaType2.id(), targetClass, std::move(converter2), std::move(reconverter2)};
@@ -2432,7 +2432,33 @@ QMetaType getNativeWrapperType(const QMetaType& metaType){
                         gMetaTypeMetaObjectHash->insert(metaTypeInterface, mo);
                     }
                     nativeWrapperType = metaTypeInterface;
-                    (void)QMetaType(nativeWrapperType).id();
+                    QMetaType nativeWrapperMetaType(nativeWrapperType);
+                    (void)nativeWrapperMetaType.id();
+                    locker.unlock();
+                    if(!QMetaType::hasRegisteredConverterFunction(nativeWrapperMetaType, QMetaType::fromType<QString>())){
+                        if(isQObject){
+                            QMetaType::registerConverterFunction([metaType](const void *src, void *target) -> bool {
+                                new (target)QString();
+                                if(src){
+                                    QObject* obj = reinterpret_cast<const JQObjectWrapper*>(src)->qobject();
+                                    return QMetaType::convert(metaType, &obj, QMetaType::fromType<QString>(), target);
+                                }
+                                return true;
+                            }, nativeWrapperMetaType, QMetaType::fromType<QString>());
+                        }else{
+                            QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
+                                bool ok = false;
+                                if(src){
+                                    new (target)QString(reinterpret_cast<const JObjectWrapper*>(src)->toString(&ok));
+                                }else{
+                                    ok = true;
+                                    new (target)QString();
+                                }
+                                return ok;
+                            }, nativeWrapperMetaType, QMetaType::fromType<QString>());
+                        }
+                    }
+                    locker.relock();
                 }
             }
         }
@@ -3746,9 +3772,9 @@ int QmlAPI::registerMetaType(JNIEnv *env, SequentialContainerType containerType,
     int result = 0;
     AbstractListAccess* listAccess = dynamic_cast<AbstractListAccess*>(AbstractContainerAccess::create(env, containerType, elementType));
     if(!listAccess){
-        QHashFunction hashFunction;
-        InternalToExternalConverter internalToExternalConverter;
-        ExternalToInternalConverter externalToInternalConverter;
+        QtJambiUtils::QHashFunction hashFunction;
+        QtJambiUtils::InternalToExternalConverter internalToExternalConverter;
+        QtJambiUtils::ExternalToInternalConverter externalToInternalConverter;
         const JObjectValueWrapperPrivate* methods{nullptr};
         {
             const QtPrivate::QMetaTypeInterface *iface = QMetaType(elementType).iface();
@@ -4404,6 +4430,18 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                             }
                             QMetaType metaType(metaTypeInterface);
                             int result = metaType.id();
+                            if(!QMetaType::hasRegisteredConverterFunction(metaType, QMetaType::fromType<QString>())){
+                                QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
+                                    bool ok = false;
+                                    if(src){
+                                        new (target)QString(reinterpret_cast<const JObjectValueWrapper*>(src)->toString(&ok));
+                                    }else{
+                                        ok = true;
+                                        new (target)QString();
+                                    }
+                                    return ok;
+                                }, metaType, QMetaType::fromType<QString>());
+                            }
                             if(!QMetaType::hasRegisteredConverterFunction(metaType, QMetaType::fromType<JObjectWrapper>())){
                                 QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
                                     if(src){
@@ -4471,6 +4509,18 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                                                             nullptr, &findWrappersMetaObject);
                         int result = metaType.id();
                         registerJavaClassForCustomMetaType(env, metaType, clazz, true);
+                        if(!QMetaType::hasRegisteredConverterFunction(metaType, QMetaType::fromType<QString>())){
+                            QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
+                                bool ok = false;
+                                if(src){
+                                    new (target)QString(reinterpret_cast<const JObjectWrapper*>(src)->toString(&ok));
+                                }else{
+                                    ok = true;
+                                    new (target)QString();
+                                }
+                                return ok;
+                            }, metaType, QMetaType::fromType<QString>());
+                        }
                         registerConverterVariant(env, metaType, QLatin1String(metaTypeName), javaClassName, clazz);
                         return result;
                     }
@@ -4574,6 +4624,18 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                                 }
                                 QMetaType metaType(metaTypeInterface);
                                 int result = metaType.id();
+                                if(!QMetaType::hasRegisteredConverterFunction(metaType, QMetaType::fromType<QString>())){
+                                    QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
+                                        bool ok = false;
+                                        if(src){
+                                            new (target)QString(reinterpret_cast<const JObjectValueWrapper*>(src)->toString(&ok));
+                                        }else{
+                                            ok = true;
+                                            new (target)QString();
+                                        }
+                                        return ok;
+                                    }, metaType, QMetaType::fromType<QString>());
+                                }
                                 if(!QMetaType::hasRegisteredConverterFunction(metaType, QMetaType::fromType<JObjectWrapper>())){
                                     QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
                                         if(src){
@@ -4641,6 +4703,18 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                                                                 nullptr, &findWrappersMetaObject);
                             int result = metaType.id();
                             registerJavaClassForCustomMetaType(env, metaType, clazz, true);
+                            if(!QMetaType::hasRegisteredConverterFunction(metaType, QMetaType::fromType<QString>())){
+                                QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
+                                    bool ok = false;
+                                    if(src){
+                                        new (target)QString(reinterpret_cast<const JObjectWrapper*>(src)->toString(&ok));
+                                    }else{
+                                        ok = true;
+                                        new (target)QString();
+                                    }
+                                    return ok;
+                                }, metaType, QMetaType::fromType<QString>());
+                            }
                             registerConverterVariant(env, metaType, QLatin1String(metaTypeName), javaClassName, clazz);
                             return result;
                         }
@@ -4672,6 +4746,18 @@ int registerMetaType(JNIEnv *env, jclass clazz, jboolean isPointer, jboolean isR
                                                                     ),
                                                             nullptr, &findWrappersMetaObject);
                         int result = metaType.id();
+                        if(!QMetaType::hasRegisteredConverterFunction(metaType, QMetaType::fromType<QString>())){
+                            QMetaType::registerConverterFunction([](const void *src, void *target) -> bool {
+                                bool ok = false;
+                                if(src){
+                                    new (target)QString(reinterpret_cast<const JObjectWrapper*>(src)->toString(&ok));
+                                }else{
+                                    ok = true;
+                                    new (target)QString();
+                                }
+                                return ok;
+                            }, metaType, QMetaType::fromType<QString>());
+                        }
                         registerJavaClassForCustomMetaType(env, metaType, clazz, true);
                         registerConverterVariant(env, metaType, QLatin1String(metaTypeName), javaClassName, clazz);
                         return result;

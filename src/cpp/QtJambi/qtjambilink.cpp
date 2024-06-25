@@ -233,7 +233,7 @@ void AbstractDestructionEvent::execute(){
             return;
         }
         QSharedPointer<QtJambiLink> link = m_link.toStrongRef();
-        QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(link, "AbstractDestructionEvent destruct pointer")
+        QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(link, "AbstractDestructionEvent::execute()")
         destruct(m_pointer, link);
         m_pointer = nullptr;
         // This cannot be deleted before now, since the type may have a virtual destructor and may be a shell class object,
@@ -493,6 +493,7 @@ QtJambiLinkUserData::~QtJambiLinkUserData()
         QSharedPointer<QtJambiLink> link = m_link.toStrongRef();
         m_link.clear();
         if (link && link->isQObject()) {
+            QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(link, "QtJambiLinkUserData::~QtJambiLinkUserData()")
             QTJAMBI_INCREASE_COUNTER(userDataDestroyedCount, link)
             if(link->isSmartPointer()){
                 reinterpret_cast<SmartPointerToQObjectLink*>(link.data())->setAsQObjectDeleted();
@@ -545,8 +546,12 @@ ValueOwnerUserData::~ValueOwnerUserData(){
     }
 }
 
-void ValueOwnerUserData::addDeleter(const std::function<void()>& deleter){
+void ValueOwnerUserData::addDeleter(const QtJambiUtils::Runnable& deleter){
     m_deleters << deleter;
+}
+
+void ValueOwnerUserData::addDeleter(QtJambiUtils::Runnable&& deleter){
+    m_deleters << std::move(deleter);
 }
 
 static volatile int sObjectCacheMode = 2;
@@ -632,7 +637,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForQObject(JNIEnv *env
                 qtJambiLink = new PointerToQObjectWithExtraSignalsLink(env, nativeLink, javaObject, metaObject, object, created_by_java, false, is_shell, ocurredException);
         }
     }
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -664,7 +669,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNativeQObject(JNIEn
         else
             qtJambiLink = new PointerToQObjectWithExtraSignalsLink(env, nativeLink, javaObject, metaObject, object, created_by_java, false, is_shell, ocurredException);
     }
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -698,7 +703,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNativeQObject(JNIEn
         else
             qtJambiLink = new PointerToQObjectInterfaceWithExtraSignalsLink(env, nativeLink, javaObject, interfaceOffsets, interfaceTypes, inheritedInterfaces, metaObject, object, created_by_java, false, is_shell, ocurredException);
     }
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -710,7 +715,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNativeQObject(JNIEn
 
 const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewQObject(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject javaObject, const std::type_info& typeId, const QMetaObject* metaObject, QObject *object, const SuperTypeInfos* superTypeInfos, bool created_by_java, bool isDeclarativeCall, bool is_shell, bool hasCustomMetaObject, JavaException& ocurredException)
 {
-    if(!ocurredException.object()){
+    if(!ocurredException){
         Q_ASSERT(env);
         Q_ASSERT(javaObject);
         Q_ASSERT(object);
@@ -741,7 +746,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewQObject(JNIEnv *
                 }
             }
         }
-        if(ocurredException.object()){
+        if(ocurredException){
             qtJambiLink->dispose();
         }else{
             return qtJambiLink->getStrongPointer();
@@ -778,7 +783,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForSmartPointerToQObje
         else
             qtJambiLink = new SmartPointerToQObjectInterfaceWithExtraSignalsLink(env, nativeLink, javaObject, offsets, interfaces, inheritedInterfaces, object, created_by_java, is_shell, ptr_shared_pointer, pointerDeleter, pointerGetter, ocurredException);
     }
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -815,7 +820,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForSmartPointerToQObje
         else
             qtJambiLink = new SmartPointerToQObjectWithExtraSignalsLink(env, nativeLink, javaObject, object, created_by_java, is_shell, ptr_shared_pointer, pointerDeleter, pointerGetter, ocurredException);
     }
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -846,7 +851,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createExtendedLinkForSmartPointe
     QtJambiLink* qtJambiLink = new ExtendedSmartPointerToObjectLink(env, nativeLink, javaObject,
                                                LINK_NAME_ARG(qt_name)
                                                created_by_java, is_shell, extension, ownerFunction, ptr_shared_pointer, pointerDeleter, pointerGetter, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -877,7 +882,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForSmartPointerToObjec
     QtJambiLink* qtJambiLink = new SmartPointerToObjectInterfaceLink(env, nativeLink, javaObject, offsets, interfaces, inheritedInterfaces,
                                                             LINK_NAME_ARG(qt_name)
                                                             created_by_java, is_shell, ownerFunction, ptr_shared_pointer, pointerDeleter, pointerGetter, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -905,7 +910,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForSmartPointerToObjec
     QtJambiLink* qtJambiLink = new SmartPointerToObjectLink(env, nativeLink, javaObject,
                                                  LINK_NAME_ARG(qt_name)
                                                  created_by_java, is_shell, ownerFunction, ptr_shared_pointer, pointerDeleter, pointerGetter, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -935,7 +940,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForSmartPointerToConta
     QtJambiLink* qtJambiLink = new SmartPointerToContainerInterfaceLink(env, nativeLink, javaObject, offsets, interfaces, inheritedInterfaces,
                                                              LINK_NAME_ARG(qt_name)
                                                              false, false, nullptr, ptr_shared_pointer, pointerDeleter, pointerGetter, containerAccess, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -962,7 +967,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForSmartPointerToConta
     QtJambiLink* qtJambiLink = new SmartPointerToContainerLink(env, nativeLink, javaObject,
                                                     LINK_NAME_ARG(qt_name)
                                                     false, false, nullptr, ptr_shared_pointer, pointerDeleter, pointerGetter, containerAccess, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -1007,7 +1012,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNativeObject(JNIEnv
     QtJambiLink* qtJambiLink = new MetaTypedPointerToContainerLink(env, nativeLink, javaObject,
                                                             ptr, metaType, created_by_java, false,
                                                             containerAccess, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -1052,7 +1057,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNativeObject(JNIEnv
                                                                  inheritedInterfaces,
                                                                  ptr, metaType, created_by_java, false,
                                                                  containerAccess, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -1114,7 +1119,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNativeObject(JNIEnv
                                                             LINK_NAME_ARG(qt_name)
                                                             ptr, created_by_java, false,
                                                             destructor_function, containerAccess, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -1159,7 +1164,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNativeObject(JNIEnv
                                                                      LINK_NAME_ARG(qt_name)
                                                                      ptr, created_by_java, false,
                                                                      destructor_function, containerAccess, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -1201,7 +1206,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNativeObject(JNIEnv
     QtJambiLink* qtJambiLink = new OwnedMetaTypedPointerToObjectLink(env, nativeLink, javaObject,
                                                                      ptr, metaType, created_by_java,
                                                                      is_shell, ownerFunction, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -1249,7 +1254,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNativeObject(JNIEnv
                                                                               inheritedInterfaces,
                                                                               ptr, metaType, created_by_java,
                                                                               is_shell, ownerFunction, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -1285,7 +1290,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNativeObject(JNIEnv
     JavaException ocurredException;
     QtJambiLink* qtJambiLink = new MetaTypedPointerToObjectLink(env, nativeLink, javaObject,
                                                                 ptr, metaType, created_by_java, is_shell, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -1324,7 +1329,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNativeObject(JNIEnv
     JavaException ocurredException;
     QtJambiLink* qtJambiLink = new MetaTypedPointerToObjectInterfaceLink(env, nativeLink, javaObject, interfaceOffsets, interfaceTypes, inheritedInterfaces,
                                                                          ptr, metaType, created_by_java, is_shell, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -1366,7 +1371,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForDependentObject(JNI
     QtJambiLink* qtJambiLink = new OwnedDependentMetaTypedPointerToObjectLink(env, nativeLink, javaObject,
                                                                               ptr, metaType, created_by_java,
                                                                               is_shell, ownerFunction, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -1414,7 +1419,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForDependentObject(JNI
                                                                                        inheritedInterfaces,
                                                                                        ptr, metaType, created_by_java,
                                                                                        is_shell, ownerFunction, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -1455,7 +1460,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForDependentObject(JNI
     QtJambiLink* qtJambiLink = new DependentDeletablePointerToObjectLink(env, nativeLink, javaObject,
                                                                          LINK_NAME_ARG(qt_name)
                                                                          ptr, created_by_java, is_shell, destructor_function, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -1496,7 +1501,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createExtendedLinkForObject(JNIE
     QtJambiLink* qtJambiLink = new ExtendedDeletablePointerToObjectLink(env, nativeLink, javaObject,
                                                                          LINK_NAME_ARG(qt_name)
                                                                          ptr, created_by_java, is_shell, destructor_function, extension, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -1532,7 +1537,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForDependentObject(JNI
     JavaException ocurredException;
     QtJambiLink* qtJambiLink = new DependentMetaTypedPointerToObjectLink(env, nativeLink, javaObject,
                                                                          ptr, metaType, created_by_java, is_shell, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -1573,7 +1578,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForDependentObject(JNI
     QtJambiLink* qtJambiLink = new DependentMetaTypedPointerToObjectInterfaceLink(env, nativeLink, javaObject,
                                                                                   interfaceOffsets, interfaceTypes, inheritedInterfaces,
                                                                                   ptr, metaType, created_by_java, is_shell, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -1625,7 +1630,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNativeObject(JNIEnv
                                                                      ptr, created_by_java,
                                                                      is_shell, deleter_function,
                                                                      ownerFunction, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -1688,7 +1693,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNativeObject(JNIEnv
                                                                               ptr, created_by_java,
                                                                               is_shell, deleter_function,
                                                                               ownerFunction, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -1732,7 +1737,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNativeObject(JNIEnv
                                                                 LINK_NAME_ARG(qt_name)
                                                                 ptr, created_by_java,
                                                                 is_shell, deleter_function, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -1786,7 +1791,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNativeObject(JNIEnv
                                                                 LINK_NAME_ARG(qt_name)
                                                                 ptr, created_by_java,
                                                                 is_shell, deleter_function, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -1823,7 +1828,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNativeObject(JNIEnv
     QtJambiLink* qtJambiLink = new PointerToObjectLink(env, nativeLink, javaObject,
                                               LINK_NAME_ARG(qt_name)
                                               ptr, created_by_java, is_shell, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -1866,7 +1871,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNativeObject(JNIEnv
                                                        inheritedInterfaces,
                                                        LINK_NAME_ARG(qt_name)
                                                        ptr, created_by_java, is_shell, ocurredException);
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -1894,7 +1899,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewObject(JNIEnv *e
     if(!ownerFunction){
         return createLinkForNewObject(env, objectClass, nativeLink, javaObject, typeId, ptr, superTypeInfos, metaType, created_by_java, is_shell, ocurredException);
     }
-    if(!ocurredException.object()){
+    if(!ocurredException){
         Q_ASSERT(env);
         Q_ASSERT(javaObject);
         Q_ASSERT(ptr);
@@ -1911,7 +1916,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewObject(JNIEnv *e
             qtJambiLink = new OwnedMetaTypedPointerToObjectLink(env, nativeLink, javaObject,
                                                   ptr, metaType, created_by_java, is_shell, ownerFunction, ocurredException);
         }
-        if(ocurredException.object()){
+        if(ocurredException){
             qtJambiLink->dispose();
         }else{
             if(created_by_java){
@@ -1925,7 +1930,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewObject(JNIEnv *e
 
 const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewContainer(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject javaObject, const std::type_info& typeId, void *ptr, const SuperTypeInfos* superTypeInfos, const QMetaType& metaType, bool created_by_java, bool is_shell, AbstractContainerAccess* containerAccess, JavaException& ocurredException)
 {
-    if(!ocurredException.object()){
+    if(!ocurredException){
         Q_ASSERT(env);
         Q_ASSERT(javaObject);
         Q_ASSERT(ptr);
@@ -1942,7 +1947,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewContainer(JNIEnv
             qtJambiLink = new MetaTypedPointerToContainerLink(env, nativeLink, javaObject,
                                                   ptr, metaType, created_by_java, is_shell, containerAccess, ocurredException);
         }
-        if(ocurredException.object()){
+        if(ocurredException){
             qtJambiLink->dispose();
         }else{
             if(created_by_java){
@@ -1956,7 +1961,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewContainer(JNIEnv
 
 const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewContainer(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject javaObject, const std::type_info& typeId, void *ptr, const SuperTypeInfos* superTypeInfos, bool created_by_java, bool is_shell, AbstractContainerAccess* containerAccess, PtrDeleterFunction destructor_function, JavaException& ocurredException)
 {
-    if(!ocurredException.object()){
+    if(!ocurredException){
         Q_ASSERT(env);
         Q_ASSERT(javaObject);
         Q_ASSERT(ptr);
@@ -1974,7 +1979,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewContainer(JNIEnv
                                                               LINK_NAME_ARG(getQtName(typeId))
                                                               ptr, created_by_java, is_shell, destructor_function, containerAccess, ocurredException);
         }
-        if(ocurredException.object()){
+        if(ocurredException){
             qtJambiLink->dispose();
         }else{
             if(created_by_java){
@@ -1988,7 +1993,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewContainer(JNIEnv
 
 const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewContainer(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject javaObject, const std::type_info& typeId, void *ptr, const SuperTypeInfos* superTypeInfos, bool created_by_java, bool is_shell, AbstractContainerAccess* containerAccess, PtrDeleterFunction destructor_function, PtrOwnerFunction ownerFunction, JavaException& ocurredException)
 {
-    if(!ocurredException.object()){
+    if(!ocurredException){
         Q_ASSERT(env);
         Q_ASSERT(javaObject);
         Q_ASSERT(ptr);
@@ -2006,7 +2011,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewContainer(JNIEnv
                                                               LINK_NAME_ARG(getQtName(typeId))
                                                               ptr, created_by_java, is_shell, destructor_function, ownerFunction, containerAccess, ocurredException);
         }
-        if(ocurredException.object()){
+        if(ocurredException){
             qtJambiLink->dispose();
         }else{
             if(created_by_java){
@@ -2020,7 +2025,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewContainer(JNIEnv
 
 const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewObject(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject javaObject, const std::type_info& typeId, void *ptr, const SuperTypeInfos* superTypeInfos, const QMetaType& metaType, bool created_by_java, bool is_shell, JavaException& ocurredException)
 {
-    if(!ocurredException.object()){
+    if(!ocurredException){
         Q_ASSERT(env);
         Q_ASSERT(javaObject);
         Q_ASSERT(ptr);
@@ -2036,7 +2041,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewObject(JNIEnv *e
             qtJambiLink = new MetaTypedPointerToObjectLink(env, nativeLink, javaObject,
                                                   ptr, metaType, created_by_java, is_shell, ocurredException);
         }
-        if(ocurredException.object()){
+        if(ocurredException){
             qtJambiLink->dispose();
         }else{
             if(created_by_java){
@@ -2053,7 +2058,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewObject(JNIEnv *e
     if(!ownerFunction){
         return createLinkForNewObject(env, objectClass, nativeLink, javaObject, typeId, ptr, superTypeInfos, created_by_java, is_shell, deleter_function, ocurredException);
     }
-    if(!ocurredException.object()){
+    if(!ocurredException){
         Q_ASSERT(env);
         Q_ASSERT(javaObject);
         Q_ASSERT(ptr);
@@ -2072,7 +2077,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewObject(JNIEnv *e
                                                   LINK_NAME_ARG(getQtName(typeId))
                                                   ptr, created_by_java, is_shell, deleter_function, ownerFunction, ocurredException);
         }
-        if(ocurredException.object()){
+        if(ocurredException){
             qtJambiLink->dispose();
         }else{
             if(created_by_java){
@@ -2089,7 +2094,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewObject(JNIEnv *e
     if(!deleter_function){
         return createLinkForNewObject(env, objectClass, nativeLink, javaObject, typeId, ptr, superTypeInfos, created_by_java, is_shell, ocurredException);
     }
-    if(!ocurredException.object()){
+    if(!ocurredException){
         Q_ASSERT(env);
         Q_ASSERT(javaObject);
         Q_ASSERT(ptr);
@@ -2107,7 +2112,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewObject(JNIEnv *e
                                                   LINK_NAME_ARG(getQtName(typeId))
                                                   ptr, created_by_java, is_shell, deleter_function, ocurredException);
         }
-        if(ocurredException.object()){
+        if(ocurredException){
             qtJambiLink->dispose();
         }else{
             if(created_by_java){
@@ -2121,7 +2126,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewObject(JNIEnv *e
 
 const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewObject(JNIEnv *env, jclass objectClass, jobject nativeLink, jobject javaObject, const std::type_info& typeId, void *ptr, const SuperTypeInfos* superTypeInfos, bool created_by_java, bool is_shell, JavaException& ocurredException)
 {
-    if(!ocurredException.object()){
+    if(!ocurredException){
         Q_ASSERT(env);
         Q_ASSERT(javaObject);
         Q_ASSERT(ptr);
@@ -2139,7 +2144,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForNewObject(JNIEnv *e
                                                   LINK_NAME_ARG(getQtName(typeId))
                                                   ptr, created_by_java, is_shell, ocurredException);
         }
-        if(ocurredException.object()){
+        if(ocurredException){
             qtJambiLink->dispose();
         }else{
             if(created_by_java){
@@ -2185,7 +2190,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForOwnedObject(JNIEnv 
                                                       ptr, false, false, ocurredException);
         }
     }
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -2225,7 +2230,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForOwnedObject(JNIEnv 
                                               LINK_NAME_ARG(qt_name)
                                               ptr, false, false, ocurredException);
     }
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -2261,7 +2266,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForOwnedContainer(JNIE
                                               LINK_NAME_ARG(qt_name)
                                               ptr, false, false, containerAccess, ocurredException);
     }
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -2297,7 +2302,7 @@ const QSharedPointer<QtJambiLink>& QtJambiLink::createLinkForOwnedContainer(JNIE
                                               LINK_NAME_ARG(qt_name)
                                               ptr, false, false, destructor_function, containerAccess, ocurredException);
     }
-    if(ocurredException.object()){
+    if(ocurredException){
         qtJambiLink->dispose();
         ocurredException.raise();
         Q_ASSERT(false);// should not reach this
@@ -2730,13 +2735,8 @@ void QtJambiLink::unregisterOffsets() {
 }
 
 void QtJambiLink::registerPointer(const QSharedPointer<QtJambiLink>& link) {
-    if(QtJambiLink::getObjectCacheMode() != 0 && link && link->pointer()) {
-        QWriteLocker locker(gLinkAccessLock());
-        Q_UNUSED(locker)
-        Q_ASSERT(gUserObjectCache());
-        QWeakPointer<QtJambiLink> wlink = link.toWeakRef();
-        if(!gUserObjectCache->contains(link->pointer(), wlink))
-            gUserObjectCache->insert(link->pointer(), wlink);
+    if(link && link->pointer()) {
+        link->registerPointer(link->pointer());
     }
 }
 
@@ -2746,13 +2746,18 @@ void QtJambiLink::registerPointer(void *ptr) {
         Q_UNUSED(locker)
         Q_ASSERT(gUserObjectCache());
         QWeakPointer<QtJambiLink> wlink = m_this.toWeakRef();
-        if(!gUserObjectCache->contains(ptr, wlink))
+        if(!gUserObjectCache->contains(ptr, wlink)){
             gUserObjectCache->insert(ptr, wlink);
+            m_flags.setFlag(Flag::IsPointerRegistered);
+        }
     }
 }
 
 void QtJambiLink::unregisterPointer(void *ptr) {
-    if(QtJambiLink::getObjectCacheMode() != 0) {
+    if(QtJambiLink::getObjectCacheMode() != 0
+            && m_flags.testFlag(Flag::IsPointerRegistered)
+            && !gLinkAccessLock.isDestroyed()
+            && !gUserObjectCache.isDestroyed()) {
         QWriteLocker locker(gLinkAccessLock());
         Q_UNUSED(locker)
         if(MultiLinkHash* h = gUserObjectCache()){
@@ -2761,6 +2766,26 @@ void QtJambiLink::unregisterPointer(void *ptr) {
                 QSharedPointer<QtJambiLink> link(wlink);
                 if(!link || link==m_this){
                     h->remove(ptr, link.toWeakRef());
+                }
+            }
+        }
+    }
+}
+
+void QtJambiLink::unregisterPointers(const QVector<void*>& pointers){
+    if(QtJambiLink::getObjectCacheMode() != 0
+            && !gLinkAccessLock.isDestroyed()
+            && !gUserObjectCache.isDestroyed()) {
+        QWriteLocker locker(gLinkAccessLock());
+        Q_UNUSED(locker)
+        if(MultiLinkHash* h = gUserObjectCache()){
+            for(void* ptr : pointers){
+                const QList<QWeakPointer<QtJambiLink>> values = h->values(ptr);
+                for(const QWeakPointer<QtJambiLink>& wlink : values){
+                    QSharedPointer<QtJambiLink> link(wlink);
+                    if(!link || link==m_this){
+                        h->remove(ptr, link.toWeakRef());
+                    }
                 }
             }
         }
@@ -2828,6 +2853,7 @@ void MetaTypedPointerToContainerLink::deleteNativeObject(JNIEnv *env, bool force
         invalidateDependentObjects(env);
         unregisterPointer(m_pointer);
         unregisterOffsets();
+        m_flags.setFlag(Flag::IsPointerRegistered, false);
         if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
             void* pointer = m_pointer;
             m_pointer = nullptr;
@@ -2995,7 +3021,7 @@ PointerToObjectLink::PointerToObjectLink(JNIEnv *env, jobject nativeLink, jobjec
                 created_by_java, false, is_shell, ocurredException),
     m_pointer(ptr)
 {
-    if(!ocurredException.object()){
+    if(!ocurredException){
         if(created_by_java){
             registerPointer(m_pointer);
         }
@@ -3228,6 +3254,7 @@ void QtJambiLink::unregisterDependentObject(const QSharedPointer<QtJambiLink>& l
 
 void QtJambiLink::invalidateDependentObjects(JNIEnv *env)
 {
+    QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(m_this, "QtJambiLink::invalidateDependentObjects(JNIEnv *)")
     if(isQObject()){
 #ifdef AVAILABLE_IN_DELETION
         if(!isInDestructor())
@@ -3282,6 +3309,7 @@ void PointerToObjectLink::invalidate(JNIEnv *env) {
     if(m_pointer) {
         unregisterPointer(m_pointer);
         unregisterOffsets();
+        m_flags.setFlag(Flag::IsPointerRegistered, false);
         m_pointer = nullptr;
     }
     dispose();
@@ -3293,6 +3321,7 @@ void PointerToObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
         invalidateDependentObjects(env);
         unregisterPointer(m_pointer);
         unregisterOffsets();
+        m_flags.setFlag(Flag::IsPointerRegistered, false);
         if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
             m_pointer = nullptr;
             dispose();
@@ -3381,6 +3410,7 @@ void MetaTypedPointerToObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
         invalidateDependentObjects(env);
         unregisterPointer(m_pointer);
         unregisterOffsets();
+        m_flags.setFlag(Flag::IsPointerRegistered, false);
         if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
             void* pointer = m_pointer;
             m_pointer = nullptr;
@@ -3400,6 +3430,7 @@ void OwnedMetaTypedPointerToObjectLink::deleteNativeObject(JNIEnv *env, bool for
         invalidateDependentObjects(env);
         unregisterPointer(m_pointer);
         unregisterOffsets();
+        m_flags.setFlag(Flag::IsPointerRegistered, false);
         if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
             void* pointer = m_pointer;
             m_pointer = nullptr;
@@ -3519,6 +3550,7 @@ void DeletableOwnedPointerToObjectLink::deleteNativeObject(JNIEnv *env, bool for
         invalidateDependentObjects(env);
         unregisterPointer(m_pointer);
         unregisterOffsets();
+        m_flags.setFlag(Flag::IsPointerRegistered, false);
         if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
             void* pointer = m_pointer;
             m_pointer = nullptr;
@@ -3622,6 +3654,7 @@ void DeletablePointerToContainerLink::deleteNativeObject(JNIEnv *env, bool force
         invalidateDependentObjects(env);
         unregisterPointer(m_pointer);
         unregisterOffsets();
+        m_flags.setFlag(Flag::IsPointerRegistered, false);
         if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
             void* pointer = m_pointer;
             m_pointer = nullptr;
@@ -3725,6 +3758,7 @@ void DeletablePointerToObjectLink::deleteNativeObject(JNIEnv *env, bool forced)
         invalidateDependentObjects(env);
         unregisterPointer(m_pointer);
         unregisterOffsets();
+        m_flags.setFlag(Flag::IsPointerRegistered, false);
         if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
             void* pointer = m_pointer;
             m_pointer = nullptr;
@@ -3743,6 +3777,7 @@ void DeletableOwnedPointerToContainerLink::deleteNativeObject(JNIEnv *env, bool 
         invalidateDependentObjects(env);
         unregisterPointer(m_pointer);
         unregisterOffsets();
+        m_flags.setFlag(Flag::IsPointerRegistered, false);
         if(!m_flags.testFlag(Flag::NoNativeDeletion) && (m_flags.testFlag(Flag::JavaOwnership) || forced)){
             void* pointer = m_pointer;
             m_pointer = nullptr;
@@ -3859,7 +3894,7 @@ PointerToQObjectLink::PointerToQObjectLink(JNIEnv *env, jobject nativeLink, jobj
 {
     QtJambiMetaObject::resolveSignals(env, jobj, metaObject, ocurredException);
     // Fetch the user data id
-    if(ocurredException.object()){
+    if(ocurredException){
         m_flags.setFlag(Flag::IsJavaLinkDetached);
     }
 }
@@ -3942,7 +3977,7 @@ void PointerToQObjectLink::setAsQObjectDeleted() {
 }
 
 void PointerToQObjectLink::invalidate(JNIEnv *env) {
-    QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(m_this, "QtJambiLink::resetObject(JNIEnv *)")
+    QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(m_this, "PointerToQObjectLink::invalidate(JNIEnv *)")
     invalidateDependentObjects(env);
     releaseJavaObject(env);
     QWriteLocker locker(QtJambiLinkUserData::lock());
@@ -4176,7 +4211,7 @@ SmartPointerToObjectLink::SmartPointerToObjectLink(JNIEnv *env, jobject nativeLi
     m_shared_pointer_getter(pointerGetter),
     m_owner_function(ownerFunction)
 {
-    if(!ocurredException.object()){
+    if(!ocurredException){
         registerPointer(m_shared_pointer_getter(m_ptr_shared_pointer));
     }else{
         m_flags.setFlag(Flag::IsJavaLinkDetached);
@@ -4225,7 +4260,7 @@ void* SmartPointerToObjectLink::getSmartPointer() const{
 }
 
 void SmartPointerToObjectLink::invalidate(JNIEnv *env) {
-    QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(m_this, "QtJambiLink::resetObject(JNIEnv *)")
+    QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(m_this, "SmartPointerToObjectLink::invalidate(JNIEnv *)")
     invalidateDependentObjects(env);
     releaseJavaObject(env);
     detachJavaLink(env);
@@ -4237,6 +4272,7 @@ void SmartPointerToObjectLink::deleteNativeObject(JNIEnv *env, bool){
         QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(m_this, "SmartPointerToObjectLink::deleteNativeObject(JNIEnv *env, bool)")
         unregisterOffsets();
         unregisterPointer(pointer());
+        m_flags.setFlag(Flag::IsPointerRegistered, false);
         invalidateDependentObjects(env);
 
         void* shared_pointer = m_ptr_shared_pointer;
@@ -4416,7 +4452,7 @@ void SmartPointerToQObjectLink::setAsQObjectDeleted() {
 }
 
 void SmartPointerToQObjectLink::invalidate(JNIEnv *env) {
-    QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(m_this, "QtJambiLink::resetObject(JNIEnv *)")
+    QTJAMBI_DEBUG_METHOD_PRINT_LINKNAME(m_this, "SmartPointerToQObjectLink::invalidate(JNIEnv *)")
     invalidateDependentObjects(env);
     releaseJavaObject(env);
     dispose();
@@ -4801,10 +4837,10 @@ SmartPointerToQObjectWithPendingExtraSignalsLink::SmartPointerToQObjectWithPendi
       m_extraSignals()
 {
     jobject local = env->NewLocalRef(jobj);
-    if(!ocurredException.object()){
+    if(!ocurredException){
         QtJambiMetaObject::resolveSignals(env, jobj, superTypeForCustomMetaObject, ocurredException);
     }
-    if(!ocurredException.object()){
+    if(!ocurredException){
         bool _isValueOwner = isValueOwner(superTypeForCustomMetaObject);
         QWriteLocker locker(QtJambiLinkUserData::lock());
         Q_UNUSED(locker)
@@ -4851,10 +4887,10 @@ SmartPointerToPlainQObjectLink::SmartPointerToPlainQObjectLink(JNIEnv *env, jobj
 {
     jobject local = env->NewLocalRef(jobj);
     const QMetaObject* metaObject = object->metaObject();
-    if(!ocurredException.object()){
+    if(!ocurredException){
         QtJambiMetaObject::resolveSignals(env, jobj, metaObject, ocurredException);
     }
-    if(!ocurredException.object()){
+    if(!ocurredException){
         bool _isValueOwner = isValueOwner(metaObject);
         QWriteLocker locker(QtJambiLinkUserData::lock());
         Q_UNUSED(locker)
@@ -4874,10 +4910,10 @@ SmartPointerToQObjectWithExtraSignalsLink::SmartPointerToQObjectWithExtraSignals
 {
     jobject local = env->NewLocalRef(jobj);
     const QMetaObject* metaObject = object->metaObject();
-    if(!ocurredException.object()){
+    if(!ocurredException){
         QtJambiMetaObject::resolveSignals(env, jobj, metaObject, ocurredException);
     }
-    if(!ocurredException.object()){
+    if(!ocurredException){
         bool _isValueOwner = isValueOwner(metaObject);
         QWriteLocker locker(QtJambiLinkUserData::lock());
         Q_UNUSED(locker)
@@ -5160,13 +5196,15 @@ void OwnedDependentMetaTypedPointerToObjectInterfaceLink::invalidate(JNIEnv *env
 LINKTYPE::~LINKTYPE()\
 {\
     unregisterOffsets();\
-    m_flags.setFlag(Flag::IsOffsetsUnregistered);\
 }\
 void LINKTYPE::unregisterOffsets() {\
     if(!m_flags.testFlag(Flag::IsOffsetsUnregistered)){\
+        QVector<void*> pointers;\
         for(QMap<size_t, uint>::key_value_iterator i = m_interfaceOffsets.keyValueBegin(); i!=m_interfaceOffsets.keyValueEnd(); ++i){\
-            unregisterPointer(reinterpret_cast<void*>( quintptr(LINKSUPERTYPE::pointer()) + i.base().value() ));\
+            pointers << reinterpret_cast<void*>( quintptr(LINKSUPERTYPE::pointer()) + i.base().value() );\
         }\
+        unregisterPointers(pointers);\
+        m_flags.setFlag(Flag::IsOffsetsUnregistered);\
     }\
 }\
 void LINKTYPE::addInterface(const std::type_info& qtInterfaceType){\

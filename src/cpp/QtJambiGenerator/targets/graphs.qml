@@ -32,4 +32,5 @@ import QtJambiGenerator 1.0
 
 TypeSystem{
     LoadTypeSystem{name: "QtGraphs";            generate: true; unless: "QTJAMBI_NO_GRAPHS";           since: [6, 6]}
+    LoadTypeSystem{name: "QtGraphsWidgets";     generate: true; unless: "QTJAMBI_NO_GRAPHS_WIDGETS";   since: [6, 8]}
 }

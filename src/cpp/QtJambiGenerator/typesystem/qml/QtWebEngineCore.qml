@@ -1057,6 +1057,75 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/webengine/core,QWebEngineProfile$IconAvail
     }
     ObjectType{
         name: "QWebEngineFrame"
+        ExtraIncludes{
+            Include{
+                fileName: "QtJambi/JavaAPI"
+                location: Include.Global
+            }
+            Include{
+                fileName: "QtJambi/JObjectWrapper"
+                location: Include.Global
+            }
+        }
+        ModifyFunction{
+            signature: "runJavaScript(QString, const std::function<void(const QVariant &)> &)"
+            ModifyArgument{
+                index: 2
+                ReplaceType{
+                    modifiedType: "java.util.function.@Nullable Consumer<@Nullable Object>"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    InsertTemplate{
+                        name: "webc.comsumer.function"
+                        Replace{
+                            from: "%TYPE"
+                            to: "const QVariant &"
+                        }
+                    }
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "runJavaScript(QString, quint32, const std::function<void(const QVariant &)> &)"
+            ModifyArgument{
+                index: 3
+                ReplaceType{
+                    modifiedType: "java.util.function.@Nullable Consumer<@Nullable Object>"
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    InsertTemplate{
+                        name: "webc.comsumer.function"
+                        Replace{
+                            from: "%TYPE"
+                            to: "const QVariant &"
+                        }
+                    }
+                }
+            }
+        }
+        ModifyFunction{
+            signature: "printToPdf(const std::function<void(const QByteArray &)> &)"
+            ModifyArgument{
+                index: 1
+                ReplaceType{
+                    modifiedType: "java.util.function.@Nullable Consumer<io.qt.core.@NonNull QByteArray>"
+                }
+                NoNullPointer{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    InsertTemplate{
+                        name: "web.comsumer.function"
+                        Replace{
+                            from: "%TYPE"
+                            to: "const QByteArray &"
+                        }
+                    }
+                }
+            }
+        }
         since: 6.8
     }
 

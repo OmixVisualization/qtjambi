@@ -508,13 +508,7 @@ uint QtJambiAPI::getJavaObjectHashCode(JNIEnv *env, jobject object){
 }
 
 bool enabledDanglingPointerCheck(JNIEnv * env){
-    static bool b = [](JNIEnv * env)->bool{
-        if(env){
-            return Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-dangling-pointer-check"));
-        }else if(JniEnvironment _env{200})
-            return Java::Runtime::Boolean::getBoolean(_env, _env->NewStringUTF("io.qt.enable-dangling-pointer-check"));
-        else return false;
-    }(env);
+    static ResettableBoolFlag b(env, "io.qt.enable-dangling-pointer-check");
     return b;
 }
 
@@ -531,16 +525,16 @@ const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, cons
         bool isRegistered = false;
         bool isSigSegv = false;
     };
-    static QThreadStorage<SigData> sigData;
-    SigData& _sigData = sigData.localData();
+    static thread_local SigData sigData;
+    SigData& _sigData = sigData;
     struct sigaction sa;
-    struct sigaction &sa_old = sigData.localData().sa_old;
+    struct sigaction &sa_old = sigData.sa_old;
     memset(&sa, 0, sizeof(sa));
     memset(&sa_old, 0, sizeof(sa_old));
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_NODEFER | SA_SIGINFO;
     sa.sa_sigaction = [](int, siginfo_t *, void *){
-        SigData& _sigData = sigData.localData();
+        SigData& _sigData = sigData;
         _sigData.isSigSegv = true;
         if(_sigData.isRegistered)
             sigaction(SIGSEGV, &_sigData.sa_old, nullptr);
@@ -551,9 +545,9 @@ const std::type_info* checkedGetTypeInfo(TypeInfoSupplier typeInfoSupplier, cons
     _sigData.isRegistered = sigaction(SIGSEGV, &sa, &sa_old)==0;
     try{
         const std::type_info* typeId{nullptr};
-        if(sigData.localData().isRegistered){
+        if(sigData.isRegistered){
             auto sc = qScopeGuard([](){
-                SigData& _sigData = sigData.localData();
+                SigData& _sigData = sigData;
                 if(_sigData.isRegistered)
                     sigaction(SIGSEGV, &_sigData.sa_old, nullptr);
             });

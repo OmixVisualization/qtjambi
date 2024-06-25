@@ -57,15 +57,15 @@ public:
     ParameterTypeInfo(
             int metaTypeId,
             jclass _javaClass,
-            InternalToExternalConverter&& internalToExternalConverter,
-            ExternalToInternalConverter&& externalToInternalConverter
+            QtJambiUtils::InternalToExternalConverter&& internalToExternalConverter,
+            QtJambiUtils::ExternalToInternalConverter&& externalToInternalConverter
         );
     ParameterTypeInfo(
             int metaTypeId,
             const QString& typeName,
             jclass _javaClass,
-            InternalToExternalConverter&& internalToExternalConverter,
-            ExternalToInternalConverter&& externalToInternalConverter
+            QtJambiUtils::InternalToExternalConverter&& internalToExternalConverter,
+            QtJambiUtils::ExternalToInternalConverter&& externalToInternalConverter
         );
     ParameterTypeInfo(const ParameterTypeInfo& other);
     ParameterTypeInfo& operator=(const ParameterTypeInfo& other);
@@ -76,8 +76,8 @@ public:
     bool convertExternalToInternal(JNIEnv* env, QtJambiScope* scope, jvalue in,void* & out, jValueType valueType) const;
     jclass javaClass() const;
     int metaType() const;
-    static InternalToExternalConverter default_internalToExternalConverter();
-    static ExternalToInternalConverter default_externalToInternalConverter();
+    static QtJambiUtils::InternalToExternalConverter default_internalToExternalConverter();
+    static QtJambiUtils::ExternalToInternalConverter default_externalToInternalConverter();
     static ParameterTypeInfo voidTypeInfo(JNIEnv* env);
 private:
     void resolveI2E(JNIEnv* env);
@@ -85,8 +85,8 @@ private:
     int m_qTypeId;
     QString m_typeName;
     jclass m_javaClass;
-    InternalToExternalConverter m_internalToExternalConverter;
-    ExternalToInternalConverter m_externalToInternalConverter;
+    QtJambiUtils::InternalToExternalConverter m_internalToExternalConverter;
+    QtJambiUtils::ExternalToInternalConverter m_externalToInternalConverter;
     uint m_resolvedI2E : 1;
     uint m_resolvedE2I : 1;
     friend class QtJambiMetaObject;
@@ -119,8 +119,8 @@ public:
     int revision() const;
 
     jclass typeOfProperty(int index) const;
-    InternalToExternalConverter internalToExternalConverterOfProperty(int index) const;
-    ExternalToInternalConverter externalToInternalConverterOfProperty(int index) const;
+    QtJambiUtils::InternalToExternalConverter internalToExternalConverterOfProperty(int index) const;
+    QtJambiUtils::ExternalToInternalConverter externalToInternalConverterOfProperty(int index) const;
     jclass javaClass() const;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     jfieldID getQPropertyField(int index) const;

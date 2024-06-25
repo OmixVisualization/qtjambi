@@ -72,6 +72,7 @@ SOURCES += \
     jobjectwrapper.cpp \
     messagehandler.cpp \
     metainfo.cpp \
+    modelapi.cpp \
     objectdata.cpp \
     paint.cpp \
     plugin.cpp \
@@ -118,6 +119,7 @@ HEADERS += \
     jnienvironment.h \
     jobjectwrapper.h \
     metainfo.h \
+    modelapi.h \
     paint.h \
     qmlapi.h \
     qtjambi_cast_array.h \

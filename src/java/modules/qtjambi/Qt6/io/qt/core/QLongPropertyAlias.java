@@ -34,6 +34,8 @@ import io.qt.*;
  * QLongPropertyAlias is primitive-typed version of QPropertyAlias&lt;Long&gt;.
  * @see QPropertyAlias
  */
+@Deprecated(forRemoval=true, since="Qt 6.6")
+@SuppressWarnings("removal")
 public final class QLongPropertyAlias extends QAbstractPropertyAlias {
 	
 	private static QPropertyAlias<@NonNull@QtPrimitiveType Long> check(QPropertyAlias<@NonNull@QtPrimitiveType Long> other){

@@ -1264,7 +1264,11 @@ class ComplexTypeEntry : public TypeEntry {
         void setTargetTypeSystem(const QString &qt_jambi_library);
 
         bool isQObject() const;
-        void setQObject(bool qobject);
+        void setQObject(bool b);
+        bool isQModelIndex() const;
+        void setQModelIndex(bool b);
+        bool isQAbstractItemModel() const;
+        void setQAbstractItemModel(bool b);
         bool isQEvent() const;
         void setQEvent(bool b);
         bool isQByteArrayView() const;
@@ -1508,7 +1512,9 @@ class ComplexTypeEntry : public TypeEntry {
             ForceMetaTypeRegistration = 0x40000,
             IsQMediaControl = 0x80000,
             IsQEvent = 0x100000,
-            IsQByteArrayView = 0x200000
+            IsQByteArrayView = 0x200000,
+            IsQModelIndex = 0x800000,
+            IsQAbstractItemModel = 0x1000000,
         };
         QFlags<ComplexAttributeFlag> m_attributes;
 

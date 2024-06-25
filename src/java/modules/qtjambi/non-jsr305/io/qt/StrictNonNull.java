@@ -35,7 +35,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation marks a parameter to not accept null.
+ * <p>This annotation marks a parameter to not accept <code>null</code>.</p>
+ * <p>A Qt method with <code>StrictNonNull</code>-annotated return type never returns <code>null</code>.</p>
+ * <p>When giving <code>null</code> to a <code>StrictNonNull</code>-annotated method argument a <code>NullPointerException</code> is thrown.</p>
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE_USE)

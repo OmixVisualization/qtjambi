@@ -31,6 +31,9 @@ package io.qt.dbus;
 
 import java.util.Objects;
 
+import io.qt.NonNull;
+import io.qt.Nullable;
+
 /**
  * The QDBusReply class stores the reply for a method call to a remote object.
  * <p>Java wrapper for Qt's class <a href="https://doc.qt.io/qt/qdbusreply.html">QDBusReply</a></p>
@@ -46,20 +49,20 @@ public final class QDBusReply<T> extends io.qt.QtObject implements java.lang.Clo
     }
     
     @Override
-    public QDBusReply<T> clone() {
+    public @NonNull QDBusReply<T> clone() {
     	QDBusReply<T> newReply = new QDBusReply<>();
     	newReply.set(this);
         return newReply;
     }
 
-    public QDBusReply(io.qt.dbus.QDBusError dbusError){
+    public QDBusReply(io.qt.dbus.@NonNull QDBusError dbusError){
         super((QPrivateConstructor)null);
         initialize_native(this, dbusError);
     }
 
     private native static <T> void initialize_native(QDBusReply<T> instance, io.qt.dbus.QDBusError dbusError);
     
-    public QDBusReply(io.qt.dbus.QDBusMessage reply, Class<T> valueType, io.qt.core.QMetaType... instantiation){
+    public QDBusReply(io.qt.dbus.@NonNull QDBusMessage reply, @Nullable Class<T> valueType, io.qt.core.@NonNull QMetaType @NonNull... instantiation){
         super((QPrivateConstructor)null);
         Objects.requireNonNull(valueType);
         initialize_native(this, reply, io.qt.core.QMetaType.fromType(valueType, instantiation));
@@ -67,7 +70,7 @@ public final class QDBusReply<T> extends io.qt.QtObject implements java.lang.Clo
     
     private native static <T> void initialize_native(QDBusReply<T> instance, io.qt.dbus.QDBusMessage reply, io.qt.core.QMetaType metaType);
 
-    public QDBusReply(io.qt.dbus.QDBusPendingCall pcall, Class<T> valueType, io.qt.core.QMetaType... instantiation){
+    public QDBusReply(io.qt.dbus.@NonNull QDBusPendingCall pcall, @Nullable Class<T> valueType, io.qt.core.@NonNull QMetaType @NonNull... instantiation){
         super((QPrivateConstructor)null);
         Objects.requireNonNull(valueType);
         initialize_native(this, pcall, io.qt.core.QMetaType.fromType(valueType, instantiation));
@@ -79,7 +82,7 @@ public final class QDBusReply<T> extends io.qt.QtObject implements java.lang.Clo
     private native final void set(io.qt.dbus.QDBusReply<T> other);
     
     @io.qt.QtUninvokable
-    public native final io.qt.dbus.QDBusError error();
+    public native final io.qt.dbus.@NonNull QDBusError error();
     
     @io.qt.QtUninvokable
     public native final boolean isValid();

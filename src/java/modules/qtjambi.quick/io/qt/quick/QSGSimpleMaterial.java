@@ -29,32 +29,40 @@
 
 package io.qt.quick;
 
+import io.qt.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+/**
+ * <p>The QSGSimpleMaterial class is a template generated class used to store the state used with a QSGSimpleMateralShader.</p>
+ * <p>Java wrapper for Qt class <code><a href="https://doc.qt.io/qt-5/qsgsimplematerial.html">QSGSimpleMaterial</a></code></p>
+ * <p><b>Warning:</b> This utility class is only functional when running with the legacy OpenGL renderer of the Qt Quick scenegraph. Its usage is not recommended in new application code.</p>
+ */
 public class QSGSimpleMaterial<State> extends QSGMaterial {
-	@SuppressWarnings("unchecked")
-	public QSGSimpleMaterial(State aState, Supplier<QSGMaterialShader> func) {
-		m_type = (Class<State>)aState.getClass();
+	public QSGSimpleMaterial(@StrictNonNull State aState, @StrictNonNull Supplier<@Nullable QSGMaterialShader> func) {
+		m_type = QtJambi_LibraryUtilities.internal.getClass(Objects.requireNonNull(aState));
 		m_state = aState;
 		m_func = Objects.requireNonNull(func);
     }
 
-	public QSGSimpleMaterial(Class<State> type, Supplier<QSGMaterialShader> func) {
+	public QSGSimpleMaterial(@Nullable Class<State> type, @StrictNonNull Supplier<@Nullable QSGMaterialShader> func) {
 		m_type = type;
 		m_state = null;
 		m_func = Objects.requireNonNull(func);
     }
 
 	@Override
-	public QSGMaterialShader createShader() { return m_func.get(); }
+	public @Nullable QSGMaterialShader createShader() { return m_func.get(); }
 
 	@Override
-	public QSGMaterialType type() { return m_types.computeIfAbsent(m_type, cls->new QSGMaterialType()); }
+	public @Nullable QSGMaterialType type() { return m_types.computeIfAbsent(m_type, cls->new QSGMaterialType()); }
 
-	public final State state() { return m_state; }
+	/**
+	 * Returns the state
+	 */
+	public final @NonNull State state() { return m_state; }
 
 	final Class<State> m_type;
 	private final State m_state;

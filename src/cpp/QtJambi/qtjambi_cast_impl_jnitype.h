@@ -317,11 +317,11 @@ template<bool has_scope, bool is_const, bool is_polymorphic>
 struct qtjambi_jnitype_qobject_decider_cast<false, has_scope, QModelIndex, false, is_const, false, false, is_polymorphic>{
     typedef typename std::conditional<is_const, typename std::add_const<QModelIndex>::type, QModelIndex>::type QModelIndex_c;
     static QModelIndex_c cast(JNIEnv * env, jobject in, const char*, QtJambiScope*){
-        QModelIndex* result = nullptr;
-        if(!QtJambiAPI::convertJavaToModelIndex(env, in, &result)){
+        QModelIndex result;
+        if(!QtJambiAPI::convertJavaToModelIndex(env, in, result)){
             JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast object of type %1 to %2").arg(in ? QtJambiAPI::getObjectClassName(env, in) : QStringLiteral("null")).arg(QLatin1String(QtJambiAPI::typeName(typeid(QModelIndex)))) QTJAMBI_STACKTRACEINFO );
         }
-        return result ? *result : QModelIndex();
+        return result;
     }
 };
 
@@ -330,9 +330,9 @@ template<bool has_scope, bool is_polymorphic>
 struct qtjambi_jnitype_qobject_decider_cast<false, has_scope, QModelIndex, false, true, true, false, is_polymorphic>{
     typedef typename std::conditional<true, typename std::add_const<QModelIndex>::type, QModelIndex>::type QModelIndex_c;
     typedef typename std::conditional<true, typename std::add_lvalue_reference<QModelIndex_c>::type, QModelIndex_c>::type QModelIndex_cr;
-    static QModelIndex_cr cast(JNIEnv * env, jobject in, const char*, QtJambiScope*){
+    static QModelIndex_cr cast(JNIEnv * env, jobject in, const char*, QtJambiScope* scope){
         QModelIndex* result = nullptr;
-        if(!QtJambiAPI::convertJavaToModelIndex(env, in, &result)){
+        if(!QtJambiAPI::convertJavaToModelIndex(env, in, result, scope)){
             JavaException::raiseIllegalArgumentException(env, QStringLiteral("Cannot cast object of type %1 to %2").arg(in ? QtJambiAPI::getObjectClassName(env, in) : QStringLiteral("null")).arg(QLatin1String(QtJambiAPI::typeName(typeid(QModelIndex)))) QTJAMBI_STACKTRACEINFO );
         }
         return deref_ptr_or_default<true,QModelIndex>::deref(result);

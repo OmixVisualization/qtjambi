@@ -43,13 +43,13 @@ template<size_t _align, size_t _size>
 class GenericLinkedListAccess : public AbstractLinkedListAccess{
     typedef typename std::conditional<_size==0, void*, ContainerElement<_size, 0, false, _align>>::type T;
     MetaTypeInfo<0,_size==0> m_elementMetaTypeInfo;
-    InternalToExternalConverter m_internalToExternalConverter;
-    ExternalToInternalConverter m_externalToInternalConverter;
+    QtJambiUtils::InternalToExternalConverter m_internalToExternalConverter;
+    QtJambiUtils::ExternalToInternalConverter m_externalToInternalConverter;
     GenericLinkedListAccess(
             const QMetaType& metaType,
-            const QHashFunction& hashFunction,
-            const InternalToExternalConverter& internalToExternalConverter,
-            const ExternalToInternalConverter& externalToInternalConverter
+            const QtJambiUtils::QHashFunction& hashFunction,
+            const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
+            const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter
             )
         :   AbstractLinkedListAccess(),
           m_elementMetaTypeInfo(metaType, hashFunction),
@@ -68,9 +68,9 @@ class GenericLinkedListAccess : public AbstractLinkedListAccess{
 
 public:
     static AbstractLinkedListAccess* newInstance(const QMetaType& metaType,
-                                           const QHashFunction& hashFunction,
-                                           const InternalToExternalConverter& internalToExternalConverter,
-                                           const ExternalToInternalConverter& externalToInternalConverter){
+                                           const QtJambiUtils::QHashFunction& hashFunction,
+                                           const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
+                                           const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter){
         return new GenericLinkedListAccess(
                                      metaType,
                                      hashFunction,

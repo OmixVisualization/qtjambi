@@ -12868,22 +12868,6 @@ class QMetaType___ extends QMetaType {
     }
     
     /**
-     * @deprecated Use {@link #qRegisterMetaType(Class, QMetaType...)} instead.
-     */
-    @Deprecated
-    public static int registerMetaType(@NonNull Class<?> clazz, @NonNull QMetaType @NonNull... instantiations){
-        return qRegisterMetaType(clazz, instantiations);
-    }
-    
-    /**
-     * @deprecated Use {@link #qMetaTypeId(Class, QMetaType...)} instead.
-     */
-    @Deprecated
-    public static int metaTypeId(@NonNull Class<?> clazz, @NonNull QMetaType @NonNull... instantiations){
-        return qMetaTypeId(clazz, instantiations);
-    }
-    
-    /**
      * Writes a value to data stream.
      * @param <U>
      */
@@ -13645,6 +13629,20 @@ class QVariant_5__ {
     public static boolean canConvert(@Nullable Object obj, QMetaType.@StrictNonNull Type type) {
         return canConvert(obj, type.value());
     }
+
+    private static Object getTypedNull(java.lang.Class<?> type, io.qt.core.QMetaType... instantiations) {
+        int metaTypeID = QMetaType.qRegisterMetaType(type, instantiations);
+        if(!type.isArray()) {
+            String typeName = QMetaType.typeName(metaTypeID);
+            if(!typeName.startsWith("JObjectWrapper") && !typeName.endsWith("*")) {
+                throw new IllegalArgumentException(typeName + " cannot be null.");
+            }
+        }
+        if(metaTypeID==QMetaType.Type.Nullptr.value()) {
+            return NULL;
+        }
+        return new Null(metaTypeID);
+    }
 }// class
 
 class QVariant_6__ {
@@ -13823,15 +13821,97 @@ class QVariant_6__ {
     public static boolean canConvert(@Nullable Object obj, int targetType) {
         return canConvert(obj, new QMetaType(targetType));
     }
+
+    private static Object getTypedNull(java.lang.Class<?> type, io.qt.core.QMetaType... instantiations) {
+        int metaTypeID = QMetaType.qRegisterMetaType(type, instantiations);
+        if(!type.isArray()) {
+            @SuppressWarnings("deprecation")
+            QMetaType.TypeFlags flags = QMetaType.typeFlags(metaTypeID);
+            if(!flags.testFlag(QMetaType.TypeFlag.IsPointer)) {
+                @SuppressWarnings("deprecation")
+                String typeName = QMetaType.typeName(metaTypeID);
+                if(!typeName.startsWith("JObjectWrapper")) {
+                    throw new IllegalArgumentException(typeName + " cannot be null.");
+                }
+            }
+        }
+        if(metaTypeID==QMetaType.Type.Nullptr.value()) {
+            return NULL;
+        }
+        return new Null(metaTypeID);
+    }
 }// class
 
 class QVariant___ {
 
     /**
      * Create a variant for the native nullptr type.
+     * @deprecated Use QVariant.NULL instead
      */
+     @Deprecated
     public static QVariant nullVariant() {
         return new QVariant(QMetaType.Type.Nullptr);
+    }
+
+    @NativeAccess
+    private static final class Null{
+        private final int metaTypeID;
+
+        Null(int metaTypeID) {
+            this.metaTypeID = metaTypeID;
+        }
+
+        @Override
+        public int hashCode() {
+            return 0;
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if(other instanceof QVariant)
+                return other.equals(this);
+            else return other==null;
+        }
+
+        @Override
+        public String toString(){
+            return "";
+        }
+
+        @NativeAccess
+        private int metaTypeID() {
+            return metaTypeID;
+        }
+    }
+
+    /**
+     * Special value representing QVariant(null)
+     */
+    public static final Object NULL = new Null(QMetaType.Type.Nullptr.value());
+
+    /**
+     * Special value representing invalid QVariant
+     */
+    public static final Object INVALID = new Null(QMetaType.Type.UnknownType.value());
+
+    /**
+     * Returns value if value is not null and {@link #NULL} otherwise.
+     * @param value
+     * @return value or {@link #NULL}
+     */
+    public static Object nullable(Object value) {
+        return value==null ? NULL : value;
+    }
+
+    /**
+     * Returns value if value is not null and {@link #NULL} otherwise.
+     * @param value
+     * @param type Java type of the value
+     * @param instantiations only required for generic container types
+     * @return value or {@link #NULL}
+     */
+    public static <T> Object typedNullable(T value, java.lang.@StrictNonNull Class<T> type, io.qt.core.@StrictNonNull QMetaType @StrictNonNull... instantiations) {
+        return value==null ? getTypedNull(type, instantiations) : value;
     }
 
     static Class<?> getComplexType(Class<?> primitiveType) {

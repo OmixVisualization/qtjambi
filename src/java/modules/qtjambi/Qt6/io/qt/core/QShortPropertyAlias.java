@@ -34,7 +34,10 @@ import io.qt.QtUtilities.ShortSupplier;
 /**
  * QShortPropertyAlias is primitive-typed version of QPropertyAlias&lt;Short&gt;.
  * @see QPropertyAlias
+ * @deprecated Class was only meant for internal use, use a <code>QProperty</code> and add a binding to the target
  */
+@Deprecated(forRemoval=true, since="Qt 6.6")
+@SuppressWarnings("removal")
 public final class QShortPropertyAlias extends QAbstractPropertyAlias {
 	
 	private static QPropertyAlias<@NonNull@QtPrimitiveType Short> check(QPropertyAlias<@NonNull@QtPrimitiveType Short> other){

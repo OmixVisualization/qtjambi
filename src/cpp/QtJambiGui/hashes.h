@@ -66,7 +66,7 @@ inline hash_type qHash(const QCursor &cursor, hash_type seed = 0)
     QtPrivate::QHashCombine hash;
     seed = hash(seed, int(cursor.shape()));
     if(cursor.shape()==Qt::BitmapCursor){
-#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0) && QT_VERSION < QT_VERSION_CHECK(6, 5, 0)
         seed = hash(seed, cursor.bitmap(Qt::ReturnByValue));
         seed = hash(seed, cursor.mask(Qt::ReturnByValue));
 #else

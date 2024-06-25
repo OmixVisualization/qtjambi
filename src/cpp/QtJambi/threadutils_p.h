@@ -41,21 +41,29 @@
 #include <functional>
 
 class QtJambiLink;
+class EventDispatcherCheck;
 
-class EventDispatcherCheck{
+typedef QExplicitlySharedDataPointer<EventDispatcherCheck> EventDispatcherCheckPointer;
+
+class EventDispatcherCheck : public QSharedData {
 public:
-    typedef void (*CheckerFunction)(QPointer<QThread>&,JObjectWrapper&&,QWeakPointer<QtJambiLink>&&,QList<std::function<void()>>&&);
-    EventDispatcherCheck(JObjectWrapper&& jthreadObjectWrapper, QThread* thread, QWeakPointer<QtJambiLink>&& wlink, CheckerFunction&& _cleaner = nullptr);
+    struct Data{
+        jobject m_jthreadObject;
+        jint m_hash;
+        QPointer<QThread> m_thread;
+        QWeakPointer<QtJambiLink> m_wlink;
+        QList<QtJambiUtils::Runnable> m_finalActions;
+        ~Data();
+    };
+
+    typedef void (*CleanupFunction)(Data*);
+    EventDispatcherCheck(JNIEnv *env, jobject jthreadObject, QThread* thread, QWeakPointer<QtJambiLink>&& wlink, CleanupFunction _cleaner = nullptr);
     ~EventDispatcherCheck();
-    
-    static QThreadStorage<QSharedPointer<EventDispatcherCheck>> storage;
+    static QThreadStorage<EventDispatcherCheckPointer> Instance;
 private:
-    JObjectWrapper m_jthreadObjectWrapper;
-    QPointer<QThread> m_thread;
-    QWeakPointer<QtJambiLink> m_wlink;
-    QList<std::function<void()>> m_finalActions;
+    Data* m_data;
     QMutex m_mutex;
-    CheckerFunction cleaner;
+    CleanupFunction cleaner;
 };
 
 class QThreadUserData : public QtJambiObjectData
@@ -67,7 +75,7 @@ public:
     QTJAMBI_OBJECTUSERDATA_ID_DECL
     void initialize(QThread* thread);
     void deleteAtThreadEnd(QObject* object);
-    void doAtThreadEnd(const std::function<void()>& action);
+    void doAtThreadEnd(QtJambiUtils::Runnable&& action);
     inline bool isDaemon() const { return m_isDaemon; }
     inline void setDaemon(bool isDaemon) { m_isDaemon = isDaemon; }
     inline QByteArray getName() const { return m_name; }
@@ -92,7 +100,7 @@ private:
     void cleanup();
     QSharedPointer<QObject> m_threadDeleter;
     QList<QPointer<QObject>> m_objectsForDeletion;
-    QList<std::function<void()>>* m_finalActions;
+    QList<QtJambiUtils::Runnable>* m_finalActions;
     QMutex* m_mutex;
     JObjectWrapper m_threadGroup;
     bool m_isDaemon;

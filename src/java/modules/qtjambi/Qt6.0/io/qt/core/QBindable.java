@@ -466,7 +466,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * otherwise the property remains unchanged.</p>
 	 * <p>The first time the property value is read, the binding is evaluated. 
 	 * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of the underlying property is read.</p>
-	 * @param newBinding
+	 * @param binding
 	 * @return oldBinding
 	 */
 	@SuppressWarnings("unchecked")

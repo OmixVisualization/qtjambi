@@ -35,13 +35,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotation marks a parameter to not accept null.
+ * <p>This annotation marks a parameter to not accept <code>null</code>.</p>
+ * <p>A Qt method with <code>StrictNonNull</code>-annotated return type never returns <code>null</code>.</p>
+ * <p>When giving <code>null</code> to a <code>StrictNonNull</code>-annotated method argument a <code>NullPointerException</code> is thrown.</p>
  */
+@SuppressWarnings("deprecartion")
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE_USE)
 @javax.annotation.Nonnull(when=javax.annotation.meta.When.ALWAYS)
 @javax.annotation.meta.TypeQualifierNickname
 @kotlin.annotations.jvm.UnderMigration(status = kotlin.annotations.jvm.MigrationStatus.STRICT)
-@SuppressWarnings("deprecartion")
 public @interface StrictNonNull {
 }

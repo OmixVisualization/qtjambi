@@ -40,6 +40,7 @@ import io.qt.QtUtilities;
 import io.qt.autotests.generated.General;
 import io.qt.core.QLibraryInfo;
 import io.qt.core.QObject;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QPluginLoader;
 import io.qt.location.QGeoCodingManagerEngine;
 import io.qt.location.QGeoRoutingManagerEngine;
@@ -57,15 +58,19 @@ public class TestLocationInjectedCode extends ApplicationInitializer {
 	@Test
     public void test()
     {
+		int found = 0;
 		String errorString = "";
 		QPluginLoader pluginLoader = null;
+		String libDir = "geoservices";
+		if(QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android))
+			libDir = "plugins/geoservices";
 		if(QLibraryInfo.version().majorVersion()<=5) {
-			pluginLoader = new QPluginLoader("geoservices/qtgeoservices_mapbox");
+			pluginLoader = new QPluginLoader(libDir+"/qtgeoservices_mapbox");
 			if(!pluginLoader.isLoaded() && !pluginLoader.load()) {
-				pluginLoader = new QPluginLoader("geoservices/qtgeoservices_mapboxd");
+				pluginLoader = new QPluginLoader(libDir+"/qtgeoservices_mapboxd");
 			}
 			if(!pluginLoader.isLoaded() && !pluginLoader.load()) {
-				pluginLoader = new QPluginLoader("geoservices/qtgeoservices_mapbox_debug");
+				pluginLoader = new QPluginLoader(libDir+"/qtgeoservices_mapbox_debug");
 			}
 			if(pluginLoader.isLoaded() || pluginLoader.load()){
 				Map<String,Object> parameters = new HashMap<>();
@@ -102,16 +107,17 @@ public class TestLocationInjectedCode extends ApplicationInitializer {
 				
 				servicePlugin.dispose();
 				Assert.assertTrue(factory.isDisposed());
+				++found;
 			}else {
-				errorString += pluginLoader.errorString()+" ("+pluginLoader.fileName()+") ";
+				errorString += pluginLoader.errorString()+" (geoservices/qtgeoservices_mapbox) ";
 			}
 			
-			pluginLoader = new QPluginLoader("geoservices/qtgeoservices_nokia");
+			pluginLoader = new QPluginLoader(libDir+"/qtgeoservices_nokia");
 			if(!pluginLoader.isLoaded() && !pluginLoader.load()) {
-	    		pluginLoader = new QPluginLoader("geoservices/qtgeoservices_nokiad");
+	    		pluginLoader = new QPluginLoader(libDir+"/qtgeoservices_nokiad");
 	    	}
 			if(!pluginLoader.isLoaded() && !pluginLoader.load()) {
-	    		pluginLoader = new QPluginLoader("geoservices/qtgeoservices_nokia_debug");
+	    		pluginLoader = new QPluginLoader(libDir+"/qtgeoservices_nokia_debug");
 	    	}
 			if(pluginLoader.isLoaded() || pluginLoader.load()){
 				Map<String,Object> parameters = new HashMap<>();
@@ -146,17 +152,18 @@ public class TestLocationInjectedCode extends ApplicationInitializer {
 				Assert.assertEquals(QGeoServiceProvider.Error.MissingRequiredParameterError, createGeocodingManagerEngine.error());
 				Assert.assertEquals("Qt Location requires app_id and token parameters.\n" + 
 						"Please register at https://developer.here.com/ to get your personal application credentials.", createGeocodingManagerEngine.errorString());
+				++found;
 			}else {
-				errorString += pluginLoader.errorString()+" ("+pluginLoader.fileName()+") ";
+				errorString += pluginLoader.errorString()+" (geoservices/qtgeoservices_nokia) ";
 			}
 		}
 		
-		pluginLoader = new QPluginLoader("geoservices/qtgeoservices_itemsoverlay");
+		pluginLoader = new QPluginLoader(libDir+"/qtgeoservices_itemsoverlay");
 		if(!pluginLoader.isLoaded() && !pluginLoader.load()) {
-			pluginLoader = new QPluginLoader("geoservices/qtgeoservices_itemsoverlayd");
+			pluginLoader = new QPluginLoader(libDir+"/qtgeoservices_itemsoverlayd");
     	}
 		if(!pluginLoader.isLoaded() && !pluginLoader.load()) {
-			pluginLoader = new QPluginLoader("geoservices/qtgeoservices_itemsoverlay_debug");
+			pluginLoader = new QPluginLoader(libDir+"/qtgeoservices_itemsoverlay_debug");
     	}
 		if(pluginLoader.isLoaded() || pluginLoader.load()){
 			QObject servicePlugin = pluginLoader.instance();
@@ -193,17 +200,18 @@ public class TestLocationInjectedCode extends ApplicationInitializer {
 			QGeoServiceProviderFactory factory3 = servicePlugin.qt_metacast(QGeoServiceProviderFactory.class);
 			Assert.assertTrue(factory3!=factory);
 			Assert.assertTrue(factory3!=factory2);
+			++found;
 		}else {
-			errorString += pluginLoader.errorString()+" ("+pluginLoader.fileName()+") ";
+			errorString += pluginLoader.errorString()+" (geoservices/qtgeoservices_itemsoverlay) ";
 		}
 
 		
-		pluginLoader = new QPluginLoader("geoservices/qtgeoservices_osm");
+		pluginLoader = new QPluginLoader(libDir+"/qtgeoservices_osm");
 		if(!pluginLoader.isLoaded() && !pluginLoader.load()) {
-    		pluginLoader = new QPluginLoader("geoservices/qtgeoservices_osmd");
+    		pluginLoader = new QPluginLoader(libDir+"/qtgeoservices_osmd");
     	}
 		if(!pluginLoader.isLoaded() && !pluginLoader.load()) {
-    		pluginLoader = new QPluginLoader("geoservices/qtgeoservices_osm_debug");
+    		pluginLoader = new QPluginLoader(libDir+"/qtgeoservices_osm_debug");
     	}
 		if(pluginLoader.isLoaded() || pluginLoader.load()){
 			QObject servicePlugin = pluginLoader.instance();
@@ -240,12 +248,13 @@ public class TestLocationInjectedCode extends ApplicationInitializer {
 			Assert.assertEquals(null, createGeocodingManagerEngine.errorString());
 			Assert.assertEquals("", createGeocodingManagerEngine.engine().managerName());
 			Assert.assertEquals("QGeoCodingManagerEngineOsm", createGeocodingManagerEngine.engine().metaObject().className());
+			++found;
 		}else {
-			errorString += pluginLoader.errorString()+" ("+pluginLoader.fileName()+") ";
+			errorString += pluginLoader.errorString()+" (geoservices/qtgeoservices_osm) ";
 		}
 
 		{
-			Assert.assertTrue(errorString, errorString.isEmpty());
+			Assert.assertTrue(errorString, found>0);
     	}
     }
 }

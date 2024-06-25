@@ -394,16 +394,30 @@ public class ForeachVersionTask extends Task {
 										break;
 									case Windows:
 										if(compiler==null) {
-											qtDirs.add(new java.io.File(versionDir, "msvc2019_64"));
+											java.io.File f = new java.io.File(versionDir, "msvc2022_64");
+											if(!f.exists())
+												f = new java.io.File(versionDir, "msvc2019_64");
+											qtDirs.add(f);
 										}else switch(compiler) {
-										case MinGW_W64:
-											qtDirs.add(new java.io.File(versionDir, "mingw_64"));
+										case MinGW_W64:{
+											java.io.File f = new java.io.File(versionDir, "mingw_64");
+											if(!f.exists())
+												f = new java.io.File(versionDir, "llvm-mingw_64");
+											qtDirs.add(f);
+										}
 											break;
 										default:
-											if(compiler.name().endsWith("_arm64"))
-												qtDirs.add(new java.io.File(versionDir, "msvc2019_arm64"));
-											else
-												qtDirs.add(new java.io.File(versionDir, "msvc2019_64"));
+											if(compiler.name().endsWith("_arm64")) {
+												java.io.File f = new java.io.File(versionDir, "msvc2022_arm64");
+												if(!f.exists())
+													f = new java.io.File(versionDir, "msvc2019_arm64");
+												qtDirs.add(f);
+											}else {
+												java.io.File f = new java.io.File(versionDir, "msvc2022_64");
+												if(!f.exists())
+													f = new java.io.File(versionDir, "msvc2019_64");
+												qtDirs.add(f);
+											}
 											break;
 										}
 										break;
@@ -437,16 +451,25 @@ public class ForeachVersionTask extends Task {
 										break;
 									case Windows:
 										if(compiler==null) {
-											qtDir = new java.io.File(versionDir, "msvc2019_64");
+											qtDir = new java.io.File(versionDir, "msvc2022_64");
+											if(!qtDir.exists())
+												qtDir = new java.io.File(versionDir, "msvc2019_64");
 										}else switch(compiler) {
 										case MinGW_W64:
 											qtDir = new java.io.File(versionDir, "mingw_64");
+											if(!qtDir.exists())
+												qtDir = new java.io.File(versionDir, "llvm-mingw_64");
 											break;
 										default:
-											if(compiler.name().endsWith("_arm64"))
-												qtDir = new java.io.File(versionDir, "msvc2019_arm64");
-											else
-												qtDir = new java.io.File(versionDir, "msvc2019_64");
+											if(compiler.name().endsWith("_arm64")) {
+												qtDir = new java.io.File(versionDir, "msvc2022_arm64");
+												if(!qtDir.exists())
+													qtDir = new java.io.File(versionDir, "msvc2019_arm64");
+											}else {
+												qtDir = new java.io.File(versionDir, "msvc2022_64");
+												if(!qtDir.exists())
+													qtDir = new java.io.File(versionDir, "msvc2019_64");
+											}
 											break;
 										}
 										if(iVersion[0]<6) {

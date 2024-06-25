@@ -29,6 +29,7 @@
 
 package io.qt.sql;
 
+import io.qt.*;
 import io.qt.core.QAbstractItemModel;
 import io.qt.core.QModelIndex;
 import io.qt.core.QObject;
@@ -59,7 +60,7 @@ public class QSqlRelationalDelegate extends QItemDelegate {
     /**
      * <p>See <a href="https://doc.qt.io/qt/qsqlrelationaldelegate.html#QSqlRelationalDelegate">QSqlRelationalDelegate::QSqlRelationalDelegate(QObject *)</a></p>
      */
-    public QSqlRelationalDelegate(QObject parent) {
+    public QSqlRelationalDelegate(@Nullable QObject parent) {
         super(parent);
     }
 
@@ -76,9 +77,9 @@ public class QSqlRelationalDelegate extends QItemDelegate {
      * <p>See <a href="https://doc.qt.io/qt/qsqlrelationaldelegate.html#createEditor">QSqlRelationalDelegate::createEditor(QWidget *, const QStyleOptionViewItem &amp;, const QModelIndex &amp;) const</a></p>
      */
 	@Override
-    public QWidget createEditor(QWidget parent,
-                                QStyleOptionViewItem option,
-                                QModelIndex index) {
+    public @Nullable QWidget createEditor(@Nullable QWidget parent,
+							    		  @NonNull QStyleOptionViewItem option,
+							    		  @NonNull QModelIndex index) {
         if (!index.isValid())
             return null;
         QSqlRelationalTableModel sqlModel = qobject_cast(QSqlRelationalTableModel.class, index.model());
@@ -98,7 +99,7 @@ public class QSqlRelationalDelegate extends QItemDelegate {
      * <p>See <a href="https://doc.qt.io/qt/qsqlrelationaldelegate.html#setModelData">QSqlRelationalDelegate::setModelData(QWidget *, QAbstractItemModel *, const QModelIndex &amp;) const</a></p>
      */
     @Override
-    public void setEditorData(QWidget editor, QModelIndex index) {
+    public void setEditorData(@Nullable QWidget editor, @NonNull QModelIndex index) {
         if (index==null || !index.isValid())
             return;
         if (editor instanceof QComboBox) {
@@ -118,7 +119,7 @@ public class QSqlRelationalDelegate extends QItemDelegate {
      * {@inheritDoc}
      */
     @Override
-    public void setModelData(QWidget editor, QAbstractItemModel model, QModelIndex index) {
+    public void setModelData(@Nullable QWidget editor, @Nullable QAbstractItemModel model, @NonNull QModelIndex index) {
         if (!index.isValid())
             return;
         QSqlRelationalTableModel sqlModel = qobject_cast(QSqlRelationalTableModel.class, index.model());

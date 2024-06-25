@@ -133,7 +133,7 @@ public abstract class MemoryManagement extends ApplicationInitializer{
                 int i = shortClassName.lastIndexOf('.');
                 if(i > 0)
                     shortClassName = shortClassName.substring(i + 1);
-            	return shortClassName + ".ctor " + className + "@" + System.identityHashCode(o) + "; thread=" + Thread.currentThread().getId() + "; id=" + _id;
+            	return shortClassName + ".ctor " + className + "@" + System.identityHashCode(o) + "; thread=" + ApplicationInitializer.currentThreadToString() + "; id=" + _id;
             });
         }
         WeakReference<Object> wr = new WeakReference<Object>(o, weakReferenceQueue);
@@ -145,6 +145,8 @@ public abstract class MemoryManagement extends ApplicationInitializer{
             alive.add(id);
         }
     }
+    
+    
 
     // Types: Normal object type with shell class
     //        Normal object type without shell class

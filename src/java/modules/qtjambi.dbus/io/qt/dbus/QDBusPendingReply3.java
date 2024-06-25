@@ -29,6 +29,9 @@
 
 package io.qt.dbus;
 
+import io.qt.NonNull;
+import io.qt.Nullable;
+import io.qt.StrictNonNull;
 import io.qt.core.QMetaType;
 
 /**
@@ -43,28 +46,28 @@ public class QDBusPendingReply3<A,B,C> extends QDBusPendingReply2<A,B> {
 		typeC = new QMetaType();
 	}
 
-	public QDBusPendingReply3(QDBusMessage message, Class<A> typeA, Class<B> typeB, Class<C> typeC) {
+	public QDBusPendingReply3(@NonNull QDBusMessage message, @Nullable Class<A> typeA, @Nullable Class<B> typeB, @Nullable Class<C> typeC) {
 		super(message, typeA, typeB);
 		this.typeC = QMetaType.fromType(typeC);
 	}
 
-	public QDBusPendingReply3(QDBusPendingCall call, Class<A> typeA, Class<B> typeB, Class<C> typeC) {
+	public QDBusPendingReply3(@NonNull QDBusPendingCall call, @Nullable Class<A> typeA, @Nullable Class<B> typeB, @Nullable Class<C> typeC) {
 		super(call, typeA, typeB);
 		this.typeC = QMetaType.fromType(typeC);
 	}
 
-	public QDBusPendingReply3(QDBusPendingReply3<A,B,C> other) {
+	public QDBusPendingReply3(@StrictNonNull QDBusPendingReply3<A,B,C> other) {
 		super(other);
 		this.typeC = other.typeC;
 	}
 	
-	public QDBusPendingReply3(QDBusPendingReply2<A,B> other, Class<C> typeC, QMetaType... instantiations) {
+	public QDBusPendingReply3(@NonNull QDBusPendingReply2<A,B> other, @Nullable Class<C> typeC, @NonNull QMetaType @NonNull... instantiations) {
 		super(other);
 		this.typeC = QMetaType.fromType(typeC, instantiations);
 	}
 
 	@Override
-	public QDBusPendingReply3<A,B,C> clone() {
+	public @NonNull QDBusPendingReply3<A,B,C> clone() {
 		return new QDBusPendingReply3<A,B,C>(this);
 	}
 

@@ -148,7 +148,7 @@ public final class QtUtilities {
      * @deprecated Use {@link #jambiDeploymentDir()} instead.
      * @return
      */
-    @Deprecated
+    @Deprecated(forRemoval=true)
     public static @Nullable File jambiTempDir() {
         return Utility.jambiDeploymentDir();
     }

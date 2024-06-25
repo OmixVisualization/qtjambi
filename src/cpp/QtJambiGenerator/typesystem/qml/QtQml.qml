@@ -124,17 +124,21 @@ TypeSystem{
     Rejection{
         className: "QQmlV4Function"
     }
-    
+
     Rejection{
-        className: "QV4::CompiledData::CompilationUnit"
+        className: "QV4"
     }
     
     Rejection{
         className: "QV4::CompiledData"
     }
-    
+
     Rejection{
-        className: "QV4"
+        className: "QV4::CompiledData::CompilationUnit"
+    }
+
+    Rejection{
+        className: "QV4::ExecutionEngine"
     }
     
     Rejection{
@@ -151,88 +155,43 @@ TypeSystem{
     }
     
     Rejection{
-        className: "QV4::ExecutionEngine"
-    }
-    
-    Rejection{
         className: "QQmlComponentAttached"
-    }
-    
-    EnumType{
-        name: "QJSValue::ObjectConversionBehavior"
-        since: [6, 1]
-    }
-    
-    EnumType{
-        name: "QQmlIncubator::IncubationMode"
-    }
-    
-    EnumType{
-        name: "QQmlIncubator::Status"
-    }
-    
-    EnumType{
-        name: "QQmlProperty::Type"
-    }
-    
-    EnumType{
-        name: "QQmlProperty::PropertyTypeCategory"
-    }
-    
-    EnumType{
-        name: "QJSValue::SpecialValue"
-    }
-    
-    EnumType{
-        name: "QJSValue::ErrorType"
-    }
-    
-    EnumType{
-        name: "QQmlComponent::CompilationMode"
-    }
-    
-    EnumType{
-        name: "QQmlComponent::Status"
-    }
-    
-    EnumType{
-        name: "QQmlAbstractUrlInterceptor::DataType"
     }
     
     InterfaceType{
         name: "QQmlAbstractUrlInterceptor"
-    }
-    
-    EnumType{
-        name: "QQmlDebuggingEnabler::StartMode"
+        EnumType{
+            name: "DataType"
+        }
     }
     
     ObjectType{
         name: "QQmlDebuggingEnabler"
+        EnumType{
+            name: "StartMode"
+        }
         ModifyFunction{
             signature: "QQmlDebuggingEnabler(bool)"
             remove: RemoveFlag.All
         }
     }
     
-    EnumType{
-        name: "QQmlFile::Status"
-    }
-    
     ObjectType{
         name: "QQmlFile"
+        EnumType{
+            name: "Status"
+        }
         ModifyFunction{
             signature: "data() const"
             remove: RemoveFlag.All
         }
     }
     
-    ValueType{
-        name: "QQmlContext::PropertyPair"
-    }
-    
     ObjectType{
         name: "QQmlContext"
+        ValueType{
+            name: "PropertyPair"
+        }
         ModifyFunction{
             signature: "nameForObject(QObject*) const"
             ModifyArgument{
@@ -440,11 +399,26 @@ TypeSystem{
     
     ObjectType{
         name: "QJSNumberCoercion"
+        ModifyFunction{
+            signature: "isArrayIndex(quint64)"
+            remove: RemoveFlag.All
+            since: 6.8
+        }
         since: [6, 1]
     }
     
     ValueType{
         name: "QJSValue"
+        EnumType{
+            name: "SpecialValue"
+        }
+        EnumType{
+            name: "ErrorType"
+        }
+        EnumType{
+            name: "ObjectConversionBehavior"
+            since: [6, 1]
+        }
         ModifyFunction{
             signature: "QJSValue(uint)"
             remove: RemoveFlag.All
@@ -1131,6 +1105,10 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
         }
         ModifyFunction{
             signature: "loadData(const QByteArray &, const QUrl &)"
+            ModifyArgument{
+                index: 1
+                AddImplicitCall{type: "java.lang.@NonNull String"}
+            }
             blockExceptions: true
         }
     }
@@ -1161,6 +1139,12 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
                 fileName: "QtJambi/QmlAPI"
                 location: Include.Global
             }
+        }
+        EnumType{
+            name: "CompilationMode"
+        }
+        EnumType{
+            name: "Status"
         }
         ModifyFunction{
             signature: "QQmlComponent(QQmlEngine*,QUrl,QObject*)"
@@ -1378,6 +1362,12 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
     
     ObjectType{
         name: "QQmlIncubator"
+        EnumType{
+            name: "IncubationMode"
+        }
+        EnumType{
+            name: "Status"
+        }
         ModifyFunction{
             signature: "setInitialState(QObject*)"
             ModifyArgument{
@@ -1493,6 +1483,12 @@ public static final ObjectOwnership KotlinOwnership = JavaOwnership;`}
                 fileName: "QtCore/QByteArray"
                 location: Include.Global
             }
+        }
+        EnumType{
+            name: "Type"
+        }
+        EnumType{
+            name: "PropertyTypeCategory"
         }
         ModifyFunction{
             signature: "connectNotifySignal(QObject *, int) const"

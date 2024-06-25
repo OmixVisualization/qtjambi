@@ -133,6 +133,7 @@ public final class QPropertyBinding<T> extends QUntypedPropertyBinding {
 		pendingMetaType.set(metaTypeSupplier);
 	}
 	
+	@SuppressWarnings({ "removal", "deprecation" })
 	@NativeAccess
 	static QMetaType analyzeMetaType(Serializable functor) {
 		ClassAnalyzerUtility.LambdaInfo lamdaInfo = ClassAnalyzerUtility.lambdaInfo(functor);

@@ -51,6 +51,16 @@ TypeSystem{
         className: "QNativeInterface::Private::QInterfaceProxyImp"
         since: [6,5]
     }
+
+    Rejection{
+        className: "QNativeInterface::Private::QInterfaceProxy"
+        since: 6.5
+    }
+
+    Rejection{
+        className: "QNativeInterface::Private::QInterfaceProxy<func>"
+        since: 6.5
+    }
     
     PrimitiveType{
         name: "GLuint"
@@ -3612,6 +3622,11 @@ TypeSystem{
         }
 
         EnumType{
+            name: "AnnouncementPriority"
+            since: 6.8
+        }
+
+        EnumType{
             name: "RelationFlag"
         }
 
@@ -5705,11 +5720,13 @@ TypeSystem{
             signature: "bitmap()const"
             remove: RemoveFlag.All
             since: [5, 15]
+            until: 6.4
         }
         ModifyFunction{
             signature: "mask()const"
             remove: RemoveFlag.All
             since: [5, 15]
+            until: 6.4
         }
         ModifyFunction{
             signature: "bitmap(Qt::ReturnByValueConstant)const"
@@ -5721,8 +5738,10 @@ TypeSystem{
                     codeClass: CodeClass.Native
                     Text{content: "Qt::ReturnByValueConstant %out = Qt::ReturnByValue;"}
                 }
+                since: [5, 15]
+                until: 6.4
             }
-            since: [5, 15]
+            Remove{since: 6.5}
         }
         ModifyFunction{
             signature: "mask(Qt::ReturnByValueConstant)const"
@@ -5734,8 +5753,10 @@ TypeSystem{
                     codeClass: CodeClass.Native
                     Text{content: "Qt::ReturnByValueConstant %out = Qt::ReturnByValue;"}
                 }
+                since: [5, 15]
+                until: 6.4
             }
-            since: [5, 15]
+            Remove{since: 6.5}
         }
     }
     
@@ -6570,6 +6591,11 @@ TypeSystem{
         }
     }
     
+    ObjectType{
+        name: "QAccessibleAnnouncementEvent"
+        since: 6.8
+    }
+
     ObjectType{
         name: "QAccessibleValueChangeEvent"
     }
@@ -10749,6 +10775,7 @@ if(QPainter* painter = reinterpret_cast<PaintDeviceAccess*>(device)->getSharedPa
         name: "QStandardItem"
         EnumType{
             name: "ItemType"
+            extensible: true
         }
         ModifyFunction{
             signature: "appendColumn(const QList<QStandardItem *> &)"

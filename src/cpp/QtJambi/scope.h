@@ -31,6 +31,7 @@
 #define QTJAMBI_SCOPE_H
 
 #include "global.h"
+#include "utils.h"
 #include <functional>
 
 class QtJambiShell;
@@ -45,7 +46,7 @@ public:
     QtJambiScope(QtJambiNativeID nativeId);
     QtJambiScope(JNIEnv *env, jobject object);
     ~QtJambiScope();
-    void addFinalAction(std::function<void()>&& action);
+    void addFinalAction(QtJambiUtils::Runnable&& action);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     void addDeletion(int metaTypeId, void* pointer);
 #else
@@ -53,11 +54,11 @@ public:
 #endif
     template<typename T>
     void addDeletion(T* pointer){
-        addFinalAction([pointer](){delete pointer;});
+        addFinalAction(QtJambiUtils::Runnable::deleter(pointer));
     }
     template<typename T>
     void addArrayDeletion(T* pointer){
-        addFinalAction([pointer](){delete[] pointer;});
+        addFinalAction(QtJambiUtils::Runnable::arrayDeleter(pointer));
     }
     void addObjectInvalidation(JNIEnv *env, jobject object, bool persistent = true);
     void addObjectInvalidation(JNIEnv *env, QtJambiNativeID nativeId, bool persistent = true);
@@ -69,14 +70,15 @@ protected:
 private:
     QtJambiScopePrivate* d;
     Q_DISABLE_COPY_MOVE(QtJambiScope)
+    friend QtJambiScopePrivate;
 };
 
 class QTJAMBI_EXPORT DoFinally{
 public:
-    DoFinally(std::function<void()> action);
+    DoFinally(QtJambiUtils::Runnable&& action);
     ~DoFinally();
 private:
-    std::function<void()> action;
+    QtJambiUtils::Runnable action;
     Q_DISABLE_COPY_MOVE(DoFinally)
 };
 

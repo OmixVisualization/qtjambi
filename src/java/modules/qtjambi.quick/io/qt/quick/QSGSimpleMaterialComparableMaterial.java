@@ -31,18 +31,23 @@ package io.qt.quick;
 
 import java.util.function.Supplier;
 
+import io.qt.*;
+
+/**
+ * <p><b>Warning:</b> This utility class is only functional when running with the legacy OpenGL renderer of the Qt Quick scenegraph. Its usage is not recommended in new application code.</p>
+ */
 public class QSGSimpleMaterialComparableMaterial<State extends Object & Comparable<State>> extends QSGSimpleMaterial<State> {
 
-	public QSGSimpleMaterialComparableMaterial(State aState, Supplier<QSGMaterialShader> func) {
+	public QSGSimpleMaterialComparableMaterial(@StrictNonNull State aState, @StrictNonNull Supplier<@Nullable QSGMaterialShader> func) {
 		super(aState, func);
 	}
 
-	public QSGSimpleMaterialComparableMaterial(Class<State> type, Supplier<QSGMaterialShader> func) {
+	public QSGSimpleMaterialComparableMaterial(@Nullable Class<State> type, @StrictNonNull Supplier<@Nullable QSGMaterialShader> func) {
 		super(type, func);
 	}
 
 	@Override
-	public int compare(QSGMaterial other) {
+	public int compare(@Nullable QSGMaterial other) {
 		if(other instanceof QSGSimpleMaterialComparableMaterial) {
 			QSGSimpleMaterialComparableMaterial<?> _other = (QSGSimpleMaterialComparableMaterial<?>)other;
 			if(_other.m_type==this.m_type) {

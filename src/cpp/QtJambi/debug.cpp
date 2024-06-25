@@ -99,6 +99,7 @@ class MethodPrintPrivate{
     const char* m_file;
     int m_line;
     const char* m_function;
+    QByteArray* m_data = nullptr;
     MethodPrintPrivate(MethodPrint::Type callType, const void* pointer, const char* method,
                             OPTIONAL_LINK_NAME_K(const char* type)
                             const char* file, int line, const char *function)
@@ -115,6 +116,23 @@ class MethodPrintPrivate{
         methodPrint(true, m_callType, m_pointer, m_method, m_file, m_line, m_function);
 #endif
     }
+    MethodPrintPrivate(MethodPrint::Type callType,
+                       const char* file, int line, const char *function, QByteArray* data)
+        : m_callType(callType),
+        m_pointer(nullptr),
+        m_method(data->constData()),
+        OPTIONAL_LINK_NAME_K(m_type(nullptr))
+        m_file(file),
+        m_line(line),
+        m_function(function),
+        m_data(data)
+    {
+#if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME)
+        printWithType(true, m_callType, m_pointer, m_method, m_type, m_file, m_line, m_function);
+#else
+        methodPrint(true, m_callType, m_pointer, m_method, m_file, m_line, m_function);
+#endif
+    }
 public:
     ~MethodPrintPrivate(){
 #if defined(QTJAMBI_DEBUG_TOOLS) || defined(QTJAMBI_LINK_NAME)
@@ -122,6 +140,8 @@ public:
 #else
         methodPrint(false, m_callType, m_pointer, m_method, m_file, m_line, m_function);
 #endif
+        if(m_data)
+            delete m_data;
     }
     static MethodPrintPrivate* create(MethodPrint::Type callType, const void* pointer, const char* method, const char* file, int line, const char *function){
         if(enabledMethodTracePrints() && callType!=MethodPrint::Disabled){
@@ -207,6 +227,22 @@ public:
                                                         file, line, function);
                 }
             }
+        }
+        return nullptr;
+    }
+    static MethodPrintPrivate* create(MethodPrint::Type callType, const char* file, int line, const char *function, const char* message,...){
+        if(enabledMethodTracePrints() && callType!=MethodPrint::Disabled){
+            QByteArray* data = new QByteArray(QString::asprintf(message).toUtf8());
+            return new MethodPrintPrivate(callType,
+                                          file, line, function, data);
+        }
+        return nullptr;
+    }
+    static MethodPrintPrivate* create(MethodPrint::Type callType, const char* file, int line, const char *function, std::function<QByteArray()>&& supplier){
+        if(enabledMethodTracePrints() && callType!=MethodPrint::Disabled){
+            QByteArray* data = new QByteArray(supplier());
+            return new MethodPrintPrivate(callType,
+                                          file, line, function, data);
         }
         return nullptr;
     }
@@ -453,6 +489,16 @@ MethodPrintFromLink::MethodPrintFromLink(MethodPrint::Type callType, const QShar
 
 MethodPrintFromLink::MethodPrintFromLink(MethodPrint::Type callType, const QWeakPointer<QtJambiLink>& link, const char* method, const char* file, int line, const char *function)
     : MethodPrint(MethodPrintPrivate::create(callType, link, method, file, line, function))
+{
+}
+
+MethodPrintFromArgs::MethodPrintFromArgs(MethodPrint::Type callType, const char* file, int line, const char *function, const char* message, ...)
+    : MethodPrint(MethodPrintPrivate::create(callType, file, line, function, message))
+{
+}
+
+MethodPrintFromSupplier::MethodPrintFromSupplier(MethodPrint::Type callType, const char* file, int line, const char *function, std::function<QByteArray()>&& supplier)
+    : MethodPrint(MethodPrintPrivate::create(callType, file, line, function, std::forward<std::function<QByteArray()>>(supplier)))
 {
 }
 

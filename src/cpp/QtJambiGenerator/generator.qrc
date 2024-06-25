@@ -101,6 +101,8 @@
         <file alias="QtProtobuf.qml">typesystem/qml/QtProtobuf.qml</file>
         <file alias="QtGrpc.qml">typesystem/qml/QtGrpc.qml</file>
         <file alias="QtGraphs.qml">typesystem/qml/QtGraphs.qml</file>
+        <file alias="QtGraphsWidgets.qml">typesystem/qml/QtGraphsWidgets.qml</file>
+        <file alias="QtInsightTracker.qml">typesystem/qml/QtInsightTracker.qml</file>
     </qresource>
     <qresource prefix="/io/qtjambi/generator/targets">
         <file alias="all.qml">targets/all.qml</file>

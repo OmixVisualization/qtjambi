@@ -537,7 +537,12 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_dbus_QD
         QDBusArgument* arg = qtjambi_cast<QDBusArgument*>(__jni_env, _arg);
         QtJambiAPI::checkNullPointer(__jni_env, arg);
         QMetaType* metaType = qtjambi_cast<QMetaType*>(__jni_env, _metaType);
-        QVariant variant = QtJambiAPI::convertJavaObjectToQVariant(__jni_env, _value);
+        QVariant variant = _value ? QtJambiAPI::convertJavaObjectToQVariant(__jni_env, _value)
+#if QT_VERSION < QT_VERSION_CHECK(6,0,0)
+                                  : QVariant(QMetaType::Nullptr, nullptr);
+#else
+                                  : QVariant(QMetaType(QMetaType::Nullptr));
+#endif
         if(metaType){
 #if QT_VERSION < QT_VERSION_CHECK(6,0,0)
             if(variant.userType()!=metaType->id()){

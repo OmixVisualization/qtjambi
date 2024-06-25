@@ -13,7 +13,7 @@ to your project:
   <version>$VERSION</version>
 </dependency>
 ```
-(exchange `$VERSION` either by `6.5.7` or by `6.7.1`).
+(exchange `$VERSION` either by `6.5.8` or by `6.7.2`).
 
 Otherwise, download QtJambi JAR file from [Maven Central Repository](https://search.maven.org/artifact/io.qtjambi/qtjambi/).
 Find the [list of all available QtJambi modules](www/Modules.md).
@@ -36,7 +36,7 @@ public class Test {
 Compile the file:
 
 ``` powershell
-javac -cp qtjambi-6.5.7.jar Test.java
+javac -cp qtjambi-6.5.8.jar Test.java
 ```
 
 ## Executing Example
@@ -57,19 +57,19 @@ macOS) or the Java runtime property **java.library.path**.
 The example program can be executed this way on Windows:
 
 ``` powershell
-java -cp qtjambi-6.5.7.jar;qtjambi-native-windows-x64-6.5.7.jar;. -Djava.library.path=C:\Qt\6.5.3\msvc2019_64\bin Test
+java -cp qtjambi-6.5.8.jar;qtjambi-native-windows-x64-6.5.8.jar;. -Djava.library.path=C:\Qt\6.5.3\msvc2019_64\bin Test
 ```
 
 On Linux it looks this way:
 
 ``` bash
-java -cp qtjambi-6.5.7.jar:qtjambi-native-linux-x64-6.5.7.jar:. -Djava.library.path=<path to>/Qt/6.5.3/gcc_64/lib Test
+java -cp qtjambi-6.5.8.jar:qtjambi-native-linux-x64-6.5.8.jar:. -Djava.library.path=<path to>/Qt/6.5.3/gcc_64/lib Test
 ```
 
 On macOS you additionally need to use the start parameter -XstartOnFirstThread:
 
 ``` bash
-java -cp qtjambi-6.5.7.jar:qtjambi-native-macos-6.5.7.jar:. -Djava.library.path=<path to>/Qt/6.5.3/macos/lib -XstartOnFirstThread Test
+java -cp qtjambi-6.5.8.jar:qtjambi-native-macos-6.5.8.jar:. -Djava.library.path=<path to>/Qt/6.5.3/macos/lib -XstartOnFirstThread Test
 ```
 
 If the example fails with a `UnsatisfiedLinkError` QtJambi libraries and Qt libraries seem to be incompatible.
@@ -80,7 +80,7 @@ If the example fails with a `UnsatisfiedLinkError` QtJambi libraries and Qt libr
 QtJambi automatically detects the required native component jars if they are located next to their Java counterparts or in a subfolder `native`.
 You can simply skip `qtjambi-native-OS-VERSION.jar` in your classpath (`-cp`).
 
-If you intend to use automatic module loading (`java -p <dir>`) you strictly need to place native components in `native` subfolder next to `qtjambi-6.5.7.jar`.
+If you intend to use automatic module loading (`java -p <dir>`) you strictly need to place native components in `native` subfolder next to `qtjambi-6.5.8.jar`.
 
 Native bundles are extracted every time at program startup. By default, this is a process specific temporal directory purged after program shutdown.
 Alternatively, you can use Java system property `io.qt.deploymentdir` to let libraries to be exctacted and persist in user 
@@ -101,10 +101,10 @@ here](How-to-deploy-QtJambi-applications.md).
 [Read more about developing applications for Android](Android.md).
 
 and [QtJambi 6.5 API Reference
-Documentation](https://doc.qtjambi.io/6.5.7/)
+Documentation](https://doc.qtjambi.io/6.5.8/)
 
 and [QtJambi 6.7 API Reference
-Documentation](https://doc.qtjambi.io/6.7.1/)
+Documentation](https://doc.qtjambi.io/6.7.2/)
 
 ## Useful Java System Properties for QtJambi
 
@@ -126,6 +126,7 @@ You can specify Java system properties as start argument `-Dproperty=value` or i
 * `io.qt.enable-method-logs` - Specify `true` to activate method logging. *Caution! This highly decreases performance especially in combination with `io.qt.log-messages` or custom message handlers.*
 * `io.qt.enable-cleanup-logs` - Specify `true` to log native object cleanup after GC.
 * `io.qt.enable-dangling-pointer-check` - Specify `true` to activate dangling pointer checks.
+* `io.qt.enable-signal-argument-check` - Specify `true` to activate signal argument checks where applicable.
 * `io.qt.enable-concurrent-container-modification-check` - Specify `true` to activate concurrent modification checks during container iteration.
 * `io.qt.enable-thread-affinity-check` - Specify `true` to activate thread affinity checks when calling certain thread-affine methods.
 * `io.qt.enable-event-thread-affinity-check` - ...the same applying to access checks during event handling.
@@ -180,3 +181,14 @@ For development purpose it is possible to let QtJambi extract header files from 
 * ~~`io.qt.enabled-qml-debugging-nowarn`~~ - ...also inhibits a security warning.
 
 Along with this use program argument `-qmljsdebugger=...` to enable QML debugging for Qt. 
+
+### Experimental Features
+
+* `io.qt.experimental.fast-jni` - Specify `true` to enable improved gathering of JNI environment during native calls
+* `io.qt.experimental.fast-jni-for-overrides` - Specify `true` to enable improved gathering of JNI environment during native virtual calls
+
+Following properties deal with the improvement of item model performance:
+
+* `io.qt.experimental.item-model-cached-virtuals` - Specify `true` to cache the return values of item model's `rowCount()` and `columnCount()` to improve performance of item views.
+* `io.qt.experimental.enable-invalid-modelindex-singleton` - Specify `true` to use one single Java object to represent invalid `QModelIndex` instead of copies.
+* `io.qt.experimental.enable-ephemeral-modelindexes` - Specify `true` to call virtual Java methods with an alias for QModelIndex arguments instead of submitting a copies. These alias objects are invalidated after use.

@@ -42,6 +42,7 @@ import io.qt.QtInvokable;
 import io.qt.QtPropertyReader;
 import io.qt.QtPropertyWriter;
 import io.qt.autotests.generated.SignalsAndSlots;
+import io.qt.core.QCoreApplication;
 import io.qt.core.QMetaEnum;
 import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
@@ -49,6 +50,8 @@ import io.qt.core.QMetaProperty;
 import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QPair;
+import io.qt.core.QStringListModel;
+import io.qt.core.QThread;
 import io.qt.core.Qt;
 import io.qt.core.QtAlgorithms;
 import io.qt.gui.QStandardItem;
@@ -372,14 +375,14 @@ public class TestMetaObject extends ApplicationInitializer {
     	Assert.assertTrue(isEnabledP.isReadable());
     	Assert.assertFalse(isEnabledP.isWritable());
     	QMetaMethod isEnabledM = mo.method("isEnabled()");
-    	Assert.assertFalse(isEnabledM.isValid());
+    	Assert.assertTrue(isEnabledM.isValid());
     	
     	QMetaProperty visibleP = mo.property("visible");
     	Assert.assertTrue(visibleP.isValid());
     	Assert.assertTrue(visibleP.isReadable());
     	Assert.assertTrue(visibleP.isWritable());
     	QMetaMethod visibleM = mo.method("visible()");
-    	Assert.assertFalse(visibleM.isValid());
+    	Assert.assertTrue(visibleM.isValid());
     }
     
     static class PropertyMemberCarrier extends QObject {
@@ -397,6 +400,27 @@ public class TestMetaObject extends ApplicationInitializer {
     @Test public void testPublicMember() {
     	// not throwing QPropertyDeclarationException
     	new PropertyMemberCarrier();
+    }
+    
+    @Test public void testInvokeSignal() {
+    	QStringListModel model = new QStringListModel();
+    	model.insertRow(5);
+    	model.layoutChanged.connect(()->{
+    		System.out.println("layoutChanged invoked in "+Thread.currentThread());
+    	}, Qt.ConnectionType.DirectConnection);
+    	model.layoutChanged.emit();
+    	QMetaObject.invokeMethod(model.layoutChanged);
+    	QMetaObject.invokeMethod(model.layoutChanged, Qt.ConnectionType.DirectConnection);
+    	QMetaObject.invokeMethod(model.layoutChanged, Qt.ConnectionType.QueuedConnection);
+    	QThread thread = QThread.create(()->{
+    		model.layoutChanged.emit();
+    		QMetaObject.invokeMethod(model.layoutChanged);
+    		QMetaObject.invokeMethod(model.layoutChanged, Qt.ConnectionType.DirectConnection);
+    	});
+    	thread.start();
+    	thread.join();
+    	QCoreApplication.processEvents();
+    	QCoreApplication.sendPostedEvents();
     }
     
     public static void main(String args[]) {

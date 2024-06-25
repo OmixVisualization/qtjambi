@@ -3951,6 +3951,8 @@ MetaClass *MetaBuilder::traverseClass(ClassModelItem class_item, QList<PendingCl
     if (type->isObject()) {
         if(full_class_name==QLatin1String("QObject")){
             type->setQObject(true);
+        }else if(full_class_name==QLatin1String("QModelIndex")){
+            type->setQModelIndex(true);
         }else if(full_class_name==QLatin1String("QEvent")){
             type->setQEvent(true);
         }else if(full_class_name==QLatin1String("QByteArrayView")){
@@ -3959,12 +3961,20 @@ MetaClass *MetaBuilder::traverseClass(ClassModelItem class_item, QList<PendingCl
             type->setQWidget(true);
         }else if(full_class_name==QLatin1String("QWindow")){
             type->setQWindow(true);
+        }else if(full_class_name==QLatin1String("QAbstractItemModel")){
+            type->setQAbstractItemModel(true);
         }else if(full_class_name==QLatin1String("QCoreApplication")){
             type->setQCoreApplication(true);
         }else if(full_class_name==QLatin1String("QAction")){
             type->setQAction(true);
         }else if(full_class_name==QLatin1String("QMediaControl")){
             type->setQMediaControl(true);
+        }
+    }else if (type->isValue()) {
+        if(full_class_name==QLatin1String("QModelIndex")){
+            type->setQModelIndex(true);
+        }else if(full_class_name==QLatin1String("QByteArrayView")){
+            type->setQByteArrayView(true);
         }
     }
 
@@ -4096,12 +4106,16 @@ MetaClass *MetaBuilder::traverseClass(ClassModelItem class_item, QList<PendingCl
             if(ComplexTypeEntry* instantiation = const_cast<ComplexTypeEntry*>(instantiations[args])){
                 if (meta_class->typeEntry()->isQEvent()) {
                     instantiation->setQEvent(true);
+                }else if (meta_class->typeEntry()->isQModelIndex()) {
+                    instantiation->setQModelIndex(true);
                 }else if(meta_class->typeEntry()->isQObject()){
                     instantiation->setQObject(true);
                     if(meta_class->typeEntry()->isQWidget()){
                         instantiation->setQWidget(true);
                     }else if(meta_class->typeEntry()->isQWindow()){
                         instantiation->setQWindow(true);
+                    }else if(meta_class->typeEntry()->isQAbstractItemModel()){
+                        instantiation->setQAbstractItemModel(true);
                     }else if(meta_class->typeEntry()->isQAction()){
                         instantiation->setQAction(true);
                     }else if(meta_class->typeEntry()->isQCoreApplication()){
@@ -6471,7 +6485,7 @@ void MetaBuilder::setupInheritance(MetaClass *meta_class, QList<PendingHiddenBas
     }
 
     // we only support our own containers and ONLY if there is only one baseclass
-    if (publicBaseClasses.size() == 1 && publicBaseClasses.first().toString().count('<') == 1) {
+    if (publicBaseClasses.size() == 1 && !publicBaseClasses.first().arguments().isEmpty()) {
         QStringList base = publicBaseClasses.first().qualifiedName();
         if(QT_VERSION_CHECK(m_qtVersionMajor,m_qtVersionMinor,m_qtVersionPatch) >= QT_VERSION_CHECK(6, 0, 0) && base==QStringList{"QVector"}){
             base = QStringList{"QList"};

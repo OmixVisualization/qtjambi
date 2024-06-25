@@ -37,6 +37,9 @@ QT_WARNING_DISABLE_DEPRECATED
 #include <QtCore/QDir>
 #include <QtCore/QCborValue>
 #include <QtCore/QLibrary>
+#if defined(QTJAMBI_LIGHTWEIGHT_MODELINDEX)
+#include <QtCore/QModelIndex>
+#endif
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 #include <QtCore/QLinkedList>
@@ -94,6 +97,10 @@ void registerPointerContainerAccess();
 JNIEnv *currentJNIEnvironment(bool initializeJavaThread = true);
 QObject* connectionSender(const QMetaObject::Connection* connection);
 void registerPluginImporter();
+void clearResettableFlags();
+#ifdef Q_OS_ANDROID
+void reinitializeResettableFlags(JNIEnv * env);
+#endif
 
 std::atomic<bool>* getJVMLoaded();
 std::atomic<JavaVM *>* getJVM();
@@ -727,17 +734,31 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
                 registerContainerTypeInfo<QStack<QVariant>>("QStack", "io/qt/core/QStack", "java/util/Deque");
                 registerEnumTypeInfo<QString::SectionFlag>("QString::SectionFlag", "io/qt/core/QString$SectionFlag", "QFlags<QtString::SectionFlag>", "QtString::SectionFlags", "io/qt/core/QString$SectionFlags");
             }
+#if defined(QTJAMBI_LIGHTWEIGHT_MODELINDEX)
+            {
+                const std::type_info& typeId = registerValueTypeInfo<QModelIndex>("QModelIndex", "io/qt/core/QModelIndex");
+                registerDeleter(typeId, [](void *ptr, bool isShell) {
+                                    QTJAMBI_NATIVE_METHOD_CALL("qtjambi_deleter for QModelIndex")
+                                    QModelIndex *_ptr = reinterpret_cast<QModelIndex *>(ptr);
+                                    if(!isShell){
+                                        QtJambiAPI::registerNonShellDeletion(ptr);
+                                    }
+                                    delete _ptr;
+                                });
+                registerMetaType<QModelIndex>("QModelIndex");
+            }
+#endif
             registerPluginImporter();
 
+            QFileInfo thisLibraryPath(getFunctionLibraryPath(reinterpret_cast<QFunctionPointer>(&JNI_OnLoad)));
+            QStringList libraryPaths = QCoreApplication::libraryPaths();
+            bool hasChanged = false;
             if(env){
                 JniLocalFrame __jniLocalFrame(env, 200);
-                bool hasChanged = false;
                 Java::QtJambi::ResourceUtility::initialize(env);
-                QStringList libraryPaths = QCoreApplication::libraryPaths();
                 QFileInfo sunBootLibraryPath(qtjambi_cast<QString>(env, Java::Runtime::System::getProperty(env, env->NewStringUTF("sun.boot.library.path"), nullptr)));
                 if(sunBootLibraryPath.exists())
                     hasChanged |= libraryPaths.removeAll(sunBootLibraryPath.absoluteFilePath()) > 0;
-                QFileInfo thisLibraryPath(getFunctionLibraryPath(reinterpret_cast<QFunctionPointer>(&JNI_OnLoad)));
 #ifdef Q_OS_ANDROID
                 //qputenv("QT_DEBUG_PLUGINS", "1");
                 libraryPaths << thisLibraryPath.absolutePath();
@@ -748,8 +769,13 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
 #endif
                                                                                                            , "plugins_platforms_qtforandroid"));
                 if(!library.load()){
-                    qCWarning(DebugAPI::internalCategory, "Unable to load qtforandroid: %s", qPrintable(library.errorString()));
+                    qFatal("Unable to load qtforandroid: %s", qPrintable(library.errorString()));
                 }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
+                if(auto onLoad = reinterpret_cast<decltype(&JNI_OnLoad)>(library.resolve("JNI_OnLoad"))){
+                    onLoad(vm, nullptr);
+                }
+#endif
                 qputenv("QML_IMPORT_PATH", qPrintable(thisLibraryPath.absolutePath()));
                 qputenv("QML2_IMPORT_PATH", qPrintable(thisLibraryPath.absolutePath()));
 
@@ -805,10 +831,14 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
                         }
                     }
                 }
-                hasChanged |= libraryPaths.removeDuplicates() > 0 || libraryPaths.removeAll({}) > 0;
-                if(hasChanged)
-                    QCoreApplication::setLibraryPaths(libraryPaths);
+#ifdef Q_OS_ANDROID
+            }else{
+                qFatal("Unable to load qtforandroid without JNI");
+#endif
             }
+            hasChanged |= libraryPaths.removeDuplicates() > 0 || libraryPaths.removeAll({}) > 0;
+            if(hasChanged)
+                QCoreApplication::setLibraryPaths(libraryPaths);
 
             if(!QCoreApplication::instance()){
                 qAddPreRoutine([](){
@@ -816,6 +846,19 @@ extern "C" Q_DECL_EXPORT jint JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnLoad)(JavaVM
                     if(JniEnvironment env{400}){
                         try{
                             Java::QtCore::Internal::QCoreApplication::execPreRoutines(env);
+#ifdef Q_OS_ANDROID
+                            reinitializeResettableFlags(env);
+                            enableThreadAffinity(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-thread-affinity-check")));
+                            if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-event-thread-affinity-check"))){
+                                QInternal::unregisterCallback(QInternal::EventNotifyCallback, &threadAffineEventNotify);
+                                QInternal::unregisterCallback(QInternal::EventNotifyCallback, &simpleEventNotify);
+                                QInternal::registerCallback(QInternal::EventNotifyCallback, &threadAffineEventNotify);
+                            }else{
+                                QInternal::unregisterCallback(QInternal::EventNotifyCallback, &threadAffineEventNotify);
+                                QInternal::unregisterCallback(QInternal::EventNotifyCallback, &simpleEventNotify);
+                                QInternal::registerCallback(QInternal::EventNotifyCallback, &simpleEventNotify);
+                            }
+#endif
                         }catch(const JavaException& exn){
                             __exnHandler.handle(env, exn, "preRoutine");
                         }
@@ -862,6 +905,7 @@ extern "C" Q_DECL_EXPORT void JNICALL QTJAMBI_FUNCTION_PREFIX(JNI_OnUnload)(Java
 
 void shutdown(JNIEnv * env)
 {
+    clearResettableFlags();
     if(std::atomic<bool>* atm = getJVMLoaded()){
         if(!atm->load())
             return;
@@ -979,7 +1023,7 @@ int main(int argc, char *argv[])
                 }
             }
         }catch (const JavaException& exn) {
-            Java::Runtime::Throwable::printStackTrace(env, exn.object());
+            Java::Runtime::Throwable::printStackTrace(env, exn.throwable(env));
             return -1;
         }catch (const std::exception& exn) {
             qCWarning(DebugAPI::internalCategory, "An error occurred: %s", exn.what());
@@ -1031,7 +1075,7 @@ int main(int argc, char *argv[])
                     return -1;
                 }
             }catch (const JavaException& exn) {
-                Java::Runtime::Throwable::printStackTrace(env, exn.object());
+                Java::Runtime::Throwable::printStackTrace(env, exn.throwable(env));
                 return -1;
             }catch (const std::exception& exn) {
                 qCWarning(DebugAPI::internalCategory, "An error occurred: %s", exn.what());

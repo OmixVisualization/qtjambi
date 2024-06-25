@@ -35,33 +35,12 @@ TypeSystem{
     qtLibrary: "QtSpatialAudio"
     module: "qtjambi.spatialaudio"
     description: "Qt Spatial Audio is an add-on module that provides a rich set of QML types and C++ classes to implement sound fields in 3D space."
-
-    EnumType{
-        name: "QAudioEngine::OutputMode"
-    }
-    
-    EnumType{
-        name: "QAmbientSound::Loops"
-    }
-    
-    EnumType{
-        name: "QAudioRoom::Material"
-    }
-    
-    EnumType{
-        name: "QAudioRoom::Wall"
-    }
-    
-    EnumType{
-        name: "QSpatialSound::Loops"
-    }
-    
-    EnumType{
-        name: "QSpatialSound::DistanceModel"
-    }
     
     ObjectType{
         name: "QAudioEngine"
+        EnumType{
+            name: "OutputMode"
+        }
         ModifyField{
             name: "DistanceScaleCentimeter"
             read: false
@@ -79,6 +58,9 @@ TypeSystem{
     
     ObjectType{
         name: "QAmbientSound"
+        EnumType{
+            name: "Loops"
+        }
     }
     
     ObjectType{
@@ -87,9 +69,23 @@ TypeSystem{
     
     ObjectType{
         name: "QAudioRoom"
+        EnumType{
+            name: "Material"
+        }
+
+        EnumType{
+            name: "Wall"
+        }
     }
     
     ObjectType{
         name: "QSpatialSound"
+        EnumType{
+            name: "Loops"
+        }
+
+        EnumType{
+            name: "DistanceModel"
+        }
     }
 }

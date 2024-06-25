@@ -243,9 +243,7 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #       	include <QtQuick/QQuickRenderTarget>
 #       	include <QtQuick/QQuickGraphicsDevice>
 #		endif
-#       define QSGTEXTURE_PLATFORM_H
 #       include <QtQuick/QtQuick>
-#       undef QSGTEXTURE_PLATFORM_H
 #   endif
 #	include <QtQuick/private/qquickevents_p_p.h>
 #   include <QtJambiQuick/hashes.h>
@@ -568,10 +566,15 @@ typedef void (*GLDEBUGPROC)(GLenum source,GLenum type,GLuint id,GLenum severity,
 #ifndef QTJAMBI_NO_HTTPSERVER
 #define QT_WEBSOCKETS_LIB
 #include <QtHttpServer/QtHttpServer>
+#include <QtJambiHttpServer/hashes.h>
 #endif
 
 #ifndef QTJAMBI_NO_SPATIALAUDIO
 #include <QtSpatialAudio/QtSpatialAudio>
+#endif
+
+#ifndef QTJAMBI_NO_INSIDETRACKER
+#include <QtInsightTracker/QtInsightTracker>
 #endif
 
 #ifndef QTJAMBI_NO_GRPC

@@ -975,29 +975,17 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
                 QtInvokable invokable = declaredMethod.getAnnotation(QtInvokable.class);
             	if (
                         (
-                                (
-                                        (isQObject || isGadget)
-                                        && !declaredMethod.isAnnotationPresent(QtUninvokable.class) 
-                                        && !Modifier.isStatic(declaredMethod.getModifiers())
-                                        && (declaredMethod.getReturnType()==void.class || Modifier.isPublic(declaredMethod.getModifiers()))
-                                        && !(declaredMethod.getParameterCount()==0 && "clone".equals(declaredMethod.getName()))
-                                ) || (
-                            			invokable!=null 
-                                        && invokable.value()
-                                )
+                                (isQObject || isGadget)
+                                && !declaredMethod.isAnnotationPresent(QtUninvokable.class) 
+                                && !Modifier.isStatic(declaredMethod.getModifiers())
+                                && (declaredMethod.getReturnType()==void.class || Modifier.isPublic(declaredMethod.getModifiers()))
+                                && !(declaredMethod.getParameterCount()==0 && "clone".equals(declaredMethod.getName()))
+                                && !isOverriding(declaredMethod, clazz)
+                        ) || (
+                    			invokable!=null 
+                                && invokable.value()
                         )
-                        && !overridesGeneratedSlot(declaredMethod, clazz)
                     ) {
-            		if(propertyReaders.keySet().contains(declaredMethod.getName()) ) {
-            			if(invokable==null) {
-	            			Logger.getLogger("io.qt.internal").warning("Method with same name as property skipped: '"
-	                                + clazz.getName() + "::" + declaredMethod.getName() + "'.");
-	            			continue;
-            			}else if(invokable.value()){
-            				Logger.getLogger("io.qt.internal").warning("Invokable method with same name as property may lead to unexpected behavior: '"
-	                                + clazz.getName() + "::" + declaredMethod.getName() + "'.");
-            			}
-            		}
                 	List<ParameterInfo> methodParameterInfos = new ArrayList<>();
                 	boolean isPointer = false;
                     boolean isReference = false;
@@ -2549,21 +2537,27 @@ cloop: 		    for(Constructor<?> constructor : declaredConstructors){
     	return type;
     }
 
-    private static boolean overridesGeneratedSlot(Method declaredMethod, Class<?> clazz) {
-        if(!Modifier.isPrivate(declaredMethod.getModifiers()) && !Modifier.isStatic(declaredMethod.getModifiers()) && clazz.getSuperclass()!=null) {
-            try {
-                Method declaredSuperMethod = clazz.getSuperclass().getDeclaredMethod(declaredMethod.getName(), declaredMethod.getParameterTypes());
-                if(declaredSuperMethod!=null) {
-                    Class<?> declaringClass = declaredSuperMethod.getDeclaringClass();
-                    if(ClassAnalyzerUtility.isGeneratedClass(declaringClass)) {
-                        return true;
-                    }else {
-                        return overridesGeneratedSlot(declaredSuperMethod, declaringClass);
-                    }
-                }
-            } catch (Throwable e) {
-            }
-        }
+    private static boolean isOverriding(Method declaredMethod, Class<?> clazz) {
+        Class<?> superclass;
+    	if(!Modifier.isPrivate(declaredMethod.getModifiers()) && !Modifier.isStatic(declaredMethod.getModifiers()) && (superclass = clazz.getSuperclass())!=null) {
+	        try {
+	        	Method superMethod = superclass.getMethod(declaredMethod.getName(), declaredMethod.getParameterTypes());
+	        	if(superMethod!=null)
+	        		return true;
+	        } catch (Throwable e) {
+	        }
+	        if(!Modifier.isPublic(declaredMethod.getModifiers())) {
+		        do {
+		        	try {
+			        	Method superMethod = superclass.getDeclaredMethod(declaredMethod.getName(), declaredMethod.getParameterTypes());
+			        	if(superMethod!=null && !Modifier.isPrivate(superMethod.getModifiers()))
+			        		return true;
+			        } catch (Throwable e) {
+			        }
+		        	superclass = superclass.getSuperclass();
+		        }while(superclass!=null);
+	        }
+    	}
         return false;
     }
 

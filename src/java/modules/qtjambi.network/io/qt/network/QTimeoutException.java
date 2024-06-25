@@ -37,7 +37,7 @@ package io.qt.network;
 public class QTimeoutException extends RuntimeException {
     private static final long serialVersionUID = 1L;
 
-    public QTimeoutException(String message) {
+    public QTimeoutException(@io.qt.NonNull String message) {
         super(message);
     }
 

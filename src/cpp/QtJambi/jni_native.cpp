@@ -83,7 +83,7 @@ JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_NativeUtility_00024NativeLin
             try{
                 link->onClean(env);
             }catch(const JavaException& exn){
-                throwable = jthrowable(env->NewLocalRef(exn.object()));
+                throwable = exn.throwable(env);
             }
             if(env->ExceptionCheck()){
                 throwable = env->ExceptionOccurred();
@@ -113,7 +113,7 @@ JNICALL QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_NativeUtility_00024NativeLin
                 link->onDispose(env);
                 __exnRaiser.raise(env);
             }catch(const JavaException& exn){
-                throwable = jthrowable(env->NewLocalRef(exn.object()));
+                throwable = exn.throwable(env);
             }
             if(env->ExceptionCheck()){
                 throwable = env->ExceptionOccurred();

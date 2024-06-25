@@ -1,5 +1,7 @@
 package io.qt.core;
 
+import io.qt.*;
+
 /**
  * <p>Java wrapper for Qt class QFutureInterface</p>
  */
@@ -10,15 +12,15 @@ public final class QFutureInterface<T> extends io.qt.core.QFutureInterfaceBase
      * <p>Overloaded factory for {@link #createVoidFutureInterface(io.qt.core.QFutureInterfaceBase.State)}
      *  with <code>initialState = io.qt.core.QFutureInterfaceBase.State.NoState</code>.</p>
      */
-    public static QFutureInterface<Void> createVoidFutureInterface() {
+    public static @NonNull QFutureInterface<Void> createVoidFutureInterface() {
     	return createVoidFutureInterface(State.NoState);
     }
     
-    public static QFutureInterface<Void> createVoidFutureInterface(State initialState) {
+    public static @NonNull QFutureInterface<Void> createVoidFutureInterface(@NonNull State initialState) {
     	return new QFutureInterface<>(true, initialState);
     }
     
-    public static <T> QFutureInterface<T> canceledResult()
+    public static <T> @NonNull QFutureInterface<T> canceledResult()
     { return new QFutureInterface<T>(false, State.resolve(State.Started.value() | State.Finished.value() | State.Canceled.value())); }
 	
 	
@@ -43,13 +45,13 @@ public final class QFutureInterface<T> extends io.qt.core.QFutureInterfaceBase
         this(false, io.qt.core.QFutureInterfaceBase.State.NoState);
     }
     
-    public QFutureInterface(io.qt.core.QFutureInterfaceBase.State initialState){
+    public QFutureInterface(io.qt.core.QFutureInterfaceBase.@NonNull State initialState){
     	this(false, initialState);
     }
     
     private native static <T> void initialize_native(QFutureInterface<T> instance, io.qt.core.QFutureInterfaceBase.State initialState, boolean isVoid);
     
-    public QFutureInterface(io.qt.core.QFutureInterface<T> other){
+    public QFutureInterface(io.qt.core.@StrictNonNull QFutureInterface<T> other){
         super((QPrivateConstructor)null);
         initialize_native(this, java.util.Objects.requireNonNull(other));
     }
@@ -57,7 +59,7 @@ public final class QFutureInterface<T> extends io.qt.core.QFutureInterfaceBase
     private native static <T> void initialize_native(QFutureInterface<T> instance, io.qt.core.QFutureInterfaceBase other);
     
     @io.qt.QtUninvokable
-    public final io.qt.core.QFuture<T> future(){
+    public final io.qt.core.@NonNull QFuture<T> future(){
         return new io.qt.core.QFuture<T>(this);
     }
     
@@ -124,7 +126,7 @@ public final class QFutureInterface<T> extends io.qt.core.QFutureInterfaceBase
     static native <T> T result(long __this__nativeId, int index);
     
     @io.qt.QtUninvokable
-    public final io.qt.core.QList<T> results(){
+    public final io.qt.core.@NonNull QList<T> results(){
         return results(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     
@@ -140,7 +142,7 @@ public final class QFutureInterface<T> extends io.qt.core.QFutureInterfaceBase
     
     
     @Override
-    public QFutureInterface<T> clone() {
+    public @NonNull QFutureInterface<T> clone() {
         return clone(QtJambi_LibraryUtilities.internal.nativeId(this));
     }
     private native QFutureInterface<T> clone(long __this_nativeId);

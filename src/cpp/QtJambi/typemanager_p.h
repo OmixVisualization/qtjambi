@@ -98,24 +98,24 @@ public:
     static QString getExternalTypeName(JNIEnv* env, const QString &internalTypeName, const QMetaType& metaType = QMetaType());
     static QString getInternalTypeName(JNIEnv* env, const QString &externalTypeName, jobject classLoader = nullptr, bool useNextSuperclass = true);
     static QString getInternalTypeName(JNIEnv* env, jclass externalClass, bool useNextSuperclass = true);
-    static InternalToExternalConverter getInternalToExternalConverter(
+    static QtJambiUtils::InternalToExternalConverter getInternalToExternalConverter(
                                    JNIEnv* env,
                                    const QString &internalTypeName,
                                    const QMetaType& internalMetaType,
                                    jclass externalClass,
                                    bool allowValuePointers = false);
-    static ExternalToInternalConverter getExternalToInternalConverter(JNIEnv* env, jclass externalClass, const QString &internalTypeName, const QMetaType& internalMetaType);
+    static QtJambiUtils::ExternalToInternalConverter getExternalToInternalConverter(JNIEnv* env, jclass externalClass, const QString &internalTypeName, const QMetaType& internalMetaType);
 
-    static InternalToExternalConverter tryGetInternalToExternalConverter(
+    static QtJambiUtils::InternalToExternalConverter tryGetInternalToExternalConverter(
                                    JNIEnv* env,
                                    const QString &internalTypeName,
                                    const QMetaType& internalMetaType,
                                    jclass externalClass,
                                    bool allowValuePointers = false);
-    static ExternalToInternalConverter tryGetExternalToInternalConverter(JNIEnv* env, jclass externalClass, const QString &internalTypeName, const QMetaType& internalMetaType);
+    static QtJambiUtils::ExternalToInternalConverter tryGetExternalToInternalConverter(JNIEnv* env, jclass externalClass, const QString &internalTypeName, const QMetaType& internalMetaType);
 
     static QStringList parseSignature(const QString &signature, QString *name = nullptr);
-    static QHashFunction findHashFunction(bool isPointer, int metaType);
+    static QtJambiUtils::QHashFunction findHashFunction(bool isPointer, int metaType);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
     static void registerInternalAlignment(const QByteArray &internalTypeName, size_t align);
 #endif
@@ -140,13 +140,13 @@ private:
     static bool isQtClass(JNIEnv *env, const QString &className, jobject classLoader = nullptr);
     static bool isQtSubClass(JNIEnv *env, const QString &className, jobject classLoader = nullptr);
 
-    static InternalToExternalConverter getInternalToExternalConverterImpl(
+    static QtJambiUtils::InternalToExternalConverter getInternalToExternalConverterImpl(
                                    JNIEnv* env,
                                    QString internalTypeName,
                                    const QMetaType& internalMetaType,
                                    jclass externalClass,
                                    bool allowValuePointers = false);
-    static ExternalToInternalConverter getExternalToInternalConverterImpl(JNIEnv* env, jclass externalClass, QString internalTypeName, const QMetaType& internalMetaType);
+    static QtJambiUtils::ExternalToInternalConverter getExternalToInternalConverterImpl(JNIEnv* env, jclass externalClass, QString internalTypeName, const QMetaType& internalMetaType);
     static QString processInternalTypeName(const QString &typeName, PointerType &pointerType);
 };
 

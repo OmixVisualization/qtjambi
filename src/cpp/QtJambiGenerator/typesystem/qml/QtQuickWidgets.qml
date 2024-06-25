@@ -36,17 +36,15 @@ TypeSystem{
     module: "qtjambi.quickwidgets"
     description: "Provides a C++ widget class for displaying a Qt Quick user interface."
     LoadTypeSystem{name: "QtQuick"; unless: "QTJAMBI_NO_QUICK"}
-
-    EnumType{
-        name: "QQuickWidget::ResizeMode"
-    }
-    
-    EnumType{
-        name: "QQuickWidget::Status"
-    }
     
     ObjectType{
         name: "QQuickWidget"
+        EnumType{
+            name: "ResizeMode"
+        }
+        EnumType{
+            name: "Status"
+        }
         ModifyFunction{
             signature: "QQuickWidget(const QUrl &, QWidget *)"
             blockExceptions: true

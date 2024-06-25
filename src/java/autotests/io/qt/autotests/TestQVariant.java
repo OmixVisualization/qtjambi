@@ -51,7 +51,6 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
-import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -2060,16 +2059,16 @@ public class TestQVariant extends ApplicationInitializer {
     	QGraphicsObject object = new QGraphicsWidget();
     	QMetaType.fromType(QGraphicsObject.class);
     	QGraphicsItem item = io.qt.autotests.generated.Variants.convertInterface(object);
-    	Assert.assertTrue(item==object);
+    	assertTrue(item==object);
     }
     
     @Test
     public void testConvertJavaObject() {
     	QObject qobject = new QWidget();
     	QObject result = Variants.convertJavaObject(qobject);
-    	Assert.assertTrue(result==qobject);
+    	assertTrue(result==qobject);
     }
-
+    
     public static void main(String args[]) {
         org.junit.runner.JUnitCore.main(TestQVariant.class.getName());
     }

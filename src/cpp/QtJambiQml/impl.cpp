@@ -220,16 +220,16 @@ struct CreatorFunctionMetaData : QSharedData{
     int fhCast;
 };
 
-typedef QHash<hash_type,QSharedDataPointer<CreatorFunctionMetaData>> MetaDataHash;
+typedef QHash<hash_type,QExplicitlySharedDataPointer<CreatorFunctionMetaData>> MetaDataHash;
 Q_GLOBAL_STATIC(MetaDataHash, gMetaDataHash)
 
 void* creatorFunctionMetaData(JNIEnv * env, const QMetaObject *meta_object, jclass clazz, jmethodID constructor, size_t objectSize, int psCast, int vsCast, int viCast, int fhCast){
     hash_type hash = qHashMulti(0, QtJambiAPI::getJavaObjectHashCode(env, clazz), qint64(constructor), psCast, vsCast, viCast, fhCast);
     if(gMetaDataHash->contains(hash)){
-        return (*gMetaDataHash)[hash];
+        return (*gMetaDataHash)[hash].data();
     }else{
-        (*gMetaDataHash)[hash] = QSharedDataPointer<CreatorFunctionMetaData>(new CreatorFunctionMetaData{QSharedData(), JavaAPI::toGlobalReference(env, clazz), meta_object, constructor, objectSize, psCast, vsCast, viCast, fhCast});
-        return (*gMetaDataHash)[hash];
+        (*gMetaDataHash)[hash] = new CreatorFunctionMetaData{QSharedData(), JavaAPI::toGlobalReference(env, clazz), meta_object, constructor, objectSize, psCast, vsCast, viCast, fhCast};
+        return (*gMetaDataHash)[hash].data();
     }
 }
 
@@ -594,8 +594,9 @@ CreateValueTypeFn getCreateValueType(JNIEnv *env, jclass clazz, CreateValueTypeF
 #endif
 
 QmlTypeRegistractionData registerQmlType(JNIEnv *env, jclass clazz, const char* qmlName, RegisterOptions skip = {}){
+    const QString javaName = QtJambiAPI::getClassName(env, clazz);
     QmlTypeRegistractionData data;
-    data.javaName = QtJambiAPI::getClassName(env, clazz);
+    data.javaName = javaName;
     data.psCast = parserStatusCast(env, clazz);
     data.vsCast = valueSourceCast(env, clazz);
     data.viCast = valueInterceptorCast(env, clazz);
@@ -608,7 +609,7 @@ QmlTypeRegistractionData registerQmlType(JNIEnv *env, jclass clazz, const char* 
         if (findQmlAttachedProperties(env, clazz).function) {
             Java::QtQml::QmlTypeRegistrationException::throwNew(env, QStringLiteral("%1 is not a QObject, but has attached properties. This won't work.").arg(data.javaName) QTJAMBI_STACKTRACEINFO );
         }
-        QMetaType typeId(QmlAPI::registerMetaType(env, clazz, data.javaName.replace(".", "/")));
+        QMetaType typeId(QmlAPI::registerMetaType(env, clazz, QString(javaName).replace(".", "/")));
         data.typeId = typeId.id();
         if(data.typeId==0){
             Java::QtQml::QmlTypeRegistrationException::throwNew(env, QStringLiteral("%1 is not a valid Qt value type. Valid value tyoes define a default constructor as well as a clone method and implement java.lang.Cloneable.").arg(data.javaName) QTJAMBI_STACKTRACEINFO );
@@ -621,7 +622,7 @@ QmlTypeRegistractionData registerQmlType(JNIEnv *env, jclass clazz, const char* 
             int typeNameLen = typeName.length();
             for (int ii = 0; ii < typeNameLen; ++ii) {
                 if (!(typeName.at(ii).isLetterOrNumber() || typeName.at(ii) == u'_')) {
-                    Java::QtQml::QmlTypeRegistrationException::throwNew(env, QStringLiteral("Invalid QML %1 name \"%2\"").arg(data.javaName, typeName) QTJAMBI_STACKTRACEINFO );
+                    Java::QtQml::QmlTypeRegistrationException::throwNew(env, QStringLiteral("Invalid QML %1 name \"%2\"").arg(QString(javaName).replace("$", "."), typeName) QTJAMBI_STACKTRACEINFO );
                 }
             }
         }
@@ -633,8 +634,14 @@ QmlTypeRegistractionData registerQmlType(JNIEnv *env, jclass clazz, const char* 
             data.meta_object = typeId.metaObject();
         }
         if(!skip.testFlag(RegisterOption::SkipCreator)){
-            jmethodID jsvConstructor(nullptr);
+            jmethodID jsvFactory{nullptr};
+            jmethodID jsvConstructor{nullptr};
             if(!(typeId.flags() & QMetaType::IsPointer)){
+                jsvFactory = JavaAPI::resolveMethod(env, "create", "(Lio/qt/qml/QJSValue;)Ljava/lang/Object;", clazz, true);
+                if(!jsvFactory)
+                    jsvFactory = JavaAPI::resolveMethod(env, "create", "(Lio/qt/qml/QJSValue;)Lio/qt/core/QVariant;", clazz, true);
+                if(!jsvFactory)
+                    jsvFactory = JavaAPI::resolveMethod(env, "create", QByteArray("(Lio/qt/qml/QJSValue;)L") + javaName.toUtf8().replace(".", "/") + ";", clazz, true);
                 jsvConstructor = JavaAPI::resolveMethod(env, "<init>", "(Lio/qt/qml/QJSValue;)V", clazz);
             }
             if((!typeId.iface()->copyCtr || !typeId.iface()->defaultCtr) && !jsvConstructor){
@@ -650,38 +657,66 @@ QmlTypeRegistractionData registerQmlType(JNIEnv *env, jclass clazz, const char* 
                     };
                     data.userdata = const_cast<QtPrivate::QMetaTypeInterface*>(typeId.iface());
                 }*/
-                if(jsvConstructor){
+                if(jsvFactory){
                     clazz = JavaAPI::toGlobalReference(env, clazz);
                     data.createValueType = qtjambi_function_pointer<64, QVariant(const QJSValue&)>(
-                                [clazz,jsvConstructor,typeId](const QJSValue & arguments) -> QVariant {
-                                                    if(JniEnvironment env{300}){
-                                                        jobject args = qtjambi_cast<jobject>(env, arguments);
-                                                        jobject result = env->NewObject(clazz, jsvConstructor, args);
-                                                        QVariant v = QtJambiAPI::convertJavaObjectToQVariant(env, result);
-                                                        if(v.metaType()!=typeId)
-                                                            v.convert(typeId);
-                                                        return v;
-                                                    }
-                                                    return QVariant();
-                                                }, Java::Runtime::Object::hashCode(env, clazz)
-                    );
+                            [clazz,jsvFactory,typeId](const QJSValue & arguments) -> QVariant {
+                                if(JniEnvironment env{300}){
+                                    jobject args = qtjambi_cast<jobject>(env, arguments);
+                                    jobject result = env->CallStaticObjectMethod(clazz, jsvFactory, args);
+                                    if(env->ExceptionCheck()){
+                                        env->ExceptionDescribe();
+                                        env->ExceptionClear();
+                                    }
+                                    if(!result)
+                                        return QVariant(typeId, nullptr);
+                                    QVariant v = QtJambiAPI::convertJavaObjectToQVariant(env, result);
+                                    if(v.metaType()!=typeId)
+                                        v.convert(typeId);
+                                    return v;
+                                }
+                                return QVariant(typeId, nullptr);
+                            }, Java::Runtime::Object::hashCode(env, clazz)
+                        );
+                    QmlAPI::registerMetaTypeConverter(env, QMetaType::fromType<QJSValue>(), Java::QtQml::QJSValue::getClass(env), typeId, clazz, jsvConstructor);
+                }else if(jsvConstructor){
+                    clazz = JavaAPI::toGlobalReference(env, clazz);
+                    data.createValueType = qtjambi_function_pointer<64, QVariant(const QJSValue&)>(
+                            [clazz,jsvConstructor,typeId](const QJSValue & arguments) -> QVariant {
+                                if(JniEnvironment env{300}){
+                                    jobject args = qtjambi_cast<jobject>(env, arguments);
+                                    jobject result = env->NewObject(clazz, jsvConstructor, args);
+                                    if(env->ExceptionCheck()){
+                                        env->ExceptionDescribe();
+                                        env->ExceptionClear();
+                                    }
+                                    if(!result)
+                                        return QVariant(typeId, nullptr);
+                                    QVariant v = QtJambiAPI::convertJavaObjectToQVariant(env, result);
+                                    if(v.metaType()!=typeId)
+                                        v.convert(typeId);
+                                    return v;
+                                }
+                                return QVariant(typeId, nullptr);
+                            }, Java::Runtime::Object::hashCode(env, clazz)
+                        );
                     QmlAPI::registerMetaTypeConverter(env, QMetaType::fromType<QJSValue>(), Java::QtQml::QJSValue::getClass(env), typeId, clazz, jsvConstructor);
                 }
             }
         }
 #else
-        Java::QtQml::QmlTypeRegistrationException::throwNew(env, QStringLiteral("%1 is not a QObject.").arg(data.javaName) QTJAMBI_STACKTRACEINFO );
+        Java::QtQml::QmlTypeRegistrationException::throwNew(env, QStringLiteral("%1 is not a QObject.").arg(QString(javaName).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
 #endif
     }else{
         QString typeName = QLatin1String(qmlName);
         if (!typeName.isEmpty()) {
             if(typeName.at(0).isLower()){
-                Java::QtQml::QmlTypeRegistrationException::throwNew(env, QStringLiteral("Invalid QML %1 name \"%2\"; type names must begin with an uppercase letter").arg(data.javaName, typeName) QTJAMBI_STACKTRACEINFO );
+                Java::QtQml::QmlTypeRegistrationException::throwNew(env, QStringLiteral("Invalid QML %1 name \"%2\"; type names must begin with an uppercase letter").arg(QString(javaName).replace("$", "."), typeName) QTJAMBI_STACKTRACEINFO );
             }
             int typeNameLen = typeName.length();
             for (int ii = 0; ii < typeNameLen; ++ii) {
                 if (!(typeName.at(ii).isLetterOrNumber() || typeName.at(ii) == u'_')) {
-                    Java::QtQml::QmlTypeRegistrationException::throwNew(env, QStringLiteral("Invalid QML %1 name \"%2\"").arg(data.javaName, typeName) QTJAMBI_STACKTRACEINFO );
+                    Java::QtQml::QmlTypeRegistrationException::throwNew(env, QStringLiteral("Invalid QML %1 name \"%2\"").arg(QString(javaName).replace("$", "."), typeName) QTJAMBI_STACKTRACEINFO );
                 }
             }
         }

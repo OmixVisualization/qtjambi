@@ -35,13 +35,12 @@ TypeSystem{
     qtLibrary: "QtPurchasing"
     module: "qtjambi.purchasing"
     description: "Enables in-app purchase of products in Qt applications."
-
-    EnumType{
-        name: "QInAppProduct::ProductType"
-    }
     
     ObjectType{
         name: "QInAppProduct"
+        EnumType{
+            name: "ProductType"
+        }
     }
     
     ObjectType{
@@ -54,13 +53,13 @@ TypeSystem{
             signature: "finalize()"
             rename: "finalizeTransaction"
         }
-    }
-    
-    EnumType{
-        name: "QInAppTransaction::FailureReason"
-    }
-    
-    EnumType{
-        name: "QInAppTransaction::TransactionStatus"
+
+        EnumType{
+            name: "FailureReason"
+        }
+
+        EnumType{
+            name: "TransactionStatus"
+        }
     }
 }

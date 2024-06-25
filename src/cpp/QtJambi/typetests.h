@@ -627,10 +627,13 @@ struct qtjambi_type_property_decider<Property,double,sizeof(double),false,true>{
     using type = Property<double>;
 };
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 6, 0) || defined(QTJAMBI_CAST_DEPRECATED_TYPES)
 template<typename T>
 struct qtjambi_type_container1<QPropertyAlias,T>
         : qtjambi_type_property_decider<QPropertyAlias,T>{
 };
+#endif //QT_VERSION < QT_VERSION_CHECK(6, 6, 0) || defined(QTJAMBI_CAST_DEPRECATED_TYPES)
+
 template<typename T>
 struct qtjambi_type_container1<QPropertyBinding,T>
         : qtjambi_type_property_decider<QPropertyBinding,T>{

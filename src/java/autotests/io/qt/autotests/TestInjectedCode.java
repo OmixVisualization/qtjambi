@@ -1725,7 +1725,7 @@ public class TestInjectedCode extends ApplicationInitializer {
     @Test
     public void testByteArray() {
 		io.qt.core.QByteArray bv = new io.qt.core.QByteArray("Byte\0Array");
-		for(Byte b : bv) {
+		for(@SuppressWarnings("unused") Byte b : bv) {
 		}
 		assertArrayEquals("Byte\0Array".getBytes(), bv.toArray());
 		assertEquals("Byte\0Array", new String(bv.toArray()));

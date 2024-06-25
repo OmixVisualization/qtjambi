@@ -56,10 +56,10 @@ QTJAMBI_EXPORT jobject objectFromQVector(JNIEnv *__jni_env,
 template<int index, bool isPointer>
 class MetaTypeInfo{
     QMetaType m_metaType;
-    QHashFunction m_hashFunction;
+    QtJambiUtils::QHashFunction m_hashFunction;
 public:
     MetaTypeInfo(const QMetaType& metaType,
-                 const QHashFunction& hashFunction
+                 const QtJambiUtils::QHashFunction& hashFunction
             ) : m_metaType(
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                               metaType.id()
@@ -85,7 +85,7 @@ public:
         return m_metaType;
     }
 
-    const QHashFunction& hashFunction() const {
+    const QtJambiUtils::QHashFunction& hashFunction() const {
         return m_hashFunction;
     }
 
@@ -104,7 +104,7 @@ class MetaTypeInfo<index,true>{
     QMetaType m_metaType;
 public:
     MetaTypeInfo(const QMetaType& metaType,
-                 const QHashFunction&
+                 const QtJambiUtils::QHashFunction&
             ) : m_metaType(
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
                         metaType.id()
@@ -124,14 +124,14 @@ public:
         return m_metaType;
     }
 
-    QHashFunction hashFunction() const {
+    QtJambiUtils::QHashFunction hashFunction() const {
         return &pointerHashFunction;
     }
 };
 
 struct QTJAMBI_EXPORT AbstractMetaTypeInfoLocker{
 protected:
-    AbstractMetaTypeInfoLocker(int index, const QMetaType& _metaType, const QHashFunction& _hashFunction);
+    AbstractMetaTypeInfoLocker(int index, const QMetaType& _metaType, const QtJambiUtils::QHashFunction& _hashFunction);
     ~AbstractMetaTypeInfoLocker();
 private:
     int m_index;
@@ -140,7 +140,7 @@ private:
 #else
     QMetaType m_metaType;
 #endif
-    QHashFunction m_hashFunction;
+    QtJambiUtils::QHashFunction m_hashFunction;
 };
 
 template<int index, bool isPointer>
@@ -443,7 +443,7 @@ protected:
           m_elementMetaTypeInfo(other.m_elementMetaTypeInfo),
           m_internalToExternalConverter(other.m_internalToExternalConverter){}
 public:
-    SequentialConstIteratorAccess(MetaTypeInfo<0,_size==0> elementMetaTypeInfo, const InternalToExternalConverter& internalToExternalConverter)
+    SequentialConstIteratorAccess(MetaTypeInfo<0,_size==0> elementMetaTypeInfo, const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter)
         : AbstractSequentialConstIteratorAccess(),
           m_elementMetaTypeInfo(elementMetaTypeInfo),
           m_internalToExternalConverter(internalToExternalConverter){}
@@ -492,7 +492,7 @@ public:
     }
 protected:
     MetaTypeInfo<0,_size==0> m_elementMetaTypeInfo;
-    InternalToExternalConverter m_internalToExternalConverter;
+    QtJambiUtils::InternalToExternalConverter m_internalToExternalConverter;
 };
 
 template<template<typename> class Container, size_t _align, size_t _size, bool _isStatic>
@@ -503,8 +503,8 @@ class SequentialIteratorAccess : public virtual SequentialConstIteratorAccess<Co
           m_externalToInternalConverter(other.m_externalToInternalConverter){}
 public:
     SequentialIteratorAccess(MetaTypeInfo<0,_size==0> elementMetaTypeInfo,
-                             const InternalToExternalConverter& internalToExternalConverter,
-                             const ExternalToInternalConverter& externalToInternalConverter)
+                             const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
+                             const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter)
         : SequentialConstIteratorAccess<Container, _align, _size, _isStatic, false>(elementMetaTypeInfo, internalToExternalConverter),
           m_externalToInternalConverter(externalToInternalConverter){}
 
@@ -550,7 +550,7 @@ public:
         m_externalToInternalConverter(env, nullptr, _value, out, jValueType::l);
     }
 private:
-    ExternalToInternalConverter m_externalToInternalConverter;
+    QtJambiUtils::ExternalToInternalConverter m_externalToInternalConverter;
 };
 
 template<template<typename, typename> class Container, size_t align1, size_t size1, size_t align2, size_t size2, bool isConst = true>
@@ -568,9 +568,9 @@ protected:
 
 public:
     AssociativeConstIteratorAccess(MetaTypeInfo<0,size1==0> keyMetaTypeInfo,
-                   const InternalToExternalConverter& keyInternalToExternalConverter,
+                   const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
                    MetaTypeInfo<1,size2==0> valueMetaTypeInfo,
-                   const InternalToExternalConverter& valueInternalToExternalConverter)
+                   const QtJambiUtils::InternalToExternalConverter& valueInternalToExternalConverter)
         : AbstractAssociativeConstIteratorAccess(),
           m_keyMetaTypeInfo(keyMetaTypeInfo),
           m_keyInternalToExternalConverter(keyInternalToExternalConverter),
@@ -633,9 +633,9 @@ public:
     }
 protected:
     MetaTypeInfo<0,size1==0> m_keyMetaTypeInfo;
-    InternalToExternalConverter m_keyInternalToExternalConverter;
+    QtJambiUtils::InternalToExternalConverter m_keyInternalToExternalConverter;
     MetaTypeInfo<1,size2==0> m_valueMetaTypeInfo;
-    InternalToExternalConverter m_valueInternalToExternalConverter;
+    QtJambiUtils::InternalToExternalConverter m_valueInternalToExternalConverter;
 };
 
 template<template<typename, typename> class Container, size_t align1, size_t size1, size_t align2, size_t size2>
@@ -647,10 +647,10 @@ class AssociativeIteratorAccess : public virtual AssociativeConstIteratorAccess<
           m_valueExternalToInternalConverter(other.m_valueExternalToInternalConverter){}
 public:
     AssociativeIteratorAccess(MetaTypeInfo<0,size1==0> keyMetaTypeInfo,
-                              const InternalToExternalConverter& keyInternalToExternalConverter,
+                              const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
                               MetaTypeInfo<1,size2==0> valueMetaTypeInfo,
-                              const InternalToExternalConverter& valueInternalToExternalConverter,
-                              const ExternalToInternalConverter& valueExternalToInternalConverter)
+                              const QtJambiUtils::InternalToExternalConverter& valueInternalToExternalConverter,
+                              const QtJambiUtils::ExternalToInternalConverter& valueExternalToInternalConverter)
         : AssociativeConstIteratorAccess<Container, align1, size1, align2, size2, false>(
               keyMetaTypeInfo, keyInternalToExternalConverter,
               valueMetaTypeInfo, valueInternalToExternalConverter),
@@ -703,7 +703,7 @@ public:
         m_valueExternalToInternalConverter(env, nullptr, _value, out, jValueType::l);
     }
 private:
-    ExternalToInternalConverter m_valueExternalToInternalConverter;
+    QtJambiUtils::ExternalToInternalConverter m_valueExternalToInternalConverter;
 };
 
 template<template <typename> class Container, size_t align, size_t size, bool isStatic>
@@ -715,18 +715,18 @@ struct AssociativeContainerAccessFac{
 };
 
 typedef AbstractContainerAccess*(*SequentialContainerAccessFactory)(const QMetaType& metaType,
-                                                          const QHashFunction& hashFunction,
-                                                          const InternalToExternalConverter& internalToExternalConverter,
-                                                          const ExternalToInternalConverter& externalToInternalConverter);
+                                                          const QtJambiUtils::QHashFunction& hashFunction,
+                                                          const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
+                                                          const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter);
 
 typedef AbstractContainerAccess*(*AssociativeContainerAccessFactory)(const QMetaType& keyMetaType,
-                                                            const QHashFunction& keyHashFunction,
-                                                            const InternalToExternalConverter& keyInternalToExternalConverter,
-                                                            const ExternalToInternalConverter& keyExternalToInternalConverter,
+                                                            const QtJambiUtils::QHashFunction& keyHashFunction,
+                                                            const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
+                                                            const QtJambiUtils::ExternalToInternalConverter& keyExternalToInternalConverter,
                                                             const QMetaType& valueMetaType,
-                                                            const QHashFunction& valueHashFunction,
-                                                            const InternalToExternalConverter& valueInternalToExternalConverter,
-                                                            const ExternalToInternalConverter& valueExternalToInternalConverter);
+                                                            const QtJambiUtils::QHashFunction& valueHashFunction,
+                                                            const QtJambiUtils::InternalToExternalConverter& valueInternalToExternalConverter,
+                                                            const QtJambiUtils::ExternalToInternalConverter& valueExternalToInternalConverter);
 
 QTJAMBI_EXPORT void registerAccessFactory(SequentialContainerType containerType, size_t align, size_t size, bool isStatic, SequentialContainerAccessFactory factory);
 QTJAMBI_EXPORT void registerAccessFactory(AssociativeContainerType containerType, size_t align1, size_t size1, size_t align2, size_t size2, AssociativeContainerAccessFactory factory);

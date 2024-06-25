@@ -35,6 +35,9 @@ import java.lang.reflect.Modifier;
 import java.util.Objects;
 import java.util.function.Function;
 
+import io.qt.NonNull;
+import io.qt.Nullable;
+import io.qt.StrictNonNull;
 import io.qt.core.QByteArray;
 
 /**
@@ -45,21 +48,21 @@ public class QItemEditorCreator<T extends QWidget> implements QItemEditorCreator
 	private final Function<QWidget, T> constructorHandle;
 	private final QByteArray valuePropertyName;
 	
-	public QItemEditorCreator(String valuePropertyName, Function<QWidget, T> constructorHandle) {
+	public QItemEditorCreator(@StrictNonNull String valuePropertyName, @StrictNonNull Function<QWidget, T> constructorHandle) {
         this(new QByteArray(Objects.requireNonNull(valuePropertyName)), constructorHandle);
     }
 	
-    public QItemEditorCreator(QByteArray valuePropertyName, Function<QWidget, T> constructorHandle) {
+    public QItemEditorCreator(@StrictNonNull QByteArray valuePropertyName, @StrictNonNull Function<QWidget, T> constructorHandle) {
         super();
         this.constructorHandle = Objects.requireNonNull(constructorHandle);
         this.valuePropertyName = valuePropertyName.clone();
     }
     
-    public QItemEditorCreator(String valuePropertyName, Class<T> widgetType) {
+    public QItemEditorCreator(@StrictNonNull String valuePropertyName, @StrictNonNull Class<T> widgetType) {
         this(new QByteArray(Objects.requireNonNull(valuePropertyName)), widgetType);
     }
 	
-    public QItemEditorCreator(QByteArray valuePropertyName, Class<T> widgetType) {
+    public QItemEditorCreator(@StrictNonNull QByteArray valuePropertyName, @StrictNonNull Class<T> widgetType) {
         this(valuePropertyName, findConstructor("QItemEditorCreator", widgetType));
     }
     
@@ -77,12 +80,12 @@ public class QItemEditorCreator<T extends QWidget> implements QItemEditorCreator
     }
 
     @Override
-    public final T createWidget(QWidget parent) {
+    public final @Nullable T createWidget(@Nullable QWidget parent) {
     	return this.constructorHandle.apply(parent);
     }
 
     @Override
-    public final QByteArray valuePropertyName() {
+    public final @NonNull QByteArray valuePropertyName() {
         return valuePropertyName.clone();
     }
 }

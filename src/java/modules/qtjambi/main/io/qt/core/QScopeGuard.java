@@ -61,6 +61,9 @@ public final class QScopeGuard implements AutoCloseable {
 		this.data.cleanable = QtJambi_LibraryUtilities.internal.registerCleaner(this, this.data::cleanup);
 	}
 
+    /**
+     * performs the function
+     */
 	@Override
     @QtUninvokable
 	public void close(){

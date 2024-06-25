@@ -35,17 +35,13 @@ import org.junit.*;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.Nullable;
-import io.qt.QtEnumerator;
 import io.qt.QtInvokable;
 import io.qt.QtUtilities;
 import io.qt.autotests.generated.General;
 import io.qt.core.*;
-import io.qt.core.QMetaObject.AbstractPublicSignal4;
 import io.qt.gui.*;
 import io.qt.qml.*;
 import io.qt.webengine.core.*;
-import io.qt.webengine.core.QWebEnginePage.JavaScriptConsoleMessageLevel;
 import io.qt.webengine.quick.*;
 import io.qt.widgets.*;
 

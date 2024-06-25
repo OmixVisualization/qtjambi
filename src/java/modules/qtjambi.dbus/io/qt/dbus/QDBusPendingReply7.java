@@ -29,6 +29,9 @@
 
 package io.qt.dbus;
 
+import io.qt.NonNull;
+import io.qt.Nullable;
+import io.qt.StrictNonNull;
 import io.qt.core.QMetaType;
 
 /**
@@ -43,28 +46,28 @@ public class QDBusPendingReply7<A,B,C,D,E,F,G> extends QDBusPendingReply6<A,B,C,
 		typeG = new QMetaType();
 	}
 
-	public QDBusPendingReply7(QDBusMessage message, Class<A> typeA, Class<B> typeB, Class<C> typeC, Class<D> typeD, Class<E> typeE, Class<F> typeF, Class<G> typeG) {
+	public QDBusPendingReply7(@NonNull QDBusMessage message, @Nullable Class<A> typeA, @Nullable Class<B> typeB, @Nullable Class<C> typeC, @Nullable Class<D> typeD, @Nullable Class<E> typeE, @Nullable Class<F> typeF, @Nullable Class<G> typeG) {
 		super(message, typeA, typeB, typeC, typeD, typeE, typeF);
 		this.typeG = QMetaType.fromType(typeG);
 	}
 
-	public QDBusPendingReply7(QDBusPendingCall call, Class<A> typeA, Class<B> typeB, Class<C> typeC, Class<D> typeD, Class<E> typeE, Class<F> typeF, Class<G> typeG) {
+	public QDBusPendingReply7(@NonNull QDBusPendingCall call, @Nullable Class<A> typeA, @Nullable Class<B> typeB, @Nullable Class<C> typeC, @Nullable Class<D> typeD, @Nullable Class<E> typeE, @Nullable Class<F> typeF, @Nullable Class<G> typeG) {
 		super(call, typeA, typeB, typeC, typeD, typeE, typeF);
 		this.typeG = QMetaType.fromType(typeG);
 	}
 
-	public QDBusPendingReply7(QDBusPendingReply7<A,B,C,D,E,F,G> other) {
+	public QDBusPendingReply7(@StrictNonNull QDBusPendingReply7<A,B,C,D,E,F,G> other) {
 		super(other);
 		this.typeG = other.typeG;
 	}
 	
-	public QDBusPendingReply7(QDBusPendingReply6<A,B,C,D,E,F> other, Class<G> typeG, QMetaType... instantiations) {
+	public QDBusPendingReply7(@NonNull QDBusPendingReply6<A,B,C,D,E,F> other, @Nullable Class<G> typeG, @NonNull QMetaType @NonNull... instantiations) {
 		super(other);
 		this.typeG = QMetaType.fromType(typeG, instantiations);
 	}
 
 	@Override
-	public QDBusPendingReply7<A,B,C,D,E,F,G> clone() {
+	public @NonNull QDBusPendingReply7<A,B,C,D,E,F,G> clone() {
 		return new QDBusPendingReply7<>(this);
 	}
 

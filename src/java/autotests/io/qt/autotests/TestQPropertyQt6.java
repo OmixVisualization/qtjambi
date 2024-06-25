@@ -43,35 +43,24 @@ import io.qt.QtUtilities;
 import io.qt.core.QBindable;
 import io.qt.core.QBooleanBindable;
 import io.qt.core.QBooleanProperty;
-import io.qt.core.QBooleanPropertyAlias;
 import io.qt.core.QByteBindable;
 import io.qt.core.QByteProperty;
-import io.qt.core.QBytePropertyAlias;
 import io.qt.core.QCharBindable;
 import io.qt.core.QCharProperty;
-import io.qt.core.QCharPropertyAlias;
 import io.qt.core.QDoubleBindable;
 import io.qt.core.QDoubleProperty;
-import io.qt.core.QDoublePropertyAlias;
 import io.qt.core.QFloatBindable;
 import io.qt.core.QFloatProperty;
-import io.qt.core.QFloatPropertyAlias;
 import io.qt.core.QIntBindable;
 import io.qt.core.QIntProperty;
-import io.qt.core.QIntPropertyAlias;
-import io.qt.core.QLibraryInfo;
 import io.qt.core.QLongBindable;
 import io.qt.core.QLongProperty;
-import io.qt.core.QLongPropertyAlias;
 import io.qt.core.QMetaType;
 import io.qt.core.QProperty;
-import io.qt.core.QPropertyAlias;
 import io.qt.core.QPropertyChangeHandler;
 import io.qt.core.QShortBindable;
 import io.qt.core.QShortProperty;
-import io.qt.core.QShortPropertyAlias;
 import io.qt.core.QThread;
-import io.qt.core.QVersionNumber;
 import io.qt.widgets.QGraphicsItem;
 import io.qt.widgets.QGraphicsPathItem;
 import io.qt.widgets.QGraphicsProxyWidget;
@@ -79,9 +68,7 @@ import io.qt.widgets.QGraphicsWidget;
 
 public class TestQPropertyQt6 extends ApplicationInitializer {
 	
-	private boolean canAlias = QLibraryInfo.version().compareTo(new QVersionNumber(7,0,0))<0;
-	
-    @Test
+	@Test
     public void testQByteProperty() {
     	QByteProperty p1 = new QByteProperty((byte)5);
     	QByteProperty p2 = new QByteProperty((byte)5);
@@ -135,17 +122,6 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	boundProperty.takeBinding();
     	b1.setValue((byte)0);
     	assertEquals(5+6, boundProperty.value());
-    	if(canAlias) {
-	    	QBytePropertyAlias b2Alias = new QBytePropertyAlias(b2);
-	    	assertEquals(5, b2Alias.value());
-	    	b2Alias.setValue((byte)8);
-	    	assertEquals(8, b2.value());
-	    	QByteProperty p3 = new QByteProperty((byte)43);
-	    	b2Alias.setBinding(()->(byte)(p3.value()-30));
-	    	assertEquals(13, b2Alias.value());
-	    	assertEquals(13, b2.value());
-	    	assertEquals(13, p2.value());
-    	}
     }
     
     @Test
@@ -202,17 +178,6 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	boundProperty.takeBinding();
     	b1.setValue(0);
     	assertEquals(5+6, boundProperty.value());
-    	if(canAlias) {
-	    	QIntPropertyAlias b2Alias = new QIntPropertyAlias(b2);
-	    	assertEquals(5, b2Alias.value());
-	    	b2Alias.setValue(8);
-	    	assertEquals(8, b2.value());
-	    	QIntProperty p3 = new QIntProperty(143);
-	    	b2Alias.setBinding(()->p3.value()-30);
-	    	assertEquals(113, b2Alias.value());
-	    	assertEquals(113, b2.value());
-	    	assertEquals(113, p2.value());
-    	}
     }
     
     @Test
@@ -269,17 +234,6 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	boundProperty.takeBinding();
     	b1.setValue((short)0);
     	assertEquals(5+6, boundProperty.value());
-    	if(canAlias) {
-	    	QShortPropertyAlias b2Alias = new QShortPropertyAlias(b2);
-	    	assertEquals(5, b2Alias.value());
-	    	b2Alias.setValue((short)8);
-	    	assertEquals(8, b2.value());
-	    	QShortProperty p3 = new QShortProperty((short)143);
-	    	b2Alias.setBinding(()->(short)(p3.value()-30));
-	    	assertEquals(113, b2Alias.value());
-	    	assertEquals(113, b2.value());
-	    	assertEquals(113, p2.value());
-    	}
     }
     
     @Test
@@ -336,17 +290,6 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	boundProperty.takeBinding();
     	b1.setValue(0);
     	assertEquals(5+6, boundProperty.value());
-    	if(canAlias) {
-	    	QLongPropertyAlias b2Alias = new QLongPropertyAlias(b2);
-	    	assertEquals(5, b2Alias.value());
-	    	b2Alias.setValue(8);
-	    	assertEquals(8, b2.value());
-	    	QLongProperty p3 = new QLongProperty(143);
-	    	b2Alias.setBinding(()->p3.value()-30);
-	    	assertEquals(113, b2Alias.value());
-	    	assertEquals(113, b2.value());
-	    	assertEquals(113, p2.value());
-    	}
     }
     
     @Test
@@ -404,17 +347,6 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	boundProperty.takeBinding();
     	b1.setValue((char)0);
     	assertEquals(5+6, boundProperty.value());
-    	if(canAlias) {
-	    	QCharPropertyAlias b2Alias = new QCharPropertyAlias(b2);
-	    	assertEquals(5, b2Alias.value());
-	    	b2Alias.setValue((char)8);
-	    	assertEquals(8, b2.value());
-	    	QCharProperty p3 = new QCharProperty((char)143);
-	    	b2Alias.setBinding(()->(char)(p3.value()-30));
-	    	assertEquals(113, b2Alias.value());
-	    	assertEquals(113, b2.value());
-	    	assertEquals(113, p2.value());
-    	}
     }
     
     @Test
@@ -471,17 +403,6 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	boundProperty.takeBinding();
     	b1.setValue(0);
     	assertEquals(5+6, boundProperty.value(), 0.001);
-    	if(canAlias) {
-	    	QFloatPropertyAlias b2Alias = new QFloatPropertyAlias(b2);
-	    	assertEquals(5, b2Alias.value(), 0.001);
-	    	b2Alias.setValue(8);
-	    	assertEquals(8, b2.value(), 0.001);
-	    	QFloatProperty p3 = new QFloatProperty(143);
-	    	b2Alias.setBinding(()->p3.value()-30);
-	    	assertEquals(113, b2Alias.value(), 0.001);
-	    	assertEquals(113, b2.value(), 0.001);
-	    	assertEquals(113, p2.value(), 0.001);
-    	}
     }
     
     @Test
@@ -538,17 +459,6 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	boundProperty.takeBinding();
     	b1.setValue(0);
     	assertEquals(5+6, boundProperty.value(), 0.001);
-    	if(canAlias) {
-	    	QDoublePropertyAlias b2Alias = new QDoublePropertyAlias(b2);
-	    	assertEquals(5, b2Alias.value(), 0.001);
-	    	b2Alias.setValue(8);
-	    	assertEquals(8, b2.value(), 0.001);
-	    	QDoubleProperty p3 = new QDoubleProperty(143);
-	    	b2Alias.setBinding(()->p3.value()-30);
-	    	assertEquals(113, b2Alias.value(), 0.001);
-	    	assertEquals(113, b2.value(), 0.001);
-	    	assertEquals(113, p2.value(), 0.001);
-    	}
     }
     
     @Test
@@ -598,17 +508,6 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	boundProperty.takeBinding();
     	b1.setValue(false);
     	assertFalse(boundProperty.value());
-    	if(canAlias) {
-	    	QBooleanPropertyAlias b2Alias = new QBooleanPropertyAlias(b2);
-	    	assertTrue(b2Alias.value());
-	    	b2Alias.setValue(true);
-	    	assertTrue(b2.value());
-	    	QBooleanProperty p3 = new QBooleanProperty(true);
-	    	b2Alias.setBinding(()->p3.value());
-	    	assertTrue(b2Alias.value());
-	    	assertTrue(b2.value());
-	    	assertTrue(p2.value());
-    	}
     }
     
     @Test
@@ -665,17 +564,6 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	boundProperty.takeBinding();
     	b1.setValue((byte)0);
     	assertEquals(5+6, (byte)boundProperty.value());
-    	if(canAlias) {
-	    	QPropertyAlias<Byte> b2Alias = new QPropertyAlias<>(b2);
-	    	assertEquals(5, (byte)b2Alias.value());
-	    	b2Alias.setValue((byte)8);
-	    	assertEquals(8, (byte)b2.value());
-	    	QProperty<Byte> p3 = new QProperty<Byte>((byte)43);
-	    	b2Alias.setBinding(()->(byte)(p3.value()-30));
-	    	assertEquals(13, (byte)b2Alias.value());
-	    	assertEquals(13, (byte)b2.value());
-	    	assertEquals(13, (byte)p2.value());
-    	}
     }
     
     @Test
@@ -765,17 +653,6 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	boundProperty.takeBinding();
     	b1.setValue(0);
     	assertEquals(5+6, (int)boundProperty.value());
-    	if(canAlias) {
-	    	QPropertyAlias<Integer> b2Alias = new QPropertyAlias<>(b2);
-	    	assertEquals(5, (int)b2Alias.value());
-	    	b2Alias.setValue(8);
-	    	assertEquals(8, (int)b2.value());
-	    	QIntProperty p3 = new QIntProperty(143);
-	    	b2Alias.setBinding(()->p3.value()-30);
-	    	assertEquals(113, (int)b2Alias.value());
-	    	assertEquals(113, (int)b2.value());
-	    	assertEquals(113, (int)p2.value());
-    	}
     }
     
     @Test
@@ -832,17 +709,6 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	boundProperty.takeBinding();
     	b1.setValue((short)0);
     	assertEquals(5+6, (short)boundProperty.value());
-    	if(canAlias) {
-	    	QPropertyAlias<Short> b2Alias = new QPropertyAlias<>(b2);
-	    	assertEquals(5, (short)b2Alias.value());
-	    	b2Alias.setValue((short)8);
-	    	assertEquals(8, (short)b2.value());
-	    	QProperty<Short> p3 = new QProperty<>((short)143);
-	    	b2Alias.setBinding(()->(short)(p3.value()-30));
-	    	assertEquals(113, (short)b2Alias.value());
-	    	assertEquals(113, (short)b2.value());
-	    	assertEquals(113, (short)p2.value());
-    	}
     }
     
     @Test
@@ -899,17 +765,6 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	boundProperty.takeBinding();
     	b1.setValue(0l);
     	assertEquals(5+6, (long)boundProperty.value());
-    	if(canAlias) {
-	    	QPropertyAlias<Long> b2Alias = new QPropertyAlias<>(b2);
-	    	assertEquals(5, (long)b2Alias.value());
-	    	b2Alias.setValue(8l);
-	    	assertEquals(8, (long)b2.value());
-	    	QProperty<Long> p3 = new QProperty<>(143l);
-	    	b2Alias.setBinding(()->p3.value()-30);
-	    	assertEquals(113, (long)b2Alias.value());
-	    	assertEquals(113, (long)b2.value());
-	    	assertEquals(113, (long)p2.value());
-    	}
     }
     
     @Test
@@ -967,17 +822,6 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	boundProperty.takeBinding();
     	b1.setValue((char)0);
     	assertEquals(5+6, (char)boundProperty.value());
-    	if(canAlias) {
-	    	QPropertyAlias<Character> b2Alias = new QPropertyAlias<>(b2);
-	    	assertEquals(5, (char)b2Alias.value());
-	    	b2Alias.setValue((char)8);
-	    	assertEquals(8, (char)b2.value());
-	    	QProperty<Character> p3 = new QProperty<>((char)143);
-	    	b2Alias.setBinding(()->(char)(p3.value()-30));
-	    	assertEquals(113, (char)b2Alias.value());
-	    	assertEquals(113, (char)b2.value());
-	    	assertEquals(113, (char)p2.value());
-    	}
     }
     
     @Test
@@ -1034,17 +878,6 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	boundProperty.takeBinding();
     	b1.setValue(0f);
     	assertEquals(5+6, boundProperty.value(), 0.001);
-    	if(canAlias) {
-	    	QPropertyAlias<Float> b2Alias = new QPropertyAlias<>(b2);
-	    	assertEquals(5, b2Alias.value(), 0.001);
-	    	b2Alias.setValue(8f);
-	    	assertEquals(8, b2.value(), 0.001);
-	    	QFloatProperty p3 = new QFloatProperty(143);
-	    	b2Alias.setBinding(()->p3.value()-30);
-	    	assertEquals(113, b2Alias.value(), 0.001);
-	    	assertEquals(113, b2.value(), 0.001);
-	    	assertEquals(113, p2.value(), 0.001);
-    	}
     }
     
     @Test
@@ -1101,17 +934,6 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	boundProperty.takeBinding();
     	b1.setValue(0.);
     	assertEquals(5+6, boundProperty.value(), 0.001);
-    	if(canAlias) {
-	    	QPropertyAlias<Double> b2Alias = new QPropertyAlias<>(b2);
-	    	assertEquals(5, b2Alias.value(), 0.001);
-	    	b2Alias.setValue(8.);
-	    	assertEquals(8, b2.value(), 0.001);
-	    	QDoubleProperty p3 = new QDoubleProperty(143);
-	    	b2Alias.setBinding(()->p3.value()-30);
-	    	assertEquals(113, b2Alias.value(), 0.001);
-	    	assertEquals(113, b2.value(), 0.001);
-	    	assertEquals(113, p2.value(), 0.001);
-    	}
     }
     
     @Test
@@ -1161,17 +983,6 @@ public class TestQPropertyQt6 extends ApplicationInitializer {
     	boundProperty.takeBinding();
     	b1.setValue(false);
     	assertFalse(boundProperty.value());
-    	if(canAlias) {
-	    	QPropertyAlias<Boolean> b2Alias = new QPropertyAlias<>(b2);
-	    	assertTrue(b2Alias.value());
-	    	b2Alias.setValue(true);
-	    	assertTrue(b2.value());
-	    	QBooleanProperty p3 = new QBooleanProperty(true);
-	    	b2Alias.setBinding(()->p3.value());
-	    	assertTrue(b2Alias.value());
-	    	assertTrue(b2.value());
-	    	assertTrue(p2.value());
-    	}
     }
     
     @Test

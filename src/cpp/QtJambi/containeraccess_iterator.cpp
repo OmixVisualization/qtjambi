@@ -39,7 +39,7 @@
 
 AutoSequentialConstIteratorAccess::~AutoSequentialConstIteratorAccess() = default;
 AutoSequentialConstIteratorAccess::AutoSequentialConstIteratorAccess(
-        const InternalToExternalConverter& internalToExternalConverter,
+        const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
         IncrementFn increment,
         DecrementFn decrement,
         ValueFn value,
@@ -109,13 +109,13 @@ jboolean AutoSequentialConstIteratorAccess::equals(JNIEnv *, const void* iterato
 
 AutoAssociativeConstIteratorAccess::~AutoAssociativeConstIteratorAccess(){}
 AutoAssociativeConstIteratorAccess::AutoAssociativeConstIteratorAccess(
-        const InternalToExternalConverter& internalToExternalConverter,
+        const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
         IncrementFn increment,
         DecrementFn decrement,
         ValueFn value,
         LessThanFn lessThan,
         EqualsFn equals,
-        const InternalToExternalConverter& keyInternalToExternalConverter,
+        const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
         KeyFn key
         )
     : AbstractAssociativeConstIteratorAccess(),
@@ -162,13 +162,13 @@ jboolean AutoAssociativeConstIteratorAccess::equals(JNIEnv * env, const void* it
 
 AutoSequentialIteratorAccess::~AutoSequentialIteratorAccess() = default;
 AutoSequentialIteratorAccess::AutoSequentialIteratorAccess(
-        const InternalToExternalConverter& internalToExternalConverter,
+        const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
         IncrementFn increment,
         DecrementFn decrement,
         ValueFn value,
         LessThanFn lessThan,
         EqualsFn equals,
-        const ExternalToInternalConverter& externalToInternalConverter,
+        const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter,
         SetValueFn setValue
     )
     : AbstractSequentialIteratorAccess(),
@@ -216,15 +216,15 @@ jboolean AutoSequentialIteratorAccess::equals(JNIEnv * env, const void* iterator
 
 AutoAssociativeIteratorAccess::~AutoAssociativeIteratorAccess(){}
 AutoAssociativeIteratorAccess::AutoAssociativeIteratorAccess(
-        const InternalToExternalConverter& valueInternalToExternalConverter,
+        const QtJambiUtils::InternalToExternalConverter& valueInternalToExternalConverter,
         IncrementFn increment,
         DecrementFn decrement,
         ValueFn value,
         LessThanFn lessThan,
         EqualsFn equals,
-        const InternalToExternalConverter& keyInternalToExternalConverter,
+        const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
         KeyFn key,
-        const ExternalToInternalConverter& valueExternalToInternalConverter,
+        const QtJambiUtils::ExternalToInternalConverter& valueExternalToInternalConverter,
         SetValueFn setValue
         )
     : AbstractAssociativeIteratorAccess(),

@@ -932,7 +932,6 @@ public class QList<T> extends AbstractList<T> implements Cloneable
     /**
      * Returns a QStringList containing given elements.
      *
-     * @param <T> the {@code QStringList}'s element type
      * @param element0 the first element
      * @param elements subsequent elements
      * @return a {@code QStringList} containing the specified element

@@ -721,6 +721,30 @@ constexpr inline bool HasQHashSingleArgOverload<QMap<QString,QPoint>> = false;
             }
         }
     }
+
+    ObjectType{
+        name: "PerformanceTests"
+        ObjectType{
+            name: "AbstractVirtualHost"
+        }
+        ObjectType{
+            name: "VirtualHost"
+        }
+        ModifyFunction{
+            signature: "createNativeHost()"
+            ModifyArgument{
+                index: "return"
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Java
+                }
+            }
+        }
+        InjectCode{
+            position: Position.End
+            Text{content: "public static void empty(){}"}
+        }
+    }
     
     ObjectType{
         name: "CustomEvent"
@@ -1177,7 +1201,7 @@ if(java.util.logging.Logger.getLogger("io.qt.autotests").isLoggable(java.util.lo
 		int i = shortClassName.lastIndexOf('.');
 		if(i > 0)
 			shortClassName = shortClassName.substring(i + 1);
-		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINEST, shortClassName + ".dtor(" + className + "@" + hash + ") thread=" + Thread.currentThread().getId());
+		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINEST, shortClassName + ".dtor(" + className + "@" + hash + ") thread=" + io.qt.autotests.ApplicationInitializer.currentThreadToString());
 	});
 }
 				`}

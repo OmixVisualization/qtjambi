@@ -36,16 +36,17 @@ TypeSystem{
     module: "qtjambi.networkauth"
     description: "Provides support for OAuth-based authorization to online services."
     
-    EnumType{
-        name: "QOAuth1::SignatureMethod"
+    RequiredLibrary{
+        name: "QtGui"
+        mode: RequiredLibrary.ProvideOnly
+        since: 6.8
     }
-    
-    EnumType{
-        name: "QOAuth1Signature::HttpRequestMethod"
-    }
-    
+
     ValueType{
         name: "QOAuth1Signature"
+        EnumType{
+            name: "HttpRequestMethod"
+        }
     }
     
     ObjectType{
@@ -189,6 +190,9 @@ TypeSystem{
     
     ObjectType{
         name: "QOAuth1"
+        EnumType{
+            name: "SignatureMethod"
+        }
     }
     
     ObjectType{
@@ -210,6 +214,11 @@ TypeSystem{
     
     ObjectType{
         name: "QOAuthOobReplyHandler"
+    }
+
+    ObjectType{
+        name: "QOAuthUriSchemeReplyHandler"
+        since: 6.8
     }
     
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QOAuth1Signature."}

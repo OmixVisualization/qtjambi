@@ -47,9 +47,9 @@ QT_WARNING_DISABLE_DEPRECATED
 AutoLinkedListAccess::AutoLinkedListAccess(
         int elementMetaType,
         size_t elementAlign,
-        const QHashFunction& hashFunction,
-        const InternalToExternalConverter& internalToExternalConverter,
-        const ExternalToInternalConverter& externalToInternalConverter
+        const QtJambiUtils::QHashFunction& hashFunction,
+        const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
+        const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter
         )
     : AbstractLinkedListAccess(),
       m_elementMetaType(elementMetaType),

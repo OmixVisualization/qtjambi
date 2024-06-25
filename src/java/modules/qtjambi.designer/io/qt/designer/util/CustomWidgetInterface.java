@@ -35,6 +35,9 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 
+import io.qt.NonNull;
+import io.qt.Nullable;
+import io.qt.StrictNonNull;
 import io.qt.core.QMetaObject;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.designer.QDesignerCustomWidgetInterface;
@@ -50,8 +53,10 @@ public final class CustomWidgetInterface extends io.qt.QtObject implements QDesi
 		QtJambi_LibraryUtilities.initialize();
 	}
 	
-	public CustomWidgetInterface(String group, QMetaObject.Method1<QWidget, ? extends QWidget> constructor) {
+	public CustomWidgetInterface(@NonNull String group, QMetaObject.@StrictNonNull Method1<@Nullable QWidget, @Nullable ? extends QWidget> constructor) {
 		super();
+		if(group==null)
+			group = new String();
 		this.group = group;
 		this.constructor = constructor;
 		Class<?> resultType = QtJambi_LibraryUtilities.internal.lambdaReturnType(QMetaObject.Method1.class, constructor);
@@ -116,16 +121,32 @@ public final class CustomWidgetInterface extends io.qt.QtObject implements QDesi
 			name = QWidget.class.getName().replace(".", "::");
 	}
 
-	public CustomWidgetInterface(String group, QMetaObject.Method1<QWidget, ? extends QWidget> constructor, String name) {
+	public CustomWidgetInterface(@NonNull String group, QMetaObject.@StrictNonNull Method1<@Nullable QWidget, @Nullable ? extends QWidget> constructor, @NonNull String name) {
 		super();
+		if(group==null)
+			group = new String();
+		if(name==null)
+			name = new String();
 		this.group = group;
 		this.constructor = constructor;
 		this.name = name;
 	}
 
-	public CustomWidgetInterface(String group, QMetaObject.Method1<QWidget, ? extends QWidget> constructor, String whatsThis,
-			String name, String toolTip, boolean isContainer, String includeFile, QIcon icon) {
+	public CustomWidgetInterface(@NonNull String group, QMetaObject.@StrictNonNull Method1<@Nullable QWidget, @Nullable ? extends QWidget> constructor, @NonNull String whatsThis,
+			@NonNull String name, @NonNull String toolTip, boolean isContainer, @NonNull String includeFile, @NonNull QIcon icon) {
 		super();
+		if(whatsThis==null)
+			whatsThis = new String();
+		if(toolTip==null)
+			toolTip = new String();
+		if(includeFile==null)
+			includeFile = new String();
+		if(icon==null)
+			icon = new QIcon();
+		if(group==null)
+			group = new String();
+		if(name==null)
+			name = new String();
 		this.group = group;
 		this.constructor = constructor;
 		this.whatsThis = whatsThis;
@@ -151,10 +172,14 @@ public final class CustomWidgetInterface extends io.qt.QtObject implements QDesi
 	}
 
 	public void setWhatsThis(String whatsThis) {
+		if(whatsThis==null)
+			whatsThis = new String();
 		this.whatsThis = whatsThis;
 	}
 
 	public void setToolTip(String toolTip) {
+		if(toolTip==null)
+			toolTip = new String();
 		this.toolTip = toolTip;
 	}
 
@@ -163,25 +188,29 @@ public final class CustomWidgetInterface extends io.qt.QtObject implements QDesi
 	}
 
 	public void setIncludeFile(String includeFile) {
+		if(includeFile==null)
+			includeFile = new String();
 		this.includeFile = includeFile;
 	}
 
 	public void setIcon(QIcon icon) {
+		if(icon==null)
+			icon = new QIcon();
 		this.icon = icon;
 	}
 
 	@Override
-	public String whatsThis() {
+	public @NonNull String whatsThis() {
 		return whatsThis;
 	}
 	
 	@Override
-	public String toolTip() {
+	public @NonNull String toolTip() {
 		return toolTip;
 	}
 	
 	@Override
-	public String name() {
+	public @NonNull String name() {
 		return name;
 	}
 	
@@ -191,22 +220,22 @@ public final class CustomWidgetInterface extends io.qt.QtObject implements QDesi
 	}
 	
 	@Override
-	public String includeFile() {
+	public @NonNull String includeFile() {
 		return includeFile;
 	}
 	
 	@Override
-	public QIcon icon() {
+	public @NonNull QIcon icon() {
 		return icon;
 	}
 	
 	@Override
-	public String group() {
+	public @NonNull String group() {
 		return group;
 	}
 	
 	@Override
-	public QWidget createWidget(QWidget parent) {
+	public @Nullable QWidget createWidget(@Nullable QWidget parent) {
 		try {
 			return constructor.invoke(parent);
 		} catch (RuntimeException | Error e) {
@@ -217,7 +246,7 @@ public final class CustomWidgetInterface extends io.qt.QtObject implements QDesi
 	}
 	
 	@Override
-	public String domXml() {
+	public @NonNull String domXml() {
 		return domXml==null ? QDesignerCustomWidgetInterface.super.domXml() : domXml;
 	}
 }

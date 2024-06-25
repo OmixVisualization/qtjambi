@@ -107,13 +107,14 @@ struct ValueOwnerUserData : public QtJambiObjectData
 {
     ValueOwnerUserData(const QObject* object);
     ~ValueOwnerUserData() override;
-    void addDeleter(const std::function<void()>& deleter);
+    void addDeleter(const QtJambiUtils::Runnable& deleter);
+    void addDeleter(QtJambiUtils::Runnable&& deleter);
     inline const QPointer<const QObject>& pointer() const { return m_object; }
     QTJAMBI_OBJECTUSERDATA_ID_DECL
 private:
     Q_DISABLE_COPY_MOVE(ValueOwnerUserData)
     QPointer<const QObject> m_object;
-    QList<std::function<void()>> m_deleters;
+    QList<QtJambiUtils::Runnable> m_deleters;
 };
 
 struct DependencyManagerUserData : public QtJambiObjectData
@@ -206,7 +207,8 @@ public:
         IsPendingObjectResolved = 0x040000,
         IsPendingValueOwner = 0x080000,
         NoNativeDeletion = 0x100000,
-        NoDebugMessaging = 0x200000
+        NoDebugMessaging = 0x200000,
+        IsPointerRegistered = 0x400000
     };
     typedef QFlags<Flag> Flags;
 
@@ -460,6 +462,7 @@ protected:
     virtual void unregisterOffsets();
     void registerPointer(void*);
     void unregisterPointer(void*);
+    void unregisterPointers(const QVector<void*>& pointers);
 
     QSharedPointer<QtJambiLink> m_this;
 
@@ -1060,14 +1063,5 @@ public:
 
     QtJambiLink * link() const;
 };
-
-namespace DebugAPI{
-class MethodPrintFromLink : public MethodPrint
-{
-public:
-    MethodPrintFromLink(MethodPrint::Type callType, const QSharedPointer<QtJambiLink>& link, const char* method, const char* file, int line, const char *function);
-    MethodPrintFromLink(MethodPrint::Type callType, const QWeakPointer<QtJambiLink>& link, const char* method, const char* file, int line, const char *function);
-};
-}
 
 #endif // QTJAMBILINK_P_H

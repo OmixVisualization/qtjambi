@@ -43,6 +43,7 @@
 #define GL_APIENTRY
 #define Q_COMPILER_CONSTEXPR
 #define Q_COMPILER_UNIFORM_INIT
+#define QSGTEXTURE_PLATFORM_H
 
 #undef Q_STATIC_ASSERT
 #undef Q_STATIC_ASSERT_X
@@ -61,6 +62,10 @@ typedef struct __GLsync *GLsync;
 #ifndef QTJAMBI_NO_GRAPHS
 #include <QtGraphs/QtGraphs>
 #include <QtJambiGraphs/hashes.h>
+#endif
+
+#ifndef QTJAMBI_NO_GRAPHS_WIDGETS
+#include <QtGraphsWidgets/QtGraphsWidgets>
 #endif
 
 #endif

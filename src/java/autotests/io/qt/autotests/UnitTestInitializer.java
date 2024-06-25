@@ -66,6 +66,7 @@ public abstract class UnitTestInitializer {
 					throw new ExceptionInInitializerError(e);
 				}
 			}
+			ApplicationInitializer.setTestClassName(description.getTestClass().getSimpleName());
 			if(description.getTestClass().getSimpleName().startsWith("TestInitialization")) {
 				if(!"debug".equals(System.getProperty("io.qt.debug"))) {
 					System.clearProperty("io.qt.no-deployment-spec");

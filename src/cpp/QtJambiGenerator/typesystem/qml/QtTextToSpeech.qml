@@ -286,9 +286,9 @@ public io.qt.core.QList<QVoice> findVoices(io.qt.core.QLocale.@NonNull Language 
                     metaName: "%3"
                 }
                 Text{content: "}QTJAMBI_CATCH(const JavaException& exn){\n"+
-                              "    if(Java::QtTextToSpeech::QTextToSpeechPlugin$CreateException::isInstanceOf(%env, exn.object())){\n"+
+                              "    if(exn.isInstanceOf(%env, Java::QtTextToSpeech::QTextToSpeechPlugin$CreateException::getClass(%env))){\n"+
                               "        if(%3){\n"+
-                              "            jstring message = Java::QtTextToSpeech::QTextToSpeechPlugin$CreateException::getMessage(%env, exn.object());\n"+
+                              "            jstring message = Java::QtTextToSpeech::QTextToSpeechPlugin$CreateException::getMessage(%env, exn.throwable(%env));\n"+
                               "            *%3 = qtjambi_cast<QString>(%env, message);\n"+
                               "        }\n"+
                               "    }else{\n"+

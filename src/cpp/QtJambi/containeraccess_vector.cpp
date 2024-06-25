@@ -42,9 +42,9 @@
 AutoVectorAccess::AutoVectorAccess(
         int elementMetaType,
         size_t elementAlign,
-        const QHashFunction& hashFunction,
-        const InternalToExternalConverter& internalToExternalConverter,
-        const ExternalToInternalConverter& externalToInternalConverter
+        const QtJambiUtils::QHashFunction& hashFunction,
+        const QtJambiUtils::InternalToExternalConverter& internalToExternalConverter,
+        const QtJambiUtils::ExternalToInternalConverter& externalToInternalConverter
         )
     : AbstractVectorAccess(),
       m_elementMetaType(elementMetaType),

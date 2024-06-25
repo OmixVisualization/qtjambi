@@ -34,6 +34,9 @@ import java.lang.reflect.Modifier;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+import io.qt.NonNull;
+import io.qt.StrictNonNull;
+
 /**
  * <p>The QSqlDriverCreator class is a template class that provides a SQL driver factory for a specific driver type.</p>
  * <p>Java wrapper for Qt's class <a href="https://doc.qt.io/qt/qsqldrivercreator.html">QSqlDriverCreator</a></p>
@@ -46,7 +49,7 @@ public class QSqlDriverCreator<T extends QSqlDriver> extends QSqlDriverCreatorBa
 	 * Create new QSqlDriverCreator by using <code>T::new</code>.
 	 * @param constructor
 	 */
-	public QSqlDriverCreator(Supplier<T> constructor) {
+	public QSqlDriverCreator(@StrictNonNull Supplier<@NonNull T> constructor) {
 		constructorHandle = Objects.requireNonNull(constructor);
 	}
 	
@@ -54,7 +57,7 @@ public class QSqlDriverCreator<T extends QSqlDriver> extends QSqlDriverCreatorBa
 	 * Create new QSqlDriverCreator by using <code>T.class</code>.
 	 * @param type
 	 */
-	public QSqlDriverCreator(Class<T> type) {
+	public QSqlDriverCreator(@StrictNonNull Class<T> type) {
 		if(Modifier.isAbstract(type.getModifiers())) {
         	throw new RuntimeException("Cannot construct QSqlDriverCreator for abstract widget type "+type.getName()+".");
         }
@@ -71,7 +74,7 @@ public class QSqlDriverCreator<T extends QSqlDriver> extends QSqlDriverCreatorBa
      * <p>See <a href="https://doc.qt.io/qt/qsqldrivercreator.html#createObject">QSqlDriverCreator::createObject() const</a></p>
      */
 	@Override
-	public T createObject() {
+	public @NonNull T createObject() {
 		return constructorHandle.get();
 	}
 

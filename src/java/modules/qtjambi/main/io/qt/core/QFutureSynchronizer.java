@@ -3,6 +3,9 @@ package io.qt.core;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+
+import io.qt.NonNull;
 
 /**
  * <p>Convenience class that simplifies QFuture synchronization</p>
@@ -24,7 +27,7 @@ public final class QFutureSynchronizer<T>
     /**
      * <p>See <code><a href="http://doc.qt.io/qt/qfuturesynchronizer.html#QFutureSynchronizer-2">QFutureSynchronizer::<wbr>QFutureSynchronizer(QFuture&lt;T>)</a></code></p>
      */
-    public QFutureSynchronizer(QFuture<T> future){
+    public QFutureSynchronizer(@NonNull QFuture<T> future){
         super();
         addFuture(future);
     }
@@ -33,8 +36,8 @@ public final class QFutureSynchronizer<T>
      * <p>See <code><a href="http://doc.qt.io/qt/qfuturesynchronizer.html#addFuture">QFutureSynchronizer::<wbr>addFuture(QFuture&lt;T>)</a></code></p>
      */
     @io.qt.QtUninvokable
-    public final void addFuture(QFuture<T> future){
-        m_futures.add(future);
+    public final void addFuture(@NonNull QFuture<T> future){
+        m_futures.add(Objects.requireNonNull(future));
     }
     
     /**
@@ -65,7 +68,7 @@ public final class QFutureSynchronizer<T>
      * <p>See <code><a href="http://doc.qt.io/qt/qfuturesynchronizer.html#setFuture">QFutureSynchronizer::<wbr>setFuture(QFuture&lt;T>)</a></code></p>
      */
     @io.qt.QtUninvokable
-    public final void setFuture(QFuture<T> future){
+    public final void setFuture(@NonNull QFuture<T> future){
         waitForFinished();
         m_futures.clear();
         addFuture(future);
@@ -91,7 +94,7 @@ public final class QFutureSynchronizer<T>
      * <p>See <code><a href="http://doc.qt.io/qt/qfuturesynchronizer.html#futures">QFutureSynchronizer::<wbr>futures()const</a></code></p>
      */
     @io.qt.QtUninvokable
-    public final List<QFuture<T>> futures() {
+    public final @NonNull List<@NonNull QFuture<T>> futures() {
         return Collections.unmodifiableList(m_futures);
     }
     

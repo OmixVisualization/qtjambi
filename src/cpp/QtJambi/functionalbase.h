@@ -61,7 +61,7 @@ protected:
     jobject getJavaObjectLocalRef(JNIEnv *env) const;
     QtJambiShell* shell() const;
 private:
-    QSharedDataPointer<FunctorBasePrivate> d;
+    QExplicitlySharedDataPointer<FunctorBasePrivate> d;
 };
 
 #endif // QTJAMBI_FUNCTIONALBASE_H

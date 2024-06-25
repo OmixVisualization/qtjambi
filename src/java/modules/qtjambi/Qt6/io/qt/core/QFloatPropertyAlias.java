@@ -33,7 +33,10 @@ import io.qt.*;
 /**
  * QFloatPropertyAlias is primitive-typed version of QPropertyAlias&lt;Float&gt;.
  * @see QPropertyAlias
+ * @deprecated Class was only meant for internal use, use a <code>QProperty</code> and add a binding to the target
  */
+@Deprecated(forRemoval=true, since="Qt 6.6")
+@SuppressWarnings("removal")
 public final class QFloatPropertyAlias extends QAbstractPropertyAlias {
 	
 	private static QPropertyAlias<@NonNull@QtPrimitiveType Float> check(QPropertyAlias<@NonNull@QtPrimitiveType Float> other){

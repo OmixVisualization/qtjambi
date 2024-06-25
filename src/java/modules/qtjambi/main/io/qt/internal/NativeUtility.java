@@ -716,11 +716,24 @@ public abstract class NativeUtility {
 			}
 			return result;
 		}
+		
+		static AssociativeReference findByHashCode(int hashCode) {
+			AssociativeReference result = null;
+			synchronized(associativeReferences) {
+				for (AssociativeReference ref : associativeReferences) {
+					if(System.identityHashCode(ref) == hashCode) {
+						result = ref;
+						break;
+					}
+				}
+			}
+			return result;
+		}
 	}
 
 	@NativeAccess
-	private static void createAssociation(java.lang.Object o1, java.lang.Object o2) {
-		new AssociativeReference(o1, o2);
+	private static int createAssociation(java.lang.Object o1, java.lang.Object o2) {
+		return System.identityHashCode(new AssociativeReference(o1, o2));
 	}
 
 	@NativeAccess
@@ -731,6 +744,16 @@ public abstract class NativeUtility {
 			return true;
 		} else
 			return false;
+	}
+	
+	@NativeAccess
+	private static java.lang.Object deleteAssociationByHashCode(int hashCode) {
+		AssociativeReference matchingReference = AssociativeReference.findByHashCode(hashCode);
+		if (matchingReference != null) {
+			matchingReference.enqueue();
+			return matchingReference.get();
+		} else
+			return null;
 	}
 	
 	@NativeAccess

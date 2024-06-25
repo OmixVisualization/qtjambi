@@ -45,7 +45,7 @@ public class TestInjectedCodeQt6 extends ApplicationInitializer {
 	@Test
     public void testByteArrayView() {
 		io.qt.core.QByteArrayView bv = new io.qt.core.QByteArrayView("ByteArray\0View".getBytes());
-		for(Byte b : bv) {
+		for(@SuppressWarnings("unused") Byte b : bv) {
 		}
 		assertEquals(new io.qt.core.QByteArray("ByteArray\0View".getBytes()), bv.toByteArray());
 		assertEquals("ByteArray\0View", bv.toString());

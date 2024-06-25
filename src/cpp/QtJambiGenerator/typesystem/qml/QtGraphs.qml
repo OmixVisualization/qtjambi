@@ -423,6 +423,7 @@ TypeSystem{
         EnumType{
             name: "Theme"
         }
+        until: 6.7
     }
     
     ObjectType{
@@ -581,6 +582,7 @@ TypeSystem{
                 }
             }
         }
+        until: 6.7
     }
     
     ObjectType{
@@ -1285,6 +1287,7 @@ TypeSystem{
             name: "SeriesColorTheme"
         }
         since: 6.7
+        until: 6.7
     }
 
     ObjectType{
@@ -1293,6 +1296,17 @@ TypeSystem{
             name: "AxisType"
         }
         Rejection{fieldName: "d_ptr"}
+        ModifyFunction{
+            signature: "setLabelDelegate(QQmlComponent*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcLabelComponent"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: 6.8
+        }
         since: 6.7
     }
 
@@ -1319,6 +1333,7 @@ TypeSystem{
                     action: ReferenceCount.Set
                 }
             }
+            until: 6.7
         }
         Rejection{fieldName: "d_ptr"}
         Rejection{functionName: "graph"}
@@ -1361,7 +1376,7 @@ TypeSystem{
             }
         }
         ModifyFunction{
-            signature: "insert(int,QBarSet*)"
+            signature: "insert(qsizetype,QBarSet*)"
             ModifyArgument{
                 index: 2
                 ReferenceCount{
@@ -1399,6 +1414,7 @@ TypeSystem{
                     action: ReferenceCount.Set
                 }
             }
+            until: 6.7
         }
         ModifyFunction{
             signature: "setAxisY(QAbstractAxis*)"
@@ -1409,9 +1425,10 @@ TypeSystem{
                     action: ReferenceCount.Set
                 }
             }
+            until: 6.7
         }
         ModifyFunction{
-            signature: "setBarComponent(QQmlComponent*)"
+            signature: "setBarDelegate(QQmlComponent*)"
             ModifyArgument{
                 index: 1
                 ReferenceCount{
@@ -1435,6 +1452,61 @@ TypeSystem{
 
     ObjectType{
         name: "QLegendData"
+        since: 6.8
+    }
+
+    ObjectType{
+        name: "QGraphsTheme"
+        EnumType{
+            name: "Theme"
+        }
+        EnumType{
+            name: "ColorStyle"
+        }
+        ModifyFunction{
+            signature: "dirtyBits()"
+            ModifyArgument{
+                index: 0
+                DefineOwnership{
+                    codeClass: CodeClass.Native
+                    ownership: Ownership.Dependent
+                }
+            }
+        }
+        since: 6.8
+    }
+
+    ObjectType{
+        name: "QGraphsThemeDirtyBitField"
+        since: 6.8
+    }
+
+    NamespaceType{
+        name: "QGraphs3D"
+        EnumType{
+            name: "SelectionFlag"
+        }
+        EnumType{
+            name: "ShadowQuality"
+        }
+        EnumType{
+            name: "ElementType"
+        }
+        EnumType{
+            name: "OptimizationHint"
+        }
+        EnumType{
+            name: "RenderingMode"
+        }
+        EnumType{
+            name: "CameraPreset"
+        }
+        ExtraIncludes{
+            Include{
+                fileName: "QtGraphs/qutils.h"
+                location: Include.Global
+            }
+        }
         since: 6.8
     }
     

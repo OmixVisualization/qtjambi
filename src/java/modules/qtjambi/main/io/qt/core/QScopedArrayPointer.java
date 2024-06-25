@@ -39,7 +39,10 @@ import java.util.function.ToLongFunction;
 import java.util.logging.Level;
 
 import io.qt.QtUninvokable;
+import io.qt.StrictNonNull;
 import io.qt.InternalAccess.Cleanable;
+import io.qt.NonNull;
+import io.qt.Nullable;
 import io.qt.QtObjectInterface;
 
 /**
@@ -91,28 +94,44 @@ public final class QScopedArrayPointer<O> implements AutoCloseable {
 		this.data.cleanable = QtJambi_LibraryUtilities.internal.registerCleaner(this, this.data::close);
 	}
 
+	/**
+	 * <p>Returns the array stored by this scoped pointer</p>
+	 * @return data
+	 */
     @QtUninvokable
-	public O[] data() {
+	public O @Nullable[] data() {
 		return data.data==null ? null : Arrays.copyOf(data.data, data.data.length);
 	}
 
+	/**
+	 * @see #data()
+	 */
     @QtUninvokable
-	public O[] get() {
+	public O @Nullable[] get() {
 		return data();
 	}
     
+	/**
+	 * <p>Returns the object at index i in the array stored by this scoped pointer</p>
+	 * <p>See <a href="https://doc.qt.io/qt/qscopedpointer.html#operator-5b-5d-1">QScopedPointer::operator[](qsizetype i)const</a>.</p>
+	 * @param i index
+	 * @return data
+	 */
     @QtUninvokable
 	public O data(int i) {
 		return data.data==null ? null : data.data[i];
 	}
 
+	/**
+	 * @see #data(int)
+	 */
     @QtUninvokable
 	public O get(int i) {
 		return data(i);
 	}
 
     @QtUninvokable
-	public O[] take() {
+	public O @Nullable[] take() {
     	if(data.data==null)
     		return null;
 		O[] oldData = data.data;
@@ -120,6 +139,10 @@ public final class QScopedArrayPointer<O> implements AutoCloseable {
 		return oldData;
 	}
     
+	/**
+	 * <p>Removes and returns the array stored by this scoped pointer without cleanup</p>
+	 * @return data
+	 */
     @QtUninvokable
 	public O take(int i) {
     	if(data.data==null)
@@ -129,6 +152,9 @@ public final class QScopedArrayPointer<O> implements AutoCloseable {
 		return oldData;
 	}
 
+	/**
+	 * <p>performs cleanup operation on all objects of the contained array and sets new array.</p>
+	 */
     @QtUninvokable
     @SafeVarargs
 	public final void reset(O... other) {
@@ -143,13 +169,16 @@ public final class QScopedArrayPointer<O> implements AutoCloseable {
 		}
 	}
 	
+    /**
+     * checks if the array is null
+     */
     @QtUninvokable
 	public boolean isNull(){
 		return data.data==null;
 	}
 	
     @QtUninvokable
-	public void swap(QScopedArrayPointer<O> other){
+	public void swap(@StrictNonNull QScopedArrayPointer<O> other){
 		O[] oldData = data.data;
 		Consumer<O> oldCleanup = data.cleanup;
 		this.data.data = other.data.data;
@@ -158,6 +187,9 @@ public final class QScopedArrayPointer<O> implements AutoCloseable {
 		other.data.cleanup = oldCleanup;
 	}
 
+    /**
+     * performs the cleanup operation
+     */
 	@Override
     @QtUninvokable
 	public void close(){
@@ -180,21 +212,37 @@ public final class QScopedArrayPointer<O> implements AutoCloseable {
 			data.disposeLater();
 	}
 	
+    /**
+     * Creates a scoped pointer for the given objects performing {@link QtObjectInterface#dispose()} on each object at cleanup.
+     * @param data the contained objects
+     * @return scoped pointer
+     */
     @SafeVarargs
 	@QtUninvokable
-	public static <O extends QtObjectInterface> QScopedArrayPointer<O> disposing(O... data){
+	public static <O extends QtObjectInterface> @NonNull QScopedArrayPointer<O> disposing(O @Nullable... data){
 		return new QScopedArrayPointer<>(data, QScopedArrayPointer::dispose);
 	}
 	
+    /**
+     * Creates a scoped pointer for the given objects performing {@link QObject#disposeLater()} on each object at cleanup.
+     * @param data the contained objects
+     * @return scoped pointer
+     */
     @SafeVarargs
     @QtUninvokable
-	public static <O extends QObject> QScopedArrayPointer<O> disposingLater(O... data){
+	public static <O extends QObject> @NonNull QScopedArrayPointer<O> disposingLater(O @Nullable... data){
 		return new QScopedArrayPointer<>(data, QScopedArrayPointer::disposeLater);
 	}
 	
+    /**
+     * Creates a scoped array pointer for the given objects performing the given operation on each object at cleanup.
+     * @param cleanup operation performed at cleanup
+     * @param data the contained objects
+     * @return scoped pointer
+     */
     @SafeVarargs
     @QtUninvokable
-	public static <O> QScopedArrayPointer<O> cleanup(Consumer<O> cleanup, O... data){
+	public static <O> @NonNull QScopedArrayPointer<O> cleanup(@StrictNonNull Consumer<O> cleanup, O @Nullable... data){
 		return new QScopedArrayPointer<>(data, cleanup);
 	}
 	

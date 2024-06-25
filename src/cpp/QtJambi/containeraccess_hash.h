@@ -41,20 +41,20 @@ class GenericHashAccess : public AbstractHashAccess{
     typedef typename std::conditional<size1==0, void*, ContainerElement<size1, 0, false, align1>>::type K;
     typedef typename std::conditional<size2==0, void*, ContainerElement<size2, 1, false, align2>>::type T;
     MetaTypeInfo<0,size1==0> m_keyMetaTypeInfo;
-    InternalToExternalConverter m_keyInternalToExternalConverter;
-    ExternalToInternalConverter m_keyExternalToInternalConverter;
+    QtJambiUtils::InternalToExternalConverter m_keyInternalToExternalConverter;
+    QtJambiUtils::ExternalToInternalConverter m_keyExternalToInternalConverter;
     MetaTypeInfo<1,size2==0> m_valueMetaTypeInfo;
-    InternalToExternalConverter m_valueInternalToExternalConverter;
-    ExternalToInternalConverter m_valueExternalToInternalConverter;
+    QtJambiUtils::InternalToExternalConverter m_valueInternalToExternalConverter;
+    QtJambiUtils::ExternalToInternalConverter m_valueExternalToInternalConverter;
     GenericHashAccess(
             const QMetaType& keyMetaType,
-            const QHashFunction& keyHashFunction,
-            const InternalToExternalConverter& keyInternalToExternalConverter,
-            const ExternalToInternalConverter& keyExternalToInternalConverter,
+            const QtJambiUtils::QHashFunction& keyHashFunction,
+            const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
+            const QtJambiUtils::ExternalToInternalConverter& keyExternalToInternalConverter,
             const QMetaType& valueMetaType,
-            const QHashFunction& valueHashFunction,
-            const InternalToExternalConverter& valueInternalToExternalConverter,
-            const ExternalToInternalConverter& valueExternalToInternalConverter
+            const QtJambiUtils::QHashFunction& valueHashFunction,
+            const QtJambiUtils::InternalToExternalConverter& valueInternalToExternalConverter,
+            const QtJambiUtils::ExternalToInternalConverter& valueExternalToInternalConverter
             )
         :   AbstractHashAccess(),
           m_keyMetaTypeInfo(keyMetaType, keyHashFunction),
@@ -79,13 +79,13 @@ class GenericHashAccess : public AbstractHashAccess{
 
 public:
     static AbstractHashAccess* newInstance(const QMetaType& keyMetaType,
-                                          const QHashFunction& keyHashFunction,
-                                          const InternalToExternalConverter& keyInternalToExternalConverter,
-                                          const ExternalToInternalConverter& keyExternalToInternalConverter,
+                                          const QtJambiUtils::QHashFunction& keyHashFunction,
+                                          const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
+                                          const QtJambiUtils::ExternalToInternalConverter& keyExternalToInternalConverter,
                                           const QMetaType& valueMetaType,
-                                          const QHashFunction& valueHashFunction,
-                                          const InternalToExternalConverter& valueInternalToExternalConverter,
-                                          const ExternalToInternalConverter& valueExternalToInternalConverter){
+                                          const QtJambiUtils::QHashFunction& valueHashFunction,
+                                          const QtJambiUtils::InternalToExternalConverter& valueInternalToExternalConverter,
+                                          const QtJambiUtils::ExternalToInternalConverter& valueExternalToInternalConverter){
         return new GenericHashAccess(keyMetaType,
                                     keyHashFunction,
                                      keyInternalToExternalConverter,

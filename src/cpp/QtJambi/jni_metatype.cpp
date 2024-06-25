@@ -381,19 +381,20 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_MetaTypeUtility_registerConverter)
     if(!QMetaType::hasRegisteredConverterFunction(metaType1, metaType2)){
         class1 = getGlobalClassRef(env, class1);
         class2 = getGlobalClassRef(env, class2);
-        InternalToExternalConverter converter1 = QtJambiTypeManager::getInternalToExternalConverter(env, metaType1.name(), metaType1, class1);
-        ExternalToInternalConverter reconverter1 = QtJambiTypeManager::getExternalToInternalConverter(env, class1, metaType1.name(), metaType1);
-        InternalToExternalConverter converter2 = QtJambiTypeManager::getInternalToExternalConverter(env, metaType2.name(), metaType2, class2);
-        ExternalToInternalConverter reconverter2 = QtJambiTypeManager::getExternalToInternalConverter(env, class2, metaType2.name(), metaType2);
+        QtJambiUtils::InternalToExternalConverter converter1 = QtJambiTypeManager::getInternalToExternalConverter(env, metaType1.name(), metaType1, class1);
+        QtJambiUtils::ExternalToInternalConverter reconverter1 = QtJambiTypeManager::getExternalToInternalConverter(env, class1, metaType1.name(), metaType1);
+        QtJambiUtils::InternalToExternalConverter converter2 = QtJambiTypeManager::getInternalToExternalConverter(env, metaType2.name(), metaType2, class2);
+        QtJambiUtils::ExternalToInternalConverter reconverter2 = QtJambiTypeManager::getExternalToInternalConverter(env, class2, metaType2.name(), metaType2);
         if(converter1 && reconverter1 && converter2 && reconverter2){
             ParameterTypeInfo parameter1{metaTypeId1, class1, std::move(converter1), std::move(reconverter1)};
             ParameterTypeInfo parameter2{metaTypeId2, class2, std::move(converter2), std::move(reconverter2)};
             JObjectWrapper converter(env, converterFn);
             return QMetaType::registerConverterFunction([converter, parameter1, parameter2](const void *src, void *target)->bool{
                 if(JniEnvironment env{500}){
+                    QtJambiScope scope;
                     jvalue jv;
                     jv.l = nullptr;
-                    if(parameter1.convertInternalToExternal(env, nullptr, src, jv, true)){
+                    if(parameter1.convertInternalToExternal(env, &scope, src, jv, true)){
                         jobject result{nullptr};
                         try{
                             result = Java::Runtime::Function::apply(env, converter.object(), jv.l);

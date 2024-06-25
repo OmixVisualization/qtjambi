@@ -311,6 +311,8 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
+	@Deprecated(forRemoval=true, since="Qt 6.6")
+	@SuppressWarnings("removal")
 	public static @NonNull QBindable<@QtPrimitiveType Boolean> fromProperty(@StrictNonNull QBooleanPropertyAlias property){
 		return new QBindable<>(property.aliasedProperty(), property.iface);
 	}
@@ -320,6 +322,8 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
+	@Deprecated(forRemoval=true, since="Qt 6.6")
+	@SuppressWarnings("removal")
 	public static @NonNull QBindable<@QtPrimitiveType Byte> fromProperty(@StrictNonNull QBytePropertyAlias property){
 		return new QBindable<>(property.aliasedProperty(), property.iface);
 	}
@@ -329,6 +333,8 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
+	@Deprecated(forRemoval=true, since="Qt 6.6")
+	@SuppressWarnings("removal")
 	public static @NonNull QBindable<@QtPrimitiveType Short> fromProperty(@StrictNonNull QShortPropertyAlias property){
 		return new QBindable<>(property.aliasedProperty(), property.iface);
 	}
@@ -338,6 +344,8 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
+	@Deprecated(forRemoval=true, since="Qt 6.6")
+	@SuppressWarnings("removal")
 	public static @NonNull QBindable<@QtPrimitiveType Integer> fromProperty(@StrictNonNull QIntPropertyAlias property){
 		return new QBindable<>(property.aliasedProperty(), property.iface);
 	}
@@ -347,6 +355,8 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
+	@Deprecated(forRemoval=true, since="Qt 6.6")
+	@SuppressWarnings("removal")
 	public static @NonNull QBindable<@QtPrimitiveType Long> fromProperty(@StrictNonNull QLongPropertyAlias property){
 		return new QBindable<>(property.aliasedProperty(), property.iface);
 	}
@@ -356,6 +366,8 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
+	@Deprecated(forRemoval=true, since="Qt 6.6")
+	@SuppressWarnings("removal")
 	public static @NonNull QBindable<@QtPrimitiveType Float> fromProperty(@StrictNonNull QFloatPropertyAlias property){
 		return new QBindable<>(property.aliasedProperty(), property.iface);
 	}
@@ -365,6 +377,8 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
+	@Deprecated(forRemoval=true, since="Qt 6.6")
+	@SuppressWarnings("removal")
 	public static @NonNull QBindable<@QtPrimitiveType Double> fromProperty(@StrictNonNull QDoublePropertyAlias property){
 		return new QBindable<>(property.aliasedProperty(), property.iface);
 	}
@@ -374,6 +388,8 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * @param property
 	 * @return <code>QBindable</code>
 	 */
+	@Deprecated(forRemoval=true, since="Qt 6.6")
+	@SuppressWarnings("removal")
 	public static @NonNull QBindable<@QtPrimitiveType Character> fromProperty(@StrictNonNull QCharPropertyAlias property){
 		return new QBindable<>(property.aliasedProperty(), property.iface);
 	}
@@ -454,6 +470,8 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * Creates a new <code>QBindable</code> from provided property.
 	 * @param property
 	 */
+	@Deprecated(forRemoval=true, since="Qt 6.6")
+	@SuppressWarnings("removal")
 	public QBindable(@StrictNonNull QPropertyAlias<T> property) {
 		super(property.aliasedProperty(), property.iface);
 	}
@@ -541,7 +559,7 @@ public final class QBindable<T> extends QUntypedBindable {
 	 * otherwise the property remains unchanged.</p>
 	 * <p>The first time the property value is read, the binding is evaluated. 
 	 * Whenever a dependency of the binding changes, the binding will be re-evaluated the next time the value of the underlying property is read.</p>
-	 * @param newBinding
+	 * @param binding
 	 * @return oldBinding
 	 */
 	@SuppressWarnings("unchecked")

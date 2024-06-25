@@ -124,7 +124,8 @@ public abstract class CoreUtility {
     	return ReflectionUtility.functionFromMethod(method);
     }
     
-    protected static URL createURL(String url) throws MalformedURLException {
+    @SuppressWarnings("deprecation")
+	protected static URL createURL(String url) throws MalformedURLException {
     	return new URL(url);
     }
     

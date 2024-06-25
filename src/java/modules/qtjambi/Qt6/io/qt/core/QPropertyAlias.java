@@ -44,7 +44,10 @@ import io.qt.*;
  * <li>{@link QDoublePropertyAlias}</li>
  * <li>{@link QCharPropertyAlias}</li>
  * </ul>
+ * @deprecated Class was only meant for internal use, use a <code>QProperty</code> and add a binding to the target
  */
+@Deprecated(forRemoval=true, since="Qt 6.6")
+@SuppressWarnings("removal")
 public final class QPropertyAlias<T> extends QAbstractPropertyAlias {
 	
 	/**

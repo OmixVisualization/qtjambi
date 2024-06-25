@@ -85,7 +85,7 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_internal_ExceptionUtility_convertNativeExcept
         const std::exception* exn = reinterpret_cast<const std::exception*>(exception);
         if(typeid_equals(typeid(*exn), typeid(JavaException))){
             const JavaException* jexn = reinterpret_cast<const JavaException*>(exception);
-            return jexn->object();
+            return jexn->throwable(env);
         }else{
             return Java::Runtime::RuntimeException::newInstanceWithMessage(env, exn->what());
         }
@@ -201,10 +201,14 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_QtUtilities_reinstallEventNotifyCallback)(JNI
         }else{
             Java::Runtime::IllegalStateException::throwNew(env, "Unable to reinstall event notify callback without main thread." QTJAMBI_STACKTRACEINFO );
         }
-        if(QInternal::unregisterCallback(QInternal::EventNotifyCallback, &simpleEventNotify)){
-            return QInternal::registerCallback(QInternal::EventNotifyCallback, &simpleEventNotify);
-        }else if(QInternal::unregisterCallback(QInternal::EventNotifyCallback, &threadAffineEventNotify)){
+        if(Java::Runtime::Boolean::getBoolean(env, env->NewStringUTF("io.qt.enable-event-thread-affinity-check"))){
+            QInternal::unregisterCallback(QInternal::EventNotifyCallback, &threadAffineEventNotify);
+            QInternal::unregisterCallback(QInternal::EventNotifyCallback, &simpleEventNotify);
             return QInternal::registerCallback(QInternal::EventNotifyCallback, &threadAffineEventNotify);
+        }else{
+            QInternal::unregisterCallback(QInternal::EventNotifyCallback, &threadAffineEventNotify);
+            QInternal::unregisterCallback(QInternal::EventNotifyCallback, &simpleEventNotify);
+            return QInternal::registerCallback(QInternal::EventNotifyCallback, &simpleEventNotify);
         }
     }catch(const JavaException& exn){
         exn.raiseInJava(env);

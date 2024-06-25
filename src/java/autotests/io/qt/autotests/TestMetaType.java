@@ -47,7 +47,6 @@ import io.qt.core.QByteArray;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QDataStream;
 import io.qt.core.QDebug;
-import io.qt.core.QEasingCurve;
 import io.qt.core.QHash;
 import io.qt.core.QIODevice;
 import io.qt.core.QLibraryInfo;
@@ -58,14 +57,11 @@ import io.qt.core.QMetaType;
 import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QRect;
-import io.qt.core.QRunnable;
 import io.qt.core.QString;
 import io.qt.core.QVariant;
 import io.qt.core.QVersionNumber;
 import io.qt.core.Qt;
-import io.qt.gui.QAbstractUndoItem;
 import io.qt.gui.QWindow;
-import io.qt.internal.DeployerUtility;
 import io.qt.widgets.QMdiSubWindow;
 
 public class TestMetaType extends ApplicationInitializer {

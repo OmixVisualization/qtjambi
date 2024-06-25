@@ -28,6 +28,7 @@ HEADERS += \
     namespace.h \
     nativepointertester.h \
     paintengine.h \
+    performancetests.h \
     signalsandslots.h \
     smartpointertest.h \
     testdialog.h \
@@ -49,6 +50,7 @@ SOURCES += \
     global.cpp \
     injectedcode.cpp \
     interfaces.cpp \
+    performancetests.cpp \
     smartpointertest.cpp \
     testdialog.cpp \
     memorymanagement.cpp \

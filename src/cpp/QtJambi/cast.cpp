@@ -297,26 +297,37 @@ void test(JNIEnv *env){
         Q_STATIC_ASSERT(!QtJambiPrivate::supports_stream_operators<QList<UnknownClass>>::value);
     }
     {
-        QHashFunction hashFunction1;
-        QHashFunction hashFunction2 = [](const void*, hash_type)->hash_type{ return 0; };
-        QHashFunction hashFunction3 = hashFunction2;
+        QtJambiUtils::QHashFunction hashFunction1;
+        QtJambiUtils::QHashFunction hashFunction2 = [](const void*, hash_type)->hash_type{ return 0; };
+        QtJambiUtils::QHashFunction hashFunction3 = hashFunction2;
         hashFunction3 = [](const void*, hash_type)->hash_type{ return 0; };
-        QHashFunction hashFunction4(QHashFunction([](const void*, hash_type)->hash_type{ return 0; }));
+        QtJambiUtils::QHashFunction hashFunction4(QtJambiUtils::QHashFunction([](const void*, hash_type)->hash_type{ return 0; }));
         hashFunction3(nullptr,0);
+        QtJambiUtils::QHashFunction hashFunction5 = nullptr;
     }
     {
-        InternalToExternalConverter c1;
-        InternalToExternalConverter c2 = c1;
-        InternalToExternalConverter c3 = [](JNIEnv*, QtJambiScope*, const void*, jvalue&, bool)->bool{return false;};
-        InternalToExternalConverter c4([](JNIEnv*, QtJambiScope*, const void*, jvalue&, bool)->bool{return false;});
-        InternalToExternalConverter c5(InternalToExternalConverter([](JNIEnv*, QtJambiScope*, const void*, jvalue&, bool)->bool{return false;}));
+        QtJambiUtils::InternalToExternalConverter c1;
+        QtJambiUtils::InternalToExternalConverter c2 = c1;
+        QtJambiUtils::InternalToExternalConverter c3 = [](JNIEnv*, QtJambiScope*, const void*, jvalue&, bool)->bool{return false;};
+        QtJambiUtils::InternalToExternalConverter c4([](JNIEnv*, QtJambiScope*, const void*, jvalue&, bool)->bool{return false;});
+        QtJambiUtils::InternalToExternalConverter c5(QtJambiUtils::InternalToExternalConverter([](JNIEnv*, QtJambiScope*, const void*, jvalue&, bool)->bool{return false;}));
+        QtJambiUtils::InternalToExternalConverter c6 = nullptr;
     }
     {
-        ExternalToInternalConverter c1;
-        ExternalToInternalConverter c2 = c1;
-        ExternalToInternalConverter c3 = [](JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType)->bool{return false;};
-        ExternalToInternalConverter c4([](JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType)->bool{return false;});
-        ExternalToInternalConverter c5(ExternalToInternalConverter([](JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType)->bool{return false;}));
+        QtJambiUtils::ExternalToInternalConverter c1;
+        QtJambiUtils::ExternalToInternalConverter c2 = c1;
+        QtJambiUtils::ExternalToInternalConverter c3 = [](JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType)->bool{return false;};
+        QtJambiUtils::ExternalToInternalConverter c4([](JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType)->bool{return false;});
+        QtJambiUtils::ExternalToInternalConverter c5(QtJambiUtils::ExternalToInternalConverter([](JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType)->bool{return false;}));
+        QtJambiUtils::ExternalToInternalConverter c6 = nullptr;
+    }
+    {
+        QtJambiUtils::Runnable c1;
+        QtJambiUtils::Runnable c2 = c1;
+        QtJambiUtils::Runnable c3 = [](){};
+        QtJambiUtils::Runnable c4([](){});
+        QtJambiUtils::Runnable c5(QtJambiUtils::Runnable([](){}));
+        QtJambiUtils::Runnable c6 = nullptr;
     }
     {
         QStringList l;

@@ -361,7 +361,11 @@ QTJAMBI_EXPORT jobject convertNativeToJavaObjectAsCopy(JNIEnv *env, const void *
 
 QTJAMBI_EXPORT jobject convertModelIndexToJavaObject(JNIEnv *env, const class QModelIndex& index);
 
-QTJAMBI_EXPORT bool convertJavaToModelIndex(JNIEnv *env, jobject java_object, class QModelIndex** output);
+QTJAMBI_EXPORT jobject convertModelIndexToEphemeralJavaObject(JNIEnv *env, QtJambiScope& scope, const class QModelIndex* index);
+
+QTJAMBI_EXPORT bool convertJavaToModelIndex(JNIEnv *env, jobject java_object, class QModelIndex& output);
+
+QTJAMBI_EXPORT bool convertJavaToModelIndex(JNIEnv *env, jobject java_object, class QModelIndex*& output, QtJambiScope* scope);
 
 template<typename T>
 jobject convertNativeToJavaOwnedObjectAsWrapper(JNIEnv *env, const T *qt_object, const char *nativeTypeName = nullptr)

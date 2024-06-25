@@ -69,17 +69,6 @@ TypeSystem{
         until: [5, 15]
     }
     
-    Rejection{
-        className: "QSignalSpy"
-        functionName: "initArgs"
-    }
-    
-    
-    Rejection{
-        className: "QSignalSpy"
-        functionName: "qt_metacall"
-    }
-    
     NamespaceType{
         name: "QTest"
         ExtraIncludes{
@@ -107,6 +96,10 @@ TypeSystem{
 
 
         Rejection{functionName: "compare_ptr_helper"}
+        Rejection{className: "ThrowOnFailEnabler"}
+        Rejection{className: "ThrowOnSkipEnabler"}
+        Rejection{className: "ThrowOnFailDisabler"}
+        Rejection{className: "ThrowOnSkipDisabler"}
 
         EnumType{
             name: "ComparisonOperation"
@@ -898,6 +891,93 @@ TypeSystem{
             }
             since: [6, 4]
         }
+        ModifyFunction{
+            signature: "compare_helper(bool,const char*,const void*,const void*,const char*(*)(const void*),const char*(*)(const void*),const char*,const char*,const char*,int)"
+            ModifyArgument{
+                index: 3
+                RemoveArgument{}
+            }
+            ModifyArgument{
+                index: 4
+                RemoveArgument{}
+            }
+            ModifyArgument{
+                index: 5
+                ReplaceType{
+                    modifiedType: "java.util.function.@Nullable Supplier<@NonNull String>"
+                }
+                NoNullPointer{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    InsertTemplate{
+                        name: "test.stringsupplier.function"
+                    }
+                }
+            }
+            ModifyArgument{
+                index: 6
+                ReplaceType{
+                    modifiedType: "java.util.function.@Nullable Supplier<@NonNull String>"
+                }
+                NoNullPointer{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    InsertTemplate{
+                        name: "test.stringsupplier.function"
+                    }
+                }
+            }
+            Remove{}
+            since: 6.8
+        }
+        ModifyFunction{
+            signature: "reportResult(bool,const void*,const void*,const char*(*)(const void*),const char*(*)(const void*),const char*,const char*,QTest::ComparisonOperation,const char*,int)"
+            ModifyArgument{
+                index: 2
+                RemoveArgument{}
+            }
+            ModifyArgument{
+                index: 3
+                RemoveArgument{}
+            }
+            ModifyArgument{
+                index: 4
+                ReplaceType{
+                    modifiedType: "java.util.function.@Nullable Supplier<@NonNull String>"
+                }
+                NoNullPointer{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    InsertTemplate{
+                        name: "test.stringsupplier.function"
+                    }
+                }
+            }
+            ModifyArgument{
+                index: 5
+                ReplaceType{
+                    modifiedType: "java.util.function.@Nullable Supplier<@NonNull String>"
+                }
+                NoNullPointer{
+                }
+                ConversionRule{
+                    codeClass: CodeClass.Native
+                    InsertTemplate{
+                        name: "test.stringsupplier.function"
+                    }
+                }
+            }
+            Remove{}
+            since: 6.8
+        }
+        ModifyFunction{
+            signature: "qCompareOp<op,T1,T2>(T1 &&, T2 &&, const char *, const char *,const char *, int)"
+            Remove{}
+            since: 6.8
+        }
         InjectCode{
             target: CodeClass.Java
             ImportFile{
@@ -908,29 +988,29 @@ TypeSystem{
         }
         InjectCode{
             target: CodeClass.Java
-            until: 5
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiTest.java"
                 quoteAfterLine: "class QTest_5__"
                 quoteBeforeLine: "}// class"
+                until: 5
             }
-        }
-        InjectCode{
-            target: CodeClass.Java
-            since: 6
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiTest.java"
                 quoteAfterLine: "class QTest_6__"
                 quoteBeforeLine: "}// class"
+                since: 6
             }
-        }
-        InjectCode{
-            target: CodeClass.Java
-            since: [6, 4]
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiTest.java"
                 quoteAfterLine: "class QTest_64__"
                 quoteBeforeLine: "}// class"
+                since: 6.4
+            }
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiTest.java"
+                quoteAfterLine: "class QTest_68__"
+                quoteBeforeLine: "}// class"
+                since: 6.8
             }
         }
 
@@ -1071,10 +1151,18 @@ TypeSystem{
     
     ObjectType{
         name: "QSignalSpy"
-        implementing: "List<@NonNull List<@Nullable Object>>"
+        Implements{
+            interfaces: "List<@NonNull List<@Nullable Object>>"
+            until: 6.7
+        }
+
+        Rejection{ functionName: "initArgs" }
+        Rejection{ functionName: "qt_metacall" }
+
         DelegateBaseClass{
             baseClass: "QList<QList<QVariant>>"
             delegate: "list"
+            until: 6.7
         }
         ExtraIncludes{
             Include{
@@ -1109,6 +1197,7 @@ TypeSystem{
         ModifyFunction{
             signature: "list()"
             access: Modification.Private
+            until: 6.7
         }
         ModifyFunction{
             signature: "wait(int)"
@@ -1123,14 +1212,17 @@ TypeSystem{
             Include{
                 fileName: "java.util.*"
                 location: Include.Java
+                until: 6.7
             }
             Include{
                 fileName: "java.util.function.*"
                 location: Include.Java
+                until: 6.7
             }
             Include{
                 fileName: "java.util.stream.Stream"
                 location: Include.Java
+                until: 6.7
             }
             Include{
                 fileName: "io.qt.core.*"
@@ -1140,8 +1232,14 @@ TypeSystem{
         InjectCode{
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiTest.java"
+                quoteAfterLine: "class QSignalSpy_fromSignal_"
+                quoteBeforeLine: "}// class"
+            }
+            ImportFile{
+                name: ":/io/qtjambi/generator/typesystem/QtJambiTest.java"
                 quoteAfterLine: "class QSignalSpy__"
                 quoteBeforeLine: "}// class"
+                until: 6.7
             }
             ImportFile{
                 name: ":/io/qtjambi/generator/typesystem/QtJambiTest.java"
@@ -1154,6 +1252,7 @@ TypeSystem{
                 quoteAfterLine: "class QSignalSpy_6_"
                 quoteBeforeLine: "}// class"
                 since: 6
+                until: 6.7
             }
         }
     }

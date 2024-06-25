@@ -93,9 +93,29 @@ jobject internal_convertSmartPointerToJavaObject(JNIEnv *env, const char *classN
 jobject internal_convertSmartPointerToJavaInterface(JNIEnv *env, const std::type_info& interfaceType,
                             void* ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, SmartPointerGetterFunction sharedPointerGetter);
 
+class QtJambiLink;
+
 namespace DebugAPI{
 Q_DECLARE_LOGGING_CATEGORY(internalCategory)
 Q_DECLARE_LOGGING_CATEGORY(debugAPIJavaOverloadsCategory)
+class MethodPrintFromLink : public MethodPrint
+{
+public:
+    MethodPrintFromLink(MethodPrint::Type callType, const QSharedPointer<QtJambiLink>& link, const char* method, const char* file, int line, const char *function);
+    MethodPrintFromLink(MethodPrint::Type callType, const QWeakPointer<QtJambiLink>& link, const char* method, const char* file, int line, const char *function);
+};
+
+class MethodPrintFromArgs : public MethodPrint
+{
+public:
+    MethodPrintFromArgs(MethodPrint::Type callType, const char* file, int line, const char *function, const char* method, ...);
+};
+
+class MethodPrintFromSupplier : public MethodPrint
+{
+public:
+    MethodPrintFromSupplier(MethodPrint::Type callType, const char* file, int line, const char *function, std::function<QByteArray()>&& supplier);
+};
 }
 
 class QtJambiExceptionUnraiser{
@@ -105,6 +125,21 @@ public:
 private:
     quint8 data;
     Q_DISABLE_COPY_MOVE(QtJambiExceptionUnraiser)
+};
+
+struct ResettableBoolFlag{
+    ResettableBoolFlag(const char* property);
+    ResettableBoolFlag(JNIEnv * env, const char* property);
+    ~ResettableBoolFlag();
+    operator bool();
+private:
+    bool value;
+#ifdef Q_OS_ANDROID
+    void reinitialize(JNIEnv * env);
+    const char* m_property;
+    friend void reinitializeResettableFlags(JNIEnv * env);
+#endif
+    friend void clearResettableFlags();
 };
 
 #endif // QTJAMBI_UTILS_P_H

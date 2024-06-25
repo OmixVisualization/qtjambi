@@ -126,14 +126,14 @@ Q_GLOBAL_STATIC(MetaObjectHash, gMetaObjects);
 Q_GLOBAL_STATIC_WITH_ARGS(QReadWriteLock, gMetaObjectsLock, (QReadWriteLock::Recursive));
 Q_GLOBAL_STATIC(SignalTypesHash, gSignalTypes);
 
-InternalToExternalConverter ParameterTypeInfo::default_internalToExternalConverter()
+QtJambiUtils::InternalToExternalConverter ParameterTypeInfo::default_internalToExternalConverter()
 {
-    return InternalToExternalConverter([](JNIEnv*, QtJambiScope*, const void*, jvalue&, bool)->bool{ return false; });
+    return QtJambiUtils::InternalToExternalConverter([](JNIEnv*, QtJambiScope*, const void*, jvalue&, bool)->bool{ return false; });
 }
 
-ExternalToInternalConverter ParameterTypeInfo::default_externalToInternalConverter()
+QtJambiUtils::ExternalToInternalConverter ParameterTypeInfo::default_externalToInternalConverter()
 {
-    return ExternalToInternalConverter([](JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType) ->bool { return false; });
+    return QtJambiUtils::ExternalToInternalConverter([](JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType) ->bool { return false; });
 }
 
 ParameterTypeInfo::ParameterTypeInfo()
@@ -192,8 +192,8 @@ ParameterTypeInfo::ParameterTypeInfo(
 ParameterTypeInfo::ParameterTypeInfo(
         int qTypeId,
         jclass _javaClass,
-        InternalToExternalConverter&& internalToExternalConverter,
-        ExternalToInternalConverter&& externalToInternalConverter
+        QtJambiUtils::InternalToExternalConverter&& internalToExternalConverter,
+        QtJambiUtils::ExternalToInternalConverter&& externalToInternalConverter
         )
     :
       m_qTypeId(qTypeId),
@@ -210,8 +210,8 @@ ParameterTypeInfo::ParameterTypeInfo(
         int qTypeId,
         const QString& typeName,
         jclass _javaClass,
-        InternalToExternalConverter&& internalToExternalConverter,
-        ExternalToInternalConverter&& externalToInternalConverter
+        QtJambiUtils::InternalToExternalConverter&& internalToExternalConverter,
+        QtJambiUtils::ExternalToInternalConverter&& externalToInternalConverter
         )
     :
       m_qTypeId(qTypeId),
@@ -703,13 +703,13 @@ void analyze_methods(JNIEnv *env, jobject classLoader, int count, jobject method
                         info.methodType = JMethodType::l;
                     }
                 }
-                InternalToExternalConverter internalToExternalConverter = QtJambiTypeManager::tryGetInternalToExternalConverter(
+                QtJambiUtils::InternalToExternalConverter internalToExternalConverter = QtJambiTypeManager::tryGetInternalToExternalConverter(
                                                                 env,
                                                                 typeName,
                                                                 qMetaType,
                                                                 javaClass,
                                                                 true);
-                ExternalToInternalConverter externalToInternalConverter = QtJambiTypeManager::tryGetExternalToInternalConverter(
+                QtJambiUtils::ExternalToInternalConverter externalToInternalConverter = QtJambiTypeManager::tryGetExternalToInternalConverter(
                                                                 env,
                                                                 javaClass,
                                                                 typeName,
@@ -1934,13 +1934,13 @@ const QList<ParameterTypeInfo>& QtJambiMetaObject::methodParameterInfo(JNIEnv * 
                 //Q_ASSERT(javaClass);
                 if(javaClass){
                     // Find usage pattern
-                    InternalToExternalConverter internalToExternalConverter = QtJambiTypeManager::tryGetInternalToExternalConverter(
+                    QtJambiUtils::InternalToExternalConverter internalToExternalConverter = QtJambiTypeManager::tryGetInternalToExternalConverter(
                                                                     env,
                                                                     QLatin1String(qTypeName),
                                                                     _metaType,
                                                                     javaClass,
                                                                     true);
-                    ExternalToInternalConverter externalToInternalConverter = QtJambiTypeManager::tryGetExternalToInternalConverter(
+                    QtJambiUtils::ExternalToInternalConverter externalToInternalConverter = QtJambiTypeManager::tryGetExternalToInternalConverter(
                                                                     env,
                                                                     javaClass,
                                                                     QLatin1String(qTypeName),
@@ -1958,7 +1958,7 @@ const QList<ParameterTypeInfo>& QtJambiMetaObject::methodParameterInfo(JNIEnv * 
                                     std::move(internalToExternalConverter),
                                     std::move(externalToInternalConverter)});
                 }else{
-                    InternalToExternalConverter internalToExternalConverter;
+                    QtJambiUtils::InternalToExternalConverter internalToExternalConverter;
                     if(method.methodType()==QMetaMethod::Signal && i>0){
                         internalToExternalConverter = [](JNIEnv* env, QtJambiScope* scope, const void* in, jvalue& p, bool) -> bool{
                             p.l = Java::QtJambi::QNativePointer::fromNative(env, jlong(in), int(QNativePointer::Type::Pointer), jlong(-1), 0, true);
@@ -2707,7 +2707,7 @@ jclass QtJambiMetaObject::typeOfProperty(int _id) const
     return nullptr;
 }
 
-InternalToExternalConverter QtJambiMetaObject::internalToExternalConverterOfProperty(int _id) const
+QtJambiUtils::InternalToExternalConverter QtJambiMetaObject::internalToExternalConverterOfProperty(int _id) const
 {
     Q_D(const QtJambiMetaObject);
     if (_id < d->m_property_count) {
@@ -2732,7 +2732,7 @@ InternalToExternalConverter QtJambiMetaObject::internalToExternalConverterOfProp
     return nullptr;
 }
 
-ExternalToInternalConverter QtJambiMetaObject::externalToInternalConverterOfProperty(int _id) const
+QtJambiUtils::ExternalToInternalConverter QtJambiMetaObject::externalToInternalConverterOfProperty(int _id) const
 {
     Q_D(const QtJambiMetaObject);
     if (_id < d->m_property_count) {
@@ -3120,7 +3120,7 @@ jobject QtJambiMetaObject::convertToJavaObject(JNIEnv *env, const QMetaObject *m
 }
 
 void QtJambiMetaObject::resolveSignals(JNIEnv *env, jobject java_object, const QMetaObject* metaObject, JavaException& ocurredException){
-    if(!ocurredException.object()){
+    if(!ocurredException){
         try{
             QMap<int,QMetaMethod> metaMethods;
             {

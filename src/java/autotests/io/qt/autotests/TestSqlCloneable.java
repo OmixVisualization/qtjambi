@@ -113,16 +113,17 @@ public class TestSqlCloneable extends ApplicationInitializer {
         assertEquals(clone, clone2);
     }
 
-    // this test does not make sense because QSqlRelation does not have an equals operator
-	//@Test
+	@Test
 	public void run_clone_QSqlRelation() {
-		QSqlRelation org = new QSqlRelation();
+		QSqlRelation org = new QSqlRelation("Table", "5", "9");
 		QSqlRelation clone = org.clone();
 		assertTrue("not java ownership", General.internalAccess.isJavaOwnership(clone));
 		org.dispose();
 		QSqlRelation clone2 = clone.clone();
 		assertTrue("not java ownership", General.internalAccess.isJavaOwnership(clone2));
-		assertEquals(clone, clone2);
+		assertEquals(clone.tableName(), clone2.tableName());
+		assertEquals(clone.indexColumn(), clone2.indexColumn());
+		assertEquals(clone.displayColumn(), clone2.displayColumn());
 	}
 
     public static void main(String args[]) {

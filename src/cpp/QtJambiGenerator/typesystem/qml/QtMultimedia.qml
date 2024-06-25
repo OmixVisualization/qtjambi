@@ -203,6 +203,30 @@ TypeSystem{
         EnumType{
             name: "Rotation"
         }
+        EnumType{
+            name: "MapMode"
+            since: 6.8
+        }
+        ModifyFunction{
+            signature: "operator & (QtVideo::MapMode, QtVideo::MapMode)"
+            remove: RemoveFlag.All
+            since: 6.8
+        }
+        ModifyFunction{
+            signature: "operator | (QtVideo::MapMode, QtVideo::MapMode)"
+            remove: RemoveFlag.All
+            since: 6.8
+        }
+        ModifyFunction{
+            signature: "operator &= (QtVideo::MapMode&, QtVideo::MapMode)"
+            remove: RemoveFlag.All
+            since: 6.8
+        }
+        ModifyFunction{
+            signature: "operator |= (QtVideo::MapMode&, QtVideo::MapMode)"
+            remove: RemoveFlag.All
+            since: 6.8
+        }
         since: 6.7
     }
     
@@ -1645,6 +1669,17 @@ if(%in){
             }
             until: 5
         }
+        ModifyFunction{
+            signature: "setAudioBufferOutput(QAudioBufferOutput*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcAudioBufferOutput"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: [6, 8]
+        }
         InjectCode{
             until: 5
             ImportFile{
@@ -2659,6 +2694,28 @@ if(%in){
             }
             since: [6, 6]
         }
+        ModifyFunction{
+            signature: "setAudioBufferInput(QAudioBufferInput*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcAudioBufferInput"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: [6, 8]
+        }
+        ModifyFunction{
+            signature: "setVideoFrameInput(QVideoFrameInput*)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    variableName: "__rcVideoFrameInput"
+                    action: ReferenceCount.Set
+                }
+            }
+            since: [6, 8]
+        }
         since: [6, 2]
     }
     
@@ -2753,6 +2810,18 @@ if(%in){
     ObjectType{
         name: "QCapturableWindow"
         since: [6, 6]
+    }
+    ObjectType{
+        name: "QAudioBufferInput"
+        since: 6.8
+    }
+    ObjectType{
+        name: "QAudioBufferOutput"
+        since: 6.8
+    }
+    ObjectType{
+        name: "QVideoFrameInput"
+        since: 6.8
     }
     
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched parameter type 'QAbstractAudioBuffer*'"}

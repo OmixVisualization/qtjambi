@@ -143,9 +143,9 @@ TypeSystem{
                     metaName: "%3"
                 }
                 Text{content: "}QTJAMBI_CATCH(const JavaException& exn){\n"+
-                              "    if(Java::QtSerialBus::QCanBusException::isInstanceOf(%env, exn.object())){\n"+
+                              "    if(exn.isInstanceOf(%env, Java::QtSerialBus::QCanBusException::getClass(%env))){\n"+
                               "        if(%3){\n"+
-                              "            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.object());\n"+
+                              "            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.throwable(%env));\n"+
                               "            *%3 = qtjambi_cast<QString>(%env, message);\n"+
                               "        }\n"+
                               "    }else{\n"+
@@ -191,9 +191,9 @@ TypeSystem{
                     metaName: "%2"
                 }
                 Text{content: "}QTJAMBI_CATCH(const JavaException& exn){\n"+
-                              "    if(Java::QtSerialBus::QCanBusException::isInstanceOf(%env, exn.object())){\n"+
+                              "    if(exn.isInstanceOf(%env, Java::QtSerialBus::QCanBusException::getClass(%env))){\n"+
                               "        if(%2){\n"+
-                              "            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.object());\n"+
+                              "            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.throwable(%env));\n"+
                               "            *%2 = qtjambi_cast<QString>(%env, message);\n"+
                               "        }\n"+
                               "    }else{\n"+
@@ -394,9 +394,9 @@ TypeSystem{
                     metaName: "%2"
                 }
                 Text{content: "}QTJAMBI_CATCH(const JavaException& exn){\n"+
-                              "    if(Java::QtSerialBus::QCanBusException::isInstanceOf(%env, exn.object())){\n"+
+                              "    if(exn.isInstanceOf(%env, Java::QtSerialBus::QCanBusException::getClass(%env))){\n"+
                               "        if(%2){\n"+
-                              "            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.object());\n"+
+                              "            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.throwable(%env));\n"+
                               "            *%2 = qtjambi_cast<QString>(%env, message);\n"+
                               "        }\n"+
                               "    }else{\n"+
@@ -442,9 +442,9 @@ TypeSystem{
                     metaName: "%1"
                 }
                 Text{content: "}QTJAMBI_CATCH(const JavaException& exn){\n"+
-                              "    if(Java::QtSerialBus::QCanBusException::isInstanceOf(%env, exn.object())){\n"+
+                              "    if(exn.isInstanceOf(%env, Java::QtSerialBus::QCanBusException::getClass(%env))){\n"+
                               "        if(%1){\n"+
-                              "            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.object());\n"+
+                              "            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.throwable(%env));\n"+
                               "            *%1 = qtjambi_cast<QString>(%env, message);\n"+
                               "        }\n"+
                               "    }else{\n"+
@@ -516,9 +516,9 @@ TypeSystem{
                     metaName: "%2"
                 }
                 Text{content: "}QTJAMBI_CATCH(const JavaException& exn){\n"+
-                              "    if(Java::QtSerialBus::QCanBusException::isInstanceOf(%env, exn.object())){\n"+
+                              "    if(exn.isInstanceOf(%env, Java::QtSerialBus::QCanBusException::getClass(%env))){\n"+
                               "        if(%2){\n"+
-                              "            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.object());\n"+
+                              "            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.throwable(%env));\n"+
                               "            *%2 = qtjambi_cast<QString>(%env, message);\n"+
                               "        }\n"+
                               "    }else{\n"+
@@ -564,9 +564,9 @@ TypeSystem{
                     metaName: "%1"
                 }
                 Text{content: "}QTJAMBI_CATCH(const JavaException& exn){\n"+
-                              "    if(Java::QtSerialBus::QCanBusException::isInstanceOf(%env, exn.object())){\n"+
+                              "    if(exn.isInstanceOf(%env, Java::QtSerialBus::QCanBusException::getClass(%env))){\n"+
                               "        if(%1){\n"+
-                              "            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.object());\n"+
+                              "            jstring message = Java::QtSerialBus::QCanBusException::getMessage(%env, exn.throwable(%env));\n"+
                               "            *%1 = qtjambi_cast<QString>(%env, message);\n"+
                               "        }\n"+
                               "    }else{\n"+

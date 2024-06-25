@@ -469,6 +469,7 @@ static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope*){
     }
 };
 
+#if QT_VERSION < QT_VERSION_CHECK(6, 6, 0) || defined(QTJAMBI_CAST_DEPRECATED_TYPES)
 
 template<bool has_scope,
          bool is_pointer, bool is_const, bool is_reference,
@@ -504,6 +505,8 @@ static NativeType_out cast(JNIEnv *env, jobject in, const char*, QtJambiScope*){
         return QtJambiAPI::convertJavaObjectToNative<NativeType>(env, in);
     }
 };
+
+#endif //QT_VERSION < QT_VERSION_CHECK(6, 6, 0) || defined(QTJAMBI_CAST_DEPRECATED_TYPES)
 
 template<bool has_scope,
          bool is_pointer, bool is_const, bool is_reference,

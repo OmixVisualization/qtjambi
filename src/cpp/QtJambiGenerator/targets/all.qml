@@ -108,4 +108,5 @@ TypeSystem{
     LoadTypeSystem{name: "QtSpatialAudio";      generate: true; unless: "QTJAMBI_NO_SPATIALAUDIO";     since: [6, 4]}
     LoadTypeSystem{name: "QtGrpc";              generate: true; unless: "QTJAMBI_NO_GRPC";             since: [6, 5]}
     LoadTypeSystem{name: "QtProtobuf";          generate: true; unless: "QTJAMBI_NO_PROTOBUF";         since: [6, 5]}
+    LoadTypeSystem{name: "QtInsightTracker";    generate: true; unless: "QTJAMBI_NO_INSIGHTTRACKER";   since: [6, 5]}
 }

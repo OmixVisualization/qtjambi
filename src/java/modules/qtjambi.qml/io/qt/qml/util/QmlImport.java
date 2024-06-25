@@ -37,6 +37,7 @@ import java.lang.annotation.Target;
 
 /**
  * This annotation specified a package's major version for qml use and its java-defined qml types.
+ * @since QtJambi 6.3.2
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PACKAGE)

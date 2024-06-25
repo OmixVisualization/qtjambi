@@ -31,13 +31,16 @@ package io.qt.autotests;
 
 import static org.junit.Assert.*;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import io.qt.autotests.generated.General;
-import io.qt.help.QHelpSearchQuery;
+import io.qt.autotests.generated.*;
+import io.qt.core.QMetaType;
+import io.qt.core.QVersionNumber;
+import io.qt.help.*;
 
 public class TestHelpCloneable extends ApplicationInitializer {
 
@@ -46,6 +49,7 @@ public class TestHelpCloneable extends ApplicationInitializer {
         ApplicationInitializer.testInitialize();
     }
     
+    @Deprecated
 	@Test
 	public void run_clone_QHelpSearchQuery() {
 		QHelpSearchQuery org = new QHelpSearchQuery();
@@ -58,6 +62,48 @@ public class TestHelpCloneable extends ApplicationInitializer {
 		assertTrue("not java ownership", General.internalAccess.isJavaOwnership(clone2));
 		assertEquals(clone.fieldName(), clone2.fieldName());
 		assertEquals(clone.wordList(), clone2.wordList());
+	}
+	
+	@Test
+	public void run_clone_QHelpFilterData() {
+		QHelpFilterData org = new QHelpFilterData();
+		org.setComponents(Arrays.asList("A", "B", "C"));
+		org.setVersions(Arrays.asList(new QVersionNumber(1,0,0), new QVersionNumber(2,0,0)));
+		QHelpFilterData clone = org.clone();
+		assertTrue("not java ownership", General.internalAccess.isJavaOwnership(clone));
+		org.dispose();
+		QHelpFilterData clone2 = clone.clone();
+		assertTrue("not java ownership", General.internalAccess.isJavaOwnership(clone2));
+		assertEquals(clone.components(), clone2.components());
+		assertEquals(clone.versions(), clone2.versions());
+		assertEquals(clone, clone2);
+	}
+	
+	@Test
+	public void run_clone_QHelpLink() {
+		QHelpLink org = new QHelpLink();
+		org.setTitle("Title");
+		org.setUrl("https://www.qt.io");
+		QHelpLink clone = org.clone();
+		assertTrue("not java ownership", General.internalAccess.isJavaOwnership(clone));
+		org.dispose();
+		QHelpLink clone2 = clone.clone();
+		assertTrue("not java ownership", General.internalAccess.isJavaOwnership(clone2));
+		assertEquals(clone.title(), clone2.title());
+		assertEquals(clone.url(), clone2.url());
+	}
+	
+	@Test
+	public void run_clone_QHelpSearchResult() {
+		QHelpSearchResult org = new QHelpSearchResult("Title", "https://www.qt.io", "Snippet");
+		QHelpSearchResult clone = org.clone();
+		assertTrue("not java ownership", General.internalAccess.isJavaOwnership(clone));
+		org.dispose();
+		QHelpSearchResult clone2 = clone.clone();
+		assertTrue("not java ownership", General.internalAccess.isJavaOwnership(clone2));
+		assertEquals(clone.title(), clone2.title());
+		assertEquals(clone.url(), clone2.url());
+		assertEquals(clone.snippet(), clone2.snippet());
 	}
 
     public static void main(String args[]) {

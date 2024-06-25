@@ -330,6 +330,8 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
     }
     if(java_class->hasPaintMethod())
         writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/AboutToPaint")), included);
+    if(java_class->typeEntry()->isQAbstractItemModel())
+        writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/ModelAPI")), included);
 
     writeInclude(s, Include(Include::IncludePath, QStringLiteral(u"QtJambi/RegistryAPI")), included);
     s << Qt::endl;
@@ -339,7 +341,7 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
     }
 
     writeForwardDeclareSection(s, java_class);
-    writeInjectedCode(s, java_class, {CodeSnip::Position2, CodeSnip::Beginning});
+    writeInjectedCode(s, java_class, {CodeSnip::Position2});
 
     if (java_class->generateShellClass()) {
         if(java_class->hasVirtualDestructor()){
@@ -572,6 +574,8 @@ void CppHeaderGenerator::write(QTextStream &s, const MetaClass *java_class, int)
         }
         if(!java_class->implementableFunctions().isEmpty()){
             s << "    jmethodID __shell_javaMethod(int pos) const;" << Qt::endl;
+            if(java_class->typeEntry()->isQAbstractItemModel())
+                s << "    ModelData* __shell_modelData() const;" << Qt::endl;
         }
         if(!java_class->hasVirtualDestructor()){
             //writeVariablesSection(s, java_class, interfaceClass!=nullptr);

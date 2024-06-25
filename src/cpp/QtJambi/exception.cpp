@@ -32,6 +32,8 @@
 #include <QtCore/QThreadStorage>
 #include <QtCore/QSharedData>
 #include <QtCore/QByteArray>
+#include <thread>
+#include <sstream>
 #include "qtjambiapi.h"
 #include "jobjectwrapper.h"
 #include "exception.h"
@@ -42,11 +44,45 @@
 class JavaExceptionPrivate : public QSharedData{
 public:
     JavaExceptionPrivate() = default;
-    JavaExceptionPrivate(const JavaExceptionPrivate& copy)
-        : QSharedData(copy), m_throwable(copy.m_throwable), m_what(copy.m_what){}
+    JavaExceptionPrivate(const JavaExceptionPrivate& copy) = delete;
+    JavaExceptionPrivate(JavaExceptionPrivate&& copy) = delete;
     JavaExceptionPrivate(JNIEnv *env, jthrowable obj)
-        : QSharedData(), m_throwable(env, obj), m_what(){}
-    JObjectWrapper m_throwable;
+        : QSharedData(), m_throwable(jthrowable(env->NewGlobalRef(obj))), m_what(){}
+    ~JavaExceptionPrivate(){
+        if(m_throwable){
+            if(DefaultJniEnvironment env{0}){
+                jthrowable throwable = nullptr;
+                if(env->ExceptionCheck()){
+                    throwable = env->ExceptionOccurred();
+                    env->ExceptionClear();
+                }
+                env->DeleteGlobalRef(m_throwable);
+                if(throwable){
+                    env->Throw(throwable);
+                    env->DeleteLocalRef(throwable);
+                }
+            }
+        }
+    }
+    static void clearException(JNIEnv *env, JavaException& exn){
+        if(exn.p->m_throwable){
+            jthrowable throwable = nullptr;
+            if(env->ExceptionCheck()){
+                throwable = env->ExceptionOccurred();
+                env->ExceptionClear();
+            }
+            env->DeleteGlobalRef(exn.p->m_throwable);
+            exn.p->m_throwable = nullptr;
+            if(throwable){
+                env->Throw(throwable);
+                env->DeleteLocalRef(throwable);
+            }
+        }
+        exn.p->m_what.clear();
+        exn.p = nullptr;
+    }
+private:
+    jthrowable m_throwable = nullptr;
     QByteArray m_what;
     friend JavaException;
 };
@@ -72,7 +108,7 @@ void JavaException::update(JNIEnv *env)
 {
     try{
         if(env){
-            if(jthrowable t = object()){
+            if(jthrowable t = throwable(env)){
                 jstring msg = Java::Runtime::Throwable::tryGetMessage(env, t);
                 if(env->ExceptionCheck()){
                     env->ExceptionDescribe();
@@ -96,7 +132,7 @@ void JavaException::update(JNIEnv *env)
                     }
                 }
                 if(length>0){
-                    p->m_what.resize(length);
+                    p->m_what.fill(0, length+1);
                     env->GetStringUTFRegion(msg, 0, length, p->m_what.data());
                     if(env->ExceptionCheck()){
                         env->ExceptionDescribe();
@@ -127,9 +163,8 @@ char const* JavaException::what() const Q_DECL_NOEXCEPT
 }
 
 void JavaException::raiseInJava(JNIEnv* env) const {
-    jthrowable t = object();
-    if(t){
-        env->Throw(t);
+    if(p && p->m_throwable){
+        env->Throw(p->m_throwable);
     }
 }
 
@@ -137,29 +172,24 @@ JavaException* JavaException::clone() const{
     return new JavaException(*this);
 }
 
-jthrowable JavaException::object() const{
-    return reinterpret_cast<jthrowable>(p ? p->m_throwable.object() : nullptr);
-}
-
 void JavaException::addSuppressed(JNIEnv* env, const JavaException& exn) const{
     if(exn){
         try{
-            if(!object()){
+            if(!*this){
                 JavaException& _this = *const_cast<JavaException*>(this);
                 _this = exn;
             }else{
-                Java::Runtime::Throwable::addSuppressed(env, object(), exn.object());
+                Java::Runtime::Throwable::addSuppressed(env, throwable(env), exn.throwable(env));
             }
         }catch(const JavaException& _exn){ exn.report(env); _exn.report(env); }catch(...){}
     }
 }
 
 void JavaException::report(JNIEnv* env) const{
-    jthrowable t = object();
-    if(t){
+    if(*this){
         JniLocalFrame __jniLocalFrame(env, 200);
         try{
-            Java::QtJambi::ExceptionUtility::reportException(env, nullptr, t);
+            Java::QtJambi::ExceptionUtility::reportException(env, nullptr, throwable(env));
         }catch(const JavaException& exn){
             printf("QtJambi: exception pending at ExceptionUtility.reportException(...): %s\n", exn.what());
             printf("QtJambi: exception pending in native code: %s\n", what());
@@ -182,14 +212,26 @@ JavaException& JavaException::operator =(JavaException&& other) Q_DECL_NOEXCEPT 
 }
 
 JavaException::operator bool() const Q_DECL_NOEXCEPT {
-    return object();
+    return p && p->m_throwable;
+}
+
+bool JavaException::operator !() const Q_DECL_NOEXCEPT {
+    return !(p && p->m_throwable);
+}
+
+jthrowable JavaException::throwable(JNIEnv* env) const{
+    return p ? jthrowable(env->NewLocalRef(p->m_throwable)) : nullptr;
+}
+
+bool JavaException::isInstanceOf(JNIEnv* env, jclass exceptionType) const{
+    return p && p->m_throwable && env->IsInstanceOf(p->m_throwable, exceptionType);
 }
 
 void JavaException::raise() const{
-    if(object()){
+    if(*this){
 #if defined(Q_OS_ANDROID)
         if(JniEnvironment env{200}){
-            throw JavaException(env, object());
+            throw JavaException(env, throwable(env));
         }
 #endif
         JavaException e = *this;
@@ -205,8 +247,8 @@ void JavaException::raise() const{
 
 #ifdef QTJAMBI_STACKTRACE
 void JavaException::raise(JNIEnv* env, const char *methodName, const char *fileName, int lineNumber) const {
-    jthrowable t = object();
-    if(t){
+    if(*this){
+        jthrowable t = throwable(env);
         jstring jmethodName = methodName ? env->NewStringUTF(methodName) : nullptr;
         jstring jfileName = fileName ? env->NewStringUTF(fileName) : nullptr;
         try{
@@ -422,20 +464,18 @@ void JavaException::raiseQThreadAffinityException(JNIEnv* env, QAnyStringView me
 
 JNIEnv *currentJNIEnvironment(bool initializeJavaThread = true);
 
-struct ExceptionHandler{
-    enum State : quint8{
-        None = 0x0,
-        Blocking = 0x1,
-        Reraise = 0x2,
-        Keep = 0x4
-    };
-    ExceptionHandler() : exn(), methodName(nullptr), blocking(false), reraise(false) {}
-    ~ExceptionHandler(){
+struct ExceptionContainer{
+    std::thread::id thread_id;
+    JavaException exn;
+    const char* methodName;
+    ExceptionContainer() : thread_id(std::this_thread::get_id()), exn(), methodName(nullptr) {}
+    ~ExceptionContainer(){
         if(exn){
-            if(DefaultJniEnvironment env{200}){
+            if(JNIEnv *env = currentJNIEnvironment(false)){
+                JniLocalFrame frame(env, 200);
                 try{
                     jstring msg = methodName ? env->NewStringUTF(methodName) : nullptr;
-                    Java::QtJambi::ExceptionUtility::reportException(env, msg, exn.object());
+                    Java::QtJambi::ExceptionUtility::reportException(env, msg, exn.throwable(env));
                 }catch(const JavaException& _exn){
                     if(methodName){
                         printf("An exception occured in %s: %s\n", methodName, exn.what());
@@ -444,27 +484,48 @@ struct ExceptionHandler{
                     }
                     printf("An exception occured in ExceptionUtility.reportException(...): %s\n", _exn.what());
                 }
+                JavaExceptionPrivate::clearException(env, exn);
             }else if(methodName){
-                qCWarning(DebugAPI::internalCategory, "An exception occured in %s: %s", methodName, exn.what());
+                std::ostringstream oss;
+                oss << thread_id;
+                std::string thread_id_str = oss.str();
+                qCWarning(DebugAPI::internalCategory, "An exception occured in thread %s in %s: %s", thread_id_str.c_str(), methodName, exn.what());
             }else{
-                qCWarning(DebugAPI::internalCategory, "An exception occured: %s", exn.what());
+                std::ostringstream oss;
+                oss << thread_id;
+                std::string thread_id_str = oss.str();
+                qCWarning(DebugAPI::internalCategory, "An exception occured in thread %s: %s", thread_id_str.c_str(), exn.what());
             }
         }
     }
-    JavaException exn;
-    const char* methodName;
+    // QThreadStorage is needed because thread_local is deleted after JNI's thread detach and thus cannot treat java exceptions
+    static QThreadStorage<ExceptionContainer> exception;
+};
+QThreadStorage<ExceptionContainer> ExceptionContainer::exception;
+
+struct ExceptionHandler{
+    enum State : quint8{
+        None = 0x0,
+        Blocking = 0x1,
+        Reraise = 0x2,
+        Keep = 0x4
+    };
+    ExceptionHandler() : env(nullptr), blocking(false), reraise(false), hasException(false) {
+    }
+    JNIEnv *env;
     uint blocking : 1;
     uint reraise : 1;
     uint keep : 1;
-    static QThreadStorage<ExceptionHandler> storage;
+    uint hasException : 1;
+    static thread_local ExceptionHandler instance;
 };
 
-QThreadStorage<ExceptionHandler> ExceptionHandler::storage;
+thread_local ExceptionHandler ExceptionHandler::instance;
 
 QtJambiExceptionHandler::QtJambiExceptionHandler()
     : data(0)
 {
-    ExceptionHandler& exceptionHandler = ExceptionHandler::storage.localData();
+    ExceptionHandler& exceptionHandler = ExceptionHandler::instance;
     if(exceptionHandler.blocking){
         data |= ExceptionHandler::Blocking;
     }
@@ -478,13 +539,15 @@ QtJambiExceptionHandler::QtJambiExceptionHandler()
 }
 
 QtJambiExceptionHandler::~QtJambiExceptionHandler(){
-    ExceptionHandler::storage.localData().blocking = data;
+    ExceptionHandler::instance.blocking = data;
 }
 
 void QtJambiExceptionHandler::handle(JNIEnv *env, const JavaException& exn, const char* methodName){
     if(data){
-        ExceptionHandler& exceptionHandler = ExceptionHandler::storage.localData();
-        if(exceptionHandler.exn){
+        ExceptionHandler& exceptionHandler = ExceptionHandler::instance;
+        exceptionHandler.hasException = true;
+        ExceptionContainer& exceptionContainer = ExceptionContainer::exception.localData();
+        if(exceptionContainer.exn){
             if(!env){
                 env = currentJNIEnvironment();
                 if(!env){
@@ -496,14 +559,14 @@ void QtJambiExceptionHandler::handle(JNIEnv *env, const JavaException& exn, cons
                     return;
                 }else{
                     JniLocalFrame __jniLocalFrame(env, 200);
-                    exceptionHandler.exn.addSuppressed(env, exn);
+                    exceptionContainer.exn.addSuppressed(env, exn);
                 }
             }else{
-                exceptionHandler.exn.addSuppressed(env, exn);
+                exceptionContainer.exn.addSuppressed(env, exn);
             }
         }else{
-            exceptionHandler.exn = exn;
-            exceptionHandler.methodName = methodName;
+            exceptionContainer.exn = exn;
+            exceptionContainer.methodName = methodName;
         }
     }else if(exn){
         throw JavaException(exn);//JavaException(env, exn.object());
@@ -513,7 +576,7 @@ void QtJambiExceptionHandler::handle(JNIEnv *env, const JavaException& exn, cons
 QtJambiExceptionInhibitor::QtJambiExceptionInhibitor()
     : data(0)
 {
-    ExceptionHandler& exceptionHandler = ExceptionHandler::storage.localData();
+    ExceptionHandler& exceptionHandler = ExceptionHandler::instance;
     if(exceptionHandler.blocking){
         data |= ExceptionHandler::Blocking;
     }
@@ -527,13 +590,15 @@ QtJambiExceptionInhibitor::QtJambiExceptionInhibitor()
 }
 
 QtJambiExceptionInhibitor::~QtJambiExceptionInhibitor(){
-    ExceptionHandler::storage.localData().blocking = (data & ExceptionHandler::Blocking);
+    ExceptionHandler::instance.blocking = (data & ExceptionHandler::Blocking);
 }
 
 void QtJambiExceptionInhibitor::handle(JNIEnv *env, const JavaException& exn, const char* methodName){
     if(!(data & ExceptionHandler::Blocking) || (data & ExceptionHandler::Reraise)){
-        ExceptionHandler& exceptionHandler = ExceptionHandler::storage.localData();
-        if(exceptionHandler.exn){
+        ExceptionHandler& exceptionHandler = ExceptionHandler::instance;
+        exceptionHandler.hasException = true;
+        ExceptionContainer& exceptionContainer = ExceptionContainer::exception.localData();
+        if(exceptionContainer.exn){
             if(!env){
                 env = currentJNIEnvironment();
                 if(!env){
@@ -545,14 +610,14 @@ void QtJambiExceptionInhibitor::handle(JNIEnv *env, const JavaException& exn, co
                     return;
                 }else{
                     JniLocalFrame __jniLocalFrame(env, 200);
-                    exceptionHandler.exn.addSuppressed(env, exn);
+                    exceptionContainer.exn.addSuppressed(env, exn);
                 }
             }else{
-                exceptionHandler.exn.addSuppressed(env, exn);
+                exceptionContainer.exn.addSuppressed(env, exn);
             }
         }else{
-            exceptionHandler.exn = exn;
-            exceptionHandler.methodName = methodName;
+            exceptionContainer.exn = exn;
+            exceptionContainer.methodName = methodName;
         }
     }else{
         if(!env){
@@ -569,7 +634,7 @@ void QtJambiExceptionInhibitor::handle(JNIEnv *env, const JavaException& exn, co
         JniLocalFrame __jniLocalFrame(env, 200);
         try{
             jstring msg = methodName ? env->NewStringUTF(methodName) : nullptr;
-            Java::QtJambi::ExceptionUtility::reportException(env, msg, exn.object());
+            Java::QtJambi::ExceptionUtility::reportException(env, msg, exn.throwable(env));
         }catch(const JavaException& _exn){
             if(methodName){
                 printf("An exception occured in %s: %s\n", methodName, exn.what());
@@ -584,7 +649,7 @@ void QtJambiExceptionInhibitor::handle(JNIEnv *env, const JavaException& exn, co
 QtJambiExceptionBlocker::QtJambiExceptionBlocker()
     : data(0)
 {
-    ExceptionHandler& exceptionHandler = ExceptionHandler::storage.localData();
+    ExceptionHandler& exceptionHandler = ExceptionHandler::instance;
     if(exceptionHandler.blocking){
         data |= ExceptionHandler::Blocking;
     }
@@ -596,23 +661,25 @@ QtJambiExceptionBlocker::QtJambiExceptionBlocker()
 }
 
 QtJambiExceptionBlocker::~QtJambiExceptionBlocker(){
-    ExceptionHandler::storage.localData().blocking = (data & ExceptionHandler::Blocking);
-    ExceptionHandler::storage.localData().reraise = (data & ExceptionHandler::Reraise);
-    ExceptionHandler::storage.localData().keep = (data & ExceptionHandler::Keep);
+    ExceptionHandler::instance.blocking = (data & ExceptionHandler::Blocking);
+    ExceptionHandler::instance.reraise = (data & ExceptionHandler::Reraise);
+    ExceptionHandler::instance.keep = (data & ExceptionHandler::Keep);
 }
 
 void QtJambiExceptionBlocker::release(JNIEnv *env){
-    ExceptionHandler& exceptionHandler = ExceptionHandler::storage.localData();
-    if(exceptionHandler.exn && !exceptionHandler.keep){
-        JavaException exn = exceptionHandler.exn;
-        exceptionHandler.exn = JavaException();
+    ExceptionHandler& exceptionHandler = ExceptionHandler::instance;
+    if(exceptionHandler.hasException && !exceptionHandler.keep){
+        ExceptionContainer& exceptionContainer = ExceptionContainer::exception.localData();
+        JavaException exn = exceptionContainer.exn;
+        exceptionHandler.hasException = false;
+        exceptionContainer.exn = JavaException();
         if(exceptionHandler.reraise/*(data & ExceptionHandler::Reraise)*/){
-            exceptionHandler.methodName = nullptr;
+            exceptionContainer.methodName = nullptr;
             if(exn)
                 throw exn;
         }else{
-            const char* methodName = exceptionHandler.methodName;
-            exceptionHandler.methodName = nullptr;
+            const char* methodName = exceptionContainer.methodName;
+            exceptionContainer.methodName = nullptr;
             if(!env){
                 env = currentJNIEnvironment();
                 if(!env){
@@ -627,7 +694,7 @@ void QtJambiExceptionBlocker::release(JNIEnv *env){
             JniLocalFrame __jniLocalFrame(env, 200);
             try{
                 jstring msg = methodName ? env->NewStringUTF(methodName) : nullptr;
-                Java::QtJambi::ExceptionUtility::reportException(env, msg, exn.object());
+                Java::QtJambi::ExceptionUtility::reportException(env, msg, exn.throwable(env));
             }catch(const JavaException& _exn){
                 if(methodName){
                     printf("An exception occured in %s: %s\n", methodName, exn.what());
@@ -642,20 +709,22 @@ void QtJambiExceptionBlocker::release(JNIEnv *env){
 
 QtJambiExceptionRaiser::QtJambiExceptionRaiser()
     : data(0) {
-    ExceptionHandler& exceptionHandler = ExceptionHandler::storage.localData();
+    ExceptionHandler& exceptionHandler = ExceptionHandler::instance;
     data = exceptionHandler.reraise;
     exceptionHandler.reraise = true;
 }
 
 QtJambiExceptionRaiser::~QtJambiExceptionRaiser(){
-    ExceptionHandler::storage.localData().reraise = data;
+    ExceptionHandler::instance.reraise = data;
 }
 
 void QtJambiExceptionRaiser::raise(JNIEnv *){
-    ExceptionHandler& exceptionHandler = ExceptionHandler::storage.localData();
-    if(exceptionHandler.exn){
-        JavaException exn = exceptionHandler.exn;
-        exceptionHandler.exn = JavaException();
+    ExceptionHandler& exceptionHandler = ExceptionHandler::instance;
+    if(exceptionHandler.hasException){
+        ExceptionContainer& exceptionContainer = ExceptionContainer::exception.localData();
+        JavaException exn = exceptionContainer.exn;
+        exceptionHandler.hasException = false;
+        exceptionContainer.exn = JavaException();
         if(exn)
             throw exn;
     }
@@ -663,16 +732,166 @@ void QtJambiExceptionRaiser::raise(JNIEnv *){
 
 QtJambiExceptionUnraiser::QtJambiExceptionUnraiser()
     : data(0) {
-    ExceptionHandler& exceptionHandler = ExceptionHandler::storage.localData();
+    ExceptionHandler& exceptionHandler = ExceptionHandler::instance;
     data = exceptionHandler.reraise;
     exceptionHandler.reraise = false;
     exceptionHandler.keep = data;
 }
 
 QtJambiExceptionUnraiser::~QtJambiExceptionUnraiser(){
-    ExceptionHandler& exceptionHandler = ExceptionHandler::storage.localData();
+    ExceptionHandler& exceptionHandler = ExceptionHandler::instance;
     exceptionHandler.reraise = data;
     exceptionHandler.keep = false;
+}
+
+JNIEnv* threadLocalEnvironment(ExceptionHandler& exceptionHandler){
+    static ResettableBoolFlag useFastEnv("io.qt.experimental.fast-jni-for-overrides");
+    if(useFastEnv){
+        if(!exceptionHandler.env)
+            exceptionHandler.env = currentJNIEnvironment();
+        return exceptionHandler.env;
+    }else{
+        return currentJNIEnvironment();
+    }
+}
+
+JniEnvironmentExceptionHandler::JniEnvironmentExceptionHandler(int capacity)
+    : JniEnvironment(false),
+    data(0)
+{
+    ExceptionHandler& exceptionHandler = ExceptionHandler::instance;
+    if(exceptionHandler.blocking){
+        data |= ExceptionHandler::Blocking;
+    }
+    if(exceptionHandler.reraise){
+        data |= ExceptionHandler::Reraise;
+    }
+    if(exceptionHandler.keep){
+        data |= ExceptionHandler::Keep;
+    }
+    exceptionHandler.blocking = false;
+    initialize(threadLocalEnvironment(exceptionHandler), capacity);
+}
+
+JniEnvironmentExceptionHandler::~JniEnvironmentExceptionHandler(){
+    ExceptionHandler::instance.blocking = data;
+}
+
+void JniEnvironmentExceptionHandler::handleException(const JavaException& exn, const char* methodName){
+    if(data){
+        ExceptionHandler& exceptionHandler = ExceptionHandler::instance;
+        exceptionHandler.hasException = true;
+        ExceptionContainer& exceptionContainer = ExceptionContainer::exception.localData();
+        if(exceptionContainer.exn){
+            exceptionContainer.exn.addSuppressed(m_env, exn);
+        }else{
+            exceptionContainer.exn = exn;
+            exceptionContainer.methodName = methodName;
+        }
+    }else if(exn){
+        throw JavaException(exn);//JavaException(env, exn.object());
+    }
+}
+
+JniEnvironmentExceptionInhibitor::JniEnvironmentExceptionInhibitor(int capacity)
+    : JniEnvironment(false),
+    data(0)
+{
+    ExceptionHandler& exceptionHandler = ExceptionHandler::instance;
+    if(exceptionHandler.blocking){
+        data |= ExceptionHandler::Blocking;
+    }
+    if(exceptionHandler.reraise){
+        data |= ExceptionHandler::Reraise;
+    }
+    if(exceptionHandler.keep){
+        data |= ExceptionHandler::Keep;
+    }
+    exceptionHandler.blocking = false;
+    initialize(threadLocalEnvironment(exceptionHandler), capacity);
+}
+
+JniEnvironmentExceptionInhibitor::~JniEnvironmentExceptionInhibitor(){
+    ExceptionHandler::instance.blocking = (data & ExceptionHandler::Blocking);
+}
+
+void JniEnvironmentExceptionInhibitor::handleException(const JavaException& exn, const char* methodName){
+    if(!(data & ExceptionHandler::Blocking) || (data & ExceptionHandler::Reraise)){
+        ExceptionHandler& exceptionHandler = ExceptionHandler::instance;
+        exceptionHandler.hasException = true;
+        ExceptionContainer& exceptionContainer = ExceptionContainer::exception.localData();
+        if(exceptionContainer.exn){
+            exceptionContainer.exn.addSuppressed(m_env, exn);
+        }else{
+            exceptionContainer.exn = exn;
+            exceptionContainer.methodName = methodName;
+        }
+    }else{
+        JniLocalFrame __jniLocalFrame(m_env, 200);
+        try{
+            jstring msg = methodName ? m_env->NewStringUTF(methodName) : nullptr;
+            Java::QtJambi::ExceptionUtility::reportException(m_env, msg, exn.throwable(m_env));
+        }catch(const JavaException& _exn){
+            if(methodName){
+                printf("An exception occured in %s: %s\n", methodName, exn.what());
+            }else{
+                printf("An exception occured: %s\n", exn.what());
+            }
+            printf("An exception occured in ExceptionUtility.reportException(...): %s\n", _exn.what());
+        }
+    }
+}
+
+void releaseExceptionImpl(JNIEnv *env){
+    ExceptionHandler& exceptionHandler = ExceptionHandler::instance;
+    if(exceptionHandler.hasException && !exceptionHandler.keep){
+        ExceptionContainer& exceptionContainer = ExceptionContainer::exception.localData();
+        JavaException exn = exceptionContainer.exn;
+        exceptionHandler.hasException = false;
+        exceptionContainer.exn = JavaException();
+        if(exceptionHandler.reraise/*(data & ExceptionHandler::Reraise)*/){
+            exceptionContainer.methodName = nullptr;
+            if(exn)
+                throw exn;
+        }else{
+            const char* methodName = exceptionContainer.methodName;
+            exceptionContainer.methodName = nullptr;
+            JniLocalFrame __jniLocalFrame(env, 200);
+            try{
+                jstring msg = methodName ? env->NewStringUTF(methodName) : nullptr;
+                Java::QtJambi::ExceptionUtility::reportException(env, msg, exn.throwable(env));
+            }catch(const JavaException& _exn){
+                if(methodName){
+                    printf("An exception occured in %s: %s\n", methodName, exn.what());
+                }else{
+                    printf("An exception occured: %s\n", exn.what());
+                }
+                printf("An exception occured in ExceptionUtility.reportException(...): %s\n", _exn.what());
+            }
+        }
+    }
+}
+
+void JniEnvironmentExceptionHandlerAndBlocker::releaseException(){
+    releaseExceptionImpl(environment());
+}
+
+JniEnvironmentExceptionHandlerAndBlocker::~JniEnvironmentExceptionHandlerAndBlocker(){
+    ExceptionHandler& exceptionHandler = ExceptionHandler::instance;
+    exceptionHandler.blocking = (data & ExceptionHandler::Blocking);
+    exceptionHandler.reraise = (data & ExceptionHandler::Reraise);
+    exceptionHandler.keep = (data & ExceptionHandler::Keep);
+}
+
+void JniEnvironmentExceptionInhibitorAndBlocker::releaseException(){
+    releaseExceptionImpl(environment());
+}
+
+JniEnvironmentExceptionInhibitorAndBlocker::~JniEnvironmentExceptionInhibitorAndBlocker(){
+    ExceptionHandler& exceptionHandler = ExceptionHandler::instance;
+    exceptionHandler.blocking = (data & ExceptionHandler::Blocking);
+    exceptionHandler.reraise = (data & ExceptionHandler::Reraise);
+    exceptionHandler.keep = (data & ExceptionHandler::Keep);
 }
 
 #if defined(QTJAMBI_CENTRAL_TRY_CATCH)

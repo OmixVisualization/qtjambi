@@ -32,12 +32,20 @@ package io.qt.quick;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
+import io.qt.*;
+
+/**
+ * <p>The QSGSimpleMaterialShader class provides a convenient way of building custom OpenGL-based materials for the scene graph.</p>
+ * <p>Java wrapper for Qt class <code><a href="https://doc.qt.io/qt-5/qsgsimplematerialshader.html">QSGSimpleMaterialShader</a></code></p>
+ * <p><b>Warning:</b> This utility class is only functional when running with the legacy OpenGL renderer of the Qt Quick scenegraph. Its usage is not recommended in new application code.</p>
+ */
 public abstract class QSGSimpleMaterialShader<State> extends QSGMaterialShader {
 	
-	public QSGSimpleMaterialShader(Class<State> type) {
+	public QSGSimpleMaterialShader(@StrictNonNull Class<State> type) {
 		super();
-		m_type = type;
+		m_type = Objects.requireNonNull(type);
 	}
 
 	@Override
@@ -62,7 +70,16 @@ public abstract class QSGSimpleMaterialShader<State> extends QSGMaterialShader {
         resolveUniforms();
     }
 
+	/**
+	 * <p>Returns the name for the transform matrix uniform of this item. The default value is qt_Matrix.</p>
+	 * <p>See <code><a href="https://doc.qt.io/qt-5/qsgsimplematerialshader.html#uniformMatrixName">QSGSimpleMaterialShader::<wbr/>uniformMatrixName()const</a></code></p>
+	 */
     public final String uniformMatrixName() { return "qt_Matrix"; }
+    
+    /**
+     * <p>Returns the name for the opacity uniform of this item. The default value is qt_Opacity.</p>
+     * <p>See <code><a href="https://doc.qt.io/qt-5/qsgsimplematerialshader.html#uniformOpacityName">QSGSimpleMaterialShader::<wbr/>uniformOpacityName()const</a></code></p>
+     */
     public final String uniformOpacityName() { return "qt_Opacity"; }
 
     @Override
@@ -89,11 +106,23 @@ public abstract class QSGSimpleMaterialShader<State> extends QSGMaterialShader {
         updateState(ns, old);
     }
     
-
+    /**
+     * <p>Called whenever the state of this shader should be updated from oldState to newState, typical for each new set of geometries being drawn.</p>
+     * <p>Both the old and the new state are passed in so that the implementation can compare and minimize the state changes when applicable.</p>
+     * <p>See <code><a href="https://doc.qt.io/qt-5/qsgsimplematerialshader.html#updateState-1">QSGSimpleMaterialShader::<wbr/>updateState(const State *, const State *)</a></code></p>
+     */
     public abstract void updateState(State newState, State oldState);
 
+    /**
+     * <p>Reimplement this function to resolve the location of named uniforms in the shader program.</p>
+     * <p>This function is called when the material shader is initialized.</p>
+     * <p>See <code><a href="https://doc.qt.io/qt-5/qsgsimplematerialshader.html#resolveUniforms">QSGSimpleMaterialShader::<wbr/>resolveUniforms()</a></code></p>
+     */
     public void resolveUniforms() {}
 
+    /**
+     * <p>See <code><a href="https://doc.qt.io/qt-5/qsgsimplematerialshader.html#attributes">QSGSimpleMaterialShader::<wbr/>attributes()const</a></code></p>
+     */
     public abstract List<String> attributes();
 
     @Override
@@ -106,9 +135,6 @@ public abstract class QSGSimpleMaterialShader<State> extends QSGMaterialShader {
     private final Class<State> m_type;
     private int m_id_matrix;
     private int m_id_opacity;
-
-    private ByteBuffer m_attribute_name_data;
-    private ArrayList<String> m_attribute_pointers = new ArrayList<>();
     
     private static native boolean isOpenGL();
 }

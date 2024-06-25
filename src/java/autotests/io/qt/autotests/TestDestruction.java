@@ -33,6 +33,7 @@ import static org.junit.Assert.*;
 import java.lang.ref.*;
 import java.util.*;
 import org.junit.*;
+
 import io.qt.autotests.generated.*;
 import io.qt.core.*;
 import io.qt.internal.*;
@@ -109,7 +110,7 @@ public class TestDestruction extends ApplicationInitializer {
             int i = shortClassName.lastIndexOf('.');
             if(i > 0)
                 shortClassName = shortClassName.substring(i + 1);
-            return shortClassName + ".ctor " + className + "@" + System.identityHashCode(o) + "; thread=" + Thread.currentThread().getId() + "; id=" + _id;
+            return shortClassName + ".ctor " + className + "@" + System.identityHashCode(o) + "; thread=" + ApplicationInitializer.currentThreadToString() + "; id=" + _id;
         });
         WeakReference<OrdinaryDestroyed> wr = new WeakReference<>(o, weakReferenceQueue);
         PhantomReference<OrdinaryDestroyed> pr = new PhantomReference<>(o, phantomReferenceQueue);
@@ -453,7 +454,7 @@ public class TestDestruction extends ApplicationInitializer {
         	super(counter);
             this.id = id;
             io.qt.QtUtilities.getSignalOnDispose(this).connect(counter::onDisposed, Qt.ConnectionType.DirectConnection);
-            java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, "MyOrdinaryDestroyed.ctor() " + getClass().getName() + "@" + System.identityHashCode(this) + "; thread=" + Thread.currentThread().getId() + "; id=" + id);
+            java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINER, "MyOrdinaryDestroyed.ctor() " + getClass().getName() + "@" + System.identityHashCode(this) + "; thread=" + ApplicationInitializer.currentThreadToString() + "; id=" + id);
         }
 
         public Integer getId() {

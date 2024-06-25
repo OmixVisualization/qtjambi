@@ -41,7 +41,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.PACKAGE)
-@Deprecated
+@Deprecated(forRemoval=true, since="QtJambi 6.3.2")
 public @interface QmlImportMajorVersion {
 	int value();
 }

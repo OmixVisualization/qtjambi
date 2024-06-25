@@ -1553,11 +1553,11 @@ final class LibraryUtility {
 	        case IOS: 
 	        case MacOS: 
 	        	{
-	        		Availability availability = getLibraryAvailability(library, library + ".framework/" + library, Collections.emptyList());
+	        		Availability availability = getLibraryAvailability(library, library + ".framework/" + library, Collections.emptyList(), null);
 	        		if(availability.isAvailable()) {
 	        			libraryPlatformName = library + ".framework/" + library;
 	        		}else {
-	        			availability = getLibraryAvailability(library, "lib" + library + ".dylib", Collections.emptyList());
+	        			availability = getLibraryAvailability(library, "lib" + library + ".dylib", Collections.emptyList(), null);
 	        			if(availability.isAvailable()) {
 	        				libraryPlatformName = "lib" + library + ".dylib";
 	        			}else {
@@ -1594,7 +1594,7 @@ final class LibraryUtility {
 				return;
 	        }
     	}
-    	loadNativeLibrary(Object.class, getLibraryAvailability(library, libraryPlatformName, Collections.emptyList()), null);
+    	loadNativeLibrary(Object.class, getLibraryAvailability(library, libraryPlatformName, Collections.emptyList(), null), null);
     }
     
     static void loadQtJambiLibrary() {
@@ -1606,21 +1606,21 @@ final class LibraryUtility {
     	} catch (Throwable e) {
     		java.util.logging.Logger.getLogger("io.qt.internal").log(java.util.logging.Level.SEVERE, "Error while loading system library", e);
     	}
-    	Availability availability = getLibraryAvailability("Qt", "Core", LIBINFIX, null, configuration, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
+    	Availability availability = getLibraryAvailability("Qt", "Core", LIBINFIX, null, configuration, null, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
     	if(!availability.isAvailable()) {
 			if(configuration==LibraryBundle.Configuration.Release) {
 				// try to run qtjambi with debug libraries instead
 				configuration=LibraryBundle.Configuration.Debug;
-				Availability _availability = getLibraryAvailability("Qt", "Core", LIBINFIX, null, configuration, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
+				Availability _availability = getLibraryAvailability("Qt", "Core", LIBINFIX, null, configuration, null, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
 				if(_availability.isAvailable())
 					availability = _availability;
 			}else {
 				if(dontUseQtFrameworks==null) {
 					dontUseQtFrameworks = Boolean.TRUE;
-					Availability _availability = getLibraryAvailability("Qt", "Core", LIBINFIX, null, configuration, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
+					Availability _availability = getLibraryAvailability("Qt", "Core", LIBINFIX, null, configuration, null, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
 					if(!_availability.isAvailable()) {
 						configuration=LibraryBundle.Configuration.Debug;
-						_availability = getLibraryAvailability("Qt", "Core", LIBINFIX, null, configuration, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
+						_availability = getLibraryAvailability("Qt", "Core", LIBINFIX, null, configuration, null, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
 						if(_availability.isAvailable())
 							availability = _availability;
 					}
@@ -1633,7 +1633,7 @@ final class LibraryUtility {
 				    		isMinGWBuilt = new File(stdCAvailability.file.getParentFile(), "Qt"+QtJambi_LibraryUtilities.qtMajorVersion+"Core.dll").isFile();
 				    	}
 				    	if(isMinGWBuilt) {
-				    		availability = getLibraryAvailability("Qt", "Core", LIBINFIX, null, configuration, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
+				    		availability = getLibraryAvailability("Qt", "Core", LIBINFIX, null, configuration, null, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion);
 				    	}
 			    	}
 				}
@@ -1861,11 +1861,10 @@ final class LibraryUtility {
     }
     
     private static File loadQtJambiLibrary(Class<?> callerClass, String prefix, String library, int... versionArray) {
-    	Availability availability = getQtJambiLibraryAvailability(prefix, library, null, null, configuration, versionArray);
+    	Availability availability = getQtJambiLibraryAvailability(prefix, library, null, null, configuration, null, versionArray);
     	if(!availability.isAvailable()
     			&& versionArray!=null 
         		&& versionArray.length==3 
-        		&& !dontSearchDeploymentSpec 
         		&& !noNativeDeployment) {
         	String className = callerClass.getName();
         	int idx = className.lastIndexOf('.');
@@ -1945,7 +1944,7 @@ final class LibraryUtility {
 		    				_debuginfoDirectory = debuginfoDirectory;
 		    			}
 		    			final File nativeFile = new File(_directory, moduleName + infix + qtjambiVersion+".jar");
-		    			if(nativeFile.exists()) {
+		    			if(nativeFile.exists() && !dontSearchDeploymentSpec) {
 		    				try {
 								URL nativeFileURL = CoreUtility.createURL("jar:"+nativeFile.toURI()+DEPLOY_XML);
 								LibraryBundle deployment = null;
@@ -1989,12 +1988,14 @@ final class LibraryUtility {
 									}
 								}
 								if(deployment!=null) {
-				                	availability = getQtJambiLibraryAvailability(prefix, library, null, null, configuration, versionArray);
+				                	availability = getQtJambiLibraryAvailability(prefix, library, null, null, configuration, moduleName + infix, versionArray);
 								}
 							} catch (ParserConfigurationException | SAXException | ZipException e) {
 								Logger.getLogger("io.qt.internal").log(Level.WARNING, String.format("Unable to load native libraries from %1$s: %2$s", nativeFile.getName(), e.getMessage()), e);
 							} catch (IOException e) {
 							}
+		    			}else {
+		    				availability = getQtJambiLibraryAvailability(prefix, library, null, null, configuration, moduleName + infix, versionArray);
 		    			}
 	    			}
 	    		}
@@ -2016,7 +2017,7 @@ final class LibraryUtility {
 				return;
 		}
     	LibVersion libVersion = getLibVersion(callerClass);
-    	Availability availability = getLibraryAvailability("Qt", library, LIBINFIX, null, configuration, libVersion.qtMajorVersion, libVersion.qtMinorVersion);
+    	Availability availability = getLibraryAvailability("Qt", library, LIBINFIX, null, configuration, null, libVersion.qtMajorVersion, libVersion.qtMinorVersion);
     	switch(libraryRequirementMode) {
 		case ProvideOnly:
 			availability.extractLibrary();
@@ -2141,12 +2142,12 @@ final class LibraryUtility {
     
     static boolean isAvailableQtLibrary(Class<?> callerClass, String library) {
     	LibVersion version = getLibVersion(callerClass);
-    	return getLibraryAvailability("Qt", library, LIBINFIX, null, configuration, version.qtMajorVersion, version.qtMinorVersion).isAvailable();
+    	return getLibraryAvailability("Qt", library, LIBINFIX, null, configuration, null, version.qtMajorVersion, version.qtMinorVersion).isAvailable();
     }
     
     static Availability getQtLibraryAvailability(Class<?> callerClass, String library) {
     	LibVersion version = getLibVersion(callerClass);
-    	return getLibraryAvailability("Qt", library, LIBINFIX, null, configuration, version.qtMajorVersion, version.qtMinorVersion);
+    	return getLibraryAvailability("Qt", library, LIBINFIX, null, configuration, null, version.qtMajorVersion, version.qtMinorVersion);
     }
     
     static boolean isAvailableLibrary(String library, String version) {
@@ -2162,41 +2163,45 @@ final class LibraryUtility {
 				}
 			}
 	    	if(iparts!=null)
-	    		return getLibraryAvailability(null, library, null, null, configuration, iparts).isAvailable();
+	    		return getLibraryAvailability(null, library, null, null, configuration, null, iparts).isAvailable();
     	}
     	return getLibraryAvailability(null, library, null, version, configuration, null).isAvailable();
     }
     
     private static class Availability{
-    	public Availability(String libraryRawName, File file, String libFormat, List<String> replacements) {
+    	public Availability(String libraryRawName, File file, String libFormat, List<String> replacements, String expectedModuleName) {
 			super();
 			this.libraryRawName = libraryRawName;
 			this.file = file;
 			this.entry = null;
 			this.libFormat = libFormat;
 			this.replacements = replacements;
+			this.expectedModuleName = expectedModuleName;
 		}
-    	public Availability(String libraryRawName, String libFormat, List<String> replacements) {
+    	public Availability(String libraryRawName, String libFormat, List<String> replacements, String expectedModuleName) {
 			super();
 			this.libraryRawName = libraryRawName;
 			this.file = null;
 			this.entry = null;
 			this.libFormat = libFormat;
 			this.replacements = replacements;
+			this.expectedModuleName = expectedModuleName;
 		}
-    	public Availability(String libraryRawName, Library entry, File file, String libFormat, Iterable<String> replacements) {
+    	public Availability(String libraryRawName, Library entry, File file, String libFormat, Iterable<String> replacements, String expectedModuleName) {
 			super();
 			this.libraryRawName = libraryRawName;
 			this.file = file;
 			this.entry = entry;
 			this.libFormat = libFormat;
 			this.replacements = replacements;
+			this.expectedModuleName = expectedModuleName;
 		}
     	final String libraryRawName;
 		final File file;
 		final Library entry;
 		final Iterable<String> replacements;
 		final String libFormat;
+		final String expectedModuleName;
 		boolean isAvailable() {
 			return (file!=null && file.exists()) || entry!=null;
 		}
@@ -2212,23 +2217,23 @@ final class LibraryUtility {
 		}
     }
 
-    private static Availability getQtJambiLibraryAvailability(String qtprefix, String library, String libInfix, String versionStrg, LibraryBundle.Configuration configuration, int... version) {
+    private static Availability getQtJambiLibraryAvailability(String qtprefix, String library, String libInfix, String versionStrg, LibraryBundle.Configuration configuration, String expectedModuleName, int... version) {
     	List<String> replacements = new ArrayList<>();
     	String libFormat = qtjambiLibraryName(qtprefix, library, dontUseQtJambiFrameworks!=null && dontUseQtJambiFrameworks, configuration, replacements, version);
-    	Availability av = getLibraryAvailability(qtprefix==null ? library : qtprefix+library, libFormat, replacements);
+    	Availability av = getLibraryAvailability(qtprefix==null ? library : qtprefix+library, libFormat, replacements, expectedModuleName);
     	if(!av.isAvailable() && operatingSystem==OperatingSystem.MacOS && dontUseQtJambiFrameworks!=null && dontUseQtJambiFrameworks) {
 			libFormat = qtjambiLibraryName(qtprefix, library, false, configuration, replacements, version);
-			Availability av2 = getLibraryAvailability(qtprefix==null ? library : qtprefix+library, libFormat, replacements);
+			Availability av2 = getLibraryAvailability(qtprefix==null ? library : qtprefix+library, libFormat, replacements, expectedModuleName);
 			if(av2.isAvailable())
 				av = av2;
     	}
     	return av;
     }
 
-    private static Availability getLibraryAvailability(String qtprefix, String library, String libInfix, String versionStrg, LibraryBundle.Configuration configuration, int... version) {
+    private static Availability getLibraryAvailability(String qtprefix, String library, String libInfix, String versionStrg, LibraryBundle.Configuration configuration, String expectedModuleName, int... version) {
     	List<String> replacements = new ArrayList<>();
     	String libFormat = qtLibraryName(qtprefix, library, libInfix, versionStrg, configuration, replacements, version);  // "QtDBus" => "libQtDBus.so.4"
-    	return getLibraryAvailability(qtprefix==null ? library : qtprefix+library, libFormat, replacements);
+    	return getLibraryAvailability(qtprefix==null ? library : qtprefix+library, libFormat, replacements, expectedModuleName);
     }
     
     private static List<String> computeLibraryPaths(){
@@ -2283,7 +2288,7 @@ final class LibraryUtility {
         return mergeJniLibdir(libraryPaths);
     }
     
-    private static Availability getLibraryAvailability(String libraryRawName, String libFormat, List<String> replacements) {
+    private static Availability getLibraryAvailability(String libraryRawName, String libFormat, List<String> replacements, String expectedModuleName) {
     	if(operatingSystem!=OperatingSystem.Android
     			&& !useStaticLibs) {
 	    	List<String> libraryPaths = null;
@@ -2299,7 +2304,7 @@ final class LibraryUtility {
 	        	if(!noNativeDeployment) {
 		        	Library entry = LibraryBundle.findLibrary(lib);
 		        	if(entry!=null) {
-		        		return new Availability(libraryRawName, entry, entry.extractionPath(), libFormat, replacements);
+		        		return new Availability(libraryRawName, entry, entry.extractionPath(), libFormat, replacements, expectedModuleName);
 		        	}
 	        	}
 	        	if(libraryPaths==null)
@@ -2307,7 +2312,7 @@ final class LibraryUtility {
 		        for (String path : libraryPaths) {
 		            File f = new File(path, lib);
 		            if (f.exists()) {
-		            	return new Availability(libraryRawName, f, libFormat, replacements);
+		            	return new Availability(libraryRawName, f, libFormat, replacements, expectedModuleName);
 		            }
 		        }
 	        }while(iter.hasNext());
@@ -2324,11 +2329,11 @@ final class LibraryUtility {
 	        	}
 	    		File f = new File(dir, "lib"+lib+".so");
 	    		if (f.exists()) {
-	            	return new Availability(libraryRawName, f, libFormat, replacements);
+	            	return new Availability(libraryRawName, f, libFormat, replacements, expectedModuleName);
 	            }
 	        }while(iter.hasNext());
     	}
-        return new Availability(libraryRawName, libFormat, replacements);
+        return new Availability(libraryRawName, libFormat, replacements, expectedModuleName);
     }
     
     private static native String libraryFilePath();
@@ -2389,11 +2394,15 @@ final class LibraryUtility {
     		        if(availability.entry!=null) {
     		        	message = String.format("Library %1$s (%2$s) was not found in %3$s", availability.libraryRawName, String.join(", ", fileNames), availability.entry.source());
     		        }else {
-	    	    		if (System.getProperties().containsKey("io.qt.library-path-override")) {
-	    	    			message = String.format("Library %1$s (%2$s) was not found in 'io.qt.library-path-override=%3$s%4$s%5$s'", availability.libraryRawName, String.join(", ", fileNames), System.getProperty("io.qt.library-path-override"), File.pathSeparator, jambiDeploymentDir);
-	    				}else {
-	    	    			message = String.format("Library %1$s (%2$s) was not found in 'java.library.path=%3$s%4$s%5$s'", availability.libraryRawName, String.join(", ", fileNames), System.getProperty("java.library.path"), File.pathSeparator, jambiDeploymentDir);
-	    				}
+    		        	if(availability.expectedModuleName!=null) {
+    		        		message = String.format("Library %1$s (%2$s) was not found due to missing module '%3$s'", availability.libraryRawName, String.join(", ", fileNames), availability.expectedModuleName);
+    		        	}else {
+		    	    		if (System.getProperties().containsKey("io.qt.library-path-override")) {
+		    	    			message = String.format("Library %1$s (%2$s) was not found in 'io.qt.library-path-override=%3$s%4$s%5$s'", availability.libraryRawName, String.join(", ", fileNames), System.getProperty("io.qt.library-path-override"), File.pathSeparator, jambiDeploymentDir);
+		    				}else {
+		    	    			message = String.format("Library %1$s (%2$s) was not found in 'java.library.path=%3$s%4$s%5$s'", availability.libraryRawName, String.join(", ", fileNames), System.getProperty("java.library.path"), File.pathSeparator, jambiDeploymentDir);
+		    				}
+    		        	}
     		        }
     				throw new QLibraryNotFoundError(message);
     	        }
@@ -3540,7 +3549,7 @@ final class LibraryUtility {
 			}
 		}catch(Throwable t2){}
 		if(!atCoreLoad){
-			Availability availability = getQtJambiLibraryAvailability(null, "QtJambi", null, null, configuration, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion, QtJambi_LibraryUtilities.qtJambiPatch);
+			Availability availability = getQtJambiLibraryAvailability(null, "QtJambi", null, null, configuration, null, QtJambi_LibraryUtilities.qtMajorVersion, QtJambi_LibraryUtilities.qtMinorVersion, QtJambi_LibraryUtilities.qtJambiPatch);
 			if(availability.file!=null) {
 				try {
 					byte[] jambidata = Files.readAllBytes(availability.file.toPath());

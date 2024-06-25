@@ -307,6 +307,11 @@ QtJambiTypeEntryPtr get_type_entry(JNIEnv* env, const std::type_info& typeId, bo
             QList<const PolymorphicIdHandler*> polymorphicIdHandlers = getPolymorphicIdHandlers(typeId);
             TypeInfoSupplier typeInfoSupplier = registeredTypeInfoSupplier(typeId);
 
+            if(Java::QtCore::QModelIndex::isAssignableFrom(env, java_class)){
+                result = new QModelIndexTypeEntry(env, typeId, qt_name, java_name, java_class,
+                                                  _deleter, destructor, typeInfoSupplier);
+            }
+
             int modifiers = Java::Runtime::Class::getModifiers(env,java_class);
             if(Java::Runtime::Modifier::isAbstract(env, modifiers)){
                 jclass java_wrapper_class = nullptr;
@@ -388,10 +393,7 @@ QtJambiTypeEntryPtr get_type_entry(JNIEnv* env, const std::type_info& typeId, bo
                                                          );
                     }
                 }else{
-                    if(typeid_equals(typeId, typeid(QModelIndex))){
-                        result = new QModelIndexTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method,
-                                                          _deleter, destructor, typeInfoSupplier);
-                    }else if(qt_meta_type.isValid()){
+                    if(qt_meta_type.isValid()){
                         if(interfaceOffsetInfo.offsets.isEmpty()){
                             result = new ObjectValueTypeEntry(env, typeId, qt_name, java_name, java_class, creator_method, value_size, super_type,
                                                               shell_size, _deleter, owner_function, _virtualFunctions,
@@ -4683,7 +4685,6 @@ QModelIndexTypeEntry::QModelIndexTypeEntry(JNIEnv* env,
                                            const char *qt_name,
                                            const char *java_name,
                                            jclass java_class,
-                                           jmethodID creator_method,
                                            PtrDeleterFunction deleter,                                           
                                            Destructor destructor,
                                            TypeInfoSupplier typeInfoSupplier)
@@ -4692,7 +4693,7 @@ QModelIndexTypeEntry::QModelIndexTypeEntry(JNIEnv* env,
                            qt_name,
                            java_name,
                            java_class,
-                           creator_method,
+                           nullptr,
                            sizeof(QModelIndex),
                            nullptr,
                            0,
@@ -4717,57 +4718,117 @@ void QModelIndexTypeEntry::deleter(void *ptr, bool)
 QtJambiTypeEntry::NativeToJavaResult QModelIndexTypeEntry::convertToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jvalue& output, jValueType javaType) const{
     if(javaType!=jValueType::l)
         JavaException::raiseIllegalArgumentException(env, "Cannot convert object type" QTJAMBI_STACKTRACEINFO );
-    return convertNativeToJava(env, qt_object, mode, output.l);
+    return convertModelIndexToJava(env, reinterpret_cast<const QModelIndex *>(qt_object), mode, output.l);
 }
 
-QtJambiTypeEntry::NativeToJavaResult QModelIndexTypeEntry::convertNativeToJava(JNIEnv *env, const void *qt_object, NativeToJavaConversionMode mode, jobject& output){
-    if (!qt_object){
+jobject convertInvalidModelIndexToJava(JNIEnv *env){
+    static JObjectWrapper invalidIndex;
+    jobject output = invalidIndex.object();
+    if(env->IsSameObject(output, nullptr)){
+        output = Java::QtCore::QModelIndex::newInstance(env, nullptr);
+        invalidIndex = JObjectWrapper(env, output);
+    }else{
+        output = env->NewLocalRef(output);
+    }
+    if(Java::QtJambi::QtObjectInterface::isDisposed(env, output)){
+        QtJambiLink::createLinkForNativeObject(
+                env,
+                output,
+                new QModelIndex(),
+                LINK_NAME_ARG("QModelIndex")
+                false,
+                false,
+                QModelIndexTypeEntry::deleter,
+                QtJambiLink::Ownership::Java
+                );
+    }
+    return output;
+}
+
+QtJambiTypeEntry::NativeToJavaResult QModelIndexTypeEntry::convertModelIndexToJava(JNIEnv *env, const QModelIndex *index, NativeToJavaConversionMode mode, jobject& output, QtJambiScope* scope){
+    if (!index){
         output = nullptr;
         return true;
     }
-    if(mode==NativeToJavaConversionMode::None){
-        for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(qt_object)){
-            if(link){
-                jobject obj = link->getJavaObjectLocalRef(env);
-                if(Java::QtCore::QModelIndex::isInstanceOf(env, obj)){
-                    output = obj;
-                    return true;
+#if defined(QTJAMBI_LIGHTWEIGHT_MODELINDEX)
+    Q_UNUSED(mode)
+    const QModelIndex* index = reinterpret_cast<const QModelIndex*>(index);
+    output = Java::QtCore::QModelIndex::newInstance(env, jint(index->row()), jint(index->column()), jlong(index->internalId()), QtJambiAPI::convertQObjectToJavaObject(env, index->model()));
+    return true;
+#else
+    static ResettableBoolFlag enableSingletonInvalid(env, "io.qt.experimental.enable-invalid-modelindex-singleton");
+    if(enableSingletonInvalid && !index->isValid()){
+        output = convertInvalidModelIndexToJava(env);
+        return true;
+    }else{
+        static ResettableBoolFlag enableEphemeralModelIndex(env, "io.qt.experimental.enable-ephemeral-modelindexes");
+        if(enableEphemeralModelIndex && scope){
+            output = Java::QtCore::QModelIndex::newInstance(env, nullptr);
+            if(QtJambiLink::createLinkForNativeObject(
+                    env,
+                    output,
+                    const_cast<QModelIndex*>(index),
+                    LINK_NAME_ARG("QModelIndex")
+                    false,
+                    false,
+                    QtJambiLink::Ownership::Cpp
+                    )){
+                scope->addObjectInvalidation(env, output, false);
+                return true;
+            }else{
+                return false;
+            }
+        }
+        if(mode==NativeToJavaConversionMode::None){
+            for(const QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(index)){
+                if(link){
+                    jobject obj = link->getJavaObjectLocalRef(env);
+                    if(Java::QtCore::QModelIndex::isInstanceOf(env, obj)){
+                        output = obj;
+                        return true;
+                    }
                 }
             }
         }
+        void *copy = mode==NativeToJavaConversionMode::MakeCopyOfValues ? new QModelIndex(*index) : const_cast<QModelIndex*>(index);
+        if (!copy){
+            output = nullptr;
+            return true;
+        }
+        output = Java::QtCore::QModelIndex::newInstance(env, nullptr);
+        QtJambiLink::Ownership ownership;
+        switch(mode){
+        case NativeToJavaConversionMode::None: ownership = QtJambiLink::Ownership::None; break;
+        case NativeToJavaConversionMode::CppOwnership: ownership = QtJambiLink::Ownership::Cpp; break;
+        default: ownership = QtJambiLink::Ownership::Java; break;
+        }
+
+        if(const QAbstractItemModel *model = index->model()){
+            return QtJambiLink::createExtendedLinkForObject(
+                env,
+                output,
+                copy,
+                LINK_NAME_ARG("QModelIndex")
+                false,
+                false,
+                QModelIndexTypeEntry::deleter,
+                model,
+                ownership
+                );
+        }else{
+            return QtJambiLink::createLinkForNativeObject(
+                env,
+                output,
+                copy,
+                LINK_NAME_ARG("QModelIndex")
+                false,
+                false,
+                QModelIndexTypeEntry::deleter,
+                ownership
+                );
+        }
     }
-    const QModelIndex* index = reinterpret_cast<const QModelIndex*>(qt_object);
-    void *copy = mode==NativeToJavaConversionMode::MakeCopyOfValues ? new QModelIndex(*index) : const_cast<void*>(qt_object);
-    if (!copy){
-        output = nullptr;
-        return true;
-    }
-    output = Java::QtCore::QModelIndex::newInstance(env, nullptr);
-    JavaException::check(env QTJAMBI_STACKTRACEINFO );
-    if(index->model()){
-        return QtJambiLink::createExtendedLinkForObject(
-            env,
-            output,
-            copy,
-            LINK_NAME_ARG("QModelIndex")
-            false,
-            false,
-            QModelIndexTypeEntry::deleter,
-            index->model(),
-            mode==NativeToJavaConversionMode::None ? QtJambiLink::Ownership::None : QtJambiLink::Ownership::Java
-            );
-    }else{
-        return QtJambiLink::createLinkForNativeObject(
-            env,
-            output,
-            copy,
-            LINK_NAME_ARG("QModelIndex")
-            false,
-            false,
-            QModelIndexTypeEntry::deleter,
-            mode==NativeToJavaConversionMode::None ? QtJambiLink::Ownership::None : QtJambiLink::Ownership::Java
-            );
-    }
+#endif
 }
 
 bool QModelIndexTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_shared_pointer, SmartPointerDeleter sharedPointerDeleter, const SmartPointerGetterFunction& sharedPointerGetter, jvalue& output, jValueType javaType) const{
@@ -4782,6 +4843,10 @@ bool QModelIndexTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_sha
         output.l = nullptr;
         return true;
     }
+#if defined(QTJAMBI_LIGHTWEIGHT_MODELINDEX)
+    output.l = Java::QtCore::QModelIndex::newInstance(env, jint(index->row()), jint(index->column()), jlong(index->internalId()), QtJambiAPI::convertQObjectToJavaObject(env, index->model()));
+    return true;
+#else
     for(QSharedPointer<QtJambiLink>& link : QtJambiLink::findLinksForPointer(index)){
         if(link && !link->isSmartPointer()){
             jobject obj = link->getJavaObjectLocalRef(env);
@@ -4859,6 +4924,54 @@ bool QModelIndexTypeEntry::convertSharedPointerToJava(JNIEnv *env, void *ptr_sha
                                                             sharedPointerGetter
                                                             );
     return bool(link);
+#endif
+}
+
+#if defined(QTJAMBI_LIGHTWEIGHT_MODELINDEX)
+class QAbstractItemViewPrivate{
+public:
+    static QModelIndex index(const QAbstractItemModel* model,int row, int column, quintptr internalId){
+        return model->createIndex(row, column, internalId);
+    }
+};
+#endif
+
+bool QModelIndexTypeEntry::convertJavaToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope){
+    if(javaType!=jValueType::l)
+        JavaException::raiseIllegalArgumentException(env, "Cannot convert to object type" QTJAMBI_STACKTRACEINFO );
+#if defined(QTJAMBI_LIGHTWEIGHT_MODELINDEX)
+    if(Java::QtCore::QModelIndex::isInstanceOf(env, java_value.l)){
+        QAbstractItemModel* model = QtJambiAPI::convertJavaObjectToQObject<QAbstractItemModel>(env, Java::QtCore::QModelIndex::model(env, java_value.l));
+        int row = Java::QtCore::QModelIndex::row(env, java_value.l);
+        int column = Java::QtCore::QModelIndex::column(env, java_value.l);
+        quintptr internalId = Java::QtCore::QModelIndex::internalId(env, java_value.l);
+        QModelIndex index;
+        if(model){
+            index = QAbstractItemViewPrivate::index(model, row, column, internalId);
+        }
+        if(scope){
+            QModelIndex* indexPtr = new QModelIndex(std::move(index));
+            scope->addDeletion(indexPtr);
+            *reinterpret_cast<void**>(output) = indexPtr;
+        }else{
+            *reinterpret_cast<QModelIndex*>(output) = std::move(index);
+        }
+        return true;
+    }else return env->IsSameObject(java_value.l, nullptr);
+#else
+    Q_UNUSED(scope)
+    if(Java::QtCore::QModelIndex::isInstanceOf(env, java_value.l)){
+        *reinterpret_cast<void**>(output) = reinterpret_cast<QModelIndex*>(QtJambiLink::findPointerForJavaObject(env, java_value.l));
+        return true;
+    }else if(env->IsSameObject(java_value.l, nullptr)){
+        return true;
+    }
+    return false;
+#endif
+}
+
+bool QModelIndexTypeEntry::convertToNative(JNIEnv *env, jvalue java_value, jValueType javaType, void * output, QtJambiScope* scope) const{
+    return convertJavaToNative(env, java_value, javaType, output, scope);
 }
 
 QVariantTypeEntry::QVariantTypeEntry(JNIEnv* env, const std::type_info& typeId, const char *qt_name, const char *java_name, jclass java_class, size_t value_size)

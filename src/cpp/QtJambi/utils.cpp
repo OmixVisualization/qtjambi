@@ -133,25 +133,34 @@ void qtjambi_unregister_converter(int from, int to){
 }
 #endif
 
-class InternalToExternalConverterPointerData : public InternalToExternalConverterPrivate{
-public:
-    inline InternalToExternalConverterPointerData(InternalToExternalConverter::FunctionPointer functionPointer) noexcept
-     : m_functionPointer(functionPointer){Q_ASSERT(functionPointer);}
-    inline bool invoke(JNIEnv* env, QtJambiScope* scope, const void* in, jvalue& out, bool forceBoxedType) const override
-     { return m_functionPointer(env, scope, in, out, forceBoxedType); }
-private:
-    InternalToExternalConverter::FunctionPointer m_functionPointer;
+struct InternalToExternalConverterPrivate : QSharedData{
+    void* data = nullptr;
+    QtJambiUtils::InternalToExternalConverter::Invoker invoker;
+    QtJambiUtils::InternalToExternalConverter::Deleter deleter;
+    InternalToExternalConverterPrivate(void* _data, QtJambiUtils::InternalToExternalConverter::Invoker _invoker, QtJambiUtils::InternalToExternalConverter::Deleter _deleter = nullptr)
+        : QSharedData(), data(_data), invoker(_invoker), deleter(_deleter){
+        Q_ASSERT(_data);
+        Q_ASSERT(_invoker);
+    }
+    ~InternalToExternalConverterPrivate(){ if(deleter) deleter(data); }
 };
-InternalToExternalConverter::InternalToExternalConverter(FunctionPointer functor) noexcept
-    : d(!functor ? nullptr : new InternalToExternalConverterPointerData(functor)){}
 
-InternalToExternalConverterPrivate::InternalToExternalConverterPrivate() noexcept {}
-InternalToExternalConverterPrivate::~InternalToExternalConverterPrivate() {}
+namespace QtJambiUtils{
+
+InternalToExternalConverter::InternalToExternalConverter(FunctionPointer functor) noexcept
+    : d(!functor ? nullptr : new InternalToExternalConverterPrivate(
+            reinterpret_cast<void*>(functor),
+            [](void* data, JNIEnv* env, QtJambiScope* scope, const void* in, jvalue& out, bool forceBoxedType) -> bool {
+                FunctionPointer task = reinterpret_cast<FunctionPointer>(data);
+                return (*task)(env, scope, in, out, forceBoxedType);
+            })){}
+
 InternalToExternalConverter::InternalToExternalConverter() noexcept : d(){}
+InternalToExternalConverter::~InternalToExternalConverter() noexcept {}
 InternalToExternalConverter::InternalToExternalConverter(const InternalToExternalConverter& other) noexcept : d(other.d) {}
 InternalToExternalConverter::InternalToExternalConverter(InternalToExternalConverter&& other) noexcept : d(std::move(other.d)) {}
-InternalToExternalConverter::InternalToExternalConverter(InternalToExternalConverterPrivate* _d) noexcept : d(_d) {}
-InternalToExternalConverter& InternalToExternalConverter::operator=(InternalToExternalConverter& other) noexcept { d = other.d; return *this; }
+InternalToExternalConverter::InternalToExternalConverter(void* data, Invoker invoker, Deleter deleter) noexcept
+    : d(!data ? nullptr : new InternalToExternalConverterPrivate(data, invoker, deleter)) {}
 InternalToExternalConverter& InternalToExternalConverter::operator=(const InternalToExternalConverter& other) noexcept { d = other.d; return *this; }
 InternalToExternalConverter& InternalToExternalConverter::operator=(InternalToExternalConverter&& other) noexcept { d = std::move(other.d); return *this; }
 bool InternalToExternalConverter::operator==(const InternalToExternalConverter& other) const noexcept { return d == other.d; }
@@ -166,28 +175,39 @@ bool InternalToExternalConverter::operator !() const noexcept{
 
 bool InternalToExternalConverter::operator()(JNIEnv* env, QtJambiScope* scope, const void* in, jvalue& out, bool forceBoxedType) const{
     Q_ASSERT(d);
-    return d->invoke(env, scope, in, out, forceBoxedType);
+    return d->invoker(d->data, env, scope, in, out, forceBoxedType);
 }
 
-class ExternalToInternalConverterPointerData : public ExternalToInternalConverterPrivate{
-public:
-    inline ExternalToInternalConverterPointerData(ExternalToInternalConverter::FunctionPointer functionPointer) noexcept
-     : m_functionPointer(functionPointer){Q_ASSERT(functionPointer);}
-    inline bool invoke(JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType valueType) const override
-     { return m_functionPointer(env, scope, val, out, valueType); }
-private:
-    ExternalToInternalConverter::FunctionPointer m_functionPointer;
-};
-ExternalToInternalConverter::ExternalToInternalConverter(FunctionPointer functor) noexcept
-    : d(!functor ? nullptr : new ExternalToInternalConverterPointerData(functor)){}
+} // namespace QtJambiPrivate
 
-ExternalToInternalConverterPrivate::ExternalToInternalConverterPrivate() noexcept {}
-ExternalToInternalConverterPrivate::~ExternalToInternalConverterPrivate() {}
+struct ExternalToInternalConverterPrivate : QSharedData{
+    void* data = nullptr;
+    QtJambiUtils::ExternalToInternalConverter::Invoker invoker;
+    QtJambiUtils::ExternalToInternalConverter::Deleter deleter;
+    ExternalToInternalConverterPrivate(void* _data, QtJambiUtils::ExternalToInternalConverter::Invoker _invoker, QtJambiUtils::ExternalToInternalConverter::Deleter _deleter = nullptr)
+        : QSharedData(), data(_data), invoker(_invoker), deleter(_deleter){
+        Q_ASSERT(_data);
+        Q_ASSERT(_invoker);
+    }
+    ~ExternalToInternalConverterPrivate(){ if(deleter) deleter(data); }
+};
+
+namespace QtJambiUtils{
+
+ExternalToInternalConverter::ExternalToInternalConverter(FunctionPointer functor) noexcept
+    : d(!functor ? nullptr : new ExternalToInternalConverterPrivate(
+            reinterpret_cast<void*>(functor),
+            [](void* data, JNIEnv* env, QtJambiScope* scope, jvalue in, void*& out, jValueType type) -> bool {
+                FunctionPointer task = reinterpret_cast<FunctionPointer>(data);
+                return (*task)(env, scope, in, out, type);
+            })){}
+
 ExternalToInternalConverter::ExternalToInternalConverter() noexcept : d(){}
+ExternalToInternalConverter::~ExternalToInternalConverter() noexcept {}
 ExternalToInternalConverter::ExternalToInternalConverter(const ExternalToInternalConverter& other) noexcept : d(other.d) {}
 ExternalToInternalConverter::ExternalToInternalConverter(ExternalToInternalConverter&& other) noexcept : d(std::move(other.d)) {}
-ExternalToInternalConverter::ExternalToInternalConverter(ExternalToInternalConverterPrivate* _d) noexcept : d(_d) {}
-ExternalToInternalConverter& ExternalToInternalConverter::operator=(ExternalToInternalConverter& other) noexcept { d = other.d; return *this; }
+ExternalToInternalConverter::ExternalToInternalConverter(void* data, Invoker invoker, Deleter deleter) noexcept
+    : d(!data ? nullptr : new ExternalToInternalConverterPrivate(data, invoker, deleter)) {}
 ExternalToInternalConverter& ExternalToInternalConverter::operator=(const ExternalToInternalConverter& other) noexcept { d = other.d; return *this; }
 ExternalToInternalConverter& ExternalToInternalConverter::operator=(ExternalToInternalConverter&& other) noexcept { d = std::move(other.d); return *this; }
 bool ExternalToInternalConverter::operator==(const ExternalToInternalConverter& other) const noexcept { return d == other.d; }
@@ -202,28 +222,39 @@ bool ExternalToInternalConverter::operator !() const noexcept{
 
 bool ExternalToInternalConverter::operator()(JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType valueType) const{
     Q_ASSERT(d);
-    return d->invoke(env, scope, val, out, valueType);
+    return d->invoker(d->data, env, scope, val, out, valueType);
 }
 
-class QHashFunctionPointerData : public QHashFunctionPrivate{
-public:
-    inline QHashFunctionPointerData(QHashFunction::FunctionPointer functionPointer) noexcept
-     : m_functionPointer(functionPointer){Q_ASSERT(functionPointer);}
-    inline hash_type invoke(const void* ptr, hash_type seed) const override
-     { return m_functionPointer(ptr, seed); }
-private:
-    QHashFunction::FunctionPointer m_functionPointer;
-};
-QHashFunction::QHashFunction(FunctionPointer functor) noexcept
-    : d(!functor ? nullptr : new QHashFunctionPointerData(functor)){}
+} // namespace QtJambiPrivate
 
-QHashFunctionPrivate::QHashFunctionPrivate() noexcept {}
-QHashFunctionPrivate::~QHashFunctionPrivate() {}
+struct QHashFunctionPrivate : QSharedData{
+    void* data = nullptr;
+    QtJambiUtils::QHashFunction::Invoker invoker;
+    QtJambiUtils::QHashFunction::Deleter deleter;
+    QHashFunctionPrivate(void* _data, QtJambiUtils::QHashFunction::Invoker _invoker, QtJambiUtils::QHashFunction::Deleter _deleter = nullptr)
+        : QSharedData(), data(_data), invoker(_invoker), deleter(_deleter){
+        Q_ASSERT(_data);
+        Q_ASSERT(_invoker);
+    }
+    ~QHashFunctionPrivate(){ if(deleter) deleter(data); }
+};
+
+namespace QtJambiUtils{
+
+QHashFunction::QHashFunction(FunctionPointer functor) noexcept
+    : d(!functor ? nullptr : new QHashFunctionPrivate(
+            reinterpret_cast<void*>(functor),
+            [](void* data, const void* ptr, hash_type seed) -> hash_type{
+                FunctionPointer task = reinterpret_cast<FunctionPointer>(data);
+                return (*task)(ptr, seed);
+            })){}
+
 QHashFunction::QHashFunction() noexcept : d(){}
+QHashFunction::~QHashFunction() noexcept {}
 QHashFunction::QHashFunction(const QHashFunction& other) noexcept : d(other.d) {}
 QHashFunction::QHashFunction(QHashFunction&& other) noexcept : d(std::move(other.d)) {}
-QHashFunction::QHashFunction(QHashFunctionPrivate* _d) noexcept : d(_d) {}
-QHashFunction& QHashFunction::operator=(QHashFunction& other) noexcept { d = other.d; return *this; }
+QHashFunction::QHashFunction(void* data, Invoker invoker, Deleter deleter) noexcept
+    : d(!data ? nullptr : new QHashFunctionPrivate(data, invoker, deleter)) {}
 QHashFunction& QHashFunction::operator=(const QHashFunction& other) noexcept { d = other.d; return *this; }
 QHashFunction& QHashFunction::operator=(QHashFunction&& other) noexcept { d = std::move(other.d); return *this; }
 bool QHashFunction::operator==(const QHashFunction& other) const noexcept { return d == other.d; }
@@ -238,8 +269,57 @@ bool QHashFunction::operator !() const noexcept{
 
 hash_type QHashFunction::operator()(const void* ptr, hash_type seed) const{
     Q_ASSERT(d);
-    return d->invoke(ptr, seed);
+    return d->invoker(d->data, ptr, seed);
 }
+
+} // namespace QtJambiPrivate
+
+struct RunnablePrivate : QSharedData{
+    void* data = nullptr;
+    QtJambiUtils::Runnable::Invoker invoker;
+    QtJambiUtils::Runnable::Deleter deleter;
+    RunnablePrivate(void* _data, QtJambiUtils::Runnable::Invoker _invoker, QtJambiUtils::Runnable::Deleter _deleter = nullptr)
+        : QSharedData(), data(_data), invoker(_invoker), deleter(_deleter){
+        Q_ASSERT(_data);
+        Q_ASSERT(_invoker);
+    }
+    ~RunnablePrivate(){ if(deleter) deleter(data); }
+};
+
+namespace QtJambiUtils{
+
+Runnable::Runnable(FunctionPointer functor) noexcept
+    : d(!functor ? nullptr : new RunnablePrivate(
+            reinterpret_cast<void*>(functor),
+            [](void* data){
+                FunctionPointer task = reinterpret_cast<FunctionPointer>(data);
+                (*task)();
+            })){}
+
+Runnable::Runnable() noexcept : d(){}
+Runnable::~Runnable() noexcept {}
+Runnable::Runnable(const Runnable& other) noexcept : d(other.d) {}
+Runnable::Runnable(Runnable&& other) noexcept : d(std::move(other.d)) {}
+Runnable::Runnable(void* data, Invoker invoker, Deleter deleter) noexcept
+    : d(!data ? nullptr : new RunnablePrivate(data, invoker, deleter)) {}
+Runnable& Runnable::operator=(const Runnable& other) noexcept { d = other.d; return *this; }
+Runnable& Runnable::operator=(Runnable&& other) noexcept { d = std::move(other.d); return *this; }
+bool Runnable::operator==(const Runnable& other) const noexcept { return d == other.d; }
+
+Runnable::operator bool() const noexcept{
+    return d;
+}
+
+bool Runnable::operator !() const noexcept{
+    return !d;
+}
+
+void Runnable::operator()() const{
+    if(d)
+        d->invoker(d->data);
+}
+
+} // namespace QtJambiUtils
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 bool isLessThan(const QMetaType& keyMetaType, const void * ptr, const void* ptr2){

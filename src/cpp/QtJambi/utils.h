@@ -38,219 +38,221 @@ enum class jValueType;
 
 class QtJambiScope;
 
-class QTJAMBI_EXPORT InternalToExternalConverterPrivate : public QSharedData{
-protected:
-    InternalToExternalConverterPrivate() noexcept;
-public:
-    virtual ~InternalToExternalConverterPrivate();
-    virtual bool invoke(JNIEnv*, QtJambiScope*, const void*, jvalue&, bool) const = 0;
-    friend class InternalToExternalConverter;
-};
+struct InternalToExternalConverterPrivate;
+struct QHashFunctionPrivate;
+struct ExternalToInternalConverterPrivate;
+struct RunnablePrivate;
+
+namespace QtJambiUtils{
 
 class QTJAMBI_EXPORT InternalToExternalConverter{
+    typedef void(*Deleter)(void*);
+    typedef bool(*Invoker)(void*, JNIEnv*, QtJambiScope*, const void*, jvalue&, bool);
 public:
     typedef bool(*FunctionPointer)(JNIEnv*, QtJambiScope*, const void*, jvalue&, bool);
 
 private:
-    explicit InternalToExternalConverter(InternalToExternalConverterPrivate* _d) noexcept;
-    template<typename Functor, bool = std::is_assignable<FunctionPointer&, Functor>::value, bool = std::is_same<Functor, InternalToExternalConverter>::value>
-    class Data : public InternalToExternalConverterPrivate{
-    public:
-        inline static InternalToExternalConverterPrivate* from(Functor&& functor){
-            return new Data(std::forward<Functor>(functor));
-        }
-        inline bool invoke(JNIEnv* env, QtJambiScope* scope, const void* in, jvalue& out, bool forceBoxedType) const override {
-            return m_functor(env, scope, in, out, forceBoxedType);
-        }
-    private:
-        inline Data(Functor&& functor) noexcept : m_functor(std::forward<Functor>(functor)){}
-        Functor m_functor;
-    };
-    template<typename Functor>
-    struct Data<Functor,false,true>{
-        inline static const InternalToExternalConverter& from(const InternalToExternalConverter& function){
-            return function;
-        }
-        inline static InternalToExternalConverter&& from(InternalToExternalConverter&& function){
-            return std::move(function);
-        }
-    };
-    template<typename Functor>
-    struct Data<Functor,true,false>{
-        inline static FunctionPointer from(Functor&& functor){
-            return FunctionPointer(functor);
-        }
-    };
+    explicit InternalToExternalConverter(void* data, Invoker invoker, Deleter deleter) noexcept;
 public:
     InternalToExternalConverter() noexcept;
+    ~InternalToExternalConverter() noexcept;
     InternalToExternalConverter(const InternalToExternalConverter& other) noexcept;
     InternalToExternalConverter(InternalToExternalConverter&& other) noexcept;
     InternalToExternalConverter(FunctionPointer functor) noexcept;
+    inline InternalToExternalConverter(nullptr_t) noexcept : InternalToExternalConverter(FunctionPointer(nullptr)) {}
 
     InternalToExternalConverter& operator=(const InternalToExternalConverter& other) noexcept;
-    InternalToExternalConverter& operator=(InternalToExternalConverter& other) noexcept;
     InternalToExternalConverter& operator=(InternalToExternalConverter&& other) noexcept;
 
-    template<typename Functor
+    template<typename Functor, typename std::enable_if<!std::is_pointer<Functor>::value, bool>::type = true
+                             , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, InternalToExternalConverter>::value, bool>::type = true
+                             , typename std::enable_if<!std::is_null_pointer<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::value, bool>::type = true
+                             , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, FunctionPointer>::value, bool>::type = true
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-             , typename = std::enable_if_t<std::is_invocable_r_v<bool, Functor, JNIEnv*, QtJambiScope*, const void*, jvalue&, bool>>
+                             , typename std::enable_if<std::is_invocable_r<bool, Functor, JNIEnv*, QtJambiScope*, const void*, jvalue&, bool>::value, bool>::type = true
 #endif
-             >
+    >
     InternalToExternalConverter(Functor&& functor) noexcept
-        : InternalToExternalConverter(Data<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::from(std::forward<Functor>(functor))){}
+        : InternalToExternalConverter(
+            new typename std::remove_reference<typename std::remove_cv<Functor>::type>::type(std::move(functor)),
+            [](void* data, JNIEnv* env, QtJambiScope* scope, const void* in, jvalue& out, bool forceBoxedType){
+                typename std::remove_reference<typename std::remove_cv<Functor>::type>::type* fct = reinterpret_cast<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type*>(data);
+                return (*fct)(env, scope, in, out, forceBoxedType);
+            },
+            [](void* data){
+                delete reinterpret_cast<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type*>(data);
+            }
+            ){}
 
     bool operator==(const InternalToExternalConverter& other) const noexcept;
     bool operator()(JNIEnv*, QtJambiScope*, const void*, jvalue&, bool) const;
     operator bool() const noexcept;
     bool operator !() const noexcept;
 private:
-    template<typename, bool, bool> friend class Data;
+    friend InternalToExternalConverterPrivate;
     QExplicitlySharedDataPointer<InternalToExternalConverterPrivate> d;
 };
 
-class QTJAMBI_EXPORT ExternalToInternalConverterPrivate : public QSharedData{
-protected:
-    ExternalToInternalConverterPrivate() noexcept;
-public:
-    virtual ~ExternalToInternalConverterPrivate();
-    virtual bool invoke(JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType) const = 0;
-    friend class ExternalToInternalConverter;
-};
-
 class QTJAMBI_EXPORT ExternalToInternalConverter{
+    typedef void(*Deleter)(void*);
+    typedef bool(*Invoker)(void*, JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType);
 public:
     typedef bool(*FunctionPointer)(JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType);
 
 private:
-    explicit ExternalToInternalConverter(ExternalToInternalConverterPrivate* _d) noexcept;
-    template<typename Functor, bool = std::is_assignable<FunctionPointer&, Functor>::value, bool = std::is_same<Functor, ExternalToInternalConverter>::value>
-    class Data : public ExternalToInternalConverterPrivate{
-    public:
-        ~Data() noexcept {}
-        inline static ExternalToInternalConverterPrivate* from(Functor&& functor){
-            return new Data(std::forward<Functor>(functor));
-        }
-        inline bool invoke(JNIEnv* env, QtJambiScope* scope, jvalue val, void* &out, jValueType valueType) const override {
-            return m_functor(env, scope, val, out, valueType);
-        }
-    private:
-        inline Data(Functor&& functor) noexcept : m_functor(std::forward<Functor>(functor)){}
-        Functor m_functor;
-    };
-    template<typename Functor>
-    struct Data<Functor,false,true>{
-        inline static const ExternalToInternalConverter& from(const ExternalToInternalConverter& function){
-            return function;
-        }
-        inline static ExternalToInternalConverter&& from(ExternalToInternalConverter&& function){
-            return std::move(function);
-        }
-    };
-    template<typename Functor>
-    struct Data<Functor,true,false>{
-        inline static FunctionPointer from(Functor&& functor){
-            return FunctionPointer(functor);
-        }
-    };
+    explicit ExternalToInternalConverter(void* data, Invoker invoker, Deleter deleter) noexcept;
 public:
     ExternalToInternalConverter() noexcept;
+    ~ExternalToInternalConverter() noexcept;
     ExternalToInternalConverter(const ExternalToInternalConverter& other) noexcept;
     ExternalToInternalConverter(ExternalToInternalConverter&& other) noexcept;
     ExternalToInternalConverter(FunctionPointer functor) noexcept;
+    inline ExternalToInternalConverter(nullptr_t) noexcept : ExternalToInternalConverter(FunctionPointer(nullptr)) {}
 
     ExternalToInternalConverter& operator=(const ExternalToInternalConverter& other) noexcept;
-    ExternalToInternalConverter& operator=(ExternalToInternalConverter& other) noexcept;
     ExternalToInternalConverter& operator=(ExternalToInternalConverter&& other) noexcept;
 
-    template<typename Functor
+    template<typename Functor, typename std::enable_if<!std::is_pointer<Functor>::value, bool>::type = true
+                             , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, ExternalToInternalConverter>::value, bool>::type = true
+                             , typename std::enable_if<!std::is_null_pointer<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::value, bool>::type = true
+                             , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, FunctionPointer>::value, bool>::type = true
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-                    , typename = std::enable_if_t<std::is_invocable_r_v<bool, Functor, JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType>>
+                             , typename std::enable_if<std::is_invocable_r<bool, Functor, JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType>::value, bool>::type = true
 #endif
-          >
+    >
     ExternalToInternalConverter(Functor&& functor) noexcept
-        : ExternalToInternalConverter(Data<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::from(std::forward<Functor>(functor))){}
+        : ExternalToInternalConverter(
+            new typename std::remove_reference<typename std::remove_cv<Functor>::type>::type(std::move(functor)),
+            [](void* data, JNIEnv* env, QtJambiScope* scope, jvalue in, void*& out, jValueType type){
+                typename std::remove_reference<typename std::remove_cv<Functor>::type>::type* fct = reinterpret_cast<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type*>(data);
+                return (*fct)(env, scope, in, out, type);
+            },
+            [](void* data){
+                delete reinterpret_cast<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type*>(data);
+            }
+            ){}
 
     bool operator==(const ExternalToInternalConverter& other) const noexcept;
     bool operator()(JNIEnv*, QtJambiScope*, jvalue, void* &, jValueType) const;
     operator bool() const noexcept;
     bool operator !() const noexcept;
 private:
-    template<typename, bool, bool> friend class Data;
     QExplicitlySharedDataPointer<ExternalToInternalConverterPrivate> d;
-};
-
-class QTJAMBI_EXPORT QHashFunctionPrivate : public QSharedData{
-protected:
-    QHashFunctionPrivate() noexcept;
-public:
-    virtual ~QHashFunctionPrivate();
-    virtual hash_type invoke(const void*, hash_type) const = 0;
-    friend class QHashFunction;
+    friend ExternalToInternalConverterPrivate;
 };
 
 class QTJAMBI_EXPORT QHashFunction{
+    typedef void(*Deleter)(void*);
+    typedef hash_type(*Invoker)(void*, const void*,hash_type);
 public:
     typedef hash_type(*FunctionPointer)(const void*,hash_type);
 
 private:
-    explicit QHashFunction(QHashFunctionPrivate* _d) noexcept;
-    template<typename Functor, bool = std::is_assignable<FunctionPointer&, Functor>::value, bool = std::is_same<Functor, QHashFunction>::value>
-    class Data : public QHashFunctionPrivate{
-    public:
-        ~Data() noexcept {}
-        inline hash_type invoke(const void* ptr, hash_type seed) const override {
-            return m_functor(ptr, seed);
-        }
-        inline static QHashFunctionPrivate* from(Functor&& functor){
-            return new Data(std::forward<Functor>(functor));
-        }
-    private:
-        inline Data(Functor&& functor) noexcept : m_functor(std::forward<Functor>(functor)){}
-        Functor m_functor;
-    };
-    template<typename Functor>
-    struct Data<Functor,false,true>{
-        inline static const QHashFunction& from(const QHashFunction& function){
-            return function;
-        }
-        inline static QHashFunction&& from(QHashFunction&& function){
-            return std::move(function);
-        }
-    };
-    template<typename Functor>
-    struct Data<Functor,true,false>{
-        inline static FunctionPointer from(Functor&& functor){
-            return FunctionPointer(functor);
-        }
-    };
+    explicit QHashFunction(void* data, Invoker invoker, Deleter deleter) noexcept;
 public:
     QHashFunction() noexcept;
+    ~QHashFunction() noexcept;
     QHashFunction(const QHashFunction& other) noexcept;
     QHashFunction(QHashFunction&& other) noexcept;
     QHashFunction(FunctionPointer functor) noexcept;
+    inline QHashFunction(nullptr_t) noexcept : QHashFunction(FunctionPointer(nullptr)) {}
 
     QHashFunction& operator=(const QHashFunction& other) noexcept;
-    QHashFunction& operator=(QHashFunction& other) noexcept;
     QHashFunction& operator=(QHashFunction&& other) noexcept;
 
-    template<typename Functor
+    template<typename Functor, typename std::enable_if<!std::is_pointer<Functor>::value, bool>::type = true
+                             , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, QHashFunction>::value, bool>::type = true
+                             , typename std::enable_if<!std::is_null_pointer<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::value, bool>::type = true
+                             , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, FunctionPointer>::value, bool>::type = true
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-                    , typename = std::enable_if_t<std::is_invocable_r_v<hash_type, Functor, const void*, hash_type>>
+                             , typename std::enable_if<std::is_invocable_r<hash_type, Functor, const void*, hash_type>::value, bool>::type = true
 #endif
-             >
+    >
     QHashFunction(Functor&& functor) noexcept
-        : QHashFunction(Data<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::from(std::forward<Functor>(functor))){}
+        : QHashFunction(
+            new typename std::remove_reference<typename std::remove_cv<Functor>::type>::type(std::move(functor)),
+            [](void* data, const void* ptr, hash_type seed) -> hash_type{
+                typename std::remove_reference<typename std::remove_cv<Functor>::type>::type* fct = reinterpret_cast<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type*>(data);
+                return (*fct)(ptr, seed);
+            },
+            [](void* data){
+                delete reinterpret_cast<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type*>(data);
+            }
+            ){}
     bool operator==(const QHashFunction& other) const noexcept;
     hash_type operator()(const void*, hash_type) const;
     operator bool() const noexcept;
     bool operator !() const noexcept;
 private:
-    template<typename, bool, bool> friend class Data;
+    friend QHashFunctionPrivate;
     QExplicitlySharedDataPointer<QHashFunctionPrivate> d;
 };
 
-namespace QtJambiPrivate{
+class QTJAMBI_EXPORT Runnable{
+    typedef void(*Deleter)(void*);
+    typedef void(*Invoker)(void*);
+public:
+    typedef void(*FunctionPointer)();
 
-}
+private:
+    explicit Runnable(void* data, Invoker invoker, Deleter deleter) noexcept;
+public:
+    Runnable() noexcept;
+    ~Runnable() noexcept;
+    Runnable(const Runnable& other) noexcept;
+    Runnable(Runnable&& other) noexcept;
+    Runnable(FunctionPointer functor) noexcept;
+    inline Runnable(nullptr_t) noexcept : Runnable(FunctionPointer(nullptr)) {}
+
+    Runnable& operator=(const Runnable& other) noexcept;
+    Runnable& operator=(Runnable&& other) noexcept;
+
+    template<typename Functor, typename std::enable_if<!std::is_pointer<Functor>::value, bool>::type = true
+                             , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, Runnable>::value, bool>::type = true
+                             , typename std::enable_if<!std::is_null_pointer<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type>::value, bool>::type = true
+                             , typename std::enable_if<!std::is_same<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type, FunctionPointer>::value, bool>::type = true
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+                             , typename std::enable_if<std::is_invocable<Functor>::value, bool>::type = true
+#endif
+    >
+    Runnable(Functor&& functor) noexcept
+        : Runnable(
+            new typename std::remove_reference<typename std::remove_cv<Functor>::type>::type(std::move(functor)),
+            [](void* data){
+                typename std::remove_reference<typename std::remove_cv<Functor>::type>::type* fct = reinterpret_cast<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type*>(data);
+                (*fct)();
+            },
+            [](void* data){
+                delete reinterpret_cast<typename std::remove_reference<typename std::remove_cv<Functor>::type>::type*>(data);
+            }
+            ){}
+    bool operator==(const Runnable& other) const noexcept;
+    void operator()() const;
+    operator bool() const noexcept;
+    bool operator !() const noexcept;
+    template<typename T>
+    static Runnable deleter(T* t){
+        return Runnable(
+            reinterpret_cast<void*>(t),
+            [](void* data){
+                T* ptr = reinterpret_cast<T*>(data);
+                delete ptr;
+            }, nullptr);
+    }
+    template<typename T>
+    static Runnable arrayDeleter(T* t){
+        return Runnable(
+            reinterpret_cast<void*>(t),
+            [](void* data){
+                T* ptr = reinterpret_cast<T*>(data);
+                delete[] ptr;
+            }, nullptr);
+    }
+private:
+    friend RunnablePrivate;
+    QExplicitlySharedDataPointer<RunnablePrivate> d;
+};
+
+} // namespace QtJambiUtils
 
 #endif // QTJAMBI_UTILS_H

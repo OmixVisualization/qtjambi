@@ -33,7 +33,10 @@ import io.qt.*;
 /**
  * QCharPropertyAlias is primitive-typed version of QPropertyAlias&lt;Character&gt;.
  * @see QPropertyAlias
+ * @deprecated Class was only meant for internal use, use a <code>QProperty</code> and add a binding to the target
  */
+@Deprecated(forRemoval=true, since="Qt 6.6")
+@SuppressWarnings("removal")
 public final class QCharPropertyAlias extends QAbstractPropertyAlias {
 	
 	private static QPropertyAlias<@NonNull@QtPrimitiveType Character> check(QPropertyAlias<@NonNull@QtPrimitiveType Character> other){

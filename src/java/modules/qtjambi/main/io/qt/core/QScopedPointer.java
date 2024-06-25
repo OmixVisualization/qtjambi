@@ -37,8 +37,10 @@ import java.util.function.ToLongFunction;
 import java.util.logging.Logger;
 
 import io.qt.InternalAccess.Cleanable;
+import io.qt.NonNull;
 import io.qt.QtObjectInterface;
 import io.qt.QtUninvokable;
+import io.qt.StrictNonNull;
 
 /**
  * <p>Java wrapper for Qt class <a href="https://doc.qt.io/qt/qscopedpointer.html">QScopedPointer</a>
@@ -93,16 +95,28 @@ public final class QScopedPointer<O> implements AutoCloseable {
 		this.data.cleanable = QtJambi_LibraryUtilities.internal.registerCleaner(this, this.data::cleanup);
 	}
 	
+	/**
+	 * <p>Returns the object stored by this scoped pointer</p>
+	 * <p>See <a href="https://doc.qt.io/qt/qscopedpointer.html#data">QScopedPointer::data()const</a>.</p>
+	 * @return data
+	 */
     @QtUninvokable
 	public O data() {
 		return data.entry.data;
 	}
 
+	/**
+	 * @see #data()
+	 */
     @QtUninvokable
 	public O get() {
 		return data.entry.data;
 	}
 
+	/**
+	 * <p>Removes and returns the object stored by this scoped pointer without cleanup</p>
+	 * @return data
+	 */
     @QtUninvokable
 	public O take() {
 		O oldData = data.entry.data;
@@ -110,6 +124,10 @@ public final class QScopedPointer<O> implements AutoCloseable {
 		return oldData;
 	}
 
+	/**
+	 * <p>performs cleanup operation on the contained object and sets new reference.</p>
+	 * <p>See <a href="https://doc.qt.io/qt/qscopedpointer.html#reset">QScopedPointer::reset(T*)</a>.</p>
+	 */
     @SuppressWarnings({ "unchecked", "rawtypes" })
 	@QtUninvokable
 	public void reset(O other) {
@@ -127,19 +145,33 @@ public final class QScopedPointer<O> implements AutoCloseable {
 			oldEntry.cleanup();
 		}
 	}
+    
+    /**
+     * Overloaded function for {@link #reset(Object)} with <code>other=null</code>.
+     */
+    @QtUninvokable
+	public void reset() {
+    	reset(null);
+    }
 	
+	/**
+	 * <p>See <a href="https://doc.qt.io/qt/qscopedpointer.html#isNull">QScopedPointer::isNull()const</a>.</p>
+	 */
     @QtUninvokable
 	public boolean isNull(){
 		return data.entry==null || data.entry.data==null;
 	}
 	
     @QtUninvokable
-	public void swap(QScopedPointer<O> other){
+	public void swap(@StrictNonNull QScopedPointer<O> other){
     	QScope.AbstractEntry<O> oldEntry = data.entry;
 		this.data.entry = other.data.entry;
 		other.data.entry = oldEntry;
 	}
 
+    /**
+     * performs the cleanup operation
+     */
 	@Override
     @QtUninvokable
 	public void close(){
@@ -161,24 +193,40 @@ public final class QScopedPointer<O> implements AutoCloseable {
 			data.disposeLater();
 	}
 	
+    /**
+     * Creates a scoped pointer for the given object performing {@link QtObjectInterface#dispose()} at cleanup.
+     * @param data the contained object
+     * @return scoped pointer
+     */
     @QtUninvokable
-	public static <O extends QtObjectInterface> QScopedPointer<O> disposing(O data){
+	public static <O extends QtObjectInterface> @NonNull QScopedPointer<O> disposing(O data){
+		return new QScopedPointer<>(data);
+	}
+	
+    /**
+     * Creates a scoped pointer for the given object performing {@link QObject#disposeLater()} at cleanup.
+     * @param data the contained object
+     * @return scoped pointer
+     */
+    @QtUninvokable
+	public static <O extends QObject> @NonNull QScopedPointer<O> disposingLater(O data){
 		return new QScopedPointer<>(data);
 	}
 	
     @QtUninvokable
-	public static <O extends QObject> QScopedPointer<O> disposingLater(O data){
-		return new QScopedPointer<>(data);
-	}
-	
-    @QtUninvokable
-    @Deprecated
-	public static <O> QScopedPointer<O> cleanup(O data, Consumer<O> cleanup){
+    @Deprecated(forRemoval=true)
+	public static <O> @NonNull QScopedPointer<O> cleanup(O data, @StrictNonNull Consumer<O> cleanup){
 		return new QScopedPointer<>(data, cleanup);
 	}
     
+    /**
+     * Creates a scoped pointer for the given object performing the given operation at cleanup.
+     * @param cleanup operation performed at cleanup
+     * @param data the contained object
+     * @return scoped pointer
+     */
     @QtUninvokable
-	public static <O> QScopedPointer<O> cleanup(Consumer<O> cleanup, O data){
+	public static <O> @NonNull QScopedPointer<O> cleanup(@StrictNonNull Consumer<O> cleanup, O data){
 		return new QScopedPointer<>(data, cleanup);
 	}
 	

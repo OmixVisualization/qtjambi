@@ -128,18 +128,18 @@ AutoPairAccess::AutoPairAccess(
 #else
         const QMetaType& keyMetaType,
 #endif
-        const QHashFunction& keyHashFunction,
-        const InternalToExternalConverter& keyInternalToExternalConverter,
-        const ExternalToInternalConverter& keyExternalToInternalConverter,
+        const QtJambiUtils::QHashFunction& keyHashFunction,
+        const QtJambiUtils::InternalToExternalConverter& keyInternalToExternalConverter,
+        const QtJambiUtils::ExternalToInternalConverter& keyExternalToInternalConverter,
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
         int valueMetaType,
         size_t valueAlign,
 #else
         const QMetaType& valueMetaType,
 #endif
-        const QHashFunction& valueHashFunction,
-        const InternalToExternalConverter& valueInternalToExternalConverter,
-        const ExternalToInternalConverter& valueExternalToInternalConverter
+        const QtJambiUtils::QHashFunction& valueHashFunction,
+        const QtJambiUtils::InternalToExternalConverter& valueInternalToExternalConverter,
+        const QtJambiUtils::ExternalToInternalConverter& valueExternalToInternalConverter
         )
     :   AbstractPairAccess(),
       m_keyMetaType(keyMetaType),
@@ -431,8 +431,8 @@ int AutoPairAccess::registerContainer(const QByteArray& typeName) {
                                        nullptr,
                                        nullptr);
         if(m_keyHashFunction && m_valueHashFunction){
-            QHashFunction keyHash = m_keyHashFunction;
-            QHashFunction valueHash = m_valueHashFunction;
+            QtJambiUtils::QHashFunction keyHash = m_keyHashFunction;
+            QtJambiUtils::QHashFunction valueHash = m_valueHashFunction;
             size_t offset = m_offset;
             insertHashFunctionByMetaType(newMetaType,
                                             [offset, keyHash, valueHash]

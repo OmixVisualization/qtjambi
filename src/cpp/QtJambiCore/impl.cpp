@@ -877,7 +877,6 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_qInstallMessageHandler)
 {
     jobject _result{nullptr};
     QTJAMBI_TRY{
-        env->PushLocalFrame(500);
         _result = CoreAPI::installMessageHandler(env, supportedMessageTypes, handler);
     }QTJAMBI_CATCH(const JavaException& exn){
         exn.raiseInJava(env);
@@ -1035,7 +1034,8 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_getDebug)
             if(result)
                 Java::QtCore::QDebug::set___rcDevice(env, result, _data);
 #endif
-        }else{
+        }
+        if(!result){
             result = qtjambi_cast<jobject>(env, QDebug(gSilentDevice()));
             Java::QtCore::QDebug::set_disabled(env, result, true);
         }
@@ -1110,7 +1110,8 @@ QTJAMBI_FUNCTION_PREFIX(Java_io_qt_core_QLogging_getCDebug)
             if(result)
                 Java::QtCore::QDebug::set___rcDevice(env, result, _data);
 #endif
-        }else{
+        }
+        if(!result){
             result = qtjambi_cast<jobject>(env, QDebug(gSilentDevice()));
             Java::QtCore::QDebug::set_disabled(env, result, true);
         }
@@ -5096,12 +5097,12 @@ inline auto future_createExceptionHandler(JNIEnv * env, jobject function){
         if(JniEnvironment env{300}){
             jthrowable _exception = nullptr;
             if(const JavaException* javaException = dynamic_cast<const JavaException*>(&exception)){
-                _exception = javaException->object();
+                _exception = javaException->throwable(env);
             }else{
                 QTJAMBI_TRY{
                     JavaException::raiseRuntimeException(env, exception.what() QTJAMBI_STACKTRACEINFO );
                 }QTJAMBI_CATCH(const JavaException& exn){
-                    _exception = exn.object();
+                    _exception = exn.throwable(env);
                 }QTJAMBI_TRY_END
             }
             jobject result = Java::Runtime::Function::apply(env, _function, _exception);
@@ -5117,12 +5118,12 @@ inline auto futurevoid_createExceptionHandler(JNIEnv * env, jobject function){
         if(JniEnvironment env{300}){
             jthrowable _exception = nullptr;
             if(const JavaException* javaException = dynamic_cast<const JavaException*>(&exception)){
-                _exception = javaException->object();
+                _exception = javaException->throwable(env);
             }else{
                 QTJAMBI_TRY{
                     JavaException::raiseRuntimeException(env, exception.what() QTJAMBI_STACKTRACEINFO );
                 }QTJAMBI_CATCH(const JavaException& exn){
-                    _exception = exn.object();
+                    _exception = exn.throwable(env);
                 }QTJAMBI_TRY_END
             }
             Java::Runtime::Consumer::accept(env, _function, _exception);

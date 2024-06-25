@@ -288,7 +288,7 @@ The generic Qt type `QVariant` is directly mapped to `java.lang.Object` as a met
 The internal `QVariant` value is converted to the actual carried value type in Java.
 For instance, a variant carrying `QFont` (`QVariant(QFont)`) is converted to `io.qt.gui.QFont`, 
 `QVariant(QString)` is converted to `java.lang.String`, `QVariant(int)` is converted to the boxed primitive type `java.lang.Integer`
-and `QVariant(QObject*)` is converted to `io.qt..core.QObject` (which can also be `null`).
+and `QVariant(QObject*)` is converted to `io.qt.core.QObject` (which can also be `null`).
 
 The way Java objects are converted to native `QVariant` values depends on wether the type is a (cloneable) value or object type.
 Value types like `io.qt.gui.QFont` are converted to `QVariant(QFont)`, whereas the variant contains a copy of the value.
@@ -301,29 +301,25 @@ However, if the object is managed by Java, the variant also keeps the reference 
 This is represented by `QVariant(JObjectWrapper)` in C++. The type automatically converts to `QVariant(QObject*)` if necessary.
 
 The Java `null` always converts to invalid `QVariant`. If you need to represent `nullptr` as a result of e.g. `QAbstractItemModel.data(QModelIndex,int)`
-you need to return an instance of `QVariant` carrying a typed `nullptr`:
+there are different options: 
+
+* return `QVariant.NULL` being an alias for the native `QVariant(Nullptr)`
+* filter a variable through `QVariant.nullable(object)` which never returns Java `null` but a nullalias instead if the given value is `null`.
+	* If you need a typed variant use `QVariant.typedNullable<T>(object,Class,QMetaType...)` instead.
+* return an instance of `QVariant` boxing the given value by `QVariant.fromValue(object)`. This method produces the native `QVariant(Nullptr)` for java `null`.
+* return an instance of `QVariant` by constructor:
 
 ```java
+// --> (void*)nullptr
+new QVariant(QMetaType.Type.VoidStar, null);
 
-@Override
-public Object data(QModelIndex index, int role){
-	switch(index.row()){
-	case 1:
-		// return (void*)nullptr
-		return new QVariant(QMetaType.Type.VoidStar, null);
-	case 2:
-		// return (QObject*)nullptr
-		return new QVariant(QMetaType.Type.ObjectStar, null);
-	case 3:
-		// return (QWidget*)nullptr
-		return new QVariant(QMetaType.fromType(QWidget.class), null);
-	default:
-		// return nullptr
-		return QVariant.nullVariant();
-		// similar to new QVariant(QMetaType.Type.Nullptr, null)
-	}
-}
+// --> (QObject*)nullptr
+new QVariant(QMetaType.Type.ObjectStar, null);
+
+// --> (QWidget*)nullptr
+new QVariant(QMetaType.fromType(QWidget.class), null);
 ```
+
 If you convert cloneable pure-Java objects to native `QVariant` the original Java object is cloned.
 
 In addition to Qt API, the Java class `io.qt.core.QVariant` provides static methods for type check and conversion.
@@ -1170,7 +1166,7 @@ device.close();
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.5.7.jar:qtjambi-uic-6.5.7.jar
+     -p qtjambi-6.5.8.jar:qtjambi-uic-6.5.8.jar
      -m qtjambi.uic --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -1178,7 +1174,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.5.7.jar:qtjambi-uic-6.5.7.jar
+     -cp qtjambi-6.5.8.jar:qtjambi-uic-6.5.8.jar
      io.qt.uic.Main --output=src --package=com.myapplication.widgets com/myapplication/widgets/mainwindow.ui
 ```
 
@@ -1499,7 +1495,7 @@ and *QtJambi* libraries:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.5.7.jar:qtjambi-deployer-6.5.7.jar
+     -p qtjambi-6.5.8.jar:qtjambi-deployer-6.5.8.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1511,7 +1507,7 @@ Alternative way to call it:
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -cp qtjambi-6.5.7.jar:qtjambi-deployer-6.5.7.jar
+     -cp qtjambi-6.5.8.jar:qtjambi-deployer-6.5.8.jar
      io.qt.qtjambi.deployer.Main plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar
@@ -1538,7 +1534,7 @@ This is especially necessary on macOS (arm64).
 
 ``` shell
 java -Djava.library.path=<path to Qt libraries>
-     -p qtjambi-6.5.7.jar:qtjambi-deployer-6.5.7.jar
+     -p qtjambi-6.5.8.jar:qtjambi-deployer-6.5.8.jar
      -m qtjambi.deployer plugin
      --class-name=my.company.CustomImageIOPlugin
      --class-path=my-company-library.jar

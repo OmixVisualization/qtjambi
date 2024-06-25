@@ -45,7 +45,7 @@ public final class QFutureInterface<T> extends io.qt.core.QFutureInterfaceBase
     	return createVoidFutureInterface(State.NoState);
     }
     
-    public static @NonNull QFutureInterface<Void> createVoidFutureInterface(@StrictNonNull State initialState) {
+    public static @NonNull QFutureInterface<Void> createVoidFutureInterface(@NonNull State initialState) {
     	return new QFutureInterface<>(true, initialState);
     }
     
@@ -78,7 +78,7 @@ public final class QFutureInterface<T> extends io.qt.core.QFutureInterfaceBase
         this(false, io.qt.core.QFutureInterfaceBase.State.NoState);
     }
     
-    public QFutureInterface(io.qt.core.QFutureInterfaceBase.State initialState){
+    public QFutureInterface(io.qt.core.QFutureInterfaceBase.@NonNull State initialState){
     	this(false, initialState);
     }
     

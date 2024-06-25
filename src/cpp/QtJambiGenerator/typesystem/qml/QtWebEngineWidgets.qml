@@ -72,88 +72,11 @@ TypeSystem{
         name: "QtPrintSupport"
     }
     
-    EnumType{
-        name: "QWebEngineCertificateError::Error"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWebEngineDownloadItem::DownloadState"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWebEngineDownloadItem::DownloadType"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWebEngineDownloadItem::DownloadInterruptReason"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWebEngineDownloadItem::SavePageFormat"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWebEngineProfile::HttpCacheType"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWebEngineProfile::PersistentCookiesPolicy"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWebEngineScript::InjectionPoint"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWebEngineScript::ScriptWorldId"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWebEngineSettings::FontFamily"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWebEngineSettings::FontSize"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWebEngineSettings::WebAttribute"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWebEngineSettings::UnknownUrlSchemePolicy"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWebEngineContextMenuData::MediaType"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWebEngineContextMenuData::MediaFlag"
-        until: 5
-    }
-    
-    EnumType{
-        name: "QWebEngineContextMenuData::EditFlag"
-        until: 5
-    }
-    
     ValueType{
         name: "QWebEngineCertificateError"
+        EnumType{
+            name: "Error"
+        }
         CustomConstructor{
             Text{content: "if(copy){\n"+
                           "    return new(placement) QWebEngineCertificateError(*copy);\n"+
@@ -170,6 +93,18 @@ TypeSystem{
     
     ObjectType{
         name: "QWebEngineDownloadItem"
+        EnumType{
+            name: "DownloadState"
+        }
+        EnumType{
+            name: "DownloadType"
+        }
+        EnumType{
+            name: "DownloadInterruptReason"
+        }
+        EnumType{
+            name: "SavePageFormat"
+        }
         until: 5
     }
     
@@ -204,6 +139,12 @@ TypeSystem{
     
     ValueType{
         name: "QWebEngineScript"
+        EnumType{
+            name: "InjectionPoint"
+        }
+        EnumType{
+            name: "ScriptWorldId"
+        }
         ModifyFunction{
             signature: "operator=(QWebEngineScript)"
             Delegate{
@@ -216,6 +157,15 @@ TypeSystem{
     
     ValueType{
         name: "QWebEngineContextMenuData"
+        EnumType{
+            name: "MediaType"
+        }
+        EnumType{
+            name: "MediaFlag"
+        }
+        EnumType{
+            name: "EditFlag"
+        }
         ModifyFunction{
             signature: "operator=(QWebEngineContextMenuData)"
             Delegate{
@@ -645,6 +595,12 @@ TypeSystem{
     
     ObjectType{
         name: "QWebEngineProfile"
+        EnumType{
+            name: "HttpCacheType"
+        }
+        EnumType{
+            name: "PersistentCookiesPolicy"
+        }
         ExtraIncludes{
             Include{
                 fileName: "QtWebEngineCore/QWebEngineNotification"
@@ -741,6 +697,18 @@ TypeSystem{
     
     ObjectType{
         name: "QWebEngineSettings"
+        EnumType{
+            name: "FontFamily"
+        }
+        EnumType{
+            name: "FontSize"
+        }
+        EnumType{
+            name: "WebAttribute"
+        }
+        EnumType{
+            name: "UnknownUrlSchemePolicy"
+        }
         until: 5
     }
     

@@ -1378,7 +1378,7 @@ bool Parser::parseTemplateArgument(TemplateArgumentAST *&node) {
                                  && token_stream.lookAhead() != '>')) {
         token_stream.rewind(start);
 
-        if (!parseLogicalOrExpression(expr, true))
+        if (!parseConditionalExpression(expr, true))
             return false;
     }
 
@@ -4249,6 +4249,9 @@ bool Parser::parseLambdaExpression(ExpressionAST *&) {
         if(token_stream.lookAhead()==Token_mutable){
             token_stream.nextToken();
         }
+        if(token_stream.lookAhead()==Token_constexpr){
+            token_stream.nextToken();
+        }
         if(token_stream.lookAhead()==Token_arrow){
             token_stream.nextToken();
             if(token_stream.lookAhead()==Token_typename){
@@ -4267,6 +4270,9 @@ bool Parser::parseLambdaExpression(ExpressionAST *&) {
             }
         }
         if(token_stream.lookAhead()==Token_mutable){
+            token_stream.nextToken();
+        }
+        if(token_stream.lookAhead()==Token_constexpr){
             token_stream.nextToken();
         }
         if(token_stream.lookAhead()!='{'){

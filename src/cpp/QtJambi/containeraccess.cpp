@@ -2084,9 +2084,9 @@ AbstractContainerAccess* AbstractContainerAccess::create(JNIEnv* env, Sequential
                                                          bool isStaticType,
 #endif
                                                          bool isPointer,
-                                                         const QHashFunction& hashFunction,
-                                                         const InternalToExternalConverter& memberConverter,
-                                                         const ExternalToInternalConverter& memberReConverter){
+                                                         const QtJambiUtils::QHashFunction& hashFunction,
+                                                         const QtJambiUtils::InternalToExternalConverter& memberConverter,
+                                                         const QtJambiUtils::ExternalToInternalConverter& memberReConverter){
     if(isPointer){
         size = 0;
         align = 0;
@@ -2171,15 +2171,15 @@ AbstractContainerAccess* AbstractContainerAccess::create(JNIEnv* env, Associativ
                                                          const QMetaType& memberMetaType1,
                                                          size_t align1, size_t size1,
                                                          bool isPointer1,
-                                                         const QHashFunction& hashFunction1,
-                                                         const InternalToExternalConverter& memberConverter1,
-                                                         const ExternalToInternalConverter& memberReConverter1,
+                                                         const QtJambiUtils::QHashFunction& hashFunction1,
+                                                         const QtJambiUtils::InternalToExternalConverter& memberConverter1,
+                                                         const QtJambiUtils::ExternalToInternalConverter& memberReConverter1,
                                                          const QMetaType& memberMetaType2,
                                                          size_t align2, size_t size2,
                                                          bool isPointer2,
-                                                         const QHashFunction& hashFunction2,
-                                                         const InternalToExternalConverter& memberConverter2,
-                                                         const ExternalToInternalConverter& memberReConverter2){
+                                                         const QtJambiUtils::QHashFunction& hashFunction2,
+                                                         const QtJambiUtils::InternalToExternalConverter& memberConverter2,
+                                                         const QtJambiUtils::ExternalToInternalConverter& memberReConverter2){
     if(isPointer1){
         size1 = 0;
         align1 = 0;
@@ -2356,7 +2356,7 @@ AbstractContainerAccess* createPreparedContainerAccess(JNIEnv* env, SequentialCo
             align = size_t(memberMetaType.alignOf());
 #endif
         }
-        QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, memberMetaType.id());
+        QtJambiUtils::QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, memberMetaType.id());
         containerAccess = AbstractContainerAccess::create(env, containerType,
                                                                  memberMetaType,
                                                                  align, size,
@@ -2413,8 +2413,8 @@ AbstractContainerAccess* createPreparedContainerAccess(JNIEnv* env, AssociativeC
         align2 = size_t(memberMetaType2.alignOf());
 #endif
     }
-    QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, memberMetaType1.id());
-    QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, memberMetaType2.id());
+    QtJambiUtils::QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, memberMetaType1.id());
+    QtJambiUtils::QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, memberMetaType2.id());
     QMetaType voidPtr(QMetaType::VoidStar);
     containerAccess = AbstractContainerAccess::create(
                                    env, mapType,

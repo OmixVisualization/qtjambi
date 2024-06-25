@@ -82,7 +82,7 @@ FunctorBase::FunctorBase(const FunctorBase& functor)
 }
 
 FunctorBase::FunctorBase(const std::type_info& typeId, FunctionalBase& functional)
-    : d(QSharedDataPointer<FunctorBasePrivate>( new FunctorBasePrivate(typeId, functional) )) {}
+    : d(new FunctorBasePrivate(typeId, functional)) {}
 
 FunctorBase::~FunctorBase()
 {

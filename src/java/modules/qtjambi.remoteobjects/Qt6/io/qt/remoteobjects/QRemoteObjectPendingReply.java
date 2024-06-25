@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 
+import io.qt.*;
 import io.qt.core.QMetaType;
 import io.qt.core.QVariant;
 
@@ -48,27 +49,27 @@ public final class QRemoteObjectPendingReply<A> extends io.qt.QtObject implement
 	
 	private final QMetaType metaType;
 	
-	public static QRemoteObjectPendingReply<Object> newInstance(QRemoteObjectPendingCall call){
+	public static @NonNull QRemoteObjectPendingReply<Object> newInstance(@NonNull QRemoteObjectPendingCall call){
 		return new QRemoteObjectPendingReply<>(call, QMetaType.Type.QVariant);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static QRemoteObjectPendingReply<List<?>> newListInstance(QRemoteObjectPendingCall call){
+	public static @NonNull QRemoteObjectPendingReply<List<?>> newListInstance(@NonNull QRemoteObjectPendingCall call){
 		return new QRemoteObjectPendingReply(call, QMetaType.Type.QVariantList);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static QRemoteObjectPendingReply<List<String>> newStringListInstance(QRemoteObjectPendingCall call){
+	public static @NonNull QRemoteObjectPendingReply<List<String>> newStringListInstance(@NonNull QRemoteObjectPendingCall call){
 		return new QRemoteObjectPendingReply(call, QMetaType.Type.QStringList);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static QRemoteObjectPendingReply<NavigableMap<String,?>> newMapInstance(QRemoteObjectPendingCall call){
+	public static @NonNull QRemoteObjectPendingReply<NavigableMap<String,?>> newMapInstance(@NonNull QRemoteObjectPendingCall call){
 		return new QRemoteObjectPendingReply(call, QMetaType.Type.QVariantMap);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static QRemoteObjectPendingReply<Map<String,?>> newHashInstance(QRemoteObjectPendingCall call){
+	public static @NonNull QRemoteObjectPendingReply<Map<String,?>> newHashInstance(@NonNull QRemoteObjectPendingCall call){
 		return new QRemoteObjectPendingReply(call, QMetaType.Type.QVariantHash);
 	}
 	
@@ -84,26 +85,26 @@ public final class QRemoteObjectPendingReply<A> extends io.qt.QtObject implement
 		this.metaType = new QMetaType(variantTypeA);
 	}
 	
-	public QRemoteObjectPendingReply(QRemoteObjectPendingCall call, Class<A> typeA, QMetaType... instantiations) {
+	public QRemoteObjectPendingReply(@NonNull QRemoteObjectPendingCall call, @Nullable Class<A> typeA, @NonNull QMetaType @NonNull... instantiations) {
 		super((QPrivateConstructor)null);
         initialize_native(this, call);
         this.metaType = QMetaType.fromType(typeA, instantiations);
 	}
 	
-	@Deprecated
-	public QRemoteObjectPendingReply(Class<A> type) {
+	@Deprecated(forRemoval=true)
+	public QRemoteObjectPendingReply(@Nullable Class<A> type) {
 		this(null, type);
 	}
 
-	@Deprecated
-	public QRemoteObjectPendingReply(Class<A> type, QRemoteObjectPendingCall other) {
+	@Deprecated(forRemoval=true)
+	public QRemoteObjectPendingReply(@Nullable Class<A> type, @NonNull QRemoteObjectPendingCall other) {
 		this(other, type);
 	}
 
 	/**
 	 * Copy constructor
 	 */
-	public QRemoteObjectPendingReply(QRemoteObjectPendingReply<A> other) {
+	public QRemoteObjectPendingReply(@StrictNonNull QRemoteObjectPendingReply<A> other) {
 		super((QPrivateConstructor)null);
 		initialize_native(this, other);
 		metaType = other.metaType;
@@ -112,7 +113,7 @@ public final class QRemoteObjectPendingReply<A> extends io.qt.QtObject implement
 	/**
 	 * {@inheritDoc}
 	 */
-	public QRemoteObjectPendingReply<A> clone(){
+	public @NonNull QRemoteObjectPendingReply<A> clone(){
 		return new QRemoteObjectPendingReply<>(this);
 	}
 	

@@ -60,6 +60,7 @@ import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
 import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QStaticMemberSignals;
+import io.qt.core.QThread;
 import io.qt.core.Qt;
 import io.qt.gui.*;
 import io.qt.gui.QColor;
@@ -727,6 +728,46 @@ public class TestSignals extends ApplicationInitializer{
     		connection = loadLibrary.connect(Runtime.getRuntime(), "load0(Class, String)");
     	}
     	assertTrue(connection.isConnected());
+    }
+    
+    public static class InstanceSignalSender implements QInstanceMemberSignals, QtSignalEmitterInterface{
+    	public final Signal1<@QtPrimitiveType Integer> intValueChanged = new Signal1<>(this);
+    	public final Signal1<@QtPrimitiveType Short> shortValueChanged = new Signal1<>(this);
+    }
+    
+    public static class InstanceSignalReceiver extends QObject{
+    	private double doubleValue;
+
+		public double getDoubleValue() {
+			return doubleValue;
+		}
+
+		public void setDoubleValue(double doubleValue) {
+			this.doubleValue = doubleValue;
+		}
+		
+		public void setIntValue(int intValue) {
+			this.doubleValue = intValue;
+		}
+    }
+    
+    @Test
+    public void testInstanceSignal() {
+    	InstanceSignalSender sender = new InstanceSignalSender();
+    	InstanceSignalReceiver receiver = new InstanceSignalReceiver();
+    	sender.intValueChanged.connect(i->{
+    		receiver.setDoubleValue(i);
+    	});
+    	QThread thread = QThread.create(()->{
+    		sender.intValueChanged.emit(5);
+    	});
+    	thread.start();
+    	thread.join();
+    	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+    	QApplication.sendPostedEvents();
+    	QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
+    	QApplication.sendPostedEvents();
+    	assertEquals(5.0, receiver.getDoubleValue(), 0.001);
     }
 
     public static void main(String args[]) {

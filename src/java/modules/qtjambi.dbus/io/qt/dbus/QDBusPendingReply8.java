@@ -29,6 +29,9 @@
 
 package io.qt.dbus;
 
+import io.qt.NonNull;
+import io.qt.Nullable;
+import io.qt.StrictNonNull;
 import io.qt.core.QMetaType;
 
 /**
@@ -43,28 +46,28 @@ public class QDBusPendingReply8<A,B,C,D,E,F,G,H> extends QDBusPendingReply7<A,B,
 		typeH = new QMetaType();
 	}
 
-	public QDBusPendingReply8(QDBusMessage message, Class<A> typeA, Class<B> typeB, Class<C> typeC, Class<D> typeD, Class<E> typeE, Class<F> typeF, Class<G> typeG, Class<H> typeH) {
+	public QDBusPendingReply8(@NonNull QDBusMessage message, @Nullable Class<A> typeA, @Nullable Class<B> typeB, @Nullable Class<C> typeC, @Nullable Class<D> typeD, @Nullable Class<E> typeE, @Nullable Class<F> typeF, @Nullable Class<G> typeG, @Nullable Class<H> typeH) {
 		super(message, typeA, typeB, typeC, typeD, typeE, typeF, typeG);
 		this.typeH = QMetaType.fromType(typeH);
 	}
 
-	public QDBusPendingReply8(QDBusPendingCall call, Class<A> typeA, Class<B> typeB, Class<C> typeC, Class<D> typeD, Class<E> typeE, Class<F> typeF, Class<G> typeG, Class<H> typeH) {
+	public QDBusPendingReply8(@NonNull QDBusPendingCall call, @Nullable Class<A> typeA, @Nullable Class<B> typeB, @Nullable Class<C> typeC, @Nullable Class<D> typeD, @Nullable Class<E> typeE, @Nullable Class<F> typeF, @Nullable Class<G> typeG, @Nullable Class<H> typeH) {
 		super(call, typeA, typeB, typeC, typeD, typeE, typeF, typeG);
 		this.typeH = QMetaType.fromType(typeH);
 	}
 
-	public QDBusPendingReply8(QDBusPendingReply8<A,B,C,D,E,F,G,H> other) {
+	public QDBusPendingReply8(@StrictNonNull QDBusPendingReply8<A,B,C,D,E,F,G,H> other) {
 		super(other);
 		this.typeH = other.typeH;
 	}
 	
-	public QDBusPendingReply8(QDBusPendingReply7<A,B,C,D,E,F,G> other, Class<H> typeH, QMetaType... instantiations) {
+	public QDBusPendingReply8(@NonNull QDBusPendingReply7<A,B,C,D,E,F,G> other, @Nullable Class<H> typeH, @NonNull QMetaType @NonNull... instantiations) {
 		super(other);
 		this.typeH = QMetaType.fromType(typeH, instantiations);
 	}
 
 	@Override
-	public QDBusPendingReply8<A,B,C,D,E,F,G,H> clone() {
+	public @NonNull QDBusPendingReply8<A,B,C,D,E,F,G,H> clone() {
 		return new QDBusPendingReply8<>(this);
 	}
 

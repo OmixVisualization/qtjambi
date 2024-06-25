@@ -73,8 +73,18 @@ namespace Java{
                                             QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(execPostRoutines)
                                          )
         }
+#if defined(QTJAMBI_LIGHTWEIGHT_MODELINDEX)
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QModelIndex,
+                                         QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         QTJAMBI_REPOSITORY_DECLARE_OBJECT_METHOD(model)
+                                         QTJAMBI_REPOSITORY_DECLARE_LONG_METHOD(internalId)
+                                         QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(row)
+                                         QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(column))
+#else
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QModelIndex,
                                          QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
+#endif
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QAbstractItemModel,)
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QPluginLoader,
             QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(loadPluginInstance)
         )
@@ -154,6 +164,9 @@ namespace Java{
                                                          QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR())
         QTJAMBI_REPOSITORY_DECLARE_CLASS(QVariant,
                                                          QTJAMBI_REPOSITORY_DECLARE_CONSTRUCTOR()
+                                         )
+        QTJAMBI_REPOSITORY_DECLARE_CLASS(QVariant$Null,
+                                         QTJAMBI_REPOSITORY_DECLARE_INT_METHOD(metaTypeID)
                                          )
     }
 
@@ -297,15 +310,15 @@ namespace Java{
         QTJAMBI_REPOSITORY_DECLARE_CLASS(ThreadGroup,QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(add))
 
         QTJAMBI_REPOSITORY_DECLARE_CLASS(Throwable,
-                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(addSuppressed)
-                     QTJAMBI_REPOSITORY_DECLARE_VOID_METHOD(printStackTrace)
-                     QTJAMBI_REPOSITORY_DECLARE_STRING_METHOD(getMessage)
-                     public: static inline jstring tryGetMessage(JNIEnv* env,jobject object){
+                     QTJAMBI_REPOSITORY_DECLARE_THROWABLE_VOID_METHOD(addSuppressed)
+                     QTJAMBI_REPOSITORY_DECLARE_THROWABLE_VOID_METHOD(printStackTrace)
+                     QTJAMBI_REPOSITORY_DECLARE_THROWABLE_STRING_METHOD(getMessage)
+                     public: static inline jstring tryGetMessage(JNIEnv* env, jthrowable object){
                          auto _this = __qt_get_this(env);
                          jobject result = env->CallObjectMethod(object,_this.__getMessage);
                          return jstring(result);
                      }
-                     static inline void tryPrintStackTrace(JNIEnv* env,jobject object){
+                     static inline void tryPrintStackTrace(JNIEnv* env, jthrowable object){
                           auto _this = __qt_get_this(env);
                           env->CallVoidMethod(object,_this.__printStackTrace);
                       }
@@ -342,8 +355,9 @@ namespace Java{
     {
         QTJAMBI_REPOSITORY_DECLARE_CLASS(NativeUtility,
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(terminateCleanupThread)
-                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_VOID_METHOD(createAssociation)
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_INT_METHOD(createAssociation)
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_BOOLEAN_METHOD(deleteAssociation)
+                                     QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(deleteAssociationByHashCode)
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findAssociation)
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_OBJECT_METHOD(findInterfaceLink)
                                      QTJAMBI_REPOSITORY_DECLARE_STATIC_LONG_METHOD(nativeId)

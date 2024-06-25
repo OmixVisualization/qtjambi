@@ -160,7 +160,7 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	/**
 	 * @deprecated Use {@link #testFlags(QFlags)} instead.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval=true)
 	public final boolean isSet(@StrictNonNull QFlags<T> other) {
 		return testFlags(other);
 	}
@@ -168,7 +168,7 @@ public abstract class QFlags<T extends QtAbstractFlagEnumerator> implements java
 	/**
 	 * @deprecated Use {@link #testFlags(QtAbstractFlagEnumerator...)} instead.
 	 */
-	@Deprecated
+	@Deprecated(forRemoval=true)
 	@SafeVarargs
 	public final boolean isSet(@Nullable T @NonNull... flags) {
 		return testFlags(flags);

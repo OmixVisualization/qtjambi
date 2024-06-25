@@ -1341,6 +1341,7 @@ public class TestQml extends ApplicationInitializer{
 		QQmlApplicationEngine engine = new QQmlApplicationEngine();
 		engine.warnings.connect(list->list.forEach(System.out::println));
 		engine.loadData(data);
+		@SuppressWarnings("unused")
 		QObject object = engine.rootObjects().first();
 	}
 }

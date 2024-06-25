@@ -83,8 +83,18 @@ namespace Internal{
 }
 
 namespace QtCore{
+#if defined(QTJAMBI_LIGHTWEIGHT_MODELINDEX)
+QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QModelIndex,
+                                QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(IIJLio/qt/core/QAbstractItemModel;)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(model,()Lio/qt/core/QAbstractItemModel;)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(column,()I)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(row,()I)
+                                QTJAMBI_REPOSITORY_DEFINE_METHOD(internalId,()J)
+                                )
+#else
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QModelIndex,
                                 QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;))
+#endif
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QString,
                                 QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;))
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QChar,
@@ -816,6 +826,8 @@ QTJAMBI_REPOSITORY_DEFINE_EMPTY_CLASS(io/qt/core,QObject)
     )
 #endif
 
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QAbstractItemModel,
+                                    )
     QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QFutureInterface,
         QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
     )
@@ -835,9 +847,13 @@ QTJAMBI_REPOSITORY_DEFINE_EMPTY_CLASS(io/qt/core,QObject)
                                      QTJAMBI_REPOSITORY_DEFINE_FIELD(proxy,Ljava/lang/Object;)
                                      QTJAMBI_REPOSITORY_DEFINE_FIELD(peer,J))
 
-     QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QVariant,
-         QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
-     )
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QVariant,
+        QTJAMBI_REPOSITORY_DEFINE_CONSTRUCTOR(Lio/qt/QtObject$QPrivateConstructor;)
+    )
+
+    QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/core,QVariant$Null,
+        QTJAMBI_REPOSITORY_DEFINE_METHOD(metaTypeID,()I)
+    )
 }
 
 namespace Runtime {
@@ -1241,8 +1257,9 @@ QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,AccessUtility,
 
 QTJAMBI_REPOSITORY_DEFINE_CLASS(io/qt/internal,NativeUtility,
                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(terminateCleanupThread,()V)
-                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(createAssociation,(Ljava/lang/Object;Ljava/lang/Object;)V)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(createAssociation,(Ljava/lang/Object;Ljava/lang/Object;)I)
                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(deleteAssociation,(Ljava/lang/Object;)Z)
+                                QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(deleteAssociationByHashCode,(I)Ljava/lang/Object;)
                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findAssociation,(Ljava/lang/Object;)Ljava/lang/Object;)
                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(findInterfaceLink,(Lio/qt/QtObjectInterface;ZZ)Lio/qt/internal/NativeUtility$NativeLink;)
                                 QTJAMBI_REPOSITORY_DEFINE_STATIC_METHOD(nativeId,(Lio/qt/internal/NativeUtility$Object;)J)

@@ -1332,15 +1332,15 @@ void CoreAPI::initializeQList(JNIEnv *env, jobject object, jclass elementType, Q
             if(align==0 && !isPointer)
                 align = QtJambiTypeManager::getInternalAlignment(elementMetaType.name());
 #endif
-            QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, elementMetaType.id());
-            InternalToExternalConverter internalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
+            QtJambiUtils::QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, elementMetaType.id());
+            QtJambiUtils::InternalToExternalConverter internalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
                                                                                                                 env,
                                                                                                                 QLatin1String(qTypeName),
                                                                                                                 elementMetaType,
                                                                                                                 elementType,
                                                                                                                 true
                                                                                                             );
-            ExternalToInternalConverter externalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
+            QtJambiUtils::ExternalToInternalConverter externalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
                                                                                                                 env,
                                                                                                                 elementType,
                                                                                                                 QLatin1String(qTypeName),
@@ -1494,20 +1494,20 @@ void CoreAPI::initializeQSet(JNIEnv *env, jobject object, jclass elementType, Qt
                     if(align==0 && !isPointer)
                         align = QtJambiTypeManager::getInternalAlignment(elementMetaType.name());
 #endif
-                    InternalToExternalConverter internalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
+                    QtJambiUtils::InternalToExternalConverter internalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
                                                                                                                         env,
                                                                                                                         QLatin1String(qTypeName),
                                                                                                                         elementMetaType,
                                                                                                                         elementType,
                                                                                                                         true
                                                                                                                     );
-                    ExternalToInternalConverter externalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
+                    QtJambiUtils::ExternalToInternalConverter externalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
                                                                                                                         env,
                                                                                                                         elementType,
                                                                                                                         QLatin1String(qTypeName),
                                                                                                                         elementMetaType
                                                                                                                     );
-                    QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, elementMetaType.id());
+                    QtJambiUtils::QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, elementMetaType.id());
                     if(!hashFunction){
                         Java::QtJambi::QNoImplementationException::throwNew(env, QString("Unable to create QSet of %1 because of missing hash function.").arg(QtJambiAPI::getClassName(env, elementType).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
                     }
@@ -1656,15 +1656,15 @@ void CoreAPI::initializeQLinkedList(JNIEnv *env, jobject object, jclass elementT
                     }
                     if(align==0 && !isPointer)
                         align = QtJambiTypeManager::getInternalAlignment(elementMetaType.name());
-                    QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, elementMetaType.id());
-                    InternalToExternalConverter internalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
+                    QtJambiUtils::QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, elementMetaType.id());
+                    QtJambiUtils::InternalToExternalConverter internalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
                                                                                                                         env,
                                                                                                                         QLatin1String(elementMetaType.name()),
                                                                                                                         elementMetaType,
                                                                                                                         elementType,
                                                                                                                         true
                                                                                                                     );
-                    ExternalToInternalConverter externalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
+                    QtJambiUtils::ExternalToInternalConverter externalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
                                                                                                                         env,
                                                                                                                         elementType,
                                                                                                                         QLatin1String(elementMetaType.name()),
@@ -1810,20 +1810,20 @@ void CoreAPI::initializeQVector(JNIEnv *env, jobject object, jclass elementType,
                     }
                     if(align==0 && !isPointer)
                         align = QtJambiTypeManager::getInternalAlignment(elementMetaType.name());
-                    InternalToExternalConverter internalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
+                    QtJambiUtils::InternalToExternalConverter internalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
                                                                                                                         env,
                                                                                                                         QLatin1String(elementMetaType.name()),
                                                                                                                         elementMetaType,
                                                                                                                         elementType,
                                                                                                                         true
                                                                                                                     );
-                    ExternalToInternalConverter externalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
+                    QtJambiUtils::ExternalToInternalConverter externalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
                                                                                                                         env,
                                                                                                                         elementType,
                                                                                                                         QLatin1String(elementMetaType.name()),
                                                                                                                         elementMetaType
                                                                                                                     );
-                    QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, elementMetaType.id());
+                    QtJambiUtils::QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, elementMetaType.id());
                     containerAccess = dynamic_cast<AbstractVectorAccess*>(AbstractContainerAccess::create(
                                                                               env, SequentialContainerType::QVector,
                                                                               elementMetaType,
@@ -1958,34 +1958,34 @@ void CoreAPI::initializeQHash(JNIEnv *env, jobject object, jclass keyType, QtJam
             align2 = QtJambiTypeManager::getInternalAlignment(valueMetaType.name());
     #endif
 
-        InternalToExternalConverter keyInternalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
+        QtJambiUtils::InternalToExternalConverter keyInternalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
                                                                                                             env,
                                                                                                             QLatin1String(keyMetaType.name()),
                                                                                                             keyMetaType,
                                                                                                             keyType,
                                                                                                             true
                                                                                                         );
-        ExternalToInternalConverter keyExternalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
+        QtJambiUtils::ExternalToInternalConverter keyExternalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
                                                                                                             env,
                                                                                                             keyType,
                                                                                                             QLatin1String(keyMetaType.name()),
                                                                                                             keyMetaType
                                                                                                         );
-        InternalToExternalConverter valueInternalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
+        QtJambiUtils::InternalToExternalConverter valueInternalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
                                                                                                             env,
                                                                                                             QLatin1String(valueMetaType.name()),
                                                                                                             valueMetaType,
                                                                                                             valueType,
                                                                                                             true
                                                                                                         );
-        ExternalToInternalConverter valueExternalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
+        QtJambiUtils::ExternalToInternalConverter valueExternalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
                                                                                                             env,
                                                                                                             valueType,
                                                                                                             QLatin1String(valueMetaType.name()),
                                                                                                             valueMetaType
                                                                                                         );
-        QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, keyMetaType.id());
-        QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, valueMetaType.id());
+        QtJambiUtils::QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, keyMetaType.id());
+        QtJambiUtils::QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, valueMetaType.id());
         if(!hashFunction1){
             Java::QtJambi::QNoImplementationException::throwNew(env, QString("Unable to create QHash for %1 because of missing hash function.").arg(QtJambiAPI::getClassName(env, keyType).replace("$", ".")) QTJAMBI_STACKTRACEINFO );
         }
@@ -2125,35 +2125,35 @@ void CoreAPI::initializeQMultiHash(JNIEnv *env, jobject object, jclass keyType, 
             align2 = QtJambiTypeManager::getInternalAlignment(valueMetaType.name());
     #endif
 
-        InternalToExternalConverter keyInternalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
+        QtJambiUtils::InternalToExternalConverter keyInternalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
                                                                                                             env,
                                                                                                             QLatin1String(keyMetaType.name()),
                                                                                                             keyMetaType,
                                                                                                             keyType,
                                                                                                             true
                                                                                                         );
-        ExternalToInternalConverter keyExternalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
+        QtJambiUtils::ExternalToInternalConverter keyExternalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
                                                                                                             env,
                                                                                                             keyType,
                                                                                                             QLatin1String(keyMetaType.name()),
                                                                                                             keyMetaType
                                                                                                         );
-        InternalToExternalConverter valueInternalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
+        QtJambiUtils::InternalToExternalConverter valueInternalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
                                                                                                             env,
                                                                                                             QLatin1String(valueMetaType.name()),
                                                                                                             valueMetaType,
                                                                                                             valueType,
                                                                                                             true
                                                                                                         );
-        ExternalToInternalConverter valueExternalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
+        QtJambiUtils::ExternalToInternalConverter valueExternalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
                                                                                                             env,
                                                                                                             valueType,
                                                                                                             QLatin1String(valueMetaType.name()),
                                                                                                             valueMetaType
                                                                                                         );
 
-        QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, keyMetaType.id());
-        QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, valueMetaType.id());
+        QtJambiUtils::QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, keyMetaType.id());
+        QtJambiUtils::QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, valueMetaType.id());
         containerAccess = dynamic_cast<AbstractMultiHashAccess*>(AbstractContainerAccess::create(
                                                                      env, AssociativeContainerType::QMultiHash,
                                                                      keyMetaType,
@@ -2295,35 +2295,35 @@ void CoreAPI::initializeQMap(JNIEnv *env, jobject object, jclass keyType, QtJamb
             align2 = QtJambiTypeManager::getInternalAlignment(valueMetaType.name());
     #endif
 
-        InternalToExternalConverter keyInternalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
+        QtJambiUtils::InternalToExternalConverter keyInternalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
                                                                                                             env,
                                                                                                             QLatin1String(keyMetaType.name()),
                                                                                                             keyMetaType,
                                                                                                             keyType,
                                                                                                             true
                                                                                                         );
-        ExternalToInternalConverter keyExternalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
+        QtJambiUtils::ExternalToInternalConverter keyExternalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
                                                                                                             env,
                                                                                                             keyType,
                                                                                                             QLatin1String(keyMetaType.name()),
                                                                                                             keyMetaType
                                                                                                         );
-        InternalToExternalConverter valueInternalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
+        QtJambiUtils::InternalToExternalConverter valueInternalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
                                                                                                             env,
                                                                                                             QLatin1String(valueMetaType.name()),
                                                                                                             valueMetaType,
                                                                                                             valueType,
                                                                                                             true
                                                                                                         );
-        ExternalToInternalConverter valueExternalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
+        QtJambiUtils::ExternalToInternalConverter valueExternalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
                                                                                                             env,
                                                                                                             valueType,
                                                                                                             QLatin1String(valueMetaType.name()),
                                                                                                             valueMetaType
                                                                                                         );
 
-        QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, keyMetaType.id());
-        QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, valueMetaType.id());
+        QtJambiUtils::QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, keyMetaType.id());
+        QtJambiUtils::QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, valueMetaType.id());
         containerAccess = dynamic_cast<AbstractMapAccess*>(AbstractContainerAccess::create(
                                                                     env, AssociativeContainerType::QMap,
                                                                     keyMetaType,
@@ -2460,35 +2460,35 @@ void CoreAPI::initializeQMultiMap(JNIEnv *env, jobject object, jclass keyType, Q
             align2 = QtJambiTypeManager::getInternalAlignment(valueMetaType.name());
     #endif
 
-        InternalToExternalConverter keyInternalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
+        QtJambiUtils::InternalToExternalConverter keyInternalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
                                                                                                             env,
                                                                                                             QLatin1String(keyMetaType.name()),
                                                                                                             keyMetaType,
                                                                                                             keyType,
                                                                                                             true
                                                                                                         );
-        ExternalToInternalConverter keyExternalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
+        QtJambiUtils::ExternalToInternalConverter keyExternalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
                                                                                                             env,
                                                                                                             keyType,
                                                                                                             QLatin1String(keyMetaType.name()),
                                                                                                             keyMetaType
                                                                                                         );
-        InternalToExternalConverter valueInternalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
+        QtJambiUtils::InternalToExternalConverter valueInternalToExternalConverter = QtJambiTypeManager::getInternalToExternalConverter(
                                                                                                             env,
                                                                                                             QLatin1String(valueMetaType.name()),
                                                                                                             valueMetaType,
                                                                                                             valueType,
                                                                                                             true
                                                                                                         );
-        ExternalToInternalConverter valueExternalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
+        QtJambiUtils::ExternalToInternalConverter valueExternalToInternalConverter = QtJambiTypeManager::getExternalToInternalConverter(
                                                                                                             env,
                                                                                                             valueType,
                                                                                                             QLatin1String(valueMetaType.name()),
                                                                                                             valueMetaType
                                                                                                         );
 
-        QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, keyMetaType.id());
-        QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, valueMetaType.id());
+        QtJambiUtils::QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, keyMetaType.id());
+        QtJambiUtils::QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, valueMetaType.id());
         containerAccess = dynamic_cast<AbstractMultiMapAccess*>(AbstractContainerAccess::create(
                                                                     env, AssociativeContainerType::QMultiMap,
                                                                     keyMetaType,

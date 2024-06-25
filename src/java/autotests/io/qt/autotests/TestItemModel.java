@@ -39,6 +39,7 @@ import org.junit.Test;
 import io.qt.NonNull;
 import io.qt.QNoNativeResourcesException;
 import io.qt.QtPrimitiveType;
+import io.qt.core.QAbstractListModel;
 import io.qt.core.QAbstractTableModel;
 import io.qt.core.QMetaMethod;
 import io.qt.core.QMetaObject;
@@ -46,13 +47,12 @@ import io.qt.core.QModelIndex;
 import io.qt.core.QObject;
 import io.qt.core.QTimer;
 import io.qt.core.Qt;
-import io.qt.core.QObject.PrivateSignal3;
 import io.qt.core.Qt.Orientation;
 import io.qt.gui.QStandardItemModel;
 import io.qt.widgets.QApplication;
 import io.qt.widgets.QTableView;
 
-public class TestTableModel extends ApplicationInitializer {
+public class TestItemModel extends ApplicationInitializer {
 	
 	@BeforeClass
     public static void testInitialize() throws Exception {
@@ -112,6 +112,23 @@ public class TestTableModel extends ApplicationInitializer {
     }
     
     @Test
+    public void testSignalDefaultArgs() {
+    	QAbstractListModel listModel = new QAbstractListModel() {
+			@Override
+			public int rowCount(@NonNull QModelIndex parent) {
+				return 0;
+			}
+			
+			@Override
+			public Object data(@NonNull QModelIndex index, int role) {
+				return null;
+			}
+		};
+		listModel.dataChanged.connect((a,b,c)->{});
+		listModel.dataChanged.emit(listModel.index(0, 0), listModel.index(0, 0));
+    }
+    
+    @Test
     public void testIndexDangledModel() {
     	class Model extends QStandardItemModel {
 			public QModelIndex createIndex() {
@@ -130,6 +147,6 @@ public class TestTableModel extends ApplicationInitializer {
     }
 
     public static void main(String args[]) {
-        org.junit.runner.JUnitCore.main(TestTableModel.class.getName());
+        org.junit.runner.JUnitCore.main(TestItemModel.class.getName());
     }
 }

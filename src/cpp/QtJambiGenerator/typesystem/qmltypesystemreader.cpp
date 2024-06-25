@@ -1944,6 +1944,8 @@ TemplateInstantiation QmlTypeSystemReaderPrivate::parseInstantiation(Instantiati
                         TypesystemException::raise(QStringLiteral(u"Unexpected element %1 as child of %2").arg(item2->metaObject()->className(), item->metaObject()->className()));
                     }
                 }
+            }else if(Delegate* childElement = qobject_cast<Delegate*>(item)){
+                parseDelegate(childElement, mod);
             }else if(InjectCode* childElement = qobject_cast<InjectCode*>(item)){
                 static const QHash<CodeClass::Entries, TS::Language> languageNames{
                     {CodeClass::Java, TS::TargetLangCode},

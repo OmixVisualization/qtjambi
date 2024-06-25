@@ -51,30 +51,30 @@ TypeSystem{
         name: "QVirtualKeyboardInputContext"
     }
     
-    EnumType{
-        name: "QVirtualKeyboardInputEngine::InputMode"
-    }
-    
-    EnumType{
-        name: "QVirtualKeyboardInputEngine::PatternRecognitionMode"
-        RejectEnumValue{
-            name: "PatternRecognitionDisabled"
-        }
-        RejectEnumValue{
-            name: "HandwritingRecoginition"
-        }
-    }
-    
-    EnumType{
-        name: "QVirtualKeyboardInputEngine::ReselectFlag"
-    }
-    
-    EnumType{
-        name: "QVirtualKeyboardInputEngine::TextCase"
-    }
-    
     ObjectType{
         name: "QVirtualKeyboardInputEngine"
+
+        EnumType{
+            name: "InputMode"
+        }
+
+        EnumType{
+            name: "PatternRecognitionMode"
+            RejectEnumValue{
+                name: "PatternRecognitionDisabled"
+            }
+            RejectEnumValue{
+                name: "HandwritingRecoginition"
+            }
+        }
+
+        EnumType{
+            name: "ReselectFlag"
+        }
+
+        EnumType{
+            name: "TextCase"
+        }
         ModifyFunction{
             signature: "setInputMethod(QVirtualKeyboardAbstractInputMethod *)"
             ModifyArgument{
@@ -87,26 +87,26 @@ TypeSystem{
         }
     }
     
-    EnumType{
-        name: "QVirtualKeyboardSelectionListModel::DictionaryType"
-    }
-    
-    EnumType{
-        name: "QVirtualKeyboardSelectionListModel::Role"
-        RejectEnumValue{
-            name: "DisplayRole"
-        }
-        RejectEnumValue{
-            name: "WordCompletionLengthRole"
-        }
-    }
-    
-    EnumType{
-        name: "QVirtualKeyboardSelectionListModel::Type"
-    }
-    
     ObjectType{
         name: "QVirtualKeyboardSelectionListModel"
+
+        EnumType{
+            name: "DictionaryType"
+        }
+
+        EnumType{
+            name: "Role"
+            RejectEnumValue{
+                name: "DisplayRole"
+            }
+            RejectEnumValue{
+                name: "WordCompletionLengthRole"
+            }
+        }
+
+        EnumType{
+            name: "Type"
+        }
         ModifyFunction{
             signature: "setDataSource(QVirtualKeyboardAbstractInputMethod*,QVirtualKeyboardSelectionListModel::Type)"
             ModifyArgument{

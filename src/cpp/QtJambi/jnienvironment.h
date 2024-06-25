@@ -31,6 +31,8 @@
 #define QTJAMBI_JAVAENVIRONMENT_H
 
 #include "global.h"
+#include "scope.h"
+#include "exception.h"
 
 enum class jValueType {
     z = 1,
@@ -53,11 +55,114 @@ public:
     operator JNIEnv *() const;
     JNIEnv * environment() const;
     JNIEnv *operator->() const;
+#ifdef QTJAMBI_STACKTRACE
+    void checkException();
+#endif
+    void checkException(QTJAMBI_STACKTRACEINFO_DECL_NOENV);
 protected:
     JniEnvironment(bool,int capacity);
 private:
+    JniEnvironment(bool);
+    void initialize(JNIEnv *env, int capacity);
     JNIEnv *m_env;
     bool m_hasLocalFrames;
+    friend class JniEnvironmentExceptionHandler;
+    friend class JniEnvironmentExceptionInhibitor;
+};
+
+class JavaException;
+
+class QTJAMBI_EXPORT JniEnvironmentExceptionHandler : public JniEnvironment{
+public:
+    JniEnvironmentExceptionHandler(int capacity = 0);
+    ~JniEnvironmentExceptionHandler();
+    void handleException(const JavaException& exn, const char* methodName);
+private:
+    quint8 data;
+    Q_DISABLE_COPY_MOVE(JniEnvironmentExceptionHandler)
+    friend class JniEnvironmentExceptionHandlerAndBlocker;
+};
+
+class QTJAMBI_EXPORT JniEnvironmentExceptionInhibitor : public JniEnvironment{
+public:
+    JniEnvironmentExceptionInhibitor(int capacity = 0);
+    ~JniEnvironmentExceptionInhibitor();
+    void handleException(const JavaException& exn, const char* methodName);
+private:
+    quint8 data;
+    Q_DISABLE_COPY_MOVE(JniEnvironmentExceptionInhibitor)
+    friend class JniEnvironmentExceptionInhibitorAndBlocker;
+};
+
+class QTJAMBI_EXPORT JniEnvironmentExceptionHandlerAndBlocker : public JniEnvironmentExceptionHandler{
+public:
+    using JniEnvironmentExceptionHandler::JniEnvironmentExceptionHandler;
+    ~JniEnvironmentExceptionHandlerAndBlocker();
+    void releaseException();
+};
+
+class QTJAMBI_EXPORT JniEnvironmentExceptionInhibitorAndBlocker : public JniEnvironmentExceptionInhibitor{
+public:
+    using JniEnvironmentExceptionInhibitor::JniEnvironmentExceptionInhibitor;
+    ~JniEnvironmentExceptionInhibitorAndBlocker();
+    void releaseException();
+};
+
+class QtJambiShell;
+
+class QTJAMBI_EXPORT JniEnvironmentScope : public JniEnvironment{
+public:
+    JniEnvironmentScope(QtJambiShell* shell, int capacity = 0);
+    ~JniEnvironmentScope();
+    QtJambiScope& scope();
+    jobject getJavaObjectLocalRef();
+private:
+    QtJambiScope m_scope;
+    Q_DISABLE_COPY_MOVE(JniEnvironmentScope)
+};
+
+class QTJAMBI_EXPORT JniEnvironmentScopeExceptionHandler : public JniEnvironmentExceptionHandler{
+public:
+    JniEnvironmentScopeExceptionHandler(QtJambiShell* shell, int capacity = 0);
+    ~JniEnvironmentScopeExceptionHandler();
+    QtJambiScope& scope();
+    jobject getJavaObjectLocalRef();
+private:
+    QtJambiScope m_scope;
+    Q_DISABLE_COPY_MOVE(JniEnvironmentScopeExceptionHandler)
+};
+
+class QTJAMBI_EXPORT JniEnvironmentScopeExceptionInhibitor : public JniEnvironmentExceptionInhibitor{
+public:
+    JniEnvironmentScopeExceptionInhibitor(QtJambiShell* shell, int capacity = 0);
+    ~JniEnvironmentScopeExceptionInhibitor();
+    QtJambiScope& scope();
+    jobject getJavaObjectLocalRef();
+private:
+    QtJambiScope m_scope;
+    Q_DISABLE_COPY_MOVE(JniEnvironmentScopeExceptionInhibitor)
+};
+
+class QTJAMBI_EXPORT JniEnvironmentScopeExceptionHandlerAndBlocker : public JniEnvironmentExceptionHandlerAndBlocker{
+public:
+    JniEnvironmentScopeExceptionHandlerAndBlocker(QtJambiShell* shell, int capacity = 0);
+    ~JniEnvironmentScopeExceptionHandlerAndBlocker();
+    QtJambiScope& scope();
+    jobject getJavaObjectLocalRef();
+private:
+    QtJambiScope m_scope;
+    Q_DISABLE_COPY_MOVE(JniEnvironmentScopeExceptionHandlerAndBlocker)
+};
+
+class QTJAMBI_EXPORT JniEnvironmentScopeExceptionInhibitorAndBlocker : public JniEnvironmentExceptionInhibitorAndBlocker{
+public:
+    JniEnvironmentScopeExceptionInhibitorAndBlocker(QtJambiShell* shell, int capacity = 0);
+    ~JniEnvironmentScopeExceptionInhibitorAndBlocker();
+    QtJambiScope& scope();
+    jobject getJavaObjectLocalRef();
+private:
+    QtJambiScope m_scope;
+    Q_DISABLE_COPY_MOVE(JniEnvironmentScopeExceptionInhibitorAndBlocker)
 };
 
 class QTJAMBI_EXPORT JniLocalFrame{

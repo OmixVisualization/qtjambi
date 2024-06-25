@@ -48,13 +48,17 @@
 
 #ifndef QTJAMBI_STACKTRACEINFO
 #ifdef QTJAMBI_STACKTRACE
+#define QTJAMBI_STACKTRACEINFO_NOENV __FUNCTION__, __FILE__, __LINE__
 #define QTJAMBI_STACKTRACEINFO , __FUNCTION__, __FILE__, __LINE__
 #define QTJAMBI_STACKTRACEINFO_ENV(env) env QTJAMBI_STACKTRACEINFO
+#define QTJAMBI_STACKTRACEINFO_DECL_NOENV const char *methodName, const char *fileName, int lineNumber
 #define QTJAMBI_STACKTRACEINFO_DECL , const char *methodName, const char *fileName, int lineNumber
 #else
+#define QTJAMBI_STACKTRACEINFO_NOENV
 #define QTJAMBI_STACKTRACEINFO
 #define QTJAMBI_STACKTRACEINFO_ENV(env)
 #define QTJAMBI_STACKTRACEINFO_DECL
+#define QTJAMBI_STACKTRACEINFO_DECL_NOENV
 #endif
 #endif
 
@@ -76,10 +80,12 @@ public:
     void raise(JNIEnv* env, const char *methodName, const char *fileName, int lineNumber) const;
 #endif
     void addSuppressed(JNIEnv* env, const JavaException& exn) const;
-    jthrowable object() const;
+    jthrowable throwable(JNIEnv* env) const;
+    bool isInstanceOf(JNIEnv* env, jclass exceptionType) const;
     JavaException& operator =(const JavaException& other) Q_DECL_NOEXCEPT;
     JavaException& operator =(JavaException&& other) Q_DECL_NOEXCEPT;
     operator bool() const Q_DECL_NOEXCEPT;
+    bool operator !() const Q_DECL_NOEXCEPT;
     char const* what() const Q_DECL_NOEXCEPT override;
 
 #ifdef QTJAMBI_STACKTRACE
@@ -115,7 +121,8 @@ public:
 #endif
 private:
     void update(JNIEnv *env);
-    QSharedDataPointer<JavaExceptionPrivate> p;
+    QExplicitlySharedDataPointer<JavaExceptionPrivate> p;
+    friend JavaExceptionPrivate;
 };
 
 #if defined(QTJAMBI_CENTRAL_TRY_CATCH)

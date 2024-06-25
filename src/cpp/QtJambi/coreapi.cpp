@@ -370,7 +370,7 @@ jobject CoreAPI::readMetaPropertyOnGadget(JNIEnv *env, jobject _this, jobject ga
             }
             variant = __qt_this->readOnGadget(ptr);
             if(const QtJambiMetaObject* mo = QtJambiMetaObject::cast(__qt_this->enclosingMetaObject())){
-                if(InternalToExternalConverter converter = mo->internalToExternalConverterOfProperty(__qt_this->relativePropertyIndex())){
+                if(QtJambiUtils::InternalToExternalConverter converter = mo->internalToExternalConverterOfProperty(__qt_this->relativePropertyIndex())){
                     jvalue val;
                     val.l = nullptr;
                     QtJambiScope scope(nullptr);
@@ -397,7 +397,7 @@ jobject CoreAPI::readMetaPropertyOnGadget(JNIEnv *env, jobject _this, jobject ga
                 val.l = nullptr;
                 JavaException::check(env QTJAMBI_STACKTRACEINFO );
                 QMetaType _type(type);
-                InternalToExternalConverter converter = QtJambiTypeManager::getInternalToExternalConverter(env, qtName, _type, object_class);
+                QtJambiUtils::InternalToExternalConverter converter = QtJambiTypeManager::getInternalToExternalConverter(env, qtName, _type, object_class);
                 QtJambiScope scope(nullptr);
                 bool result = converter && converter(env, &scope, variant.data(), val, true);
                 if(result)
@@ -451,7 +451,7 @@ jboolean CoreAPI::writeMetaPropertyOnGadget(JNIEnv *env, jobject _this, jobject 
             QVariant valueVariant;
             bool success = false;
             if(const QtJambiMetaObject* mo = QtJambiMetaObject::cast(__qt_this->enclosingMetaObject())){
-                if(ExternalToInternalConverter converter = mo->externalToInternalConverterOfProperty(__qt_this->relativePropertyIndex())){
+                if(QtJambiUtils::ExternalToInternalConverter converter = mo->externalToInternalConverterOfProperty(__qt_this->relativePropertyIndex())){
                     jvalue val;
                     val.l = value;
                     void *copy = nullptr;
@@ -481,7 +481,7 @@ jboolean CoreAPI::writeMetaPropertyOnGadget(JNIEnv *env, jobject _this, jobject 
                     val.l = value;
                     JavaException::check(env QTJAMBI_STACKTRACEINFO );
                     QMetaType _type(type);
-                    ExternalToInternalConverter converter = QtJambiTypeManager::getExternalToInternalConverter(env, object_class, qtName, _type);
+                    QtJambiUtils::ExternalToInternalConverter converter = QtJambiTypeManager::getExternalToInternalConverter(env, object_class, qtName, _type);
                     void *copy = nullptr;
                     QtJambiScope scope(nullptr);
                     if(!converter(env, &scope, val, copy, jValueType::l)){
@@ -867,7 +867,7 @@ struct ResolvingInternalToExternalConverter{
 #else
     QMetaType m_metaType;
 #endif
-    mutable InternalToExternalConverter m_converter;
+    mutable QtJambiUtils::InternalToExternalConverter m_converter;
 };
 
 struct ResolvingExternalToInternalConverter{
@@ -926,7 +926,7 @@ struct ResolvingExternalToInternalConverter{
 #else
     QMetaType m_metaType;
 #endif
-    mutable ExternalToInternalConverter m_converter;
+    mutable QtJambiUtils::ExternalToInternalConverter m_converter;
 };
 
 int CoreAPI::registerMetaType(JNIEnv *env, jclass containerType, jobjectArray instantiations)
@@ -1036,7 +1036,7 @@ int CoreAPI::registerMetaType(JNIEnv *env, jclass containerType, jobjectArray in
                         align = QtJambiTypeManager::getInternalAlignment(elementType);
                 }
 
-                InternalToExternalConverter memberConverter = QtJambiTypeManager::tryGetInternalToExternalConverter(
+                QtJambiUtils::InternalToExternalConverter memberConverter = QtJambiTypeManager::tryGetInternalToExternalConverter(
                             env,
                             metaType1.name(),
                             metaType1,
@@ -1044,7 +1044,7 @@ int CoreAPI::registerMetaType(JNIEnv *env, jclass containerType, jobjectArray in
                 if(!memberConverter)
                     memberConverter = ResolvingInternalToExternalConverter(elementClass, metaType1);
 
-                ExternalToInternalConverter memberReConverter = QtJambiTypeManager::tryGetExternalToInternalConverter(
+                QtJambiUtils::ExternalToInternalConverter memberReConverter = QtJambiTypeManager::tryGetExternalToInternalConverter(
                             env,
                             elementClass,
                             metaType1.name(),
@@ -1053,7 +1053,7 @@ int CoreAPI::registerMetaType(JNIEnv *env, jclass containerType, jobjectArray in
                 if(!memberReConverter)
                     memberReConverter = ResolvingExternalToInternalConverter(elementClass, metaType1);
 
-                QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, metaType1.id());
+                QtJambiUtils::QHashFunction hashFunction = QtJambiTypeManager::findHashFunction(isPointer, metaType1.id());
                 containerAccess = AbstractContainerAccess::create(env, type,
                                                                   metaType1,
                                                                   align, size,
@@ -1179,9 +1179,9 @@ int CoreAPI::registerMetaType(JNIEnv *env, jclass containerType, jobjectArray in
 
             containerAccess = AbstractContainerAccess::create(env, type, metaType1, metaType2);
             if(!containerAccess){
-                QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, metaType1.id());
-                QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, metaType2.id());
-                InternalToExternalConverter memberConverter1 = QtJambiTypeManager::tryGetInternalToExternalConverter(
+                QtJambiUtils::QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(isPointer1, metaType1.id());
+                QtJambiUtils::QHashFunction hashFunction2 = QtJambiTypeManager::findHashFunction(isPointer2, metaType2.id());
+                QtJambiUtils::InternalToExternalConverter memberConverter1 = QtJambiTypeManager::tryGetInternalToExternalConverter(
                             env,
                             metaType1.name(),
                             metaType1,
@@ -1189,7 +1189,7 @@ int CoreAPI::registerMetaType(JNIEnv *env, jclass containerType, jobjectArray in
                 if(!memberConverter1)
                     memberConverter1 = ResolvingInternalToExternalConverter(keyClass, metaType1);
 
-                ExternalToInternalConverter memberReConverter1 = QtJambiTypeManager::tryGetExternalToInternalConverter(
+                QtJambiUtils::ExternalToInternalConverter memberReConverter1 = QtJambiTypeManager::tryGetExternalToInternalConverter(
                             env,
                             keyClass,
                             metaType1.name(),
@@ -1198,7 +1198,7 @@ int CoreAPI::registerMetaType(JNIEnv *env, jclass containerType, jobjectArray in
                 if(!memberReConverter1)
                     memberReConverter1 = ResolvingExternalToInternalConverter(keyClass, metaType1);
 
-                InternalToExternalConverter memberConverter2 = QtJambiTypeManager::tryGetInternalToExternalConverter(
+                QtJambiUtils::InternalToExternalConverter memberConverter2 = QtJambiTypeManager::tryGetInternalToExternalConverter(
                             env,
                             metaType2.name(),
                             metaType2,
@@ -1206,7 +1206,7 @@ int CoreAPI::registerMetaType(JNIEnv *env, jclass containerType, jobjectArray in
                 if(!memberConverter2)
                     memberConverter2 = ResolvingInternalToExternalConverter(valueClass, metaType2);
 
-                ExternalToInternalConverter memberReConverter2 = QtJambiTypeManager::tryGetExternalToInternalConverter(
+                QtJambiUtils::ExternalToInternalConverter memberReConverter2 = QtJambiTypeManager::tryGetExternalToInternalConverter(
                             env,
                             valueClass,
                             metaType2.name(),
@@ -1325,6 +1325,10 @@ int qtjambiMetaTypeId(JNIEnv *env, jclass clazz, jobjectArray instantiations, QS
             return QMetaType::Float;
         }else if(Java::Runtime::Double::isSameClass(env, clazz) || Java::Runtime::Double::isPrimitiveType(env, clazz)){
             return QMetaType::Double;
+        }else if(Java::QtCore::QVariant$Null::isSameClass(env, clazz)){
+            return QMetaType::Nullptr;
+        }else if(Java::QtCore::QVariant::isSameClass(env, clazz)){
+            return QMetaType::QVariant;
         }else{
             QString javaClassName = QtJambiAPI::getClassName(env, clazz).replace('.', '/');
             if(const std::type_info* typeId = getTypeByJavaName(javaClassName)){
@@ -1478,7 +1482,7 @@ QVariant CoreAPI::convertCheckedObjectToQVariant(JNIEnv *env, jobject object, co
 
 hash_type CoreAPI::computeHash(const QMetaType& metaType, const void* ptr, hash_type seed, bool* success)
 {
-    QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(AbstractContainerAccess::isPointerType(metaType), metaType.id());
+    QtJambiUtils::QHashFunction hashFunction1 = QtJambiTypeManager::findHashFunction(AbstractContainerAccess::isPointerType(metaType), metaType.id());
     if(success)
         *success = hashFunction1;
     if(hashFunction1)

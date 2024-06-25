@@ -337,7 +337,9 @@ bool MetaFunction::needsCallThrough() const {
             if (mod.snips.count() <= 0)
                 continue ;
             for(const CodeSnip& snip : mod.snips) {
-                if (snip.language == TS::TargetLangCode)
+                if (snip.language == TS::TargetLangCode
+                    && snip.position!=CodeSnip::Comment
+                    && snip.position!=CodeSnip::CommentIntro)
                     return true;
             }
         }
@@ -2155,7 +2157,23 @@ void MetaFunction::setInterfaceClass(const MetaClass *cl) { m_interface_class = 
 void MetaFunction::setPropertySpec(QPropertySpec *spec) { m_property_spec = spec; }
 
 bool MetaFunction::hasCodeInjections(const MetaClass *implementor, TS::Language language, const QSet<CodeSnip::Position>& positions) const{
-    return implementor->typeEntry()->hasFunctionCodeInjections(minimalSignature(), language, positions);
+    if(implementor->typeEntry()->hasFunctionCodeInjections(minimalSignature(), language, positions))
+        return true;
+    if((minimalSignature()!=originalSignature() && implementor->typeEntry()->hasFunctionCodeInjections(originalSignature(), language, positions)))
+        return true;
+    if(m_functionTemplate.first){
+        if(implementor->typeEntry()->hasFunctionCodeInjections(m_functionTemplate.first->minimalSignature(), language, positions))
+            return true;
+        if(!m_functionTemplate.second.signature.isEmpty()){
+            for(const CodeSnip& snip : m_functionTemplate.second.snips) {
+                if (positions.contains(snip.position)
+                    && (snip.language & language)
+                    && !snip.code().isEmpty())
+                    return true;
+            }
+        }
+    }
+    return false;
 }
 
 FunctionModificationList MetaFunction::modifications(const MetaClass *implementor) const {
@@ -2646,12 +2664,16 @@ void MetaClass::setBaseClass(MetaClass *base_class) {
     if(base_class){
         if(base_class->typeEntry()->isQObject())
             m_type_entry->setQObject(true);
+        if(base_class->typeEntry()->isQModelIndex())
+            m_type_entry->setQModelIndex(true);
         if(base_class->typeEntry()->isQEvent())
             m_type_entry->setQEvent(true);
         if(base_class->typeEntry()->isQWidget())
             m_type_entry->setQWidget(true);
         if(base_class->typeEntry()->isQWindow())
             m_type_entry->setQWindow(true);
+        if(base_class->typeEntry()->isQAbstractItemModel())
+            m_type_entry->setQAbstractItemModel(true);
         if(base_class->typeEntry()->isQCoreApplication())
             m_type_entry->setQCoreApplication(true);
         if(base_class->typeEntry()->isQAction())
@@ -2839,8 +2861,8 @@ bool MetaClass::hasEqualsOperator() const {
 }
 
 bool MetaClass::hasCloneOperator() const {
-    if(m_template_base_class && m_template_base_class->hasCloneOperator())
-        return true;
+    //if(m_template_base_class && m_template_base_class->hasCloneOperator())
+    //    return true;
     if(this->isPublic() && !this->isAbstract() && !m_type_entry->isInterface() && m_type_entry->hasPublicCopyConstructor()){
         QString signature = QLatin1String("%1(%2)").arg(m_type_entry->qualifiedCppName().split("::").last(), m_type_entry->qualifiedCppName());
         for(FunctionModification mod : m_type_entry->functionModifications(signature)){

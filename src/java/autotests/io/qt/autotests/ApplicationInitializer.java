@@ -49,6 +49,7 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.BeforeClass;
 
+import io.qt.Nullable;
 import io.qt.QNoNativeResourcesException;
 import io.qt.QtObjectInterface;
 import io.qt.QtUtilities;
@@ -56,15 +57,22 @@ import io.qt.autotests.generated.General;
 import io.qt.core.QCoreApplication;
 import io.qt.core.QEvent;
 import io.qt.core.QIODevice;
+import io.qt.core.QLibraryInfo;
+import io.qt.core.QMetaObject;
 import io.qt.core.QObject;
+import io.qt.core.QOperatingSystemVersion;
 import io.qt.core.QProcess;
 import io.qt.core.QProcessEnvironment;
 import io.qt.core.QResource;
 import io.qt.core.QStringList;
 import io.qt.core.QThread;
+import io.qt.core.QVersionNumber;
+import io.qt.core.Qt;
 import io.qt.gui.QGuiApplication;
+import io.qt.gui.QShowEvent;
 import io.qt.internal.TestUtility;
 import io.qt.widgets.QApplication;
+import io.qt.widgets.QDialog;
 
 public abstract class ApplicationInitializer extends UnitTestInitializer{
 	
@@ -75,6 +83,8 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 			return base;
 		}
 	};
+	
+	private static String testClassName = "";
 	
 	protected static final List<WeakReference<QtObjectInterface>> instances = Collections.synchronizedList(new ArrayList<>());
 	
@@ -94,7 +104,7 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
     private static void testInitialize(int mode) throws Exception {
         try {
 			if(QCoreApplication.instance()==null) {
-				java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.INFO, "testInitialize: BEGIN");
+				java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.INFO, "testInitialize({0}): BEGIN", testClassName);
 				QResource.addClassPath(".");
 				QCoreApplication.setApplicationName("QtJambiUnitTest");
 				switch(mode){
@@ -139,7 +149,21 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 					timeoutThread.start();
 				});*/
 		        QThread.currentThread().setObjectName("main");
-			    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.INFO, "testInitialize: DONE");
+			    java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.INFO, "testInitialize({0}): DONE", testClassName);
+			    if(mode>=2 
+			    		&& QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.MacOS)
+			    		&& QLibraryInfo.version().equals(new QVersionNumber(6,5,3))
+			    		) {
+			    	QDialog dialog = new QDialog(){
+						@Override
+						protected void showEvent(@Nullable QShowEvent arg__1) {
+							super.showEvent(arg__1);
+					    	QMetaObject.invokeMethod(this::reject, Qt.ConnectionType.QueuedConnection);
+						}
+			    	};
+			    	dialog.exec();
+			    	dialog.dispose();
+			    }
 			}
 		} catch (Throwable e) {
 			e.printStackTrace();
@@ -150,7 +174,7 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
     @AfterClass
     public static void testDispose() throws Exception {
     	try {
-	        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.INFO, "testDispose: BEGIN");
+	        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.INFO, "testDispose({0}): BEGIN", testClassName);
     		Object currentThread = QThread.currentThread();
     		while(!instances.isEmpty()) {
     			WeakReference<QtObjectInterface> weak = instances.remove(0);
@@ -164,15 +188,16 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
     			}
     		}
 	        runGC();
+	        boolean noShutdown = Boolean.getBoolean("io.qt.autotests.no-app-shutdown");
 	
 	        // We are attempting to reach a point here where memory should be reclaimed
 	        // except for anything linked to QApplication.
 	
 	        QCoreApplication app = QCoreApplication.instance();
 	        try {
-	            java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: QCoreApplication-only  app={0}", app);
+	            java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose({0}): QCoreApplication-only  app={1}", new Object[]{testClassName, app});
 	        } catch(QNoNativeResourcesException e) {
-	            java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: QCoreApplication-only  io.qt.QNoNativeResourcesException: app={0}", e.getMessage());
+	            java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose({0}): QCoreApplication-only  io.qt.QNoNativeResourcesException: {1}", new Object[]{testClassName, e.getMessage()});
 	        }
 	
 	        System.err.flush();
@@ -180,19 +205,19 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 	
 	        if(app != null) {
 	            try {
-	        		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: processEvents() 1 PRE");
+	        		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose({0}): processEvents() 1 PRE", testClassName);
 	                QCoreApplication.processEvents();	// NPE
-	        		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: processEvents() 1 POST");
+	        		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose({0}): processEvents() 1 POST", testClassName);
 	            } catch(Throwable t) {
 	                t.printStackTrace();
 	            }
-	    		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: sendPostedEvents(DeferredDelete) PRE");
+	    		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose({0}): sendPostedEvents(DeferredDelete) PRE", testClassName);
 	            QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
-	    		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: sendPostedEvents(DeferredDelete) POST");
+	    		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose({0}): sendPostedEvents(DeferredDelete) POST", testClassName);
 	        }
 	        app = QCoreApplication.instance();
 	        if(app != null) {
-				java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: garbage PRE");
+				java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose({0}): garbage PRE", testClassName);
 		        for (int i = 0; i < 4; i++) {
 		        	runGC();
 		            Thread.sleep(50);
@@ -204,53 +229,59 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 		            QCoreApplication.processEvents();
 		            QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());	        	
 		        }
-				java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: garbage POST");
+				java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose({0}): garbage POST", testClassName);
 		        
-	    		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: processEvents() 2 PRE");
+	    		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose({0}): processEvents() 2 PRE", testClassName);
 	            QCoreApplication.processEvents();
-	    		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: processEvents() 2 POST");
-	    		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: processEvents() 3 PRE");
+	    		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose({0}): processEvents() 2 POST", testClassName);
+	    		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose({0}): processEvents() 3 PRE", testClassName);
 	            QCoreApplication.processEvents(/*QEventLoop.ProcessEventsFlag.DeferredDeletion*/);
-	    		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: processEvents() 3 POST");
-	    		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: QCoreApplication.dispose() PRE");
-	            app.dispose();
-	    		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: QCoreApplication.dispose() POST");
-	            try {
-	            	if(app.isDisposed())
-	            		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: done  app="+app.getClass()+"@"+app.hashCode());
-	            	else
-	            		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: not done  app="+app);
-	            } catch(QNoNativeResourcesException e) {
-	                java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: done  io.qt.QNoNativeResourcesException: app="+e.getMessage());
-	            }
-	            app = null;		// kill hard-reference
-	            Thread timeoutThread = new Thread(()->{
-					try {
-						synchronized(ApplicationInitializer.class) {
-							ApplicationInitializer.class.wait(15000);
-						}
-						System.err.println("Test process does not terminate.");
-						Runtime.getRuntime().halt(-1);
-					} catch (InterruptedException e) {
-					}
-				});
-				timeoutThread.setDaemon(true);
-				timeoutThread.start();
+	    		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose({0}): processEvents() 3 POST", testClassName);
+	    		if(!noShutdown) {
+		    		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose({0}): QCoreApplication.dispose() PRE", testClassName);
+		            app.dispose();
+		    		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose({0}): QCoreApplication.dispose() POST", testClassName);
+		            try {
+		            	if(app.isDisposed())
+		            		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose({0}): done  app={1}@{2}", new Object[]{testClassName, app.getClass(), app.hashCode()});
+		            	else
+		            		java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose({0}): not done  app={1}", new Object[]{testClassName, app});
+		            } catch(QNoNativeResourcesException e) {
+		                java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose({0}): done  io.qt.QNoNativeResourcesException: app={1}", new Object[]{testClassName, e.getMessage()});
+		            }
+		            app = null;		// kill hard-reference
+		            if(!QOperatingSystemVersion.current().isAnyOfType(QOperatingSystemVersion.OSType.Android)) {
+			            Thread timeoutThread = new Thread(()->{
+							try {
+								synchronized(ApplicationInitializer.class) {
+									ApplicationInitializer.class.wait(15000);
+								}
+								System.err.println("Test process does not terminate.");
+								Runtime.getRuntime().halt(-1);
+							} catch (InterruptedException e) {
+							}
+						});
+						timeoutThread.setDaemon(true);
+						timeoutThread.start();
+		            }
+	    		}
 	        }
-			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: garbage PRE");
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose({0}): garbage PRE", testClassName);
 	        runGC();
 	        QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 	        runGC();
 	        QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
 	        Thread.sleep(50);
-			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: garbage POST");
+			java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose({0}): garbage POST", testClassName);
 	
 	        // We are attempting to reach a point here where memory should be reclaimed
 	        // including that which was linked to QCoreApplication
 	
-	        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: shutdown PRE");
-	        QCoreApplication.shutdown();
-	        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: shutdown POST");
+			if(!noShutdown) {
+		        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose({0}): shutdown PRE", testClassName);
+		        QCoreApplication.shutdown();
+		        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose({0}): shutdown POST", testClassName);
+			}
 	        
 	        runGC();
 	        QCoreApplication.sendPostedEvents(null, QEvent.Type.DeferredDispose.value());
@@ -260,7 +291,7 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 	        TestUtility.flushErr();  // fflush(stderr)
 	        int objectCount = TestUtility.objectCount();  // QtJambiLink::QtJambiLink_dump()
 	        TestUtility.flushErr();  // fflush(stderr)
-	        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: end objectCount="+objectCount);
+	        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose({0}): end objectCount={1}", new Object[]{testClassName, objectCount});
 	
 	        if(objectCount == 0)
 	            return;  // optimization due to class loading causing some references to be set
@@ -275,9 +306,9 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
 	        TestUtility.flushErr();  // fflush(stderr)
 	        objectCount = TestUtility.objectCount();  // QtJambiLink::QtJambiLink_dump()
 	        TestUtility.flushErr();  // fflush(stderr)
-	        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose: end objectCount="+objectCount);
+	        java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.FINE, "testDispose({0}): end objectCount={1}", new Object[]{testClassName, objectCount});
     	}finally {
-            java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.INFO, "testDispose: DONE");
+            java.util.logging.Logger.getLogger("io.qt.autotests").log(java.util.logging.Level.INFO, "testDispose({0}): DONE", testClassName);
     	}
     }
     
@@ -541,4 +572,17 @@ public abstract class ApplicationInitializer extends UnitTestInitializer{
     	Thread.yield();
     	runFinalization.accept(Runtime.getRuntime());
     }
+    
+    public static String currentThreadToString(){
+    	return threadToString(Thread.currentThread());
+    }
+
+    @Deprecated
+	private static String threadToString(Thread thread){
+		return ""+thread.getId();
+	}
+
+	public static void setTestClassName(String n) {
+		testClassName = n;
+	}
 }

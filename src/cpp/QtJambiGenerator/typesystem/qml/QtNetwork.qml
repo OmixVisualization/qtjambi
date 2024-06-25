@@ -1720,6 +1720,29 @@ TypeSystem{
             remove: RemoveFlag.All
         }
     }
+
+    ValueType{
+        name: "QDnsTlsAssociationRecord"
+        EnumType{
+            name: "CertificateUsage"
+            RejectEnumValue{name: "PKIX_TA"}
+            RejectEnumValue{name: "PKIX_EE"}
+            RejectEnumValue{name: "DANE_TA"}
+            RejectEnumValue{name: "DANE_EE"}
+            RejectEnumValue{name: "PrivCert"}
+        }
+        EnumType{
+            name: "Selector"
+            RejectEnumValue{name: "Cert"}
+            RejectEnumValue{name: "SPKI"}
+            RejectEnumValue{name: "PrivSel"}
+        }
+        EnumType{
+            name: "MatchingType"
+            RejectEnumValue{name: "PrivMatch"}
+        }
+        since: 6.8
+    }
     
     ValueType{
         name: "QDnsDomainNameRecord"
@@ -3090,6 +3113,38 @@ TypeSystem{
         since: 6.7
     }
 
+    ObjectType{
+        name: "QFormDataBuilder"
+        since: 6.8
+    }
+
+    ObjectType{
+        name: "QFormDataPartBuilder"
+        ModifyFunction{
+            signature: "setBody(QByteArrayView,QAnyStringView)"
+            threadAffinity: true
+            ModifyArgument{
+                index: 1
+                InhibitImplicitCall{type: "io.qt.core.@NonNull QByteArray"}
+            }
+        }
+        ModifyFunction{
+            signature: "setBody<>(QByteArray,QAnyStringView)"
+            threadAffinity: true
+            noImplicitArguments: true
+        }
+        ModifyFunction{
+            signature: "setBodyDevice(QIODevice*,QAnyStringView)"
+            ModifyArgument{
+                index: 1
+                ReferenceCount{
+                    action: ReferenceCount.Ignore
+                }
+            }
+        }
+        since: 6.8
+    }
+
     GlobalFunction{
         signature: "qt_qhostinfo_lookup(const QString&,QObject*,const char*,bool*,int*)"
         targetType: "QHostInfo"
@@ -3117,4 +3172,5 @@ TypeSystem{
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QNetworkInterface."}
     SuppressedWarning{text: "WARNING(JavaGenerator) :: No ==/!= operator found for value type QSslCertificateExtension."}
     SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QNetworkInformationBackend*'"}
+    SuppressedWarning{text: "WARNING(MetaJavaBuilder) :: skipping function '*', unmatched *type 'QFormDataPartBuilder::PrivateConstructor'"}
 }

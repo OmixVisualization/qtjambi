@@ -58,73 +58,79 @@ final class BundleGenerator {
 		return key->new ArrayList<>();
 	}
 	
-//	private static final Map<String,String> pluginsModules;
-	private static final Map<String,Set<String>> pluginsByModules;
-	static {
-		Map<String,String> _pluginsModules = new TreeMap<>();
-		_pluginsModules.put("3dinputdevices", "qt3dinput");
-		_pluginsModules.put("renderplugins", "qt3drender");
-		_pluginsModules.put("geometryloaders", "qt3drender");
-		_pluginsModules.put("sceneparsers", "qt3drender");
-		_pluginsModules.put("renderers", "qt3drender");
-		_pluginsModules.put("geometryloaders", "qt3drender");
-		_pluginsModules.put("accessible", "gui");
-		_pluginsModules.put("accessiblebridge", "gui");
-		_pluginsModules.put("iconengines", "gui");
-		_pluginsModules.put("imageformats", "gui");
-		_pluginsModules.put("generic", "gui");
-		_pluginsModules.put("platforminputcontexts", "gui");
-		_pluginsModules.put("platforms", "gui");
-		_pluginsModules.put("platformthemes", "gui");
-		_pluginsModules.put("networkaccess", "network");
-		_pluginsModules.put("networkinformation", "network");
-		_pluginsModules.put("tls", "network");
-		_pluginsModules.put("egldeviceintegrations", "gui");
-		_pluginsModules.put("xcbglintegrations", "gui");
-		_pluginsModules.put("printsupport", "printsupport");
-		_pluginsModules.put("sqldrivers", "sql");
-		_pluginsModules.put("styles", "widgets");
-		_pluginsModules.put("qmltooling", "qml");
-		_pluginsModules.put("qmllint", "qml");
-		_pluginsModules.put("scenegraph", "quick");
-		_pluginsModules.put("opcua", "opcua");
-		_pluginsModules.put("position", "positioning");
-		_pluginsModules.put("assetimporters", "quick3d");
-		_pluginsModules.put("scxmldatamodel", "scxml");
-		_pluginsModules.put("canbus", "serialbus");
-		_pluginsModules.put("virtualkeyboard", "virtualkeyboard");
-		_pluginsModules.put("wayland-graphics-integration-client", "waylandclient");
-		_pluginsModules.put("wayland-inputdevice-integration", "waylandclient");
-		_pluginsModules.put("wayland-decoration-client", "waylandclient");
-		_pluginsModules.put("wayland-shell-integration", "waylandclient");
-		_pluginsModules.put("wayland-graphics-integration-server", "waylandcompositor");
-		_pluginsModules.put("wayland-hardware-layer-integration", "waylandcompositor");
-		_pluginsModules.put("wayland-graphics-integration-server", "waylandcompositor");
-		_pluginsModules.put("webview", "webview");
-		_pluginsModules.put("gamepads", "gamepad");
-		_pluginsModules.put("geoservices", "location");
-		_pluginsModules.put("texttospeech", "texttospeech");
-		_pluginsModules.put("designer", "designer");
-		_pluginsModules.put("sensors", "sensors");
-		_pluginsModules.put("sensorgestures", "sensors");
-		_pluginsModules.put("video", "multimedia");
-		_pluginsModules.put("audio", "multimedia");
-		_pluginsModules.put("mediaservice", "multimedia");
-		_pluginsModules.put("resourcepolicy", "multimedia");
-		_pluginsModules.put("playlistformats", "multimedia");
-		_pluginsModules.put("multimedia", "multimedia");
-		_pluginsModules.put("bearer", "network");
-		_pluginsModules.put("qtwebengine", "webenginecore");
-		Map<String,Set<String>> _pluginsByModules = new TreeMap<>();
-		Function<String,Set<String>> containerFactory = key->new TreeSet<>();
-		for(Map.Entry<String,String> entry : _pluginsModules.entrySet()) {
-			_pluginsByModules.computeIfAbsent(entry.getValue(), containerFactory).add(entry.getKey());
+	private static Map<String,Set<String>> pluginsByModules;
+	private static Map<String,Set<String>> pluginsByModules(String osArchName){
+		if(pluginsByModules==null) {
+			Map<String,String> _pluginsModules = new TreeMap<>();
+			_pluginsModules.put("3dinputdevices", "qt3dinput");
+			_pluginsModules.put("renderplugins", "qt3drender");
+			_pluginsModules.put("geometryloaders", "qt3drender");
+			_pluginsModules.put("sceneparsers", "qt3drender");
+			_pluginsModules.put("renderers", "qt3drender");
+			_pluginsModules.put("geometryloaders", "qt3drender");
+			_pluginsModules.put("accessible", "gui");
+			_pluginsModules.put("accessiblebridge", "gui");
+			_pluginsModules.put("iconengines", "gui");
+			_pluginsModules.put("imageformats", "gui");
+			_pluginsModules.put("generic", "gui");
+			_pluginsModules.put("platforminputcontexts", "gui");
+			if(osArchName.startsWith("android-")) {
+				_pluginsModules.put("platforms", "core");
+			}else {
+				_pluginsModules.put("platforms", "gui");
+			}
+			_pluginsModules.put("platformthemes", "gui");
+			_pluginsModules.put("networkaccess", "network");
+			_pluginsModules.put("networkinformation", "network");
+			_pluginsModules.put("tls", "network");
+			_pluginsModules.put("egldeviceintegrations", "gui");
+			_pluginsModules.put("xcbglintegrations", "gui");
+			_pluginsModules.put("printsupport", "printsupport");
+			_pluginsModules.put("sqldrivers", "sql");
+			_pluginsModules.put("styles", "widgets");
+			_pluginsModules.put("qmltooling", "qml");
+			_pluginsModules.put("qmllint", "qml");
+			_pluginsModules.put("scenegraph", "quick");
+			_pluginsModules.put("opcua", "opcua");
+			_pluginsModules.put("position", "positioning");
+			_pluginsModules.put("assetimporters", "quick3d");
+			_pluginsModules.put("scxmldatamodel", "scxml");
+			_pluginsModules.put("canbus", "serialbus");
+			_pluginsModules.put("virtualkeyboard", "virtualkeyboard");
+			_pluginsModules.put("wayland-graphics-integration-client", "waylandclient");
+			_pluginsModules.put("wayland-inputdevice-integration", "waylandclient");
+			_pluginsModules.put("wayland-decoration-client", "waylandclient");
+			_pluginsModules.put("wayland-shell-integration", "waylandclient");
+			_pluginsModules.put("wayland-graphics-integration-server", "waylandcompositor");
+			_pluginsModules.put("wayland-hardware-layer-integration", "waylandcompositor");
+			_pluginsModules.put("wayland-graphics-integration-server", "waylandcompositor");
+			_pluginsModules.put("webview", "webview");
+			_pluginsModules.put("gamepads", "gamepad");
+			_pluginsModules.put("geoservices", "location");
+			_pluginsModules.put("texttospeech", "texttospeech");
+			_pluginsModules.put("designer", "designer");
+			_pluginsModules.put("sensors", "sensors");
+			_pluginsModules.put("sensorgestures", "sensors");
+			_pluginsModules.put("video", "multimedia");
+			_pluginsModules.put("audio", "multimedia");
+			_pluginsModules.put("mediaservice", "multimedia");
+			_pluginsModules.put("resourcepolicy", "multimedia");
+			_pluginsModules.put("playlistformats", "multimedia");
+			_pluginsModules.put("multimedia", "multimedia");
+			_pluginsModules.put("bearer", "network");
+			_pluginsModules.put("qtwebengine", "webenginecore");
+			Map<String,Set<String>> _pluginsByModules = new TreeMap<>();
+			Function<String,Set<String>> containerFactory = key->new TreeSet<>();
+			for(Map.Entry<String,String> entry : _pluginsModules.entrySet()) {
+				_pluginsByModules.computeIfAbsent(entry.getValue(), containerFactory).add(entry.getKey());
+			}
+			for(Map.Entry<String,Set<String>> entry : _pluginsByModules.entrySet()) {
+				entry.setValue(Collections.unmodifiableSet(entry.getValue()));
+			}
+//			pluginsModules = Collections.unmodifiableMap(_pluginsModules);
+			pluginsByModules = Collections.unmodifiableMap(_pluginsByModules);
 		}
-		for(Map.Entry<String,Set<String>> entry : _pluginsByModules.entrySet()) {
-			entry.setValue(Collections.unmodifiableSet(entry.getValue()));
-		}
-//		pluginsModules = Collections.unmodifiableMap(_pluginsModules);
-		pluginsByModules = Collections.unmodifiableMap(_pluginsByModules);
+		return pluginsByModules;
 	}
 	
 	static void generate(QCommandLineParser parser, String[] args, QCommandLineOption platformOption, QCommandLineOption dirOption, QCommandLineOption configurationOption) throws InterruptedException, IOException{
@@ -1500,7 +1506,7 @@ final class BundleGenerator {
 							}
 						}
 						
-						Set<String> associatedPlugins = pluginsByModules.get(libPair.getKey());
+						Set<String> associatedPlugins = pluginsByModules(osArchName).get(libPair.getKey());
 						if(associatedPlugins!=null) {
 							for(String plugin : associatedPlugins) {
 								File pluginFile = plugins.remove(plugin);

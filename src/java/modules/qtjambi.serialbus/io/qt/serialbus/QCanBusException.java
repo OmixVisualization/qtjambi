@@ -29,6 +29,8 @@
 
 package io.qt.serialbus;
 
+import io.qt.Nullable;
+
 /**
  * This exception is thrown when canbus returns an error message.
  * @see QCanBus#availableDevices(String)
@@ -36,7 +38,7 @@ package io.qt.serialbus;
  */
 public class QCanBusException extends Exception {
     private static final long serialVersionUID = 5359890019927868780L;
-    public QCanBusException(String message) {
+    public QCanBusException(@Nullable String message) {
         super(message);
     }
 }

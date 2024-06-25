@@ -33,6 +33,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 
+import io.qt.NonNull;
+import io.qt.Nullable;
+import io.qt.StrictNonNull;
 import io.qt.core.QMetaType;
 
 /**
@@ -47,51 +50,51 @@ public class QDBusPendingReply<A> extends io.qt.dbus.QDBusPendingReplyBase imple
 	
 	private final QMetaType typeA;
 	
-	public static QDBusPendingReply<Object> newInstance(QDBusMessage message){
+	public static @NonNull QDBusPendingReply<Object> newInstance(@NonNull QDBusMessage message){
 		return new QDBusPendingReply<>(message, QMetaType.Type.QVariant);
 	}
 	
-	public static QDBusPendingReply<Object> newInstance(QDBusPendingCall call){
+	public static @NonNull QDBusPendingReply<Object> newInstance(@NonNull QDBusPendingCall call){
 		return new QDBusPendingReply<>(call, QMetaType.Type.QVariant);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static QDBusPendingReply<List<?>> newListInstance(QDBusMessage message){
+	public static @NonNull QDBusPendingReply<List<?>> newListInstance(@NonNull QDBusMessage message){
 		return new QDBusPendingReply(message, QMetaType.Type.QVariantList);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static QDBusPendingReply<List<?>> newListInstance(QDBusPendingCall call){
+	public static @NonNull QDBusPendingReply<List<?>> newListInstance(@NonNull QDBusPendingCall call){
 		return new QDBusPendingReply(call, QMetaType.Type.QVariantList);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static QDBusPendingReply<List<String>> newStringListInstance(QDBusMessage message){
+	public static @NonNull QDBusPendingReply<List<String>> newStringListInstance(@NonNull QDBusMessage message){
 		return new QDBusPendingReply(message, QMetaType.Type.QStringList);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static QDBusPendingReply<List<String>> newStringListInstance(QDBusPendingCall call){
+	public static @NonNull QDBusPendingReply<List<String>> newStringListInstance(@NonNull QDBusPendingCall call){
 		return new QDBusPendingReply(call, QMetaType.Type.QStringList);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static QDBusPendingReply<NavigableMap<String,?>> newMapInstance(QDBusMessage message){
+	public static @NonNull QDBusPendingReply<NavigableMap<String,?>> newMapInstance(@NonNull QDBusMessage message){
 		return new QDBusPendingReply(message, QMetaType.Type.QVariantMap);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static QDBusPendingReply<NavigableMap<String,?>> newMapInstance(QDBusPendingCall call){
+	public static @NonNull QDBusPendingReply<NavigableMap<String,?>> newMapInstance(@NonNull QDBusPendingCall call){
 		return new QDBusPendingReply(call, QMetaType.Type.QVariantMap);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static QDBusPendingReply<Map<String,?>> newHashInstance(QDBusMessage message){
+	public static @NonNull QDBusPendingReply<Map<String,?>> newHashInstance(@NonNull QDBusMessage message){
 		return new QDBusPendingReply(message, QMetaType.Type.QVariantHash);
 	}
 	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static QDBusPendingReply<Map<String,?>> newHashInstance(QDBusPendingCall call){
+	public static @NonNull QDBusPendingReply<Map<String,?>> newHashInstance(@NonNull QDBusPendingCall call){
 		return new QDBusPendingReply(call, QMetaType.Type.QVariantHash);
 	}
 	
@@ -113,19 +116,19 @@ public class QDBusPendingReply<A> extends io.qt.dbus.QDBusPendingReplyBase imple
         assign(call);
 	}
 	
-	public QDBusPendingReply(QDBusMessage message, Class<A> typeA, QMetaType... instantiations) {
+	public QDBusPendingReply(@NonNull QDBusMessage message, @Nullable Class<A> typeA, @NonNull QMetaType @NonNull... instantiations) {
 		super();
 		this.typeA = QMetaType.fromType(typeA, instantiations);
         assign(io.qt.dbus.QDBusPendingCall.fromCompletedCall(message));
 	}
 
-	public QDBusPendingReply(QDBusPendingCall call, Class<A> typeA, QMetaType... instantiations) {
+	public QDBusPendingReply(@NonNull QDBusPendingCall call, @Nullable Class<A> typeA, @NonNull QMetaType @NonNull... instantiations) {
 		super();
         this.typeA = QMetaType.fromType(typeA, instantiations);
         assign(call);
 	}
 
-	public QDBusPendingReply(QDBusPendingReply<A> other) {
+	public QDBusPendingReply(@StrictNonNull QDBusPendingReply<A> other) {
 		super();
 		typeA = other.typeA;
         assign(other);
@@ -155,7 +158,7 @@ public class QDBusPendingReply<A> extends io.qt.dbus.QDBusPendingReplyBase imple
 		metaTypes[0] = typeA;
 	}
 
-	public QDBusPendingReply<A> clone(){
+	public @NonNull QDBusPendingReply<A> clone(){
 		return new QDBusPendingReply<>(this);
 	}
 	
@@ -174,7 +177,7 @@ public class QDBusPendingReply<A> extends io.qt.dbus.QDBusPendingReplyBase imple
 
 	@SuppressWarnings("unchecked")
 	@io.qt.QtUninvokable
-    final <R> R argumentAt(QMetaType type, int index){
+    final <R> R argumentAt(@NonNull QMetaType type, int index){
         if(index<0 || index>=numberOfArguments())
             throw new IndexOutOfBoundsException("Index out of range: " + index);
         if(isInvalid())

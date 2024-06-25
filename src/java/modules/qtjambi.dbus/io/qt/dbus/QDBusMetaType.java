@@ -32,6 +32,9 @@ package io.qt.dbus;
 import java.io.Serializable;
 import java.util.Objects;
 
+import io.qt.NonNull;
+import io.qt.Nullable;
+import io.qt.StrictNonNull;
 import io.qt.core.QMetaType;
 
 public final class QDBusMetaType {
@@ -39,19 +42,21 @@ public final class QDBusMetaType {
 		QtJambi_LibraryUtilities.initialize();
 	}
 	
-	public static QMetaType registerDBusMetaType(Class<?> clazz, QMetaType... instantiations) {
+	public static @NonNull QMetaType registerDBusMetaType(@Nullable Class<?> clazz, @NonNull QMetaType @NonNull... instantiations) {
 		QMetaType metaType = QMetaType.fromType(clazz, instantiations);
 		if(metaType!=null && metaType.isValid()) {
 			registerDBusMetaType(metaType.id(), null, null, null);
 		}else {
-			throw new RuntimeException("Unable to find meta type for class "+clazz.getName());
+			throw new RuntimeException("Unable to find meta type for class "+(clazz==null ? "null" : clazz.getName()));
 		}
 		return metaType;
 	}
 	
-	public static QMetaType registerDBusMetaType(QMetaType metaType) {
+	public static @NonNull QMetaType registerDBusMetaType(@NonNull QMetaType metaType) {
 		if(metaType!=null && metaType.isValid()) {
 			registerDBusMetaType(metaType.id(), null, null, null);
+		}else if(metaType==null) {
+			metaType = new QMetaType();
 		}
 		return metaType;
 	}
@@ -62,7 +67,7 @@ public final class QDBusMetaType {
 	public interface DemarshallFunction<U> extends java.util.function.Function<QDBusArgument, U>, Serializable{
 	}
 	
-	public static <T> QMetaType registerDBusMetaType(MarshallFunction<T> marshallFunction, DemarshallFunction<T> demarshallFunction) {
+	public static <T> @NonNull QMetaType registerDBusMetaType(@StrictNonNull MarshallFunction<T> marshallFunction, @StrictNonNull DemarshallFunction<T> demarshallFunction) {
 		int[] marshallFunctionTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(MarshallFunction.class, Objects.requireNonNull(marshallFunction));
 		int[] demarshallFunctionTypes = QtJambi_LibraryUtilities.internal.lambdaMetaTypes(DemarshallFunction.class, Objects.requireNonNull(demarshallFunction));
 		Class<?>[] marshallFunctionClassTypes = QtJambi_LibraryUtilities.internal.lambdaClassTypes(MarshallFunction.class, Objects.requireNonNull(marshallFunction));
@@ -81,15 +86,15 @@ public final class QDBusMetaType {
 	
 	private static native <T> void registerDBusMetaType(int metaType, Class<?> classType, MarshallFunction<T> marshallFunction, DemarshallFunction<T> demarshallFunction);
 	
-	public static native Object demarshall(QDBusArgument arg, QMetaType id) throws UnsupportedOperationException;
+	public static native Object demarshall(@NonNull QDBusArgument arg, @NonNull QMetaType id) throws UnsupportedOperationException;
 	
-	public static void marshall(QDBusArgument arg, Object value) throws UnsupportedOperationException {
+	public static void marshall(@NonNull QDBusArgument arg, Object value) throws UnsupportedOperationException {
 		marshall(arg, null, value);
 	}
 	
-	public static native void marshall(QDBusArgument arg, QMetaType id, Object value) throws UnsupportedOperationException;
+	public static native void marshall(@NonNull QDBusArgument arg, @NonNull QMetaType id, Object value) throws UnsupportedOperationException;
 	
-	public static native String typeToSignature(QMetaType metaType);
+	public static native @NonNull String typeToSignature(@NonNull QMetaType metaType);
 	
-	public static native QMetaType signatureToMetaType(String signature);
+	public static native @NonNull QMetaType signatureToMetaType(@NonNull String signature);
 }

@@ -163,7 +163,7 @@ public class TestReferenceCounting extends ApplicationInitializer {
                         int i = shortClassName.lastIndexOf('.');
                         if(i > 0)
                             shortClassName = shortClassName.substring(i + 1);
-            			return shortClassName + ".ctor " + className + "@" + System.identityHashCode(o) + "; thread=" + Thread.currentThread().getId() + "; id=" + _id;
+            			return shortClassName + ".ctor " + className + "@" + System.identityHashCode(o) + "; thread=" + ApplicationInitializer.currentThreadToString() + "; id=" + _id;
             		});
         }
         WeakReference<QObject> wr = new WeakReference<QObject>(o, weakReferenceQueue);

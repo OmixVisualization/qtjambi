@@ -155,6 +155,8 @@
             <exclude name="io/qt/**/Test*XmlPatterns.java" unless="${qtjambi.xmlpatterns.any.true}"/>
             <exclude name="io/qt/**/Test*Charts.java" unless="${qtjambi.charts.any.true}"/>
             <exclude name="io/qt/**/Test*Graphs.java" unless="${qtjambi.graphs.any.true}"/>
+            <exclude name="io/qt/**/Test*GraphsWidgets.java" unless="${qtjambi.graphswidgets.any.true}"/>
+            <exclude name="io/qt/**/Test*InsightTracker.java" unless="${qtjambi.insighttracker.any.true}"/>
             <exclude name="io/qt/**/Test*DataVis.java" unless="${qtjambi.datavisualization.any.true}"/>
             <exclude name="io/qt/**/Test*DataVisualization.java" unless="${qtjambi.datavisualization.any.true}"/>
             <exclude name="io/qt/**/Test*SpatialAudio.java" unless="${qtjambi.spatialaudio.any.true}"/>
@@ -220,6 +222,8 @@
             <exclude name="io/qt/**/TestSpatialAudio*.java" unless="${qtjambi.spatialaudio.any.true}"/>
             <exclude name="io/qt/**/TestCharts*.java" unless="${qtjambi.charts.any.true}"/>
             <exclude name="io/qt/**/TestGraphs*.java" unless="${qtjambi.graphs.any.true}"/>
+            <exclude name="io/qt/**/TestGraphsWidgets*.java" unless="${qtjambi.graphswidgets.any.true}"/>
+            <exclude name="io/qt/**/TestInsightTracker*.java" unless="${qtjambi.insighttracker.any.true}"/>
             <exclude name="io/qt/**/TestDataVis*.java" unless="${qtjambi.datavisualization.any.true}"/>
             <exclude name="io/qt/**/TestQuick3D*.java" unless="${qtjambi.quick3d.any.true}"/>
             <exclude name="io/qt/**/TestQml*.java" unless="${qtjambi.qml.any.true}"/>
@@ -530,6 +534,7 @@
 					<compilerarg value="-Xlint:deprecation" />
 					<compilerarg value="-Xlint:unchecked" />
 					<compilerarg value="-Xlint:-options" />
+					<compilerarg value="-Xlint:-preview" />
 					<compilerarg value="--enable-preview" />
 					<classpath>
 						<fileset dir="${deploymentdir}">
@@ -838,6 +843,24 @@
 						<condition property="enablepreview" value="-Dx" else="--enable-preview">
 							<equals arg1="${jdk-exec-version}" arg2="8"/>
 						</condition>
+						<condition property="Dqtjambi.log-level" value="-Dqtjambi.log-level=${qtjambi.log-level}" else="-Dx">
+							<isset property="qtjambi.log-level"/>
+						</condition>
+						<condition property="Dio.qt.verbose-loading" value="-Dio.qt.verbose-loading=${io.qt.verbose-loading}" else="-Dx">
+							<isset property="io.qt.verbose-loading"/>
+						</condition>
+						<condition property="Dio.qt.enable-dangling-pointer-check" value="-Dio.qt.enable-dangling-pointer-check=${io.qt.enable-dangling-pointer-check}" else="-Dx">
+							<isset property="io.qt.enable-dangling-pointer-check"/>
+						</condition>
+						<condition property="Dio.qt.enable-thread-affinity-check" value="-Dio.qt.enable-thread-affinity-check=${io.qt.enable-thread-affinity-check}" else="-Dx">
+							<isset property="io.qt.enable-thread-affinity-check"/>
+						</condition>
+						<condition property="Dio.qt.enable-event-thread-affinity-check" value="-Dio.qt.enable-event-thread-affinity-check=${io.qt.enable-event-thread-affinity-check}" else="-Dx">
+							<isset property="io.qt.enable-event-thread-affinity-check"/>
+						</condition>
+						<condition property="Dio.qt.enable-method-logs" value="-Dio.qt.enable-method-logs=${io.qt.enable-method-logs}" else="-Dx">
+							<isset property="io.qt.enable-method-logs"/>
+						</condition>
 						<trycatch>
 							<try>
 								<mkdir dir="${outputDir}/${qtjambi.osname}/tests/junitxml-${kind}${jdk-exec-version}"/>
@@ -854,20 +877,19 @@
 										<pathelement path="${outputDir}/${qtjambi.osname}/tests/qtjambi-autotests-${qtjambi.jar.version}.jar" />
 									</classpath>
 									<jvmarg value="-Dio.qt.library-path-override=${qtPath}${psep}${qtJambiPath}${psep}${testLibPath}"/>
-									<jvmarg value="-Dio.qt.verbose-loading=${io.qt.verbose-loading}"/>
+									<jvmarg value="${Dio.qt.verbose-loading}"/>
 									<jvmarg value="-Dio.qt.debug=${kind}"/><!-- This should not be needed now, it loads default from MANIFEST.MF -->
 									<jvmarg value="-Dio.qt.log-messages=ALL"/>
-									<jvmarg value="-Dqtjambi.log-level=${qtjambi.log-level}"/>
+									<jvmarg value="${Dqtjambi.log-level}"/>
 									<jvmarg value="-Dio.qt.no-deployment-spec=true"/>
-									<jvmarg value="-Dio.qt.enable-dangling-pointer-check=${qtjambi.enable-dangling-pointer-check}"/>
-									<jvmarg value="-Dio.qt.enable-thread-affinity-check=${qtjambi.enable-thread-affinity-check}"/>
-									<jvmarg value="-Dio.qt.enable-event-thread-affinity-check=${qtjambi.enable-event-thread-affinity-check}"/>
-									<jvmarg value="-Dio.qt.enable-method-logs=${qtjambi.enable-method-logs}"/>
+									<jvmarg value="${Dio.qt.enable-dangling-pointer-check}"/>
+									<jvmarg value="${Dio.qt.enable-thread-affinity-check}"/>
+									<jvmarg value="${Dio.qt.enable-event-thread-affinity-check}"/>
+									<jvmarg value="${Dio.qt.enable-method-logs}"/>
 									<jvmarg value="-Dio.qt.qml-imports=${testQmlPath}"/>
 									<jvmarg value="-Dio.qt.pluginpath=${qtjambiPluginPath}${psep}${testPluginPath}"/>
 									<jvmarg value="${XstartOnFirstThread}"/>
 									<jvmarg value="-Dqtjambi.deployer.test.jdbc=${testJdbcPath}"/>
-									<jvmarg value="-Djava.util.logging.config.file=${basedir}/logging.properties"/>
 									<jvmarg value="-Dqtjambi.antcontrib=${ant.library.dir}/ant.jar"/>
 									<!--jvmarg value="-Xrs"/-->
 									<!-- This stops JVM intercepting SIGSEGV
